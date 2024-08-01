@@ -13,6 +13,7 @@ class UserModel {
   String? gender;
   List<String> favoriteBrands = [];
   List<String> favoriteStks = [];
+  List<String> volunteers = [];
   DateTime? createdAt;
 
   UserModel({
@@ -31,24 +32,24 @@ class UserModel {
     this.createdAt,
   });
 
-  UserModel.fromJson(Map<String, dynamic> json) {
-    name = json['name'];
+  UserModel.fromJson(Map<String?, dynamic> json) {
+    name = json['name'] ?? "";
     phone = json['phone'];
     uid = json['uid'];
-    image = json['image'];
-    email = json['email'];
+    image = json['image'] ?? "";
+    email = json['email'] ?? "";
 
-    birthDate = DateTime.tryParse(json['birthDate'].toString());
-    city = json['city'];
-    neighberhood = json['neighberhood'];
-    district = json['district'];
-    gender = json['gender'];
+    birthDate = DateTime.tryParse((json['birthDate'] ?? "").toString());
+    city = json['city'] ?? "";
+    neighberhood = json['neighberhood'] ?? "";
+    district = json['district'] ?? "";
+    gender = json['gender'] ?? "";
     favoriteBrands = json['favoriteBrands'] != null
         ? json['favoriteBrands'].cast<String>()
         : [];
     favoriteStks =
         json['favoriteStks'] != null ? json['favoriteStks'].cast<String>() : [];
-    createdAt = DateTime.tryParse(json['createdAt'].toString());
+    createdAt = DateTime.tryParse((json['createdAt'] ?? "").toString());
   }
 
   Map<String, dynamic> toJson() {

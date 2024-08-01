@@ -21,8 +21,7 @@ class LoginRegisterPageController {
     required String smsCode,
   }) async {
     try {
-      User user = await _firebaseAuthServices.verifyPhoneNumber(
-          verificationId, smsCode);
+      User user = await _firebaseAuthServices.verifyPhoneNumber(verificationId, smsCode);
       if (user.uid.isEmpty) {
         return GeneralResponseModel(
           success: false,
@@ -51,7 +50,7 @@ class LoginRegisterPageController {
             HiveHelpers.addUserToHive(userModel);
           }
         }
-
+        HiveHelpers.addUserToHive(userModel);
         return GeneralResponseModel(
           success: true,
           message: 'Kayıt yapıldı',
@@ -77,8 +76,7 @@ class LoginRegisterPageController {
       if (kDebugMode) {
         print("isUserExist : ${data.first.data()}");
       }
-      UserModel userModel =
-          UserModel.fromJson(data.first.data() as Map<String, dynamic>);
+      UserModel userModel = UserModel.fromJson(data.first.data() as Map<String, dynamic>);
       if (userModel.uid == null || userModel.phone == null) {
         return false;
       } else {
@@ -96,10 +94,7 @@ class LoginRegisterPageController {
       var data = await _firestoreServices.getData('users', wheres: [
         WhereModel(
           'phone',
-          isEqualTo: phoneNumber
-              .replaceAll(" ", "")
-              .replaceAll("(", "")
-              .replaceAll(")", ""),
+          isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""),
         )
       ]);
 

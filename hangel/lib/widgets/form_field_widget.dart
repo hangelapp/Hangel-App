@@ -39,9 +39,11 @@ class FormFieldWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
-              title,
-              style: AppTheme.semiBoldTextStyle(context, 16),
+            Expanded(
+              child: Text(
+                title,
+                style: AppTheme.semiBoldTextStyle(context, 16),
+              ),
             ),
             if (isRequired)
               Text(

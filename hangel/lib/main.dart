@@ -13,6 +13,7 @@ import 'package:hangel/views/register_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/views/settings_page.dart';
 import 'package:hangel/views/support_page.dart';
+import 'package:hangel/views/vounteer_form.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
@@ -79,10 +80,9 @@ class MyApp extends StatelessWidget {
         AboutUsPage.routeName: (context) => const AboutUsPage(),
         SupportPage.routeName: (context) => const SupportPage(),
         DonationHistoryPage.routeName: (context) => const DonationHistoryPage(),
-        SelectFavoriteStkPage.routeName: (context) =>
-            const SelectFavoriteStkPage(),
-        FrequentlyAskedQuestionsPage.routeName: (context) =>
-            const FrequentlyAskedQuestionsPage(),
+        SelectFavoriteStkPage.routeName: (context) => const SelectFavoriteStkPage(),
+        FrequentlyAskedQuestionsPage.routeName: (context) => const FrequentlyAskedQuestionsPage(),
+        VolunteerForm.routeName: (context) => const VolunteerForm()
       },
     );
   }

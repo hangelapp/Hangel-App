@@ -11,6 +11,7 @@ import 'package:hangel/views/home_page.dart';
 import 'package:hangel/views/onboarding_page.dart';
 import 'package:hangel/views/profile_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
+import 'package:hangel/views/vounteer_form.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
@@ -33,9 +34,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _maskFormatter = MaskTextInputFormatter(
-      mask: '(###) ### ## ##',
-      filter: {"#": RegExp(r'[0-9]')},
-      type: MaskAutoCompletionType.lazy);
+      mask: '(###) ### ## ##', filter: {"#": RegExp(r'[0-9]')}, type: MaskAutoCompletionType.lazy);
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -70,8 +69,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    _phoneLoginPageType =
-        context.watch<LoginRegisterPageProvider>().phoneLoginPageType;
+    _phoneLoginPageType = context.watch<LoginRegisterPageProvider>().phoneLoginPageType;
     return Scaffold(
       backgroundColor: AppTheme.white,
       body: Column(
@@ -89,11 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     _phoneLoginPageType == PhoneLoginPageType.verify
                         ? "assets/images/verification.svg"
                         : "assets/images/register.svg",
-                    height: deviceHeightSize(
-                        context,
-                        _phoneLoginPageType == PhoneLoginPageType.login
-                            ? 360
-                            : 280),
+                    height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.login ? 360 : 280),
                   ),
                   SizedBox(
                     height: deviceHeightSize(context, 20),
@@ -119,14 +113,11 @@ class _RegisterPageState extends State<RegisterPage> {
       child: Column(
         children: [
           Text(
-            _phoneLoginPageType == PhoneLoginPageType.register
-                ? "Hesap oluşturun"
-                : "Giriş yapın",
+            _phoneLoginPageType == PhoneLoginPageType.register ? "Hesap oluşturun" : "Giriş yapın",
             style: AppTheme.lightTextStyle(context, 28),
           ),
           SizedBox(
-            height: deviceHeightSize(context,
-                _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
+            height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
           ),
           if (_phoneLoginPageType == PhoneLoginPageType.register)
             FormFieldWidget(
@@ -178,101 +169,81 @@ class _RegisterPageState extends State<RegisterPage> {
             title: "Telefon Numarası",
           ),
           SizedBox(
-            height: deviceHeightSize(context,
-                _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
+            height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
           ),
           GeneralButtonWidget(
             onPressed: () async {
-              if ((_nameController.text.isEmpty &&
-                      _phoneLoginPageType == PhoneLoginPageType.register) ||
+              if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
                   _phoneController.text.isEmpty) {
-                ToastWidgets.errorToast(
-                    context, "Lütfen tüm alanları doldurunuz!");
+                ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurunuz!");
                 return;
               }
 
-              context.read<LoginRegisterPageProvider>().phoneNumber =
-                  "+90${_phoneController.text
-                    ..replaceAll(" ", "")
-                    ..replaceAll("(", "")
-                    ..replaceAll(")", "")}";
+              context.read<LoginRegisterPageProvider>().phoneNumber = "+90${_phoneController.text
+                ..replaceAll(" ", "")
+                ..replaceAll("(", "")
+                ..replaceAll(")", "")}";
 
               if (_phoneLoginPageType == PhoneLoginPageType.login) {
-                GeneralResponseModel generalResponseModel = await context
-                    .read<LoginRegisterPageProvider>()
-                    .isPhoneNumberExist();
+                GeneralResponseModel generalResponseModel =
+                    await context.read<LoginRegisterPageProvider>().isPhoneNumberExist();
                 if (generalResponseModel.success == false) {
-                  ToastWidgets.errorToast(
-                      context, generalResponseModel.message ?? "");
+                  ToastWidgets.errorToast(context, generalResponseModel.message ?? "");
                   FocusScope.of(context).unfocus();
-                  Navigator.pushReplacementNamed(
-                      context, OnboardingPage.routeName);
+                  Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
                   return;
                 }
               }
 
               if (_phoneLoginPageType == PhoneLoginPageType.register &&
-                  (context
-                          .read<LoginRegisterPageProvider>()
-                          .selectedOptions
-                          .any((element) => element == -1) ==
-                      true)) {
-                Navigator.pushReplacementNamed(
-                    context, OnboardingPage.routeName);
+                  (context.read<LoginRegisterPageProvider>().selectedOptions.any((element) => element == -1) == true)) {
+                Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
                 return;
               }
 
               setState(() {
                 resendSecond = 120;
               });
-              context.read<LoginRegisterPageProvider>().name =
-                  _nameController.text;
+              context.read<LoginRegisterPageProvider>().name = _nameController.text;
               context.read<LoginRegisterPageProvider>().phoneNumber =
-                  "+90${_phoneController.text
-                    ..replaceAll(" ", "")
-                    ..replaceAll("(", "")
-                    ..replaceAll(")", "")}";
-              context.read<LoginRegisterPageProvider>().sendVerificationCode();
+                  "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
+              var response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
+              if (response.success == true) {
+                print("Sms code sended");
+              } else {
+                ToastWidgets.errorToast(context, "Girilen telefon numarası sistemde zaten kayıtlı!");
+                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  RegisterPage.routeName,
+                  (route) => false,
+                );
+              }
             },
-            isLoading:
-                context.watch<LoginRegisterPageProvider>().smsCodeSentState ==
-                    LoadingState.loading,
-            text: _phoneLoginPageType == PhoneLoginPageType.login
-                ? "Giriş Yap"
-                : "Kayıt Ol",
+            isLoading: context.watch<LoginRegisterPageProvider>().smsCodeSentState == LoadingState.loading,
+            text: _phoneLoginPageType == PhoneLoginPageType.login ? "Giriş Yap" : "Kayıt Ol",
           ),
           TextButton(
             onPressed: () {
               if (_phoneLoginPageType == PhoneLoginPageType.login) {
-                context
-                    .read<LoginRegisterPageProvider>()
-                    .setPhoneLoginPageType(PhoneLoginPageType.register);
-                Navigator.pushReplacementNamed(
-                    context, OnboardingPage.routeName);
+                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.register);
+                Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
               } else {
-                context
-                    .read<LoginRegisterPageProvider>()
-                    .setPhoneLoginPageType(PhoneLoginPageType.login);
+                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
               }
             },
             child: RichText(
                 text: TextSpan(
-              text: _phoneLoginPageType == PhoneLoginPageType.login
-                  ? "Hesabınız yok mu? "
-                  : "Hesabınız var mı? ",
+              text: _phoneLoginPageType == PhoneLoginPageType.login ? "Hesabınız yok mu? " : "Hesabınız var mı? ",
               style: AppTheme.lightTextStyle(context, 16),
               children: [
                 TextSpan(
-                  text: _phoneLoginPageType == PhoneLoginPageType.login
-                      ? "Kayıt Ol"
-                      : "Giriş Yap",
-                  style: AppTheme.boldTextStyle(context, 16,
-                      color: AppTheme.primaryColor),
+                  text: _phoneLoginPageType == PhoneLoginPageType.login ? "Kayıt Ol" : "Giriş Yap",
+                  style: AppTheme.boldTextStyle(context, 16, color: AppTheme.primaryColor),
                 ),
               ],
             )),
           ),
-          ElevatedButton(onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage(),));}, child: const Text("Skip"))
         ],
       ),
     );
@@ -294,9 +265,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Pinput(
             length: 6,
             controller: _verifyController,
-            cursor: Text("_",
-                style: AppTheme.boldTextStyle(context, 22,
-                    color: AppTheme.primaryColor)),
+            cursor: Text("_", style: AppTheme.boldTextStyle(context, 22, color: AppTheme.primaryColor)),
             keyboardType: TextInputType.number,
             defaultPinTheme: PinTheme(
               decoration: BoxDecoration(
@@ -312,8 +281,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               width: deviceWidthSize(context, 50),
               height: deviceHeightSize(context, 60),
-              textStyle: AppTheme.boldTextStyle(context, 24,
-                  color: AppTheme.primaryColor),
+              textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.primaryColor),
             ),
             onTap: () {
               print("object");
@@ -332,9 +300,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 );
               }
             },
-            forceErrorState:
-                context.watch<LoginRegisterPageProvider>().smsCodeState ==
-                    LoadingState.error,
+            forceErrorState: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.error,
             errorPinTheme: PinTheme(
               decoration: BoxDecoration(
                 color: AppTheme.white,
@@ -343,12 +309,10 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               width: deviceWidthSize(context, 50),
               height: deviceHeightSize(context, 60),
-              textStyle:
-                  AppTheme.boldTextStyle(context, 24, color: AppTheme.yellow),
+              textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.yellow),
             ),
             errorText: "Hatalı Kod",
-            errorTextStyle:
-                AppTheme.normalTextStyle(context, 16, color: AppTheme.red),
+            errorTextStyle: AppTheme.normalTextStyle(context, 16, color: AppTheme.red),
           ),
           SizedBox(
             height: deviceHeightSize(context, 20),
@@ -356,11 +320,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Column(
             children: [
               Text(
-                Duration(seconds: resendSecond)
-                    .toString()
-                    .split(".")[0]
-                    .padLeft(8, "0")
-                    .substring(3, 8),
+                Duration(seconds: resendSecond).toString().split(".")[0].padLeft(8, "0").substring(3, 8),
                 style: AppTheme.lightTextStyle(
                   context,
                   32,
@@ -374,9 +334,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 onPressed: () {
                   if (resendSecond == 0) {
                     _verifyController.clear();
-                    context
-                        .read<LoginRegisterPageProvider>()
-                        .sendVerificationCode();
+                    context.read<LoginRegisterPageProvider>().sendVerificationCode();
                     setState(() {
                       resendSecond = 120;
                     });
@@ -385,9 +343,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Text(
                   "Tekrar Gönder",
                   style: AppTheme.boldTextStyle(context, 16,
-                      color: resendSecond == 0
-                          ? AppTheme.darkBlue
-                          : AppTheme.darkBlue.withOpacity(0.3)),
+                      color: resendSecond == 0 ? AppTheme.darkBlue : AppTheme.darkBlue.withOpacity(0.3)),
                 ),
               ),
             ],
@@ -397,29 +353,35 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           GeneralButtonWidget(
             onPressed: () {
-              if (context.read<LoginRegisterPageProvider>().smsCodeState ==
-                  LoadingState.loading) {
+              if (context.read<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading) {
                 return;
               }
 
               if (_verifyController.text.length != 6) {
                 ToastWidgets.errorToast(context, "Lütfen kodu doğru giriniz!");
               } else {
-                context
-                    .read<LoginRegisterPageProvider>()
-                    .verifyPhoneNumber(_verifyController.text)
-                    .then(
+                context.read<LoginRegisterPageProvider>().phoneNumber = "+90${_phoneController.text
+                  ..replaceAll(" ", "")
+                  ..replaceAll("(", "")
+                  ..replaceAll(")", "")}";
+                context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
                   (value) {
                     if (value.success == true) {
                       if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                        Navigator.pushReplacementNamed(
-                            context, SelectFavoriteStkPage.routeName);
+                        Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
                         return;
                       }
-                      context.read<LoginRegisterPageProvider>().selectedWidget =
-                          const ProfilePage();
-                      Navigator.pushReplacementNamed(
-                          context, AppView.routeName);
+                      if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                (element) => element == -1,
+                              ) ==
+                          false) {
+                        if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                          Navigator.pushReplacementNamed(context, VolunteerForm.routeName);
+                          return;
+                        }
+                      }
+                      context.read<LoginRegisterPageProvider>().selectedWidget = const HomePage();
+                      Navigator.pushReplacementNamed(context, AppView.routeName);
                     } else {
                       ToastWidgets.errorToast(context, value.message ?? "");
                     }
@@ -427,9 +389,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 );
               }
             },
-            isLoading:
-                context.watch<LoginRegisterPageProvider>().smsCodeState ==
-                    LoadingState.loading,
+            isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,
             text: "Doğrula",
           )
         ],

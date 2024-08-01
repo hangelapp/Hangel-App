@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 
 import '../helpers/hive_helpers.dart';
 import '../models/user_model.dart';
+import 'vounteer_form.dart';
 
 class SelectFavoriteStkPage extends StatefulWidget {
   const SelectFavoriteStkPage({Key? key}) : super(key: key);
@@ -23,8 +24,7 @@ class SelectFavoriteStkPage extends StatefulWidget {
   State<SelectFavoriteStkPage> createState() => _SelectFavoriteStkPageState();
 }
 
-class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
-    with SingleTickerProviderStateMixin {
+class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with SingleTickerProviderStateMixin {
   List<String> selectedStkIdList = [];
   final TextEditingController _searchController = TextEditingController();
   TabController? _tabController;
@@ -100,8 +100,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
                               tabAlignment: TabAlignment.start,
                               labelColor: AppTheme.primaryColor,
                               labelStyle: AppTheme.boldTextStyle(context, 14),
-                              unselectedLabelStyle:
-                                  AppTheme.normalTextStyle(context, 14),
+                              unselectedLabelStyle: AppTheme.normalTextStyle(context, 14),
                               indicatorSize: TabBarIndicatorSize.tab,
                               indicator: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
@@ -112,8 +111,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
                               ),
                               dividerColor: Colors.transparent,
                               isScrollable: true,
-                              overlayColor:
-                                  MaterialStateProperty.all(Colors.transparent),
+                              overlayColor: WidgetStateProperty.all(Colors.transparent),
                               tabs: _tabs
                                   .map(
                                     (e) => Tab(
@@ -126,10 +124,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
                           Expanded(
                               child: TabBarView(
                                   controller: _tabController,
-                                  children: List.generate(
-                                      _tabs.length,
-                                      (tabIndex) =>
-                                          viewWidget(context, tabIndex))))
+                                  children: List.generate(_tabs.length, (tabIndex) => viewWidget(context, tabIndex))))
                         ],
                       ),
                       const GradientWidget(height: 80),
@@ -139,17 +134,14 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
                         right: deviceWidthSize(context, 20),
                         child: GeneralButtonWidget(
                           onPressed: () async {
-                            if (context.read<STKProvider>().favoriteSTKState ==
-                                LoadingState.loading) {
+                            if (context.read<STKProvider>().favoriteSTKState == LoadingState.loading) {
                               return;
                             }
                             if (selectedStkIdList.length < 2) {
-                              ToastWidgets.errorToast(
-                                  context, "En az 2 STK seçmelisiniz!");
+                              ToastWidgets.errorToast(context, "En az 2 STK seçmelisiniz!");
                               return;
                             }
-                            context.read<STKProvider>().favoriteSTKState =
-                                LoadingState.loading;
+                            context.read<STKProvider>().favoriteSTKState = LoadingState.loading;
                             for (var element in selectedStkIdList) {
                               if (user.favoriteStks.contains(element)) {
                                 continue;
@@ -160,23 +152,32 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
                                     element,
                                   )
                                   .then((value) {
-                                context.read<STKProvider>().favoriteSTKState =
-                                    LoadingState.loaded;
+                                context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
                               });
                             }
-                            context.read<STKProvider>().favoriteSTKState =
-                                LoadingState.loaded;
+                            context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
                             if (user.uid != null) {
-                              Navigator.pop(context);
-                            } else {
                               Navigator.pushNamedAndRemoveUntil(
-                                  context, AppView.routeName, (route) => false);
+                                context,
+                                AppView.routeName,
+                                (route) => false,
+                              );
+                            } else {
+                              Navigator.pushNamedAndRemoveUntil(context, AppView.routeName, (route) => false);
+                            }
+
+                            if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                      (element) => element == -1,
+                                    ) ==
+                                false) {
+                              if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                                Navigator.pushReplacementNamed(context, VolunteerForm.routeName);
+                                return;
+                              }
                             }
                           },
                           text: "Kaydet",
-                          isLoading:
-                              context.watch<STKProvider>().favoriteSTKState ==
-                                  LoadingState.loading,
+                          isLoading: context.watch<STKProvider>().favoriteSTKState == LoadingState.loading,
                           buttonColor: AppTheme.primaryColor,
                         ),
                       )
@@ -200,9 +201,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
             .toLowerCase()
             .contains(_searchController.text.toLowerCase());
         bool isReturn = isSearch &&
-            (context.watch<STKProvider>().stkList[index].type ==
-                    _tabs[tabIndex] ||
-                _tabs[tabIndex] == "Tümü");
+            (context.watch<STKProvider>().stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
         return isReturn
             ? Padding(
                 padding: EdgeInsets.symmetric(
@@ -234,22 +233,13 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage>
                       setState(() {
                         if (value!) {
                           if (selectedStkIdList.length == 2) {
-                            ToastWidgets.errorToast(
-                                context, "En fazla 2 STK seçebilirsiniz!");
+                            ToastWidgets.errorToast(context, "En fazla 2 STK seçebilirsiniz!");
                             return;
                           }
-                          selectedStkIdList.add(context
-                              .read<STKProvider>()
-                              .stkList[index]
-                              .id
-                              .toString());
+                          selectedStkIdList.add(context.read<STKProvider>().stkList[index].id.toString());
                         } else {
                           selectedStkIdList.remove(
-                            context
-                                .read<STKProvider>()
-                                .stkList[index]
-                                .id
-                                .toString(),
+                            context.read<STKProvider>().stkList[index].id.toString(),
                           );
                         }
                       });

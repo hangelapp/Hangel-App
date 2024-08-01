@@ -174,12 +174,14 @@ class STKProvider with ChangeNotifier {
       ));
     }
     UserModel userModel = HiveHelpers.getUserFromHive();
+    UserModel newModel = userModel;
     if (userModel.favoriteStks.contains(id)) {
-      userModel.favoriteStks.remove(id);
+      newModel.favoriteStks.remove(id);
     } else {
-      userModel.favoriteStks.add(id);
+      newModel.favoriteStks = [...newModel.favoriteStks,id];
+      
     }
-    HiveHelpers.addUserToHive(userModel);
+    HiveHelpers.addUserToHive(newModel);
 
     return _stkController.addRemoveFavoriteSTK(id);
   }

@@ -12,38 +12,34 @@ class ProfilePageController {
   final _storageServices = locator<StorageServices>();
 
   Future<GeneralResponseModel> uploadImage(File file) async {
-    final url = await _storageServices.uploadImage(
-        "users/${HiveHelpers.getUserFromHive().uid!}", file);
+    final url = await _storageServices.uploadImage("users/${HiveHelpers.getUserFromHive().uid!}", file);
     if (url.isEmpty) {
-      return GeneralResponseModel(
-          message: "Fotoğraf yüklenirken bir hata oluştu", success: false);
+      return GeneralResponseModel(message: "Fotoğraf yüklenirken bir hata oluştu", success: false);
     } else {
       //update user image url
-      GeneralResponseModel responseModel = await _firestoreService.updateData(
-          'users/${HiveHelpers.getUserFromHive().uid!}', {'image': url});
+      GeneralResponseModel responseModel =
+          await _firestoreService.updateData('users/${HiveHelpers.getUserFromHive().uid!}', {'image': url});
       if (responseModel.success == true) {
         //update user image url in hive
         UserModel user = HiveHelpers.getUserFromHive();
         user.image = url;
         HiveHelpers.addUserToHive(user);
-        return GeneralResponseModel(
-            message: "Fotoğraf başarıyla yüklendi", success: true);
+        return GeneralResponseModel(message: "Fotoğraf başarıyla yüklendi", success: true);
       } else {
-        return GeneralResponseModel(
-            message: "Fotoğraf yüklenirken bir hata oluştu", success: false);
+        return GeneralResponseModel(message: "Fotoğraf yüklenirken bir hata oluştu", success: false);
       }
     }
   }
 
   Future<GeneralResponseModel> updateProfile(Map<String, String> map) async {
     try {
-      GeneralResponseModel responseModel = await _firestoreService.updateData(
-          'users/${HiveHelpers.getUserFromHive().uid!}', map);
+      GeneralResponseModel responseModel =
+          await _firestoreService.updateData('users/${HiveHelpers.getUserFromHive().uid!}', map);
+      HiveHelpers.addUserToHive(UserModel.fromJson(map));
       return responseModel;
     } catch (e) {
       print("updateProfile Error : " + e.toString());
-      return GeneralResponseModel(
-          message: "Profil güncellenirken bir hata oluştu", success: false);
+      return GeneralResponseModel(message: "Profil güncellenirken bir hata oluştu", success: false);
     }
   }
 }

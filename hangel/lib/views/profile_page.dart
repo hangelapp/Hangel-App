@@ -12,9 +12,11 @@ import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/views/stk_detail_page.dart';
+import 'package:hangel/views/vounteer_form.dart';
 import 'package:hangel/widgets/add_photo_form.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
 import 'package:hangel/widgets/bottom_sheet_widget.dart';
+import 'package:hangel/widgets/general_button_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
 
 import 'package:hangel/widgets/user_information_form.dart';
@@ -22,6 +24,7 @@ import 'package:hangel/widgets/user_name_form.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/stk_provider.dart';
+import 'stk_form_widget.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -32,8 +35,7 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage>
-    with TickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   UserModel user = HiveHelpers.getUserFromHive();
   @override
   void initState() {
@@ -51,15 +53,8 @@ class _ProfilePageState extends State<ProfilePage>
 
   //format phone number to +90 812 345 78 90
   String formatPhoneNumber(String phone) {
-    String formattedPhone = phone.substring(0, 3) +
-        " " +
-        phone.substring(3, 6) +
-        " " +
-        phone.substring(6, 9) +
-        " " +
-        phone.substring(9, 11) +
-        " " +
-        phone.substring(11, 13);
+    String formattedPhone =
+        "${phone.substring(0, 3)} ${phone.substring(3, 6)} ${phone.substring(6, 9)} ${phone.substring(9, 11)} ${phone.substring(11, 13)}";
     return formattedPhone;
   }
 
@@ -103,8 +98,7 @@ class _ProfilePageState extends State<ProfilePage>
                         Text(
                           (user.name ?? ""),
                           textAlign: TextAlign.center,
-                          style: AppTheme.semiBoldTextStyle(context, 24,
-                              color: Colors.white),
+                          style: AppTheme.semiBoldTextStyle(context, 24, color: Colors.white),
                         ),
                         Positioned(
                           right: 0,
@@ -115,9 +109,7 @@ class _ProfilePageState extends State<ProfilePage>
                                 isScrollControlled: true,
                                 backgroundColor: Colors.transparent,
                                 builder: (dialogContext) {
-                                  return const BottomSheetWidget(
-                                      title: "İsim Değiştir",
-                                      child: UserNameForm());
+                                  return const BottomSheetWidget(title: "İsim Değiştir", child: UserNameForm());
                                 },
                               );
                             },
@@ -250,8 +242,7 @@ class _ProfilePageState extends State<ProfilePage>
                     )
                   : Text(
                       nameText(user.name ?? ""),
-                      style: AppTheme.blackTextStyle(context, 48,
-                          color: AppTheme.white),
+                      style: AppTheme.blackTextStyle(context, 48, color: AppTheme.white),
                     ),
             ),
             errorWidget: (context, url, error) => Center(
@@ -262,8 +253,7 @@ class _ProfilePageState extends State<ProfilePage>
                     )
                   : Text(
                       nameText(user.name ?? ""),
-                      style: AppTheme.blackTextStyle(context, 48,
-                          color: AppTheme.white),
+                      style: AppTheme.blackTextStyle(context, 48, color: AppTheme.white),
                     ),
             ),
           ),
@@ -277,8 +267,7 @@ class _ProfilePageState extends State<ProfilePage>
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => const BottomSheetWidget(
-                    title: "Fotoğraf Ekle", child: AddPhotoForm()),
+                builder: (context) => const BottomSheetWidget(title: "Fotoğraf Ekle", child: AddPhotoForm()),
               );
             },
             child: Container(
@@ -313,7 +302,7 @@ class _ProfilePageState extends State<ProfilePage>
       List<String> names = name.split(" ");
       String text = "";
       for (int i = 0; i < names.length; i++) {
-        if (names[i].length > 0) {
+        if (names[i].isNotEmpty) {
           text += names[i][0];
         }
       }
@@ -340,8 +329,7 @@ class _ProfilePageState extends State<ProfilePage>
         "title": "Üye Olduğu Tarih",
         "value": HiveHelpers.getUserFromHive().createdAt == null
             ? "-"
-            : DateFormatHelper.getDate(
-                HiveHelpers.getUserFromHive().createdAt.toString(), context)
+            : DateFormatHelper.getDate(HiveHelpers.getUserFromHive().createdAt.toString(), context)
       },
     ];
 
@@ -368,8 +356,7 @@ class _ProfilePageState extends State<ProfilePage>
         "title": "Doğum Tarihi",
         "value": HiveHelpers.getUserFromHive().birthDate == null
             ? "-"
-            : DateFormatHelper.getDate(
-                HiveHelpers.getUserFromHive().birthDate.toString(), context)
+            : DateFormatHelper.getDate(HiveHelpers.getUserFromHive().birthDate.toString(), context)
       },
       {
         "icon": Icons.location_on_rounded,
@@ -377,11 +364,12 @@ class _ProfilePageState extends State<ProfilePage>
         "value": HiveHelpers.getUserFromHive().city == null
             ? "-"
             : HiveHelpers.getUserFromHive().city ??
-                "-" +
-                    "/" +
-                    (HiveHelpers.getUserFromHive().district ?? "-") +
-                    "/" +
-                    (HiveHelpers.getUserFromHive().neighberhood ?? "-"),
+                "-/${HiveHelpers.getUserFromHive().district ?? "-"}/${HiveHelpers.getUserFromHive().neighberhood ?? "-"}",
+      },
+      {
+        "icon": Icons.group,
+        "title": "Gönüllülük Durumu",
+        "value": HiveHelpers.getUserFromHive().volunteers.isEmpty ? "-" : HiveHelpers.getUserFromHive().volunteers,
       },
     ];
     return Column(
@@ -406,7 +394,7 @@ class _ProfilePageState extends State<ProfilePage>
               // ),
             ),
             dividerColor: Colors.transparent,
-            overlayColor: MaterialStateProperty.all(Colors.transparent),
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
             tabs: [
               Tab(
                 child: Row(
@@ -428,9 +416,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   isScrollControlled: true,
                                   builder: (context) {
                                     return const BottomSheetWidget(
-                                        isMinPadding: true,
-                                        title: "Kişisel Bilgiler",
-                                        child: UserInformationForm());
+                                        isMinPadding: true, title: "Kişisel Bilgiler", child: UserInformationForm());
                                   });
                             },
                             child: Container(
@@ -442,8 +428,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   width: 2,
                                 ),
                               ),
-                              padding:
-                                  EdgeInsets.all(deviceWidthSize(context, 3)),
+                              padding: EdgeInsets.all(deviceWidthSize(context, 3)),
                               child: const Icon(
                                 Icons.edit_rounded,
                                 color: AppTheme.white,
@@ -456,7 +441,7 @@ class _ProfilePageState extends State<ProfilePage>
                   ],
                 ),
               ),
-              Tab(
+              const Tab(
                 child: Text(
                   "İstatistikler",
                 ),
@@ -467,9 +452,7 @@ class _ProfilePageState extends State<ProfilePage>
         SizedBox(
           height: deviceHeightSize(context, 4),
         ),
-        _tabController!.index == 0
-            ? _personalInfo(context, info)
-            : _personalInfo(context, statics),
+        _tabController!.index == 0 ? _personalInfo(context, info) : _personalInfo(context, statics),
         SizedBox(
           height: deviceHeightSize(context, 20),
         ),
@@ -485,11 +468,40 @@ class _ProfilePageState extends State<ProfilePage>
         ),
         ...List.generate(
             context.watch<STKProvider>().stkList.length,
-            (index) => HiveHelpers.getUserFromHive()
-                    .favoriteStks
-                    .contains(context.watch<STKProvider>().stkList[index].id)
-                ? stkItem(context, index)
-                : const SizedBox()),
+            (index) =>
+                HiveHelpers.getUserFromHive().favoriteStks.contains(context.watch<STKProvider>().stkList[index].id)
+                    ? stkItem(context, index)
+                    : const SizedBox()),
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 15),
+          padding: EdgeInsets.symmetric(
+            horizontal: deviceWidthSize(context, 20),
+          ),
+          child: GeneralButtonWidget(
+              onPressed: () {
+                Navigator.pushNamed(context, VolunteerForm.routeName);
+              },
+              text: "Gönüllü olmak istiyorum"),
+        ),
+        Container(
+          margin: const EdgeInsets.only(bottom: 150),
+          padding: EdgeInsets.symmetric(
+            horizontal: deviceWidthSize(context, 20),
+          ),
+          child: GeneralButtonWidget(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => const BottomSheetWidget(
+                    title: "STK Başvuru Formu",
+                    isMinPadding: true,
+                    child: STKFormWidget(),
+                  ),
+                );
+              },
+              text: "STK Başvuru Formu"),
+        ),
       ],
     );
   }

@@ -6,9 +6,11 @@ import 'package:hangel/views/register_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 // import 'package:hangel/views/onboarding_page.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
+import 'package:provider/provider.dart';
 
 // import '../constants/app_theme.dart';
 import '../constants/size.dart';
+import '../providers/login_register_page_provider.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -51,6 +53,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
     Future.delayed(const Duration(seconds: 2), () {
       if (HiveHelpers.getUid() != "") {
+        context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid());
         if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
           Navigator.pushReplacementNamed(
               context, SelectFavoriteStkPage.routeName);
@@ -69,7 +72,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Container(
+        child: SizedBox(
           width: deviceFontSize(context, 153),
           child: AnimatedOpacity(
               duration: const Duration(milliseconds: 500),

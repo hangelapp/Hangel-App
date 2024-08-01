@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hangel/helpers/hive_helpers.dart';
+import 'package:hangel/models/user_model.dart';
 import 'package:hangel/views/favorites_page.dart';
 import '../controllers/login_register_page_controller.dart';
 import '../helpers/locator.dart';
@@ -22,7 +25,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
   String _verificationId = "";
   String _smsCode = "";
   String _name = "";
-  int _selectedIndex = -1;
+  final int _selectedIndex = -1;
   LoadingState smsCodeSentState = LoadingState.loaded;
   LoadingState smsCodeState = LoadingState.loaded;
   PhoneLoginPageType _phoneLoginPageType = PhoneLoginPageType.login;
@@ -80,10 +83,22 @@ class LoginRegisterPageProvider with ChangeNotifier {
     const ProfilePage(),
   ];
 
-  Future sendVerificationCode() async {
+  Future<GeneralResponseModel> sendVerificationCode() async {
     smsCodeSentState = LoadingState.loading;
     notifyListeners();
     timerTick = 120;
+
+    // Mevcut kullanıcıyı kontrol et (örneğin, telefon numarası ile)
+    bool existingUser = await getUserByPhoneNumber(_phoneNumber)!=null;
+
+
+
+    if (existingUser && phoneLoginPageType!=PhoneLoginPageType.login) {
+      print("User already exists with this phone number");
+      smsCodeSentState = LoadingState.loaded;
+      notifyListeners();
+      return GeneralResponseModel(success: false,message: "User already exists with this phone number",data: HiveHelpers.getUserFromHive());
+    }
 
     //verify phone number with firebase
     await FirebaseAuth.instance.verifyPhoneNumber(
@@ -118,32 +133,100 @@ class LoginRegisterPageProvider with ChangeNotifier {
         notifyListeners();
       },
     );
+    if(smsCodeSentState==LoadingState.error){
+      return GeneralResponseModel(success: false,message: "Error handled");
+    }else if(smsCodeSentState==LoadingState.loaded){
+      return GeneralResponseModel(success: true,message: "Successfully sended");
+    }else{
+      return GeneralResponseModel(success: false,message: "Error handled");
+    }
+  }
+
+  // Örnek kullanıcı kontrol fonksiyonu (Firebase Firestore gibi bir veritabanında kontrol edebilirsiniz)
+  Future<UserModel?> getUserByPhoneNumber(String phoneNumber) async {
+    try {
+      // Firestore'daki kullanıcı koleksiyonunu sorgula
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('users').where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")).limit(1).get();
+
+      // Eğer kullanıcı mevcutsa
+      if (querySnapshot.docs.isNotEmpty) {
+        // Belgeyi al
+        var data = querySnapshot.docs.first.data() as Map<String?, dynamic>;
+        UserModel user = UserModel.fromJson(data);
+
+        // Kullanıcıyı Hive'a ekle
+        HiveHelpers.addUserToHive(user);
+        return user;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting user by phone number: $e');
+      return null;
+    }
+  }
+
+
+Future<UserModel?> getUserById(String uid) async {
+    try {
+      // Firestore'daki kullanıcı koleksiyonunu sorgula
+      DocumentSnapshot snapshot =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      var data = snapshot.data() as Map<String?,dynamic>;
+      UserModel user = UserModel.fromJson(data);
+
+      // Kullanıcıyı Hive'a ekle
+      HiveHelpers.addUserToHive(user);
+      return user;
+        } catch (e) {
+      print('Error getting user by phone number: $e');
+      return null;
+    }
   }
 
   Future<GeneralResponseModel> verifyPhoneNumber(String smsCode) async {
-    smsCodeState = LoadingState.loading;
-    notifyListeners();
+    try {
+      smsCodeState = LoadingState.loading;
+      notifyListeners();
 
-    GeneralResponseModel responseModel =
-        await _loginRegisterPageController.verifyPhoneNumber(
-      phoneNumber: _phoneNumber,
-      name: _name,
-      verificationId: _verificationId,
-      smsCode: smsCode,
-    );
-    smsCodeState = LoadingState.loaded;
-    notifyListeners();
-    return responseModel;
+      GeneralResponseModel responseModel = await _loginRegisterPageController.verifyPhoneNumber(
+        phoneNumber: _phoneNumber,
+        name: _name,
+        verificationId: _verificationId,
+        smsCode: smsCode,
+      );
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""))
+          .limit(1)
+          .get();
+      // Eğer kullanıcı mevcutsa
+      if (querySnapshot.docs.isNotEmpty) {
+        // Belgeyi al
+        var data = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        UserModel user = UserModel.fromJson(data);
+
+        // Kullanıcıyı Hive'a ekle
+        HiveHelpers.addUserToHive(user);
+        print(user);
+      }
+
+      smsCodeState = LoadingState.loaded;
+      notifyListeners();
+      return responseModel;
+    } on Exception catch (e) {
+      smsCodeState = LoadingState.loaded;
+      notifyListeners();
+      return GeneralResponseModel(success: false, data: null, message: e.toString());
+    }
   }
 
   Future<GeneralResponseModel> isPhoneNumberExist() async {
     smsCodeSentState = LoadingState.loading;
     notifyListeners();
-    bool isExist = await _loginRegisterPageController.isPhoneNumberExist(
-        _phoneNumber
-            .replaceAll(" ", "")
-            .replaceAll("(", "")
-            .replaceAll(")", ""));
+    bool isExist = await _loginRegisterPageController
+        .isPhoneNumberExist(_phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""));
     smsCodeSentState = LoadingState.loaded;
     notifyListeners();
     if (isExist) {
@@ -153,9 +236,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
     }
     return GeneralResponseModel(
       success: isExist,
-      message: isExist
-          ? "Kullanıcı bulundu"
-          : "Kullanıcı bulunamadı, lütfen kayıt olun!",
+      message: isExist ? "Kullanıcı bulundu" : "Kullanıcı bulunamadı, lütfen kayıt olun!",
     );
   }
 
