@@ -14,12 +14,7 @@ class LoginRegisterPageController {
   // final _apiServices = locator<ApiServices>();
   // final _usersPath = 'users';
 
-  Future<GeneralResponseModel> verifyPhoneNumber({
-    required String phoneNumber,
-    required String name,
-    required String verificationId,
-    required String smsCode,
-  }) async {
+  Future<GeneralResponseModel> verifyPhoneNumber({required String phoneNumber,required String name,required String verificationId,required String smsCode}) async {
     try {
       User user = await _firebaseAuthServices.verifyPhoneNumber(verificationId, smsCode);
       if (user.uid.isEmpty) {

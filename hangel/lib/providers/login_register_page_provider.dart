@@ -68,36 +68,20 @@ class LoginRegisterPageProvider with ChangeNotifier {
     _name = "";
   }
 
-  Widget _selectedWidget = const HomePage();
-  Widget get selectedWidget => _selectedWidget;
-  set selectedWidget(Widget value) {
-    _selectedWidget = value;
-    notifyListeners();
-  }
-
-  List<Widget> widgetOptions = <Widget>[
-    const HomePage(),
-    const BrandsPage(),
-    const FavoritesPage(),
-    const STKPage(),
-    const ProfilePage(),
-  ];
-
   Future<GeneralResponseModel> sendVerificationCode() async {
     smsCodeSentState = LoadingState.loading;
     notifyListeners();
     timerTick = 120;
 
     // Mevcut kullanıcıyı kontrol et (örneğin, telefon numarası ile)
-    bool existingUser = await getUserByPhoneNumber(_phoneNumber)!=null;
+    bool existingUser = await getUserByPhoneNumber(_phoneNumber) != null;
 
-
-
-    if (existingUser && phoneLoginPageType!=PhoneLoginPageType.login) {
+    if (existingUser && phoneLoginPageType != PhoneLoginPageType.login) {
       print("User already exists with this phone number");
       smsCodeSentState = LoadingState.loaded;
       notifyListeners();
-      return GeneralResponseModel(success: false,message: "User already exists with this phone number",data: HiveHelpers.getUserFromHive());
+      return GeneralResponseModel(
+          success: false, message: "User already exists with this phone number", data: HiveHelpers.getUserFromHive());
     }
 
     //verify phone number with firebase
@@ -133,12 +117,12 @@ class LoginRegisterPageProvider with ChangeNotifier {
         notifyListeners();
       },
     );
-    if(smsCodeSentState==LoadingState.error){
-      return GeneralResponseModel(success: false,message: "Error handled");
-    }else if(smsCodeSentState==LoadingState.loaded){
-      return GeneralResponseModel(success: true,message: "Successfully sended");
-    }else{
-      return GeneralResponseModel(success: false,message: "Error handled");
+    if (smsCodeSentState == LoadingState.error) {
+      return GeneralResponseModel(success: false, message: "Error handled");
+    } else if (smsCodeSentState == LoadingState.loaded) {
+      return GeneralResponseModel(success: true, message: "Successfully sended");
+    } else {
+      return GeneralResponseModel(success: false, message: "Error handled");
     }
   }
 
@@ -146,8 +130,11 @@ class LoginRegisterPageProvider with ChangeNotifier {
   Future<UserModel?> getUserByPhoneNumber(String phoneNumber) async {
     try {
       // Firestore'daki kullanıcı koleksiyonunu sorgula
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('users').where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")).limit(1).get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""))
+          .limit(1)
+          .get();
 
       // Eğer kullanıcı mevcutsa
       if (querySnapshot.docs.isNotEmpty) {
@@ -167,19 +154,17 @@ class LoginRegisterPageProvider with ChangeNotifier {
     }
   }
 
-
-Future<UserModel?> getUserById(String uid) async {
+  Future<UserModel?> getUserById(String uid) async {
     try {
       // Firestore'daki kullanıcı koleksiyonunu sorgula
-      DocumentSnapshot snapshot =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      var data = snapshot.data() as Map<String?,dynamic>;
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      var data = snapshot.data() as Map<String?, dynamic>;
       UserModel user = UserModel.fromJson(data);
 
       // Kullanıcıyı Hive'a ekle
       HiveHelpers.addUserToHive(user);
       return user;
-        } catch (e) {
+    } catch (e) {
       print('Error getting user by phone number: $e');
       return null;
     }

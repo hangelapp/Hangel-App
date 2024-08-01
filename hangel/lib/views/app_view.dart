@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
+import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/views/donation_history_page.dart';
@@ -30,8 +31,8 @@ class _AppViewState extends State<AppView> {
   Widget selectedWidget = const HomePage();
   @override
   Widget build(BuildContext context) {
-    widgetOptions = context.watch<LoginRegisterPageProvider>().widgetOptions;
-    selectedWidget = context.watch<LoginRegisterPageProvider>().selectedWidget;
+    widgetOptions = context.watch<AppViewProvider>().widgetOptions;
+    selectedWidget = context.watch<AppViewProvider>().selectedWidget;
     return Scaffold(
       key: scaffoldKey,
       bottomNavigationBar: BottomNavigationBar(
@@ -53,7 +54,7 @@ class _AppViewState extends State<AppView> {
             ? 0
             : widgetOptions.indexOf(selectedWidget),
         onTap: (index) {
-          context.read<LoginRegisterPageProvider>().selectedWidget =
+          context.read<AppViewProvider>().selectedWidget =
               widgetOptions.elementAt(index);
         },
         items: const [
@@ -130,7 +131,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
-                context.read<LoginRegisterPageProvider>().selectedWidget =
+                context.read<AppViewProvider>().selectedWidget =
                     widgetOptions.elementAt(4);
                 Navigator.pop(context);
               },
@@ -162,7 +163,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
-                context.read<LoginRegisterPageProvider>().selectedWidget =
+                context.read<AppViewProvider>().selectedWidget =
                     widgetOptions.elementAt(3);
                 Navigator.pop(context);
               },
@@ -179,7 +180,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
-                context.read<LoginRegisterPageProvider>().selectedWidget =
+                context.read<AppViewProvider>().selectedWidget =
                     widgetOptions.elementAt(1);
                 Navigator.pop(context);
               },
@@ -197,7 +198,7 @@ class _AppViewState extends State<AppView> {
               iconColor: AppTheme.primaryColor,
               onTap: () {
                 context.read<BrandProvider>().filterText = "socialEnterprise";
-                context.read<LoginRegisterPageProvider>().selectedWidget =
+                context.read<AppViewProvider>().selectedWidget =
                     widgetOptions.elementAt(1);
                 Navigator.pop(context);
               },

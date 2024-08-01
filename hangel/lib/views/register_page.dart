@@ -360,10 +360,8 @@ class _RegisterPageState extends State<RegisterPage> {
               if (_verifyController.text.length != 6) {
                 ToastWidgets.errorToast(context, "Lütfen kodu doğru giriniz!");
               } else {
-                context.read<LoginRegisterPageProvider>().phoneNumber = "+90${_phoneController.text
-                  ..replaceAll(" ", "")
-                  ..replaceAll("(", "")
-                  ..replaceAll(")", "")}";
+                context.read<LoginRegisterPageProvider>().phoneNumber =
+                    "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
                 context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
                   (value) {
                     if (value.success == true) {
