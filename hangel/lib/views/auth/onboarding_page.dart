@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
 import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:provider/provider.dart';
 
-import '../constants/app_theme.dart';
-import '../constants/size.dart';
-import '../models/onboarding_model.dart';
+import '../../constants/app_theme.dart';
+import '../../constants/size.dart';
+import '../../models/onboarding_model.dart';
 import 'register_page.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -68,9 +69,9 @@ class _OnboardingPageState extends State<OnboardingPage>
   @override
   dispose() {
     _pageController.dispose();
-    pages.forEach((element) {
+    for (var element in pages) {
       element.image.evict();
-    });
+    }
     super.dispose();
   }
 

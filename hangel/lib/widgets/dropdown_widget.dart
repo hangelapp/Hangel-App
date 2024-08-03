@@ -47,7 +47,7 @@ class DropdownWidget extends StatelessWidget {
                 child: RichText(
                   text: TextSpan(
                     text: title,
-                    style: AppTheme.semiBoldTextStyle(context, 16),
+                    style: AppTheme.semiBoldTextStyle(context, 15),
                     children: [
                       TextSpan(
                         text: isRequired ? " *" : "",

@@ -1,18 +1,17 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 double deviceHeight(BuildContext context) => MediaQuery.of(context).size.height;
-double deviceHeightSize(BuildContext context, double size) =>
-    MediaQuery.of(context).size.height * size * 0.00123;
+double deviceHeightSize(BuildContext context, double size) => MediaQuery.of(context).size.height * size * 0.00123;
 
 double deviceWidth(BuildContext context) => MediaQuery.of(context).size.width;
-double deviceWidthSize(BuildContext context, double size) =>
-    MediaQuery.of(context).size.width * size * 0.0026;
+double deviceWidthSize(BuildContext context, double size) => MediaQuery.of(context).size.width * size * 0.0026;
 
-double deviceTopPadding(BuildContext context) =>
-    MediaQuery.of(context).padding.top +
-    (Platform.isAndroid ? deviceHeightSize(context, 10) : 0);
+double deviceTopPadding(BuildContext context) => kIsWeb
+    ? MediaQuery.of(context).padding.top
+    : MediaQuery.of(context).padding.top + (Platform.isAndroid ? deviceHeightSize(context, 10) : 0);
 
 double deviceFontSize(BuildContext context, double fontSize) {
   //mobile, tablet, desktop,

@@ -9,6 +9,8 @@ import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
 
+import 'utilities.dart';
+
 class STKDetailPage extends StatefulWidget {
   const STKDetailPage({Key? key, required this.stkModel}) : super(key: key);
   final StkModel stkModel;

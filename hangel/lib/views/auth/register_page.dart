@@ -6,22 +6,23 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/general_response_model.dart';
+import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/home_page.dart';
-import 'package:hangel/views/onboarding_page.dart';
+import 'package:hangel/views/auth/onboarding_page.dart';
 import 'package:hangel/views/profile_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/views/vounteer_form.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
-import '../constants/app_theme.dart';
-import '../constants/size.dart';
-import '../providers/login_register_page_provider.dart';
-import '../widgets/app_bar_widget.dart';
-import '../widgets/form_field_widget.dart';
-import '../widgets/general_button_widget.dart';
-import '../widgets/toast_widgets.dart';
+import '../../constants/app_theme.dart';
+import '../../constants/size.dart';
+import '../../providers/login_register_page_provider.dart';
+import '../../widgets/app_bar_widget.dart';
+import '../../widgets/form_field_widget.dart';
+import '../../widgets/general_button_widget.dart';
+import '../../widgets/toast_widgets.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -171,53 +172,71 @@ class _RegisterPageState extends State<RegisterPage> {
           SizedBox(
             height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
           ),
+
+          //GİRİŞ YAP VEYA KAYDOL BUTONU
           GeneralButtonWidget(
             onPressed: () async {
-              if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
-                  _phoneController.text.isEmpty) {
-                ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurunuz!");
-                return;
-              }
+              try {
+// Null check
+                if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
+                    _phoneController.text.isEmpty) {
+                  ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurunuz!");
+                  return;
+                }
 
-              context.read<LoginRegisterPageProvider>().phoneNumber = "+90${_phoneController.text
-                ..replaceAll(" ", "")
-                ..replaceAll("(", "")
-                ..replaceAll(")", "")}";
+                //Telefon numarası formatlama
+                context.read<LoginRegisterPageProvider>().phoneNumber = "+90${_phoneController.text
+                  ..replaceAll(" ", "")
+                  ..replaceAll("(", "")
+                  ..replaceAll(")", "")}";
 
-              if (_phoneLoginPageType == PhoneLoginPageType.login) {
-                GeneralResponseModel generalResponseModel =
-                    await context.read<LoginRegisterPageProvider>().isPhoneNumberExist();
-                if (generalResponseModel.success == false) {
-                  ToastWidgets.errorToast(context, generalResponseModel.message ?? "");
-                  FocusScope.of(context).unfocus();
+                // Login olurken telefon numarası kontrolü
+                if (_phoneLoginPageType == PhoneLoginPageType.login) {
+                  GeneralResponseModel generalResponseModel =
+                      await context.read<LoginRegisterPageProvider>().isPhoneNumberExist();
+                  if (generalResponseModel.success == false) {
+                    ToastWidgets.errorToast(context, generalResponseModel.message ?? "");
+                    FocusScope.of(context).unfocus();
+                    Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
+                    return;
+                  }
+                }
+
+                // Onbarding'de cevaplanmamış soru varsa tekrar onboarding ekranına at
+                if (_phoneLoginPageType == PhoneLoginPageType.register &&
+                    (context.read<LoginRegisterPageProvider>().selectedOptions.any((element) => element == -1) ==
+                        true)) {
                   Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
                   return;
                 }
-              }
 
-              if (_phoneLoginPageType == PhoneLoginPageType.register &&
-                  (context.read<LoginRegisterPageProvider>().selectedOptions.any((element) => element == -1) == true)) {
-                Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
+                // Süreyi ayarla
+                setState(() {
+                  resendSecond = 120;
+                });
+
+                // Provider verilerini güncelle
+                context.read<LoginRegisterPageProvider>().name = _nameController.text;
+                context.read<LoginRegisterPageProvider>().phoneNumber =
+                    "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
+
+                // KOD GÖNDERME AŞAMASI
+                var response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
+
+                // Gönderilmediyse hata döndür ve kayıt ol sayfasına yönlendir.
+                if (response.success == true) {
+                  print("Sms code sended");
+                } else {
+                  ToastWidgets.errorToast(context,
+                      "Girilen telefon numarası sistemde zaten kayıtlı ya da girdiğiniz verilerde hata olabilir!");
+                  print("BURAYA GELDİ");
+                  context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
+                  Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
+                }
+              } catch (e) {
+                ToastWidgets.errorToast(context, "Beklenmeyen bir hatayla karşılaşıldı. Lütfen tekrar deneyin");
+                Navigator.pushReplacementNamed(context, RegisterPage.routeName);
                 return;
-              }
-
-              setState(() {
-                resendSecond = 120;
-              });
-              context.read<LoginRegisterPageProvider>().name = _nameController.text;
-              context.read<LoginRegisterPageProvider>().phoneNumber =
-                  "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
-              var response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
-              if (response.success == true) {
-                print("Sms code sended");
-              } else {
-                ToastWidgets.errorToast(context, "Girilen telefon numarası sistemde zaten kayıtlı!");
-                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  RegisterPage.routeName,
-                  (route) => false,
-                );
               }
             },
             isLoading: context.watch<LoginRegisterPageProvider>().smsCodeSentState == LoadingState.loading,
@@ -374,11 +393,11 @@ class _RegisterPageState extends State<RegisterPage> {
                               ) ==
                           false) {
                         if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                          Navigator.pushReplacementNamed(context, VolunteerForm.routeName);
+                          Navigator.pushReplacementNamed(context, VolunteerForm.routeName,);
                           return;
                         }
                       }
-                      context.read<LoginRegisterPageProvider>().selectedWidget = const HomePage();
+                      context.read<AppViewProvider>().selectedWidget = const HomePage();
                       Navigator.pushReplacementNamed(context, AppView.routeName);
                     } else {
                       ToastWidgets.errorToast(context, value.message ?? "");

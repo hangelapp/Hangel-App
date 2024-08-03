@@ -35,12 +35,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
   final TextEditingController _stkPhoneController = TextEditingController();
   final TextEditingController _stkFounderController = TextEditingController();
   final TextEditingController _stkWebsiteController = TextEditingController();
-  final TextEditingController _stkContactPersonController =
-      TextEditingController();
-  final TextEditingController _stkContactPersonPhoneController =
-      TextEditingController();
-  final TextEditingController _stkContactPersonMailController =
-      TextEditingController();
+  final TextEditingController _stkContactPersonController = TextEditingController();
+  final TextEditingController _stkContactPersonPhoneController = TextEditingController();
+  final TextEditingController _stkContactPersonMailController = TextEditingController();
   final TextEditingController _stkContactPersonJob = TextEditingController();
   final TextEditingController _stkAddressController = TextEditingController();
 
@@ -49,7 +46,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
   PlatformFile? _tuzukPDF;
   List<ImageModel?> _faaliyetImage = [];
 
-  List<String> _selectedCategories = [];
+  final List<String> _selectedCategories = [];
   int _selectedSectorIndex = -1;
   List<String> selectedBMs = [];
   int _selectedType = -1;
@@ -66,8 +63,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       //get iller from json file /assets/il-ilce.json
-      jsonData = await DefaultAssetBundle.of(context)
-          .loadString("assets/il-ilce.json");
+      jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
         final jsonResult = jsonDecode(jsonData);
         for (var item in jsonResult) {
@@ -157,8 +153,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                   _logoImage = [];
                 });
               },
-              infoText:
-                  "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
+              infoText: "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
             ),
             PickImageWidget(
               context,
@@ -178,8 +173,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                   _bannerImage = [];
                 });
               },
-              infoText:
-                  "Markanın logosu, 800x500 boyutlarında, png veya jpg formatında olmalıdır.",
+              infoText: "Markanın logosu, 800x500 boyutlarında, png veya jpg formatında olmalıdır.",
             ),
             FormFieldWidget(
               context,
@@ -377,11 +371,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
             SizedBox(height: deviceHeightSize(context, 10)),
             GeneralButtonWidget(
               text: "Gönder",
-              isLoading: context.watch<STKProvider>().sendFormState ==
-                  LoadingState.loading,
+              isLoading: context.watch<STKProvider>().sendFormState == LoadingState.loading,
               onPressed: () {
-                if (context.read<STKProvider>().sendFormState ==
-                    LoadingState.loading) {
+                if (context.read<STKProvider>().sendFormState == LoadingState.loading) {
                   return;
                 }
 
@@ -416,10 +408,8 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                           phone: _stkPhoneController.text,
                           founder: _stkFounderController.text,
                           contactPerson: _stkContactPersonController.text,
-                          contactPersonPhone:
-                              _stkContactPersonPhoneController.text,
-                          contactPersonMail:
-                              _stkContactPersonMailController.text,
+                          contactPersonPhone: _stkContactPersonPhoneController.text,
+                          contactPersonMail: _stkContactPersonMailController.text,
                           address: _stkAddressController.text,
                           city: selectedIl!,
                           district: selectedIlce!,
@@ -448,9 +438,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 }
               },
             ),
-            SizedBox(
-                height: deviceHeightSize(context, 30) +
-                    MediaQuery.of(context).viewInsets.bottom),
+            SizedBox(height: deviceHeightSize(context, 30) + MediaQuery.of(context).viewInsets.bottom),
           ],
         ),
       ),

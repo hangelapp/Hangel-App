@@ -123,9 +123,9 @@ class STKProvider with ChangeNotifier {
 
   void sortSTK(String value) {
     _sortText = value;
-    _stkList.forEach((element) {
+    for (var element in _stkList) {
       print(element.toJson().toString());
-    });
+    }
     switch (value) {
       case "A-Z":
         _stkList.sort((a, b) => a.name!.compareTo(b.name!));

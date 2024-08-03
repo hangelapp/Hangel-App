@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/stk_model.dart';
+import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:hangel/providers/offer_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/brand_detail_page.dart';
@@ -15,7 +21,11 @@ import 'package:hangel/views/stk_detail_page.dart';
 import 'package:hangel/views/stk_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
+import 'package:hangel/widgets/general_button_widget.dart';
 import 'package:provider/provider.dart';
+
+import '../models/offer_model.dart';
+import 'utilities.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -24,237 +34,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-List<Color> randomColors = [
-  AppTheme.blue,
-  AppTheme.green,
-  AppTheme.yellow,
-  AppTheme.red,
-  AppTheme.primaryColor,
-];
-List<StkModel> stkModels = [
-  StkModel(
-    name: "Güvercin Sevenler Derneği",
-    country: "Türkiye",
-    city: "İstanbul",
-    fieldOfBenefit: "Hayvan Hakları",
-    inEarthquakeZone: false,
-    specialStatus: "Sivil Toplum Kuruluşu",
-    creationDate: DateTime(2005, 9, 27),
-    bannerImage: "https://example.com/guvercin-banner.jpg",
-    detailText:
-        "Kuş severlerin bir araya geldiği ve güvercinlerin haklarını savunan bir dernektir.",
-    link: "https://www.guvercinseverler.org/",
-    type: "Dernek",
-    donorCount: 15000,
-    categories: [
-      "Hayvan Hakları",
-      "Sosyal Değişim",
-    ],
-  ),
-  StkModel(
-    name: "Bağımlılıkla Mücadele Derneği",
-    country: "Türkiye",
-    city: "Ankara",
-    fieldOfBenefit: "Bağımlılıkla Mücadele",
-    inEarthquakeZone: false,
-    specialStatus: "Sivil Toplum Kuruluşu",
-    creationDate: DateTime(2003, 4, 11),
-    bannerImage: "https://example.com/bagimlilik-banner.jpg",
-    detailText:
-        "Bağımlılıkla mücadele ederek toplumda sağlıklı bir yaşamı teşvik eden bir dernektir.",
-    link: "https://www.bagimlilikla-mucadele.org/",
-    type: "Dernek",
-    donorCount: 20000,
-    categories: [
-      "Bağımlılıkla Mücadele",
-      "Sosyal Değişim",
-    ],
-  ),
-  StkModel(
-    name: "Fırsat Eşitliği Derneği",
-    country: "Türkiye",
-    city: "İzmir",
-    fieldOfBenefit: "Eşitlik",
-    inEarthquakeZone: false,
-    specialStatus: "Sivil Toplum Kuruluşu",
-    creationDate: DateTime(2006, 8, 5),
-    bannerImage: "https://example.com/esitlik-banner.jpg",
-    detailText:
-        "Toplumda fırsat eşitliği ve adaleti destekleyerek sosyal değişim yaratmayı amaçlar.",
-    link: "https://www.firsat-esitligi.org/",
-    type: "Dernek",
-    donorCount: 18000,
-    categories: [
-      "Eşitlik",
-      "Sosyal Değişim",
-    ],
-  ),
-  StkModel(
-    name: "Bergamalılar Derneği",
-    country: "Türkiye",
-    city: "Bergama",
-    fieldOfBenefit: "Kültürel Miras",
-    inEarthquakeZone: true,
-    specialStatus: "Sivil Toplum Kuruluşu",
-    creationDate: DateTime(1998, 12, 19),
-    bannerImage: "https://example.com/bergamalar-banner.jpg",
-    detailText:
-        "Bergama'nın kültürel mirasını korumayı ve tanıtmayı amaçlayan bir dernektir.",
-    link: "https://www.bergamalar.org.tr/",
-    type: "Özel İzinli",
-    donorCount: 12000,
-    categories: [
-      "Kültürel Miras",
-      "Sosyal Değişim",
-    ],
-  ),
-  StkModel(
-    name: "Kırsal Kalkınma Derneği",
-    country: "Türkiye",
-    city: "Adana",
-    fieldOfBenefit: "Kırsal Kalkınma",
-    inEarthquakeZone: false,
-    specialStatus: "Sivil Toplum Kuruluşu",
-    creationDate: DateTime(2000, 6, 8),
-    bannerImage: "https://example.com/kirsal-kalkinma-banner.jpg",
-    detailText:
-        "Kırsal bölgelerde yaşayan insanların ekonomik ve sosyal kalkınmasını destekler.",
-    link: "https://www.kirsal-kalkinma.org.tr/",
-    type: "Vakıf",
-    donorCount: 25000,
-    categories: [
-      "Kırsal Kalkınma",
-      "Sosyal Değişim",
-    ],
-  ),
-];
-
-List<BrandModel> brandModels = [
-  BrandModel(
-    name: "Güzel Otomotiv",
-    sector: "Otomotiv",
-    inEarthquakeZone: false,
-    isSocialEnterprise: false,
-    donationRate: 0.03,
-    creationDate: DateTime(1999, 5, 15),
-    bannerImage: "https://example.com/guzel-otomotiv-banner.jpg",
-    detailText:
-        "Güzel Otomotiv, kaliteli otomobil satışı ve servis hizmetleri sunan bir şirkettir.",
-    link: "https://www.guzelotomotiv.com/",
-    categories: [
-      CategoryModel(
-        name: "Otomotiv",
-        donationRate: 0.03,
-      ),
-      CategoryModel(
-        name: "Aracılık Hizmetleri",
-        donationRate: 0.03,
-      ),
-      CategoryModel(
-        name: "Sosyal Şirket",
-        donationRate: 0.5,
-      ),
-    ],
-  ),
-  BrandModel(
-    name: "Karlı Kuyumculuk",
-    sector: "Kuyumculuk",
-    inEarthquakeZone: false,
-    isSocialEnterprise: false,
-    donationRate: 0.02,
-    creationDate: DateTime(2005, 8, 20),
-    bannerImage: "https://example.com/karli-kuyumculuk-banner.jpg",
-    detailText:
-        "Karlı Kuyumculuk, değerli mücevherler ve takılar sunan bir kuyumculuk markasıdır.",
-    link: "https://www.karlikuyumculuk.com/",
-    categories: [
-      CategoryModel(
-        name: "Kuyumculuk",
-        donationRate: 0.02,
-      ),
-      CategoryModel(
-        donationRate: 0.5,
-        name: "Sosyal Şirket",
-      ),
-    ],
-  ),
-  BrandModel(
-    name: "Sağlam İnşaat",
-    sector: "İnşaat",
-    inEarthquakeZone: true,
-    isSocialEnterprise: false,
-    donationRate: 0.01,
-    creationDate: DateTime(2010, 3, 10),
-    bannerImage: "https://example.com/saglam-insaat-banner.jpg",
-    detailText:
-        "Sağlam İnşaat, inşaat projeleri ve taahhüt hizmetleri sunan bir inşaat şirketidir.",
-    link: "https://www.saglaminsaat.com/",
-    categories: [
-      CategoryModel(
-        name: "İnşaat Hizmetleri",
-        donationRate: 0.01,
-      ),
-      CategoryModel(
-        name: "İnşaat Malzemeleri",
-        donationRate: 0.01,
-      ),
-    ],
-  ),
-  BrandModel(
-    name: "Bizim Kargo",
-    sector: "Lojistik",
-    inEarthquakeZone: false,
-    isSocialEnterprise: true,
-    donationRate: 0.05,
-    creationDate: DateTime(2008, 6, 18),
-    bannerImage: "https://example.com/bizim-kargo-banner.jpg",
-    detailText:
-        "Bizim Kargo, hızlı ve güvenilir kargo hizmetleri sunan bir lojistik şirketidir.",
-    link: "https://www.bizimkargo.com/",
-    categories: [
-      CategoryModel(
-        name: "Lojistik",
-        donationRate: 0.05,
-      ),
-      CategoryModel(
-        name: "Sosyal Şirket",
-        donationRate: 0.5,
-      ),
-    ],
-  ),
-  BrandModel(
-    name: "Doyuran Restoran",
-    sector: "Restoran",
-    inEarthquakeZone: false,
-    isSocialEnterprise: false,
-    donationRate: 0.04,
-    creationDate: DateTime(2007, 9, 12),
-    bannerImage: "https://example.com/doyuran-restoran-banner.jpg",
-    detailText:
-        "Doyuran Restoran, lezzetli yemekler ve misafirperverlik sunan bir restoran zinciridir.",
-    link: "https://www.doyuranrestoran.com/",
-    categories: [
-      CategoryModel(
-        name: "Yeme içme",
-        donationRate: 0.04,
-      ),
-      CategoryModel(
-        name: "Sosyal Şirket",
-        donationRate: 0.5,
-      ),
-    ],
-  ),
-];
-List<BrandModel> socialEnterprises = brandModels.where((element) {
-  return element.isSocialEnterprise == true;
-}).toList();
-
 class _HomePageState extends State<HomePage> {
   List<String> sliderImages = [
     "https://www.turkonfed.org/images/Volunteering-Program.png",
     "https://www.fm-magazine.com/content/dam/cgma/magazine/news/volunteer-819.jpg.transform/750w/image.png",
     "https://students.1fbusa.com/hubfs/25%20Ways%20to%20Volunteer%20in%20Your%20Community.jpg",
-    "https://www.glasshouserecruiting.co.za/wp-content/uploads/2022/06/Volunteer1.png",
+    "https://fjwp.s3.amazonaws.com/blog/wp-content/uploads/2020/10/15153848/The-Career-Benefits-of-Volunteering-During-Your-Job-Search-2.jpg",
     "https://kacuv.org/en/wp-content/uploads/2020/10/kacuv-pattern.png"
   ];
   List<String> bannerImages = [
@@ -432,10 +217,14 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
+  List<OfferModel> offerList = [];
+  Map<String, String> offerImages = {};
   @override
   Widget build(BuildContext context) {
     brandModels = context.watch<BrandProvider>().brandList;
     stkModels = context.watch<STKProvider>().stkList;
+    offerList = context.watch<OfferProvider>().offers;
+    offerImages = context.watch<OfferProvider>().offerImages;
     socialEnterprises = brandModels.where((element) {
       return element.isSocialEnterprise == true;
     }).toList();
@@ -515,6 +304,67 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         height: deviceHeightSize(context, 8),
                       ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: deviceHeight(context) * 0.1,
+                        child: TypeAheadField(
+                          itemBuilder: (context, offer) {
+                            return ListTile(
+                              title: Text(offer.name ?? ""),
+                            );
+                          },
+                          onSelected: (value) {},
+                          suggestionsCallback: (search) {
+                            return context.read<OfferProvider>().getOfferByName(search);
+                          },
+                        ),
+                      ),
+                      GeneralButtonWidget(
+                          onPressed: () async {
+                            // var response = await context.read<OfferProvider>().getOffers();
+                            // var response2 = await context.read<OfferProvider>().getOfferImages();
+                            var response2 = await context.read<OfferProvider>().getOfferByName("Col");
+
+                            // print(response2);
+                            setState(() {});
+                          },
+                          text: "ARA"),
+                      SizedBox(
+                        width: double.maxFinite,
+                        height: deviceHeight(context) * 0.4,
+                        child: ListView.builder(
+                          itemCount: offerList.length,
+                          itemBuilder: (context, i) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  radius: 30,
+                                  child: Image.network(
+                                    offerImages[offerList[i].id] ??
+                                        "https://bulutistan.com/blog/wp-content/uploads/2023/01/Depositphotos_1348029_S-800x443.jpg",
+                                    errorBuilder: (context, error, stackTrace) => const AppNameWidget(
+                                      fontSize: 12,
+                                    ),
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                title: Text(offerList[i].name ?? "-"),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: deviceWidthSize(context, 20),
@@ -528,8 +378,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         height: deviceHeightSize(context, 6),
                       ),
-                      context.watch<STKProvider>().loadingState ==
-                              LoadingState.loading
+                      context.watch<STKProvider>().loadingState == LoadingState.loading
                           ? SizedBox(
                               height: deviceHeightSize(context, 90),
                               child: const Center(
@@ -546,8 +395,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   ...List.generate(
                                     stkModels.length,
-                                    (index) => listItemImage2(context,
-                                        logo: stkModels[index].name, onTap: () {
+                                    (index) => listItemImage2(context, logo: stkModels[index].name, onTap: () {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -560,9 +408,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   GestureDetector(
                                     onTap: () {
-                                      context
-                                          .read<LoginRegisterPageProvider>()
-                                          .selectedWidget = const STKPage();
+                                      context.read<AppViewProvider>().selectedWidget = const STKPage();
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -574,14 +420,12 @@ class _HomePageState extends State<HomePage> {
                                             size: deviceFontSize(context, 20),
                                           ),
                                           SizedBox(
-                                            height:
-                                                deviceHeightSize(context, 8),
+                                            height: deviceHeightSize(context, 8),
                                           ),
                                           Text(
                                             "Tümünü\nGör",
                                             textAlign: TextAlign.center,
-                                            style: AppTheme.normalTextStyle(
-                                                context, 18),
+                                            style: AppTheme.normalTextStyle(context, 18),
                                           )
                                         ],
                                       ),
@@ -609,8 +453,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         height: deviceHeightSize(context, 6),
                       ),
-                      context.watch<BrandProvider>().loadingState ==
-                              LoadingState.loading
+                      context.watch<BrandProvider>().loadingState == LoadingState.loading
                           ? SizedBox(
                               height: deviceHeightSize(context, 90),
                               child: const Center(
@@ -627,8 +470,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   ...List.generate(
                                     brandModels.length,
-                                    (index) => listItemImage2(context,
-                                        logo: brandModels[index].name,
+                                    (index) => listItemImage2(context, logo: brandModels[index].name,
+                                        //  img: photos.first,
                                         onTap: () {
                                       Navigator.push(
                                         context,
@@ -642,9 +485,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   GestureDetector(
                                     onTap: () {
-                                      context
-                                          .read<LoginRegisterPageProvider>()
-                                          .selectedWidget = const BrandsPage();
+                                      context.read<AppViewProvider>().selectedWidget = const BrandsPage();
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -656,14 +497,12 @@ class _HomePageState extends State<HomePage> {
                                             size: deviceFontSize(context, 20),
                                           ),
                                           SizedBox(
-                                            height:
-                                                deviceHeightSize(context, 8),
+                                            height: deviceHeightSize(context, 8),
                                           ),
                                           Text(
                                             "Tümünü\nGör",
                                             textAlign: TextAlign.center,
-                                            style: AppTheme.normalTextStyle(
-                                                context, 18),
+                                            style: AppTheme.normalTextStyle(context, 18),
                                           )
                                         ],
                                       ),
@@ -691,8 +530,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         height: deviceHeightSize(context, 6),
                       ),
-                      context.watch<BrandProvider>().loadingState ==
-                              LoadingState.loading
+                      context.watch<BrandProvider>().loadingState == LoadingState.loading
                           ? SizedBox(
                               height: deviceHeightSize(context, 90),
                               child: const Center(
@@ -715,39 +553,26 @@ class _HomePageState extends State<HomePage> {
                                         if (index == 4) {
                                           return GestureDetector(
                                             onTap: () {
-                                              context
-                                                      .read<BrandProvider>()
-                                                      .filterText =
-                                                  "socialEnterprise";
+                                              context.read<BrandProvider>().filterText = "socialEnterprise";
 
-                                              context
-                                                      .read<
-                                                          LoginRegisterPageProvider>()
-                                                      .selectedWidget =
-                                                  const BrandsPage();
+                                              context.read<AppViewProvider>().selectedWidget = const BrandsPage();
                                             },
                                             child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
+                                              padding: const EdgeInsets.all(8.0),
                                               child: Column(
                                                 children: [
                                                   Icon(
-                                                    Icons
-                                                        .arrow_forward_ios_rounded,
+                                                    Icons.arrow_forward_ios_rounded,
                                                     color: AppTheme.black,
-                                                    size: deviceFontSize(
-                                                        context, 20),
+                                                    size: deviceFontSize(context, 20),
                                                   ),
                                                   SizedBox(
-                                                    height: deviceHeightSize(
-                                                        context, 8),
+                                                    height: deviceHeightSize(context, 8),
                                                   ),
                                                   Text(
                                                     "Tümünü\nGör",
                                                     textAlign: TextAlign.center,
-                                                    style: AppTheme
-                                                        .normalTextStyle(
-                                                            context, 18),
+                                                    style: AppTheme.normalTextStyle(context, 18),
                                                   )
                                                 ],
                                               ),
@@ -757,16 +582,12 @@ class _HomePageState extends State<HomePage> {
                                         if (index > 4) {
                                           return const SizedBox();
                                         }
-                                        return listItemImage2(context,
-                                            logo: socialEnterprises[index].name,
-                                            onTap: () {
+                                        return listItemImage2(context, logo: socialEnterprises[index].name, onTap: () {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) =>
-                                                  BrandDetailPage(
-                                                brandModel:
-                                                    socialEnterprises[index],
+                                              builder: (context) => BrandDetailPage(
+                                                brandModel: socialEnterprises[index],
                                               ),
                                             ),
                                           );
@@ -823,6 +644,7 @@ class _HomePageState extends State<HomePage> {
   GestureDetector listItemImage2(
     BuildContext context, {
     required String? logo,
+    String? img,
     required Function()? onTap,
   }) {
     int randomIndex = (logo ?? "").length % (randomColors.length - 1);
@@ -842,10 +664,15 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const AppNameWidget(
-              fontSize: 20,
-              color: AppTheme.white,
-            ),
+            img != null
+                ? Image.network(
+                    img,
+                    fit: BoxFit.fill,
+                  )
+                : const AppNameWidget(
+                    fontSize: 20,
+                    color: AppTheme.white,
+                  ),
             SizedBox(
               height: deviceHeightSize(context, 8),
             ),
@@ -868,9 +695,7 @@ class _HomePageState extends State<HomePage> {
           width: deviceWidthSize(context, currentIndex == index ? 12 : 8),
           height: deviceHeightSize(context, 8),
           decoration: BoxDecoration(
-            color: currentIndex == index
-                ? AppTheme.primaryColor
-                : AppTheme.secondaryColor.withOpacity(0.2),
+            color: currentIndex == index ? AppTheme.primaryColor : AppTheme.secondaryColor.withOpacity(0.2),
             borderRadius: BorderRadius.circular(10),
           ),
         ),

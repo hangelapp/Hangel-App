@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 class FirebaseAuthServices {
   final _firebaseAuth = FirebaseAuth.instance;
 
-  FirebaseAuthServices() {
-    FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
-  }
+  // FirebaseAuthServices() {
+  //   FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
+  // }
 
   Future<User> verifyPhoneNumber(String verificationId, String smsCode) async {
     final AuthCredential credential = PhoneAuthProvider.credential(

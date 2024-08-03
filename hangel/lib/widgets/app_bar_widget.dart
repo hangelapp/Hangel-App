@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../constants/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../constants/size.dart';
@@ -15,6 +17,9 @@ class AppBarWidget extends StatefulWidget {
 class _AppBarWidgetState extends State<AppBarWidget> {
   @override
   Widget build(BuildContext context) {
+    if(kIsWeb){
+      return const SizedBox();
+    }
     return Container(
       margin: EdgeInsets.only(top: deviceTopPadding(context)),
       padding: EdgeInsets.symmetric(

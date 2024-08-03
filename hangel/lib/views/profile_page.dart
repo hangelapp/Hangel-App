@@ -479,7 +479,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
           child: GeneralButtonWidget(
               onPressed: () {
-                Navigator.pushNamed(context, VolunteerForm.routeName);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => const BottomSheetWidget(
+                    title: "Gönüllü Başvuru Formu",
+                    isMinPadding: true,
+                    child: VolunteerForm(),
+                  ),
+                );
               },
               text: "Gönüllü olmak istiyorum"),
         ),

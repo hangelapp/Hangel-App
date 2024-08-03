@@ -4,6 +4,8 @@ import 'package:hangel/constants/size.dart';
 import 'package:hangel/views/home_page.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
 
+import '../views/utilities.dart';
+
 ListItemWidget(
   BuildContext context, {
   required String? logo,
@@ -122,10 +124,10 @@ GestureDetector listItemImage2(
         boxShadow: AppTheme.shadowList,
         borderRadius: BorderRadius.circular(13),
       ),
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const AppNameWidget(
+          AppNameWidget(
             fontSize: 16,
             color: AppTheme.white,
           ),

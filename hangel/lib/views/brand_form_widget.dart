@@ -17,6 +17,8 @@ import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../models/brand_model.dart';
+
 class BrandFormWidget extends StatefulWidget {
   const BrandFormWidget({Key? key}) : super(key: key);
 

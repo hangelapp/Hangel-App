@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/views/app_view.dart';
-import 'package:hangel/views/register_page.dart';
+import 'package:hangel/views/auth/register_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 // import 'package:hangel/views/onboarding_page.dart';
 import 'package:hangel/widgets/app_name_widget.dart';

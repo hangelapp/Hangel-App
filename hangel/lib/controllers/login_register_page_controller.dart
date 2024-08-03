@@ -79,6 +79,7 @@ class LoginRegisterPageController {
         return true;
       }
     } catch (e) {
+      // Kullanıcı bu aşamada bulanamazsa false değeri döndürüyoruz.
       print("isUserExist Error : " + e.toString());
       return false;
     }
@@ -93,7 +94,7 @@ class LoginRegisterPageController {
         )
       ]);
 
-      if (data.length > 0) {
+      if (data.isNotEmpty) {
         return true;
       } else {
         return false;

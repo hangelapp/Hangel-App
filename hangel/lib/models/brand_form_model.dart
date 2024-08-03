@@ -1,3 +1,5 @@
+import 'package:hangel/models/brand_model.dart';
+
 class BrandFormModel {
   String? name;
   String? website;
@@ -163,29 +165,5 @@ class BrandFormModel {
      
     </table>
     """;
-  }
-}
-
-class CategoryModel {
-  String? name;
-  double? donationRate;
-
-  CategoryModel({
-    this.name,
-    this.donationRate,
-  });
-
-  factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    return CategoryModel(
-      name: json['name'],
-      donationRate: json['donationRate'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'donationRate': donationRate,
-    };
   }
 }
