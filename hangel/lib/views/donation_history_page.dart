@@ -3,7 +3,9 @@ import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/models/donation_model.dart';
+import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
+import 'package:provider/provider.dart';
 
 class DonationHistoryPage extends StatefulWidget {
   const DonationHistoryPage({Key? key}) : super(key: key);
@@ -34,10 +36,21 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
       cardAmount: 8700,
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    List<DonationModel> listDonation = [];
+    listDonation.addAll(context.read<DonationProvider>().donations);
+    listDonation.addAll(donationHistory);
+    donationHistory.clear();
+    donationHistory = listDonation;
+  }
+
   @override
   Widget build(BuildContext context) {
     totalDonationAmount = donationHistory
-        .map((e) => e.donationAmount ?? 0)
+        .map((e) => e.donationAmount == -1 ? 0.0 : (e.donationAmount ?? 0))
         .reduce((value, element) => value + element);
     return Scaffold(
       body: Column(
@@ -74,8 +87,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                       ),
                       Text(
                         "${totalDonationAmount.toStringAsFixed(2)} TL",
-                        style: AppTheme.boldTextStyle(context, 32,
-                            color: AppTheme.primaryColor),
+                        style: AppTheme.boldTextStyle(context, 32, color: AppTheme.primaryColor),
                       ),
                     ],
                   ),
@@ -120,13 +132,10 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                                         height: deviceWidthSize(context, 50),
                                         decoration: BoxDecoration(
                                           color: AppTheme.primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(10),
                                           image: DecorationImage(
                                             image: AssetImage(
-                                              donationHistory[index]
-                                                      .brandLogo ??
-                                                  "",
+                                              donationHistory[index].brandLogo ?? "",
                                             ),
                                             fit: BoxFit.cover,
                                           ),
@@ -138,8 +147,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                                       Text(
                                         donationHistory[index].brandName ?? "",
                                         textAlign: TextAlign.center,
-                                        style: AppTheme.semiBoldTextStyle(
-                                            context, 16),
+                                        style: AppTheme.semiBoldTextStyle(context, 16),
                                       ),
                                     ],
                                   ),
@@ -148,8 +156,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                                   width: deviceWidthSize(context, 4),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(
-                                      top: deviceHeightSize(context, 18)),
+                                  padding: EdgeInsets.only(top: deviceHeightSize(context, 18)),
                                   child: Icon(
                                     Icons.switch_left_rounded,
                                     color: AppTheme.primaryColor,
@@ -167,12 +174,10 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                                         height: deviceWidthSize(context, 50),
                                         decoration: BoxDecoration(
                                           color: AppTheme.primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(10),
                                           image: DecorationImage(
                                             image: AssetImage(
-                                              donationHistory[index].stkLogo ??
-                                                  "",
+                                              donationHistory[index].stkLogo ?? "",
                                             ),
                                             fit: BoxFit.cover,
                                           ),
@@ -184,8 +189,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                                       Text(
                                         donationHistory[index].stkName ?? "",
                                         textAlign: TextAlign.center,
-                                        style: AppTheme.semiBoldTextStyle(
-                                            context, 16),
+                                        style: AppTheme.semiBoldTextStyle(context, 16),
                                       ),
                                     ],
                                   ),
@@ -196,7 +200,9 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                               height: deviceHeightSize(context, 10),
                             ),
                             Text(
-                              "${(donationHistory[index].donationAmount ?? 0).toStringAsFixed(2)} TL",
+                              (donationHistory[index].donationAmount ?? 0).toStringAsFixed(2) == "-1.00"
+                                  ? "Hesaplanıyor..."
+                                  : (donationHistory[index].donationAmount ?? 0).toStringAsFixed(2) + " TL",
                               textAlign: TextAlign.center,
                               style: AppTheme.semiBoldTextStyle(context, 24),
                             ),
@@ -208,15 +214,13 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                                 children: [
                                   TextSpan(
                                     text: "Sepet Tutarı: ",
-                                    style: AppTheme.semiBoldTextStyle(
-                                        context, 16,
-                                        color: AppTheme.darkGreen),
+                                    style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.darkGreen),
                                   ),
                                   TextSpan(
-                                    text:
-                                        "${(donationHistory[index].cardAmount ?? 0).toStringAsFixed(2)} TL",
-                                    style: AppTheme.lightTextStyle(context, 16,
-                                        color: AppTheme.darkGreen),
+                                    text: (donationHistory[index].cardAmount ?? 0).toStringAsFixed(2) == "-1.00"
+                                        ? "Hesaplanıyor..."
+                                        : (donationHistory[index].cardAmount ?? 0).toStringAsFixed(2) + " TL",
+                                    style: AppTheme.lightTextStyle(context, 16, color: AppTheme.darkGreen),
                                   ),
                                 ],
                               ),
@@ -239,11 +243,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                               ),
                               child: Center(
                                 child: Text(
-                                  DateFormatHelper.getDate(
-                                      donationHistory[index]
-                                          .shoppingDate
-                                          .toString(),
-                                      context),
+                                  DateFormatHelper.getDate(donationHistory[index].shoppingDate.toString(), context),
                                   style: AppTheme.normalTextStyle(
                                     context,
                                     14,

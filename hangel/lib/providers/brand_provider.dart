@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/controllers/brand_controller.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/locator.dart';
 
@@ -97,7 +98,9 @@ class BrandProvider with ChangeNotifier {
             String? id = val["Offer"]["id"];
             String? name = val["Offer"]["name"];
             String? logo = val["Thumbnail"]["url"];
-            String? sector = (val["OfferVertical"] is Map<String, dynamic>)?(val["OfferVertical"] as Map<String, dynamic>).values.first["name"]:null;
+            String? sector = (val["OfferVertical"] is Map<String, dynamic>)
+                ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
+                : null;
             bool? inEarthquakeZone = false;
             bool? isSocialEnterprise = false;
             double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
@@ -125,7 +128,7 @@ class BrandProvider with ChangeNotifier {
                 logo: logo,
                 name: name,
                 sector: sector));
-                print("*********************************************************");
+            print("*********************************************************");
           } else {
             print("Element with ID ${val["Offer"]["id"]} already exists.");
           }
@@ -139,6 +142,64 @@ class BrandProvider with ChangeNotifier {
     }
   }
 
+  Future<List<BrandModel>> getOffersForSearch(String pattern) async {
+    try {
+      Dio dio = Dio();
+      List<BrandModel> resultBrands = [];
+      var response = await dio.getUri(Uri.parse(
+          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=250&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
+      if (response.statusCode == 200) {
+        var json = response.data;
+        print(response.data);
+        // Offer <-> Brand argument match
+        for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
+          String offerName = val["Offer"]["name"].toString().toLowerCase().removeBrackets().replaceAll(" ", "");
+          if (offerName.contains(pattern)) {
+            String? id = val["Offer"]["id"];
+            String? name = val["Offer"]["name"];
+            String? logo = val["Thumbnail"]["url"];
+            String? sector = (val["OfferVertical"] is Map<String, dynamic>)
+                ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
+                : null;
+            bool? inEarthquakeZone = false;
+            bool? isSocialEnterprise = false;
+            double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
+            DateTime? creationDate = DateTime.now();
+            String? bannerImage = val["Thumbnail"]["thumbnail"];
+            String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
+            String? link = val["TrackingLink"]["click_url"];
+            List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
+                .values
+                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                .toList();
+            int favoriteCount = 0;
+
+            resultBrands.add(BrandModel(
+                id: id,
+                bannerImage: bannerImage,
+                categories: categories,
+                creationDate: creationDate,
+                detailText: detailText,
+                donationRate: donationRate,
+                favoriteCount: favoriteCount,
+                inEarthquakeZone: inEarthquakeZone,
+                isSocialEnterprise: isSocialEnterprise,
+                link: link,
+                logo: logo,
+                name: name,
+                sector: sector));
+            print("*********************************************************");
+          }
+        }
+        notifyListeners();
+        return resultBrands;
+      }
+      throw Exception("Bağlantı problemi!");
+    } catch (e) {
+      return [];
+    }
+  }
+
   //getBrand
   Future getBrands() async {
     if (_brandList.isNotEmpty) {
@@ -147,7 +208,7 @@ class BrandProvider with ChangeNotifier {
     _loadingState = LoadingState.loading;
     notifyListeners();
     // Şuan markalar sadece API'den gelecek
-    // _brandList = await _brandController.getBrands(); 
+    // _brandList = await _brandController.getBrands();
     await getOffers();
     _loadingState = LoadingState.loaded;
     notifyListeners();

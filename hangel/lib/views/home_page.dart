@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/app_view_provider.dart';
@@ -313,17 +314,88 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.grey.shade300,
                             ),
                             itemBuilder: (context, offer) {
-                              return ListTile(
-                                onTap: () {
-                                  //Offerbyname methodunu da ayır
-                                },
-                                leading: CircleAvatar(
-                                  radius: 30,
-                                  child: Text((offer.name ?? "   ").substring(0, 2)),
+                              return Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: ListTile(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BrandDetailPage(
+                                          brandModel: offer,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  subtitle: Text(offer.sector ?? ""),
+                                  trailing: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: deviceWidthSize(context, 10),
+                                      vertical: deviceHeightSize(context, 5),
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: SizedBox(
+                                      // height: 50,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.volunteer_activism_rounded,
+                                            color: AppTheme.primaryColor,
+                                            size: deviceFontSize(context, 18),
+                                          ),
+                                          SizedBox(
+                                            width: deviceWidthSize(context, 6),
+                                          ),
+                                          Text(
+                                            "%${(offer.donationRate)}",
+                                            style: AppTheme.semiBoldTextStyle(
+                                              context,
+                                              14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  leading: Container(
+                                      width: deviceWidthSize(context, 50),
+                                      height: deviceHeightSize(context, 50),
+                                      decoration: BoxDecoration(
+                                        boxShadow: AppTheme.shadowList,
+                                        color: AppTheme.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: offer.logo != null
+                                          ? ClipRRect(
+                                              borderRadius: BorderRadius.circular(100),
+                                              child: Image.network(
+                                                offer.logo ?? "",
+                                                fit: BoxFit.contain,
+                                                alignment: Alignment.center,
+                                                errorBuilder: (context, error, stackTrace) => Center(
+                                                  child: Text(
+                                                    offer.name![0],
+                                                    style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Center(
+                                              child: Text(
+                                                offer.name![0],
+                                                style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
+                                              ),
+                                            )),
+                                  title: Text(offer.name?.removeBrackets() ?? ""),
                                 ),
-                                title: Text(offer.name ?? ""),
                               );
                             },
+                            emptyBuilder: (context) => const Text(""),
+                            errorBuilder: (context, error) => const Text("Bağlantı Problemi!"),
                             builder: (context, search, focusNode) {
                               return Container(
                                 alignment: Alignment.center,
@@ -352,7 +424,7 @@ class _HomePageState extends State<HomePage> {
                                   },
                                   controller: search,
                                   decoration: InputDecoration(
-                                    hintText: "Ara",
+                                    hintText: "Marka Ara",
                                     hintStyle: AppTheme.lightTextStyle(context, 14),
                                     border: InputBorder.none,
                                     prefixIcon: Icon(
@@ -365,35 +437,10 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               );
-
-                              return InkWell(
-                                child: TextField(
-                                  onTap: () {
-                                    _homescrollController.animateTo(
-                                      deviceHeightSize(context, 200),
-                                      duration: const Duration(milliseconds: 500),
-                                      curve: Curves.ease,
-                                    );
-                                  },
-                                  controller: search,
-                                  focusNode: focusNode,
-                                  decoration: InputDecoration(
-                                      suffixIcon: (search.text.isNotEmpty)
-                                          ? IconButton(onPressed: search.clear, icon: const Icon(Icons.close))
-                                          : null,
-                                      prefixIcon: const Icon(Icons.search_rounded),
-                                      filled: true,
-                                      fillColor: Colors.grey.shade100,
-                                      hintText: "Marka Ara",
-                                      border: OutlineInputBorder(
-                                          borderSide: BorderSide.none, borderRadius: BorderRadius.circular(15)),
-                                      contentPadding: const EdgeInsets.all(8)),
-                                ),
-                              );
                             },
                             onSelected: (value) {},
                             suggestionsCallback: (search) async {
-                              return await context.read<OfferProvider>().getOfferByName(search);
+                              return await context.read<BrandProvider>().getOffersForSearch(search);
                             },
                           ),
                         ),
@@ -719,6 +766,7 @@ class _HomePageState extends State<HomePage> {
           right: deviceWidthSize(context, 10),
         ),
         decoration: BoxDecoration(
+          // color: randomColors[randomIndex],
           color: randomColors[randomIndex],
           boxShadow: AppTheme.shadowList,
           borderRadius: BorderRadius.circular(13),

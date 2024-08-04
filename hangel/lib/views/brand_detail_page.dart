@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/url_launcher_helper.dart';
 import 'package:hangel/models/brand_model.dart';
+import 'package:hangel/models/donation_model.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
+import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
-import 'package:hangel/views/home_page.dart';
-import 'package:hangel/views/utilities.dart';
-import 'package:hangel/widgets/app_bar_widget.dart';
-import 'package:hangel/widgets/app_name_widget.dart';
-import 'package:hangel/widgets/dialog_widgets.dart';
-import 'package:hangel/widgets/general_button_widget.dart';
-import 'package:hangel/widgets/gradient_widget.dart';
-import 'package:hangel/widgets/toast_widgets.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
+
+import '../widgets/app_bar_widget.dart';
+import '../widgets/app_name_widget.dart';
+import '../widgets/dialog_widgets.dart';
+import '../widgets/general_button_widget.dart';
+import '../widgets/gradient_widget.dart';
+import '../widgets/toast_widgets.dart';
+import 'utilities.dart';
 
 class BrandDetailPage extends StatefulWidget {
   const BrandDetailPage({Key? key, required this.brandModel}) : super(key: key);
@@ -25,17 +29,40 @@ class BrandDetailPage extends StatefulWidget {
   State<BrandDetailPage> createState() => _BrandDetailPageState();
 }
 
-class _BrandDetailPageState extends State<BrandDetailPage>
-    with SingleTickerProviderStateMixin {
+class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProviderStateMixin {
   TabController? _tabController;
-
+  Color? backgroundColor;
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
     _tabController!.addListener(() {
       setState(() {});
     });
+    _updatePalette();
     super.initState();
+  }
+
+  Future<void> _updatePalette() async {
+    try {
+      final PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
+        NetworkImage(widget.brandModel.bannerImage ?? ""),
+      );
+
+      setState(() {
+        backgroundColor = paletteGenerator.vibrantColor?.color ??
+            paletteGenerator.dominantColor?.color ??
+            paletteGenerator.lightVibrantColor?.color ??
+            paletteGenerator.darkVibrantColor?.color ??
+            paletteGenerator.lightMutedColor?.color ??
+            paletteGenerator.darkMutedColor?.color ??
+            AppTheme.primaryColor;
+        backgroundColor = backgroundColor?.withOpacity(0.5);
+      });
+    } catch (e) {
+      setState(() {
+        backgroundColor = AppTheme.primaryColor; // Fallback color in case of error
+      });
+    }
   }
 
   @override
@@ -58,11 +85,19 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
+                        // BackdropFilter(
+                        //   filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        //   child: Container(
+                        //     color: backgroundColor?.withOpacity(0.2) ?? Colors.grey.withOpacity(0.5),
+                        //   ),
+                        // ),
                         listItemImage2(
                           context,
-                          logo: widget.brandModel.name,
+                          title: widget.brandModel.name,
+                          img: widget.brandModel.bannerImage,
                           onTap: () {},
                         ),
+
                         // Container(
                         //   width: double.infinity,
                         //   height: deviceHeightSize(context, 200),
@@ -86,26 +121,30 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                                 height: deviceHeightSize(context, 50),
                                 decoration: BoxDecoration(
                                   boxShadow: AppTheme.shadowList,
-                                  color: AppTheme.primaryColor,
+                                  color: AppTheme.white,
                                   shape: BoxShape.circle,
-                                  image: widget.brandModel.logo != null
-                                      ? DecorationImage(
-                                          image: NetworkImage(
-                                              widget.brandModel.logo ?? ""),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
                                 ),
-                                child: widget.brandModel.logo == null
-                                    ? Center(
-                                        child: Text(
-                                          widget.brandModel.name![0],
-                                          style: AppTheme.boldTextStyle(
-                                              context, 28,
-                                              color: AppTheme.white),
+                                child: widget.brandModel.logo != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(100),
+                                        child: Image.network(
+                                          widget.brandModel.logo ?? "",
+                                          fit: BoxFit.contain,
+                                          alignment: Alignment.center,
+                                          errorBuilder: (context, error, stackTrace) => Center(
+                                            child: Text(
+                                              widget.brandModel.name![0],
+                                              style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                            ),
+                                          ),
                                         ),
                                       )
-                                    : null),
+                                    : Center(
+                                        child: Text(
+                                          widget.brandModel.name![0],
+                                          style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
+                                        ),
+                                      )),
                             SizedBox(
                               width: deviceWidthSize(context, 12),
                             ),
@@ -114,7 +153,7 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    widget.brandModel.name ?? "",
+                                    (widget.brandModel.name ?? "").removeBrackets(),
                                     style: AppTheme.boldTextStyle(context, 16),
                                   ),
                                   SizedBox(
@@ -122,8 +161,8 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                                   ),
                                   Text(
                                     widget.brandModel.sector ?? "",
-                                    style: AppTheme.normalTextStyle(context, 14,
-                                        color: AppTheme.black.withOpacity(0.7)),
+                                    style:
+                                        AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                   ),
                                 ],
                               ),
@@ -165,13 +204,11 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                               onTap: () {
                                 context
                                     .read<BrandProvider>()
-                                    .addRemoveFavoriteBrand(
-                                        widget.brandModel.id!)
+                                    .addRemoveFavoriteBrand(widget.brandModel.id!)
                                     .then((value) {
                                   setState(() {});
                                   if (value.success == true) {
-                                    ToastWidgets.successToast(
-                                        context, "İşlem Başarılı!");
+                                    ToastWidgets.successToast(context, "İşlem Başarılı!");
                                   }
                                 });
                               },
@@ -183,17 +220,14 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                                 child: Column(
                                   children: [
                                     Icon(
-                                      HiveHelpers.getUserFromHive()
-                                              .favoriteBrands
-                                              .contains(widget.brandModel.id)
+                                      HiveHelpers.getUserFromHive().favoriteBrands.contains(widget.brandModel.id)
                                           ? Icons.favorite_rounded
                                           : Icons.favorite_border_rounded,
                                       color: AppTheme.primaryColor,
                                       size: deviceFontSize(context, 24),
                                     ),
                                     Text(
-                                      widget.brandModel.favoriteCount
-                                          .toString(),
+                                      widget.brandModel.favoriteCount.toString(),
                                       style: AppTheme.normalTextStyle(
                                         context,
                                         14,
@@ -231,9 +265,8 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Yaptığın alışverişlerde %${(widget.brandModel.donationRate ?? 0.12) * 100} oranında bağış yapma imkanı!",
-                            style: AppTheme.semiBoldTextStyle(context, 16,
-                                color: AppTheme.black),
+                            "Yaptığın alışverişlerde %${(widget.brandModel.donationRate ?? 0.12)} oranında bağış yapma imkanı!",
+                            style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
                           ),
                         ),
                         SizedBox(
@@ -247,8 +280,7 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                                 (widget.brandModel.detailText ?? "") +
                                 " " +
                                 (widget.brandModel.detailText ?? ""),
-                            style: AppTheme.normalTextStyle(context, 14,
-                                color: AppTheme.black.withOpacity(0.7)),
+                            style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                           ),
                         ),
                         SizedBox(
@@ -262,16 +294,12 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                               children: [
                                 TextSpan(
                                   text: "Platforma Katılma Tarihi: ",
-                                  style: AppTheme.normalTextStyle(context, 14,
-                                      color: AppTheme.black.withOpacity(0.7)),
+                                  style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                 ),
                                 TextSpan(
                                   text: DateFormatHelper.getDate(
-                                      (widget.brandModel.creationDate ?? "")
-                                          .toString(),
-                                      context),
-                                  style: AppTheme.normalTextStyle(context, 14,
-                                      color: AppTheme.primaryColor),
+                                      (widget.brandModel.creationDate ?? "").toString(), context),
+                                  style: AppTheme.normalTextStyle(context, 14, color: AppTheme.primaryColor),
                                 ),
                               ],
                             ),
@@ -287,13 +315,9 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                             alignment: WrapAlignment.start,
                             children: [
                               if (widget.brandModel.inEarthquakeZone == true)
-                                tagItem(context,
-                                    color: AppTheme.blue,
-                                    text: "Deprem Bölgesi"),
+                                tagItem(context, color: AppTheme.blue, text: "Deprem Bölgesi"),
                               if (widget.brandModel.isSocialEnterprise == true)
-                                tagItem(context,
-                                    color: AppTheme.green,
-                                    text: "Sosyal Girişim"),
+                                tagItem(context, color: AppTheme.green, text: "Sosyal Girişim"),
                             ],
                           ),
                         ),
@@ -313,12 +337,38 @@ class _BrandDetailPageState extends State<BrandDetailPage>
                       onPressed: () {
                         showDialog(
                           context: context,
-                          builder: (context) =>
-                              DialogWidgets().rowCircularButtonDialogWidget(
+                          builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(
                             context,
-                            onAcceptButtonPressed: () {
-                              UrlLauncherHelper().launch(
-                                  "https://exchange.bytedex.io/ref/A68R1V");
+                            onAcceptButtonPressed: () async {
+                              UrlLauncherHelper().launch("${widget.brandModel.link}").whenComplete(
+                                    () => Navigator.pop(context),
+                                  );
+                              DonationModel donationModel = DonationModel(
+                                brandLogo: widget.brandModel.logo,
+                                brandName: widget.brandModel.name,
+                                cardAmount: -1,
+                                donationAmount: -1,
+                                shoppingDate: DateTime.now(),
+                                stkName: context
+                                    .read<STKProvider>()
+                                    .stkList
+                                    .where(
+                                      (e) => e.id == HiveHelpers.getUserFromHive().favoriteStks.first,
+                                    )
+                                    .toList()
+                                    .first
+                                    .name,
+                                stkLogo: context
+                                    .read<STKProvider>()
+                                    .stkList
+                                    .where(
+                                      (e) => e.id == HiveHelpers.getUserFromHive().favoriteStks.first,
+                                    )
+                                    .toList()
+                                    .first
+                                    .logo,
+                              );
+                              context.read<DonationProvider>().addDonation(donationModel);
                             },
                             title: "Bilgilendirme",
                             buttonText: "Yönlendir",
@@ -399,8 +449,7 @@ class _BrandDetailPageState extends State<BrandDetailPage>
     );
   }
 
-  Container tagItem(BuildContext context,
-      {required String text, required Color color}) {
+  Container tagItem(BuildContext context, {required String text, required Color color}) {
     return Container(
       margin: EdgeInsets.only(
         right: deviceWidthSize(context, 6),
@@ -423,35 +472,53 @@ class _BrandDetailPageState extends State<BrandDetailPage>
 
   GestureDetector listItemImage2(
     BuildContext context, {
-    required String? logo,
+    required String? title,
+    String? img,
     required Function()? onTap,
   }) {
-    int randomIndex = (logo ?? "").length % randomColors.length;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
         width: deviceWidth(context),
         height: deviceHeightSize(context, 200),
         margin: EdgeInsets.only(
           right: deviceWidthSize(context, 10),
         ),
         decoration: BoxDecoration(
-          color: randomColors[randomIndex],
+          color: backgroundColor ?? AppTheme.primaryColor,
           boxShadow: AppTheme.shadowList,
           borderRadius: BorderRadius.circular(13),
         ),
+        duration: Durations.extralong4,
+        curve: Curves.fastOutSlowIn,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const AppNameWidget(
-              fontSize: 48,
-              color: AppTheme.white,
+            SizedBox(
+              width: deviceWidth(context) * 0.3,
+              height: deviceWidth(context) * 0.3,
+              child: img != null
+                  ? Image.network(
+                      img,
+                      alignment: Alignment.center,
+                      fit: BoxFit.fitWidth,
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: AppNameWidget(
+                          fontSize: 32,
+                          color: AppTheme.white,
+                        ),
+                      ),
+                    )
+                  : const AppNameWidget(
+                      fontSize: 48,
+                      color: AppTheme.white,
+                    ),
             ),
             SizedBox(
               height: deviceHeightSize(context, 8),
             ),
             Text(
-              logo ?? "",
+              (title ?? "").removeBrackets(),
               textAlign: TextAlign.center,
               style: AppTheme.boldTextStyle(context, 20, color: AppTheme.white),
             ),
@@ -469,19 +536,27 @@ class _BrandDetailPageState extends State<BrandDetailPage>
       },
       {
         "title": "Favori",
-        "value": "0",
+        "value": widget.brandModel.favoriteCount,
       },
       {
         "title": "İşlem Sayısı",
         "value": "0",
       },
     ];
-    List<Map<String, dynamic>> categories = widget.brandModel.categories!
-        .map((e) => {
-              "title": e.name,
-              "value": ((e.donationRate ?? 0) * 100).toString() + "%"
-            })
-        .toList();
+    List<Map<String, dynamic>> categories = [
+      {
+        "title": "Kategoriler",
+        "value": widget.brandModel.categories?.map(
+          (e) => e.name,
+        )
+      },
+      {"title": "Bağış Oranı", "value": widget.brandModel.donationRate.toString() + "%"},
+      {"title": "Deprem Bölgesi mi?", "value": (widget.brandModel.inEarthquakeZone ?? false) ? "Evet" : "Hayır"},
+      // {
+      //   "title":"Sosyal Şirket mi?",
+      //   "value": (widget.brandModel.isSocialEnterprise??false)?"Evet":"Hayır"
+      // },
+    ];
 
     return Column(
       children: [
@@ -504,7 +579,7 @@ class _BrandDetailPageState extends State<BrandDetailPage>
             horizontal: deviceWidthSize(context, 10),
           ),
           dividerColor: Colors.transparent,
-          overlayColor: MaterialStateProperty.all(Colors.transparent),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
           tabs: const [
             Tab(
               child: Text(
@@ -518,12 +593,10 @@ class _BrandDetailPageState extends State<BrandDetailPage>
             ),
           ],
         ),
-        SizedBox(
+        AnimatedContainer(
           height: deviceHeightSize(
-              context,
-              _tabController?.index == 0
-                  ? ((categories.length * 60)) + 10
-                  : 180),
+              context, _tabController?.index == 0 ? ((categories.length * 60)) + 10 : ((statics.length * 60)) + 10),
+          duration: Durations.medium1,
           child: TabBarView(
             controller: _tabController,
             children: [
@@ -561,7 +634,7 @@ class _BrandDetailPageState extends State<BrandDetailPage>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
-                  flex: _tabController!.index == 0 ? 1 : 2,
+                  flex: _tabController?.index == 0 ? 1 : 2,
                   child: Text(
                     info[index]["title"]!,
                     textAlign: TextAlign.start,
