@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
@@ -22,12 +23,29 @@ class BrandsPage extends StatefulWidget {
 class _BrandsPageState extends State<BrandsPage> {
   List<BrandModel> _brandList = [];
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoading = false;
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      // context.read<BrandProvider>().getBrands();
+      context.read<BrandProvider>().getBrands();
+    });
+    _scrollController.addListener(() async {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !_isLoading) {
+        await _loadMoreData();
+      }
     });
     super.initState();
+  }
+
+  Future<void> _loadMoreData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    context.read<BrandProvider>().nextPage();
+    await context.read<BrandProvider>().getOffers().whenComplete(
+          () => setState(() => _isLoading = false),
+        );
   }
 
   List<Map<String, String>> filters = [
@@ -88,127 +106,102 @@ class _BrandsPageState extends State<BrandsPage> {
             controller: _searchController,
           ),
           Expanded(
-            child: context.watch<BrandProvider>().loadingState ==
-                    LoadingState.loading
+            child: context.watch<BrandProvider>().loadingState == LoadingState.loading
                 ? const Center(child: CircularProgressIndicator())
-                : Stack(
+                : Column(
                     children: [
-                      SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: deviceHeightSize(context, 10),
-                            ),
-                            //filter and sort
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    left: deviceWidthSize(context, 20),
-                                  ),
-                                  child: Text(
-                                    "Markalar",
-                                    style: AppTheme.boldTextStyle(context, 20),
-                                  ),
-                                ),
-                                filterAndSort(context),
-                              ],
-                            ),
-
-                            ...List.generate(
-                              _brandList.length,
-                              (index) {
-                                bool isSearch = _brandList[index]
-                                    .name!
-                                    .toLowerCase()
-                                    .contains(
-                                        _searchController.text.toLowerCase());
-                                bool isFilter = false;
-                                String filterText =
-                                    context.read<BrandProvider>().filterText;
-                                switch (filterText) {
-                                  case "depremBolgesi":
-                                    isFilter =
-                                        _brandList[index].inEarthquakeZone!;
-                                    break;
-                                  case "socialEnterprise":
-                                    isFilter =
-                                        _brandList[index].isSocialEnterprise!;
-                                    break;
-                                  default:
-                                    isFilter = _brandList[index]
-                                        .sector!
-                                        .toLowerCase()
-                                        .contains(filterText.toLowerCase());
-                                    break;
-                                }
-
-                                _brandList[index]
-                                    .sector!
-                                    .toLowerCase()
-                                    .contains(context
-                                        .read<BrandProvider>()
-                                        .filterText
-                                        .toLowerCase());
-
-                                bool isReturn = isSearch && isFilter;
-                                return isReturn
-                                    ? ListItemWidget(
-                                        context,
-                                        logo: _brandList[index].logo,
-                                        title: _brandList[index].name,
-                                        desc: _brandList[index].detailText,
-                                        donationRate:
-                                            _brandList[index].donationRate,
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  BrandDetailPage(
-                                                brandModel: _brandList[index],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    : Container();
-                              },
-                            ),
-                            SizedBox(
-                              height: deviceHeightSize(context, 80),
-                            ),
-                          ],
-                        ),
+                      SizedBox(
+                        height: deviceHeightSize(context, 10),
                       ),
-                      Positioned(
-                        bottom: deviceHeightSize(context, 10),
-                        right: deviceWidthSize(context, 20),
-                        child: FloatingActionButton(
-                          shape: const CircleBorder(),
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) => const BottomSheetWidget(
-                                title: "Marka Başvuru Formu",
-                                isMinPadding: true,
-                                child: BrandFormWidget(),
-                              ),
-                            );
-                          },
-                          backgroundColor: AppTheme.primaryColor,
-                          child: Image.asset(
-                            "assets/icons/apply.png",
-                            width: deviceWidthSize(context, 24),
+                      //filter and sort
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: deviceWidthSize(context, 20),
+                            ),
+                            child: Text(
+                              "Markalar",
+                              style: AppTheme.boldTextStyle(context, 20),
+                            ),
                           ),
+                          filterAndSort(context),
+                        ],
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          itemCount: _brandList.length,
+                          itemBuilder: (context, index) {
+                            bool isSearch =
+                                _brandList[index].name!.toLowerCase().contains(_searchController.text.toLowerCase());
+                            bool isFilter = false;
+                            String filterText = context.read<BrandProvider>().filterText;
+                            switch (filterText) {
+                              case "depremBolgesi":
+                                isFilter = _brandList[index].inEarthquakeZone!;
+                                break;
+                              case "socialEnterprise":
+                                isFilter = _brandList[index].isSocialEnterprise!;
+                                break;
+                              default:
+                                isFilter =
+                                    (_brandList[index].sector ?? "").toLowerCase().contains(filterText.toLowerCase());
+                                break;
+                            }
+
+                            (_brandList[index].sector ?? "")
+                                .toLowerCase()
+                                .contains(context.read<BrandProvider>().filterText.toLowerCase());
+
+                            bool isReturn = isSearch && isFilter;
+                            return isReturn
+                                ? ListItemWidget(
+                                    context,
+                                    logo: _brandList[index].logo,
+                                    title: (_brandList[index].name??"").removeBrackets(),
+                                    desc: _brandList[index].detailText,
+                                    donationRate: _brandList[index].donationRate,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => BrandDetailPage(
+                                            brandModel: _brandList[index],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Container();
+                          },
                         ),
                       ),
+                      _isLoading?const LinearProgressIndicator():const SizedBox.shrink()
                     ],
                   ),
           )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => const BottomSheetWidget(
+              title: "Marka Başvuru Formu",
+              isMinPadding: true,
+              child: BrandFormWidget(),
+            ),
+          );
+        },
+        backgroundColor: AppTheme.primaryColor,
+        child: Image.asset(
+          "assets/icons/apply.png",
+          width: deviceWidthSize(context, 24),
+        ),
       ),
     );
   }
@@ -229,10 +222,8 @@ class _BrandsPageState extends State<BrandsPage> {
                 (index) => PopupMenuItem(
                   value: sorts[index]["value"],
                   child: Text(sorts[index]["name"] ?? "",
-                      style: context.read<BrandProvider>().sortText ==
-                              sorts[index]["value"]
-                          ? AppTheme.boldTextStyle(context, 14,
-                              color: AppTheme.primaryColor)
+                      style: context.read<BrandProvider>().sortText == sorts[index]["value"]
+                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),
@@ -259,11 +250,10 @@ class _BrandsPageState extends State<BrandsPage> {
                 (index) => PopupMenuItem(
                   value: context.read<BrandProvider>().brandSectors[index],
                   child: Text(context.read<BrandProvider>().brandSectors[index],
-                      style: context.read<BrandProvider>().filterText ==
-                              context.read<BrandProvider>().brandSectors[index]
-                          ? AppTheme.boldTextStyle(context, 14,
-                              color: AppTheme.primaryColor)
-                          : AppTheme.normalTextStyle(context, 14)),
+                      style:
+                          context.read<BrandProvider>().filterText == context.read<BrandProvider>().brandSectors[index]
+                              ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
+                              : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),
               ...List.generate(
@@ -271,10 +261,8 @@ class _BrandsPageState extends State<BrandsPage> {
                 (index) => PopupMenuItem(
                   value: filters[index]["value"],
                   child: Text(filters[index]["name"] ?? "",
-                      style: context.read<BrandProvider>().filterText ==
-                              filters[index]["value"]
-                          ? AppTheme.boldTextStyle(context, 14,
-                              color: AppTheme.primaryColor)
+                      style: context.read<BrandProvider>().filterText == filters[index]["value"]
+                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),

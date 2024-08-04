@@ -1,17 +1,17 @@
 class BrandModel {
-  String? id;
-  final String? name;
-  final String? logo;
-  final String? sector;
-  final bool? inEarthquakeZone;
-  final bool? isSocialEnterprise;
-  final double? donationRate;
-  final DateTime? creationDate;
-  final String? bannerImage;
-  final String? detailText;
-  final String? link;
-  final List<CategoryModel>? categories;
-  final int favoriteCount;
+  String? id; // Offer
+  final String? name; // Offer
+  final String? logo; // Contain
+  final String? sector; // Contain
+  final bool? inEarthquakeZone; // Default Value false
+  final bool? isSocialEnterprise; // Default Value false
+  final double? donationRate; // Offer
+  final DateTime? creationDate; // Default Value Datetime.now
+  final String? bannerImage; // Contain
+  final String? detailText; //Default Value text shema
+  final String? link; // Contain
+  final List<CategoryModel>? categories; // Contain
+  final int favoriteCount; // Default value 0 Closed for now 
 
   BrandModel({
     this.id,

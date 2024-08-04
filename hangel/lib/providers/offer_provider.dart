@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/constants.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/general_response_model.dart';
 
+import '../models/brand_model.dart';
 import '../models/offer_model.dart';
 
 class OfferProvider with ChangeNotifier {
@@ -14,18 +16,37 @@ class OfferProvider with ChangeNotifier {
   Future<GeneralResponseModel> getOffers() async {
     try {
       Dio dio = Dio();
-      var response = await dio.get(AppConstants.REKLAM_ACTION_BASE_URL, queryParameters: {
-        "api_key": AppConstants.REKLAM_ACTION_API_KEY,
-        "Target": "Affiliate_Offer",
-        "Method": "findAll",
-        "limit": limit,
-        "page": page
-      });
+      var response = await dio.getUri(Uri.parse(
+          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
       if (response.statusCode == 200) {
         var json = response.data;
+        print(response.data);
+        // Offer <-> Brand argument match
         for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
-          offers.add(OfferModel.fromJson(val["Offer"]));
+          if (!offers.any((e) => e.id == val["Offer"]["id"])) {
+            String? id = val["Offer"]["id"];
+            String? name = val["Offer"]["name"];
+            String? logo = val["Thumbnail"]["url"];
+            String? sector = (val["OfferVertical"] as Map<String, dynamic>).values.first["name"];
+            bool? inEarthquakeZone = false;
+            bool? isSocialEnterprise = false;
+            double? donationRate = val["Offer"]["percent_payout"];
+            DateTime? creationDate = DateTime.now();
+            String? bannerImage = val["Thumbnail"]["thumbnail"];
+            String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
+            String? link = val["TrackingLink"]["click_url"];
+            List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
+                .values
+                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                .toList();
+            int favoriteCount = 0;
+            
+            offers.add(OfferModel.fromJson(val["Offer"]));
+          } else {
+            print("Element with ID ${val["Offer"]["id"]} already exists.");
+          }
         }
+        notifyListeners();
         await getOfferImages();
         return GeneralResponseModel(success: true, data: offers, message: "Successfully");
       }
@@ -77,24 +98,39 @@ class OfferProvider with ChangeNotifier {
         "fields[]": "name",
         "limit": 250,
       });
+
       List<OfferModel> resultOffers = [];
+
       if (response.statusCode == 200) {
         var data = response.data;
-
-        for (var val in (data["response"]["data"]["data"] as Map<String, dynamic>).values.toList()) {
-          for (var element in offers) {
-              if ((element.name ?? "").toLowerCase().contains(val["Offer"]["name"].toString().toLowerCase())) {
-                resultOffers.add(element);
-              }
+        if (data["response"]["data"]["data"] is Map<String, dynamic>) {
+          for (var val in (data["response"]["data"]["data"] as Map<String, dynamic>).values) {
+            String offerName = val["Offer"]["name"].toString().toLowerCase().removeBrackets().replaceAll(" ", "");
+            // print((element.name ?? "*").toLowerCase().removeBrackets().contains("col"));
+            print("OFFER " + offerName);
+            print("NAME  " + name);
+            if (offerName.contains(name)) {
+              print("GEÇTİ *******************" + offerName);
+              // print("ADDED NAME: "+element.)
+              resultOffers.add(OfferModel.fromJson(val["Offer"]));
             }
+          }
+        } else {
+          print("Unexpected data format");
         }
+
         return resultOffers;
       } else {
         throw Exception("Bağlantı problemi!");
       }
     } catch (e) {
-      print(e);
+      print("Error: $e");
       return [];
     }
+  }
+
+  void nextPage() {
+    page++;
+    notifyListeners();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/controllers/brand_controller.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
@@ -10,9 +11,13 @@ import 'package:hangel/models/image_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 
+import '../constants/constants.dart';
+
 class BrandProvider with ChangeNotifier {
   final _brandController = locator<BrandController>();
 
+  int page = 1;
+  int limit = 10;
   List<BrandModel> _brandList = [];
   List<BrandModel> get brandList => _brandList;
   set brandList(List<BrandModel> value) {
@@ -48,8 +53,7 @@ class BrandProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> get brandSectors =>
-      _brandList.map((e) => e.sector ?? "").toList().toSet().toList();
+  List<String> get brandSectors => _brandList.map((e) => e.sector ?? "").toList().toSet().toList();
 
   String _filterText = "";
   String get filterText => _filterText;
@@ -79,6 +83,62 @@ class BrandProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<GeneralResponseModel> getOffers() async {
+    try {
+      Dio dio = Dio();
+      var response = await dio.getUri(Uri.parse(
+          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
+      if (response.statusCode == 200) {
+        var json = response.data;
+        print(response.data);
+        // Offer <-> Brand argument match
+        for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
+          if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
+            String? id = val["Offer"]["id"];
+            String? name = val["Offer"]["name"];
+            String? logo = val["Thumbnail"]["url"];
+            String? sector = (val["OfferVertical"] is Map<String, dynamic>)?(val["OfferVertical"] as Map<String, dynamic>).values.first["name"]:null;
+            bool? inEarthquakeZone = false;
+            bool? isSocialEnterprise = false;
+            double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
+            DateTime? creationDate = DateTime.now();
+            String? bannerImage = val["Thumbnail"]["thumbnail"];
+            String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
+            String? link = val["TrackingLink"]["click_url"];
+            List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
+                .values
+                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                .toList();
+            int favoriteCount = 0;
+
+            _brandList.add(BrandModel(
+                id: id,
+                bannerImage: bannerImage,
+                categories: categories,
+                creationDate: creationDate,
+                detailText: detailText,
+                donationRate: donationRate,
+                favoriteCount: favoriteCount,
+                inEarthquakeZone: inEarthquakeZone,
+                isSocialEnterprise: isSocialEnterprise,
+                link: link,
+                logo: logo,
+                name: name,
+                sector: sector));
+                print("*********************************************************");
+          } else {
+            print("Element with ID ${val["Offer"]["id"]} already exists.");
+          }
+        }
+        notifyListeners();
+        return GeneralResponseModel(success: true, data: brandList, message: "Successfully");
+      }
+      return GeneralResponseModel(success: false, data: response.data, message: "Error handled");
+    } catch (e) {
+      return GeneralResponseModel(success: false, message: e.toString(), data: null);
+    }
+  }
+
   //getBrand
   Future getBrands() async {
     if (_brandList.isNotEmpty) {
@@ -86,8 +146,15 @@ class BrandProvider with ChangeNotifier {
     }
     _loadingState = LoadingState.loading;
     notifyListeners();
-    _brandList = await _brandController.getBrands();
+    // Şuan markalar sadece API'den gelecek
+    // _brandList = await _brandController.getBrands(); 
+    await getOffers();
     _loadingState = LoadingState.loaded;
+    notifyListeners();
+  }
+
+  void nextPage() {
+    page++;
     notifyListeners();
   }
 

@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
@@ -202,6 +203,8 @@ class _HomePageState extends State<HomePage> {
   // ];
 
   int currentIndex = 0;
+  final ScrollController _homescrollController = ScrollController();
+
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -214,20 +217,15 @@ class _HomePageState extends State<HomePage> {
       context.read<BrandProvider>().getBrands();
       context.read<STKProvider>().getSTKs();
     });
+
     super.initState();
   }
 
-  List<OfferModel> offerList = [];
-  Map<String, String> offerImages = {};
+  List<BrandModel> brandModels = [];
   @override
   Widget build(BuildContext context) {
     brandModels = context.watch<BrandProvider>().brandList;
     stkModels = context.watch<STKProvider>().stkList;
-    offerList = context.watch<OfferProvider>().offers;
-    offerImages = context.watch<OfferProvider>().offerImages;
-    socialEnterprises = brandModels.where((element) {
-      return element.isSocialEnterprise == true;
-    }).toList();
     return Scaffold(
       body: Column(
         children: [
@@ -245,301 +243,181 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: deviceHeightSize(context, 16),
-                  ),
-                  CarouselSlider(
-                    items: [
-                      ...List.generate(
-                        bannerImages.length,
-                        (index) => Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(13),
-                            image: DecorationImage(
-                              image: AssetImage(bannerImages[index]),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      ...List.generate(
-                        sliderImages.length,
-                        (index) => Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(13),
-                            image: DecorationImage(
-                              image: NetworkImage(sliderImages[index]),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                    options: CarouselOptions(
-                      onPageChanged: (index, reason) {
-                        setState(() {
-                          currentIndex = index;
-                        });
-                      },
-                      height: deviceHeightSize(context, 180),
-                      viewportFraction: 0.8,
-                      enlargeCenterPage: true,
-                      autoPlay: true,
-                      autoPlayInterval: const Duration(seconds: 5),
-                      autoPlayAnimationDuration: const Duration(seconds: 1),
-                      autoPlayCurve: Curves.fastOutSlowIn,
-                      scrollDirection: Axis.horizontal,
+              controller: _homescrollController,
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: deviceHeightSize(context, 16),
                     ),
-                  ),
-                  SizedBox(
-                    height: deviceHeightSize(context, 8),
-                  ),
-                  dotList(context),
-                  Column(
-                    children: [
-                      SizedBox(
-                        height: deviceHeightSize(context, 8),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        height: deviceHeight(context) * 0.1,
-                        child: TypeAheadField(
-                          itemBuilder: (context, offer) {
-                            return ListTile(
-                              title: Text(offer.name ?? ""),
-                            );
-                          },
-                          onSelected: (value) {},
-                          suggestionsCallback: (search) {
-                            return context.read<OfferProvider>().getOfferByName(search);
-                          },
+                    CarouselSlider(
+                      items: [
+                        ...List.generate(
+                          bannerImages.length,
+                          (index) => Container(
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(13),
+                              image: DecorationImage(
+                                image: AssetImage(bannerImages[index]),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
                         ),
+                        ...List.generate(
+                          sliderImages.length,
+                          (index) => Container(
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(13),
+                              image: DecorationImage(
+                                image: NetworkImage(sliderImages[index]),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                      options: CarouselOptions(
+                        onPageChanged: (index, reason) {
+                          setState(() {
+                            currentIndex = index;
+                          });
+                        },
+                        height: deviceHeightSize(context, 180),
+                        viewportFraction: 0.8,
+                        enlargeCenterPage: true,
+                        autoPlay: true,
+                        autoPlayInterval: const Duration(seconds: 5),
+                        autoPlayAnimationDuration: const Duration(seconds: 1),
+                        autoPlayCurve: Curves.fastOutSlowIn,
+                        scrollDirection: Axis.horizontal,
                       ),
-                      GeneralButtonWidget(
-                          onPressed: () async {
-                            // var response = await context.read<OfferProvider>().getOffers();
-                            // var response2 = await context.read<OfferProvider>().getOfferImages();
-                            var response2 = await context.read<OfferProvider>().getOfferByName("Col");
-
-                            // print(response2);
-                            setState(() {});
-                          },
-                          text: "ARA"),
-                      SizedBox(
-                        width: double.maxFinite,
-                        height: deviceHeight(context) * 0.4,
-                        child: ListView.builder(
-                          itemCount: offerList.length,
-                          itemBuilder: (context, i) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: ListTile(
+                    ),
+                    SizedBox(
+                      height: deviceHeightSize(context, 8),
+                    ),
+                    dotList(context),
+                    Column(
+                      children: [
+                        SizedBox(
+                          height: deviceHeightSize(context, 8),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          width: double.infinity,
+                          height: deviceHeight(context) * 0.10,
+                          child: TypeAheadField(
+                            itemSeparatorBuilder: (context, index) => Divider(
+                              color: Colors.grey.shade300,
+                            ),
+                            itemBuilder: (context, offer) {
+                              return ListTile(
+                                onTap: () {
+                                  //Offerbyname methodunu da ayır
+                                },
                                 leading: CircleAvatar(
                                   radius: 30,
-                                  child: Image.network(
-                                    offerImages[offerList[i].id] ??
-                                        "https://bulutistan.com/blog/wp-content/uploads/2023/01/Depositphotos_1348029_S-800x443.jpg",
-                                    errorBuilder: (context, error, stackTrace) => const AppNameWidget(
-                                      fontSize: 12,
-                                    ),
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Center(
-                                        child: CircularProgressIndicator(
-                                          value: loadingProgress.expectedTotalBytes != null
-                                              ? loadingProgress.cumulativeBytesLoaded /
-                                                  loadingProgress.expectedTotalBytes!
-                                              : null,
-                                        ),
-                                      );
-                                    },
+                                  child: Text((offer.name ?? "   ").substring(0, 2)),
+                                ),
+                                title: Text(offer.name ?? ""),
+                              );
+                            },
+                            builder: (context, search, focusNode) {
+                              return Container(
+                                alignment: Alignment.center,
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: deviceWidthSize(context, 10),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: deviceWidthSize(context, 5),
+                                  vertical: deviceHeightSize(context, 4),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: AppTheme.secondaryColor.withOpacity(0.2),
                                   ),
                                 ),
-                                title: Text(offerList[i].name ?? "-"),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: deviceWidthSize(context, 20),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "STK'lar",
-                          style: AppTheme.semiBoldTextStyle(context, 20),
-                        ),
-                      ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 6),
-                      ),
-                      context.watch<STKProvider>().loadingState == LoadingState.loading
-                          ? SizedBox(
-                              height: deviceHeightSize(context, 90),
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              clipBehavior: Clip.none,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: deviceWidthSize(context, 20),
-                                  ),
-                                  ...List.generate(
-                                    stkModels.length,
-                                    (index) => listItemImage2(context, logo: stkModels[index].name, onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => STKDetailPage(
-                                            stkModel: stkModels[index],
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      context.read<AppViewProvider>().selectedWidget = const STKPage();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        children: [
-                                          Icon(
-                                            Icons.arrow_forward_ios_rounded,
-                                            color: AppTheme.black,
-                                            size: deviceFontSize(context, 20),
-                                          ),
-                                          SizedBox(
-                                            height: deviceHeightSize(context, 8),
-                                          ),
-                                          Text(
-                                            "Tümünü\nGör",
-                                            textAlign: TextAlign.center,
-                                            style: AppTheme.normalTextStyle(context, 18),
-                                          )
-                                        ],
-                                      ),
+                                child: TextField(
+                                  focusNode: focusNode,
+                                  onTap: () {
+                                    _homescrollController.animateTo(
+                                      deviceHeightSize(context, 200),
+                                      duration: const Duration(milliseconds: 500),
+                                      curve: Curves.ease,
+                                    );
+                                  },
+                                  controller: search,
+                                  decoration: InputDecoration(
+                                    hintText: "Ara",
+                                    hintStyle: AppTheme.lightTextStyle(context, 14),
+                                    border: InputBorder.none,
+                                    prefixIcon: Icon(
+                                      Icons.search_rounded,
+                                      color: AppTheme.secondaryColor.withOpacity(0.5),
                                     ),
+                                    suffixIcon: (search.text.isNotEmpty)
+                                        ? IconButton(onPressed: search.clear, icon: const Icon(Icons.close))
+                                        : null,
                                   ),
-                                  SizedBox(
-                                    width: deviceWidthSize(context, 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 8),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: deviceWidthSize(context, 20),
+                                ),
+                              );
+
+                              return InkWell(
+                                child: TextField(
+                                  onTap: () {
+                                    _homescrollController.animateTo(
+                                      deviceHeightSize(context, 200),
+                                      duration: const Duration(milliseconds: 500),
+                                      curve: Curves.ease,
+                                    );
+                                  },
+                                  controller: search,
+                                  focusNode: focusNode,
+                                  decoration: InputDecoration(
+                                      suffixIcon: (search.text.isNotEmpty)
+                                          ? IconButton(onPressed: search.clear, icon: const Icon(Icons.close))
+                                          : null,
+                                      prefixIcon: const Icon(Icons.search_rounded),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                      hintText: "Marka Ara",
+                                      border: OutlineInputBorder(
+                                          borderSide: BorderSide.none, borderRadius: BorderRadius.circular(15)),
+                                      contentPadding: const EdgeInsets.all(8)),
+                                ),
+                              );
+                            },
+                            onSelected: (value) {},
+                            suggestionsCallback: (search) async {
+                              return await context.read<OfferProvider>().getOfferByName(search);
+                            },
+                          ),
                         ),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Markalar",
-                          style: AppTheme.semiBoldTextStyle(context, 20),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: deviceWidthSize(context, 20),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "STK'lar",
+                            style: AppTheme.semiBoldTextStyle(context, 20),
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 6),
-                      ),
-                      context.watch<BrandProvider>().loadingState == LoadingState.loading
-                          ? SizedBox(
-                              height: deviceHeightSize(context, 90),
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              clipBehavior: Clip.none,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: deviceWidthSize(context, 20),
-                                  ),
-                                  ...List.generate(
-                                    brandModels.length,
-                                    (index) => listItemImage2(context, logo: brandModels[index].name,
-                                        //  img: photos.first,
-                                        onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => BrandDetailPage(
-                                            brandModel: brandModels[index],
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      context.read<AppViewProvider>().selectedWidget = const BrandsPage();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        children: [
-                                          Icon(
-                                            Icons.arrow_forward_ios_rounded,
-                                            color: AppTheme.black,
-                                            size: deviceFontSize(context, 20),
-                                          ),
-                                          SizedBox(
-                                            height: deviceHeightSize(context, 8),
-                                          ),
-                                          Text(
-                                            "Tümünü\nGör",
-                                            textAlign: TextAlign.center,
-                                            style: AppTheme.normalTextStyle(context, 18),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: deviceWidthSize(context, 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 8),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: deviceWidthSize(context, 20),
+                        SizedBox(
+                          height: deviceHeightSize(context, 6),
                         ),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Sosyal Şirketler",
-                          style: AppTheme.semiBoldTextStyle(context, 20),
-                        ),
-                      ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 6),
-                      ),
-                      context.watch<BrandProvider>().loadingState == LoadingState.loading
-                          ? SizedBox(
-                              height: deviceHeightSize(context, 90),
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : SizedBox(
-                              width: deviceWidth(context),
-                              child: SingleChildScrollView(
+                        context.watch<STKProvider>().loadingState == LoadingState.loading
+                            ? SizedBox(
+                                height: deviceHeightSize(context, 90),
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 clipBehavior: Clip.none,
                                 child: Row(
@@ -548,51 +426,42 @@ class _HomePageState extends State<HomePage> {
                                       width: deviceWidthSize(context, 20),
                                     ),
                                     ...List.generate(
-                                      socialEnterprises.length,
-                                      (index) {
-                                        if (index == 4) {
-                                          return GestureDetector(
-                                            onTap: () {
-                                              context.read<BrandProvider>().filterText = "socialEnterprise";
-
-                                              context.read<AppViewProvider>().selectedWidget = const BrandsPage();
-                                            },
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: [
-                                                  Icon(
-                                                    Icons.arrow_forward_ios_rounded,
-                                                    color: AppTheme.black,
-                                                    size: deviceFontSize(context, 20),
-                                                  ),
-                                                  SizedBox(
-                                                    height: deviceHeightSize(context, 8),
-                                                  ),
-                                                  Text(
-                                                    "Tümünü\nGör",
-                                                    textAlign: TextAlign.center,
-                                                    style: AppTheme.normalTextStyle(context, 18),
-                                                  )
-                                                ],
-                                              ),
+                                      stkModels.length,
+                                      (index) => listItemImage2(context, logo: stkModels[index].name, onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => STKDetailPage(
+                                              stkModel: stkModels[index],
                                             ),
-                                          );
-                                        }
-                                        if (index > 4) {
-                                          return const SizedBox();
-                                        }
-                                        return listItemImage2(context, logo: socialEnterprises[index].name, onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => BrandDetailPage(
-                                                brandModel: socialEnterprises[index],
-                                              ),
-                                            ),
-                                          );
-                                        });
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        context.read<AppViewProvider>().selectedWidget = const STKPage();
                                       },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              Icons.arrow_forward_ios_rounded,
+                                              color: AppTheme.black,
+                                              size: deviceFontSize(context, 20),
+                                            ),
+                                            SizedBox(
+                                              height: deviceHeightSize(context, 8),
+                                            ),
+                                            Text(
+                                              "Tümünü\nGör",
+                                              textAlign: TextAlign.center,
+                                              style: AppTheme.normalTextStyle(context, 18),
+                                            )
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                     SizedBox(
                                       width: deviceWidthSize(context, 20),
@@ -600,13 +469,206 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                            ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 8),
-                      ),
-                    ],
-                  ),
-                ],
+                        SizedBox(
+                          height: deviceHeightSize(context, 8),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: deviceWidthSize(context, 20),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Markalar",
+                            style: AppTheme.semiBoldTextStyle(context, 20),
+                          ),
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 6),
+                        ),
+                        context.watch<BrandProvider>().loadingState == LoadingState.loading
+                            ? SizedBox(
+                                height: deviceHeightSize(context, 90),
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                clipBehavior: Clip.none,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      width: deviceWidthSize(context, 20),
+                                    ),
+                                    SizedBox(
+                                      width: deviceWidth(context) * 0.9,
+                                      height: deviceHeight(context) * 0.12,
+                                      child: ListView.builder(
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: brandModels.length,
+                                        itemBuilder: (context, i) {
+                                          if (i == brandModels.length - 1) {
+                                            return Row(
+                                              children: [
+                                                listItemImage2(
+                                                  context,
+                                                  logo: brandModels[i].logo,
+                                                  img: brandModels[i].logo,
+                                                  onTap: () => Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => BrandDetailPage(
+                                                        brandModel: brandModels[i],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    context.read<AppViewProvider>().selectedWidget = const BrandsPage();
+                                                  },
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.arrow_forward_ios_rounded,
+                                                          color: AppTheme.black,
+                                                          size: deviceFontSize(context, 20),
+                                                        ),
+                                                        SizedBox(
+                                                          height: deviceHeightSize(context, 8),
+                                                        ),
+                                                        Text(
+                                                          "Tümünü\nGör",
+                                                          textAlign: TextAlign.center,
+                                                          style: AppTheme.normalTextStyle(context, 18),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          }
+                                          return listItemImage2(
+                                            context,
+                                            logo: brandModels[i].logo,
+                                            img: brandModels[i].logo,
+                                            onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => BrandDetailPage(
+                                                  brandModel: brandModels[i],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: deviceWidthSize(context, 20),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 8),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: deviceWidthSize(context, 20),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Sosyal Şirketler",
+                            style: AppTheme.semiBoldTextStyle(context, 20),
+                          ),
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 6),
+                        ),
+                        context.watch<BrandProvider>().loadingState == LoadingState.loading
+                            ? SizedBox(
+                                height: deviceHeightSize(context, 90),
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : SizedBox(
+                                width: deviceWidth(context),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  clipBehavior: Clip.none,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: deviceWidthSize(context, 20),
+                                      ),
+                                      ...List.generate(
+                                        1,
+                                        (index) {
+                                          if (index == 4) {
+                                            return GestureDetector(
+                                              onTap: () {
+                                                context.read<BrandProvider>().filterText = "socialEnterprise";
+
+                                                context.read<AppViewProvider>().selectedWidget = const BrandsPage();
+                                              },
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Column(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.arrow_forward_ios_rounded,
+                                                      color: AppTheme.black,
+                                                      size: deviceFontSize(context, 20),
+                                                    ),
+                                                    SizedBox(
+                                                      height: deviceHeightSize(context, 8),
+                                                    ),
+                                                    Text(
+                                                      "Tümünü\nGör",
+                                                      textAlign: TextAlign.center,
+                                                      style: AppTheme.normalTextStyle(context, 18),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                          if (index > 4) {
+                                            return const SizedBox();
+                                          }
+                                          return listItemImage2(context, logo: "socialEnterprises[index].name",
+                                              onTap: () {
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //     builder: (context) => BrandDetailPage(
+                                            //       brandModel: socialEnterprises[index],
+                                            //     ),
+                                            //   ),
+                                            // );
+                                          });
+                                        },
+                                      ),
+                                      SizedBox(
+                                        width: deviceWidthSize(context, 20),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 8),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -667,7 +729,12 @@ class _HomePageState extends State<HomePage> {
             img != null
                 ? Image.network(
                     img,
-                    fit: BoxFit.fill,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    errorBuilder: (context, error, stackTrace) => const AppNameWidget(
+                      fontSize: 20,
+                      color: AppTheme.white,
+                    ),
                   )
                 : const AppNameWidget(
                     fontSize: 20,

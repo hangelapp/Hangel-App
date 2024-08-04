@@ -33,19 +33,27 @@ ListItemWidget(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
+          SizedBox(
             width: deviceWidthSize(context, 80),
             height: deviceHeightSize(context, 80),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(13),
-              image: logo == null
-                  ? null
-                  : DecorationImage(
-                      image: NetworkImage(logo),
-                      fit: BoxFit.cover,
-                    ),
-            ),
-            child: listItemImage2(context, logo: title, onTap: onTap),
+            // decoration: BoxDecoration(
+            //   borderRadius: BorderRadius.circular(13),
+            //   image: logo == null
+            //       ? null
+            //       : DecorationImage(
+            //           image: NetworkImage(logo),
+            // alignment: Alignment.center,
+            // fit: BoxFit.fitWidth,
+            //         ),
+            // ),
+            child: logo == null
+                ? listItemImage2(context, logo: logo, onTap: onTap)
+                : Image.network(
+                    logo,
+                    alignment: Alignment.center,
+                    fit: BoxFit.fitWidth,
+                    errorBuilder: (context, error, stackTrace) => listItemImage2(context, logo: logo, onTap: onTap),
+                  ),
           ),
           SizedBox(
             width: deviceWidthSize(context, 10),
@@ -83,7 +91,7 @@ ListItemWidget(
                               width: deviceWidthSize(context, 6),
                             ),
                             Text(
-                              "%${(donationRate) * 100}",
+                              "%${(donationRate)}",
                               style: AppTheme.semiBoldTextStyle(
                                 context,
                                 14,
@@ -99,6 +107,8 @@ ListItemWidget(
                 ),
                 Text(
                   desc ?? "",
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 5,
                   style: AppTheme.normalTextStyle(context, 14),
                 ),
               ],
