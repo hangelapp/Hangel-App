@@ -11,7 +11,7 @@ double deviceWidthSize(BuildContext context, double size) => MediaQuery.of(conte
 
 double deviceTopPadding(BuildContext context) => kIsWeb
     ? MediaQuery.of(context).padding.top
-    : MediaQuery.of(context).padding.top + (Platform.isAndroid ? deviceHeightSize(context, 10) : 0);
+    : MediaQuery.of(context).padding.top + (deviceHeightSize(context, 10));
 
 double deviceFontSize(BuildContext context, double fontSize) {
   //mobile, tablet, desktop,

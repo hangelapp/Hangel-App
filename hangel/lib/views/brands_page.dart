@@ -299,6 +299,7 @@ class _BrandsPageState extends State<BrandsPage> {
                             return isReturn
                                 ? ListItemWidget(
                                     context,
+                                    sector: _brandList[index].sector,
                                     logo: _brandList[index].logo,
                                     title: (_brandList[index].name ?? "").removeBrackets(),
                                     desc: _brandList[index].detailText,

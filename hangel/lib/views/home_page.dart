@@ -771,27 +771,29 @@ class _HomePageState extends State<HomePage> {
           boxShadow: AppTheme.shadowList,
           borderRadius: BorderRadius.circular(13),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            img != null
-                ? Image.network(
-                    img,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                    errorBuilder: (context, error, stackTrace) => const AppNameWidget(
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          width: deviceWidthSize(context, 90),
+          height: deviceHeightSize(context, 90),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              img != null
+                  ? Image.network(
+                      img,
+                      fit: BoxFit.fitHeight,
+                      alignment: Alignment.center,
+                      errorBuilder: (context, error, stackTrace) => const AppNameWidget(
+                        fontSize: 20,
+                        color: AppTheme.white,
+                      ),
+                    )
+                  : const AppNameWidget(
                       fontSize: 20,
                       color: AppTheme.white,
                     ),
-                  )
-                : const AppNameWidget(
-                    fontSize: 20,
-                    color: AppTheme.white,
-                  ),
-            SizedBox(
-              height: deviceHeightSize(context, 8),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

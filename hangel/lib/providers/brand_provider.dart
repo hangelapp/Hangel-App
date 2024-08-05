@@ -18,7 +18,7 @@ class BrandProvider with ChangeNotifier {
   final _brandController = locator<BrandController>();
 
   int page = 1;
-  int limit = 10;
+  int limit = 20;
   List<BrandModel> _brandList = [];
   List<BrandModel> get brandList => _brandList;
   set brandList(List<BrandModel> value) {
@@ -88,7 +88,7 @@ class BrandProvider with ChangeNotifier {
     try {
       Dio dio = Dio();
       var response = await dio.getUri(Uri.parse(
-          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
+          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
       if (response.statusCode == 200) {
         var json = response.data;
         print(response.data);
@@ -98,6 +98,9 @@ class BrandProvider with ChangeNotifier {
             String? id = val["Offer"]["id"];
             String? name = val["Offer"]["name"];
             String? logo = val["Thumbnail"]["url"];
+            if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+              continue;
+            }
             String? sector = (val["OfferVertical"] is Map<String, dynamic>)
                 ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
                 : null;
@@ -106,8 +109,12 @@ class BrandProvider with ChangeNotifier {
             double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
             DateTime? creationDate = DateTime.now();
             String? bannerImage = val["Thumbnail"]["thumbnail"];
-            String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
+            String? detailText = "";
+            // String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
             String? link = val["TrackingLink"]["click_url"];
+            // if (await dio.getUri(Uri.parse(link ?? "")).then((value) => value.statusCode != 200)) {
+            //   continue;
+            // }
             List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
                 .values
                 .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
@@ -126,7 +133,7 @@ class BrandProvider with ChangeNotifier {
                 isSocialEnterprise: isSocialEnterprise,
                 link: link,
                 logo: logo,
-                name: name,
+                name: (name ?? "").removeBrackets(),
                 sector: sector));
             print("*********************************************************");
           } else {
@@ -147,7 +154,7 @@ class BrandProvider with ChangeNotifier {
       Dio dio = Dio();
       List<BrandModel> resultBrands = [];
       var response = await dio.getUri(Uri.parse(
-          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=250&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
+          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=250&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
       if (response.statusCode == 200) {
         var json = response.data;
         print(response.data);
@@ -158,6 +165,9 @@ class BrandProvider with ChangeNotifier {
             String? id = val["Offer"]["id"];
             String? name = val["Offer"]["name"];
             String? logo = val["Thumbnail"]["url"];
+            if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+              continue;
+            }
             String? sector = (val["OfferVertical"] is Map<String, dynamic>)
                 ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
                 : null;
@@ -186,7 +196,7 @@ class BrandProvider with ChangeNotifier {
                 isSocialEnterprise: isSocialEnterprise,
                 link: link,
                 logo: logo,
-                name: name,
+                name: (name ?? "").removeBrackets(),
                 sector: sector));
             print("*********************************************************");
           }

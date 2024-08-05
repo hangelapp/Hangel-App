@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class FirebaseAuthServices {
   final _firebaseAuth = FirebaseAuth.instance;
 
   // FirebaseAuthServices() {
-  //   FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
+  //   if (kIsWeb) {
+  //     FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
+  //   }
   // }
 
   Future<User> verifyPhoneNumber(String verificationId, String smsCode) async {

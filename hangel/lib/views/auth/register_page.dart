@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -221,8 +222,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
 
                 // KOD GÖNDERME AŞAMASI
-                var response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
-
+                GeneralResponseModel response;
+                if (kIsWeb) {
+                  await context.read<LoginRegisterPageProvider>().sendOTP();
+                  response = GeneralResponseModel(success: true);
+                } else {
+                  response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
+                }
                 // Gönderilmediyse hata döndür ve kayıt ol sayfasına yönlendir.
                 if (response.success == true) {
                   print("Sms code sended");
@@ -234,7 +240,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
                 }
               } catch (e) {
-                ToastWidgets.errorToast(context, "Beklenmeyen bir hatayla karşılaşıldı. Lütfen tekrar deneyin");
+                ToastWidgets.errorToast(context, "$e Beklenmeyen bir hatayla karşılaşıldı. Lütfen tekrar deneyin");
                 Navigator.pushReplacementNamed(context, RegisterPage.routeName);
                 return;
               }
@@ -381,29 +387,61 @@ class _RegisterPageState extends State<RegisterPage> {
               } else {
                 context.read<LoginRegisterPageProvider>().phoneNumber =
                     "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
-                context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
-                  (value) {
-                    if (value.success == true) {
-                      if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                        Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
-                        return;
-                      }
-                      if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                (element) => element == -1,
-                              ) ==
-                          false) {
-                        if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                          Navigator.pushReplacementNamed(context, VolunteerForm.routeName,);
+                if (kIsWeb) {
+                  context.read<LoginRegisterPageProvider>().authenticate(_verifyController.text).then(
+                    (value) {
+                      if (value.success == true) {
+                        if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
+                          Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
                           return;
                         }
+                        if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                  (element) => element == -1,
+                                ) ==
+                            false) {
+                          if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              VolunteerForm.routeName,
+                            );
+                            return;
+                          }
+                        }
+                        context.read<AppViewProvider>().selectedWidget = const HomePage();
+                        Navigator.pushReplacementNamed(context, AppView.routeName);
+                      } else {
+                        ToastWidgets.errorToast(context, value.message ?? "");
                       }
-                      context.read<AppViewProvider>().selectedWidget = const HomePage();
-                      Navigator.pushReplacementNamed(context, AppView.routeName);
-                    } else {
-                      ToastWidgets.errorToast(context, value.message ?? "");
-                    }
-                  },
-                );
+                    },
+                  );
+                } else {
+                  context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
+                    (value) {
+                      if (value.success == true) {
+                        if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
+                          Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
+                          return;
+                        }
+                        if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                  (element) => element == -1,
+                                ) ==
+                            false) {
+                          if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              VolunteerForm.routeName,
+                            );
+                            return;
+                          }
+                        }
+                        context.read<AppViewProvider>().selectedWidget = const HomePage();
+                        Navigator.pushReplacementNamed(context, AppView.routeName);
+                      } else {
+                        ToastWidgets.errorToast(context, value.message ?? "");
+                      }
+                    },
+                  );
+                }
               }
             },
             isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,

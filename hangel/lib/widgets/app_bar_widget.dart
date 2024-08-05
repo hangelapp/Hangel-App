@@ -18,7 +18,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
   @override
   Widget build(BuildContext context) {
     if(kIsWeb){
-      return const SizedBox();
+      return AppBar();
     }
     return Container(
       margin: EdgeInsets.only(top: deviceTopPadding(context)),

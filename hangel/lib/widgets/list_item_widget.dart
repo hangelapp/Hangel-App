@@ -10,6 +10,7 @@ ListItemWidget(
   BuildContext context, {
   required String? logo,
   required String? title,
+  String? sector,
   required String? desc,
   required Function()? onTap,
   double? donationRate,
@@ -31,7 +32,8 @@ ListItemWidget(
         boxShadow: AppTheme.shadowListBig(radius: 22),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
             width: deviceWidthSize(context, 80),
@@ -65,9 +67,19 @@ ListItemWidget(
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        title ?? "",
-                        style: AppTheme.boldTextStyle(context, 16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title ?? "",
+                            style: AppTheme.boldTextStyle(context, 15),
+                          ),
+                          Text(
+                            sector ?? "",
+                            style: AppTheme.lightTextStyle(context, 12),
+                          ),
+                        ],
                       ),
                     ),
                     if (donationRate != null)
@@ -102,15 +114,15 @@ ListItemWidget(
                       )
                   ],
                 ),
-                SizedBox(
-                  height: deviceHeightSize(context, 5),
-                ),
-                Text(
-                  desc ?? "",
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 5,
-                  style: AppTheme.normalTextStyle(context, 14),
-                ),
+                // SizedBox(
+                //   height: deviceHeightSize(context, 5),
+                // ),
+                // Text(
+                //   desc ?? "",
+                //   overflow: TextOverflow.ellipsis,
+                //   maxLines: 5,
+                //   style: AppTheme.normalTextStyle(context, 14),
+                // ),
               ],
             ),
           ),

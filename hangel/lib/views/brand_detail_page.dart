@@ -272,17 +272,17 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            (widget.brandModel.detailText ?? "") +
-                                " " +
-                                (widget.brandModel.detailText ?? "") +
-                                " " +
-                                (widget.brandModel.detailText ?? ""),
-                            style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
-                          ),
-                        ),
+                        // Align(
+                        //   alignment: Alignment.centerLeft,
+                        //   child: Text(
+                        //     (widget.brandModel.detailText ?? "") +
+                        //         " " +
+                        //         (widget.brandModel.detailText ?? "") +
+                        //         " " +
+                        //         (widget.brandModel.detailText ?? ""),
+                        //     style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
+                        //   ),
+                        // ),
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),

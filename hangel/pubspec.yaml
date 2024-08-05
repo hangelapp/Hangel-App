@@ -57,6 +57,7 @@ dependencies:
   dio: ^5.5.0+1
   flutter_typeahead: ^5.2.0
   palette_generator: ^0.3.3+4
+  firebase_auth_platform_interface: ^7.3.0
 
 dev_dependencies:
   flutter_test:

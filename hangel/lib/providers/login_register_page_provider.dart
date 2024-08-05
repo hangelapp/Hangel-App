@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/login_register_page_controller.dart';
@@ -25,7 +28,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
   LoadingState smsCodeSentState = LoadingState.loaded;
   LoadingState smsCodeState = LoadingState.loaded;
   PhoneLoginPageType _phoneLoginPageType = PhoneLoginPageType.login;
-
+  ConfirmationResult? confirmationResult;
   String verificationCode = "";
   int? _resendToken;
 
@@ -91,6 +94,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
         setResendToken(resendToken);
         smsCodeSentState = LoadingState.loaded;
         notifyListeners();
+
         // await SmsAutoFill().listenForCode();
         // SmsAutoFill().code.listen((event) {
         //   // _verifyController.text = event;
@@ -169,8 +173,56 @@ class LoginRegisterPageProvider with ChangeNotifier {
     );
   }
 
+  Future<ConfirmationResult> sendOTP() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    var verifier = RecaptchaVerifier(auth: FirebaseAuthPlatform.instance);
+    ConfirmationResult result =
+        await auth.signInWithPhoneNumber(_phoneNumber, verifier);
+    print("OTP Sent to $phoneNumber");
+    setConfirmationResult(result);
+    setPhoneLoginPageType(PhoneLoginPageType.verify);
+    smsCodeSentState = LoadingState.loaded;
+    notifyListeners();
+    return result;
+  }
+
+  Future<GeneralResponseModel> authenticate(String otp) async {
+    try {
+      if (confirmationResult == null) throw Exception("Kod gönderilmemiş");
+      UserCredential userCredential = await confirmationResult!.confirm(otp);
+      userCredential.additionalUserInfo!.isNewUser ? print("Authentication Successful") : print("User already exists");
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""))
+          .limit(1)
+          .get();
+      // Eğer kullanıcı mevcutsa
+      if (querySnapshot.docs.isNotEmpty) {
+        // Belgeyi al
+        var data = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        UserModel user = UserModel.fromJson(data);
+
+        // Kullanıcıyı Hive'a ekle
+        HiveHelpers.addUserToHive(user);
+        print(user);
+        return GeneralResponseModel(success: true);
+      }
+
+      smsCodeState = LoadingState.loaded;
+      notifyListeners();
+      return GeneralResponseModel(success: true);
+    } catch (e) {
+      return GeneralResponseModel(success: false);
+    }
+  }
+
   setTimerTick(int timerTick) {
     this.timerTick = timerTick;
+    notifyListeners();
+  }
+
+  setConfirmationResult(ConfirmationResult confirmationResult) {
+    this.confirmationResult = confirmationResult;
     notifyListeners();
   }
 
