@@ -61,5 +61,5 @@ flutter {
     source '../..'
 }
 dependencies {
-    implementation 'androidx.browser:browser:1.3.0'
+    // implementation 'androidx.browser:browser:1.3.0'
 }

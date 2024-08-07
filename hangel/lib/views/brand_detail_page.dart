@@ -45,7 +45,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
   Future<void> _updatePalette() async {
     try {
       final PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
-        NetworkImage(widget.brandModel.bannerImage ?? ""),
+        NetworkImage(widget.brandModel.logo ?? ""),
       );
 
       setState(() {
@@ -94,7 +94,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         listItemImage2(
                           context,
                           title: widget.brandModel.name,
-                          img: widget.brandModel.bannerImage,
+                          img: widget.brandModel.logo,
                           onTap: () {},
                         ),
 
@@ -480,7 +480,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
       onTap: onTap,
       child: AnimatedContainer(
         width: deviceWidth(context),
-        height: deviceHeightSize(context, 200),
+        height: deviceHeight(context)*0.5,
         margin: EdgeInsets.only(
           right: deviceWidthSize(context, 10),
         ),
@@ -496,7 +496,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
           children: [
             SizedBox(
               width: deviceWidth(context) * 0.3,
-              height: deviceWidth(context) * 0.3,
+              height: deviceHeight(context) * 0.3,
               child: img != null
                   ? Image.network(
                       img,
@@ -514,14 +514,14 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                       color: AppTheme.white,
                     ),
             ),
-            SizedBox(
-              height: deviceHeightSize(context, 8),
-            ),
-            Text(
-              (title ?? "").removeBrackets(),
-              textAlign: TextAlign.center,
-              style: AppTheme.boldTextStyle(context, 20, color: AppTheme.white),
-            ),
+            // SizedBox(
+            //   height: deviceHeightSize(context, 8),
+            // ),
+            // Text(
+            //   (title ?? "").removeBrackets(),
+            //   textAlign: TextAlign.center,
+            //   style: AppTheme.boldTextStyle(context, 20, color: AppTheme.white),
+            // ),
           ],
         ),
       ),
@@ -595,7 +595,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
         ),
         AnimatedContainer(
           height: deviceHeightSize(
-              context, _tabController?.index == 0 ? ((categories.length * 60)) + 10 : ((statics.length * 60)) + 10),
+              context, _tabController?.index == 0 ? ((categories.length * 70)) + 10 : ((statics.length * 70)) + 10),
           duration: Durations.medium1,
           child: TabBarView(
             controller: _tabController,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -341,7 +342,7 @@ class _BrandsPageState extends State<BrandsPage> {
         backgroundColor: AppTheme.primaryColor,
         child: Image.asset(
           "assets/icons/apply.png",
-          width: deviceWidthSize(context, 24),
+          width: kIsWeb?deviceWidthSize(context, 10): deviceWidthSize(context, 24),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
@@ -34,6 +35,7 @@ class _AppViewState extends State<AppView> {
     widgetOptions = context.watch<AppViewProvider>().widgetOptions;
     selectedWidget = context.watch<AppViewProvider>().selectedWidget;
     return Scaffold(
+      appBar: kIsWeb ? AppBar() : null,
       key: scaffoldKey,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -41,8 +43,7 @@ class _AppViewState extends State<AppView> {
         selectedItemColor: AppTheme.primaryColor,
         unselectedItemColor: AppTheme.secondaryColor.withOpacity(0.5),
         selectedLabelStyle: AppTheme.normalTextStyle(context, 14),
-        unselectedLabelStyle: AppTheme.lightTextStyle(context, 13,
-            color: AppTheme.secondaryColor.withOpacity(0.5)),
+        unselectedLabelStyle: AppTheme.lightTextStyle(context, 13, color: AppTheme.secondaryColor.withOpacity(0.5)),
         showUnselectedLabels: true,
         selectedIconTheme: IconThemeData(
           size: deviceFontSize(context, 28),
@@ -50,12 +51,9 @@ class _AppViewState extends State<AppView> {
         unselectedIconTheme: IconThemeData(
           size: deviceFontSize(context, 24),
         ),
-        currentIndex: !widgetOptions.contains(selectedWidget)
-            ? 0
-            : widgetOptions.indexOf(selectedWidget),
+        currentIndex: !widgetOptions.contains(selectedWidget) ? 0 : widgetOptions.indexOf(selectedWidget),
         onTap: (index) {
-          context.read<AppViewProvider>().selectedWidget =
-              widgetOptions.elementAt(index);
+          context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(index);
         },
         items: const [
           BottomNavigationBarItem(
@@ -110,13 +108,11 @@ class _AppViewState extends State<AppView> {
                 children: [
                   Text(
                     "Merhaba,",
-                    style: AppTheme.lightTextStyle(context, 32,
-                        color: AppTheme.white),
+                    style: AppTheme.lightTextStyle(context, 32, color: AppTheme.white),
                   ),
                   Text(
                     (HiveHelpers.getUserFromHive().name ?? "").split(" ").last,
-                    style: AppTheme.boldTextStyle(context, 32,
-                        color: AppTheme.white),
+                    style: AppTheme.boldTextStyle(context, 32, color: AppTheme.white),
                   ),
                 ],
               ),
@@ -131,8 +127,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
-                context.read<AppViewProvider>().selectedWidget =
-                    widgetOptions.elementAt(4);
+                context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(4);
                 Navigator.pop(context);
               },
             ),
@@ -163,8 +158,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
-                context.read<AppViewProvider>().selectedWidget =
-                    widgetOptions.elementAt(3);
+                context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(3);
                 Navigator.pop(context);
               },
             ),
@@ -180,8 +174,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
-                context.read<AppViewProvider>().selectedWidget =
-                    widgetOptions.elementAt(1);
+                context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(1);
                 Navigator.pop(context);
               },
             ),
@@ -198,8 +191,7 @@ class _AppViewState extends State<AppView> {
               iconColor: AppTheme.primaryColor,
               onTap: () {
                 context.read<BrandProvider>().filterText = "socialEnterprise";
-                context.read<AppViewProvider>().selectedWidget =
-                    widgetOptions.elementAt(1);
+                context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(1);
                 Navigator.pop(context);
               },
             ),
@@ -239,10 +231,8 @@ class _AppViewState extends State<AppView> {
                       topRight: Radius.circular(20),
                     ),
                   ),
-                  builder: (context) => const BottomSheetWidget(
-                      isMinPadding: true,
-                      title: "İletişime Geç",
-                      child: SupportForm()),
+                  builder: (context) =>
+                      const BottomSheetWidget(isMinPadding: true, title: "İletişime Geç", child: SupportForm()),
                 );
                 // Navigator.pushNamed(context, SupportPage.routeName);
               },
@@ -268,8 +258,7 @@ class _AppViewState extends State<AppView> {
               onTap: () {
                 showDialog(
                   context: context,
-                  builder: (context) =>
-                      DialogWidgets().rowCircularButtonDialogWidget(
+                  builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(
                     context,
                     title: "Çıkış Yap",
                     buttonText: "Çıkış Yap",
@@ -279,11 +268,8 @@ class _AppViewState extends State<AppView> {
                     color: AppTheme.red,
                     onAcceptButtonPressed: () {
                       HiveHelpers.logout();
-                      context
-                          .read<LoginRegisterPageProvider>()
-                          .setPhoneLoginPageType(PhoneLoginPageType.login);
-                      Navigator.pushNamedAndRemoveUntil(
-                          context, SplashPage.routeName, (route) => false);
+                      context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
+                      Navigator.pushNamedAndRemoveUntil(context, SplashPage.routeName, (route) => false);
                     },
                   ),
                 );

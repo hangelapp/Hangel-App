@@ -6,15 +6,14 @@ class HiveHelpers {
     Hive.box('user')
         .put('userModel', userModel.toJson())
         .then((value) => print('User added to hive: ${userModel.uid}'))
-        .onError((error, stackTrace) =>
-            print('User added to hive error: ${error.toString()}'));
+        .onError((error, stackTrace) => print('User added to hive error: ${error.toString()}'));
   }
 
   static UserModel getUserFromHive() {
     try {
       final data = Hive.box('user').get('userModel');
-      print("get user data" + data.toString());
-      return UserModel.fromJson(Map<String, dynamic>.from((data)));
+      print("get user data " + data.toString());
+      return UserModel.fromJson(Map<String, dynamic>.from((data ?? {})));
     } catch (e) {
       print("get user error" + e.toString());
       return UserModel();

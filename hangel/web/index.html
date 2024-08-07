@@ -15,17 +15,24 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/hangel_app/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Hangel App">
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="hangel">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png" />
@@ -35,9 +42,29 @@
 </head>
 
 <body>
-  <div id="recaptcha"></div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1_y0i7LWYe5jWAXP2caRLyyjY05a_DBg",
+      authDomain: "hangel-1.firebaseapp.com",
+      projectId: "hangel-1",
+      storageBucket: "hangel-1.appspot.com",
+      messagingSenderId: "681395322694",
+      appId: "1:681395322694:web:ea61354f0d8652cfa06f47",
+      measurementId: "G-MK1E9P7YZG"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
   <script src="main.dart.js" type="application/javascript"></script>
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/flutter_service_worker.js');
+      });
+    }
+  </script>
 </body>
 
 </html>

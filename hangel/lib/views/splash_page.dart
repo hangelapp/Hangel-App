@@ -59,9 +59,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
               context, SelectFavoriteStkPage.routeName);
           return;
         }
-        Navigator.pushReplacementNamed(context, AppView.routeName);
+        Navigator.pushNamedAndRemoveUntil(context, AppView.routeName,(route) => false,);
       } else {
-        Navigator.pushReplacementNamed(context, RegisterPage.routeName);
+        Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName,(route) => false,);
       }
     });
     super.initState();

@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hangel/controllers/brand_controller.dart';
 import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
@@ -84,6 +87,8 @@ class BrandProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  List<String> redIds = ["1209", "59291", "60179"];
+
   Future<GeneralResponseModel> getOffers() async {
     try {
       Dio dio = Dio();
@@ -96,11 +101,14 @@ class BrandProvider with ChangeNotifier {
         for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
           if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
             String? id = val["Offer"]["id"];
-            String? name = val["Offer"]["name"];
-            String? logo = val["Thumbnail"]["url"];
-            if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+            if (redIds.contains(id)) {
               continue;
             }
+            String? name = val["Offer"]["name"];
+            String? logo = val["Thumbnail"]["url"];
+            // if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+            //   continue;
+            // }
             String? sector = (val["OfferVertical"] is Map<String, dynamic>)
                 ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
                 : null;
@@ -163,11 +171,14 @@ class BrandProvider with ChangeNotifier {
           String offerName = val["Offer"]["name"].toString().toLowerCase().removeBrackets().replaceAll(" ", "");
           if (offerName.contains(pattern)) {
             String? id = val["Offer"]["id"];
-            String? name = val["Offer"]["name"];
-            String? logo = val["Thumbnail"]["url"];
-            if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+            if (redIds.contains(id)) {
               continue;
             }
+            String? name = val["Offer"]["name"];
+            String? logo = val["Thumbnail"]["url"];
+            // if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+            //   continue;
+            // }
             String? sector = (val["OfferVertical"] is Map<String, dynamic>)
                 ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
                 : null;
@@ -198,8 +209,8 @@ class BrandProvider with ChangeNotifier {
                 logo: logo,
                 name: (name ?? "").removeBrackets(),
                 sector: sector));
-            print("*********************************************************");
           }
+          print("*********************************************************");
         }
         notifyListeners();
         return resultBrands;

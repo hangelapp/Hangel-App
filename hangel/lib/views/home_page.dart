@@ -724,32 +724,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  GestureDetector listItemImage(
-    BuildContext context, {
-    required String? logo,
-    required Function()? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: deviceWidthSize(context, 130),
-        height: deviceHeightSize(context, 150),
-        margin: EdgeInsets.only(
-          right: deviceWidthSize(context, 10),
-        ),
-        decoration: BoxDecoration(
-          color: AppTheme.white,
-          boxShadow: AppTheme.shadowList,
-          borderRadius: BorderRadius.circular(13),
-          image: DecorationImage(
-            image: NetworkImage(logo ?? ""),
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    );
-  }
-
   GestureDetector listItemImage2(
     BuildContext context, {
     required String? logo,
@@ -760,8 +734,8 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: deviceWidthSize(context, 90),
-        height: deviceHeightSize(context, 90),
+        width: deviceWidth(context) * 0.25,
+        height: deviceHeight(context) * 0.12,
         margin: EdgeInsets.only(
           right: deviceWidthSize(context, 10),
         ),
@@ -773,15 +747,17 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Container(
           padding: const EdgeInsets.all(5),
-          width: deviceWidthSize(context, 90),
-          height: deviceHeightSize(context, 90),
+          width: deviceWidth(context) * 0.4,
+          height: deviceHeight(context) * 0.1,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               img != null
                   ? Image.network(
                       img,
-                      fit: BoxFit.fitHeight,
+                      width: deviceWidth(context) * 0.3,
+                      height: deviceHeight(context) * 0.1,
+                      fit: BoxFit.fitWidth,
                       alignment: Alignment.center,
                       errorBuilder: (context, error, stackTrace) => const AppNameWidget(
                         fontSize: 20,

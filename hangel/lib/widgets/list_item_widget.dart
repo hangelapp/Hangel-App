@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/views/home_page.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
 
@@ -48,14 +49,14 @@ ListItemWidget(
             // fit: BoxFit.fitWidth,
             //         ),
             // ),
-            child: logo == null
-                ? listItemImage2(context, logo: logo, onTap: onTap)
-                : Image.network(
+            child: logo != null
+                ? Image.network(
                     logo,
                     alignment: Alignment.center,
                     fit: BoxFit.fitWidth,
                     errorBuilder: (context, error, stackTrace) => listItemImage2(context, logo: logo, onTap: onTap),
-                  ),
+                  )
+                : listItemImage2(context, logo: logo, onTap: onTap),
           ),
           SizedBox(
             width: deviceWidthSize(context, 10),

@@ -37,4 +37,4 @@ double tabletFontSize(BuildContext context, double fontSize) {
 }
 
 double desktopFontSize(BuildContext context, double fontSize) =>
-    deviceHeight(context) / deviceWidth(context) * 0.48 * fontSize * 2.2;
+    deviceHeight(context) / deviceWidth(context) * 0.48 * fontSize * 4;

@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
 
 import '../constants/app_theme.dart';
-import '../models/brand_model.dart';
 import '../models/stk_model.dart';
 
 List<Color> randomColors = [
@@ -103,3 +104,20 @@ List<StkModel> stkModels = [
     ],
   ),
 ];
+
+Future<List<String>> loadAssets() async {
+  final manifestContent = await rootBundle.loadString('AssetManifest.json');
+  final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+  final imagePaths =
+      manifestMap.keys.where((String key) => key.startsWith('assets/images/brands/') && key.endsWith('.png')).toList();
+  return imagePaths;
+}
+
+Future<String?> findAsset(String fileName) async {
+  final imagePaths = await loadAssets();
+  final searchFileName = 'assets/images/brands/$fileName.png';
+  if (imagePaths.contains(searchFileName)) {
+    return searchFileName;
+  }
+  return null;
+}
