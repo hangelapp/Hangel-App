@@ -30,9 +30,9 @@ double mobileFontSize(BuildContext context, double fontSize) =>
 double tabletFontSize(BuildContext context, double fontSize) {
   //landscape
   if (deviceHeight(context) > deviceWidth(context)) {
-    return deviceHeight(context) / deviceWidth(context) * 0.48 * fontSize * 2.2;
+    return deviceHeight(context) / deviceWidth(context) * 0.48 * fontSize * 1.5;
   } else {
-    return deviceWidth(context) / deviceHeight(context) * 0.48 * fontSize * 2.2;
+    return deviceWidth(context) / deviceHeight(context) * 0.48 * fontSize * 1.5;
   }
 }
 

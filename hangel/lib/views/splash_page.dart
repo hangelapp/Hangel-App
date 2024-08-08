@@ -26,6 +26,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -55,16 +56,24 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       if (HiveHelpers.getUid() != "") {
         context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid());
         if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-          Navigator.pushReplacementNamed(
-              context, SelectFavoriteStkPage.routeName);
+          Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
           return;
         }
-        Navigator.pushNamedAndRemoveUntil(context, AppView.routeName,(route) => false,);
+        // Navigator.pushNamedAndRemoveUntil(
+        //   context,
+        //   AppView.routeName,
+        //   (route) => false,
+        // );
+        return;
       } else {
-        Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName,(route) => false,);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          RegisterPage.routeName,
+          (route) => false,
+        );
+        return;
       }
     });
-    super.initState();
   }
 
   @override
@@ -75,9 +84,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
         child: SizedBox(
           width: deviceFontSize(context, 153),
           child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 500),
-              opacity: _opacity,
-              child: const AppNameWidget(fontSize: 40)),
+              duration: const Duration(milliseconds: 500), opacity: _opacity, child: const AppNameWidget(fontSize: 40)),
           // child: Stack(
           //   alignment: Alignment.center,
           //   children: [

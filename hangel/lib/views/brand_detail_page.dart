@@ -11,9 +11,16 @@ import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
+import 'package:hangel/views/app_view.dart';
+import 'package:hangel/views/brands_page.dart';
+import 'package:hangel/views/favorites_page.dart';
+import 'package:hangel/views/home_page.dart';
+import 'package:hangel/views/profile_page.dart';
+import 'package:hangel/views/stk_page.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/app_view_provider.dart';
 import '../widgets/app_bar_widget.dart';
 import '../widgets/app_name_widget.dart';
 import '../widgets/dialog_widgets.dart';
@@ -116,35 +123,65 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                                width: deviceWidthSize(context, 50),
-                                height: deviceHeightSize(context, 50),
-                                decoration: BoxDecoration(
-                                  boxShadow: AppTheme.shadowList,
-                                  color: AppTheme.white,
-                                  shape: BoxShape.circle,
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1), // Gölgenin rengi (hafif şeffaf)
+                                    blurRadius: 8, // Gölgenin yumuşaklığı (yüksek değer daha yumuşak gölge)
+                                    offset: const Offset(2, 2), // Gölgenin konumu (x, y ekseninde)
+                                  ),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: 35,
+                                backgroundColor: AppTheme.white,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(60),
+                                  child: Image.network(
+                                    widget.brandModel.logo ?? "",
+                                    fit: BoxFit.contain,
+                                    alignment: Alignment.center,
+                                    errorBuilder: (context, error, stackTrace) => Center(
+                                      child: Text(
+                                        widget.brandModel.name![0],
+                                        style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                child: widget.brandModel.logo != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(100),
-                                        child: Image.network(
-                                          widget.brandModel.logo ?? "",
-                                          fit: BoxFit.contain,
-                                          alignment: Alignment.center,
-                                          errorBuilder: (context, error, stackTrace) => Center(
-                                            child: Text(
-                                              widget.brandModel.name![0],
-                                              style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : Center(
-                                        child: Text(
-                                          widget.brandModel.name![0],
-                                          style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
-                                        ),
-                                      )),
+                              ),
+                            ),
+                            // Container(
+                            //     width: deviceWidthSize(context, 50),
+                            //     height: deviceHeightSize(context, 50),
+                            //     decoration: BoxDecoration(
+                            //       boxShadow: AppTheme.shadowList,
+                            //       color: AppTheme.white,
+                            //       shape: BoxShape.circle,
+                            //     ),
+                            //     clipBehavior: Clip.antiAlias,
+                            //     child: widget.brandModel.logo != null
+                            //         ? Image.network(
+                            //             widget.brandModel.logo ?? "",
+                            //             fit: BoxFit.contain,
+                            //             width: deviceWidthSize(context, 50),
+                            //             height: deviceHeightSize(context, 50),
+                            //             alignment: Alignment.center,
+                            //             errorBuilder: (context, error, stackTrace) => Center(
+                            //               child: Text(
+                            //                 widget.brandModel.name![0],
+                            //                 style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                            //               ),
+                            //             ),
+                            //           )
+                            //         : Center(
+                            //             child: Text(
+                            //               widget.brandModel.name![0],
+                            //               style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
+                            //             ),
+                            //           )),
                             SizedBox(
                               width: deviceWidthSize(context, 12),
                             ),
@@ -269,6 +306,26 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
                           ),
                         ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Bonus ödemesi için ortalama zaman: 60 gün",
+                            style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
+                          ),
+                        ),
+                        Container(
+                            padding: const EdgeInsets.only(top: 8),
+                            alignment: Alignment.centerLeft,
+                            child: ElevatedButton.icon(
+                                onPressed: () {
+                                  showKosulDialog(context);
+                                },
+                                style:
+                                    const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppTheme.primaryColor)),
+                                label: const Text(
+                                  "Genel Bonus Koşulları",
+                                  style: TextStyle(fontSize: 12),
+                                ))),
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
@@ -409,6 +466,114 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
     );
   }
 
+  void showKosulDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding:
+              EdgeInsets.symmetric(horizontal: deviceWidth(context) * 0.15, vertical: deviceHeight(context) * 0.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Sonraki alışverişinden bağış kazanacağından emin olman için bilmen gerekenler",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16.0),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSection(context, "Adblock ve diğer tarayıcı eklentilerini devre dışı bırakın",
+                            "Adblock gibi reklam önleyici programlar ve tarayıcı eklentileri çerezlerinizi kullanır ve/veya siler. Bu durumda Hangel üzerinden mağaza geçerek alışverişinizi tamamlasanız bile çerezleriniz takip edilemediğinden mağaza bağışlarınızı yansıtmayacaktır."),
+                        _buildSection(
+                            context,
+                            "İnternet tarayıcınızın çerezlere izin verecek şekilde etkinleştirildiğinden emin olun",
+                            "Mağazalar, Hangel üzerinden yaptığınız satın alma işlemini tanımlamak için çerezleri kullanır. Tanımlaması yapıldıktan sonra bağış hesabınıza eklenir. Platformumuz üzerinden mağazaya gitmeden önce lütfen tarayıcınızın çerezlere izin verdiğinden emin olun."),
+                        _buildSection(
+                            context,
+                            "Herhangi bir tarayıcıda özel veya gizli bir pencere ile alışverişinizi tamamlamayın",
+                            "Çerezlerinizin takibi gizli sekmede yapılamadığından, Hangel üzerinden gerçekleştirilen tıklama bilgileri mağazaya iletilemez. Bu nedenle bağışınız yansımayacaktır. Tıklama bilgisi bulunmadığından bağışınızın manuel eklenmesi de mümkün olmayacaktır."),
+                        _buildSection(context, "Diğer para iadesi/bağış programları kullanmayın",
+                            "Hangel gibi diğer para iadesi/bağış/ödül/puan programları kullanıldığında aynı şekilde çerez takibi yapıldığı için mağazalar bağışlarınızı yansıtmamaktadır. Bu nedenle, alışverişinizi tamamlarken yalnızca Hangel’in açık olmasını tavsiye ediyoruz."),
+                        _buildSection(context, "Yalnızca Hangel'de bulunan kupon kodlarını kullanın",
+                            "Hangel platformunda listelenmeyen bir kupon kodu kullandıysanız (mağazanın kupon kodları, kupon kodu sitelerinden alınan kod gibi), bağışınız genelde mağaza tarafından yansıtılmamaktadır. Mağazalar kendi koşullarını belirlemekte olduğu için sitemizde belirtilmeyen kupon kodları kullanıldığında bağış tanımı yapılmamaktadır."),
+                        _buildSection(
+                            context,
+                            "Fiyat karşılaştırma veya kupon kodu sitelerini Hangel üzerinden alışverişiniz öncesinde ziyaret etmeyin",
+                            "Fiyat karşılaştırma ve kupon kodu siteleri, Hangel gibi mağazalardan satış komisyonu almaktadır. Bu işlem, yine Hangel gibi çerezlerinizin takibi ile sağlanmaktadır. Hangel ile alışverişinizi tamamlamadan önce bu siteleri ziyaret ettiğiniz takdirde çerezleriniz silinir/üzerine yazılır."),
+                        _buildSection(
+                            context,
+                            "Mağazanın mobil uygulamasını (AliExpress ve/veya birkaç mağaza hariç) kullanmayın",
+                            "Bir mobil cihaz üzerinden alışveriş yapıyorsanız, yalnızca web mağazalarının / rezervasyon hizmetinin tarayıcı sürümlerini kullanın. Satın alma/rezervasyon işlemlerinizi gerçekleştirmek için mağazanın mobil uygulamasını kullandığınız takdirde birkaç mağaza haricinde bağış verilmemektedir."),
+                        _buildSection(context, "Alışveriş sepetinize yalnızca Hangel'e tıkladıktan sonra ürün ekleyin",
+                            "Bazı mağazalar, alışverişinizi tamamlayarak Hangel’den bağış kazanmanızın koşulu olarak alışveriş sepetinizin boş olmasını istemektedirler."),
+                        _buildSection(context, "Bağış yansımama problemini sık yaşıyorsanız çerezlerinizi temizleyin",
+                            "Bağış yansımama problemini sık yaşıyorsanız çerezlerinizi temizlemenizi tavsiye ediyoruz."),
+                        _buildSection(context, "Hangel üzerinden mağazaya tıklamadan alışverişinizi tamamlamayın",
+                            "Hangel'e tıklamadan önce mağazayı ziyaret ettiyseniz, mağaza ilk önce doğrudan çerez takibini yapamadığından Hangel bağışlarınızı yansıtmayacaktır."),
+                        _buildSection(
+                            context,
+                            "Hangel ile ortak olan mağazaların reklamını yapan siteleri ziyaret etmekten kaçının",
+                            "Satın alma işleminiz sırasında reklam afişleri veya linkleri olan başka sekmeleriniz varsa, bağışınız yansımayacaktır."),
+                        _buildSection(context, "Telefonla sipariş vermeyin",
+                            "Telefonla sipariş/rezervasyonlarda hiçbir mağaza bağış vermemektedir."),
+                        _buildSection(
+                            context,
+                            "Başka bir ülkenin mağaza sayfasından sipariş vermeyin (örn. AliExpress Rusya)",
+                            "Sadece Hangel platformunun linkleri üzerinden yapılan alışverişler için bağış kazanabilirsiniz."),
+                        _buildSection(context, "Alışverişinizi tamamlamadan önce mağazanın özel koşullarına göz atın",
+                            "Bazı ürünler veya satıcılar da bağış programına dahil edilmeyebilir."),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("Tamam"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSection(BuildContext context, String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8.0),
+          Text(
+            content,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
   GestureDetector stkItem(BuildContext context, int index) {
     StkModel stkModel = context.watch<STKProvider>().stkList[index];
     int randomIndex = (stkModel.name ?? "").length % randomColors.length;
@@ -480,7 +645,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
       onTap: onTap,
       child: AnimatedContainer(
         width: deviceWidth(context),
-        height: deviceHeight(context)*0.5,
+        height: deviceHeight(context) * 0.1,
         margin: EdgeInsets.only(
           right: deviceWidthSize(context, 10),
         ),
@@ -494,26 +659,24 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: deviceWidth(context) * 0.3,
-              height: deviceHeight(context) * 0.3,
-              child: img != null
-                  ? Image.network(
-                      img,
-                      alignment: Alignment.center,
-                      fit: BoxFit.fitWidth,
-                      errorBuilder: (context, error, stackTrace) => const Center(
-                        child: AppNameWidget(
-                          fontSize: 32,
-                          color: AppTheme.white,
-                        ),
+            img != null
+                ? Image.network(
+                    img,
+                    width: deviceWidth(context) * 0.9,
+                    height: deviceHeight(context) * 0.09,
+                    alignment: Alignment.center,
+                    fit: BoxFit.fitHeight,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: AppNameWidget(
+                        fontSize: 32,
+                        color: AppTheme.white,
                       ),
-                    )
-                  : const AppNameWidget(
-                      fontSize: 48,
-                      color: AppTheme.white,
                     ),
-            ),
+                  )
+                : const AppNameWidget(
+                    fontSize: 48,
+                    color: AppTheme.white,
+                  ),
             // SizedBox(
             //   height: deviceHeightSize(context, 8),
             // ),
@@ -583,7 +746,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
           tabs: const [
             Tab(
               child: Text(
-                "Kategoriler",
+                "Bilgiler",
               ),
             ),
             Tab(

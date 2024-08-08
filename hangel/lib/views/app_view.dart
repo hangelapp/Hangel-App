@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
@@ -13,6 +14,7 @@ import 'package:hangel/views/splash_page.dart';
 import 'package:hangel/views/support_page.dart';
 import 'package:hangel/widgets/dialog_widgets.dart';
 import 'package:hangel/widgets/menu_item_widget.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/bottom_sheet_widget.dart';
@@ -25,67 +27,143 @@ class AppView extends StatefulWidget {
   State<AppView> createState() => _AppViewState();
 }
 
-final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+// final DrawerMenuController drawerController = DrawerMenuController();
 
 class _AppViewState extends State<AppView> {
+  final PersistentTabController controller = PersistentTabController(initialIndex: 0);
+
   List<Widget> widgetOptions = <Widget>[];
-  Widget selectedWidget = const HomePage();
+  Widget? selectedWidget;
   @override
   Widget build(BuildContext context) {
     widgetOptions = context.watch<AppViewProvider>().widgetOptions;
     selectedWidget = context.watch<AppViewProvider>().selectedWidget;
     return Scaffold(
-      appBar: kIsWeb ? AppBar() : null,
-      key: scaffoldKey,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: AppTheme.primaryColor,
-        unselectedItemColor: AppTheme.secondaryColor.withOpacity(0.5),
-        selectedLabelStyle: AppTheme.normalTextStyle(context, 14),
-        unselectedLabelStyle: AppTheme.lightTextStyle(context, 13, color: AppTheme.secondaryColor.withOpacity(0.5)),
-        showUnselectedLabels: true,
-        selectedIconTheme: IconThemeData(
-          size: deviceFontSize(context, 28),
-        ),
-        unselectedIconTheme: IconThemeData(
-          size: deviceFontSize(context, 24),
-        ),
-        currentIndex: !widgetOptions.contains(selectedWidget) ? 0 : widgetOptions.indexOf(selectedWidget),
-        onTap: (index) {
-          context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(index);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: "Anasayfa",
+      // key: scaffoldKey,
+      drawer: drawerWidget(context),
+      body: PersistentTabView(
+        context,
+        screens: widgetOptions,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        navBarStyle: NavBarStyle.style15,
+        animationSettings: const NavBarAnimationSettings(
+            navBarItemAnimation: ItemAnimationSettings(curve: Curves.linear, duration: Durations.extralong3),
+            screenTransitionAnimation: ScreenTransitionAnimationSettings(
+                screenTransitionAnimationType: ScreenTransitionAnimationType.slide, animateTabTransition: true)),
+        items: [
+          PersistentBottomNavBarItem(
+            icon: const Icon(Icons.home_rounded),
+            activeColorPrimary: AppTheme.primaryColor,
+            inactiveColorPrimary: CupertinoColors.systemGrey,
+            title: ("Ana Sayfa"),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag_rounded),
-            label: "Markalar",
+          PersistentBottomNavBarItem(
+            icon: const Icon(Icons.shopping_bag_rounded),
+            title: ("Markalar"),
+            activeColorPrimary: AppTheme.primaryColor,
+            inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_rounded),
-            label: "Favoriler",
+          PersistentBottomNavBarItem(
+            icon: const Padding(
+              padding: EdgeInsets.only(top: 4.0),
+              child: Center(
+                child: Icon(
+                  Icons.favorite_rounded,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ),
+            inactiveIcon: const Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: 4.0),
+                child: Icon(
+                  Icons.favorite_outline_rounded,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ),
+            title: ("Favoriler"),
+            activeColorPrimary: AppTheme.white,
+            inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.volunteer_activism_rounded),
-            label: "STK'lar",
+          PersistentBottomNavBarItem(
+            icon: const Icon(Icons.volunteer_activism_rounded),
+            title: ("STK' lar"),
+            activeColorPrimary: AppTheme.primaryColor,
+            inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
-            label: "Profilim",
+          PersistentBottomNavBarItem(
+            icon: const Icon(Icons.person_rounded),
+            title: ("Profil"),
+            activeColorPrimary: AppTheme.primaryColor,
+            inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
         ],
+
+        // child: Scaffold(
+        //   key: scaffoldKey,
+        //   bottomNavigationBar: BottomNavigationBar(
+        //     type: BottomNavigationBarType.fixed,
+        //     backgroundColor: Colors.white,
+        //     selectedItemColor: AppTheme.primaryColor,
+        //     unselectedItemColor: AppTheme.secondaryColor.withOpacity(0.5),
+        //     selectedLabelStyle: AppTheme.normalTextStyle(context, 14),
+        //     unselectedLabelStyle: AppTheme.lightTextStyle(context, 13, color: AppTheme.secondaryColor.withOpacity(0.5)),
+        //     showUnselectedLabels: true,
+        //     selectedIconTheme: IconThemeData(
+        //       size: deviceFontSize(context, 28),
+        //     ),
+        //     unselectedIconTheme: IconThemeData(
+        //       size: deviceFontSize(context, 24),
+        //     ),
+        //     currentIndex: !widgetOptions.contains(selectedWidget) ? 0 : widgetOptions.indexOf(selectedWidget),
+        //     onTap: (index) {
+        //       context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(index);
+        //     },
+        //     items: const [
+        //       BottomNavigationBarItem(
+        //         icon: Icon(Icons.home_rounded),
+        //         label: "Anasayfa",
+        //       ),
+        //       BottomNavigationBarItem(
+        //         icon: Icon(Icons.shopping_bag_rounded),
+        //         label: "Markalar",
+        //       ),
+        //       BottomNavigationBarItem(
+        //         icon: Icon(Icons.favorite_rounded),
+        //         label: "Favoriler",
+        //       ),
+        //       BottomNavigationBarItem(
+        //         icon: Icon(Icons.volunteer_activism_rounded),
+        //         label: "STK'lar",
+        //       ),
+        //       BottomNavigationBarItem(
+        //         icon: Icon(Icons.person_rounded),
+        //         label: "Profilim",
+        //       ),
+        //     ],
+        //   ),
+        //   drawer: drawerWidget(context),
+        //   floatingActionButton: FloatingActionButton(
+        //     onPressed: () {},
+        //     shape: const CircleBorder(),
+        //     elevation: 0,
+        //     backgroundColor: Colors.white,
+        //     child: const Icon(
+        //       Icons.favorite_border_outlined,
+        //       color: AppTheme.primaryColor,
+        //     ),
+        //   ),
+        //   floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        //   body: selectedWidget,
+        // ),
       ),
-      drawer: drawerWidget(context),
-      body: selectedWidget,
     );
   }
 
-  Drawer drawerWidget(BuildContext context) {
+  Widget drawerWidget(BuildContext context) {
     return Drawer(
-      width: deviceWidth(context) * 0.7,
+      width: kIsWeb ? deviceWidth(context) * 0.4 : deviceWidth(context) * 0.5,
       backgroundColor: AppTheme.white,
       child: SizedBox(
         height: deviceHeight(context),

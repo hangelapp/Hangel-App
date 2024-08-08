@@ -11,7 +11,7 @@ class BrandModel {
   final String? detailText; //Default Value text shema
   final String? link; // Contain
   final List<CategoryModel>? categories; // Contain
-  final int favoriteCount; // Default value 0 Closed for now 
+  final int favoriteCount; // Default value 0 Closed for now
 
   BrandModel({
     this.id,
@@ -43,9 +43,7 @@ class BrandModel {
       detailText: json['detailText'],
       link: json['link'],
       categories: json['categories'] != null
-          ? (json['categories'] as List)
-              .map((e) => CategoryModel.fromJson(e))
-              .toList()
+          ? (json['categories'] as List).map((e) => CategoryModel.fromJson(e)).toList()
           : null,
       favoriteCount: json['favoriteCount'] ?? 157,
     );

@@ -58,6 +58,9 @@ dependencies:
   flutter_typeahead: ^5.2.0
   palette_generator: ^0.3.3+4
   firebase_auth_platform_interface: ^7.3.0
+  persistent_bottom_nav_bar: ^6.2.1
+  animated_flip_counter: ^0.3.4
+  countup: ^0.1.4
 
 dev_dependencies:
   flutter_test:

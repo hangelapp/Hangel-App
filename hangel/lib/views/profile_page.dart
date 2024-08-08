@@ -39,7 +39,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   UserModel user = HiveHelpers.getUserFromHive();
   @override
   void initState() {
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     SchedulerBinding.instance.addPostFrameCallback((_) {
       // context.read<ProfilePageProvider>().getProfile();
       _tabController!.addListener(() {
@@ -211,8 +211,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     return Stack(
       children: [
         Container(
-          width: deviceWidthSize(context, 220),
-          height: deviceWidthSize(context, 220),
+          width: 150,
+          height: 150,
           decoration: const BoxDecoration(
             color: AppTheme.secondaryColor,
             shape: BoxShape.circle,
@@ -271,8 +271,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               );
             },
             child: Container(
-              width: deviceWidthSize(context, 55),
-              height: deviceWidthSize(context, 55),
+              width: 40,
+              height: 40,
               decoration: const BoxDecoration(
                 color: AppTheme.secondaryColor,
                 shape: BoxShape.circle,
@@ -332,6 +332,33 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             : DateFormatHelper.getDate(HiveHelpers.getUserFromHive().createdAt.toString(), context)
       },
     ];
+    List<Map<String, dynamic>> volunteerInfo = [
+      {
+        "icon": Icons.money_outlined,
+        "title": "Toplam Bağış Miktarı",
+        "value": "15.200,00 TL",
+      },
+      {
+        "icon": Icons.wifi_protected_setup_sharp,
+        "title": "Bağış İşlem Sayısı",
+        "value": "18.00",
+      },
+      {
+        "icon": Icons.favorite_outline_rounded,
+        "title": "Toplam Favori",
+        "value": HiveHelpers.getUserFromHive().favoriteStks.length.toString()
+      },
+      {
+        "icon": Icons.group_work_outlined,
+        "title": "Toplam Bağışçı",
+        "value": "15.00"
+      },
+      {
+        "icon": Icons.history_toggle_off,
+        "title": "Katılım Tarihi",
+        "value": "17.05.2024",
+      },
+    ];
 
     List<Map<String, dynamic>> info = [
       {
@@ -365,11 +392,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ? "-"
             : HiveHelpers.getUserFromHive().city ??
                 "-/${HiveHelpers.getUserFromHive().district ?? "-"}/${HiveHelpers.getUserFromHive().neighberhood ?? "-"}",
-      },
-      {
-        "icon": Icons.group,
-        "title": "Gönüllülük Durumu",
-        "value": HiveHelpers.getUserFromHive().volunteers.isEmpty ? "-" : HiveHelpers.getUserFromHive().volunteers,
       },
     ];
     return Column(
@@ -432,7 +454,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                               child: const Icon(
                                 Icons.edit_rounded,
                                 color: AppTheme.white,
-                                size: 15,
+                                size: 12,
                               ),
                             ),
                           ),
@@ -440,6 +462,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       ),
                   ],
                 ),
+              ),
+              const Tab(
+                child: Text("Gönüllülük"),
               ),
               const Tab(
                 child: Text(
@@ -452,7 +477,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         SizedBox(
           height: deviceHeightSize(context, 4),
         ),
-        _tabController!.index == 0 ? _personalInfo(context, info) : _personalInfo(context, statics),
+        if(_tabController!.index == 0)
+          _personalInfo(context, info)
+        else if(_tabController!.index == 1)
+          _volunteerInfo(context, volunteerInfo)
+        else
+           _personalInfo(context, statics),
         SizedBox(
           height: deviceHeightSize(context, 20),
         ),
@@ -509,6 +539,77 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 );
               },
               text: "STK Başvuru Formu"),
+        ),
+      ],
+    );
+  }
+
+  _volunteerInfo(BuildContext context, List<Map<String, dynamic>> info) {
+    return Column(
+      children: [
+        ...List.generate(
+          info.length,
+          (index) => Container(
+            margin: EdgeInsets.symmetric(
+              horizontal: deviceWidthSize(context, 20),
+              vertical: deviceHeightSize(context, 4),
+            ),
+            padding: EdgeInsets.symmetric(
+              horizontal: deviceWidthSize(context, 20),
+              vertical: deviceHeightSize(context, 12),
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.02),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Icon(
+                  info[index]["icon"] as IconData,
+                  color: AppTheme.primaryColor,
+                  size: deviceFontSize(context, 24),
+                ),
+                SizedBox(
+                  width: deviceWidthSize(context, 10),
+                ),
+                Expanded(
+                  flex: _tabController!.index == 0 ? 1 : 2,
+                  child: Text(
+                    info[index]["title"]!,
+                    textAlign: TextAlign.start,
+                    style: AppTheme.normalTextStyle(
+                      context,
+                      12,
+                    ),
+                  ),
+                ),
+                Text(
+                  ":",
+                  textAlign: TextAlign.start,
+                  style: AppTheme.normalTextStyle(
+                    context,
+                    12,
+                  ),
+                ),
+                SizedBox(
+                  width: deviceHeightSize(context, 5),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    info[index]["value"]!,
+                    textAlign: TextAlign.start,
+                    style: AppTheme.semiBoldTextStyle(
+                      context,
+                      14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

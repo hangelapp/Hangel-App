@@ -212,7 +212,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
       notifyListeners();
       return GeneralResponseModel(success: true);
     } catch (e) {
-      return GeneralResponseModel(success: false);
+      return GeneralResponseModel(success: false,message: e.toString());
     }
   }
 

@@ -17,9 +17,6 @@ class AppBarWidget extends StatefulWidget {
 class _AppBarWidgetState extends State<AppBarWidget> {
   @override
   Widget build(BuildContext context) {
-    if(kIsWeb){
-      return AppBar(toolbarHeight: kToolbarHeight,);
-    }
     return Container(
       margin: EdgeInsets.only(top: deviceTopPadding(context)),
       padding: EdgeInsets.symmetric(
@@ -36,12 +33,10 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                   child: Text(
                     widget.title!,
                     textAlign: TextAlign.center,
-                    style: AppTheme.boldTextStyle(context, 20,
-                        color: AppTheme.secondaryColor),
+                    style: AppTheme.boldTextStyle(context, 20, color: AppTheme.secondaryColor),
                   ),
                 ),
-          if (widget.title != null)
-            SizedBox(width: deviceWidthSize(context, 45)),
+          if (widget.title != null) SizedBox(width: deviceWidthSize(context, 45)),
         ],
       ),
     );

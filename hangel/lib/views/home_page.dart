@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:countup/countup.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -19,6 +22,7 @@ import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/brand_detail_page.dart';
 import 'package:hangel/views/brands_page.dart';
+import 'package:hangel/views/favorites_page.dart';
 import 'package:hangel/views/stk_detail_page.dart';
 import 'package:hangel/views/stk_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
@@ -203,6 +207,10 @@ class _HomePageState extends State<HomePage> {
   //   ),
   // ];
 
+  int countBrandStatistic = 133;
+  int countStkStatistic = 1248;
+  int countUserStatistic = 98102;
+  int countVolunteerStatistic = 1890;
   int currentIndex = 0;
   final ScrollController _homescrollController = ScrollController();
 
@@ -233,7 +241,7 @@ class _HomePageState extends State<HomePage> {
           AppBarWidget(
             leading: IconButton(
               onPressed: () {
-                scaffoldKey.currentState!.openDrawer();
+                Scaffold.of(context).openDrawer();
               },
               icon: Icon(
                 Icons.menu,
@@ -243,486 +251,509 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: CustomScrollView(
               controller: _homescrollController,
-              child: SafeArea(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: deviceHeightSize(context, 16),
-                    ),
-                    CarouselSlider(
-                      items: [
-                        ...List.generate(
-                          bannerImages.length,
-                          (index) => Container(
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(13),
-                              image: DecorationImage(
-                                image: AssetImage(bannerImages[index]),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                        ...List.generate(
-                          sliderImages.length,
-                          (index) => Container(
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(13),
-                              image: DecorationImage(
-                                image: NetworkImage(sliderImages[index]),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
-                      options: CarouselOptions(
-                        onPageChanged: (index, reason) {
-                          setState(() {
-                            currentIndex = index;
-                          });
-                        },
-                        height: deviceHeightSize(context, 180),
-                        viewportFraction: 0.8,
-                        enlargeCenterPage: true,
-                        autoPlay: true,
-                        autoPlayInterval: const Duration(seconds: 5),
-                        autoPlayAnimationDuration: const Duration(seconds: 1),
-                        autoPlayCurve: Curves.fastOutSlowIn,
-                        scrollDirection: Axis.horizontal,
-                      ),
-                    ),
-                    SizedBox(
-                      height: deviceHeightSize(context, 8),
-                    ),
-                    dotList(context),
-                    Column(
-                      children: [
-                        SizedBox(
-                          height: deviceHeightSize(context, 8),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          width: double.infinity,
-                          height: deviceHeight(context) * 0.10,
-                          child: TypeAheadField(
-                            itemSeparatorBuilder: (context, index) => Divider(
-                              color: Colors.grey.shade300,
-                            ),
-                            itemBuilder: (context, offer) {
-                              return Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: ListTile(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => BrandDetailPage(
-                                          brandModel: offer,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  subtitle: Text(offer.sector ?? ""),
-                                  trailing: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: deviceWidthSize(context, 10),
-                                      vertical: deviceHeightSize(context, 5),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.primaryColor.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: SizedBox(
-                                      // height: 50,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.volunteer_activism_rounded,
-                                            color: AppTheme.primaryColor,
-                                            size: deviceFontSize(context, 18),
-                                          ),
-                                          SizedBox(
-                                            width: deviceWidthSize(context, 6),
-                                          ),
-                                          Text(
-                                            "%${(offer.donationRate)}",
-                                            style: AppTheme.semiBoldTextStyle(
-                                              context,
-                                              14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  leading: Container(
-                                      width: deviceWidthSize(context, 50),
-                                      height: deviceHeightSize(context, 50),
-                                      decoration: BoxDecoration(
-                                        boxShadow: AppTheme.shadowList,
-                                        color: AppTheme.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: offer.logo != null
-                                          ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(100),
-                                              child: Image.network(
-                                                offer.logo ?? "",
-                                                fit: BoxFit.contain,
-                                                alignment: Alignment.center,
-                                                errorBuilder: (context, error, stackTrace) => Center(
-                                                  child: Text(
-                                                    offer.name![0],
-                                                    style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          : Center(
-                                              child: Text(
-                                                offer.name![0],
-                                                style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
-                                              ),
-                                            )),
-                                  title: Text(offer.name?.removeBrackets() ?? ""),
-                                ),
-                              );
-                            },
-                            emptyBuilder: (context) => const Text(""),
-                            errorBuilder: (context, error) => const Text("Bağlantı Problemi!"),
-                            builder: (context, search, focusNode) {
-                              return Container(
-                                alignment: Alignment.center,
-                                margin: EdgeInsets.symmetric(
-                                  horizontal: deviceWidthSize(context, 10),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: deviceWidthSize(context, 5),
-                                  vertical: deviceHeightSize(context, 4),
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: AppTheme.secondaryColor.withOpacity(0.2),
-                                  ),
-                                ),
-                                child: TextField(
-                                  focusNode: focusNode,
-                                  onTap: () {
-                                    _homescrollController.animateTo(
-                                      deviceHeightSize(context, 200),
-                                      duration: const Duration(milliseconds: 500),
-                                      curve: Curves.ease,
-                                    );
-                                  },
-                                  controller: search,
-                                  decoration: InputDecoration(
-                                    hintText: "Marka Ara",
-                                    hintStyle: AppTheme.lightTextStyle(context, 14),
-                                    border: InputBorder.none,
-                                    prefixIcon: Icon(
-                                      Icons.search_rounded,
-                                      color: AppTheme.secondaryColor.withOpacity(0.5),
-                                    ),
-                                    suffixIcon: (search.text.isNotEmpty)
-                                        ? IconButton(onPressed: search.clear, icon: const Icon(Icons.close))
-                                        : null,
-                                  ),
-                                ),
-                              );
-                            },
-                            onSelected: (value) {},
-                            suggestionsCallback: (search) async {
-                              return await context.read<BrandProvider>().getOffersForSearch(search);
-                            },
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: deviceWidthSize(context, 20),
-                          ),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "STK'lar",
-                            style: AppTheme.semiBoldTextStyle(context, 20),
-                          ),
-                        ),
-                        SizedBox(
-                          height: deviceHeightSize(context, 6),
-                        ),
-                        context.watch<STKProvider>().loadingState == LoadingState.loading
-                            ? SizedBox(
-                                height: deviceHeightSize(context, 90),
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              )
-                            : SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                clipBehavior: Clip.none,
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: deviceWidthSize(context, 20),
-                                    ),
-                                    ...List.generate(
-                                      stkModels.length,
-                                      (index) => listItemImage2(context, logo: stkModels[index].name, onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => STKDetailPage(
-                                              stkModel: stkModels[index],
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        context.read<AppViewProvider>().selectedWidget = const STKPage();
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          children: [
-                                            Icon(
-                                              Icons.arrow_forward_ios_rounded,
-                                              color: AppTheme.black,
-                                              size: deviceFontSize(context, 20),
-                                            ),
-                                            SizedBox(
-                                              height: deviceHeightSize(context, 8),
-                                            ),
-                                            Text(
-                                              "Tümünü\nGör",
-                                              textAlign: TextAlign.center,
-                                              style: AppTheme.normalTextStyle(context, 18),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: deviceWidthSize(context, 20),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                        SizedBox(
-                          height: deviceHeightSize(context, 8),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: deviceWidthSize(context, 20),
-                          ),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Markalar",
-                            style: AppTheme.semiBoldTextStyle(context, 20),
-                          ),
-                        ),
-                        SizedBox(
-                          height: deviceHeightSize(context, 6),
-                        ),
-                        context.watch<BrandProvider>().loadingState == LoadingState.loading
-                            ? SizedBox(
-                                height: deviceHeightSize(context, 90),
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              )
-                            : SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                clipBehavior: Clip.none,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: deviceWidthSize(context, 20),
-                                    ),
-                                    SizedBox(
-                                      width: deviceWidth(context) * 0.9,
-                                      height: deviceHeight(context) * 0.12,
-                                      child: ListView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: brandModels.length,
-                                        itemBuilder: (context, i) {
-                                          if (i == brandModels.length - 1) {
-                                            return Row(
-                                              children: [
-                                                listItemImage2(
-                                                  context,
-                                                  logo: brandModels[i].logo,
-                                                  img: brandModels[i].logo,
-                                                  onTap: () => Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) => BrandDetailPage(
-                                                        brandModel: brandModels[i],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    context.read<AppViewProvider>().selectedWidget = const BrandsPage();
-                                                  },
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: Column(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.arrow_forward_ios_rounded,
-                                                          color: AppTheme.black,
-                                                          size: deviceFontSize(context, 20),
-                                                        ),
-                                                        SizedBox(
-                                                          height: deviceHeightSize(context, 8),
-                                                        ),
-                                                        Text(
-                                                          "Tümünü\nGör",
-                                                          textAlign: TextAlign.center,
-                                                          style: AppTheme.normalTextStyle(context, 18),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          }
-                                          return listItemImage2(
-                                            context,
-                                            logo: brandModels[i].logo,
-                                            img: brandModels[i].logo,
-                                            onTap: () => Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => BrandDetailPage(
-                                                  brandModel: brandModels[i],
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: deviceWidthSize(context, 20),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                        SizedBox(
-                          height: deviceHeightSize(context, 8),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: deviceWidthSize(context, 20),
-                          ),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Sosyal Şirketler",
-                            style: AppTheme.semiBoldTextStyle(context, 20),
-                          ),
-                        ),
-                        SizedBox(
-                          height: deviceHeightSize(context, 6),
-                        ),
-                        context.watch<BrandProvider>().loadingState == LoadingState.loading
-                            ? SizedBox(
-                                height: deviceHeightSize(context, 90),
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              )
-                            : SizedBox(
-                                width: deviceWidth(context),
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  clipBehavior: Clip.none,
-                                  child: Row(
-                                    children: [
-                                      SizedBox(
-                                        width: deviceWidthSize(context, 20),
-                                      ),
-                                      ...List.generate(
-                                        1,
-                                        (index) {
-                                          if (index == 4) {
-                                            return GestureDetector(
-                                              onTap: () {
-                                                context.read<BrandProvider>().filterText = "socialEnterprise";
-
-                                                context.read<AppViewProvider>().selectedWidget = const BrandsPage();
-                                              },
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Column(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.arrow_forward_ios_rounded,
-                                                      color: AppTheme.black,
-                                                      size: deviceFontSize(context, 20),
-                                                    ),
-                                                    SizedBox(
-                                                      height: deviceHeightSize(context, 8),
-                                                    ),
-                                                    Text(
-                                                      "Tümünü\nGör",
-                                                      textAlign: TextAlign.center,
-                                                      style: AppTheme.normalTextStyle(context, 18),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          if (index > 4) {
-                                            return const SizedBox();
-                                          }
-                                          return listItemImage2(context, logo: "socialEnterprises[index].name",
-                                              onTap: () {
-                                            // Navigator.push(
-                                            //   context,
-                                            //   MaterialPageRoute(
-                                            //     builder: (context) => BrandDetailPage(
-                                            //       brandModel: socialEnterprises[index],
-                                            //     ),
-                                            //   ),
-                                            // );
-                                          });
-                                        },
-                                      ),
-                                      SizedBox(
-                                        width: deviceWidthSize(context, 20),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                        SizedBox(
-                          height: deviceHeightSize(context, 8),
-                        ),
-                      ],
-                    ),
-                  ],
+              slivers: [
+                buildCountStatisticsArea,
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: deviceHeightSize(context, 16),
+                  ),
                 ),
-              ),
+                // buildCarouselArea,
+                // SizedBox(
+                //   height: deviceHeightSize(context, 8),
+                // ),
+                // dotList(context),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: deviceHeightSize(context, 20),
+                  ),
+                ),
+                SliverToBoxAdapter(child: buildBrandSearchArea),
+                // buildSTKsArea,
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: deviceHeightSize(context, 50),
+                  ),
+                ),
+                ...buildBrandsArea,
+
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: deviceHeightSize(context, 8),
+                  ),
+                ),
+                // buildSocialEnterprisesArea,
+                // SizedBox(
+                //   height: deviceHeightSize(context, 8),
+                // ),
+              ],
             ),
           ),
+          // Expanded(
+          //   child: SingleChildScrollView(
+          //     controller: _homescrollController,
+          //     child: const Column(
+          //       children: [],
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
   }
+
+  Widget get buildCarouselArea => CarouselSlider(
+        items: [
+          ...List.generate(
+            bannerImages.length,
+            (index) => Container(
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(13),
+                image: DecorationImage(
+                  image: AssetImage(bannerImages[index]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          ...List.generate(
+            sliderImages.length,
+            (index) => Container(
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(13),
+                image: DecorationImage(
+                  image: NetworkImage(sliderImages[index]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          )
+        ],
+        options: CarouselOptions(
+          onPageChanged: (index, reason) {
+            setState(() {
+              currentIndex = index;
+            });
+          },
+          height: deviceHeightSize(context, 180),
+          viewportFraction: 0.8,
+          enlargeCenterPage: true,
+          autoPlay: true,
+          autoPlayInterval: const Duration(seconds: 5),
+          autoPlayAnimationDuration: const Duration(seconds: 1),
+          autoPlayCurve: Curves.fastOutSlowIn,
+          scrollDirection: Axis.horizontal,
+        ),
+      );
+
+  Widget get buildCountStatisticsArea => SliverToBoxAdapter(
+        child: Container(
+          margin: const EdgeInsets.only(top: 15),
+          alignment: Alignment.center,
+          width: deviceWidth(context),
+          height: deviceHeight(context) * 0.14,
+          color: AppTheme.primaryColor,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              buildCountStat("MARKA", countBrandStatistic),
+              buildCountStat("STK", countStkStatistic),
+              buildCountStat("KULLANICI", countUserStatistic),
+              buildCountStat("GÖNÜLLÜ", countVolunteerStatistic),
+            ],
+          ),
+        ),
+      );
+
+  Widget buildCountStat(String label, int count) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Countup(
+          begin: 0,
+          end: count.toDouble(),
+          separator: ",",
+          duration: const Duration(seconds: 3),
+          style: TextStyle(fontSize: deviceFontSize(context, 35), color: AppTheme.white, fontWeight: FontWeight.w900),
+        ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 15, color: AppTheme.white, fontWeight: FontWeight.w400),
+        )
+      ],
+    );
+  }
+
+  Widget get buildBrandSearchArea => Container(
+        padding: const EdgeInsets.all(8),
+        width: double.infinity,
+        height: deviceHeight(context) * 0.10,
+        child: TypeAheadField(
+          itemSeparatorBuilder: (context, index) => Divider(
+            color: Colors.grey.shade300,
+          ),
+          itemBuilder: (context, offer) {
+            return Padding(
+              padding: const EdgeInsets.all(8),
+              child: ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BrandDetailPage(
+                        brandModel: offer,
+                      ),
+                    ),
+                  );
+                },
+                subtitle: Text(offer.sector ?? ""),
+                trailing: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: deviceWidthSize(context, 10),
+                    vertical: deviceHeightSize(context, 5),
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SizedBox(
+                    // height: 50,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.volunteer_activism_rounded,
+                          color: AppTheme.primaryColor,
+                          size: deviceFontSize(context, 18),
+                        ),
+                        SizedBox(
+                          width: deviceWidthSize(context, 6),
+                        ),
+                        Text(
+                          "%${(offer.donationRate)}",
+                          style: AppTheme.semiBoldTextStyle(
+                            context,
+                            14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                leading: Container(
+                    width: deviceWidthSize(context, 50),
+                    height: deviceHeightSize(context, 50),
+                    decoration: BoxDecoration(
+                      boxShadow: AppTheme.shadowList,
+                      color: AppTheme.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: offer.logo != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: Image.network(
+                              offer.logo ?? "",
+                              fit: BoxFit.contain,
+                              alignment: Alignment.center,
+                              errorBuilder: (context, error, stackTrace) => Center(
+                                child: Text(
+                                  offer.name![0],
+                                  style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              offer.name![0],
+                              style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
+                            ),
+                          )),
+                title: Text(offer.name?.removeBrackets() ?? ""),
+              ),
+            );
+          },
+          emptyBuilder: (context) => const Text(""),
+          errorBuilder: (context, error) => const Text("Bağlantı Problemi!"),
+          builder: (context, search, focusNode) {
+            return Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.symmetric(
+                horizontal: deviceWidthSize(context, 10),
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: deviceWidthSize(context, 5),
+                vertical: deviceHeightSize(context, 4),
+              ),
+              decoration: BoxDecoration(
+                color: AppTheme.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppTheme.secondaryColor.withOpacity(0.2),
+                ),
+              ),
+              child: TextField(
+                focusNode: focusNode,
+                onTap: () {
+                  _homescrollController.animateTo(
+                    deviceHeightSize(context, 100),
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.ease,
+                  );
+                },
+                controller: search,
+                decoration: InputDecoration(
+                  hintText: "Marka Ara",
+                  hintStyle: AppTheme.lightTextStyle(context, 14),
+                  border: InputBorder.none,
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: AppTheme.secondaryColor.withOpacity(0.5),
+                  ),
+                  suffixIcon: (search.text.isNotEmpty)
+                      ? IconButton(onPressed: search.clear, icon: const Icon(Icons.close))
+                      : null,
+                ),
+              ),
+            );
+          },
+          onSelected: (value) {},
+          suggestionsCallback: (search) async {
+            return await context.read<BrandProvider>().getOffersForSearch(search);
+          },
+        ),
+      );
+
+  Widget get buildSTKsArea => Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: deviceWidthSize(context, 20),
+            ),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "STK'lar",
+              style: AppTheme.semiBoldTextStyle(context, 20),
+            ),
+          ),
+          SizedBox(
+            height: deviceHeightSize(context, 6),
+          ),
+          context.watch<STKProvider>().loadingState == LoadingState.loading
+              ? SizedBox(
+                  height: deviceHeightSize(context, 90),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: deviceWidthSize(context, 20),
+                      ),
+                      ...List.generate(
+                        stkModels.length,
+                        (index) => listItemImage2(context, logo: stkModels[index].name, onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => STKDetailPage(
+                                stkModel: stkModels[index],
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          context.read<AppViewProvider>().selectedWidget = const STKPage();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: AppTheme.black,
+                                size: deviceFontSize(context, 20),
+                              ),
+                              SizedBox(
+                                height: deviceHeightSize(context, 8),
+                              ),
+                              Text(
+                                "Tümünü\nGör",
+                                textAlign: TextAlign.center,
+                                style: AppTheme.normalTextStyle(context, 18),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: deviceWidthSize(context, 20),
+                      ),
+                    ],
+                  ),
+                ),
+        ],
+      );
+
+  List<Widget> get buildBrandsArea => [
+        SliverPadding(
+          padding: EdgeInsets.symmetric(
+            horizontal: deviceWidthSize(context, 20),
+          ),
+          sliver: SliverToBoxAdapter(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Markalar",
+                style: AppTheme.semiBoldTextStyle(context, 20),
+              ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: deviceHeightSize(context, 6),
+          ),
+        ),
+        context.watch<BrandProvider>().loadingState == LoadingState.loading
+            ? SliverToBoxAdapter(
+                child: SizedBox(
+                  height: deviceHeightSize(context, 90),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              )
+            : SliverPadding(
+                padding: EdgeInsets.only(
+                  left: deviceWidthSize(context, 20),
+                ),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      childAspectRatio: 16/9, crossAxisSpacing: 2, mainAxisSpacing: 10, maxCrossAxisExtent: 250),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      return listItemImage2(
+                        context,
+                        logo: brandModels[i].logo,
+                        img: brandModels[i].logo,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BrandDetailPage(
+                                brandModel: brandModels[i],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    childCount: brandModels.length,
+                  ),
+                ),
+              ),
+      ];
+
+  Widget get buildSocialEnterprisesArea => Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: deviceWidthSize(context, 20),
+            ),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Sosyal Şirketler",
+              style: AppTheme.semiBoldTextStyle(context, 20),
+            ),
+          ),
+          SizedBox(
+            height: deviceHeightSize(context, 6),
+          ),
+          context.watch<BrandProvider>().loadingState == LoadingState.loading
+              ? SizedBox(
+                  height: deviceHeightSize(context, 90),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : SizedBox(
+                  width: deviceWidth(context),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: deviceWidthSize(context, 20),
+                        ),
+                        ...List.generate(
+                          1,
+                          (index) {
+                            if (index == 4) {
+                              return GestureDetector(
+                                onTap: () {
+                                  context.read<BrandProvider>().filterText = "socialEnterprise";
+
+                                  context.read<AppViewProvider>().selectedWidget = const BrandsPage();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        color: AppTheme.black,
+                                        size: deviceFontSize(context, 20),
+                                      ),
+                                      SizedBox(
+                                        height: deviceHeightSize(context, 8),
+                                      ),
+                                      Text(
+                                        "Tümünü\nGör",
+                                        textAlign: TextAlign.center,
+                                        style: AppTheme.normalTextStyle(context, 18),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            if (index > 4) {
+                              return const SizedBox();
+                            }
+                            return listItemImage2(context, logo: "socialEnterprises[index].name", onTap: () {
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => BrandDetailPage(
+                              //       brandModel: socialEnterprises[index],
+                              //     ),
+                              //   ),
+                              // );
+                            });
+                          },
+                        ),
+                        SizedBox(
+                          width: deviceWidthSize(context, 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+        ],
+      );
 
   GestureDetector listItemImage2(
     BuildContext context, {
@@ -730,7 +761,7 @@ class _HomePageState extends State<HomePage> {
     String? img,
     required Function()? onTap,
   }) {
-    int randomIndex = (logo ?? "").length % (randomColors.length - 1);
+    // int randomIndex = (logo ?? "").length % (randomColors.length - 1);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -741,7 +772,7 @@ class _HomePageState extends State<HomePage> {
         ),
         decoration: BoxDecoration(
           // color: randomColors[randomIndex],
-          color: randomColors[randomIndex],
+          color: Colors.white,
           boxShadow: AppTheme.shadowList,
           borderRadius: BorderRadius.circular(13),
         ),
@@ -761,12 +792,12 @@ class _HomePageState extends State<HomePage> {
                       alignment: Alignment.center,
                       errorBuilder: (context, error, stackTrace) => const AppNameWidget(
                         fontSize: 20,
-                        color: AppTheme.white,
+                        color: AppTheme.primaryColor,
                       ),
                     )
                   : const AppNameWidget(
                       fontSize: 20,
-                      color: AppTheme.white,
+                      color: AppTheme.primaryColor,
                     ),
             ],
           ),

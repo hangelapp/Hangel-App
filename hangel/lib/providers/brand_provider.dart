@@ -21,7 +21,7 @@ class BrandProvider with ChangeNotifier {
   final _brandController = locator<BrandController>();
 
   int page = 1;
-  int limit = 20;
+  int limit = 10;
   List<BrandModel> _brandList = [];
   List<BrandModel> get brandList => _brandList;
   set brandList(List<BrandModel> value) {
