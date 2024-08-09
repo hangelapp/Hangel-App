@@ -21,8 +21,7 @@ class FavoritesPage extends StatefulWidget {
   State<FavoritesPage> createState() => _FavoritesPageState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage>
-    with SingleTickerProviderStateMixin {
+class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProviderStateMixin {
   List<StkModel> stkModels = [];
   List<BrandModel> brandModels = [];
   TabController? _tabController;
@@ -42,8 +41,16 @@ class _FavoritesPageState extends State<FavoritesPage>
       body: Column(
         children: [
           AppBarWidget(
-            title: "Favorilerim",
-            leading: SizedBox(width: deviceWidthSize(context, 45)),
+            leading: IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: Icon(
+                Icons.menu,
+                color: AppTheme.secondaryColor,
+                size: deviceFontSize(context, 30),
+              ),
+            ),
           ),
           SizedBox(
             height: deviceHeightSize(context, 20),
@@ -54,6 +61,17 @@ class _FavoritesPageState extends State<FavoritesPage>
               setState(() {});
             },
             controller: _searchController,
+          ),
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.only(
+              left: deviceWidthSize(context, 20),
+              top: 20
+            ),
+            child: Text(
+              "Favorilerim",
+              style: AppTheme.boldTextStyle(context, 20),
+            ),
           ),
           Padding(
             padding: EdgeInsets.all(
@@ -75,7 +93,7 @@ class _FavoritesPageState extends State<FavoritesPage>
                 // ),
               ),
               dividerColor: Colors.transparent,
-              overlayColor: MaterialStateProperty.all(Colors.transparent),
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
               tabs: const [
                 Tab(
                   text: "Markalar",
@@ -94,11 +112,8 @@ class _FavoritesPageState extends State<FavoritesPage>
                   child: Column(
                     children: List.generate(
                       brandModels.length,
-                      (index) => HiveHelpers.getUserFromHive()
-                                  .favoriteBrands
-                                  .contains(brandModels[index].id) &&
-                              brandModels[index].name!.toLowerCase().contains(
-                                  _searchController.text.toLowerCase())
+                      (index) => HiveHelpers.getUserFromHive().favoriteBrands.contains(brandModels[index].id) &&
+                              brandModels[index].name!.toLowerCase().contains(_searchController.text.toLowerCase())
                           ? ListItemWidget(
                               context,
                               logo: brandModels[index].logo,
@@ -124,11 +139,8 @@ class _FavoritesPageState extends State<FavoritesPage>
                   child: Column(
                     children: List.generate(
                       stkModels.length,
-                      (index) => HiveHelpers.getUserFromHive()
-                                  .favoriteStks
-                                  .contains(stkModels[index].id) &&
-                              stkModels[index].name!.toLowerCase().contains(
-                                  _searchController.text.toLowerCase())
+                      (index) => HiveHelpers.getUserFromHive().favoriteStks.contains(stkModels[index].id) &&
+                              stkModels[index].name!.toLowerCase().contains(_searchController.text.toLowerCase())
                           ? ListItemWidget(
                               context,
                               logo: stkModels[index].logo,

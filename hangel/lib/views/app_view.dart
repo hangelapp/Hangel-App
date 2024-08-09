@@ -163,7 +163,7 @@ class _AppViewState extends State<AppView> {
 
   Widget drawerWidget(BuildContext context) {
     return Drawer(
-      width: kIsWeb ? deviceWidth(context) * 0.4 : deviceWidth(context) * 0.5,
+      width: deviceWidth(context) * 0.5,
       backgroundColor: AppTheme.white,
       child: SizedBox(
         height: deviceHeight(context),
@@ -189,7 +189,7 @@ class _AppViewState extends State<AppView> {
                     style: AppTheme.lightTextStyle(context, 32, color: AppTheme.white),
                   ),
                   Text(
-                    (HiveHelpers.getUserFromHive().name ?? "").split(" ").last,
+                    (HiveHelpers.getUserFromHive().name ?? "").split(" ").first,
                     style: AppTheme.boldTextStyle(context, 32, color: AppTheme.white),
                   ),
                 ],

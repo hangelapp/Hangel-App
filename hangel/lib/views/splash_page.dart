@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
+import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/auth/register_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
@@ -52,26 +53,32 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       }),
     );
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 0), () async {
       if (HiveHelpers.getUid() != "") {
-        context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid());
+        await context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid());
         if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-          Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
-          return;
+          return Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
         }
-        // Navigator.pushNamedAndRemoveUntil(
-        //   context,
-        //   AppView.routeName,
-        //   (route) => false,
-        // );
-        return;
+        bool isAppView = false;
+        Navigator.popUntil(context, (route) {
+          if (route.settings.name == AppView.routeName) {
+            isAppView = true;
+          }
+          return true;
+        });
+        if (!isAppView) {
+          return Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppView.routeName,
+            (route) => false,
+          );
+        }
       } else {
-        Navigator.pushNamedAndRemoveUntil(
+        return Navigator.pushNamedAndRemoveUntil(
           context,
           RegisterPage.routeName,
           (route) => false,
         );
-        return;
       }
     });
   }

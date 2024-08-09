@@ -4,10 +4,12 @@ import 'package:hangel/constants/size.dart';
 import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/stk_model.dart';
+import 'package:hangel/views/donation_history_page.dart';
 import 'package:hangel/views/home_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
+import 'package:hangel/widgets/general_button_widget.dart';
 
 import 'utilities.dart';
 
@@ -18,8 +20,7 @@ class STKDetailPage extends StatefulWidget {
   State<STKDetailPage> createState() => _STKDetailPageState();
 }
 
-class _STKDetailPageState extends State<STKDetailPage>
-    with SingleTickerProviderStateMixin {
+class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProviderStateMixin {
   TabController? _tabController;
 
   @override
@@ -77,8 +78,7 @@ class _STKDetailPageState extends State<STKDetailPage>
                                 height: deviceHeightSize(context, 30),
                               ),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
                                       width: deviceWidthSize(context, 50),
@@ -89,8 +89,7 @@ class _STKDetailPageState extends State<STKDetailPage>
                                         shape: BoxShape.circle,
                                         image: widget.stkModel.logo != null
                                             ? DecorationImage(
-                                                image: NetworkImage(
-                                                    widget.stkModel.logo ?? ""),
+                                                image: NetworkImage(widget.stkModel.logo ?? ""),
                                                 fit: BoxFit.cover,
                                               )
                                             : null,
@@ -99,9 +98,7 @@ class _STKDetailPageState extends State<STKDetailPage>
                                           ? Center(
                                               child: Text(
                                                 widget.stkModel.name![0],
-                                                style: AppTheme.boldTextStyle(
-                                                    context, 28,
-                                                    color: AppTheme.white),
+                                                style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
                                               ),
                                             )
                                           : null),
@@ -111,8 +108,7 @@ class _STKDetailPageState extends State<STKDetailPage>
                                   Expanded(
                                     child: Text(
                                       widget.stkModel.name ?? "",
-                                      style:
-                                          AppTheme.boldTextStyle(context, 16),
+                                      style: AppTheme.boldTextStyle(context, 16),
                                     ),
                                   ),
                                   SizedBox(
@@ -147,10 +143,9 @@ class _STKDetailPageState extends State<STKDetailPage>
                                   //     ],
                                   //   ),
                                   // )
-                                  GestureDetector(
+                                  InkWell(
                                     onTap: () {
-                                      Navigator.pushNamed(context,
-                                          SelectFavoriteStkPage.routeName);
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SelectFavoriteStkPage(),));
                                       // context
                                       //     .read<STKProvider>()
                                       //     .addRemoveFavoriteSTK(
@@ -165,25 +160,20 @@ class _STKDetailPageState extends State<STKDetailPage>
                                     },
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                        horizontal:
-                                            deviceWidthSize(context, 10),
+                                        horizontal: deviceWidthSize(context, 10),
                                         vertical: deviceHeightSize(context, 5),
                                       ),
                                       child: Column(
                                         children: [
                                           Icon(
-                                            HiveHelpers.getUserFromHive()
-                                                    .favoriteStks
-                                                    .contains(
-                                                        widget.stkModel.id)
+                                            HiveHelpers.getUserFromHive().favoriteStks.contains(widget.stkModel.id)
                                                 ? Icons.favorite
                                                 : Icons.favorite_border,
                                             color: AppTheme.primaryColor,
                                             size: deviceFontSize(context, 24),
                                           ),
                                           Text(
-                                            widget.stkModel.favoriteCount
-                                                .toString(),
+                                            widget.stkModel.favoriteCount.toString(),
                                             style: AppTheme.normalTextStyle(
                                               context,
                                               14,
@@ -229,8 +219,7 @@ class _STKDetailPageState extends State<STKDetailPage>
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   "Hakkında",
-                                  style: AppTheme.semiBoldTextStyle(context, 16,
-                                      color: AppTheme.black),
+                                  style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
                                 ),
                               ),
                               SizedBox(
@@ -244,8 +233,7 @@ class _STKDetailPageState extends State<STKDetailPage>
                                       (widget.stkModel.detailText ?? "") +
                                       " " +
                                       (widget.stkModel.detailText ?? ""),
-                                  style: AppTheme.normalTextStyle(context, 14,
-                                      color: AppTheme.black.withOpacity(0.7)),
+                                  style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                 ),
                               ),
                               SizedBox(
@@ -258,19 +246,13 @@ class _STKDetailPageState extends State<STKDetailPage>
                                     children: [
                                       TextSpan(
                                         text: "Platforma Katılma Tarihi: ",
-                                        style: AppTheme.normalTextStyle(
-                                            context, 14,
-                                            color: AppTheme.black
-                                                .withOpacity(0.7)),
+                                        style: AppTheme.normalTextStyle(context, 14,
+                                            color: AppTheme.black.withOpacity(0.7)),
                                       ),
                                       TextSpan(
                                         text: DateFormatHelper.getDate(
-                                            (widget.stkModel.creationDate ?? "")
-                                                .toString(),
-                                            context),
-                                        style: AppTheme.normalTextStyle(
-                                            context, 14,
-                                            color: AppTheme.primaryColor),
+                                            (widget.stkModel.creationDate ?? "").toString(), context),
+                                        style: AppTheme.normalTextStyle(context, 14, color: AppTheme.primaryColor),
                                       ),
                                     ],
                                   ),
@@ -285,11 +267,8 @@ class _STKDetailPageState extends State<STKDetailPage>
                                   direction: Axis.horizontal,
                                   alignment: WrapAlignment.start,
                                   children: [
-                                    if (widget.stkModel.inEarthquakeZone ==
-                                        true)
-                                      tagItem(context,
-                                          color: AppTheme.blue,
-                                          text: "Deprem Bölgesi"),
+                                    if (widget.stkModel.inEarthquakeZone == true)
+                                      tagItem(context, color: AppTheme.blue, text: "Deprem Bölgesi"),
                                   ],
                                 ),
                               ),
@@ -337,8 +316,7 @@ class _STKDetailPageState extends State<STKDetailPage>
     );
   }
 
-  Container tagItem(BuildContext context,
-      {required String text, required Color color}) {
+  Container tagItem(BuildContext context, {required String text, required Color color}) {
     return Container(
       margin: EdgeInsets.only(
         right: deviceWidthSize(context, 6),
@@ -462,7 +440,7 @@ class _STKDetailPageState extends State<STKDetailPage>
               horizontal: deviceWidthSize(context, 20),
             ),
             dividerColor: Colors.transparent,
-            overlayColor: MaterialStateProperty.all(Colors.transparent),
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
             tabs: const [
               Tab(
                 child: Text(
@@ -478,8 +456,7 @@ class _STKDetailPageState extends State<STKDetailPage>
           ),
         ),
         SizedBox(
-          height:
-              deviceHeightSize(context, _tabController!.index == 0 ? 230 : 280),
+          height: deviceHeightSize(context, _tabController!.index == 0 ? 230 : 280),
           width: deviceWidth(context),
           child: TabBarView(
             controller: _tabController,

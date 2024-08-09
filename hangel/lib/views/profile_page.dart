@@ -24,6 +24,7 @@ import 'package:hangel/widgets/user_name_form.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/stk_provider.dart';
+import '../widgets/app_bar_widget.dart';
 import 'stk_form_widget.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -66,6 +67,18 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       body: SingleChildScrollView(
         child: Column(
           children: [
+            AppBarWidget(
+              leading: IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: Icon(
+                  Icons.menu,
+                  color: AppTheme.secondaryColor,
+                  size: deviceFontSize(context, 30),
+                ),
+              ),
+            ),
             Container(
               padding: EdgeInsets.only(
                 top: deviceTopPadding(context),
@@ -348,11 +361,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         "title": "Toplam Favori",
         "value": HiveHelpers.getUserFromHive().favoriteStks.length.toString()
       },
-      {
-        "icon": Icons.group_work_outlined,
-        "title": "Toplam Bağışçı",
-        "value": "15.00"
-      },
+      {"icon": Icons.group_work_outlined, "title": "Toplam Bağışçı", "value": "15.00"},
       {
         "icon": Icons.history_toggle_off,
         "title": "Katılım Tarihi",
@@ -477,12 +486,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         SizedBox(
           height: deviceHeightSize(context, 4),
         ),
-        if(_tabController!.index == 0)
+        if (_tabController!.index == 0)
           _personalInfo(context, info)
-        else if(_tabController!.index == 1)
+        else if (_tabController!.index == 1)
           _volunteerInfo(context, volunteerInfo)
         else
-           _personalInfo(context, statics),
+          _personalInfo(context, statics),
         SizedBox(
           height: deviceHeightSize(context, 20),
         ),

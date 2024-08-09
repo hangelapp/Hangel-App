@@ -7,6 +7,7 @@ import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/stk_detail_page.dart';
 import 'package:hangel/views/stk_form_widget.dart';
+import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/bottom_sheet_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
 import 'package:hangel/widgets/search_widget.dart';
@@ -83,6 +84,18 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
       backgroundColor: Colors.white,
       body: Column(
         children: [
+          AppBarWidget(
+            leading: IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: Icon(
+                Icons.menu,
+                color: AppTheme.secondaryColor,
+                size: deviceFontSize(context, 30),
+              ),
+            ),
+          ),
           SizedBox(height: deviceTopPadding(context)),
           SearchWidget(
             context,
@@ -116,7 +129,7 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
               ),
               dividerColor: Colors.transparent,
               isScrollable: true,
-              overlayColor: MaterialStateProperty.all(Colors.transparent),
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
               tabs: _tabs
                   .map(
                     (e) => Tab(
@@ -127,8 +140,7 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
             ),
           ),
           Expanded(
-            child: context.watch<STKProvider>().loadingState ==
-                    LoadingState.loading
+            child: context.watch<STKProvider>().loadingState == LoadingState.loading
                 ? const Center(child: CircularProgressIndicator())
                 : TabBarView(
                     controller: _tabController,
@@ -144,8 +156,7 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                                 ),
                                 //filter and sort
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Padding(
                                       padding: EdgeInsets.only(
@@ -153,8 +164,7 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                                       ),
                                       child: Text(
                                         "STK'lar",
-                                        style:
-                                            AppTheme.boldTextStyle(context, 20),
+                                        style: AppTheme.boldTextStyle(context, 20),
                                       ),
                                     ),
                                     filterAndSort(context),
@@ -167,20 +177,15 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                                     bool isSearch = _stkList[index]
                                         .name!
                                         .toLowerCase()
-                                        .contains(_searchController.text
-                                            .toLowerCase());
+                                        .contains(_searchController.text.toLowerCase());
                                     bool isFilter = false;
-                                    String filterText =
-                                        context.read<STKProvider>().filterText;
+                                    String filterText = context.read<STKProvider>().filterText;
                                     switch (filterText) {
                                       case "depremBolgesi":
-                                        isFilter =
-                                            _stkList[index].inEarthquakeZone!;
+                                        isFilter = _stkList[index].inEarthquakeZone!;
                                         break;
                                       case "specialStatus":
-                                        isFilter =
-                                            _stkList[index].specialStatus !=
-                                                null;
+                                        isFilter = _stkList[index].specialStatus != null;
                                         break;
                                       default:
                                         isFilter = _stkList[index]
@@ -193,29 +198,22 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                                     _stkList[index]
                                         .fieldOfBenefit!
                                         .toLowerCase()
-                                        .contains(context
-                                            .read<STKProvider>()
-                                            .filterText
-                                            .toLowerCase());
+                                        .contains(context.read<STKProvider>().filterText.toLowerCase());
 
                                     bool isReturn = isSearch &&
                                         isFilter &&
-                                        (_stkList[index].type ==
-                                                _tabs[tabIndex] ||
-                                            _tabs[tabIndex] == "Tümü");
+                                        (_stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
                                     return isReturn
                                         ? ListItemWidget(
                                             context,
                                             logo: _stkList[index].logo,
-                                            title:
-                                                _stkList[index].name.toString(),
+                                            title: _stkList[index].name.toString(),
                                             desc: _stkList[index].detailText,
                                             onTap: () {
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      STKDetailPage(
+                                                  builder: (context) => STKDetailPage(
                                                     stkModel: _stkList[index],
                                                   ),
                                                 ),
@@ -235,6 +233,7 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                             bottom: deviceHeightSize(context, 10),
                             right: deviceWidthSize(context, 20),
                             child: FloatingActionButton(
+                              heroTag: "stk-1",
                               shape: const CircleBorder(),
                               onPressed: () {
                                 showModalBottomSheet(
@@ -280,10 +279,8 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                 (index) => PopupMenuItem(
                   value: sorts[index]["value"],
                   child: Text(sorts[index]["name"] ?? "",
-                      style: context.read<STKProvider>().sortText ==
-                              sorts[index]["value"]
-                          ? AppTheme.boldTextStyle(context, 14,
-                              color: AppTheme.primaryColor)
+                      style: context.read<STKProvider>().sortText == sorts[index]["value"]
+                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),
@@ -310,10 +307,8 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                 (index) => PopupMenuItem(
                   value: context.read<STKProvider>().stkSectors[index],
                   child: Text(context.read<STKProvider>().stkSectors[index],
-                      style: context.read<STKProvider>().filterText ==
-                              context.read<STKProvider>().stkSectors[index]
-                          ? AppTheme.boldTextStyle(context, 14,
-                              color: AppTheme.primaryColor)
+                      style: context.read<STKProvider>().filterText == context.read<STKProvider>().stkSectors[index]
+                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),
@@ -322,10 +317,8 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                 (index) => PopupMenuItem(
                   value: filters[index]["value"],
                   child: Text(filters[index]["name"] ?? "",
-                      style: context.read<STKProvider>().filterText ==
-                              filters[index]["value"]
-                          ? AppTheme.boldTextStyle(context, 14,
-                              color: AppTheme.primaryColor)
+                      style: context.read<STKProvider>().filterText == filters[index]["value"]
+                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),

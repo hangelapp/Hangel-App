@@ -78,9 +78,9 @@ class MyApp extends StatelessWidget {
         BrandsPage.routeName: (context) => const BrandsPage(),
         SettingsPage.routeName: (context) => const SettingsPage(),
         AboutUsPage.routeName: (context) => const AboutUsPage(),
+        SelectFavoriteStkPage.routeName: (context) => const SelectFavoriteStkPage(),
         SupportPage.routeName: (context) => const SupportPage(),
         DonationHistoryPage.routeName: (context) => const DonationHistoryPage(),
-        SelectFavoriteStkPage.routeName: (context) => const SelectFavoriteStkPage(),
         FrequentlyAskedQuestionsPage.routeName: (context) => const FrequentlyAskedQuestionsPage(),
         VolunteerForm.routeName: (context) => const VolunteerForm()
       },

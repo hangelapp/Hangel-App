@@ -1,36 +1,24 @@
-import 'dart:convert';
-
-import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:countup/countup.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
-import 'package:hangel/extension/string_extension.dart';
-import 'package:hangel/models/brand_model.dart';
-import 'package:hangel/models/stk_model.dart';
-import 'package:hangel/providers/app_view_provider.dart';
-import 'package:hangel/providers/brand_provider.dart';
+import '../extension/string_extension.dart';
+import '../models/brand_model.dart';
+import '../providers/app_view_provider.dart';
+import '../providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
-import 'package:hangel/providers/offer_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
-import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/brand_detail_page.dart';
 import 'package:hangel/views/brands_page.dart';
-import 'package:hangel/views/favorites_page.dart';
 import 'package:hangel/views/stk_detail_page.dart';
 import 'package:hangel/views/stk_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
-import 'package:hangel/widgets/general_button_widget.dart';
 import 'package:provider/provider.dart';
 
-import '../models/offer_model.dart';
 import 'utilities.dart';
 
 class HomePage extends StatefulWidget {
@@ -355,7 +343,7 @@ class _HomePageState extends State<HomePage> {
           margin: const EdgeInsets.only(top: 15),
           alignment: Alignment.center,
           width: deviceWidth(context),
-          height: deviceHeight(context) * 0.14,
+          height: deviceHeight(context) * 0.12,
           color: AppTheme.primaryColor,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -379,11 +367,11 @@ class _HomePageState extends State<HomePage> {
           end: count.toDouble(),
           separator: ",",
           duration: const Duration(seconds: 3),
-          style: TextStyle(fontSize: deviceFontSize(context, 35), color: AppTheme.white, fontWeight: FontWeight.w900),
+          style: TextStyle(fontSize: deviceFontSize(context, 30), color: AppTheme.white, fontWeight: FontWeight.w700),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 15, color: AppTheme.white, fontWeight: FontWeight.w400),
+          style: TextStyle(fontSize: deviceFontSize(context, 15), color: AppTheme.white, fontWeight: FontWeight.w400),
         )
       ],
     );
@@ -561,7 +549,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ...List.generate(
                         stkModels.length,
-                        (index) => listItemImage2(context, logo: stkModels[index].name, onTap: () {
+                        (index) => listItemImage2(context, logo: stkModels[index].name, donationRate: 0, onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -638,16 +626,18 @@ class _HomePageState extends State<HomePage> {
             : SliverPadding(
                 padding: EdgeInsets.only(
                   left: deviceWidthSize(context, 20),
+                  right: deviceWidthSize(context, 20),
                 ),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      childAspectRatio: 16/9, crossAxisSpacing: 2, mainAxisSpacing: 10, maxCrossAxisExtent: 250),
+                      childAspectRatio: 4/3, crossAxisSpacing: 10, mainAxisSpacing: 10, maxCrossAxisExtent: 130),
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
                       return listItemImage2(
                         context,
                         logo: brandModels[i].logo,
                         img: brandModels[i].logo,
+                        donationRate: brandModels[i].donationRate ?? 0,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -733,16 +723,18 @@ class _HomePageState extends State<HomePage> {
                             if (index > 4) {
                               return const SizedBox();
                             }
-                            return listItemImage2(context, logo: "socialEnterprises[index].name", onTap: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) => BrandDetailPage(
-                              //       brandModel: socialEnterprises[index],
-                              //     ),
-                              //   ),
-                              // );
-                            });
+                            return const Text("Error");
+                            //Burayı ben kapadım
+                            // return listItemImage2(context, logo: "socialEnterprises[index].name", onTap: () {
+                            //   // Navigator.push(
+                            //   //   context,
+                            //   //   MaterialPageRoute(
+                            //   //     builder: (context) => BrandDetailPage(
+                            //   //       brandModel: socialEnterprises[index],
+                            //   //     ),
+                            //   //   ),
+                            //   // );
+                            // });
                           },
                         ),
                         SizedBox(
@@ -755,39 +747,35 @@ class _HomePageState extends State<HomePage> {
         ],
       );
 
-  GestureDetector listItemImage2(
+  Widget listItemImage2(
     BuildContext context, {
     required String? logo,
     String? img,
+    required double donationRate,
     required Function()? onTap,
   }) {
     // int randomIndex = (logo ?? "").length % (randomColors.length - 1);
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        width: deviceWidth(context) * 0.25,
-        height: deviceHeight(context) * 0.12,
-        margin: EdgeInsets.only(
-          right: deviceWidthSize(context, 10),
-        ),
-        decoration: BoxDecoration(
-          // color: randomColors[randomIndex],
-          color: Colors.white,
-          boxShadow: AppTheme.shadowList,
-          borderRadius: BorderRadius.circular(13),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(5),
-          width: deviceWidth(context) * 0.4,
-          height: deviceHeight(context) * 0.1,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              img != null
+      child: Stack(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            // width: deviceWidth(context) * 0.25,
+            // height: deviceHeight(context) * 0.12,
+            decoration: BoxDecoration(
+              // color: randomColors[randomIndex],
+              color: Colors.white,
+              boxShadow: AppTheme.shadowList,
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Align(
+              alignment: Alignment.center,
+              child: img != null
                   ? Image.network(
                       img,
-                      width: deviceWidth(context) * 0.3,
-                      height: deviceHeight(context) * 0.1,
+                      width: deviceWidth(context) * 0.15,
+                      height: deviceHeight(context) * 0.05,
                       fit: BoxFit.fitWidth,
                       alignment: Alignment.center,
                       errorBuilder: (context, error, stackTrace) => const AppNameWidget(
@@ -799,9 +787,46 @@ class _HomePageState extends State<HomePage> {
                       fontSize: 20,
                       color: AppTheme.primaryColor,
                     ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            left: 0,
+            child: Container(
+              width: 50,
+              height: 20,
+              margin: const EdgeInsets.symmetric(horizontal: 15),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.volunteer_activism_rounded,
+                    color: Colors.white70,
+                    size: deviceFontSize(context, 18),
+                  ),
+                  SizedBox(
+                    width: deviceWidthSize(context, 6),
+                  ),
+                  Text(
+                    "${(donationRate)}%",
+                    style: AppTheme.semiBoldTextStyle(
+                      context,
+                      color: AppTheme.white,
+                      14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        ],
       ),
     );
   }

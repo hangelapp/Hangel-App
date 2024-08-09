@@ -10,6 +10,7 @@ import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/views/brand_detail_page.dart';
 import 'package:hangel/views/brand_form_widget.dart';
+import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/bottom_sheet_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
 import 'package:hangel/widgets/search_widget.dart';
@@ -99,6 +100,18 @@ class _BrandsPageState extends State<BrandsPage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
+         AppBarWidget(
+            leading: IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: Icon(
+                Icons.menu,
+                color: AppTheme.secondaryColor,
+                size: deviceFontSize(context, 30),
+              ),
+            ),
+          ),
           SizedBox(height: deviceTopPadding(context)),
           Container(
             padding: const EdgeInsets.all(8),
@@ -327,6 +340,7 @@ class _BrandsPageState extends State<BrandsPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "stk-2",
         shape: const CircleBorder(),
         onPressed: () {
           showModalBottomSheet(
@@ -342,7 +356,7 @@ class _BrandsPageState extends State<BrandsPage> {
         backgroundColor: AppTheme.primaryColor,
         child: Image.asset(
           "assets/icons/apply.png",
-          width: kIsWeb?deviceWidthSize(context, 10): deviceWidthSize(context, 24),
+          width: kIsWeb ? deviceWidthSize(context, 10) : deviceWidthSize(context, 24),
         ),
       ),
     );

@@ -56,9 +56,9 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
     return Scaffold(
       body: Column(
         children: [
-          AppBarWidget(
+          const AppBarWidget(
             title: "Favori STK Seç",
-            leading: SizedBox(width: deviceWidthSize(context, 45)),
+            // leading: SizedBox(width: deviceWidthSize(context, 45)),
           ),
           context.watch<STKProvider>().loadingState == LoadingState.loading
               ? const LinearProgressIndicator()
