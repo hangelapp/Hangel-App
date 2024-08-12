@@ -21,6 +21,7 @@ import 'package:hangel/widgets/list_item_widget.dart';
 
 import 'package:hangel/widgets/user_information_form.dart';
 import 'package:hangel/widgets/user_name_form.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/stk_provider.dart';
@@ -350,24 +351,29 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       {
         "icon": Icons.money_outlined,
         "title": "Toplam Bağış Miktarı",
-        "value": "15.200,00 TL",
+        "value": "0 TL",
       },
       {
         "icon": Icons.wifi_protected_setup_sharp,
         "title": "Bağış İşlem Sayısı",
-        "value": "18.00",
+        "value": "0",
       },
       {
         "icon": Icons.favorite_outline_rounded,
         "title": "Toplam Favori",
-        "value": HiveHelpers.getUserFromHive().favoriteStks.length.toString()
+        "value":
+            (HiveHelpers.getUserFromHive().favoriteStks.length + HiveHelpers.getUserFromHive().favoriteBrands.length)
+                .toString()
       },
-      {"icon": Icons.group_work_outlined, "title": "Toplam Bağışçı", "value": "15.00"},
+      {"icon": Icons.group_work_outlined, "title": "Toplam Bağışçı", "value": "0"},
       {
         "icon": Icons.history_toggle_off,
         "title": "Katılım Tarihi",
-        "value": "17.05.2024",
+        "value": DateFormat('dd MMM yyyy').format(HiveHelpers.getUserFromHive().createdAt ?? DateTime(2024))
       },
+      {"icon": Icons.contact_emergency_outlined, "title": "Görev Aldığı Kuruluş", "value": "-"},
+      {"icon": Icons.account_tree_rounded, "title": "Proje Sayısı", "value": "0"},
+      {"icon": Icons.one_x_mobiledata_sharp, "title": "Toplam Saat", "value": "0"},
     ];
 
     List<Map<String, dynamic>> info = [

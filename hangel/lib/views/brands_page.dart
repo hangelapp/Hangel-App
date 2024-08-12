@@ -136,38 +136,46 @@ class _BrandsPageState extends State<BrandsPage> {
                       );
                     },
                     subtitle: Text(offer.sector ?? ""),
-                    trailing: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: deviceWidthSize(context, 10),
-                        vertical: deviceHeightSize(context, 5),
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: SizedBox(
-                        // height: 50,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.volunteer_activism_rounded,
-                              color: AppTheme.primaryColor,
-                              size: deviceFontSize(context, 18),
-                            ),
-                            SizedBox(
-                              width: deviceWidthSize(context, 6),
-                            ),
-                            Text(
-                              "%${(offer.donationRate)}",
-                              style: AppTheme.semiBoldTextStyle(
-                                context,
-                                14,
-                              ),
-                            ),
-                          ],
+                    trailing: Column(
+                      children: [
+                        Text(
+                          "Bağış Oranı",
+                          style: AppTheme.normalTextStyle(context, 14),
                         ),
-                      ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: deviceWidthSize(context, 10),
+                            vertical: deviceHeightSize(context, 5),
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: SizedBox(
+                            // height: 50,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.volunteer_activism_rounded,
+                                  color: AppTheme.primaryColor,
+                                  size: deviceFontSize(context, 18),
+                                ),
+                                SizedBox(
+                                  width: deviceWidthSize(context, 6),
+                                ),
+                                Text(
+                                  "%${(offer.donationRate)}",
+                                  style: AppTheme.semiBoldTextStyle(
+                                    context,
+                                    14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     leading: Container(
                         width: deviceWidthSize(context, 50),

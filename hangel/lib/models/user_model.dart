@@ -12,6 +12,7 @@ class UserModel {
   String? neighberhood;
   String? district;
   String? gender;
+  String? doorAndHomeNumber;
   List<String> favoriteBrands = [];
   List<String> favoriteStks = [];
   DateTime? favoriteAddedDate;
@@ -24,6 +25,7 @@ class UserModel {
     this.uid,
     this.image,
     this.email,
+    this.doorAndHomeNumber,
     this.birthDate,
     this.city,
     this.neighberhood,
@@ -41,8 +43,10 @@ class UserModel {
     uid = json['uid'];
     image = json['image'] ?? "";
     email = json['email'] ?? "";
-
-    birthDate = DateTime.tryParse((json['birthDate'] ?? "").toString());
+    doorAndHomeNumber = json["doorAndHomeNumber"] ?? "";
+    birthDate = json['birthDate'] != null
+        ? (json['birthDate'] is Timestamp ? (json['birthDate'] as Timestamp).toDate() : json['birthDate'] as DateTime)
+        : null;
     city = json['city'] ?? "";
     neighberhood = json['neighberhood'] ?? "";
     district = json['district'] ?? "";
@@ -54,7 +58,9 @@ class UserModel {
             ? (json['favoriteAddedDate'] as Timestamp).toDate()
             : json['favoriteAddedDate'] as DateTime)
         : null;
-    createdAt = DateTime.tryParse((json['createdAt'] ?? "").toString());
+    createdAt = json['createdAt'] != null
+        ? (json['createdAt'] is Timestamp ? (json['createdAt'] as Timestamp).toDate() : json['createdAt'] as DateTime)
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -64,6 +70,7 @@ class UserModel {
       'uid': uid,
       'image': image,
       'email': email,
+      "doorAndHomeNumber": doorAndHomeNumber,
       'birthDate': birthDate,
       'city': city,
       'neighberhood': neighberhood,

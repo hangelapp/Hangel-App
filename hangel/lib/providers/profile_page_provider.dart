@@ -58,7 +58,7 @@ class ProfilePageProvider with ChangeNotifier {
   }
 
   Future<GeneralResponseModel> updateProfile(
-      Map<String, String> map, UserModel userModel) async {
+      Map<String, dynamic> map, UserModel userModel) async {
     _addButtonState = LoadingState.loading;
     notifyListeners();
     final response = await _profilePageController.updateProfile(map);

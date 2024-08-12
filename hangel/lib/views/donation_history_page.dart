@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
@@ -7,7 +8,10 @@ import 'package:hangel/models/donation_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
+import 'package:hangel/widgets/circle_logo_widget.dart';
 import 'package:provider/provider.dart';
+
+import 'utilities.dart';
 
 class DonationHistoryPage extends StatefulWidget {
   const DonationHistoryPage({Key? key}) : super(key: key);
@@ -23,7 +27,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
     DonationModel(
       brandLogo: "assets/images/brand_logo.png",
       brandName: "Güzel Otomotiv",
-      donationAmount: 100,
+      donationAmount: 12.36,
       stkLogo: "assets/images/brand_logo.png",
       stkName: "Türk Kızılayı",
       shoppingDate: DateTime.now(),
@@ -32,7 +36,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
     DonationModel(
       brandLogo: "assets/images/brand_logo.png",
       brandName: "Sağlam İnşaat",
-      donationAmount: 80,
+      donationAmount: 14.86,
       stkLogo: "assets/images/brand_logo.png",
       stkName: "Güvercin Severler Derneği",
       shoppingDate: DateTime.now().subtract(const Duration(days: 15)),
@@ -68,167 +72,258 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
               children: [
                 buildDonationCount,
                 buildDonationFilter(size),
-                const SizedBox(height: 10,),
+                const SizedBox(height: 20),
                 ...List.generate(
                   donationHistory.length,
-                  (index) => Stack(
+                  (i) => Stack(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppTheme.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.secondaryColor.withOpacity(0.1),
-                              blurRadius: 44,
-                              offset: const Offset(0, 5),
+                      ListTile(
+                        tileColor: AppTheme.white,
+                        leading: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              (donationHistory[i].shoppingDate?.day ?? "").toString(),
+                              style: const TextStyle(
+                                fontSize: 12, // Yazı boyutunu ayarlayın
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            Text(
+                              "${getTurkishMonth(donationHistory[i].shoppingDate?.month)} ${donationHistory[i].shoppingDate?.year ?? ""}",
+                              style: const TextStyle(
+                                fontSize: 10, // Yazı boyutunu ayarlayın
+                                fontWeight: FontWeight.w400, // Gerekirse ağırlığı ayarlayın
+                              ),
+                            ),
+                            Text(
+                              "${(donationHistory[i].shoppingDate?.hour ?? "").toString().padLeft(2, '0')}:${(donationHistory[i].shoppingDate?.minute ?? "").toString().padLeft(2, '0')}",
+                              style: const TextStyle(
+                                fontSize: 10, // Yazı boyutunu ayarlayın
+                                fontWeight: FontWeight.w300,
+                              ),
                             ),
                           ],
                         ),
-                        margin: EdgeInsets.symmetric(
-                          // horizontal: deviceWidthSize(context, 20),
-                          vertical: deviceHeightSize(context, 8),
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: deviceWidthSize(context, 20),
-                          vertical: deviceHeightSize(context, 10),
-                        ),
-                        child: Column(
+                        title: Row(
                           children: [
-                            SizedBox(
-                              height: deviceHeightSize(context, 10),
+                            CircleLogoWidget(
+                              logoUrl: donationHistory[i].brandLogo ?? "",
+                              logoName: donationHistory[i].brandName?[0] ?? "",
                             ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        width: deviceWidthSize(context, 50),
-                                        height: deviceWidthSize(context, 50),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.primaryColor,
-                                          borderRadius: BorderRadius.circular(10),
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                              donationHistory[index].brandLogo ?? "",
-                                            ),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: deviceHeightSize(context, 6),
-                                      ),
-                                      Text(
-                                        donationHistory[index].brandName ?? "",
-                                        textAlign: TextAlign.center,
-                                        style: AppTheme.semiBoldTextStyle(context, 16),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: deviceWidthSize(context, 4),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(top: deviceHeightSize(context, 18)),
-                                  child: Icon(
-                                    Icons.switch_left_rounded,
-                                    color: AppTheme.primaryColor,
-                                    size: deviceFontSize(context, 24),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: deviceWidthSize(context, 4),
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        width: deviceWidthSize(context, 50),
-                                        height: deviceWidthSize(context, 50),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.primaryColor,
-                                          borderRadius: BorderRadius.circular(10),
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                              donationHistory[index].stkLogo ?? "",
-                                            ),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: deviceHeightSize(context, 6),
-                                      ),
-                                      Text(
-                                        donationHistory[index].stkName ?? "",
-                                        textAlign: TextAlign.center,
-                                        style: AppTheme.semiBoldTextStyle(context, 16),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 3,),
+                            Flexible(child: Text(donationHistory[i].brandName ?? "-")),
+                          ],
+                        ),
+                        subtitle: Row(
+                          children: [
+                            CircleLogoWidget(
+                              logoUrl: donationHistory[i].stkLogo ?? "",
+                              logoName: donationHistory[i].stkName?[0] ?? "",
                             ),
-                            SizedBox(
-                              height: deviceHeightSize(context, 10),
-                            ),
-                            Text(
-                              (donationHistory[index].donationAmount ?? 0).toStringAsFixed(2) == "-1.00"
-                                  ? "Hesaplanıyor..."
-                                  : (donationHistory[index].donationAmount ?? 0).toStringAsFixed(2) + " TL",
-                              textAlign: TextAlign.center,
-                              style: AppTheme.semiBoldTextStyle(context, 24),
-                            ),
-                            SizedBox(
-                              height: deviceHeightSize(context, 4),
-                            ),
-                            RichText(
-                              text: TextSpan(
+                            const SizedBox(width: 3,),
+                            Flexible(child: Text(donationHistory[i].stkName ?? "-")),
+                          ],
+                        ),
+                        trailing: SizedBox(
+                          width: size.width * 0.30,
+                          child: Row(
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  TextSpan(
-                                    text: "Sepet Tutarı: ",
-                                    style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.darkGreen),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "Tutar: ",
+                                        style: AppTheme.boldTextStyle(context, 14),
+                                      ),
+                                      Text(
+                                        "${(donationHistory[i].donationAmount ?? "-").toString()} TL",
+                                      ),
+                                    ],
                                   ),
-                                  TextSpan(
-                                    text: (donationHistory[index].cardAmount ?? 0).toStringAsFixed(2) == "-1.00"
-                                        ? "Hesaplanıyor..."
-                                        : (donationHistory[index].cardAmount ?? 0).toStringAsFixed(2) + " TL",
-                                    style: AppTheme.lightTextStyle(context, 16, color: AppTheme.darkGreen),
+                                  Row(
+                                    children: [
+                                     Text(
+                                        "Durum: ",
+                                        style: AppTheme.boldTextStyle(context, 14),
+                                      ),
+                                      Text(("İnceleniyor").toString()),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              const Spacer(),
+                              const Icon(Icons.keyboard_arrow_right)
+                            ],
+                          ),
                         ),
+                        onTap: (){},
                       ),
-                      Positioned(
-                        top: deviceHeightSize(context, 0),
-                        right: deviceWidthSize(context, 30),
-                        child: Container(
-                            height: deviceWidthSize(context, 20),
-                            decoration: BoxDecoration(
-                              color: AppTheme.yellow,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: deviceWidthSize(context, 10),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  DateFormatHelper.getDate(donationHistory[index].shoppingDate.toString(), context),
-                                  style: AppTheme.normalTextStyle(
-                                    context,
-                                    14,
-                                    color: AppTheme.white,
-                                  ),
-                                ),
-                              ),
-                            )),
+                      const Divider(
+                        height: 1,
+                        color: Color.fromARGB(45, 158, 158, 158),
                       ),
+
+                      // Container(
+                      //   decoration: BoxDecoration(
+                      //     color: AppTheme.white,
+                      //     boxShadow: [
+                      //       BoxShadow(
+                      //         color: AppTheme.secondaryColor.withOpacity(0.1),
+                      //         blurRadius: 44,
+                      //         offset: const Offset(0, 5),
+                      //       ),
+                      //     ],
+                      //   ),
+                      //   margin: EdgeInsets.symmetric(
+                      //     // horizontal: deviceWidthSize(context, 20),
+                      //     vertical: deviceHeightSize(context, 8),
+                      //   ),
+                      //   padding: EdgeInsets.symmetric(
+                      //     horizontal: deviceWidthSize(context, 20),
+                      //     vertical: deviceHeightSize(context, 10),
+                      //   ),
+                      //   child: Column(
+                      //     children: [
+                      //       SizedBox(
+                      //         height: deviceHeightSize(context, 10),
+                      //       ),
+                      //       Row(
+                      //         mainAxisAlignment: MainAxisAlignment.start,
+                      //         crossAxisAlignment: CrossAxisAlignment.start,
+                      //         children: [
+
+                      //           Expanded(
+                      //             child: Column(
+                      //               children: [
+                      //                 Container(
+                      //                   width: deviceWidthSize(context, 50),
+                      //                   height: deviceWidthSize(context, 50),
+                      //                   decoration: BoxDecoration(
+                      //                     color: AppTheme.primaryColor,
+                      //                     borderRadius: BorderRadius.circular(10),
+                      //                     image: DecorationImage(
+                      //                       image: AssetImage(
+                      //                         donationHistory[index].brandLogo ?? "",
+                      //                       ),
+                      //                       fit: BoxFit.cover,
+                      //                     ),
+                      //                   ),
+                      //                 ),
+                      //                 SizedBox(
+                      //                   height: deviceHeightSize(context, 6),
+                      //                 ),
+                      //                 Text(
+                      //                   donationHistory[index].brandName ?? "",
+                      //                   textAlign: TextAlign.center,
+                      //                   style: AppTheme.semiBoldTextStyle(context, 16),
+                      //                 ),
+                      //               ],
+                      //             ),
+                      //           ),
+                      //           SizedBox(
+                      //             width: deviceWidthSize(context, 4),
+                      //           ),
+                      //           Padding(
+                      //             padding: EdgeInsets.only(top: deviceHeightSize(context, 18)),
+                      //             child: Icon(
+                      //               Icons.switch_left_rounded,
+                      //               color: AppTheme.primaryColor,
+                      //               size: deviceFontSize(context, 24),
+                      //             ),
+                      //           ),
+                      //           SizedBox(
+                      //             width: deviceWidthSize(context, 4),
+                      //           ),
+                      //           Expanded(
+                      //             child: Column(
+                      //               children: [
+                      //                 Container(
+                      //                   width: deviceWidthSize(context, 50),
+                      //                   height: deviceWidthSize(context, 50),
+                      //                   decoration: BoxDecoration(
+                      //                     color: AppTheme.primaryColor,
+                      //                     borderRadius: BorderRadius.circular(10),
+                      //                     image: DecorationImage(
+                      //                       image: AssetImage(
+                      //                         donationHistory[index].stkLogo ?? "",
+                      //                       ),
+                      //                       fit: BoxFit.cover,
+                      //                     ),
+                      //                   ),
+                      //                 ),
+                      //                 SizedBox(
+                      //                   height: deviceHeightSize(context, 6),
+                      //                 ),
+                      //                 Text(
+                      //                   donationHistory[index].stkName ?? "",
+                      //                   textAlign: TextAlign.center,
+                      //                   style: AppTheme.semiBoldTextStyle(context, 16),
+                      //                 ),
+                      //               ],
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //       SizedBox(
+                      //         height: deviceHeightSize(context, 10),
+                      //       ),
+                      //       Text(
+                      //         (donationHistory[index].donationAmount ?? 0).toStringAsFixed(2) == "-1.00"
+                      //             ? "Hesaplanıyor..."
+                      //             : (donationHistory[index].donationAmount ?? 0).toStringAsFixed(2) + " TL",
+                      //         textAlign: TextAlign.center,
+                      //         style: AppTheme.semiBoldTextStyle(context, 24),
+                      //       ),
+                      //       SizedBox(
+                      //         height: deviceHeightSize(context, 4),
+                      //       ),
+                      //       RichText(
+                      //         text: TextSpan(
+                      //           children: [
+                      //             TextSpan(
+                      //               text: "Sepet Tutarı: ",
+                      //               style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.darkGreen),
+                      //             ),
+                      //             TextSpan(
+                      //               text: (donationHistory[index].cardAmount ?? 0).toStringAsFixed(2) == "-1.00"
+                      //                   ? "Hesaplanıyor..."
+                      //                   : (donationHistory[index].cardAmount ?? 0).toStringAsFixed(2) + " TL",
+                      //               style: AppTheme.lightTextStyle(context, 16, color: AppTheme.darkGreen),
+                      //             ),
+                      //           ],
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      // Positioned(
+                      //   top: deviceHeightSize(context, 0),
+                      //   right: deviceWidthSize(context, 30),
+                      //   child: Container(
+                      //       height: deviceWidthSize(context, 20),
+                      //       decoration: BoxDecoration(
+                      //         color: AppTheme.yellow,
+                      //         borderRadius: BorderRadius.circular(5),
+                      //       ),
+                      //       child: Padding(
+                      //         padding: EdgeInsets.symmetric(
+                      //           horizontal: deviceWidthSize(context, 10),
+                      //         ),
+                      //         child: Center(
+                      //           child: Text(
+                      //             DateFormatHelper.getDate(donationHistory[index].shoppingDate.toString(), context),
+                      //             style: AppTheme.normalTextStyle(
+                      //               context,
+                      //               14,
+                      //               color: AppTheme.white,
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       )),
+                      // ),
                     ],
                   ),
                 ),
@@ -300,6 +395,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
             width: deviceHeightSize(context, 200),
             height: size.height * 0.05,
             child: DropdownButton(
+              value: "hepsi",
               padding: EdgeInsets.zero,
               style: AppTheme.normalTextStyle(context, 13),
               isExpanded: true,
@@ -313,10 +409,31 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                   )),
               items: [
                 DropdownMenuItem(
+                  value: "hepsi",
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Text(
                       "Hepsi",
+                      style: AppTheme.normalTextStyle(context, 13),
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: "inceleniyor",
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      "İnceleniyor",
+                      style: AppTheme.normalTextStyle(context, 13),
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: "onaylandı",
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      "Onaylandı",
                       style: AppTheme.normalTextStyle(context, 13),
                     ),
                   ),
@@ -332,6 +449,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
             width: deviceHeightSize(context, 200),
             height: size.height * 0.05,
             child: DropdownButton(
+              value: "son-1-ay",
               padding: EdgeInsets.zero,
               style: AppTheme.normalTextStyle(context, 13),
               isExpanded: true,
@@ -345,10 +463,31 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                   )),
               items: [
                 DropdownMenuItem(
+                  value: "son-1-ay",
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Text(
                       "Son 1 ay",
+                      style: AppTheme.normalTextStyle(context, 13),
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: "son-1-hafta",
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      "Son 1 hafta",
+                      style: AppTheme.normalTextStyle(context, 13),
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: "son-1-sene",
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      "Son 1 sene",
                       style: AppTheme.normalTextStyle(context, 13),
                     ),
                   ),

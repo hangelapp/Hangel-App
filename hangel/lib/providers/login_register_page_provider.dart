@@ -6,6 +6,7 @@ import 'package:firebase_auth_platform_interface/firebase_auth_platform_interfac
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hangel/widgets/toast_widgets.dart';
 
 import '../controllers/login_register_page_controller.dart';
 import '../helpers/hive_helpers.dart';
@@ -33,6 +34,13 @@ class LoginRegisterPageProvider with ChangeNotifier {
   int? _resendToken;
 
   int timerTick = -1;
+
+  DateTime? _correctDateTime;
+  DateTime? get correctDateTime => _correctDateTime;
+  set correctDateTime(DateTime? value) {
+    _correctDateTime = value;
+    notifyListeners();
+  }
 
   Map<String, DateTime> selectedDate = {
     "0": DateTime.now(),
@@ -176,8 +184,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
   Future<ConfirmationResult> sendOTP() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     var verifier = RecaptchaVerifier(auth: FirebaseAuthPlatform.instance);
-    ConfirmationResult result =
-        await auth.signInWithPhoneNumber(_phoneNumber, verifier);
+    ConfirmationResult result = await auth.signInWithPhoneNumber(_phoneNumber, verifier);
     print("OTP Sent to $phoneNumber");
     setConfirmationResult(result);
     setPhoneLoginPageType(PhoneLoginPageType.verify);
@@ -188,9 +195,10 @@ class LoginRegisterPageProvider with ChangeNotifier {
 
   Future<GeneralResponseModel> authenticate(String otp) async {
     try {
+      bool isExist = false;
       if (confirmationResult == null) throw Exception("Kod gönderilmemiş");
       UserCredential userCredential = await confirmationResult!.confirm(otp);
-      userCredential.additionalUserInfo!.isNewUser ? print("Authentication Successful") : print("User already exists");
+      userCredential.additionalUserInfo!.isNewUser ? print("Authentication Successful") : isExist = true;
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""))
@@ -205,14 +213,16 @@ class LoginRegisterPageProvider with ChangeNotifier {
         // Kullanıcıyı Hive'a ekle
         HiveHelpers.addUserToHive(user);
         print(user);
-        return GeneralResponseModel(success: true);
+        return GeneralResponseModel(success: true, message: isExist.toString());
       }
 
       smsCodeState = LoadingState.loaded;
       notifyListeners();
-      return GeneralResponseModel(success: true);
+      return GeneralResponseModel(success: true, message: isExist.toString());
     } catch (e) {
-      return GeneralResponseModel(success: false,message: e.toString());
+      smsCodeState = LoadingState.loaded;
+      notifyListeners();
+      return GeneralResponseModel(success: false, message: e.toString());
     }
   }
 

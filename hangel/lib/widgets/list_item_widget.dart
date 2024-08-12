@@ -84,34 +84,42 @@ ListItemWidget(
                       ),
                     ),
                     if (donationRate != null)
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: deviceWidthSize(context, 10),
-                          vertical: deviceHeightSize(context, 5),
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.volunteer_activism_rounded,
-                              color: AppTheme.primaryColor,
-                              size: deviceFontSize(context, 18),
+                      Column(
+                        children: [
+                          Text(
+                            "Bağış Oranı",
+                            style: AppTheme.normalTextStyle(context, 14),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: deviceWidthSize(context, 10),
+                              vertical: deviceHeightSize(context, 5),
                             ),
-                            SizedBox(
-                              width: deviceWidthSize(context, 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            Text(
-                              "%${(donationRate)}",
-                              style: AppTheme.semiBoldTextStyle(
-                                context,
-                                14,
-                              ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.volunteer_activism_rounded,
+                                  color: AppTheme.primaryColor,
+                                  size: deviceFontSize(context, 18),
+                                ),
+                                SizedBox(
+                                  width: deviceWidthSize(context, 6),
+                                ),
+                                Text(
+                                  "%${(donationRate)}",
+                                  style: AppTheme.semiBoldTextStyle(
+                                    context,
+                                    14,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       )
                   ],
                 ),

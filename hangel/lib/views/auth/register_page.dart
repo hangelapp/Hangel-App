@@ -186,10 +186,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
 
                 //Telefon numarası formatlama
-                context.read<LoginRegisterPageProvider>().phoneNumber = "+90${_phoneController.text
-                  ..replaceAll(" ", "")
-                  ..replaceAll("(", "")
-                  ..replaceAll(")", "")}";
+                context.read<LoginRegisterPageProvider>().phoneNumber =
+                    "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
 
                 // Login olurken telefon numarası kontrolü
                 if (_phoneLoginPageType == PhoneLoginPageType.login) {
@@ -240,7 +238,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
                 }
               } catch (e) {
-                ToastWidgets.errorToast(context, "$e Beklenmeyen bir hatayla karşılaşıldı. Lütfen tekrar deneyin");
+                ToastWidgets.errorToast(context, "Beklenmeyen bir hatayla karşılaşıldı. Lütfen tekrar deneyin");
                 Navigator.pushReplacementNamed(context, RegisterPage.routeName);
                 return;
               }
@@ -390,6 +388,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 if (kIsWeb) {
                   context.read<LoginRegisterPageProvider>().authenticate(_verifyController.text).then(
                     (value) {
+                      print(value.message);
+                      if(value.message=="true"){
+                        ToastWidgets.successToast(context, "Giriş yapılıyor...");
+                      }
                       if (value.success == true) {
                         if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
                           Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);

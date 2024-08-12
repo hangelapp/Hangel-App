@@ -22,16 +22,16 @@ class UserInformationForm extends StatefulWidget {
 }
 
 class _UserInformationFormState extends State<UserInformationForm> {
-  List<String> _genderList = ['Erkek', 'Kadın', 'Belirtmek İstemiyorum'];
-  String? _selectedGender;
-  final TextEditingController _emailController =
-      TextEditingController(text: HiveHelpers.getUserFromHive().email ?? '');
-  final DateTime _birthDate =
-      HiveHelpers.getUserFromHive().birthDate ?? DateTime.now();
+  final List<String> _genderList = ['Erkek', 'Kadın', 'Belirtmek İstemiyorum'];
+  String? _selectedGender = HiveHelpers.getUserFromHive().gender;
+  final TextEditingController _emailController = TextEditingController(text: HiveHelpers.getUserFromHive().email ?? '');
+  final TextEditingController _doorAndHomeNumber =
+      TextEditingController(text: HiveHelpers.getUserFromHive().doorAndHomeNumber ?? '');
+  // final DateTime? _birthDate = HiveHelpers.getUserFromHive().birthDate;
   String? selectedIl = HiveHelpers.getUserFromHive().city;
   String? selectedIlce = HiveHelpers.getUserFromHive().district;
   String? selectedMahalle = HiveHelpers.getUserFromHive().neighberhood;
-
+  DateTime? correctDateTime;
   List<String> iller = [];
   List<String> ilceler = [];
   List<String> mahalleler = [];
@@ -39,11 +39,10 @@ class _UserInformationFormState extends State<UserInformationForm> {
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      context.read<LoginRegisterPageProvider>().selectedDate["0"] =
-          HiveHelpers.getUserFromHive().birthDate ?? DateTime.now();
+      // context.read<LoginRegisterPageProvider>().selectedDate["0"] =
+      //     HiveHelpers.getUserFromHive().birthDate ?? DateTime.now();
       //get iller from json file /assets/il-ilce.json
-      jsonData = await DefaultAssetBundle.of(context)
-          .loadString("assets/il-ilce.json");
+      jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
         final jsonResult = jsonDecode(jsonData);
         for (var item in jsonResult) {
@@ -82,7 +81,8 @@ class _UserInformationFormState extends State<UserInformationForm> {
 
   @override
   Widget build(BuildContext context) {
-    _birthDate == context.watch<LoginRegisterPageProvider>().selectedDate["0"];
+    // _birthDate == context.watch<LoginRegisterPageProvider>().selectedDate["0"];
+    correctDateTime = context.watch<LoginRegisterPageProvider>().correctDateTime;
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -170,25 +170,33 @@ class _UserInformationFormState extends State<UserInformationForm> {
                 },
                 title: "Mahalle",
               ),
+            if (selectedMahalle != null)
+              FormFieldWidget(
+                context,
+                title: 'Sokak,Kapı ve Daire No',
+                controller: _doorAndHomeNumber,
+                keyboardType: TextInputType.text,
+              ),
             GeneralButtonWidget(
               onPressed: () {
                 UserModel userModel = HiveHelpers.getUserFromHive();
-                if (_birthDate != DateTime.now()) {
-                  userModel.birthDate = _birthDate;
-                }
+                // if (_birthDate != DateTime.now()) {
+                //   userModel.birthDate = _birthDate;
+                // }
+                userModel.birthDate = correctDateTime;
                 userModel.city = selectedIl;
                 userModel.district = selectedIlce;
                 userModel.neighberhood = selectedMahalle;
-
+                userModel.doorAndHomeNumber = _doorAndHomeNumber.text;
                 userModel.email = _emailController.text;
                 userModel.gender = _selectedGender ?? '';
-
                 context.read<ProfilePageProvider>().updateProfile({
-                  'birthDate': _birthDate.toString(),
+                  'birthDate': correctDateTime,
                   'city': selectedIl.toString(),
                   'district': selectedIlce.toString(),
                   'neighberhood': selectedMahalle.toString(),
                   'email': _emailController.text,
+                  "doorAndHomeNumber": _doorAndHomeNumber.text,
                   'gender': _selectedGender ?? '',
                 }, userModel).then((value) {
                   if (value.success == true) {
@@ -200,8 +208,7 @@ class _UserInformationFormState extends State<UserInformationForm> {
               text: 'Kaydet',
             ),
             SizedBox(
-              height: deviceHeightSize(context, 30) +
-                  MediaQuery.of(context).viewInsets.bottom,
+              height: deviceHeightSize(context, 30) + MediaQuery.of(context).viewInsets.bottom,
             ),
           ],
         ),

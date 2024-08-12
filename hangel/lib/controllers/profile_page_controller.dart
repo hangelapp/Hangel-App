@@ -31,11 +31,12 @@ class ProfilePageController {
     }
   }
 
-  Future<GeneralResponseModel> updateProfile(Map<String, String> map) async {
+  Future<GeneralResponseModel> updateProfile(Map<String, dynamic> map) async {
     try {
       GeneralResponseModel responseModel =
           await _firestoreService.updateData('users/${HiveHelpers.getUserFromHive().uid!}', map);
       HiveHelpers.addUserToHive(UserModel.fromJson(map));
+      print(map);
       return responseModel;
     } catch (e) {
       print("updateProfile Error : " + e.toString());

@@ -28,10 +28,9 @@ class AppView extends StatefulWidget {
 }
 
 // final DrawerMenuController drawerController = DrawerMenuController();
+final PersistentTabController tabcontroller = PersistentTabController(initialIndex: 0);
 
 class _AppViewState extends State<AppView> {
-  final PersistentTabController controller = PersistentTabController(initialIndex: 0);
-
   List<Widget> widgetOptions = <Widget>[];
   Widget? selectedWidget;
   @override
@@ -43,6 +42,7 @@ class _AppViewState extends State<AppView> {
       drawer: drawerWidget(context),
       body: PersistentTabView(
         context,
+        controller: tabcontroller,
         screens: widgetOptions,
         padding: const EdgeInsets.symmetric(vertical: 8),
         navBarStyle: NavBarStyle.style15,
@@ -205,6 +205,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
+                tabcontroller.jumpToTab(4);
                 context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(4);
                 Navigator.pop(context);
               },
@@ -237,6 +238,7 @@ class _AppViewState extends State<AppView> {
               iconColor: AppTheme.primaryColor,
               onTap: () {
                 context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(3);
+                tabcontroller.jumpToTab(3);
                 Navigator.pop(context);
               },
             ),
@@ -252,6 +254,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
+                tabcontroller.jumpToTab(1);
                 context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(1);
                 Navigator.pop(context);
               },
@@ -270,6 +273,7 @@ class _AppViewState extends State<AppView> {
               onTap: () {
                 context.read<BrandProvider>().filterText = "socialEnterprise";
                 context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(1);
+                tabcontroller.jumpToTab(1);
                 Navigator.pop(context);
               },
             ),

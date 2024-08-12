@@ -299,19 +299,31 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         SizedBox(
                           height: deviceHeightSize(context, 4),
                         ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Yaptığın alışverişlerde %${(widget.brandModel.donationRate ?? 0.12)} oranında bağış yapma imkanı!",
-                            style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Yaptığın alışverişlerde %${(widget.brandModel.donationRate ?? 0.12)} oranında bağış yapma imkanı!",
+                                style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
+                              ),
+                            ),
+                          ],
                         ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Bonus ödemesi için ortalama zaman: 60 gün",
-                            style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Bağış ödemesi için ortalama zaman: 60 gün",
+                                style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
+                              ),
+                            ),
+                          ],
                         ),
                         Container(
                             padding: const EdgeInsets.only(top: 8),

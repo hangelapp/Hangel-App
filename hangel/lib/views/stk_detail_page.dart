@@ -412,7 +412,11 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
       {
         "title": "BM Sürdürülebilirlik Amaçları",
         "value": widget.stkModel.bmCategories.join(", "),
-      }
+      },
+      {
+        "title": "Alanı",
+        "value": widget.stkModel.fieldOfBenefit,
+      },
     ];
 
     return Column(

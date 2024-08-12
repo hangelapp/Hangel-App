@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_holo_date_picker/date_picker.dart';
+import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
+import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import '/constants/app_theme.dart';
 import '/constants/size.dart';
@@ -23,12 +26,14 @@ class DatePickerWidget extends StatefulWidget {
 }
 
 class _DatePickerWidgetState extends State<DatePickerWidget> {
-  DateTime selectedDate = DateTime.now();
+  // DateTime? selectedDate;
+  final user = HiveHelpers.getUserFromHive();
+  DateTime? correctDateTime = HiveHelpers.getUserFromHive().birthDate;
+
   @override
   Widget build(BuildContext context) {
-    selectedDate = context
-        .watch<LoginRegisterPageProvider>()
-        .selectedDate[widget.id.toString()]!;
+    // selectedDate = context.watch<LoginRegisterPageProvider>().selectedDate[widget.id.toString()]!;
+    correctDateTime = context.watch<LoginRegisterPageProvider>().correctDateTime;
     return Column(
       children: [
         Row(
@@ -40,8 +45,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
             if (widget.isRequired)
               Text(
                 " *",
-                style: AppTheme.semiBoldTextStyle(context, 16,
-                    color: AppTheme.red),
+                style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.red),
               ),
           ],
         ),
@@ -69,11 +73,15 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "${selectedDate.toLocal()}".split(' ')[0],
+                        // selectedDate != null ? "${selectedDate?.toLocal()}".split(' ')[0] : "",
+                        correctDateTime != null
+                            ? "${correctDateTime?.toLocal()}".split(' ')[0]
+                            : user.birthDate != null
+                                ? "${user.birthDate?.toLocal()}".split(' ')[0]
+                                : "Doğum Tarihi",
                         style: AppTheme.normalTextStyle(context, 16),
                       ),
-                      const Icon(Icons.calendar_today,
-                          color: AppTheme.darkBlue),
+                      const Icon(Icons.calendar_today, color: AppTheme.darkBlue),
                     ],
                   ),
                 ),
@@ -87,30 +95,30 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
     );
   }
 
-  void _selectDate(BuildContext context) {
-    showDatePicker(
-      context: context,
-      initialDate: selectedDate,
+  void _selectDate(BuildContext context) async {
+    await DatePicker.showSimpleDatePicker(
+      context,
+      initialDate: correctDateTime ?? user.birthDate ?? DateTime.now().subtract(const Duration(days: 365 * 15)),
       firstDate: DateTime(1900),
+      titleText: "Doğum Tarihi Gir",
+      confirmText: "Seç",
+      cancelText: "İptal",
       lastDate: DateTime(2050),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            dialogBackgroundColor: AppTheme.white,
-          ),
-          child: child!,
-        );
+      dateFormat: "dd-MMMM-yyyy",
+      locale: DateTimePickerLocale.tr,
+      looping: true,
+    ).then(
+      (value) {
+        context.read<LoginRegisterPageProvider>().correctDateTime = value;
+        setState(() {});
+        // if (value != null) {
+        // setState(() {
+        //   selectedDate =
+        //       DateTime(value.year, value.month, value.day, selectedDate?.hour ?? 0, selectedDate?.minute ?? 0);
+        // });
+        // context.read<LoginRegisterPageProvider>().addSelectedDate(value, widget.id);
+        // }
       },
-    ).then((value) {
-      if (value != null) {
-        setState(() {
-          selectedDate = DateTime(value.year, value.month, value.day,
-              selectedDate.hour, selectedDate.minute);
-        });
-        context
-            .read<LoginRegisterPageProvider>()
-            .addSelectedDate(selectedDate, widget.id);
-      }
-    });
+    );
   }
 }

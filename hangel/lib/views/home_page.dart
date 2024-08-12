@@ -48,7 +48,8 @@ class _HomePageState extends State<HomePage> {
   int countVolunteerStatistic = 1890;
   int currentIndex = 0;
   final ScrollController _homescrollController = ScrollController();
-
+  List<BrandModel> brandModels = [];
+  bool _isLoading = false;
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -60,12 +61,31 @@ class _HomePageState extends State<HomePage> {
       // });
       context.read<BrandProvider>().getBrands();
       context.read<STKProvider>().getSTKs();
+      Future.delayed(
+        Duration.zero,
+        () async {
+          await _loadMoreData();
+        },
+      );
     });
-
+    _homescrollController.addListener(() async {
+      if (_homescrollController.position.pixels == _homescrollController.position.maxScrollExtent && !_isLoading) {
+        await _loadMoreData();
+      }
+    });
     super.initState();
   }
 
-  List<BrandModel> brandModels = [];
+  Future<void> _loadMoreData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    context.read<BrandProvider>().nextPage();
+    await context.read<BrandProvider>().getOffers().whenComplete(
+          () => setState(() => _isLoading = false),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     brandModels = context.watch<BrandProvider>().brandList;
@@ -126,6 +146,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+          _isLoading == true ? const LinearProgressIndicator() : const SizedBox()
           // Expanded(
           //   child: SingleChildScrollView(
           //     controller: _homescrollController,
@@ -247,38 +268,46 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 subtitle: Text(offer.sector ?? ""),
-                trailing: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: deviceWidthSize(context, 10),
-                    vertical: deviceHeightSize(context, 5),
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: SizedBox(
-                    // height: 50,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.volunteer_activism_rounded,
-                          color: AppTheme.primaryColor,
-                          size: deviceFontSize(context, 18),
-                        ),
-                        SizedBox(
-                          width: deviceWidthSize(context, 6),
-                        ),
-                        Text(
-                          "%${(offer.donationRate)}",
-                          style: AppTheme.semiBoldTextStyle(
-                            context,
-                            14,
-                          ),
-                        ),
-                      ],
+                trailing: Column(
+                  children: [
+                    Text(
+                      "Bağış Oranı",
+                      style: AppTheme.normalTextStyle(context, 14),
                     ),
-                  ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: deviceWidthSize(context, 10),
+                        vertical: deviceHeightSize(context, 5),
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SizedBox(
+                        // height: 50,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.volunteer_activism_rounded,
+                              color: AppTheme.primaryColor,
+                              size: deviceFontSize(context, 18),
+                            ),
+                            SizedBox(
+                              width: deviceWidthSize(context, 6),
+                            ),
+                            Text(
+                              "%${(offer.donationRate)}",
+                              style: AppTheme.semiBoldTextStyle(
+                                context,
+                                14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 leading: Container(
                     width: deviceWidthSize(context, 50),

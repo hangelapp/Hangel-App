@@ -102,6 +102,12 @@ List<Color> randomColors = [
 //   ),
 // ];
 
+String getTurkishMonth(int? month) {
+  if (month == null) return "";
+  List<String> months = ["OCA", "ŞUB", "MAR", "NİS", "MAY", "HAZ", "TEM", "AĞU", "EYL", "EKİ", "KAS", "ARA"];
+  return months[month - 1];
+}
+
 Future<List<String>> loadAssets() async {
   final manifestContent = await rootBundle.loadString('AssetManifest.json');
   final Map<String, dynamic> manifestMap = json.decode(manifestContent);
