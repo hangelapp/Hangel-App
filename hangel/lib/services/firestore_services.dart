@@ -31,10 +31,7 @@ class FirestoreServices {
 
   Future<GeneralResponseModel> addUser(UserModel userModel) async {
     try {
-      await _firestore
-          .collection("users")
-          .doc(userModel.uid)
-          .set(userModel.toJson());
+      await _firestore.collection("users").doc(userModel.uid).set(userModel.toJson());
       return GeneralResponseModel(
         success: true,
         message: "User added successfully",
@@ -47,8 +44,7 @@ class FirestoreServices {
     }
   }
 
-  Future<GeneralResponseModel> setData(
-      Map<String, dynamic> json, String path) async {
+  Future<GeneralResponseModel> setData(Map<String, dynamic> json, String path) async {
     try {
       await getRef(path).set(json);
       return GeneralResponseModel(
@@ -64,8 +60,7 @@ class FirestoreServices {
     }
   }
 
-  Future<List<QueryDocumentSnapshot>> getData(String path,
-      {List<WhereModel>? wheres}) async {
+  Future<List<QueryDocumentSnapshot>> getData(String path, {List<WhereModel>? wheres}) async {
     try {
       if (wheres != null && wheres.isNotEmpty) {
         var collection = getRef(path);
@@ -113,13 +108,15 @@ class FirestoreServices {
     return query;
   }
 
-  Future<GeneralResponseModel> updateData(
-      String path, Map<String, dynamic> map) async {
+  Future<GeneralResponseModel> updateData(String path, Map<String, dynamic> map) async {
     try {
+      // Firestore'da doküman mı yoksa koleksiyon mu olduğunu kontrol ediyorsun.
       if (isDoc(path)) {
-        await getRef(path).update(map);
+        // Doküman güncelleme (sadece mevcut alanları günceller).
+        await getRef(path).set(map, SetOptions(merge: true)); // Merge seçeneği ile güncellemeyi yap
       } else {
-        await getRef(path).set(map, SetOptions(merge: true));
+        // Koleksiyon güncelleme (mevcut ve yeni alanları ekler).
+        await getRef(path).set(map, SetOptions(merge: true)); // Merge seçeneği ile yeni alanları ekler
       }
       return GeneralResponseModel(
         success: true,
@@ -135,6 +132,29 @@ class FirestoreServices {
       );
     }
   }
+
+  // Future<GeneralResponseModel> updateData(
+  //     String path, Map<String, dynamic> map) async {
+  //   try {
+  //     if (isDoc(path)) {
+  //       await getRef(path).update(map);
+  //     } else {
+  //       await getRef(path).set(map, SetOptions(merge: true));
+  //     }
+  //     return GeneralResponseModel(
+  //       success: true,
+  //       message: "Bilgiler güncellendi!",
+  //     );
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print("Update Data Error : $e");
+  //     }
+  //     return GeneralResponseModel(
+  //       success: false,
+  //       message: e.toString(),
+  //     );
+  //   }
+  // }
 
   Future<String> addData(
     String path,

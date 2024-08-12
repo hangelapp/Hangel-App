@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserModel {
@@ -13,6 +14,7 @@ class UserModel {
   String? gender;
   List<String> favoriteBrands = [];
   List<String> favoriteStks = [];
+  DateTime? favoriteAddedDate;
   List<String> volunteers = [];
   DateTime? createdAt;
 
@@ -29,6 +31,7 @@ class UserModel {
     this.gender,
     this.favoriteBrands = const [],
     this.favoriteStks = const [],
+    this.favoriteAddedDate,
     this.createdAt,
   });
 
@@ -44,11 +47,13 @@ class UserModel {
     neighberhood = json['neighberhood'] ?? "";
     district = json['district'] ?? "";
     gender = json['gender'] ?? "";
-    favoriteBrands = json['favoriteBrands'] != null
-        ? json['favoriteBrands'].cast<String>()
-        : [];
-    favoriteStks =
-        json['favoriteStks'] != null ? json['favoriteStks'].cast<String>() : [];
+    favoriteBrands = json['favoriteBrands'] != null ? json['favoriteBrands'].cast<String>() : [];
+    favoriteStks = json['favoriteStks'] != null ? List.from(json['favoriteStks']) : [];
+    favoriteAddedDate = json['favoriteAddedDate'] != null
+        ? (json['favoriteAddedDate'] is Timestamp
+            ? (json['favoriteAddedDate'] as Timestamp).toDate()
+            : json['favoriteAddedDate'] as DateTime)
+        : null;
     createdAt = DateTime.tryParse((json['createdAt'] ?? "").toString());
   }
 
@@ -66,6 +71,7 @@ class UserModel {
       'gender': gender,
       'favoriteBrands': favoriteBrands,
       'favoriteStks': favoriteStks,
+      "favoriteAddedDate": favoriteAddedDate,
       'createdAt': createdAt,
     };
   }

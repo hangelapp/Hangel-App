@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
@@ -54,6 +55,10 @@ class _VolunteerFormState extends State<VolunteerForm> {
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      var user = HiveHelpers.getUserFromHive();
+      if (user.image != null) {
+        volunteerImage.add(ImageModel(imageType: ImageType.network, url: user.image));
+      }
       //get iller from json file /assets/il-ilce.json
       jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
@@ -149,16 +154,32 @@ class _VolunteerFormState extends State<VolunteerForm> {
                 context,
                 title: "Gönüllü Fotoğrafı",
                 onImagePicked: (List<XFile?> image) {
-                  setState(() {
-                    volunteerImage.add(ImageModel(
-                      imageType: ImageType.asset,
-                      file: image[0]!,
-                    ));
-                  });
+                  print("Seçilen image: ${image.first?.path}");
+                  if (image.isNotEmpty && (image[0] != null)) {
+                    try {
+                      setState(() {
+                        print("Adding image to volunteerImage list");
+                        ImageModel imageModel = ImageModel(
+                          imageType: ImageType.asset,
+                          file: image[0],
+                        );
+                        volunteerImage = [...volunteerImage, imageModel];
+                      });
+                    } catch (e) {
+                      print("HATA: " + e.toString());
+                    }
+                  } else {
+                    print("HATA: Seçilen görsel null veya boş.");
+                  }
                 },
-                selectedImages: volunteerImage,
+                selectedImages: volunteerImage.isNotEmpty
+                    ? volunteerImage.first != null
+                        ? volunteerImage
+                        : []
+                    : [],
                 isSelectOnlyOne: true,
                 onImageRemoved: (ImageModel? image) {
+                  print("Removing image");
                   setState(() {
                     volunteerImage = [];
                   });

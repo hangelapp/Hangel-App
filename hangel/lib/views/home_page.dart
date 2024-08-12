@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/models/stk_model.dart';
 import '../extension/string_extension.dart';
 import '../models/brand_model.dart';
 import '../providers/app_view_provider.dart';
@@ -41,160 +42,6 @@ class _HomePageState extends State<HomePage> {
     "assets/images/banner2.jpeg",
   ];
 
-  // List<StkModel> stkModels = [
-  //   StkModel(
-  //     logo:
-  //         "http://docs.kariyer.net/job/jobtemplate/000/000/002/avatar/227520190319015959633.jpeg",
-  //     name: "TEMA Vakfı",
-  //     country: "Türkiye",
-  //     city: "Ankara",
-  //     fieldOfBenefit: "Çevre Koruma",
-  //     inEarthquakeZone: false,
-  //     specialStatus: "Vakıf",
-  //     creationDate: DateTime(2002, 2, 13),
-  //     bannerImage: "https://example.com/tema-banner.jpg",
-  //     detailText:
-  //         "Türkiye'nin doğal güzelliklerini ve çevresini korumayı amaçlayan bir sivil toplum kuruluşudur.",
-  //     link: "https://www.tema.org.tr/",
-  //     donorCount: 50000,
-  //   ),
-  //   StkModel(
-  //     logo:
-  //         "https://cf.kizlarsoruyor.com/q19852181/0f216d32-eb4a-48c8-abde-d746910e65ff.jpg",
-  //     name: "Ahbap",
-  //     country: "Türkiye",
-  //     city: "İstanbul",
-  //     fieldOfBenefit: "Sosyal Yardım",
-  //     inEarthquakeZone: false,
-  //     specialStatus: "Vakıf",
-  //     creationDate: DateTime(2014, 7, 19),
-  //     bannerImage: "https://example.com/ahbap-banner.jpg",
-  //     detailText:
-  //         "İhtiyaç sahiplerine destek sağlamak ve yardımlaşmayı teşvik etmek amacıyla kurulan bir gönüllü hareketidir.",
-  //     link: "https://www.ahbap.org/",
-  //     donorCount: 300000,
-  //   ),
-  //   StkModel(
-  //     logo:
-  //         "https://pbs.twimg.com/profile_images/1676596053125070848/0M52PW5W_400x400.jpg",
-  //     name: "AFAD",
-  //     country: "Türkiye",
-  //     city: "Ankara",
-  //     fieldOfBenefit: "Afet Yönetimi",
-  //     inEarthquakeZone: true,
-  //     specialStatus: "Kamu Kurumu",
-  //     creationDate: DateTime(2009, 8, 17),
-  //     bannerImage: "https://example.com/afad-banner.jpg",
-  //     detailText:
-  //         "Türkiye'nin afetlere karşı hazırlıklı olmasını sağlamak ve afet durumlarında etkili müdahale yapmak amacıyla kurulmuş bir kamu kurumudur.",
-  //     link: "https://www.afad.gov.tr/",
-  //     donorCount: 0,
-  //   ),
-  //   StkModel(
-  //     logo: "https://cemkaya.net/uploads/resim/23-1/acev-logo.png",
-  //     name: "AÇEV",
-  //     country: "Türkiye",
-  //     city: "İstanbul",
-  //     fieldOfBenefit: "Eğitim",
-  //     inEarthquakeZone: false,
-  //     specialStatus: "Vakıf",
-  //     creationDate: DateTime(1993, 5, 10),
-  //     bannerImage: "https://example.com/acev-banner.jpg",
-  //     detailText:
-  //         "Çocukların eğitimine destek olmayı amaçlayan bir sivil toplum kuruluşudur.",
-  //     link: "https://www.acev.org/",
-  //     donorCount: 10000,
-  //   ),
-  //   StkModel(
-  //     logo:
-  //         "https://upload.wikimedia.org/wikipedia/tr/5/50/TSK_Mehmet%C3%A7ik_Vakf%C4%B1_logo.png",
-  //     name: "Mehmetçik Vakfı",
-  //     country: "Türkiye",
-  //     city: "Ankara",
-  //     fieldOfBenefit: "Askeri Personel ve Aileleri",
-  //     inEarthquakeZone: false,
-  //     specialStatus: "Vakıf",
-  //     creationDate: DateTime(1995, 4, 23),
-  //     bannerImage: "https://example.com/mehmetcik-banner.jpg",
-  //     detailText:
-  //         "Türk Silahlı Kuvvetleri personeli ve ailelerine destek olmayı amaçlayan bir sivil toplum kuruluşudur.",
-  //     link: "https://www.mehmetcik.org.tr/",
-  //     donorCount: 25000,
-  //   ),
-  // ];
-
-  // List<BrandModel> brandModels = [
-  //   BrandModel(
-  //     name: "DeFacto",
-  //     logo: "https://logowik.com/content/uploads/images/793_defacto.jpg",
-  //     sector: "Moda",
-  //     inEarthquakeZone: false,
-  //     isSocialEnterprise: false,
-  //     donationRate: 0.05,
-  //     creationDate: DateTime(1993, 7, 5),
-  //     bannerImage: "https://example.com/defacto-banner.jpg",
-  //     detailText:
-  //         "DeFacto, geniş ürün yelpazesi ve modern tasarımlarıyla dikkat çeken bir moda markasıdır.",
-  //     link: "https://www.defacto.com.tr/",
-  //   ),
-  //   BrandModel(
-  //     name: "Getir",
-  //     logo:
-  //         "https://www.donanimhaber.com/images/images/haber/159864/1400x1400getir-in-yeni-ozelligi-getiryemek-masa-kullanima-sunuldu.jpg",
-  //     sector: "Alışveriş ve Teslimat",
-  //     inEarthquakeZone: false,
-  //     isSocialEnterprise: false,
-  //     donationRate: 0.02,
-  //     creationDate: DateTime(2015, 12, 8),
-  //     bannerImage: "https://example.com/getir-banner.jpg",
-  //     detailText:
-  //         "Getir, hızlı ve pratik teslimat hizmeti sunan bir platformdur.",
-  //     link: "https://www.getir.com/",
-  //   ),
-  //   BrandModel(
-  //     name: "Trendyol",
-  //     logo:
-  //         "https://play-lh.googleusercontent.com/LosPYfjaz1pOL-I3XCTroj4vQVxfsF5629nzPJM4pIj2KLaQuLbwmXUqV-I1RT5u9A",
-  //     sector: "E-Ticaret",
-  //     inEarthquakeZone: false,
-  //     isSocialEnterprise: false,
-  //     donationRate: 0.03,
-  //     creationDate: DateTime(2010, 10, 1),
-  //     bannerImage: "https://example.com/trendyol-banner.jpg",
-  //     detailText:
-  //         "Trendyol, çeşitli ürünlerin satıldığı ve online alışverişin kolaylaştırıldığı bir platformdur.",
-  //     link: "https://www.trendyol.com/",
-  //   ),
-  //   BrandModel(
-  //     name: "Amazon",
-  //     logo:
-  //         "https://m.media-amazon.com/images/G/41/social_share/amazon_logo._CB633269640_.png",
-  //     sector: "E-Ticaret ve Teknoloji",
-  //     inEarthquakeZone: false,
-  //     isSocialEnterprise: false,
-  //     donationRate: 0.01,
-  //     creationDate: DateTime(1994, 7, 5),
-  //     bannerImage: "https://example.com/amazon-banner.jpg",
-  //     detailText:
-  //         "Amazon, dünya genelinde hizmet veren büyük bir e-ticaret ve teknoloji şirketidir.",
-  //     link: "https://www.amazon.com/",
-  //   ),
-  //   BrandModel(
-  //     name: "Koton",
-  //     logo:
-  //         "https://play-lh.googleusercontent.com/qjh8Y5ijBDtwSK7lrPPWW5GOXRjWgIIvapXG29dzXcJPCUCHNY4TrN2KsQHJpg617wSz",
-  //     sector: "Moda",
-  //     inEarthquakeZone: false,
-  //     isSocialEnterprise: false,
-  //     donationRate: 0.04,
-  //     creationDate: DateTime(1988, 10, 10),
-  //     bannerImage: "https://example.com/koton-banner.jpg",
-  //     detailText:
-  //         "Koton, genç ve dinamik moda anlayışıyla öne çıkan bir markadır.",
-  //     link: "https://www.koton.com/",
-  //   ),
-  // ];
-
   int countBrandStatistic = 133;
   int countStkStatistic = 1248;
   int countUserStatistic = 98102;
@@ -222,7 +69,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     brandModels = context.watch<BrandProvider>().brandList;
-    stkModels = context.watch<STKProvider>().stkList;
+    // stkModels = context.watch<STKProvider>().stkList;
     return Scaffold(
       body: Column(
         children: [
@@ -548,17 +395,19 @@ class _HomePageState extends State<HomePage> {
                         width: deviceWidthSize(context, 20),
                       ),
                       ...List.generate(
-                        stkModels.length,
-                        (index) => listItemImage2(context, logo: stkModels[index].name, donationRate: 0, onTap: () {
+                        // stkModels.length,
+                        0,
+                        (index) => listItemImage2(context, /*logo: stkModels[index].name,*/ donationRate: 0, onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => STKDetailPage(
-                                stkModel: stkModels[index],
+                                // stkModel: stkModels[index],
+                                stkModel: StkModel(),
                               ),
                             ),
                           );
-                        }),
+                        }, logo: ''),
                       ),
                       GestureDetector(
                         onTap: () {
@@ -630,7 +479,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      childAspectRatio: 4/3, crossAxisSpacing: 10, mainAxisSpacing: 10, maxCrossAxisExtent: 130),
+                      childAspectRatio: 4 / 3, crossAxisSpacing: 10, mainAxisSpacing: 10, maxCrossAxisExtent: 130),
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
                       return listItemImage2(

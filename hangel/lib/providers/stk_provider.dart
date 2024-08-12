@@ -69,14 +69,29 @@ class STKProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> get stkSectors =>
-      _stkList.map((e) => e.fieldOfBenefit ?? "").toList().toSet().toList();
+  List<String> get stkSectors => _stkList.map((e) => e.fieldOfBenefit ?? "").toList().toSet().toList();
 
   LoadingState _favoriteSTKState = LoadingState.loaded;
   LoadingState get favoriteSTKState => _favoriteSTKState;
   set favoriteSTKState(LoadingState value) {
     _favoriteSTKState = value;
     notifyListeners();
+  }
+
+  String checkAddedTime(DateTime? addedTime) {
+    if (addedTime == null) return "Kaydet";
+    final now = DateTime.now();
+    final difference = now.difference(addedTime).inDays;
+
+    if (difference < 30) {
+      if (difference < 29) {
+        return "${30 - difference} gün sonra güncellenebilir...";
+      } else {
+        return "1 günden az kaldı...";
+      }
+    } else {
+      return "Kaydet";
+    }
   }
 
   //getSTK
@@ -137,8 +152,7 @@ class STKProvider with ChangeNotifier {
         _stkList.sort((a, b) => a.creationDate!.compareTo(b.creationDate!));
         break;
       case "enEskidenEnYeniye":
-        _stkList.sort((a, b) => (b.creationDate ?? DateTime(2020))
-            .compareTo(a.creationDate ?? DateTime(2020)));
+        _stkList.sort((a, b) => (b.creationDate ?? DateTime(2020)).compareTo(a.creationDate ?? DateTime(2020)));
         break;
 
       default:
@@ -166,23 +180,37 @@ class STKProvider with ChangeNotifier {
     return response;
   }
 
-  Future<GeneralResponseModel> addRemoveFavoriteSTK(String? id) {
-    if (id == null) {
+  Future<GeneralResponseModel> addRemoveFavoriteSTK(List<String>? updatedFavoriteStks) async {
+    if (updatedFavoriteStks == null) {
+      print("STK id bulunamadı");
       return Future.value(GeneralResponseModel(
         success: false,
         message: "STK id bulunamadı",
       ));
     }
-    UserModel userModel = HiveHelpers.getUserFromHive();
-    UserModel newModel = userModel;
-    if (userModel.favoriteStks.contains(id)) {
-      newModel.favoriteStks.remove(id);
-    } else {
-      newModel.favoriteStks = [...newModel.favoriteStks,id];
-      
+    if (updatedFavoriteStks.length > 2) {
+      return Future.value(GeneralResponseModel(
+        success: false,
+        message: "En fazla 2 STK seçilebilir",
+      ));
+    } else if (updatedFavoriteStks.isEmpty) {
+      return Future.value(GeneralResponseModel(
+        success: false,
+        message: "En az 1 STK seçilmelidir",
+      ));
     }
+    //Local kullanıcıyı al
+    UserModel userModel = HiveHelpers.getUserFromHive();
+    //Kopyasını oluştur
+    UserModel newModel = userModel;
+    //Kopyalananda STK'ları güncelle
+    newModel.favoriteStks = updatedFavoriteStks;
+    //Favori ekleme günü
+    newModel.favoriteAddedDate = DateTime.now();
+    //Uygulama geneline bu değişiklikten haber ver
     HiveHelpers.addUserToHive(newModel);
-
-    return _stkController.addRemoveFavoriteSTK(id);
+    //Database'de bu güncellemeyi yap.
+    var response = await _stkController.addRemoveFavoriteSTK();
+    return response;
   }
 }

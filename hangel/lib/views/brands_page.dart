@@ -100,7 +100,7 @@ class _BrandsPageState extends State<BrandsPage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-         AppBarWidget(
+          AppBarWidget(
             leading: IconButton(
               onPressed: () {
                 Scaffold.of(context).openDrawer();
@@ -338,26 +338,6 @@ class _BrandsPageState extends State<BrandsPage> {
                   ),
           )
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "stk-2",
-        shape: const CircleBorder(),
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => const BottomSheetWidget(
-              title: "Marka Başvuru Formu",
-              isMinPadding: true,
-              child: BrandFormWidget(),
-            ),
-          );
-        },
-        backgroundColor: AppTheme.primaryColor,
-        child: Image.asset(
-          "assets/icons/apply.png",
-          width: kIsWeb ? deviceWidthSize(context, 10) : deviceWidthSize(context, 24),
-        ),
       ),
     );
   }

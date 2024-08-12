@@ -14,6 +14,7 @@ import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/hive_helpers.dart';
+import '../models/general_response_model.dart';
 import '../models/user_model.dart';
 import 'vounteer_form.dart';
 
@@ -44,7 +45,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
       context.read<STKProvider>().getSTKs();
       if (user.favoriteStks.isNotEmpty) {
         setState(() {
-          selectedStkIdList = user.favoriteStks;
+          selectedStkIdList.addAll(user.favoriteStks);
         });
       }
     });
@@ -134,38 +135,40 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
                         right: deviceWidthSize(context, 20),
                         child: GeneralButtonWidget(
                           onPressed: () async {
+                            //Yükleniyorsa tıklanmasın
                             if (context.read<STKProvider>().favoriteSTKState == LoadingState.loading) {
+                              print("object");
                               return;
                             }
+                            //Favori eklenme süresini kontrol et
+                            String? control = context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate);
+                            if (control != "Kaydet") {
+                              ToastWidgets.errorToast(context, control);
+                              return;
+                            }
+                            //2 STK şartı kontrolü
                             if (selectedStkIdList.length < 2) {
                               ToastWidgets.errorToast(context, "En az 2 STK seçmelisiniz!");
                               return;
                             }
+                            if (selectedStkIdList.length > 2) {
+                              ToastWidgets.errorToast(context, "En fazla 2 STK seçebilirsiniz!");
+                              return;
+                            }
+                            //İşleme başlarken yükleniyor animasyonu
                             context.read<STKProvider>().favoriteSTKState = LoadingState.loading;
-                            for (var element in selectedStkIdList) {
-                              if (user.favoriteStks.contains(element)) {
-                                continue;
-                              }
-                              await context
-                                  .read<STKProvider>()
-                                  .addRemoveFavoriteSTK(
-                                    element,
-                                  )
-                                  .then((value) {
+                            await context.read<STKProvider>().addRemoveFavoriteSTK(selectedStkIdList).then((response) {
+                              if (response.success ?? false) {
                                 context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
-                              });
-                            }
+                                ToastWidgets.successToast(context, "Favori STK'ları başarıyla güncellendi");
+                              } else {
+                                context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
+                                ToastWidgets.errorToast(
+                                    context, response.message ?? "Bir hata ile karşılaşıldı!\nHata Kodu:00321");
+                              }
+                            });
                             context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
-                            if (user.uid != null) {
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                AppView.routeName,
-                                (route) => false,
-                              );
-                            } else {
-                              Navigator.pushNamedAndRemoveUntil(context, AppView.routeName, (route) => false);
-                            }
-
+                            
                             if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
                                       (element) => element == -1,
                                     ) ==
@@ -175,8 +178,9 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
                                 return;
                               }
                             }
+                            Navigator.pop(context);
                           },
-                          text: "Kaydet",
+                          text: context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate),
                           isLoading: context.watch<STKProvider>().favoriteSTKState == LoadingState.loading,
                           buttonColor: AppTheme.primaryColor,
                         ),

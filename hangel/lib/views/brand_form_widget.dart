@@ -34,12 +34,9 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   final TextEditingController _brandPhoneController = TextEditingController();
   final TextEditingController _brandFounderController = TextEditingController();
   final TextEditingController _brandWebsiteController = TextEditingController();
-  final TextEditingController _brandContactPersonController =
-      TextEditingController();
-  final TextEditingController _brandContactPersonPhoneController =
-      TextEditingController();
-  final TextEditingController _brandContactPersonMailController =
-      TextEditingController();
+  final TextEditingController _brandContactPersonController = TextEditingController();
+  final TextEditingController _brandContactPersonPhoneController = TextEditingController();
+  final TextEditingController _brandContactPersonMailController = TextEditingController();
   final TextEditingController _brandContactPersonJob = TextEditingController();
   final TextEditingController _brandVergiNoController = TextEditingController();
 
@@ -47,8 +44,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   List<ImageModel?> _bannerImage = [];
   List<ImageModel?> _vergiImage = [];
 
-  List<int> _selectedCategories = [-1];
-  List<TextEditingController> _categoryControllers = [
+  final List<int> _selectedCategories = [-1];
+  final List<TextEditingController> _categoryControllers = [
     TextEditingController(),
   ];
 
@@ -65,8 +62,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       //get iller from json file /assets/il-ilce.json
-      jsonData = await DefaultAssetBundle.of(context)
-          .loadString("assets/il-ilce.json");
+      jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
         final jsonResult = jsonDecode(jsonData);
         for (var item in jsonResult) {
@@ -149,8 +145,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   _logoImage = [];
                 });
               },
-              infoText:
-                  "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
+              infoText: "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
             ),
 
             PickImageWidget(
@@ -171,8 +166,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   _bannerImage = [];
                 });
               },
-              infoText:
-                  "Markanın logosu, 800x500 boyutlarında, png veya jpg formatında olmalıdır.",
+              infoText: "Markanın logosu, 800x500 boyutlarında, png veya jpg formatında olmalıdır.",
             ),
             FormFieldWidget(
               context,
@@ -331,15 +325,12 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                           titles: _categories,
                           selectedIndex: _selectedCategories[index],
                           onChanged: (value) {
-                            if (_selectedCategories.any((element) =>
-                                element == _categories.indexOf(value!))) {
-                              ToastWidgets.errorToast(
-                                  context, "Bu kategori zaten ekli.");
+                            if (_selectedCategories.any((element) => element == _categories.indexOf(value!))) {
+                              ToastWidgets.errorToast(context, "Bu kategori zaten ekli.");
                               return;
                             }
                             setState(() {
-                              _selectedCategories[index] =
-                                  _categories.indexOf(value!);
+                              _selectedCategories[index] = _categories.indexOf(value!);
                             });
                           },
                           title: "Kategori",
@@ -348,9 +339,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       ),
                       if (index != 0)
                         Padding(
-                          padding: EdgeInsets.only(
-                              left: deviceHeightSize(context, 10),
-                              top: deviceHeightSize(context, 16)),
+                          padding:
+                              EdgeInsets.only(left: deviceHeightSize(context, 10), top: deviceHeightSize(context, 16)),
                           child: ButtonTheme(
                             minWidth: deviceWidthSize(context, 50),
                             height: deviceHeightSize(context, 50),
@@ -418,8 +408,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
             SizedBox(height: deviceHeightSize(context, 20)),
             GeneralButtonWidget(
               text: "Gönder",
-              isLoading: context.watch<BrandProvider>().sendFormState ==
-                  LoadingState.loading,
+              isLoading: context.watch<BrandProvider>().sendFormState == LoadingState.loading,
               onPressed: () {
                 if (_brandNameController.text.isNotEmpty &&
                     _brandWebsiteController.text.isNotEmpty &&
@@ -437,8 +426,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     _bannerImage.isNotEmpty &&
                     _vergiImage.isNotEmpty &&
                     _selectedCategories.any((element) => element != -1) &&
-                    _categoryControllers
-                        .every((element) => element.text.isNotEmpty)) {
+                    _categoryControllers.every((element) => element.text.isNotEmpty)) {
                   context
                       .read<BrandProvider>()
                       .sendForm(
@@ -449,10 +437,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                           phone: _brandPhoneController.text,
                           founder: _brandFounderController.text,
                           contactPerson: _brandContactPersonController.text,
-                          contactPersonPhone:
-                              _brandContactPersonPhoneController.text,
-                          contactPersonMail:
-                              _brandContactPersonMailController.text,
+                          contactPersonPhone: _brandContactPersonPhoneController.text,
+                          contactPersonMail: _brandContactPersonMailController.text,
                           sector: _sectors[selectedIndex],
                           city: selectedIl!,
                           district: selectedIlce!,
@@ -462,10 +448,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                                 (e) => CategoryModel(
                                   name: _categories[e],
                                   donationRate: double.parse(
-                                      _categoryControllers[
-                                              _selectedCategories.indexOf(e)]
-                                          .text
-                                          .replaceAll(",", ".")),
+                                      _categoryControllers[_selectedCategories.indexOf(e)].text.replaceAll(",", ".")),
                                 ),
                               )
                               .toList(),
@@ -483,14 +466,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     ToastWidgets.responseToast(context, value);
                   });
                 } else {
-                  ToastWidgets.errorToast(
-                      context, "Lütfen tüm alanları doldurunuz.");
+                  ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurunuz.");
                 }
               },
             ),
-            SizedBox(
-                height: deviceHeightSize(context, 30) +
-                    MediaQuery.of(context).viewInsets.bottom),
+            SizedBox(height: deviceHeightSize(context, 30) + MediaQuery.of(context).viewInsets.bottom),
           ],
         ),
       ),

@@ -84,8 +84,7 @@ class STKController {
       required List<ImageModel?> faaliyetImage}) async {
     try {
       //add stk form and get id
-      final stkFormId =
-          await _firestoreService.addData(_stksFormPath, stkFormModel.toJson());
+      final stkFormId = await _firestoreService.addData(_stksFormPath, stkFormModel.toJson());
 
       //then add images to firebase storage and get urls and update stk
       //form with urls
@@ -113,7 +112,7 @@ class STKController {
       stkFormModel.tuzukPDF = tuzukPDFUrl;
       stkFormModel.faaliyetImage = faaliyetImageUrl;
       SendMailHelper.sendMail(
-        to: ["mykynk1@gmail.com","ihadiguzel@gmail.com"],
+        to: ["mykynk1@gmail.com", "ihadiguzel@gmail.com"],
         subject: "STK Başvurusu",
         body: "STK Başvurusu",
         html: stkFormModel.toHTMLTable(),
@@ -136,16 +135,17 @@ class STKController {
     }
   }
 
-  Future<GeneralResponseModel> addRemoveFavoriteSTK(
-    String id,
-  ) async {
+  Future<GeneralResponseModel> addRemoveFavoriteSTK() async {
     try {
       String userId = HiveHelpers.getUid();
       UserModel userModel = HiveHelpers.getUserFromHive();
 
-      await _firestoreService.updateData("users/$userId", {
+      var response = await _firestoreService.updateData("users/$userId", {
+        'favoriteAddedDate': userModel.favoriteAddedDate,
         'favoriteStks': userModel.favoriteStks,
       });
+      print("UPDATE RESPONSE: ");
+      print(response);
       return GeneralResponseModel(
         success: true,
         message: "Brand added successfully",

@@ -25,6 +25,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/stk_provider.dart';
 import '../widgets/app_bar_widget.dart';
+import 'brand_form_widget.dart';
 import 'stk_form_widget.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -531,7 +532,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               text: "Gönüllü olmak istiyorum"),
         ),
         Container(
-          margin: const EdgeInsets.only(bottom: 150),
+          margin: const EdgeInsets.only(bottom: 15),
           padding: EdgeInsets.symmetric(
             horizontal: deviceWidthSize(context, 20),
           ),
@@ -548,6 +549,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 );
               },
               text: "STK Başvuru Formu"),
+        ),
+        Container(
+          margin: const EdgeInsets.only(bottom: 150),
+          padding: EdgeInsets.symmetric(
+            horizontal: deviceWidthSize(context, 20),
+          ),
+          child: GeneralButtonWidget(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => const BottomSheetWidget(
+                    title: "Marka Başvuru Formu",
+                    isMinPadding: true,
+                    child: BrandFormWidget(),
+                  ),
+                );
+              },
+              text: "Marka Başvuru Formu"),
         ),
       ],
     );

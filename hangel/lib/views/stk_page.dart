@@ -146,114 +146,84 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
                     controller: _tabController,
                     children: List.generate(
                       _tabs.length,
-                      (tabIndex) => Stack(
-                        children: [
-                          SingleChildScrollView(
-                            child: Column(
+                      (tabIndex) => SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: deviceHeightSize(context, 10),
+                            ),
+                            //filter and sort
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                SizedBox(
-                                  height: deviceHeightSize(context, 10),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: deviceWidthSize(context, 20),
+                                  ),
+                                  child: Text(
+                                    "STK'lar",
+                                    style: AppTheme.boldTextStyle(context, 20),
+                                  ),
                                 ),
-                                //filter and sort
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left: deviceWidthSize(context, 20),
-                                      ),
-                                      child: Text(
-                                        "STK'lar",
-                                        style: AppTheme.boldTextStyle(context, 20),
-                                      ),
-                                    ),
-                                    filterAndSort(context),
-                                  ],
-                                ),
-
-                                ...List.generate(
-                                  _stkList.length,
-                                  (index) {
-                                    bool isSearch = _stkList[index]
-                                        .name!
-                                        .toLowerCase()
-                                        .contains(_searchController.text.toLowerCase());
-                                    bool isFilter = false;
-                                    String filterText = context.read<STKProvider>().filterText;
-                                    switch (filterText) {
-                                      case "depremBolgesi":
-                                        isFilter = _stkList[index].inEarthquakeZone!;
-                                        break;
-                                      case "specialStatus":
-                                        isFilter = _stkList[index].specialStatus != null;
-                                        break;
-                                      default:
-                                        isFilter = _stkList[index]
-                                            .fieldOfBenefit!
-                                            .toLowerCase()
-                                            .contains(filterText.toLowerCase());
-                                        break;
-                                    }
-
-                                    _stkList[index]
-                                        .fieldOfBenefit!
-                                        .toLowerCase()
-                                        .contains(context.read<STKProvider>().filterText.toLowerCase());
-
-                                    bool isReturn = isSearch &&
-                                        isFilter &&
-                                        (_stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
-                                    return isReturn
-                                        ? ListItemWidget(
-                                            context,
-                                            logo: _stkList[index].logo,
-                                            title: _stkList[index].name.toString(),
-                                            desc: _stkList[index].detailText,
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => STKDetailPage(
-                                                    stkModel: _stkList[index],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          )
-                                        : Container();
-                                  },
-                                ),
-                                SizedBox(
-                                  height: deviceHeightSize(context, 80),
-                                ),
+                                filterAndSort(context),
                               ],
                             ),
-                          ),
-                          Positioned(
-                            bottom: deviceHeightSize(context, 10),
-                            right: deviceWidthSize(context, 20),
-                            child: FloatingActionButton(
-                              heroTag: "stk-1",
-                              shape: const CircleBorder(),
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (context) => const BottomSheetWidget(
-                                    title: "STK Başvuru Formu",
-                                    isMinPadding: true,
-                                    child: STKFormWidget(),
-                                  ),
-                                );
+
+                            ...List.generate(
+                              _stkList.length,
+                              (index) {
+                                bool isSearch =
+                                    _stkList[index].name!.toLowerCase().contains(_searchController.text.toLowerCase());
+                                bool isFilter = false;
+                                String filterText = context.read<STKProvider>().filterText;
+                                switch (filterText) {
+                                  case "depremBolgesi":
+                                    isFilter = _stkList[index].inEarthquakeZone!;
+                                    break;
+                                  case "specialStatus":
+                                    isFilter = _stkList[index].specialStatus != null;
+                                    break;
+                                  default:
+                                    isFilter = _stkList[index]
+                                        .fieldOfBenefit!
+                                        .toLowerCase()
+                                        .contains(filterText.toLowerCase());
+                                    break;
+                                }
+
+                                _stkList[index]
+                                    .fieldOfBenefit!
+                                    .toLowerCase()
+                                    .contains(context.read<STKProvider>().filterText.toLowerCase());
+
+                                bool isReturn = isSearch &&
+                                    isFilter &&
+                                    (_stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
+                                return isReturn
+                                    ? ListItemWidget(
+                                        context,
+                                        logo: _stkList[index].logo,
+                                        title: _stkList[index].name.toString(),
+                                        desc: _stkList[index].detailText,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => STKDetailPage(
+                                                stkModel: _stkList[index],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : Container();
                               },
-                              backgroundColor: AppTheme.primaryColor,
-                              child: Image.asset(
-                                "assets/icons/apply.png",
-                                width: deviceWidthSize(context, 24),
-                              ),
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              height: deviceHeightSize(context, 80),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
