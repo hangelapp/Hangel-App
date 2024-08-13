@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
@@ -88,24 +89,24 @@ class STKController {
 
       //then add images to firebase storage and get urls and update stk
       //form with urls
-      final logoImageUrl = await _storageService.uploadImage(
+      final logoImageUrl = await _storageService.uploadImagebyByte(
         "$_stksFormPath/$stkFormId",
-        File(logoImage.first!.file!.path),
+        await logoImage.first!.file!.readAsBytes(),
       );
 
-      final bannerImageUrl = await _storageService.uploadImage(
+      final bannerImageUrl = await _storageService.uploadImagebyByte(
         "$_stksFormPath/$stkFormId",
-        File(bannerImage.first!.file!.path),
+        await bannerImage.first!.file!.readAsBytes(),
       );
 
-      final tuzukPDFUrl = await _storageService.uploadImage(
+      final tuzukPDFUrl = await _storageService.uploadImagebyByte(
         "$_stksFormPath/$stkFormId",
-        File(tuzukPDF!.path!),
+        tuzukPDF?.bytes ?? Uint8List(0),
       );
 
-      final faaliyetImageUrl = await _storageService.uploadImage(
+      final faaliyetImageUrl = await _storageService.uploadImagebyByte(
         "$_stksFormPath/$stkFormId",
-        File(faaliyetImage.first!.file!.path),
+        await faaliyetImage.first!.file!.readAsBytes(),
       );
       stkFormModel.logoImage = logoImageUrl;
       stkFormModel.bannerImage = bannerImageUrl;
@@ -127,7 +128,6 @@ class STKController {
         },
       );
     } catch (e) {
-      print(e);
       return GeneralResponseModel(
         success: false,
         message: e.toString(),

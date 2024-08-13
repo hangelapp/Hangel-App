@@ -5,6 +5,7 @@ import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/providers/offer_provider.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
+import 'package:hangel/providers/volunteer_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import '../providers/login_register_page_provider.dart';
@@ -17,4 +18,5 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider<AppViewProvider>(create: (BuildContext context) => AppViewProvider()),
   ChangeNotifierProvider<OfferProvider>(create: (BuildContext context) => OfferProvider()),
   ChangeNotifierProvider<DonationProvider>(create: (BuildContext context) => DonationProvider()),
+  ChangeNotifierProvider<VolunteerProvider>(create: (BuildContext context) => VolunteerProvider()),
 ];

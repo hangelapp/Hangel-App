@@ -378,25 +378,26 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 }
 
                 if (_stkNameController.text.isNotEmpty &&
-                    _stkWebsiteController.text.isNotEmpty &&
-                    _stkMailController.text.isNotEmpty &&
-                    _stkPhoneController.text.isNotEmpty &&
-                    _stkFounderController.text.isNotEmpty &&
+                    _stkFullNameController.text.isNotEmpty &&
                     _stkContactPersonController.text.isNotEmpty &&
                     _stkContactPersonPhoneController.text.isNotEmpty &&
                     _stkContactPersonMailController.text.isNotEmpty &&
                     _stkContactPersonJob.text.isNotEmpty &&
-                    _selectedSectorIndex != -1 &&
-                    _stkAddressController.text.isNotEmpty &&
+                    _logoImage.isNotEmpty &&
+                    _bannerImage.isNotEmpty &&
+                    _stkWebsiteController.text.isNotEmpty &&
+                    _stkMailController.text.isNotEmpty &&
+                    _stkPhoneController.text.isNotEmpty &&
+                    _stkFounderController.text.isNotEmpty &&
                     selectedIl != null &&
                     selectedIlce != null &&
                     selectedMahalle != null &&
-                    _selectedCategories.isNotEmpty &&
-                    selectedBMs.isNotEmpty &&
-                    _logoImage.isNotEmpty &&
-                    _bannerImage.isNotEmpty &&
+                    _stkAddressController.text.isNotEmpty &&
                     _tuzukPDF != null &&
                     _faaliyetImage.isNotEmpty &&
+                    _selectedSectorIndex != -1 &&
+                    _selectedCategories.isNotEmpty &&
+                    selectedBMs.isNotEmpty &&
                     _selectedType != -1) {
                   context
                       .read<STKProvider>()

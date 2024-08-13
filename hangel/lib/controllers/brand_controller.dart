@@ -19,8 +19,7 @@ class BrandController {
 
   Future<GeneralResponseModel> addBrand(BrandModel brandModel) async {
     try {
-      String id =
-          await _firestoreService.addData(brandsPath, brandModel.toJson());
+      String id = await _firestoreService.addData(brandsPath, brandModel.toJson());
       await _firestoreService.updateData(brandsPath + id, {
         'id': id,
       });
@@ -82,19 +81,18 @@ class BrandController {
       required List<ImageModel?> bannerImage,
       required List<ImageModel?> vergiImage}) async {
     try {
-      final formId = await _firestoreService.addData(
-          brandFormsPath, brandFormModel.toJson());
-      final logoImageUrls = await _storageService.uploadImage(
-          "$brandFormsPath/$formId", File(logoImage.first!.file!.path));
-      final bannerImageUrls = await _storageService.uploadImage(
-          "$brandFormsPath/$formId", File(bannerImage.first!.file!.path));
-      final vergiImageUrls = await _storageService.uploadImage(
-          "$brandFormsPath/$formId", File(vergiImage.first!.file!.path));
+      final formId = await _firestoreService.addData(brandFormsPath, brandFormModel.toJson());
+      final logoImageUrls = await _storageService.uploadImagebyByte(
+          "$brandFormsPath/$formId", await logoImage.first!.file!.readAsBytes());
+      final bannerImageUrls = await _storageService.uploadImagebyByte(
+          "$brandFormsPath/$formId", await bannerImage.first!.file!.readAsBytes());
+      final vergiImageUrls = await _storageService.uploadImagebyByte(
+          "$brandFormsPath/$formId", await vergiImage.first!.file!.readAsBytes());
       brandFormModel.logoImage = logoImageUrls;
       brandFormModel.bannerImage = bannerImageUrls;
       brandFormModel.vergiImage = vergiImageUrls;
       SendMailHelper.sendMail(
-        to: ["mykynk1@gmail.com","ihadiguzel@gmail.com"],
+        to: ["mykynk1@gmail.com", "ihadiguzel@gmail.com"],
         subject: "Marka Başvurusu",
         body: "Marka Başvurusu",
         html: brandFormModel.toHTMLTable(),
@@ -119,7 +117,6 @@ class BrandController {
     try {
       String userId = HiveHelpers.getUid();
       UserModel userModel = HiveHelpers.getUserFromHive();
-
 
       await _firestoreService.updateData("users/$userId", {
         'favoriteBrands': userModel.favoriteBrands,

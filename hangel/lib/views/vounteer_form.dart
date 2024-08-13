@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/image_model.dart';
+import 'package:hangel/models/volunteer_model.dart';
+import 'package:hangel/providers/volunteer_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
 import 'package:hangel/widgets/form_field_widget.dart';
@@ -15,6 +17,9 @@ import 'package:hangel/widgets/pick_file_widget.dart';
 import 'package:hangel/widgets/pick_image_widget.dart';
 import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/login_register_page_provider.dart';
 
 class VolunteerForm extends StatefulWidget {
   const VolunteerForm({Key? key}) : super(key: key);
@@ -25,16 +30,14 @@ class VolunteerForm extends StatefulWidget {
 }
 
 class _VolunteerFormState extends State<VolunteerForm> {
-  final TextEditingController volunteerAreasController = TextEditingController();
-  final TextEditingController statusController = TextEditingController();
   final TextEditingController expertiseAreasController = TextEditingController();
-  final TextEditingController availableTimeSlotsController = TextEditingController();
-  final TextEditingController educationLevelController = TextEditingController();
   final TextEditingController totalYearsOfWorkController = TextEditingController();
   final TextEditingController stkAddressController = TextEditingController();
 
   List<ImageModel?> volunteerImage = [];
   PlatformFile? resumePDF;
+  Uint8List? cvByte;
+  Uint8List? imageByte;
 
   List<String> cities = [];
   List<String> districts = [];
@@ -55,10 +58,6 @@ class _VolunteerFormState extends State<VolunteerForm> {
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      var user = HiveHelpers.getUserFromHive();
-      if (user.image != null) {
-        volunteerImage.add(ImageModel(imageType: ImageType.network, url: user.image));
-      }
       //get iller from json file /assets/il-ilce.json
       jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
@@ -153,10 +152,11 @@ class _VolunteerFormState extends State<VolunteerForm> {
               PickImageWidget(
                 context,
                 title: "Gönüllü Fotoğrafı",
-                onImagePicked: (List<XFile?> image) {
-                  print("Seçilen image: ${image.first?.path}");
+                onImagePicked: (List<XFile?> image) async {
+                  print("Seçilen image: ${await image.first?.readAsBytes()}");
                   if (image.isNotEmpty && (image[0] != null)) {
                     try {
+                      imageByte = await image.first?.readAsBytes();
                       setState(() {
                         print("Adding image to volunteerImage list");
                         ImageModel imageModel = ImageModel(
@@ -192,6 +192,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
                 onFilePicked: (PlatformFile file) {
                   setState(() {
                     resumePDF = file;
+                    cvByte = file.bytes;
                   });
                 },
                 onFileRemoved: () {
@@ -290,12 +291,9 @@ class _VolunteerFormState extends State<VolunteerForm> {
                   SizedBox(
                     width: deviceWidth(context) * 0.4,
                     child: GeneralButtonWidget(
-                      onPressed: () {
-                        if (volunteerAreasController.text.isNotEmpty &&
-                            statusController.text.isNotEmpty &&
-                            expertiseAreasController.text.isNotEmpty &&
-                            availableTimeSlotsController.text.isNotEmpty &&
-                            educationLevelController.text.isNotEmpty &&
+                      isLoading: context.watch<VolunteerProvider>().sendFormState == LoadingState.loading,
+                      onPressed: () async {
+                        if ((expertiseAreasController.text.isNotEmpty &&
                             totalYearsOfWorkController.text.isNotEmpty &&
                             stkAddressController.text.isNotEmpty &&
                             selectedIl != null &&
@@ -306,13 +304,46 @@ class _VolunteerFormState extends State<VolunteerForm> {
                             selectedStatuIndex != -1 &&
                             selectedmusaitVakitIndex != -1 &&
                             volunteerImage.isNotEmpty &&
-                            resumePDF != null) {
+                            resumePDF != null)) {
                           // Save form data
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            AppView.routeName,
-                            (route) => false,
+                          VolunteerModel model = VolunteerModel(
+                              volunteerAreas: _alanlar.elementAt(selectedAlanIndex),
+                              status: _statuler.elementAt(selectedStatuIndex),
+                              expertiseAreas: expertiseAreasController.text,
+                              availableTimeSlots: _musaitVakitler.elementAt(selectedmusaitVakitIndex),
+                              educationLevel: _mezuniyetler.elementAt(selectedMezunIndex),
+                              totalYearsOfWork: int.parse(totalYearsOfWorkController.text),
+                              city: selectedIl,
+                              district: selectedIlce,
+                              neighborhood: selectedMahalle,
+                              address: stkAddressController.text,
+                              image: null,
+                              cv: null);
+                          print("${volunteerImage.first ?? "LAN"}");
+                          await context
+                              .read<VolunteerProvider>()
+                              .sendForm(
+                                  imageByte: imageByte!,
+                                  cvByte: cvByte ?? resumePDF?.bytes ?? Uint8List(0),
+                                  volunteerModel: model,
+                                  image: volunteerImage.first!,
+                                  cv: resumePDF)
+                              .then(
+                            (value) {
+                              if (value.success == true) {
+                                ToastWidgets.successToast(
+                                  context,
+                                  "Form başarıyla gönderildi.",
+                                );
+                              } else {
+                                ToastWidgets.errorToast(
+                                  context,
+                                  "Beklenmeyen bir hatayla karşılaşıldı",
+                                );
+                              }
+                            },
                           );
+                          Navigator.pop(context);
                         } else {
                           ToastWidgets.errorToast(
                             context,

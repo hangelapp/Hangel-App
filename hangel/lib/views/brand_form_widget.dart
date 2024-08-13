@@ -411,20 +411,22 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               isLoading: context.watch<BrandProvider>().sendFormState == LoadingState.loading,
               onPressed: () {
                 if (_brandNameController.text.isNotEmpty &&
+                    _brandContactPersonController.text.isNotEmpty &&
+                    _brandContactPersonPhoneController.text.isNotEmpty &&
+                    _brandContactPersonMailController.text.isNotEmpty &&
+                    _brandContactPersonJob.text.isNotEmpty &&
+                    _logoImage.isNotEmpty &&
+                    _bannerImage.isNotEmpty &&
                     _brandWebsiteController.text.isNotEmpty &&
                     _brandMailController.text.isNotEmpty &&
                     _brandPhoneController.text.isNotEmpty &&
                     _brandFounderController.text.isNotEmpty &&
-                    _brandContactPersonController.text.isNotEmpty &&
-                    _brandContactPersonPhoneController.text.isNotEmpty &&
-                    _brandContactPersonMailController.text.isNotEmpty &&
                     selectedIndex != -1 &&
                     selectedIl != null &&
                     selectedIlce != null &&
                     selectedMahalle != null &&
-                    _logoImage.isNotEmpty &&
-                    _bannerImage.isNotEmpty &&
                     _vergiImage.isNotEmpty &&
+                    _brandVergiNoController.text.isNotEmpty &&
                     _selectedCategories.any((element) => element != -1) &&
                     _categoryControllers.every((element) => element.text.isNotEmpty)) {
                   context
