@@ -17,6 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
+      print("Web sürümüne geçiliyor...");
       return web;
     }
     switch (defaultTargetPlatform) {

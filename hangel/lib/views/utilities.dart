@@ -134,6 +134,8 @@ Future<Uint8List> assetToUint8List(String assetPath) async {
 
   return bytes;
 }
+
+
   // List<StkModel> stkModels = [
   //   StkModel(
   //     logo:

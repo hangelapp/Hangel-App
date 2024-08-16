@@ -389,7 +389,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   context.read<LoginRegisterPageProvider>().authenticate(_verifyController.text).then(
                     (value) {
                       print(value.message);
-                      if(value.message=="true"){
+                      if (value.message == "true") {
                         ToastWidgets.successToast(context, "Giriş yapılıyor...");
                       }
                       if (value.success == true) {

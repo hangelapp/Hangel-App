@@ -1,21 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class StkModel {
   String? id;
-  final String? logo;
-  final String? name;
-  final String? country;
-  final String? city;
-  final String? fieldOfBenefit;
-  final bool? inEarthquakeZone;
-  final String? specialStatus;
-  final DateTime? creationDate;
-  final String? bannerImage;
-  final String? detailText;
-  final String? link;
-  final int? donorCount;
-  final String? type;
-  final List<String> categories;
-  final int favoriteCount;
-  List<String?> bmCategories;
+  String? logo;
+  String? name;
+  String? country;
+  String? city;
+  String? fieldOfBenefit;
+  bool? inEarthquakeZone;
+  String? specialStatus;
+  DateTime? creationDate;
+  String? bannerImage;
+  String? detailText;
+  String? link;
+  int? donorCount;
+  String? type;
+  List<String> categories;
+  int favoriteCount;
+  List<String> bmCategories;
 
   StkModel({
     this.id,
@@ -47,7 +49,11 @@ class StkModel {
       fieldOfBenefit: json['fieldOfBenefit'],
       inEarthquakeZone: json['inEarthquakeZone'],
       specialStatus: json['specialStatus'],
-      creationDate: DateTime.tryParse(json['creationDate'].toString()),
+      creationDate: json['creationDate'] != null
+          ? (json['creationDate'] is Timestamp
+              ? (json['creationDate'] as Timestamp).toDate()
+              : DateTime.parse(json['creationDate']))
+          : null,
       bannerImage: json['bannerImage'],
       detailText: json['detailText'],
       link: json['link'],
@@ -69,7 +75,7 @@ class StkModel {
       'fieldOfBenefit': fieldOfBenefit,
       'inEarthquakeZone': inEarthquakeZone,
       'specialStatus': specialStatus,
-      'creationDate': creationDate,
+      'creationDate': creationDate?.toIso8601String(), // Ensure creationDate is a string
       'bannerImage': bannerImage,
       'detailText': detailText,
       'link': link,

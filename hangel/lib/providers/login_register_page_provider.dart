@@ -2,11 +2,8 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hangel/widgets/toast_widgets.dart';
 
 import '../controllers/login_register_page_controller.dart';
 import '../helpers/hive_helpers.dart';
@@ -77,52 +74,57 @@ class LoginRegisterPageProvider with ChangeNotifier {
   }
 
   Future<GeneralResponseModel> sendVerificationCode() async {
-    smsCodeSentState = LoadingState.loading;
-    notifyListeners();
-    timerTick = 120;
+    try {
+      smsCodeSentState = LoadingState.loading;
+      notifyListeners();
+      timerTick = 120;
 
-    //verify phone number with firebase
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: _phoneNumber,
-      verificationCompleted: (PhoneAuthCredential credential) {
-        print("verificationCompleted");
-        smsCodeSentState = LoadingState.loaded;
-        notifyListeners();
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        print("verificationFailed $e");
-        smsCodeSentState = LoadingState.error;
-        notifyListeners();
-      },
-      codeSent: (String verificationId, int? resendToken) async {
-        print("codeSent");
+      //verify phone number with firebase
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: _phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) {
+          print("verificationCompleted");
+          smsCodeSentState = LoadingState.loaded;
+          notifyListeners();
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          print("verificationFailed $e");
+          smsCodeSentState = LoadingState.error;
+          notifyListeners();
+        },
+        codeSent: (String verificationId, int? resendToken) async {
+          print("codeSent");
 
-        setPhoneLoginPageType(PhoneLoginPageType.verify);
-        setVerificationId(verificationId);
-        setResendToken(resendToken);
-        smsCodeSentState = LoadingState.loaded;
-        notifyListeners();
+          setPhoneLoginPageType(PhoneLoginPageType.verify);
+          setVerificationId(verificationId);
+          setResendToken(resendToken);
+          smsCodeSentState = LoadingState.loaded;
+          notifyListeners();
 
-        // await SmsAutoFill().listenForCode();
-        // SmsAutoFill().code.listen((event) {
-        //   // _verifyController.text = event;
-        // });
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        print("codeAutoRetrievalTimeout");
-        setVerificationId(verificationId);
-        smsCodeSentState = LoadingState.loaded;
-        notifyListeners();
-      },
-    );
-    if (smsCodeSentState == LoadingState.loaded) {
-      return GeneralResponseModel(success: false, message: "Error handled");
-    } else if (smsCodeSentState == LoadingState.loaded) {
-      return GeneralResponseModel(success: true, message: "Successfully sended");
-    } else if (smsCodeSentState == LoadingState.loading) {
-      return GeneralResponseModel(success: true, message: "Verify loading");
-    } else {
-      return GeneralResponseModel(success: false, message: "Error handled");
+          // await SmsAutoFill().listenForCode();
+          // SmsAutoFill().code.listen((event) {
+          //   // _verifyController.text = event;
+          // });
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          print("codeAutoRetrievalTimeout");
+          setVerificationId(verificationId);
+          smsCodeSentState = LoadingState.loaded;
+          notifyListeners();
+        },
+      );
+      if (smsCodeSentState == LoadingState.loaded) {
+        return GeneralResponseModel(success: false, message: "Error handled");
+      } else if (smsCodeSentState == LoadingState.loaded) {
+        return GeneralResponseModel(success: true, message: "Successfully sended");
+      } else if (smsCodeSentState == LoadingState.loading) {
+        return GeneralResponseModel(success: true, message: "Verify loading");
+      } else {
+        return GeneralResponseModel(success: false, message: "Error handled");
+      }
+    } catch (e) {
+      print(e);
+      return GeneralResponseModel(success: false);
     }
   }
 
@@ -181,16 +183,25 @@ class LoginRegisterPageProvider with ChangeNotifier {
     );
   }
 
-  Future<ConfirmationResult> sendOTP() async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    var verifier = RecaptchaVerifier(auth: FirebaseAuthPlatform.instance);
-    ConfirmationResult result = await auth.signInWithPhoneNumber(_phoneNumber, verifier);
-    print("OTP Sent to $phoneNumber");
-    setConfirmationResult(result);
-    setPhoneLoginPageType(PhoneLoginPageType.verify);
-    smsCodeSentState = LoadingState.loaded;
-    notifyListeners();
-    return result;
+  Future<ConfirmationResult?> sendOTP() async {
+    try {
+      FirebaseAuth auth = FirebaseAuth.instance;
+      smsCodeState = LoadingState.loading;
+      notifyListeners();
+      // var verifier = RecaptchaVerifier(auth: FirebaseAuthWeb.instance,container: "container");
+      ConfirmationResult result = await auth.signInWithPhoneNumber(_phoneNumber);
+      print("OTP Sent to $phoneNumber");
+      setConfirmationResult(result);
+      setPhoneLoginPageType(PhoneLoginPageType.verify);
+      smsCodeSentState = LoadingState.loaded;
+      notifyListeners();
+      return result;
+    } catch (e) {
+      print(e);
+      smsCodeState = LoadingState.loaded;
+      notifyListeners();
+    }
+    return null;
   }
 
   Future<GeneralResponseModel> authenticate(String otp) async {
