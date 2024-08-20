@@ -11,7 +11,6 @@ import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/home_page.dart';
 import 'package:hangel/views/auth/onboarding_page.dart';
-import 'package:hangel/views/profile_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/views/vounteer_form.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -66,6 +65,10 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _verifyController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -375,7 +378,7 @@ class _RegisterPageState extends State<RegisterPage> {
             height: deviceHeightSize(context, 20),
           ),
           GeneralButtonWidget(
-            onPressed: () {
+            onPressed: () async {
               if (context.read<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading) {
                 return;
               }
@@ -383,10 +386,14 @@ class _RegisterPageState extends State<RegisterPage> {
               if (_verifyController.text.length != 6) {
                 ToastWidgets.errorToast(context, "Lütfen kodu doğru giriniz!");
               } else {
-                context.read<LoginRegisterPageProvider>().phoneNumber =
+                String phoneNum =
                     "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
+                context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
                 if (kIsWeb) {
-                  context.read<LoginRegisterPageProvider>().authenticate(_verifyController.text).then(
+                  await context
+                      .read<LoginRegisterPageProvider>()
+                      .authenticate(_verifyController.text, phoneNum, _nameController.text)
+                      .then(
                     (value) {
                       print(value.message);
                       if (value.message == "true") {

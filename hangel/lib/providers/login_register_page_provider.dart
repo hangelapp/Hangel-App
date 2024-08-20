@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hangel/services/firestore_services.dart';
 
 import '../controllers/login_register_page_controller.dart';
 import '../helpers/hive_helpers.dart';
@@ -186,7 +187,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
   Future<ConfirmationResult?> sendOTP() async {
     try {
       FirebaseAuth auth = FirebaseAuth.instance;
-      smsCodeState = LoadingState.loading;
+      smsCodeSentState = LoadingState.loading;
       notifyListeners();
       // var verifier = RecaptchaVerifier(auth: FirebaseAuthWeb.instance,container: "container");
       ConfirmationResult result = await auth.signInWithPhoneNumber(_phoneNumber);
@@ -198,18 +199,57 @@ class LoginRegisterPageProvider with ChangeNotifier {
       return result;
     } catch (e) {
       print(e);
-      smsCodeState = LoadingState.loaded;
+      smsCodeSentState = LoadingState.loaded;
+      notifyListeners();
+      throw Exception("Web authtentication error");
+    } finally {
+      smsCodeSentState = LoadingState.loaded;
       notifyListeners();
     }
-    return null;
   }
 
-  Future<GeneralResponseModel> authenticate(String otp) async {
+  Future<GeneralResponseModel> authenticate(String otp, String phoneNumber, String name) async {
     try {
+      smsCodeState = LoadingState.loading;
+      notifyListeners();
+      GeneralResponseModel generalResponseModel = GeneralResponseModel();
       bool isExist = false;
       if (confirmationResult == null) throw Exception("Kod gönderilmemiş");
       UserCredential userCredential = await confirmationResult!.confirm(otp);
       userCredential.additionalUserInfo!.isNewUser ? print("Authentication Successful") : isExist = true;
+      User? user = userCredential.user;
+      if (user == null) {
+        print("Kullanıcı kaydolurken hatayla karşılaşıldı.");
+        generalResponseModel = GeneralResponseModel(success: false, message: "Kullanıcı veritabanında bulunamadı");
+      } else {
+        print("Verify Phone Number Success : " + user.uid);
+        UserModel userModel = UserModel.fromFirebaseUser(user);
+        if ((await _loginRegisterPageController.isUserExist(user.uid)) == false) {
+          userModel.name = name;
+          userModel.phone = phoneNumber;
+          userModel.image = "";
+          userModel.createdAt = DateTime.now();
+          FirestoreServices firestoreServices = FirestoreServices();
+          GeneralResponseModel responseModel = await firestoreServices.setData(
+            userModel.toJson(),
+            'users/${userModel.uid}',
+          );
+
+          if (responseModel.success == false) {
+            generalResponseModel = GeneralResponseModel(
+              success: false,
+              message: 'Kayıt yapılamadı',
+            );
+          } else {
+            HiveHelpers.addUserToHive(userModel);
+          }
+        }
+        HiveHelpers.addUserToHive(userModel);
+        generalResponseModel = GeneralResponseModel(
+          success: true,
+          message: 'Kayıt yapıldı',
+        );
+      }
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""))
@@ -224,16 +264,20 @@ class LoginRegisterPageProvider with ChangeNotifier {
         // Kullanıcıyı Hive'a ekle
         HiveHelpers.addUserToHive(user);
         print(user);
-        return GeneralResponseModel(success: true, message: isExist.toString());
+        generalResponseModel = GeneralResponseModel(success: true, message: isExist.toString());
       }
 
       smsCodeState = LoadingState.loaded;
       notifyListeners();
-      return GeneralResponseModel(success: true, message: isExist.toString());
+      generalResponseModel = GeneralResponseModel(success: true, message: isExist.toString());
+      return generalResponseModel;
     } catch (e) {
       smsCodeState = LoadingState.loaded;
       notifyListeners();
       return GeneralResponseModel(success: false, message: e.toString());
+    } finally {
+      smsCodeState = LoadingState.loaded;
+      notifyListeners();
     }
   }
 

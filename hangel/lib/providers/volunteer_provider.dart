@@ -69,7 +69,7 @@ class VolunteerProvider with ChangeNotifier {
 
       // Send email with HTML table
       SendMailHelper.sendMail(
-        to: ["mykynk1@gmail.com", "ihadiguzel@gmail.com"],
+        to: ["hangelturkiye@gmail.com"],
         // to: ["cakirg685@gmail.com"],
         subject: "Gönüllülük Başvurusu",
         body: "Gönüllülük Başvurusu",

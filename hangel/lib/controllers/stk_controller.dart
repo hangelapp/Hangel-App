@@ -113,7 +113,7 @@ class STKController {
       stkFormModel.tuzukPDF = tuzukPDFUrl;
       stkFormModel.faaliyetImage = faaliyetImageUrl;
       SendMailHelper.sendMail(
-        to: ["mykynk1@gmail.com", "ihadiguzel@gmail.com"],
+        to: ["hangelturkiye@gmail.com"],
         subject: "STK Başvurusu",
         body: "STK Başvurusu",
         html: stkFormModel.toHTMLTable(),

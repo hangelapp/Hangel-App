@@ -36,51 +36,55 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       ),
     );
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _opacity = 1;
-      });
-    }).then(
-      (value) => Future.delayed(const Duration(milliseconds: 500), () {
-        try {
-          setState(() {
-            // _left = 0;
-            // _right = 0;
-          });
-        } catch (e) {
-          print(e);
-        }
-      }),
-    );
+    _initialize();
+  }
 
-    Future.delayed(const Duration(seconds: 0), () async {
-      if (HiveHelpers.getUid() != "") {
-        await context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid());
-        if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-          return Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
+  Future<void> _initialize() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() {
+      _opacity = 1;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (HiveHelpers.getUid() != "") {
+      await context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid());
+      bool isAppView = false;
+      Navigator.popUntil(context, (route) {
+        print(route.settings.name);
+        if (route.settings.name == AppView.routeName) {
+          isAppView = true;
         }
-        bool isAppView = false;
-        Navigator.popUntil(context, (route) {
-          if (route.settings.name == AppView.routeName) {
-            isAppView = true;
-          }
-          return true;
-        });
-        if (!isAppView) {
-          return Navigator.pushNamedAndRemoveUntil(
-            context,
-            AppView.routeName,
-            (route) => false,
-          );
+        return true;
+      });
+
+      if (!isAppView) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppView.routeName,
+          (route) => false,
+        );
+      } else if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
+        Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
+      }
+    } else {
+      bool isAppView = false;
+      Navigator.popUntil(context, (route) {
+        print(route.settings.name);
+        if (route.settings.name == RegisterPage.routeName) {
+          isAppView = true;
         }
-      } else {
-        return Navigator.pushNamedAndRemoveUntil(
+        return true;
+      });
+
+      if (!isAppView) {
+        Navigator.pushNamedAndRemoveUntil(
           context,
           RegisterPage.routeName,
           (route) => false,
         );
       }
-    });
+    }
   }
 
   @override

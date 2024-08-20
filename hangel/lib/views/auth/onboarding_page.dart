@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
-import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
 import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:provider/provider.dart';
@@ -17,8 +16,7 @@ class OnboardingPage extends StatefulWidget {
   State<OnboardingPage> createState() => _OnboardingPageState();
 }
 
-class _OnboardingPageState extends State<OnboardingPage>
-    with TickerProviderStateMixin {
+class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStateMixin {
   List<OnboardingModel> pages = [];
 
   int currentIndex = 0;
@@ -69,9 +67,9 @@ class _OnboardingPageState extends State<OnboardingPage>
   @override
   dispose() {
     _pageController.dispose();
-    for (var element in pages) {
-      element.image.evict();
-    }
+    // for (var element in pages) {
+    //   element.image.evict();
+    // }
     super.dispose();
   }
 
@@ -89,9 +87,11 @@ class _OnboardingPageState extends State<OnboardingPage>
               //never scrollable
               physics: const NeverScrollableScrollPhysics(),
               itemCount: pages.length,
-              onPageChanged: (value) => setState(() {
-                currentIndex = value;
-              }),
+              onPageChanged: (value) {
+                setState(() {
+                  currentIndex = value;
+                });
+              },
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -100,8 +100,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                       SizedBox(height: deviceTopPadding(context)),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: deviceWidthSize(context, 20)),
+                          padding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
                           child: Column(
                             children: [
                               const Spacer(),
@@ -124,15 +123,10 @@ class _OnboardingPageState extends State<OnboardingPage>
                               DropdownWidget(
                                 context,
                                 titles: pages[index].options,
-                                selectedIndex: context
-                                    .watch<LoginRegisterPageProvider>()
-                                    .selectedOptions[index],
+                                selectedIndex: context.watch<LoginRegisterPageProvider>().selectedOptions[index],
                                 onChanged: (value) {
-                                  int valueIndex =
-                                      pages[index].options.indexOf(value!);
-                                  context
-                                      .read<LoginRegisterPageProvider>()
-                                      .setSelectedOption(
+                                  int valueIndex = pages[index].options.indexOf(value!);
+                                  context.read<LoginRegisterPageProvider>().setSelectedOption(
                                         index,
                                         valueIndex,
                                       );
@@ -166,12 +160,8 @@ class _OnboardingPageState extends State<OnboardingPage>
                 ),
                 GestureDetector(
                   onTap: () {
-                    if (context
-                            .read<LoginRegisterPageProvider>()
-                            .selectedOptions[currentIndex] ==
-                        -1) {
-                      ToastWidgets.errorToast(
-                          context, "Lütfen bir seçim yapınız");
+                    if (context.read<LoginRegisterPageProvider>().selectedOptions[currentIndex] == -1) {
+                      ToastWidgets.errorToast(context, "Lütfen bir seçim yapınız");
                       return;
                     }
                     if (currentIndex != pages.length - 1) {
@@ -184,17 +174,14 @@ class _OnboardingPageState extends State<OnboardingPage>
                         );
                       });
                     } else {
-                      Navigator.pushReplacementNamed(
-                          context, RegisterPage.routeName);
+                      Navigator.pushReplacementNamed(context, RegisterPage.routeName);
                     }
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        currentIndex != pages.length - 1
-                            ? "Devam Et"
-                            : "Kayıt Ol",
+                        currentIndex != pages.length - 1 ? "Devam Et" : "Kayıt Ol",
                         style: AppTheme.semiBoldTextStyle(context, 24).copyWith(
                           height: 1.5,
                         ),

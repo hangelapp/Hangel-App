@@ -29,7 +29,7 @@ void main() async {
   await Hive.openBox("user");
 
   await initializeDateFormatting('tr_TR', null);
-
+  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
