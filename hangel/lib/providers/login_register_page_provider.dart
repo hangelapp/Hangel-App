@@ -59,7 +59,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
   set name(String value) => _name = value;
   set selectedIndex(int value) => selectedIndex = value;
 
-  List<int> selectedOptions = List.filled(3, -1);
+  List<int> selectedOptions = List.filled(3, 0);
 
   // Onboarding'de sorulan soruların cevap listesini güncelle
   void setSelectedOption(int index, int value) {
@@ -150,7 +150,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
         // Belgeyi al
         var data = querySnapshot.docs.first.data() as Map<String, dynamic>;
         UserModel user = UserModel.fromJson(data);
-
+        
         // Kullanıcıyı Hive'a ekle
         HiveHelpers.addUserToHive(user);
         print(user);
@@ -221,6 +221,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
       if (user == null) {
         print("Kullanıcı kaydolurken hatayla karşılaşıldı.");
         generalResponseModel = GeneralResponseModel(success: false, message: "Kullanıcı veritabanında bulunamadı");
+        throw Exception("Kullanıcı kaydolurken hatayla karşılaşıldı.");
       } else {
         print("Verify Phone Number Success : " + user.uid);
         UserModel userModel = UserModel.fromFirebaseUser(user);
@@ -271,6 +272,13 @@ class LoginRegisterPageProvider with ChangeNotifier {
       notifyListeners();
       generalResponseModel = GeneralResponseModel(success: true, message: isExist.toString());
       return generalResponseModel;
+    } on FirebaseAuthException catch (e) {
+      smsCodeState = LoadingState.loaded;
+      notifyListeners();
+      if (e.code == "invalid-verification-code") {
+        return GeneralResponseModel(success: false, message: "Girilen doğrulama kodu yanlış!");
+      }
+      return GeneralResponseModel(success: false, message: e.toString());
     } catch (e) {
       smsCodeState = LoadingState.loaded;
       notifyListeners();

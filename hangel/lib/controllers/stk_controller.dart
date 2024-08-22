@@ -118,6 +118,11 @@ class STKController {
         body: "STK Başvurusu",
         html: stkFormModel.toHTMLTable(),
       );
+      await _firestoreService.addData("forms", {
+        "subject": "STK Başvurusu",
+        "status": "active",
+        "form": stkFormModel.toJson(),
+      });
       return await _firestoreService.updateData(
         "$_stksFormPath/$stkFormId",
         {

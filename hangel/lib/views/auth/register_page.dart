@@ -199,18 +199,19 @@ class _RegisterPageState extends State<RegisterPage> {
                   if (generalResponseModel.success == false) {
                     ToastWidgets.errorToast(context, generalResponseModel.message ?? "");
                     FocusScope.of(context).unfocus();
-                    Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
+                    context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
+                    Navigator.pushReplacementNamed(context, RegisterPage.routeName);
                     return;
                   }
                 }
 
                 // Onbarding'de cevaplanmamış soru varsa tekrar onboarding ekranına at
-                if (_phoneLoginPageType == PhoneLoginPageType.register &&
-                    (context.read<LoginRegisterPageProvider>().selectedOptions.any((element) => element == -1) ==
-                        true)) {
-                  Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
-                  return;
-                }
+                // if (_phoneLoginPageType == PhoneLoginPageType.register &&
+                //     (context.read<LoginRegisterPageProvider>().selectedOptions.any((element) => element == -1) ==
+                //         true)) {
+                //   Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
+                //   return;
+                // }
 
                 // Süreyi ayarla
                 setState(() {
@@ -253,7 +254,7 @@ class _RegisterPageState extends State<RegisterPage> {
             onPressed: () {
               if (_phoneLoginPageType == PhoneLoginPageType.login) {
                 context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.register);
-                Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
+                Navigator.pushReplacementNamed(context, RegisterPage.routeName);
               } else {
                 context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
               }
@@ -419,6 +420,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         context.read<AppViewProvider>().selectedWidget = const HomePage();
                         Navigator.pushReplacementNamed(context, AppView.routeName);
                       } else {
+                        _verifyController.clear();
                         ToastWidgets.errorToast(context, value.message ?? "");
                       }
                     },

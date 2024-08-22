@@ -76,6 +76,11 @@ class VolunteerProvider with ChangeNotifier {
         html: volunteerModel.toHtmlTable(),
       );
 
+      await _firestoreService.addData("forms", {
+        "subject": "Gönüllülük Başvurusu",
+        "status": "active",
+        "form": volunteerModel.toJson(),
+      });
       // Update Firestore with URLs
       return await _firestoreService.updateData(
         "$_volunteerFormPath/$formId",

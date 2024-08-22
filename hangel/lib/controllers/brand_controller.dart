@@ -97,6 +97,11 @@ class BrandController {
         body: "Marka Başvurusu",
         html: brandFormModel.toHTMLTable(),
       );
+      await _firestoreService.addData("forms", {
+        "subject": "Marka Başvurusu",
+        "status": "active",
+        "form": brandFormModel.toJson(),
+      });
       return await _firestoreService.updateData(
         "$brandFormsPath/$formId",
         {

@@ -330,25 +330,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   _tabView(BuildContext context) {
     List<Map<String, dynamic>> statics = [
       {
-        "icon": Icons.people_rounded,
-        "title": "Toplam Bağış Sayısı",
-        "value": "0",
-      },
-      {
-        "icon": Icons.volunteer_activism_rounded,
-        "title": "Toplam Bağış Miktarı",
-        "value": "0",
-      },
-      {
-        "icon": Icons.date_range_rounded,
-        "title": "Üye Olduğu Tarih",
-        "value": HiveHelpers.getUserFromHive().createdAt == null
-            ? "-"
-            : DateFormatHelper.getDate(HiveHelpers.getUserFromHive().createdAt.toString(), context)
-      },
-    ];
-    List<Map<String, dynamic>> volunteerInfo = [
-      {
         "icon": Icons.money_outlined,
         "title": "Toplam Bağış Miktarı",
         "value": "0 TL",
@@ -367,10 +348,24 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       },
       {"icon": Icons.group_work_outlined, "title": "Toplam Bağışçı", "value": "0"},
       {
-        "icon": Icons.history_toggle_off,
-        "title": "Katılım Tarihi",
-        "value": DateFormat('dd MMM yyyy').format(HiveHelpers.getUserFromHive().createdAt ?? DateTime(2024))
+        "icon": Icons.people_rounded,
+        "title": "Toplam Bağış Sayısı",
+        "value": "0",
       },
+      {
+        "icon": Icons.volunteer_activism_rounded,
+        "title": "Toplam Bağış Miktarı",
+        "value": "0",
+      },
+      {
+        "icon": Icons.date_range_rounded,
+        "title": "Üye Olduğu Tarih",
+        "value": HiveHelpers.getUserFromHive().createdAt == null
+            ? "-"
+            : DateFormatHelper.getDate(HiveHelpers.getUserFromHive().createdAt.toString(), context)
+      },
+    ];
+    List<Map<String, dynamic>> volunteerInfo = [
       {"icon": Icons.contact_emergency_outlined, "title": "Görev Aldığı Kuruluş", "value": "-"},
       {"icon": Icons.account_tree_rounded, "title": "Proje Sayısı", "value": "0"},
       {"icon": Icons.one_x_mobiledata_sharp, "title": "Toplam Saat", "value": "0"},
@@ -442,39 +437,32 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       "Kişisel Bilgiler",
                     ),
                     if (_tabController!.index == 0)
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: deviceWidthSize(context, 8),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (context) {
-                                    return const BottomSheetWidget(
-                                        isMinPadding: true, title: "Kişisel Bilgiler", child: UserInformationForm());
-                                  });
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppTheme.white,
-                                  width: 2,
-                                ),
-                              ),
-                              padding: EdgeInsets.all(deviceWidthSize(context, 3)),
-                              child: const Icon(
-                                Icons.edit_rounded,
-                                color: AppTheme.white,
-                                size: 12,
-                              ),
+                      InkWell(
+                        onTap: () {
+                          showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) {
+                                return const BottomSheetWidget(
+                                    isMinPadding: true, title: "Kişisel Bilgiler", child: UserInformationForm());
+                              });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppTheme.white,
+                              width: 2,
                             ),
                           ),
-                        ],
+                          padding: EdgeInsets.all(deviceWidthSize(context, 2)),
+                          child: const Icon(
+                            Icons.edit_rounded,
+                            color: AppTheme.white,
+                            size: 12,
+                          ),
+                        ),
                       ),
                   ],
                 ),

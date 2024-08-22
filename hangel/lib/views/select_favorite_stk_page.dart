@@ -168,7 +168,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
                               }
                             });
                             context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
-                            
+
                             if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
                                       (element) => element == -1,
                                     ) ==
@@ -177,6 +177,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
                                 Navigator.pushReplacementNamed(context, VolunteerForm.routeName);
                                 return;
                               }
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => AppView()));
                             }
                             Navigator.pop(context);
                           },

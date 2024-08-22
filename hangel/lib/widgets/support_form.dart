@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
@@ -24,11 +25,7 @@ class _SupportFormState extends State<SupportForm> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _telephoneController = TextEditingController();
 
-  final List<String> _userTypes = [
-    "Bireysel Kullanıcıyım",
-    "STK Yöneticisiyim",
-    "Marka Yöneticisiyim"
-  ];
+  final List<String> _userTypes = ["Bireysel Kullanıcıyım", "STK Yöneticisiyim", "Marka Yöneticisiyim"];
 
   int selectedIndex = -1;
   @override
@@ -37,6 +34,16 @@ class _SupportFormState extends State<SupportForm> {
     _emailController.text = HiveHelpers.getUserFromHive().email ?? "";
     _nameController.text = HiveHelpers.getUserFromHive().name ?? "";
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _messageController.dispose();
+    _subjectController.dispose();
+    _telephoneController.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,8 +83,7 @@ class _SupportFormState extends State<SupportForm> {
               selectedIndex: selectedIndex,
               isRequired: true,
               onChanged: (value) {
-                context.read<ProfilePageProvider>().supportSelectedIndex =
-                    _userTypes.indexOf(value!);
+                context.read<ProfilePageProvider>().supportSelectedIndex = _userTypes.indexOf(value!);
               },
             ),
             FormFieldWidget(
@@ -95,34 +101,36 @@ class _SupportFormState extends State<SupportForm> {
               minLines: 2,
             ),
             GeneralButtonWidget(
-              onPressed: () {
+              onPressed: () async {
                 if (_nameController.text.isEmpty ||
                     _emailController.text.isEmpty ||
                     _telephoneController.text.isEmpty ||
                     _subjectController.text.isEmpty ||
                     _messageController.text.isEmpty ||
                     selectedIndex == -1) {
-                  ToastWidgets.errorToast(
-                      context, "Lütfen tüm alanları doldurun");
+                  ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurun");
                   return;
                 }
-                if (!_emailController.text.contains("@") ||
-                    !_emailController.text.contains(".")) {
-                  ToastWidgets.errorToast(
-                      context, "Lütfen geçerli bir e-posta girin");
+                if (!_emailController.text.contains("@") || !_emailController.text.contains(".")) {
+                  ToastWidgets.errorToast(context, "Lütfen geçerli bir e-posta girin");
                   return;
                 }
                 if (_telephoneController.text.length < 10) {
-                  ToastWidgets.errorToast(
-                      context, "Lütfen geçerli bir telefon numarası girin");
+                  ToastWidgets.errorToast(context, "Lütfen geçerli bir telefon numarası girin");
                   return;
                 }
+                await FirebaseFirestore.instance.collection("forms").add({
+                  "subject": "İletişim",
+                  "status": "active",
+                  "form": {
+                    "name": _nameController.text,
+                    "mail": _emailController.text,
+                    "phone": _telephoneController.text,
+                    "message": _messageController.text
+                  },
+                });
                 SendMailHelper.sendMail(
-                  to: [
-                    "ismailhilmicom@gmail.com",
-                    "m.aydin005@gmail.com",
-                    "ihadiguzel@gmail.com"
-                  ],
+                  to: ["hangelturkiye@gmail.com"],
                   subject: _subjectController.text,
                   body: "",
                   html: """
@@ -138,8 +146,7 @@ class _SupportFormState extends State<SupportForm> {
               text: "Gönder",
             ),
             SizedBox(
-              height: deviceHeightSize(context, 20) +
-                  MediaQuery.of(context).viewInsets.bottom,
+              height: deviceHeightSize(context, 20) + MediaQuery.of(context).viewInsets.bottom,
             )
           ],
         ),

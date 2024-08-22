@@ -98,9 +98,10 @@ Obilsis Ekibi
                     ),
                   ),
                   builder: (context) => const BottomSheetWidget(
-                      isMinPadding: true,
-                      title: "İletişime Geç",
-                      child: SupportForm()),
+                    isMinPadding: true,
+                    title: "İletişime Geç",
+                    child: SupportForm(),
+                  ),
                 );
               },
               buttonColor: AppTheme.primaryColor,

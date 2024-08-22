@@ -11,16 +11,8 @@ import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
-import 'package:hangel/views/app_view.dart';
-import 'package:hangel/views/brands_page.dart';
-import 'package:hangel/views/favorites_page.dart';
-import 'package:hangel/views/home_page.dart';
-import 'package:hangel/views/profile_page.dart';
-import 'package:hangel/views/stk_page.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
-
-import '../providers/app_view_provider.dart';
 import '../widgets/app_bar_widget.dart';
 import '../widgets/app_name_widget.dart';
 import '../widgets/dialog_widgets.dart';
@@ -263,13 +255,13 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                       color: AppTheme.primaryColor,
                                       size: deviceFontSize(context, 24),
                                     ),
-                                    Text(
-                                      widget.brandModel.favoriteCount.toString(),
-                                      style: AppTheme.normalTextStyle(
-                                        context,
-                                        14,
-                                      ),
-                                    ),
+                                    // Text(
+                                    //   widget.brandModel.favoriteCount.toString(),
+                                    //   style: AppTheme.normalTextStyle(
+                                    //     context,
+                                    //     14,
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
                               ),
