@@ -39,16 +39,7 @@ ListItemWidget(
           SizedBox(
             width: deviceWidthSize(context, 80),
             height: deviceHeightSize(context, 80),
-            // decoration: BoxDecoration(
-            //   borderRadius: BorderRadius.circular(13),
-            //   image: logo == null
-            //       ? null
-            //       : DecorationImage(
-            //           image: NetworkImage(logo),
-            // alignment: Alignment.center,
-            // fit: BoxFit.fitWidth,
-            //         ),
-            // ),
+            
             child: logo != null
                 ? Image.network(
                     logo,

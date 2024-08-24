@@ -55,8 +55,7 @@ class _PickFileWidgetState extends State<PickFileWidget> {
             if (widget.isRequired)
               Text(
                 " *",
-                style: AppTheme.semiBoldTextStyle(context, 16,
-                    color: AppTheme.red),
+                style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.red),
               ),
           ],
         ),
@@ -110,7 +109,7 @@ class _PickFileWidgetState extends State<PickFileWidget> {
         children: [
           Icon(
             Icons.attach_file,
-            size: deviceWidthSize(context, 20),
+            size: 20,
             color: AppTheme.darkBlue.withOpacity(0.7),
           ),
           SizedBox(
@@ -118,8 +117,7 @@ class _PickFileWidgetState extends State<PickFileWidget> {
           ),
           Text(
             "Dosya Seç",
-            style: AppTheme.normalTextStyle(context, 14,
-                color: AppTheme.darkBlue.withOpacity(0.7)),
+            style: AppTheme.normalTextStyle(context, 14, color: AppTheme.darkBlue.withOpacity(0.7)),
           ),
         ],
       ),
@@ -201,6 +199,8 @@ class _PickFileWidgetState extends State<PickFileWidget> {
 
       allowedExtensions: [
         "pdf",
+        "jpg",
+        "png",
       ],
     ).then((value) {
       if (value == null) return;
@@ -208,8 +208,7 @@ class _PickFileWidgetState extends State<PickFileWidget> {
         if (element.size < 60000000) {
           widget.onFilePicked(element);
         } else {
-          ToastWidgets.errorToast(
-              context, "Dosya boyutu 60MB'dan büyük olamaz");
+          ToastWidgets.errorToast(context, "Dosya boyutu 60MB'dan büyük olamaz");
         }
       }
     });

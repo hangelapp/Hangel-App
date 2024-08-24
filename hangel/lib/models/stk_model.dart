@@ -18,10 +18,13 @@ class StkModel {
   List<String> categories;
   int favoriteCount;
   List<String> bmCategories;
+  String? federasyonlar;
+  String? sicilNo;
 
   StkModel({
     this.id,
     this.logo,
+    this.sicilNo,
     this.name,
     this.country,
     this.city,
@@ -29,6 +32,7 @@ class StkModel {
     this.inEarthquakeZone,
     this.specialStatus,
     this.creationDate,
+    this.federasyonlar,
     this.bannerImage,
     this.detailText,
     this.link,
@@ -43,9 +47,11 @@ class StkModel {
     return StkModel(
       id: json['id'],
       logo: json['logo'],
+      sicilNo: json["sicilNo"],
       name: json['name'],
       country: json['country'],
       city: json['city'],
+      federasyonlar: json["federasyonlar"],
       fieldOfBenefit: json['fieldOfBenefit'],
       inEarthquakeZone: json['inEarthquakeZone'],
       specialStatus: json['specialStatus'],
@@ -71,8 +77,10 @@ class StkModel {
       'logo': logo,
       'name': name,
       'country': country,
+      "sicilNo": sicilNo,
       'city': city,
       'fieldOfBenefit': fieldOfBenefit,
+      "federasyonlar": federasyonlar,
       'inEarthquakeZone': inEarthquakeZone,
       'specialStatus': specialStatus,
       'creationDate': creationDate?.toIso8601String(), // Ensure creationDate is a string

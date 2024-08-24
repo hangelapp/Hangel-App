@@ -29,7 +29,6 @@ class BrandFormWidget extends StatefulWidget {
 class _BrandFormWidgetState extends State<BrandFormWidget> {
   int selectedIndex = -1;
   final TextEditingController _brandNameController = TextEditingController();
-
   final TextEditingController _brandMailController = TextEditingController();
   final TextEditingController _brandPhoneController = TextEditingController();
   final TextEditingController _brandFounderController = TextEditingController();
@@ -39,6 +38,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   final TextEditingController _brandContactPersonMailController = TextEditingController();
   final TextEditingController _brandContactPersonJob = TextEditingController();
   final TextEditingController _brandVergiNoController = TextEditingController();
+  final TextEditingController _brandVergiDaireController = TextEditingController();
 
   List<ImageModel?> _logoImage = [];
   List<ImageModel?> _bannerImage = [];
@@ -74,6 +74,21 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
       });
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _brandNameController.dispose();
+    _brandMailController.dispose();
+    _brandPhoneController.dispose();
+    _brandFounderController.dispose();
+    _brandWebsiteController.dispose();
+    _brandContactPersonController.dispose();
+    _brandContactPersonPhoneController.dispose();
+    _brandContactPersonMailController.dispose();
+    _brandContactPersonJob.dispose();
+    _brandVergiNoController.dispose();
+    super.dispose();
   }
 
   @override
@@ -294,6 +309,13 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               title: "Markanın Vergi Numarası",
               isRequired: true,
             ),
+            FormFieldWidget(
+              context,
+              controller: _brandVergiDaireController,
+              keyboardType: TextInputType.number,
+              title: "Vergi Dairesi",
+              isRequired: true,
+            ),
             CheckboxListTile(
               value: isSocialEnterprise,
               contentPadding: EdgeInsets.zero,
@@ -427,6 +449,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     selectedMahalle != null &&
                     _vergiImage.isNotEmpty &&
                     _brandVergiNoController.text.isNotEmpty &&
+                    _brandVergiDaireController.text.isNotEmpty &&
                     _selectedCategories.any((element) => element != -1) &&
                     _categoryControllers.every((element) => element.text.isNotEmpty)) {
                   context

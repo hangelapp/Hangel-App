@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -6,32 +5,31 @@ import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/brand_model.dart';
+import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:hangel/providers/volunteer_provider.dart';
 import 'package:hangel/views/brand_detail_page.dart';
-import 'package:hangel/views/brand_form_widget.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
-import 'package:hangel/widgets/bottom_sheet_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
-import 'package:hangel/widgets/search_widget.dart';
 import 'package:provider/provider.dart';
 
-class BrandsPage extends StatefulWidget {
-  const BrandsPage({Key? key}) : super(key: key);
-  static const routeName = '/brands';
+class STKVolunteersPage extends StatefulWidget {
+  const STKVolunteersPage({Key? key}) : super(key: key);
+  static const routeName = '/stkVolunteers';
   @override
-  State<BrandsPage> createState() => _BrandsPageState();
+  State<STKVolunteersPage> createState() => _STKVolunteersPageState();
 }
 
-class _BrandsPageState extends State<BrandsPage> {
-  List<BrandModel> _brandList = [];
+class _STKVolunteersPageState extends State<STKVolunteersPage> {
+  List<StkModel> _stkList = [];
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
   @override
   void initState() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      context.read<BrandProvider>().getBrands();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await context.read<VolunteerProvider>().getStks();
     });
     _scrollController.addListener(() async {
       if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !_isLoading) {
@@ -95,7 +93,7 @@ class _BrandsPageState extends State<BrandsPage> {
 
   @override
   Widget build(BuildContext context) {
-    _brandList = context.watch<BrandProvider>().brandList;
+    _stkList = context.watch<VolunteerProvider>().stkVolunteers;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -260,13 +258,6 @@ class _BrandsPageState extends State<BrandsPage> {
               },
             ),
           ),
-          // SearchWidget(
-          //   context,
-          //   onChanged: (value) {
-          //     context.read<BrandProvider>().searchText = value;
-          //   },
-          //   controller: _searchController,
-          // ),
           Expanded(
             child: context.watch<BrandProvider>().loadingState == LoadingState.loading
                 ? const Center(child: CircularProgressIndicator())
@@ -284,7 +275,7 @@ class _BrandsPageState extends State<BrandsPage> {
                               left: deviceWidthSize(context, 20),
                             ),
                             child: Text(
-                              "Markalar",
+                              "STK Gönüllü İlanları",
                               style: AppTheme.boldTextStyle(context, 20),
                             ),
                           ),
@@ -294,50 +285,18 @@ class _BrandsPageState extends State<BrandsPage> {
                       Expanded(
                         child: ListView.builder(
                           controller: _scrollController,
-                          itemCount: _brandList.length,
+                          itemCount: context.read<VolunteerProvider>().tempStks.length,
+                          // itemCount: _stkList.length,
                           itemBuilder: (context, index) {
-                            bool isSearch =
-                                _brandList[index].name!.toLowerCase().contains(_searchController.text.toLowerCase());
-                            bool isFilter = false;
-                            String filterText = context.read<BrandProvider>().filterText;
-                            switch (filterText) {
-                              case "depremBolgesi":
-                                isFilter = _brandList[index].inEarthquakeZone!;
-                                break;
-                              case "socialEnterprise":
-                                isFilter = _brandList[index].isSocialEnterprise!;
-                                break;
-                              default:
-                                isFilter =
-                                    (_brandList[index].sector ?? "").toLowerCase().contains(filterText.toLowerCase());
-                                break;
-                            }
-
-                            (_brandList[index].sector ?? "")
-                                .toLowerCase()
-                                .contains(context.read<BrandProvider>().filterText.toLowerCase());
-
-                            bool isReturn = isSearch && isFilter;
-                            return isReturn
-                                ? ListItemWidget(
-                                    context,
-                                    sector: _brandList[index].sector,
-                                    logo: _brandList[index].logo,
-                                    title: (_brandList[index].name ?? "").removeBrackets(),
-                                    desc: _brandList[index].detailText,
-                                    donationRate: _brandList[index].donationRate,
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => BrandDetailPage(
-                                            brandModel: _brandList[index],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Container();
+                            var _volunteerList = context.read<VolunteerProvider>().tempStks;
+                            return ListItemWidget(
+                              context,
+                              sector: _volunteerList[index].categories.first,
+                              logo: _volunteerList[index].logo,
+                              title: (_volunteerList[index].name ?? "").removeBrackets(),
+                              desc: _volunteerList[index].detailText,
+                              onTap: () {},
+                            );
                           },
                         ),
                       ),

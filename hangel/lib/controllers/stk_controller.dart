@@ -80,7 +80,6 @@ class STKController {
   Future<GeneralResponseModel> sendForm(
       {required STKFormModel stkFormModel,
       required List<ImageModel?> logoImage,
-      required List<ImageModel?> bannerImage,
       required PlatformFile? tuzukPDF,
       required List<ImageModel?> faaliyetImage}) async {
     try {
@@ -94,11 +93,6 @@ class STKController {
         await logoImage.first!.file!.readAsBytes(),
       );
 
-      final bannerImageUrl = await _storageService.uploadImagebyByte(
-        "$_stksFormPath/$stkFormId",
-        await bannerImage.first!.file!.readAsBytes(),
-      );
-
       final tuzukPDFUrl = await _storageService.uploadImagebyByte(
         "$_stksFormPath/$stkFormId",
         tuzukPDF?.bytes ?? Uint8List(0),
@@ -109,7 +103,6 @@ class STKController {
         await faaliyetImage.first!.file!.readAsBytes(),
       );
       stkFormModel.logoImage = logoImageUrl;
-      stkFormModel.bannerImage = bannerImageUrl;
       stkFormModel.tuzukPDF = tuzukPDFUrl;
       stkFormModel.faaliyetImage = faaliyetImageUrl;
       SendMailHelper.sendMail(
@@ -127,7 +120,6 @@ class STKController {
         "$_stksFormPath/$stkFormId",
         {
           "logoImage": logoImageUrl,
-          "bannerImage": bannerImageUrl,
           "tuzukPDF": tuzukPDFUrl,
           "faaliyetImage": faaliyetImageUrl,
         },

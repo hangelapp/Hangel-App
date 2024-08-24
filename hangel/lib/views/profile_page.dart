@@ -340,24 +340,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         "value": "0",
       },
       {
-        "icon": Icons.favorite_outline_rounded,
-        "title": "Toplam Favori",
-        "value":
-            (HiveHelpers.getUserFromHive().favoriteStks.length + HiveHelpers.getUserFromHive().favoriteBrands.length)
-                .toString()
-      },
-      {"icon": Icons.group_work_outlined, "title": "Toplam Bağışçı", "value": "0"},
-      {
-        "icon": Icons.people_rounded,
-        "title": "Toplam Bağış Sayısı",
-        "value": "0",
-      },
-      {
-        "icon": Icons.volunteer_activism_rounded,
-        "title": "Toplam Bağış Miktarı",
-        "value": "0",
-      },
-      {
         "icon": Icons.date_range_rounded,
         "title": "Üye Olduğu Tarih",
         "value": HiveHelpers.getUserFromHive().createdAt == null
@@ -366,7 +348,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       },
     ];
     List<Map<String, dynamic>> volunteerInfo = [
-      {"icon": Icons.contact_emergency_outlined, "title": "Görev Aldığı Kuruluş", "value": "-"},
+      {"icon": Icons.contact_emergency_outlined, "title": "Görev Aldığı Kuruluşlar", "value": "-"},
       {"icon": Icons.account_tree_rounded, "title": "Proje Sayısı", "value": "0"},
       {"icon": Icons.one_x_mobiledata_sharp, "title": "Toplam Saat", "value": "0"},
     ];

@@ -30,6 +30,7 @@ class STKFormWidget extends StatefulWidget {
 class _stkFormWidgetState extends State<STKFormWidget> {
   final TextEditingController _stkNameController = TextEditingController();
   final TextEditingController _stkFullNameController = TextEditingController();
+  final TextEditingController _stkSicilNoController = TextEditingController();
 
   final TextEditingController _stkMailController = TextEditingController();
   final TextEditingController _stkPhoneController = TextEditingController();
@@ -40,9 +41,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
   final TextEditingController _stkContactPersonMailController = TextEditingController();
   final TextEditingController _stkContactPersonJob = TextEditingController();
   final TextEditingController _stkAddressController = TextEditingController();
+  final TextEditingController _stkFederasyonlar = TextEditingController();
 
   List<ImageModel?> _logoImage = [];
-  List<ImageModel?> _bannerImage = [];
   PlatformFile? _tuzukPDF;
   List<ImageModel?> _faaliyetImage = [];
 
@@ -78,6 +79,24 @@ class _stkFormWidgetState extends State<STKFormWidget> {
   }
 
   @override
+  void dispose() {
+    _stkNameController.dispose();
+    _stkFullNameController.dispose();
+    _stkMailController.dispose();
+    _stkPhoneController.dispose();
+    _stkFounderController.dispose();
+    _stkWebsiteController.dispose();
+    _stkContactPersonController.dispose();
+    _stkContactPersonPhoneController.dispose();
+    _stkContactPersonMailController.dispose();
+    _stkContactPersonJob.dispose();
+    _stkAddressController.dispose();
+    _stkSicilNoController.dispose();
+    _stkFederasyonlar.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
@@ -86,6 +105,12 @@ class _stkFormWidgetState extends State<STKFormWidget> {
         ),
         child: Column(
           children: [
+            FormFieldWidget(
+              context,
+              controller: _stkSicilNoController,
+              title: "STK Sicil No",
+              isRequired: true,
+            ),
             FormFieldWidget(
               context,
               controller: _stkNameController,
@@ -154,26 +179,6 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 });
               },
               infoText: "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
-            ),
-            PickImageWidget(
-              context,
-              title: "STK'nın Banner Görseli",
-              isSelectOnlyOne: true,
-              onImagePicked: (List<XFile?> image) {
-                setState(() {
-                  _bannerImage.add(ImageModel(
-                    imageType: ImageType.asset,
-                    file: image[0]!,
-                  ));
-                });
-              },
-              selectedImages: _bannerImage,
-              onImageRemoved: (ImageModel? image) {
-                setState(() {
-                  _bannerImage = [];
-                });
-              },
-              infoText: "Markanın logosu, 800x500 boyutlarında, png veya jpg formatında olmalıdır.",
             ),
             FormFieldWidget(
               context,
@@ -306,6 +311,12 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 });
               },
             ),
+            FormFieldWidget(
+              context,
+              controller: _stkFederasyonlar,
+              title: "STK'nın Bağlı Bulunduğu Federasyon ve Konfederasyonlar",
+              isRequired: true,
+            ),
             DropdownWidget(
               context,
               titles: _sectors,
@@ -379,16 +390,17 @@ class _stkFormWidgetState extends State<STKFormWidget> {
 
                 if (_stkNameController.text.isNotEmpty &&
                     _stkFullNameController.text.isNotEmpty &&
+                    _stkSicilNoController.text.isNotEmpty &&
                     _stkContactPersonController.text.isNotEmpty &&
                     _stkContactPersonPhoneController.text.isNotEmpty &&
                     _stkContactPersonMailController.text.isNotEmpty &&
                     _stkContactPersonJob.text.isNotEmpty &&
                     _logoImage.isNotEmpty &&
-                    _bannerImage.isNotEmpty &&
                     _stkWebsiteController.text.isNotEmpty &&
                     _stkMailController.text.isNotEmpty &&
                     _stkPhoneController.text.isNotEmpty &&
                     _stkFounderController.text.isNotEmpty &&
+                    _stkFederasyonlar.text.isNotEmpty &&
                     selectedIl != null &&
                     selectedIlce != null &&
                     selectedMahalle != null &&
@@ -420,7 +432,6 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                           selectedSector: _sectors[_selectedSectorIndex],
                         ),
                         logoImage: _logoImage,
-                        bannerImage: _bannerImage,
                         tuzukPDF: _tuzukPDF,
                         faaliyetImage: _faaliyetImage,
                       )

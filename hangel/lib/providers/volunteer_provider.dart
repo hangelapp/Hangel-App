@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hangel/models/stk_model.dart';
 
 import '../helpers/locator.dart';
 import '../helpers/send_mail_helper.dart';
@@ -14,6 +16,25 @@ class VolunteerProvider with ChangeNotifier {
   final _firestoreService = locator<FirestoreServices>();
   final _storageService = locator<StorageServices>();
   final _volunteerFormPath = 'volunteerForm';
+  List<StkModel> stkVolunteers = [];
+  List<StkModel> tempStks = [
+    StkModel(
+      categories: List.generate(3, (index) => "Deneme",)
+    ),
+    StkModel(
+      categories: List.generate(3, (index) => "Deneme",)
+    ),
+  ];
+
+  Future<List<StkModel>> getStks() async {
+    List<StkModel> stks = [];
+    var instance = FirebaseFirestore.instance;
+    var data = await instance.collection("stkVolunteers").get();
+    data.docs.forEach((e) {
+      stks.add(StkModel.fromJson(e.data()));
+    });
+    return stks;
+  }
 
   LoadingState _loadingState = LoadingState.loaded;
   LoadingState get loadingState => _loadingState;
@@ -75,6 +96,7 @@ class VolunteerProvider with ChangeNotifier {
         body: "Gönüllülük Başvurusu",
         html: volunteerModel.toHtmlTable(),
       );
+
 
       await _firestoreService.addData("forms", {
         "subject": "Gönüllülük Başvurusu",

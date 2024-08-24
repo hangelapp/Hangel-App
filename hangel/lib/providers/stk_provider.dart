@@ -163,7 +163,6 @@ class STKProvider with ChangeNotifier {
   Future<GeneralResponseModel> sendForm(
       {required STKFormModel stkFormModel,
       required List<ImageModel?> logoImage,
-      required List<ImageModel?> bannerImage,
       required PlatformFile? tuzukPDF,
       required List<ImageModel?> faaliyetImage}) async {
     _sendFormState = LoadingState.loading;
@@ -171,7 +170,6 @@ class STKProvider with ChangeNotifier {
     final response = await _stkController.sendForm(
       stkFormModel: stkFormModel,
       logoImage: logoImage,
-      bannerImage: bannerImage,
       tuzukPDF: tuzukPDF,
       faaliyetImage: faaliyetImage,
     );

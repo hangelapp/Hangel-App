@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
@@ -8,7 +7,6 @@ import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/views/donation_history_page.dart';
-import 'package:hangel/views/home_page.dart';
 import 'package:hangel/views/settings_page.dart';
 import 'package:hangel/views/splash_page.dart';
 import 'package:hangel/views/support_page.dart';
@@ -59,7 +57,7 @@ class _AppViewState extends State<AppView> {
           ),
           PersistentBottomNavBarItem(
             icon: const Icon(Icons.shopping_bag_rounded),
-            title: ("Markalar"),
+            title: ("Gönüllü"),
             activeColorPrimary: AppTheme.primaryColor,
             inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
@@ -246,7 +244,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             MenuItemWidget(
-              title: "Markalar",
+              title: "Gönüllü",
               icon: Icon(
                 Icons.shopping_bag_rounded,
                 color: AppTheme.primaryColor,

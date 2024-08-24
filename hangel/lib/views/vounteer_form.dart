@@ -19,6 +19,7 @@ import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/send_mail_helper.dart';
 import '../providers/login_register_page_provider.dart';
 
 class VolunteerForm extends StatefulWidget {
@@ -71,6 +72,14 @@ class _VolunteerFormState extends State<VolunteerForm> {
       });
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    expertiseAreasController.dispose();
+    totalYearsOfWorkController.dispose();
+    stkAddressController.dispose();
   }
 
   @override
@@ -200,7 +209,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
                     resumePDF = null;
                   });
                 },
-                infoText: "Dosya, Pdf formatında ve 6mb'dan küçük olmalıdır.",
+                infoText: "Dosya, Pdf,Jpg ya da Png formatında ve 6mb'dan küçük olmalıdır.",
                 selectedFile: resumePDF,
               ),
               DropdownWidget(
@@ -320,6 +329,13 @@ class _VolunteerFormState extends State<VolunteerForm> {
                               image: null,
                               cv: null);
                           print("${volunteerImage.first ?? "LAN"}");
+                          SendMailHelper.sendMail(
+                            to: ["hangelturkiye@gmail.com"],
+                            // to: ["cakirg685@gmail.com"],
+                            subject: "Gönüllülük Başvurusu",
+                            body: "Gönüllülük Başvurusu",
+                            html: "Başvurunuz alınmıştır",
+                          );
                           await context
                               .read<VolunteerProvider>()
                               .sendForm(

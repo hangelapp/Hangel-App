@@ -4,7 +4,7 @@ import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/firebase_options.dart';
 import 'package:hangel/views/about_us_page.dart';
 import 'package:hangel/views/app_view.dart';
-import 'package:hangel/views/brands_page.dart';
+import 'package:hangel/views/stk_volunteers_page.dart';
 import 'package:hangel/views/donation_history_page.dart';
 import 'package:hangel/views/frequently_asked_questions_page.dart';
 import 'package:hangel/views/home_page.dart';
@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
         HomePage.routeName: (context) => const HomePage(),
         OnboardingPage.routeName: (context) => const OnboardingPage(),
         RegisterPage.routeName: (context) => const RegisterPage(),
-        BrandsPage.routeName: (context) => const BrandsPage(),
+        STKVolunteersPage.routeName: (context) => const STKVolunteersPage(),
         SettingsPage.routeName: (context) => const SettingsPage(),
         AboutUsPage.routeName: (context) => const AboutUsPage(),
         SelectFavoriteStkPage.routeName: (context) => const SelectFavoriteStkPage(),
