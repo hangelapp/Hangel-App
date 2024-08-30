@@ -15,6 +15,7 @@ ListItemWidget(
   required String? desc,
   required Function()? onTap,
   double? donationRate,
+  bool? isSTKVolunteer,
 }) {
   return GestureDetector(
     onTap: onTap,
@@ -39,7 +40,6 @@ ListItemWidget(
           SizedBox(
             width: deviceWidthSize(context, 80),
             height: deviceHeightSize(context, 80),
-            
             child: logo != null
                 ? Image.network(
                     logo,
@@ -126,6 +126,16 @@ ListItemWidget(
               ],
             ),
           ),
+          isSTKVolunteer == true
+              ? ElevatedButton(
+                  onPressed: () {},
+                  child: Text("Başvur"),
+                  style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(AppTheme.primaryColor),
+                      foregroundColor: WidgetStatePropertyAll(Colors.white),
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)))),
+                )
+              : SizedBox.shrink()
         ],
       ),
     ),

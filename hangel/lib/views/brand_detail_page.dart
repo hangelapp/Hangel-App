@@ -401,35 +401,17 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                           builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(
                             context,
                             onAcceptButtonPressed: () async {
-                              UrlLauncherHelper().launch("${widget.brandModel.link}").whenComplete(
+                              if (HiveHelpers.getUserFromHive().phone == null) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(content: Text("Sistemde kayıtlı cep telefonu bulunamadı!")));
+                                return;
+                              }
+                              print("${widget.brandModel.link}&aff_sub=${HiveHelpers.getUserFromHive().phone}");
+                              UrlLauncherHelper()
+                                  .launch("${widget.brandModel.link}&aff_sub=${HiveHelpers.getUserFromHive().phone}")
+                                  .whenComplete(
                                     () => Navigator.pop(context),
                                   );
-                              DonationModel donationModel = DonationModel(
-                                brandLogo: widget.brandModel.logo,
-                                brandName: widget.brandModel.name,
-                                cardAmount: -1,
-                                donationAmount: -1,
-                                shoppingDate: DateTime.now(),
-                                stkName: context
-                                    .read<STKProvider>()
-                                    .stkList
-                                    .where(
-                                      (e) => e.id == HiveHelpers.getUserFromHive().favoriteStks.first,
-                                    )
-                                    .toList()
-                                    .first
-                                    .name,
-                                stkLogo: context
-                                    .read<STKProvider>()
-                                    .stkList
-                                    .where(
-                                      (e) => e.id == HiveHelpers.getUserFromHive().favoriteStks.first,
-                                    )
-                                    .toList()
-                                    .first
-                                    .logo,
-                              );
-                              context.read<DonationProvider>().addDonation(donationModel);
                             },
                             title: "Bilgilendirme",
                             buttonText: "Yönlendir",

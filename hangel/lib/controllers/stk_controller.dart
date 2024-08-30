@@ -70,11 +70,15 @@ class STKController {
 
   Future<List<StkModel>> getSTKs() async {
     List stkList = await _firestoreService.getData(_stksPath);
-    return stkList.map((e) {
+    List<StkModel> stks = [];
+    stkList.forEach((e) {
       StkModel model = StkModel.fromJson(e.data() as Map<String, dynamic>);
-      model.id = e.id;
-      return model;
-    }).toList();
+      if (model.isActive == true) {
+        model.id = e.id;
+        stks = [...stks, model];
+      }
+    });
+    return stks;
   }
 
   Future<GeneralResponseModel> sendForm(

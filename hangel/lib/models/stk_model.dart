@@ -19,12 +19,13 @@ class StkModel {
   int favoriteCount;
   List<String> bmCategories;
   String? federasyonlar;
-  String? sicilNo;
+  // String? sicilNo;
+  bool? isActive;
 
   StkModel({
     this.id,
     this.logo,
-    this.sicilNo,
+    // this.sicilNo,
     this.name,
     this.country,
     this.city,
@@ -39,36 +40,39 @@ class StkModel {
     this.donorCount,
     this.type,
     this.categories = const [],
-    this.favoriteCount = 157,
+    this.favoriteCount = 0,
     this.bmCategories = const <String>[],
+    this.isActive,
   });
 
   factory StkModel.fromJson(Map<String, dynamic> json) {
     return StkModel(
-      id: json['id'],
-      logo: json['logo'],
-      sicilNo: json["sicilNo"],
-      name: json['name'],
-      country: json['country'],
-      city: json['city'],
-      federasyonlar: json["federasyonlar"],
-      fieldOfBenefit: json['fieldOfBenefit'],
-      inEarthquakeZone: json['inEarthquakeZone'],
-      specialStatus: json['specialStatus'],
-      creationDate: json['creationDate'] != null
-          ? (json['creationDate'] is Timestamp
-              ? (json['creationDate'] as Timestamp).toDate()
-              : DateTime.parse(json['creationDate']))
-          : null,
-      bannerImage: json['bannerImage'],
-      detailText: json['detailText'],
-      link: json['link'],
-      donorCount: json['donorCount'],
-      type: json['type'],
-      categories: List<String>.from(json['categories'] ?? []),
-      favoriteCount: json['favoriteCount'] ?? 157,
-      bmCategories: List<String>.from(json['bmCategories'] ?? []),
-    );
+        id: json['id'],
+        logo: json['logo'] ?? "",
+        // sicilNo: json["sicilNo"],
+        name: json['name'] ?? "",
+        country: json['country'] ?? "",
+        city: json['city'] ?? "",
+        federasyonlar: json["federasyonlar"] ?? "",
+        fieldOfBenefit: json['fieldOfBenefit'] ?? "",
+        inEarthquakeZone: json['inEarthquakeZone'] ?? false,
+        specialStatus: json['specialStatus'] ?? "",
+        creationDate: json['creationDate'] != null
+            ? (json['creationDate'] is Timestamp
+                ? (json['creationDate'] as Timestamp).toDate()
+                : DateTime.parse(json['creationDate']))
+            : null,
+        bannerImage: json['bannerImage'] ?? "",
+        detailText: json['detailText'] ?? "",
+        link: json['link'] ?? "",
+        donorCount: json['donorCount'] ?? 0,
+        type: json['type'] ?? "",
+        categories: List<String>.from(json['categories'] ?? [""]),
+        favoriteCount: json['favoriteCount'] ?? 0,
+        bmCategories: List<String>.from(
+          json['bmCategories'] ?? [],
+        ),
+        isActive: json["isActive"] ?? true);
   }
 
   Map<String, dynamic> toJson() {
@@ -77,7 +81,7 @@ class StkModel {
       'logo': logo,
       'name': name,
       'country': country,
-      "sicilNo": sicilNo,
+      // "sicilNo": sicilNo,
       'city': city,
       'fieldOfBenefit': fieldOfBenefit,
       "federasyonlar": federasyonlar,
@@ -92,6 +96,7 @@ class StkModel {
       'categories': categories,
       'favoriteCount': favoriteCount,
       'bmCategories': bmCategories,
+      'isActive': isActive
     };
   }
 }

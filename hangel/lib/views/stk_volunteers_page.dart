@@ -10,6 +10,7 @@ import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/providers/volunteer_provider.dart';
 import 'package:hangel/views/brand_detail_page.dart';
+import 'package:hangel/views/stk_detail_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
 import 'package:provider/provider.dart';
@@ -283,20 +284,37 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                         ],
                       ),
                       Expanded(
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          itemCount: context.read<VolunteerProvider>().tempStks.length,
-                          // itemCount: _stkList.length,
-                          itemBuilder: (context, index) {
-                            var _volunteerList = context.read<VolunteerProvider>().tempStks;
-                            return ListItemWidget(
-                              context,
-                              sector: _volunteerList[index].categories.first,
-                              logo: _volunteerList[index].logo,
-                              title: (_volunteerList[index].name ?? "").removeBrackets(),
-                              desc: _volunteerList[index].detailText,
-                              onTap: () {},
-                            );
+                        child: FutureBuilder(
+                          future: context.read<VolunteerProvider>().getStks(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return ListView.builder(
+                                controller: _scrollController,
+                                itemCount: snapshot.data?.length ?? 0,
+                                // itemCount: _stkList.length,
+                                itemBuilder: (context, index) {
+                                  return ListItemWidget(
+                                    context,
+                                    sector: (snapshot.data?[index].categories ?? [""]).first,
+                                    logo: snapshot.data?[index].logo,
+                                    title: (snapshot.data?[index].name ?? "").removeBrackets(),
+                                    desc: snapshot.data?[index].detailText,
+                                    isSTKVolunteer: true,
+                                    onTap: () {
+                                      if (snapshot.data?[index] != null) {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => STKDetailPage(stkModel: snapshot.data![index]),
+                                            ));
+                                      }
+                                    },
+                                  );
+                                },
+                              );
+                            } else {
+                              return Center(child: CircularProgressIndicator());
+                            }
                           },
                         ),
                       ),

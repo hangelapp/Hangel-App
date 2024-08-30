@@ -70,8 +70,8 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
   @override
   void initState() {
     _tabController = TabController(length: 4, vsync: this);
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      // context.read<STKProvider>().getSTKs();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await context.read<STKProvider>().getSTKs();
     });
     super.initState();
   }

@@ -29,45 +29,47 @@ void main() async {
   await Hive.openBox("user");
 
   await initializeDateFormatting('tr_TR', null);
-  
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
     MultiProvider(
       providers: providers,
-      child: const MyApp(),
+      child: MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final ThemeData themeData = ThemeData(
+    primaryColor: AppTheme.primaryColor,
+    primarySwatch: MaterialColor(
+      AppTheme.primaryColor.value,
+      const {
+        50: AppTheme.primaryColor,
+        100: AppTheme.primaryColor,
+        200: AppTheme.primaryColor,
+        300: AppTheme.primaryColor,
+        400: AppTheme.primaryColor,
+        500: AppTheme.primaryColor,
+        600: AppTheme.primaryColor,
+        700: AppTheme.primaryColor,
+        800: AppTheme.primaryColor,
+        900: AppTheme.primaryColor,
+      },
+    ),
+    useMaterial3: true,
+  );
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hangel',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: AppTheme.primaryColor,
-        primarySwatch: MaterialColor(
-          AppTheme.primaryColor.value,
-          const {
-            50: AppTheme.primaryColor,
-            100: AppTheme.primaryColor,
-            200: AppTheme.primaryColor,
-            300: AppTheme.primaryColor,
-            400: AppTheme.primaryColor,
-            500: AppTheme.primaryColor,
-            600: AppTheme.primaryColor,
-            700: AppTheme.primaryColor,
-            800: AppTheme.primaryColor,
-            900: AppTheme.primaryColor,
-          },
-        ),
-        useMaterial3: true,
-      ),
+      theme: themeData,
       initialRoute: SplashPage.routeName,
       routes: {
         AppView.routeName: (context) => const AppView(),

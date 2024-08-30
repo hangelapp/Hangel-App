@@ -26,6 +26,8 @@ def handle_postback(request: Request):
         revenue = request.args.get('revenue')
         transaction_id = request.args.get('transaction_id')
 
+        
+
         users_ref = db.collection('users').document(
             "6kGnMPHZdVTAUr9RC9Y885dvTZS2")
         users_ref.update({
