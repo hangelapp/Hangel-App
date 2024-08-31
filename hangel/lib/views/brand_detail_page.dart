@@ -406,9 +406,12 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                     .showSnackBar(SnackBar(content: Text("Sistemde kayıtlı cep telefonu bulunamadı!")));
                                 return;
                               }
-                              print("${widget.brandModel.link}&aff_sub=${HiveHelpers.getUserFromHive().phone}");
+                              // htpss://ad.reklm.com/aff_c?offer_id={OFFER_ID}&aff_id=35329&aff_sub={AFF_SUB_ID}&aff_sub2={uniquedeger}
+                              print(
+                                  "TRACKİNG LİNK\n${widget.brandModel.link}&aff_sub=${widget.brandModel.id}&aff_sub2=${HiveHelpers.getUserFromHive().phone}");
                               UrlLauncherHelper()
-                                  .launch("${widget.brandModel.link}&aff_sub=${HiveHelpers.getUserFromHive().phone}")
+                                  .launch(
+                                      "${widget.brandModel.link}&aff_sub=${widget.brandModel.id}&aff_sub2=${HiveHelpers.getUserFromHive().phone}")
                                   .whenComplete(
                                     () => Navigator.pop(context),
                                   );
@@ -416,7 +419,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             title: "Bilgilendirme",
                             buttonText: "Yönlendir",
                             content:
-                                "Şu an beta yayınındayız. Yapılan alışverişler veya beta yayını süresince bağışa dönüşmeyecek. Bu süre zarfında bizi sosyal medya hesaplarımızdan takip edebilirsiniz."
+                                "Şu an beta yayınındayız. Yapılan alışverişler bağışlarım menüsünde görünmeyebilir. Bu süre zarfında bizi sosyal medya hesaplarımızdan takip edebilirsiniz."
                             // \n\nBu alışveriş ile hangi STK’ya bağış yapmak istersiniz?",
                             // "Şu an beta yayınındayız. Yapılan alışverişler veya beta yayını süresince bağışa dönüşmeyecek. Bu süre zarfında bizi sosyal medya hesaplarımızdan takip edebilirsiniz.",
 

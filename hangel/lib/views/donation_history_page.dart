@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
-import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/donation_model.dart';
 import 'package:hangel/models/user_model.dart';
@@ -22,40 +20,16 @@ class DonationHistoryPage extends StatefulWidget {
 
 class _DonationHistoryPageState extends State<DonationHistoryPage> {
   String totalDonationAmount = "27,22";
-  String correctTotalDonationAmount = "27,22";
-  List<DonationModel> donationHistory = [
-    DonationModel(
-      brandLogo: "assets/images/brand_logo.png",
-      brandName: "Güzel Otomotiv",
-      donationAmount: 12.36,
-      stkLogo: "assets/images/brand_logo.png",
-      stkName: "Türk Kızılayı",
-      shoppingDate: DateTime.now(),
-      cardAmount: 10000,
-    ),
-    DonationModel(
-      brandLogo: "assets/images/brand_logo.png",
-      brandName: "Sağlam İnşaat",
-      donationAmount: 14.86,
-      stkLogo: "assets/images/brand_logo.png",
-      stkName: "Güvercin Severler Derneği",
-      shoppingDate: DateTime.now().subtract(const Duration(days: 15)),
-      cardAmount: 8700,
-    ),
-  ];
   UserModel user = HiveHelpers.getUserFromHive();
   @override
   void initState() {
     super.initState();
-    List<DonationModel> listDonation = [];
-    listDonation.addAll(context.read<DonationProvider>().donations);
-    listDonation.addAll(donationHistory);
-    donationHistory.clear();
-    donationHistory = listDonation;
+    context.read<DonationProvider>().getDonations();
   }
 
   @override
   Widget build(BuildContext context) {
+    var donations = context.watch<DonationProvider>().donations;
     // totalDonationAmount = donationHistory
     //     .map((e) => e.donationAmount == -1 ? 0.0 : (e.donationAmount ?? 0))
     //     .reduce((value, element) => value + element);
@@ -74,7 +48,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                 buildDonationFilter(size),
                 const SizedBox(height: 20),
                 ...List.generate(
-                  donationHistory.length,
+                  donations.length,
                   (i) => Stack(
                     children: [
                       ListTile(
@@ -83,21 +57,21 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              (donationHistory[i].shoppingDate?.day ?? "").toString(),
+                              (donations[i].shoppingDate?.day ?? "").toString(),
                               style: const TextStyle(
                                 fontSize: 12, // Yazı boyutunu ayarlayın
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
                             Text(
-                              "${getTurkishMonth(donationHistory[i].shoppingDate?.month)} ${donationHistory[i].shoppingDate?.year ?? ""}",
+                              "${getTurkishMonth(donations[i].shoppingDate?.month)} ${donations[i].shoppingDate?.year ?? ""}",
                               style: const TextStyle(
                                 fontSize: 10, // Yazı boyutunu ayarlayın
                                 fontWeight: FontWeight.w400, // Gerekirse ağırlığı ayarlayın
                               ),
                             ),
                             Text(
-                              "${(donationHistory[i].shoppingDate?.hour ?? "").toString().padLeft(2, '0')}:${(donationHistory[i].shoppingDate?.minute ?? "").toString().padLeft(2, '0')}",
+                              "${(donations[i].shoppingDate?.hour ?? "").toString().padLeft(2, '0')}:${(donations[i].shoppingDate?.minute ?? "").toString().padLeft(2, '0')}",
                               style: const TextStyle(
                                 fontSize: 10, // Yazı boyutunu ayarlayın
                                 fontWeight: FontWeight.w300,
@@ -108,21 +82,25 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                         title: Row(
                           children: [
                             CircleLogoWidget(
-                              logoUrl: donationHistory[i].brandLogo ?? "",
-                              logoName: donationHistory[i].brandName?[0] ?? "",
+                              logoUrl: donations[i].brandId ?? "",
+                              logoName: donations[i].brandId?[0] ?? "",
                             ),
-                            const SizedBox(width: 3,),
-                            Flexible(child: Text(donationHistory[i].brandName ?? "-")),
+                            const SizedBox(
+                              width: 3,
+                            ),
+                            Flexible(child: Text(donations[i].brandId ?? "-")),
                           ],
                         ),
                         subtitle: Row(
                           children: [
                             CircleLogoWidget(
-                              logoUrl: donationHistory[i].stkLogo ?? "",
-                              logoName: donationHistory[i].stkName?[0] ?? "",
+                              logoUrl: donations[i].stkId1 ?? "",
+                              logoName: donations[i].stkId1?[0] ?? "",
                             ),
-                            const SizedBox(width: 3,),
-                            Flexible(child: Text(donationHistory[i].stkName ?? "-")),
+                            const SizedBox(
+                              width: 3,
+                            ),
+                            Flexible(child: Text(donations[i].stkId1 ?? "-")),
                           ],
                         ),
                         trailing: SizedBox(
@@ -139,13 +117,13 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                                         style: AppTheme.boldTextStyle(context, 14),
                                       ),
                                       Text(
-                                        "${(donationHistory[i].donationAmount ?? "-").toString()} TL",
+                                        "${(donations[i].saleAmount ?? "-").toString()} TL",
                                       ),
                                     ],
                                   ),
                                   Row(
                                     children: [
-                                     Text(
+                                      Text(
                                         "Durum: ",
                                         style: AppTheme.boldTextStyle(context, 14),
                                       ),
@@ -159,7 +137,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                             ],
                           ),
                         ),
-                        onTap: (){},
+                        onTap: () {},
                       ),
                       const Divider(
                         height: 1,
@@ -376,7 +354,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                   style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
                 ),
                 Text(
-                  "$correctTotalDonationAmount TL",
+                  "$totalDonationAmount TL",
                   style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
                 ),
               ],

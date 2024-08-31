@@ -1,45 +1,42 @@
 class DonationModel {
-  final String? brandLogo;
-  final String? brandName;
-  final String? stkLogo;
-  final String? stkName;
-  final double? donationAmount;
+  final String userId;
+  final String brandId;
+  final String stkId1;
+  final String stkId2;
+  final double saleAmount;
+  final String orderNumber;
   final DateTime? shoppingDate;
-  final double? cardAmount;
 
-  DonationModel({
-    this.brandLogo,
-    this.brandName,
-    this.stkLogo,
-    this.stkName,
-    this.donationAmount,
-    this.shoppingDate,
-    this.cardAmount,
-  });
+  DonationModel(
+      {required this.brandId,
+      required this.userId,
+      required this.stkId1,
+      required this.stkId2,
+      required this.saleAmount,
+      required this.orderNumber,
+      required this.shoppingDate});
 
   Map<String, dynamic> toMap() {
     return {
-      'brandLogo': brandLogo,
-      'brandName': brandName,
-      'stkLogo': stkLogo,
-      'stkName': stkName,
-      'donationAmount': donationAmount,
+      'userId': userId,
+      'brandId': brandId,
+      'stkId1': stkId1,
+      'stkId2': stkId2,
+      'saleAmount': saleAmount,
+      'orderNumber': orderNumber,
       'shoppingDate': shoppingDate,
-      'cardAmount': cardAmount,
     };
   }
 
   factory DonationModel.fromMap(Map<String, dynamic> map) {
     return DonationModel(
-      brandLogo: map['brandLogo'],
-      brandName: map['brandName'],
-      stkLogo: map['stkLogo'],
-      stkName: map['stkName'],
-      donationAmount: map['donationAmount'],
-      shoppingDate: map['shoppingDate'] == null
-          ? null
-          : DateTime.parse(map['shoppingDate'].toString()),
-      cardAmount: map['cardAmount'],
+      userId: map['userId'],
+      brandId: map['brandId'],
+      stkId1: map['stkId1'],
+      stkId2: map['stkId2'],
+      saleAmount: map['saleAmount'],
+      orderNumber: map['orderNumber'],
+      shoppingDate: map['shoppingDate'] == null ? null : DateTime.parse(map['shoppingDate'].toString()),
     );
   }
 }

@@ -31,7 +31,6 @@ void main() async {
   await initializeDateFormatting('tr_TR', null);
 
   await Firebase.initializeApp(
-    name: "hangel-1",
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(

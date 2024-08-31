@@ -18,15 +18,14 @@ CORS(app)  # CORS ayarlarını yap
 # Firebase Function
 
 
+# https://deneme.com/postback?adv_sub={ADV_SUB}&sale_amount={SALE_AMOUNT}&aff_sub={AFF_SUB}&aff_sub2={aff_sub2}
 @https_fn.on_request()
 def handle_postback(request: Request):
     try:
-        phone_number = request.args.get('phone')
-        payout = request.args.get('payout')
-        revenue = request.args.get('revenue')
-        transaction_id = request.args.get('transaction_id')
-
-        
+        adv_sub = request.args.get('adv_sub') # Sipariş Numarası        ->Bu şuan kullanılmayacak
+        sale_amount = request.args.get('sale_amount') # Satış Tutarı    ->Bu tutar ikiye bölünüp stk'lara dağıtılacak
+        aff_sub = request.args.get('aff_sub') # Marka Offer Id          ->Bu markayı eşleştirmek için kullanılacak
+        aff_sub2 = request.args.get('aff_sub2') # User Phone Number     ->Kullanıcıyı eşleştirmek için kullanılacak
 
         users_ref = db.collection('users').document(
             "6kGnMPHZdVTAUr9RC9Y885dvTZS2")
