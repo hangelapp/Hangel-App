@@ -66,12 +66,12 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBoSaWTEF2K68VOuCWjX4bFA_ibEI9HX74',
-    appId: '1:681395322694:ios:92be33a851076515a06f47',
+    apiKey: 'AIzaSyCRvxqC1JQsCWNvNZzuZPsfJGu07XIxRu8',
+    appId: '1:681395322694:ios:5100a4f83aba6d57a06f47',
     messagingSenderId: '681395322694',
     projectId: 'hangel-1',
     storageBucket: 'hangel-1.appspot.com',
-    iosClientId: '681395322694-p2oa843dkt8hfipn939jn2paceo5jjpm.apps.googleusercontent.com',
-    iosBundleId: 'com.hangel.app',
+    iosClientId: '681395322694-ljene7v6nks8627psmfv4d984stnrklc.apps.googleusercontent.com',
+    iosBundleId: 'com.hangel.ios.app',
   );
 }

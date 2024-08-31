@@ -2,18 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CLIENT_ID</key>
+	<key>ANDROID_CLIENT_ID</key>
 	<string>681395322694-p2oa843dkt8hfipn939jn2paceo5jjpm.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.681395322694-p2oa843dkt8hfipn939jn2paceo5jjpm</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBoSaWTEF2K68VOuCWjX4bFA_ibEI9HX74</string>
+	<string>AIzaSyCRvxqC1JQsCWNvNZzuZPsfJGu07XIxRu8</string>
 	<key>GCM_SENDER_ID</key>
 	<string>681395322694</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.hangel.app</string>
+	<string>com.hangel.ios.app</string>
 	<key>PROJECT_ID</key>
 	<string>hangel-1</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +27,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:681395322694:ios:92be33a851076515a06f47</string>
+	<string>1:681395322694:ios:5100a4f83aba6d57a06f47</string>
 </dict>
 </plist>
