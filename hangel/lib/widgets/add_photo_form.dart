@@ -1,17 +1,13 @@
 import 'dart:io';
-
-import 'package:hangel/providers/profile_page_provider.dart';
-
-import '/constants/app_theme.dart';
-import '/constants/size.dart';
-import '/providers/login_register_page_provider.dart';
-
-import '/widgets/general_button_widget.dart';
-import '/widgets/toast_widgets.dart';
 import 'package:flutter/material.dart';
-
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+
+import '../providers/login_register_page_provider.dart';
+import '../providers/profile_page_provider.dart';
+import 'general_button_widget.dart';
+import 'toast_widgets.dart';
 
 class AddPhotoForm extends StatefulWidget {
   const AddPhotoForm({Key? key}) : super(key: key);
@@ -31,21 +27,14 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
       children: [
         if (_image != null)
           Container(
-            width: deviceWidthSize(context, 200),
-            height: deviceWidthSize(context, 200),
-            margin: EdgeInsets.only(
-              bottom: deviceHeightSize(context, 20),
-            ),
+            width: 200,
+            height: 200,
+            margin: EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppTheme.primaryColor,
-                width: 5,
-              ),
+              border: Border.all(color: Colors.blue, width: 5),
               image: DecorationImage(
-                image: FileImage(
-                  File(_image!.path),
-                ),
+                image: FileImage(File(_image!.path)),
                 fit: BoxFit.cover,
               ),
             ),
@@ -54,110 +43,95 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
           children: [
             Expanded(
               child: GestureDetector(
-                onTap: () {
-                  ImagePicker()
-                      .pickImage(source: ImageSource.camera)
-                      .then((value) {
-                    context.read<ProfilePageProvider>().image = value;
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: deviceWidthSize(context, 20),
-                    vertical: deviceHeightSize(context, 20),
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.camera_alt_rounded,
-                        size: deviceWidthSize(context, 50),
-                        color: AppTheme.primaryColor,
-                      ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 16),
-                      ),
-                      Text(
-                        "Kameradan Çek",
-                        textAlign: TextAlign.center,
-                        style: AppTheme.semiBoldTextStyle(context, 16),
-                      ),
-                    ],
-                  ),
+                onTap: () => _pickImage(ImageSource.camera),
+                child: _buildOptionButton(
+                  context,
+                  icon: Icons.camera_alt_rounded,
+                  text: "Kameradan Çek",
                 ),
               ),
             ),
-            SizedBox(
-              width: deviceWidthSize(context, 20),
-            ),
+            SizedBox(width: 20),
             Expanded(
               child: GestureDetector(
-                onTap: () {
-                  ImagePicker()
-                      .pickImage(source: ImageSource.gallery)
-                      .then((value) {
-                    context.read<ProfilePageProvider>().image = value;
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: deviceWidthSize(context, 20),
-                    vertical: deviceHeightSize(context, 20),
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.photo_library_rounded,
-                        size: deviceWidthSize(context, 50),
-                        color: AppTheme.primaryColor,
-                      ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 16),
-                      ),
-                      Text(
-                        "Galeriden\nSeç",
-                        textAlign: TextAlign.center,
-                        style: AppTheme.semiBoldTextStyle(context, 16),
-                      ),
-                    ],
-                  ),
+                onTap: () => _pickImage(ImageSource.gallery),
+                child: _buildOptionButton(
+                  context,
+                  icon: Icons.photo_library_rounded,
+                  text: "Galeriden Seç",
                 ),
               ),
             ),
           ],
         ),
-        SizedBox(
-          height: deviceHeightSize(context, 20),
-        ),
+        SizedBox(height: 20),
         GeneralButtonWidget(
           onPressed: () {
-            context.read<ProfilePageProvider>().uploadImage().then(
-              (value) {
+            if (_image != null) {
+              context.read<ProfilePageProvider>().uploadImage().then((value) {
                 ToastWidgets.responseToast(context, value);
                 if (value.success == true) {
                   Navigator.pop(context);
                 }
-              },
-            );
+              });
+            }
           },
-          isLoading: context.watch<ProfilePageProvider>().addButtonState ==
-              LoadingState.loading,
-          buttonColor: _image == null
-              ? AppTheme.secondaryColor.withOpacity(0.4)
-              : AppTheme.secondaryColor,
+          isLoading: context.watch<ProfilePageProvider>().addButtonState == LoadingState.loading,
+          buttonColor: _image == null ? Colors.grey.withOpacity(0.4) : Colors.blue,
           text: "Kaydet",
         ),
-        SizedBox(
-          height: deviceHeightSize(context, 30),
-        ),
+        SizedBox(height: 30),
       ],
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await ImagePicker().pickImage(source: source);
+    if (pickedFile != null) {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Resmi Kırp',
+            toolbarColor: Colors.blue,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            minimumAspectRatio: 1.0,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        setState(() {
+          _image = XFile(croppedFile.path);
+          context.read<ProfilePageProvider>().image = _image;
+        });
+      }
+    }
+  }
+
+  Widget _buildOptionButton(BuildContext context, {required IconData icon, required String text}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 50, color: Colors.blue),
+          SizedBox(height: 16),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 }
