@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../constants/size.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFFF90058);
+  // static const Color primaryColor = Color(0xFFF90058);
+  // static const Color primaryColor = Color(0xFF39ff14);
+  static const Color primaryColor = Color(0xFFF34723);
   static const Color secondaryColor = Color(0xFF2B2D42);
   static const Color darkBlue = Color(0xFF37474F);
   static const Color red = Color(0xFFFF5964);
@@ -18,48 +20,39 @@ class AppTheme {
 
   static const appFontFamily = 'Poppins';
 
-  static TextStyle normalTextStyle(BuildContext context, double size,
-          {Color color = black}) =>
-      TextStyle(
+  static TextStyle normalTextStyle(BuildContext context, double size, {Color color = black}) => TextStyle(
         fontSize: deviceFontSize(context, size),
         fontFamily: appFontFamily,
         color: color,
       );
-  static TextStyle lightTextStyle(BuildContext context, double size,
-          {Color color = black}) =>
-      TextStyle(
+  static TextStyle lightTextStyle(BuildContext context, double size, {Color color = black}) => TextStyle(
         fontSize: deviceFontSize(context, size),
         fontFamily: appFontFamily,
         fontWeight: FontWeight.w300,
         color: color,
       );
-  static TextStyle boldTextStyle(BuildContext context, double size,
-          {Color color = black}) =>
-      TextStyle(
+  static TextStyle boldTextStyle(BuildContext context, double size, {Color color = black}) => TextStyle(
         fontSize: deviceFontSize(context, size),
         fontFamily: appFontFamily,
         fontWeight: FontWeight.bold,
         color: color,
       );
-  static TextStyle semiBoldTextStyle(BuildContext context, double size,
-          {Color color = black}) =>
+  static TextStyle semiBoldTextStyle(BuildContext context, double size, {Color color = black}) => TextStyle(
+      fontSize: deviceFontSize(context, size), fontFamily: appFontFamily, fontWeight: FontWeight.w600, color: color);
+  static TextStyle semiBoldTextStyleWithUnderline(BuildContext context, double size, {Color color = black}) =>
       TextStyle(
-        fontSize: deviceFontSize(context, size),
-        fontFamily: appFontFamily,
-        fontWeight: FontWeight.w600,
-        color: color,
-      );
-  static TextStyle extraBoldTextStyle(BuildContext context, double size,
-          {Color color = black}) =>
-      TextStyle(
+          fontSize: deviceFontSize(context, size),
+          fontFamily: appFontFamily,
+          fontWeight: FontWeight.w600,
+          color: color,
+          decoration: TextDecoration.underline);
+  static TextStyle extraBoldTextStyle(BuildContext context, double size, {Color color = black}) => TextStyle(
         fontSize: deviceFontSize(context, size),
         fontFamily: appFontFamily,
         fontWeight: FontWeight.w800,
         color: color,
       );
-  static TextStyle blackTextStyle(BuildContext context, double size,
-          {Color color = black}) =>
-      TextStyle(
+  static TextStyle blackTextStyle(BuildContext context, double size, {Color color = black}) => TextStyle(
         fontSize: deviceFontSize(context, size),
         fontFamily: appFontFamily,
         fontWeight: FontWeight.w900,
@@ -81,8 +74,7 @@ class AppTheme {
         ),
       ];
 
-  static InputDecoration borderInputDecoration({String? hintText}) =>
-      InputDecoration(
+  static InputDecoration borderInputDecoration({String? hintText}) => InputDecoration(
         hintText: hintText,
         fillColor: lightBlue.withOpacity(0.2),
         filled: true,
@@ -106,8 +98,7 @@ class AppTheme {
         ),
       );
 
-  static InputDecoration noneBorderInputDecoration({String? hintText}) =>
-      InputDecoration(
+  static InputDecoration noneBorderInputDecoration({String? hintText}) => InputDecoration(
         hintText: hintText,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),

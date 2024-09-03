@@ -41,6 +41,7 @@ class _AppViewState extends State<AppView> {
       body: PersistentTabView(
         context,
         controller: tabcontroller,
+        stateManagement: false,
         screens: widgetOptions,
         padding: const EdgeInsets.symmetric(vertical: 8),
         navBarStyle: NavBarStyle.style15,
@@ -48,15 +49,16 @@ class _AppViewState extends State<AppView> {
             navBarItemAnimation: ItemAnimationSettings(curve: Curves.linear, duration: Durations.extralong3),
             screenTransitionAnimation: ScreenTransitionAnimationSettings(
                 screenTransitionAnimationType: ScreenTransitionAnimationType.slide, animateTabTransition: true)),
+
         items: [
           PersistentBottomNavBarItem(
-            icon: const Icon(Icons.home_rounded),
+            icon: const Icon(Icons.shopping_bag_rounded),
             activeColorPrimary: AppTheme.primaryColor,
             inactiveColorPrimary: CupertinoColors.systemGrey,
-            title: ("Ana Sayfa"),
+            title: ("Markalar"),
           ),
           PersistentBottomNavBarItem(
-            icon: const Icon(Icons.shopping_bag_rounded),
+            icon: const Icon(Icons.handshake_rounded),
             title: ("Gönüllü"),
             activeColorPrimary: AppTheme.primaryColor,
             inactiveColorPrimary: CupertinoColors.systemGrey,
@@ -161,7 +163,7 @@ class _AppViewState extends State<AppView> {
 
   Widget drawerWidget(BuildContext context) {
     return Drawer(
-      width: deviceWidth(context) * 0.5,
+      width: deviceWidth(context) * 0.6,
       backgroundColor: AppTheme.white,
       child: SizedBox(
         height: deviceHeight(context),

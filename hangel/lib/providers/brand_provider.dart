@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hangel/controllers/brand_controller.dart';
 import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
@@ -22,6 +19,14 @@ class BrandProvider with ChangeNotifier {
 
   int page = 1;
   int limit = 10;
+
+  Set<BrandModel> _favoriteBrandList = {};
+  Set<BrandModel> get favoriteBrandList => _favoriteBrandList;
+  set favoriteBrandList(Set<BrandModel> value) {
+    _favoriteBrandList = value;
+    notifyListeners();
+  }
+
   List<BrandModel> _brandList = [];
   List<BrandModel> get brandList => _brandList;
   set brandList(List<BrandModel> value) {
@@ -96,7 +101,6 @@ class BrandProvider with ChangeNotifier {
           "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
       if (response.statusCode == 200) {
         var json = response.data;
-        print(response.data);
         // Offer <-> Brand argument match
         for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
           if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
@@ -143,15 +147,104 @@ class BrandProvider with ChangeNotifier {
                 logo: logo,
                 name: (name ?? "").removeBrackets(),
                 sector: sector));
-            print("*********************************************************");
           } else {
-            print("Element with ID ${val["Offer"]["id"]} already exists.");
+            // print("Element with ID ${val["Offer"]["id"]} already exists.");
           }
         }
         notifyListeners();
         return GeneralResponseModel(success: true, data: brandList, message: "Successfully");
       }
       return GeneralResponseModel(success: false, data: response.data, message: "Error handled");
+    } catch (e) {
+      return GeneralResponseModel(success: false, message: e.toString(), data: null);
+    }
+  }
+
+  Future<GeneralResponseModel> getFilteredOffers(List<String> brandIds) async {
+    Dio dio = Dio();
+
+    try {
+      // Listeyi her veri çağrımından önce sıfırlayın
+      _favoriteBrandList.clear();
+      List<BrandModel> fetchedBrands = [];
+
+      // İlk olarak teklif verilerini çekin
+      for (String id in brandIds) {
+        var response = await dio.getUri(Uri.parse(
+            "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findById&id=$id"));
+
+        if (response.statusCode == 200) {
+          var offerData = response.data["response"]["data"]["Offer"];
+
+          if (offerData != null) {
+            String? name = offerData["name"];
+            String? sector = ""; // JSON'da sektör bilgisi yoksa, default boş string
+            bool? inEarthquakeZone = false;
+            bool? isSocialEnterprise = false;
+            double? donationRate = double.tryParse(offerData["percent_payout"]);
+            DateTime? creationDate = DateTime.now();
+            String? bannerImage = ""; // JSON'da banner resmi yoksa, default boş string
+            String? detailText = offerData["description"] ?? "";
+            String? link = offerData["preview_url"];
+            List<CategoryModel> categories = []; // JSON'da kategori bilgisi yoksa, boş liste
+
+            // Model oluşturun ve listeye ekleyin
+            fetchedBrands.add(BrandModel(
+              id: id,
+              bannerImage: bannerImage,
+              categories: categories,
+              creationDate: creationDate,
+              detailText: detailText,
+              donationRate: donationRate,
+              favoriteCount: 0,
+              inEarthquakeZone: inEarthquakeZone,
+              isSocialEnterprise: isSocialEnterprise,
+              link: link,
+              logo: "", // Logo URL'yi daha sonra güncelleyeceğiz
+              name: name?.removeBrackets() ?? "",
+              sector: sector,
+            ));
+          }
+        }
+      }
+
+      // İkinci olarak küçük resimleri çekin
+      var thumbnailResponse = await dio.getUri(Uri.parse(
+          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=getThumbnail&ids[]=${brandIds.join('&ids[]=')}"));
+
+      if (thumbnailResponse.statusCode == 200) {
+        var thumbnailData = thumbnailResponse.data["response"]["data"];
+
+        for (var item in thumbnailData) {
+          String offerId = item["offer_id"];
+          var thumbnail = item["Thumbnail"]?.values.first;
+
+          if (thumbnail != null) {
+            String? thumbnailUrl = thumbnail["url"];
+            // İlgili teklif modelini bulup logo URL'sini güncelleyin
+            var brand = fetchedBrands.firstWhere((b) => b.id == offerId,
+                orElse: () => BrandModel(
+                    id: offerId,
+                    name: '',
+                    logo: '',
+                    bannerImage: '',
+                    categories: [],
+                    creationDate: DateTime.now(),
+                    detailText: '',
+                    donationRate: 0.0,
+                    favoriteCount: 0,
+                    inEarthquakeZone: false,
+                    isSocialEnterprise: false,
+                    link: '',
+                    sector: ''));
+            brand.logo = thumbnailUrl ?? "";
+          }
+        }
+      }
+
+      _favoriteBrandList.addAll(fetchedBrands);
+      notifyListeners();
+      return GeneralResponseModel(success: true, data: _favoriteBrandList, message: "Successfully");
     } catch (e) {
       return GeneralResponseModel(success: false, message: e.toString(), data: null);
     }
@@ -165,7 +258,6 @@ class BrandProvider with ChangeNotifier {
           "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=250&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
       if (response.statusCode == 200) {
         var json = response.data;
-        print(response.data);
         // Offer <-> Brand argument match
         for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
           String offerName = val["Offer"]["name"].toString().toLowerCase().removeBrackets().replaceAll(" ", "");
@@ -210,7 +302,6 @@ class BrandProvider with ChangeNotifier {
                 name: (name ?? "").removeBrackets(),
                 sector: sector));
           }
-          print("*********************************************************");
         }
         notifyListeners();
         return resultBrands;
@@ -233,6 +324,18 @@ class BrandProvider with ChangeNotifier {
     await getOffers();
     _loadingState = LoadingState.loaded;
     notifyListeners();
+  }
+
+  Future<GeneralResponseModel> getFavoriteBrands() async {
+    if (HiveHelpers.getUserFromHive().favoriteBrands.isEmpty) {
+      return GeneralResponseModel();
+    }
+    _loadingState = LoadingState.loading;
+    notifyListeners();
+    var result = await getFilteredOffers(HiveHelpers.getUserFromHive().favoriteBrands);
+    _loadingState = LoadingState.loaded;
+    notifyListeners();
+    return result;
   }
 
   void nextPage() {

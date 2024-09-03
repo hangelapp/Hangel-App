@@ -1,7 +1,7 @@
 class BrandModel {
   String? id; // Offer
   final String? name; // Offer
-  final String? logo; // Contain
+  String? logo; // Contain
   final String? sector; // Contain
   final bool? inEarthquakeZone; // Default Value false
   final bool? isSocialEnterprise; // Default Value false

@@ -402,7 +402,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       }
                       if (value.success == true) {
                         if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                          Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
+                          Navigator.pushReplacement(
+                              context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
                           return;
                         }
                         if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
@@ -430,7 +431,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     (value) {
                       if (value.success == true) {
                         if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                          Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
+                          Navigator.pushReplacement(
+                              context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
                           return;
                         }
                         if (context.read<LoginRegisterPageProvider>().selectedOptions.any(

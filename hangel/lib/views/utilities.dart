@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hangel/views/app_view.dart';
 import '../constants/app_theme.dart';
+import '../constants/size.dart';
+import 'select_favorite_stk_page.dart';
 
 List<Color> randomColors = [
   AppTheme.blue,
@@ -135,6 +139,70 @@ Future<Uint8List> assetToUint8List(String assetPath) async {
   return bytes;
 }
 
+Widget nullStkWidget(context) {
+  return Container(
+    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppTheme.primaryColor.withOpacity(0.05)),
+    width: deviceWidth(context) * 0.9,
+    child: Padding(
+      padding: EdgeInsets.all(15),
+      child: Column(
+        children: [
+          Icon(Icons.now_widgets_outlined, size: 30),
+          Text("Henüz bir STK eklemediniz."),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SelectFavoriteStkPage(
+                            inTree: true,
+                          )));
+            },
+            style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(const Color(0xFF2B2D42)),
+                shadowColor: WidgetStatePropertyAll(Colors.transparent)),
+            label: Text(
+              "STK SEÇ",
+              style: TextStyle(color: Colors.white),
+            ),
+            icon: Icon(Icons.keyboard_double_arrow_right_rounded, color: Colors.white),
+            iconAlignment: IconAlignment.end,
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+Widget nullBrandWidget(context) {
+  return Container(
+    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppTheme.primaryColor.withOpacity(0.05)),
+    width: deviceWidth(context) * 0.9,
+    child: Padding(
+      padding: EdgeInsets.all(15),
+      child: Column(
+        children: [
+          Icon(Icons.now_widgets_outlined, size: 30),
+          Text("Henüz bir Marka favorilemediniz."),
+          ElevatedButton.icon(
+            onPressed: () {
+              tabcontroller.jumpToTab(0);
+            },
+            style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(const Color(0xFF2B2D42)),
+                shadowColor: WidgetStatePropertyAll(Colors.transparent)),
+            label: Text(
+              "Markalara Göz At",
+              style: TextStyle(color: Colors.white),
+            ),
+            icon: Icon(Icons.keyboard_double_arrow_right_rounded, color: Colors.white),
+            iconAlignment: IconAlignment.end,
+          )
+        ],
+      ),
+    ),
+  );
+}
 
   // List<StkModel> stkModels = [
   //   StkModel(

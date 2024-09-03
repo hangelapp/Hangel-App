@@ -6,12 +6,9 @@ import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/url_launcher_helper.dart';
 import 'package:hangel/models/brand_model.dart';
-import 'package:hangel/models/donation_model.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
-import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import '../widgets/app_bar_widget.dart';
 import '../widgets/app_name_widget.dart';
@@ -30,38 +27,13 @@ class BrandDetailPage extends StatefulWidget {
 
 class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProviderStateMixin {
   TabController? _tabController;
-  Color? backgroundColor;
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
     _tabController!.addListener(() {
       setState(() {});
     });
-    _updatePalette();
     super.initState();
-  }
-
-  Future<void> _updatePalette() async {
-    try {
-      final PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
-        NetworkImage(widget.brandModel.logo ?? ""),
-      );
-
-      setState(() {
-        backgroundColor = paletteGenerator.vibrantColor?.color ??
-            paletteGenerator.dominantColor?.color ??
-            paletteGenerator.lightVibrantColor?.color ??
-            paletteGenerator.darkVibrantColor?.color ??
-            paletteGenerator.lightMutedColor?.color ??
-            paletteGenerator.darkMutedColor?.color ??
-            AppTheme.primaryColor;
-        backgroundColor = backgroundColor?.withOpacity(0.5);
-      });
-    } catch (e) {
-      setState(() {
-        backgroundColor = AppTheme.primaryColor; // Fallback color in case of error
-      });
-    }
   }
 
   @override
@@ -131,17 +103,24 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                 backgroundColor: AppTheme.white,
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(60),
-                                  child: Image.network(
-                                    widget.brandModel.logo ?? "",
-                                    fit: BoxFit.contain,
-                                    alignment: Alignment.center,
-                                    errorBuilder: (context, error, stackTrace) => Center(
-                                      child: Text(
-                                        widget.brandModel.name![0],
-                                        style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
-                                      ),
-                                    ),
-                                  ),
+                                  child: widget.brandModel.logo != null
+                                      ? Image.network(
+                                          widget.brandModel.logo!,
+                                          fit: BoxFit.contain,
+                                          alignment: Alignment.center,
+                                          errorBuilder: (context, error, stackTrace) => Center(
+                                            child: Text(
+                                              widget.brandModel.name![0],
+                                              style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                            ),
+                                          ),
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            widget.brandModel.name![0],
+                                            style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                          ),
+                                        ),
                                 ),
                               ),
                             ),
@@ -284,6 +263,13 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Bilgilendirmeler",
+                            style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
+                          ),
+                        ),
                         Divider(
                           color: AppTheme.secondaryColor.withOpacity(0.1),
                           thickness: 1,
@@ -293,43 +279,69 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Icon(Icons.info_outline),
+                            SizedBox(
+                              width: 10,
+                            ),
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Yaptığın alışverişlerde %${(widget.brandModel.donationRate ?? 0.12)} oranında bağış yapma imkanı!",
-                                style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
+                              child: SizedBox(
+                                width: deviceWidth(context) * 0.75,
+                                child: Text(
+                                  "Yaptığın alışverişlerde %${(widget.brandModel.donationRate ?? 0.12)} oranında bağış yapma imkanı!",
+                                  style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
+                                ),
                               ),
                             ),
                           ],
                         ),
+                        SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Icon(Icons.info_outline),
+                            SizedBox(
+                              width: 10,
+                            ),
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Bağış ödemesi için ortalama zaman: 60 gün",
-                                style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
+                              child: SizedBox(
+                                width: deviceWidth(context) * 0.75,
+                                child: Text(
+                                  "Bağış ödemesi için ortalama zaman: 75 gün",
+                                  style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        Container(
-                            padding: const EdgeInsets.only(top: 8),
-                            alignment: Alignment.centerLeft,
-                            child: ElevatedButton.icon(
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.info_outline),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: TextButton(
+                                style: ButtonStyle(padding: WidgetStatePropertyAll(EdgeInsets.zero)),
+                                child: Text(
+                                  "Genel Bonus Koşulları",
+                                  style: AppTheme.semiBoldTextStyleWithUnderline(context, 14, color: AppTheme.black),
+                                ),
                                 onPressed: () {
                                   showKosulDialog(context);
                                 },
-                                style:
-                                    const ButtonStyle(foregroundColor: WidgetStatePropertyAll(AppTheme.primaryColor)),
-                                label: const Text(
-                                  "Genel Bonus Koşulları",
-                                  style: TextStyle(fontSize: 12),
-                                ))),
+                              ),
+                            ),
+                          ],
+                        ),
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
@@ -639,7 +651,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
           right: deviceWidthSize(context, 10),
         ),
         decoration: BoxDecoration(
-          color: backgroundColor ?? AppTheme.primaryColor,
+          color: AppTheme.white,
           boxShadow: AppTheme.shadowList,
           borderRadius: BorderRadius.circular(13),
         ),
@@ -651,10 +663,10 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
             img != null
                 ? Image.network(
                     img,
-                    width: deviceWidth(context) * 0.9,
+                    width: deviceWidth(context) * 0.4,
                     height: deviceHeight(context) * 0.09,
                     alignment: Alignment.center,
-                    fit: BoxFit.fitHeight,
+                    fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => const Center(
                       child: AppNameWidget(
                         fontSize: 32,

@@ -302,17 +302,29 @@ class _PickImageWidgetState extends State<PickImageWidget> {
                           },
                           fit: BoxFit.cover,
                         )
-                      : Image.network(
-                          widget.selectedImages[index]?.url ?? "",
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              "assets/images/correctImage.png",
-                              fit: BoxFit.contain,
-                              alignment: Alignment.center,
-                            );
-                          },
-                          fit: BoxFit.cover,
-                        ),
+                      : widget.selectedImages[index]?.url != null
+                          ? Image.network(
+                              widget.selectedImages[index]!.url!,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  "assets/images/correctImage.png",
+                                  fit: BoxFit.contain,
+                                  alignment: Alignment.center,
+                                );
+                              },
+                              fit: BoxFit.cover,
+                            )
+                          : Image.memory(
+                              widget.selectedImages.first?.platformFile?.bytes ?? Uint8List(0),
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  "assets/images/correctImage.png",
+                                  fit: BoxFit.contain,
+                                  alignment: Alignment.center,
+                                );
+                              },
+                              fit: BoxFit.cover,
+                            ),
             ),
           ),
           Positioned(

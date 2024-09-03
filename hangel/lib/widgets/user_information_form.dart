@@ -24,6 +24,7 @@ class UserInformationForm extends StatefulWidget {
 class _UserInformationFormState extends State<UserInformationForm> {
   final List<String> _genderList = ['Erkek', 'Kadın', 'Belirtmek İstemiyorum'];
   String? _selectedGender = HiveHelpers.getUserFromHive().gender;
+  final TextEditingController _nameController = TextEditingController(text: HiveHelpers.getUserFromHive().name ?? '');
   final TextEditingController _emailController = TextEditingController(text: HiveHelpers.getUserFromHive().email ?? '');
   final TextEditingController _doorAndHomeNumber =
       TextEditingController(text: HiveHelpers.getUserFromHive().doorAndHomeNumber ?? '');
@@ -90,6 +91,12 @@ class _UserInformationFormState extends State<UserInformationForm> {
         ),
         child: Column(
           children: [
+            FormFieldWidget(
+              context,
+              title: 'Ad Soyad',
+              controller: _nameController,
+              keyboardType: TextInputType.name,
+            ),
             DropdownWidget(
               context,
               title: 'Cinsiyet',
@@ -183,6 +190,11 @@ class _UserInformationFormState extends State<UserInformationForm> {
                 // if (_birthDate != DateTime.now()) {
                 //   userModel.birthDate = _birthDate;
                 // }
+                if (!(_nameController.text.length >= 4)) {
+                  ToastWidgets.errorToast(context, "İsim 4 harften büyük olmalıdır");
+                  return;
+                }
+                userModel.name = _nameController.text;
                 userModel.birthDate = correctDateTime;
                 userModel.city = selectedIl;
                 userModel.district = selectedIlce;
@@ -191,6 +203,7 @@ class _UserInformationFormState extends State<UserInformationForm> {
                 userModel.email = _emailController.text;
                 userModel.gender = _selectedGender ?? '';
                 context.read<ProfilePageProvider>().updateProfile({
+                  "name": _nameController.text,
                   'birthDate': correctDateTime,
                   'city': selectedIl.toString(),
                   'district': selectedIlce.toString(),

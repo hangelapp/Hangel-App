@@ -36,7 +36,7 @@ class ProfilePageController {
       GeneralResponseModel responseModel =
           await _firestoreService.updateData('users/${HiveHelpers.getUserFromHive().uid!}', map);
       HiveHelpers.addUserToHive(UserModel.fromJson(map));
-      print(map);
+      // print(map);
       return responseModel;
     } catch (e) {
       print("updateProfile Error : " + e.toString());

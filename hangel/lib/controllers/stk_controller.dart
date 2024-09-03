@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/locator.dart';
@@ -81,6 +82,18 @@ class STKController {
     return stks;
   }
 
+  Future<List<StkModel>> getFavoriteSTKs(List<String> favoriteIds) async {
+    // 'stklar' koleksiyonundan, 'id' alanı 'favoriteIds' listesinde yer alan kayıtları alıyoruz.
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection("stklar").where("id", whereIn: favoriteIds).get();
+    List<StkModel> stks = [];
+    // Sorgu sonucunu StkModel listesine dönüştürüyoruz.
+    snapshot.docs.forEach((doc) {
+      stks.add(StkModel.fromJson(doc.data() as Map<String, dynamic>));
+    });
+    return stks;
+  }
+
   Future<GeneralResponseModel> sendForm(
       {required STKFormModel stkFormModel,
       required List<ImageModel?> logoImage,
@@ -118,6 +131,7 @@ class STKController {
       await _firestoreService.addData("forms", {
         "subject": "STK Başvurusu",
         "status": "active",
+        //
         "form": stkFormModel.toJson(),
       });
       return await _firestoreService.updateData(
@@ -141,18 +155,18 @@ class STKController {
       String userId = HiveHelpers.getUid();
       UserModel userModel = HiveHelpers.getUserFromHive();
 
-      var response = await _firestoreService.updateData("users/$userId", {
+      await _firestoreService.updateData("users/$userId", {
         'favoriteAddedDate': userModel.favoriteAddedDate,
         'favoriteStks': userModel.favoriteStks,
       });
       print("UPDATE RESPONSE: ");
-      print(response);
+      // print(response);
       return GeneralResponseModel(
         success: true,
         message: "Brand added successfully",
       );
     } catch (e) {
-      print("addRemoveFavoriteStks : " + e.toString());
+      print("addRemoveFavoriteStks Error : " + e.toString());
       return GeneralResponseModel(
         success: false,
         message: e.toString(),

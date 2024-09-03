@@ -13,7 +13,6 @@ class StkModel {
   String? bannerImage;
   String? detailText;
   String? link;
-  int? donorCount;
   String? type;
   List<String> categories;
   int favoriteCount;
@@ -21,29 +20,33 @@ class StkModel {
   String? federasyonlar;
   // String? sicilNo;
   bool? isActive;
+  double? totalDonation; // Tüm donation değerleri toplanacak
+  int? processCount; // Her seferinde 1 artacak
+  int? totalDonor; // Bunu donation'larda bu id'yle eşleşen kayıt yoksa arttır
 
-  StkModel({
-    this.id,
-    this.logo,
-    // this.sicilNo,
-    this.name,
-    this.country,
-    this.city,
-    this.fieldOfBenefit,
-    this.inEarthquakeZone,
-    this.specialStatus,
-    this.creationDate,
-    this.federasyonlar,
-    this.bannerImage,
-    this.detailText,
-    this.link,
-    this.donorCount,
-    this.type,
-    this.categories = const [],
-    this.favoriteCount = 0,
-    this.bmCategories = const <String>[],
-    this.isActive,
-  });
+  StkModel(
+      {this.id,
+      this.logo,
+      // this.sicilNo,
+      this.name,
+      this.country,
+      this.city,
+      this.fieldOfBenefit,
+      this.inEarthquakeZone,
+      this.specialStatus,
+      this.creationDate,
+      this.federasyonlar,
+      this.bannerImage,
+      this.detailText,
+      this.link,
+      this.type,
+      this.categories = const [],
+      this.favoriteCount = 0,
+      this.bmCategories = const <String>[],
+      this.isActive,
+      this.totalDonation,
+      this.processCount,
+      this.totalDonor});
 
   factory StkModel.fromJson(Map<String, dynamic> json) {
     return StkModel(
@@ -65,14 +68,16 @@ class StkModel {
         bannerImage: json['bannerImage'] ?? "",
         detailText: json['detailText'] ?? "",
         link: json['link'] ?? "",
-        donorCount: json['donorCount'] ?? 0,
         type: json['type'] ?? "",
         categories: List<String>.from(json['categories'] ?? [""]),
         favoriteCount: json['favoriteCount'] ?? 0,
         bmCategories: List<String>.from(
           json['bmCategories'] ?? [],
         ),
-        isActive: json["isActive"] ?? true);
+        isActive: json["isActive"] ?? true,
+        totalDonation: double.tryParse(((json["totalDonation"]) ?? 0.0).toString()),
+        processCount: json["processCount"] ?? 0,
+        totalDonor: json["totalDonor"] ?? 0);
   }
 
   Map<String, dynamic> toJson() {
@@ -91,12 +96,14 @@ class StkModel {
       'bannerImage': bannerImage,
       'detailText': detailText,
       'link': link,
-      'donorCount': donorCount,
       'type': type,
       'categories': categories,
       'favoriteCount': favoriteCount,
       'bmCategories': bmCategories,
-      'isActive': isActive
+      'isActive': isActive,
+      "totalDonation": totalDonation,
+      "processCount": processCount,
+      "totalDonor": totalDonor
     };
   }
 }

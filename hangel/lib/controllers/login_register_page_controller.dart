@@ -69,7 +69,8 @@ class LoginRegisterPageController {
         )
       ]);
       if (kDebugMode) {
-        print("isUserExist : ${data.first.data()}");
+        // print("isUserExist : ${data.first.data()}");
+        print("User zaten var");
       }
       UserModel userModel = UserModel.fromJson(data.first.data() as Map<String, dynamic>);
       if (userModel.uid == null || userModel.phone == null) {

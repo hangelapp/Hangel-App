@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hangel/constants/app_theme.dart';
@@ -20,9 +22,228 @@ class STKPage extends StatefulWidget {
   State<STKPage> createState() => _STKPageState();
 }
 
-class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
+class _STKPageState extends State<STKPage> {
   List<StkModel> _stkList = [];
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+
+  bool _isLoading = false;
+
+  TabController? _tabController;
+
+  @override
+  void initState() {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await context.read<STKProvider>().getSTKs();
+    });
+    // scrollController.addListener(() async {
+    //   if (scrollController.position.pixels >= (scrollController.position.maxScrollExtent - 10) && !_isLoading) {
+    //     await _loadMoreData();
+    //   }
+    // });
+    super.initState();
+  }
+
+  Future<void> _loadMoreData() async {
+    // context.watch<STKProvider>().loadingState = LoadingState.loading;
+    context.read<STKProvider>().nextPage();
+    await context
+        .read<STKProvider>()
+        .getSTKs()
+        .whenComplete(() => null //context.watch<STKProvider>().loadingState = LoadingState.loaded);
+            );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _stkList = context.watch<STKProvider>().stkList;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: DefaultTabController(
+        length: 4,
+        child: Column(
+          children: [
+            AppBarWidget(
+              leading: IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: Icon(
+                  Icons.menu,
+                  color: AppTheme.secondaryColor,
+                  size: deviceFontSize(context, 30),
+                ),
+              ),
+            ),
+            SizedBox(height: deviceTopPadding(context)),
+            SearchWidget(
+              context,
+              onChanged: (value) {
+                context.read<STKProvider>().searchText = value;
+              },
+              controller: _searchController,
+            ),
+            SizedBox(
+              height: deviceHeightSize(context, 10),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: deviceWidthSize(context, 20),
+              ),
+              alignment: Alignment.centerLeft,
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.transparent,
+                tabAlignment: TabAlignment.start,
+                labelColor: AppTheme.primaryColor,
+                labelStyle: AppTheme.boldTextStyle(context, 14),
+                unselectedLabelStyle: AppTheme.normalTextStyle(context, 14),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.primaryColor.withOpacity(0.1),
+                ),
+                labelPadding: EdgeInsets.symmetric(
+                  horizontal: deviceWidthSize(context, 20),
+                ),
+                dividerColor: Colors.transparent,
+                isScrollable: true,
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                tabs: _tabs
+                    .map(
+                      (e) => Tab(
+                        text: e,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            Expanded(
+              child: context.watch<STKProvider>().loadingState == LoadingState.loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      children: List.generate(
+                        _tabs.length,
+                        (tabIndex) => Column(
+                          children: [
+                            SizedBox(
+                              height: deviceHeightSize(context, 10),
+                            ),
+                            //filter and sort
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: deviceWidthSize(context, 20),
+                                  ),
+                                  child: Text(
+                                    "STK'lar",
+                                    style: AppTheme.boldTextStyle(context, 20),
+                                  ),
+                                ),
+                                filterAndSort(context),
+                              ],
+                            ),
+                            Expanded(
+                              child: FirestorePagination(
+                                padding: EdgeInsets.zero,
+                                limit: 5,
+                                initialLoader: CircularProgressIndicator(),
+                                bottomLoader: LinearProgressIndicator(),
+                                query: FirebaseFirestore.instance
+                                    .collection('stklar')
+                                    .where("isActive",isEqualTo: true)
+                                    .orderBy('favoriteCount',descending: true),
+                                itemBuilder: (context, docs, index) {
+                                  final stk = StkModel.fromJson(docs[index].data() as Map<String, dynamic>);
+                                  return ListItemWidget(context,
+                                      logo: stk.logo,
+                                      title: stk.name.toString(),
+                                      sector: stk.categories.first,
+                                      desc: stk.detailText, onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => STKDetailPage(
+                                          stkModel: stk,
+                                        ),
+                                      ),
+                                    );
+                                  });
+                                  // Do something cool with the data
+                                },
+                              ),
+                            ),
+                            // Expanded(
+                            //   child: ListView.builder(
+                            //     padding: EdgeInsets.zero,
+                            //     controller: scrollController,
+                            //     itemCount: _stkList.length,
+                            //     shrinkWrap: true,
+                            //     itemBuilder: (context, index) {
+                            //       bool isSearch = _stkList[index]
+                            //           .name!
+                            //           .toLowerCase()
+                            //           .contains(_searchController.text.toLowerCase());
+                            //       bool isFilter = false;
+                            //       String filterText = context.read<STKProvider>().filterText;
+
+                            //       switch (filterText) {
+                            //         case "depremBolgesi":
+                            //           isFilter = _stkList[index].inEarthquakeZone!;
+                            //           break;
+                            //         case "specialStatus":
+                            //           isFilter = _stkList[index].specialStatus != null;
+                            //           break;
+                            //         default:
+                            //           isFilter = _stkList[index]
+                            //               .fieldOfBenefit!
+                            //               .toLowerCase()
+                            //               .contains(filterText.toLowerCase());
+                            //           break;
+                            //       }
+
+                            //       bool isReturn = isSearch &&
+                            //           isFilter &&
+                            //           (_stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
+
+                            //       if (isReturn) {
+                            //         return ListItemWidget(
+                            //           context,
+                            //           logo: _stkList[index].logo,
+                            //           title: _stkList[index].name.toString(),
+                            //           desc: _stkList[index].detailText,
+                            //           onTap: () {
+                            //             Navigator.push(
+                            //               context,
+                            //               MaterialPageRoute(
+                            //                 builder: (context) => STKDetailPage(
+                            //                   stkModel: _stkList[index],
+                            //                 ),
+                            //               ),
+                            //             );
+                            //           },
+                            //         );
+                            //       } else {
+                            //         // Return an empty container if the item does not match the criteria
+                            //         return Container();
+                            //       }
+                            //     },
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ),
+                    ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 
   List<Map<String, String>> filters = [
     {
@@ -64,174 +285,6 @@ class _STKPageState extends State<STKPage> with TickerProviderStateMixin {
     "Vakıf",
     "Özel İzinli",
   ];
-
-  TabController? _tabController;
-
-  @override
-  void initState() {
-    _tabController = TabController(length: 4, vsync: this);
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await context.read<STKProvider>().getSTKs();
-    });
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    _stkList = context.watch<STKProvider>().stkList;
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          AppBarWidget(
-            leading: IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: Icon(
-                Icons.menu,
-                color: AppTheme.secondaryColor,
-                size: deviceFontSize(context, 30),
-              ),
-            ),
-          ),
-          SizedBox(height: deviceTopPadding(context)),
-          SearchWidget(
-            context,
-            onChanged: (value) {
-              context.read<STKProvider>().searchText = value;
-            },
-            controller: _searchController,
-          ),
-          SizedBox(
-            height: deviceHeightSize(context, 10),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: deviceWidthSize(context, 20),
-            ),
-            alignment: Alignment.centerLeft,
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: Colors.transparent,
-              tabAlignment: TabAlignment.start,
-              labelColor: AppTheme.primaryColor,
-              labelStyle: AppTheme.boldTextStyle(context, 14),
-              unselectedLabelStyle: AppTheme.normalTextStyle(context, 14),
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: AppTheme.primaryColor.withOpacity(0.1),
-              ),
-              labelPadding: EdgeInsets.symmetric(
-                horizontal: deviceWidthSize(context, 20),
-              ),
-              dividerColor: Colors.transparent,
-              isScrollable: true,
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
-              tabs: _tabs
-                  .map(
-                    (e) => Tab(
-                      text: e,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-          Expanded(
-            child: context.watch<STKProvider>().loadingState == LoadingState.loading
-                ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
-                    children: List.generate(
-                      _tabs.length,
-                      (tabIndex) => SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: deviceHeightSize(context, 10),
-                            ),
-                            //filter and sort
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    left: deviceWidthSize(context, 20),
-                                  ),
-                                  child: Text(
-                                    "STK'lar",
-                                    style: AppTheme.boldTextStyle(context, 20),
-                                  ),
-                                ),
-                                filterAndSort(context),
-                              ],
-                            ),
-
-                            ...List.generate(
-                              _stkList.length,
-                              (index) {
-                                bool isSearch =
-                                    _stkList[index].name!.toLowerCase().contains(_searchController.text.toLowerCase());
-                                bool isFilter = false;
-                                String filterText = context.read<STKProvider>().filterText;
-                                switch (filterText) {
-                                  case "depremBolgesi":
-                                    isFilter = _stkList[index].inEarthquakeZone!;
-                                    break;
-                                  case "specialStatus":
-                                    isFilter = _stkList[index].specialStatus != null;
-                                    break;
-                                  default:
-                                    isFilter = _stkList[index]
-                                        .fieldOfBenefit!
-                                        .toLowerCase()
-                                        .contains(filterText.toLowerCase());
-                                    break;
-                                }
-
-                                _stkList[index]
-                                    .fieldOfBenefit!
-                                    .toLowerCase()
-                                    .contains(context.read<STKProvider>().filterText.toLowerCase());
-
-                                bool isReturn = isSearch &&
-                                    isFilter &&
-                                    (_stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
-                                return isReturn
-                                    ? ListItemWidget(
-                                        context,
-                                        logo: _stkList[index].logo,
-                                        title: _stkList[index].name.toString(),
-                                        desc: _stkList[index].detailText,
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => STKDetailPage(
-                                                stkModel: _stkList[index],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    : Container();
-                              },
-                            ),
-                            SizedBox(
-                              height: deviceHeightSize(context, 80),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-          )
-        ],
-      ),
-    );
-  }
 
   Padding filterAndSort(BuildContext context) {
     return Padding(

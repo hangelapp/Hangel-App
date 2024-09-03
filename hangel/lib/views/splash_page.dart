@@ -32,7 +32,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
 
@@ -65,7 +65,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           (route) => false,
         );
       } else if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-        Navigator.pushReplacementNamed(context, SelectFavoriteStkPage.routeName);
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
       }
     } else {
       bool isAppView = false;

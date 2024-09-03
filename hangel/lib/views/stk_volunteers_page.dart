@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -6,6 +8,7 @@ import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/stk_model.dart';
+import 'package:hangel/models/stk_volunteer_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/providers/volunteer_provider.dart';
@@ -26,29 +29,24 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
   List<StkModel> _stkList = [];
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
+  bool isLoading = false;
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await context.read<VolunteerProvider>().getStks();
     });
-    _scrollController.addListener(() async {
-      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !_isLoading) {
-        await _loadMoreData();
-      }
-    });
     super.initState();
   }
 
-  Future<void> _loadMoreData() async {
-    setState(() {
-      _isLoading = true;
-    });
-    context.read<BrandProvider>().nextPage();
-    await context.read<BrandProvider>().getOffers().whenComplete(
-          () => setState(() => _isLoading = false),
-        );
-  }
+  // Future<void> _loadMoreData() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //   context.read<BrandProvider>().nextPage();
+  //   await context.read<BrandProvider>().getOffers().whenComplete(
+  //         () => setState(() => _isLoading = false),
+  //       );
+  // }
 
   List<Map<String, String>> filters = [
     {
@@ -188,7 +186,7 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
                                 child: Image.network(
-                                  offer.logo ?? "",
+                                  offer.logo!,
                                   fit: BoxFit.contain,
                                   alignment: Alignment.center,
                                   errorBuilder: (context, error, stackTrace) => Center(
@@ -283,42 +281,103 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                           filterAndSort(context),
                         ],
                       ),
+
                       Expanded(
-                        child: FutureBuilder(
-                          future: context.read<VolunteerProvider>().getStks(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return ListView.builder(
-                                controller: _scrollController,
-                                itemCount: snapshot.data?.length ?? 0,
-                                // itemCount: _stkList.length,
-                                itemBuilder: (context, index) {
-                                  return ListItemWidget(
+                        child: FirestorePagination(
+                          // padding: EdgeInsets.zero,
+                          limit: 5,
+                          initialLoader: Center(child: CircularProgressIndicator()),
+                          bottomLoader: LinearProgressIndicator(),
+                          query: FirebaseFirestore.instance
+                              .collection('stkVolunteers')
+                              .where("isActive", isEqualTo: true)
+                              .orderBy('stkName'),
+                          itemBuilder: (context, docs, index) {
+                            final stk = StkVolunteerModel.fromJson((docs[index].data() as Map<String, dynamic>));
+                            return isLoading
+                                ? Center(child: LinearProgressIndicator())
+                                : ListItemWidget(
                                     context,
-                                    sector: (snapshot.data?[index].categories ?? [""]).first,
-                                    logo: snapshot.data?[index].logo,
-                                    title: (snapshot.data?[index].name ?? "").removeBrackets(),
-                                    desc: snapshot.data?[index].detailText,
+                                    logo: stk.stkLogo,
+                                    title: stk.stkName.toString(),
+                                    sector: stk.stkCategory,
+                                    stkEmail: stk.stkEmail,
+                                    stkId: stk.stkId,
                                     isSTKVolunteer: true,
-                                    onTap: () {
-                                      if (snapshot.data?[index] != null) {
+                                    totalAplicant: stk.applicantIds,
+                                    onTap: () async {
+                                      setState(() {
+                                        isLoading = true;
+                                      });
+                                      try {
+                                        // Veriyi Firestore'dan al
+                                        var snapshot = await FirebaseFirestore.instance
+                                            .collection("stklar")
+                                            .where("id", isEqualTo: stk.stkId)
+                                            .limit(1)
+                                            .get();
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                        // Veriyi modele çevir
+                                        StkModel stkModel = StkModel.fromJson(snapshot.docs.first.data());
+                                        // Yeni sayfaya yönlendir
                                         Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => STKDetailPage(stkModel: snapshot.data![index]),
-                                            ));
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => STKDetailPage(
+                                              stkModel: stkModel,
+                                            ),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                        print(e);
                                       }
                                     },
                                   );
-                                },
-                              );
-                            } else {
-                              return Center(child: CircularProgressIndicator());
-                            }
                           },
                         ),
                       ),
-                      _isLoading ? const LinearProgressIndicator() : const SizedBox.shrink()
+
+                      // Expanded(
+                      //   child: FutureBuilder(
+                      //     future: context.read<VolunteerProvider>().getStks(),
+                      //     builder: (context, snapshot) {
+                      //       if (snapshot.hasData) {
+                      //         return ListView.builder(
+                      //           controller: _scrollController,
+                      //           itemCount: snapshot.data?.length ?? 0,
+                      //           // itemCount: _stkList.length,
+                      //           itemBuilder: (context, index) {
+                      //             return ListItemWidget(
+                      //               context,
+                      //               sector: (snapshot.data?[index].categories ?? [""]).first,
+                      //               logo: snapshot.data?[index].logo,
+                      //               title: (snapshot.data?[index].name ?? "").removeBrackets(),
+                      //               desc: snapshot.data?[index].detailText,
+                      //               isSTKVolunteer: true,
+                      //               onTap: () {
+                      //                 if (snapshot.data?[index] != null) {
+                      //                   Navigator.push(
+                      //                       context,
+                      //                       MaterialPageRoute(
+                      //                         builder: (context) => STKDetailPage(stkModel: snapshot.data![index]),
+                      //                       ));
+                      //                 }
+                      //               },
+                      //             );
+                      //           },
+                      //         );
+                      //       } else {
+                      //         return Center(child: CircularProgressIndicator());
+                      //       }
+                      //     },
+                      //   ),
+                      // ),
+                      // _isLoading ? const LinearProgressIndicator() : const SizedBox.shrink()
                     ],
                   ),
           )

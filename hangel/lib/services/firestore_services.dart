@@ -120,7 +120,7 @@ class FirestoreServices {
       }
       return GeneralResponseModel(
         success: true,
-        message: "Bilgiler güncellendi!",
+        message: "Bilgiler kaydedildi!",
       );
     } catch (e) {
       if (kDebugMode) {

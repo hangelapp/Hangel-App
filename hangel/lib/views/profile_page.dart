@@ -1,8 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
@@ -12,22 +10,19 @@ import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/views/stk_detail_page.dart';
-import 'package:hangel/views/vounteer_form.dart';
 import 'package:hangel/widgets/add_photo_form.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
 import 'package:hangel/widgets/bottom_sheet_widget.dart';
 import 'package:hangel/widgets/general_button_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
-
-import 'package:hangel/widgets/user_information_form.dart';
-import 'package:hangel/widgets/user_name_form.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/stk_provider.dart';
 import '../widgets/app_bar_widget.dart';
+import '../widgets/user_information_form.dart';
 import 'brand_form_widget.dart';
 import 'stk_form_widget.dart';
+import 'utilities.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -65,128 +60,92 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     user = context.watch<ProfilePageProvider>().user;
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            AppBarWidget(
-              leading: IconButton(
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                icon: Icon(
-                  Icons.menu,
-                  color: AppTheme.secondaryColor,
-                  size: deviceFontSize(context, 30),
+      body: Column(
+        children: [
+          AppBarWidget(
+            leading: IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: Icon(
+                Icons.menu,
+                color: AppTheme.secondaryColor,
+                size: deviceFontSize(context, 30),
+              ),
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.only(
+              left: deviceWidthSize(context, 30),
+              right: deviceWidthSize(context, 30),
+              bottom: deviceHeightSize(context, 5),
+            ),
+            decoration: const BoxDecoration(
+              color: AppTheme.primaryColor,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+            ),
+            width: deviceWidth(context),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: deviceHeightSize(context, 20),
                 ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(
-                top: deviceTopPadding(context),
-                left: deviceWidthSize(context, 30),
-                right: deviceWidthSize(context, 30),
-                bottom: deviceHeightSize(context, 30),
-              ),
-              decoration: const BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+                profilePhotoWidget(),
+                SizedBox(
+                  height: deviceHeightSize(context, 5),
                 ),
-              ),
-              width: deviceWidth(context),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: deviceHeightSize(context, 20),
+                SizedBox(
+                  width: deviceWidthSize(context, 300),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Text(
+                        (user.name ?? ""),
+                        textAlign: TextAlign.center,
+                        style: AppTheme.semiBoldTextStyle(context, 24, color: Colors.white),
+                      ),
+                      //İsim değiştirme artık Bilgileri Güncelle altında olacak.
+                      // Positioned(
+                      //   right: 0,
+                      //   child: GestureDetector(
+                      //     onTap: () {
+                      //       showModalBottomSheet(
+                      //         context: context,
+                      //         isScrollControlled: true,
+                      //         backgroundColor: Colors.transparent,
+                      //         builder: (dialogContext) {
+                      //           return const BottomSheetWidget(title: "İsim Değiştir", child: UserNameForm());
+                      //         },
+                      //       );
+                      //     },
+                      //     child: Icon(
+                      //       Icons.edit,
+                      //       color: AppTheme.white,
+                      //       size: deviceFontSize(context, 24),
+                      //     ),
+                      //   ),
+                      // )
+                    ],
                   ),
-                  profilePhotoWidget(),
-                  SizedBox(
-                    height: deviceHeightSize(context, 20),
-                  ),
-                  SizedBox(
-                    width: deviceWidthSize(context, 300),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Text(
-                          (user.name ?? ""),
-                          textAlign: TextAlign.center,
-                          style: AppTheme.semiBoldTextStyle(context, 24, color: Colors.white),
-                        ),
-                        Positioned(
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder: (dialogContext) {
-                                  return const BottomSheetWidget(title: "İsim Değiştir", child: UserNameForm());
-                                },
-                              );
-                            },
-                            child: Icon(
-                              Icons.edit,
-                              color: AppTheme.white,
-                              size: deviceFontSize(context, 24),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            SizedBox(
-              height: deviceHeightSize(context, 20),
-            ),
-            _tabView(context),
-            // Padding(
-            //   padding: EdgeInsets.all(30.0),
-            //   child: Row(
-            //     children: [
-            //       Expanded(
-            //         child: profileItem(context, "assets/icons/class.svg",
-            //             "${user. ?? ""}"),
-            //       ),
-            //       SizedBox(
-            //         width: deviceWidthSize(context, 20),
-            //       ),
-            //       Expanded(
-            //         child: profileItem(context, "assets/icons/level.svg",
-            //             "${user.level ?? ""}. Seviye"),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // Align(
-            //   alignment: Alignment.centerLeft,
-            //   child: Padding(
-            //     padding: EdgeInsets.only(
-            //       left: deviceWidthSize(context, 30),
-            //       bottom: deviceHeightSize(context, 10),
-            //     ),
-            //     child: Text(
-            //       "Hangi sınava hazırlanıyorsun?",
-            //       style: AppTheme.semiBoldTextStyle(context, 18),
-            //     ),
-            //   ),
-            // ),
-            // Padding(
-            //   padding:
-            //       EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 30)),
-            //   child: profileItem(
-            //     context,
-            //     "assets/icons/exam.svg",
-            //     "Liseye Geçiş Sınavı (LGS)",
-            //   ),
-            // ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    _tabView(context),
+                  ],
+                )),
+          ),
+        ],
       ),
     );
   }
@@ -226,20 +185,20 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     return Stack(
       children: [
         Container(
-          width: 150,
-          height: 150,
+          width: 120,
+          height: 120,
           decoration: const BoxDecoration(
             color: AppTheme.secondaryColor,
             shape: BoxShape.circle,
             border: Border.fromBorderSide(
               BorderSide(
                 color: Colors.white,
-                width: 8,
+                width: 4,
               ),
             ),
           ),
           child: CachedNetworkImage(
-            imageUrl: user.image ?? "",
+            imageUrl: user.image ?? "https://www.example.com/1.jpg",
             imageBuilder: (context, imageProvider) => Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -286,15 +245,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               );
             },
             child: Container(
-              width: 40,
-              height: 40,
+              width: 30,
+              height: 30,
               decoration: const BoxDecoration(
                 color: AppTheme.secondaryColor,
                 shape: BoxShape.circle,
                 border: Border.fromBorderSide(
                   BorderSide(
                     color: Colors.white,
-                    width: 4,
+                    width: 2,
                   ),
                 ),
               ),
@@ -302,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 child: Icon(
                   Icons.edit,
                   color: Colors.white,
-                  size: deviceFontSize(context, 24),
+                  size: deviceFontSize(context, 15),
                 ),
               ),
             ),
@@ -327,7 +286,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     }
   }
 
-  _tabView(BuildContext context) {
+  Widget _tabView(BuildContext context) {
     List<Map<String, dynamic>> statics = [
       {
         "icon": Icons.money_outlined,
@@ -352,7 +311,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       {"icon": Icons.account_tree_rounded, "title": "Proje Sayısı", "value": "0"},
       {"icon": Icons.one_x_mobiledata_sharp, "title": "Toplam Saat", "value": "0"},
     ];
-
     List<Map<String, dynamic>> info = [
       {
         "icon": Icons.person_rounded,
@@ -389,6 +347,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     ];
     return Column(
       children: [
+        SizedBox(
+          height: deviceHeightSize(context, 20),
+        ),
         Padding(
           padding: EdgeInsets.symmetric(
             horizontal: deviceWidthSize(context, 20),
@@ -412,49 +373,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             overlayColor: WidgetStateProperty.all(Colors.transparent),
             tabs: [
               Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Kişisel Bilgiler",
-                    ),
-                    if (_tabController!.index == 0)
-                      InkWell(
-                        onTap: () {
-                          showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) {
-                                return const BottomSheetWidget(
-                                    isMinPadding: true, title: "Kişisel Bilgiler", child: UserInformationForm());
-                              });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.white,
-                              width: 2,
-                            ),
-                          ),
-                          padding: EdgeInsets.all(deviceWidthSize(context, 2)),
-                          child: const Icon(
-                            Icons.edit_rounded,
-                            color: AppTheme.white,
-                            size: 12,
-                          ),
-                        ),
-                      ),
-                  ],
+                child: const Text(
+                  "Kişisel Bilgiler",
+                  style: TextStyle(fontSize: 12),
                 ),
               ),
               const Tab(
-                child: Text("Gönüllülük"),
+                child: Text(
+                  "Gönüllülük",
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
               const Tab(
                 child: Text(
                   "İstatistikler",
+                  style: TextStyle(fontSize: 12),
                 ),
               ),
             ],
@@ -463,12 +396,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         SizedBox(
           height: deviceHeightSize(context, 4),
         ),
-        if (_tabController!.index == 0)
-          _personalInfo(context, info)
-        else if (_tabController!.index == 1)
-          _volunteerInfo(context, volunteerInfo)
-        else
-          _personalInfo(context, statics),
+        (_tabController!.index == 0)
+            ? _personalInfo(context, info)
+            : (_tabController!.index == 1)
+                ? _volunteerInfo(context, volunteerInfo)
+                : _personalInfo(context, statics),
         SizedBox(
           height: deviceHeightSize(context, 20),
         ),
@@ -482,33 +414,66 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: AppTheme.boldTextStyle(context, 16),
           ),
         ),
-        ...List.generate(
-            context.watch<STKProvider>().stkList.length,
-            (index) =>
-                HiveHelpers.getUserFromHive().favoriteStks.contains(context.watch<STKProvider>().stkList[index].id)
-                    ? stkItem(context, index)
-                    : const SizedBox()),
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 15),
-          padding: EdgeInsets.symmetric(
-            horizontal: deviceWidthSize(context, 20),
-          ),
-          child: GeneralButtonWidget(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) => const BottomSheetWidget(
-                    title: "Gönüllü Başvuru Formu",
-                    isMinPadding: true,
-                    child: VolunteerForm(),
-                  ),
-                );
-              },
-              text: "Gönüllü olmak istiyorum"),
+        FutureBuilder(
+          future: context.read<STKProvider>().getFavoriteSTKs(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // Veriler yüklenirken bir yükleniyor göstergesi göstermek için kullanılabilir.
+              return CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              // Hata durumunu işlemek için.
+              return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
+            } else if (snapshot.hasData) {
+              List<StkModel>? data = snapshot.data;
+
+              // Eğer veri boşsa, nullStkWidget gösterilir.
+              if (data == null || data.isEmpty) {
+                return nullStkWidget(context);
+              }
+
+              // Veri varsa, stkItem widget'larını döndür.
+              return Column(
+                children: data.map<Widget>((stk) {
+                  return stkItem(context, stk);
+                }).toList(),
+              );
+            }
+
+            // Diğer durumlar için, boş durum widget'ını döndür.
+            return nullStkWidget(context);
+          },
         ),
+
+        // ...List.generate(
+        //     HiveHelpers.getUserFromHive().favoriteStks.length == 0 ? 1 : context.watch<STKProvider>().stkList.length,
+        //     (index) => HiveHelpers.getUserFromHive().favoriteStks.length == 0
+        //         ? nullStkWidget(context)
+        //         : HiveHelpers.getUserFromHive().favoriteStks.contains(context.watch<STKProvider>().stkList[index].id)
+        //             ? stkItem(context, index)
+        //             : const SizedBox()),
+
+        //Bu kısım şimdlik kapalı
+        // Container(
+        //   margin: const EdgeInsets.symmetric(vertical: 15),
+        //   padding: EdgeInsets.symmetric(
+        //     horizontal: deviceWidthSize(context, 20),
+        //   ),
+        //   child: GeneralButtonWidget(
+        //       onPressed: () {
+        //         showModalBottomSheet(
+        //           context: context,
+        //           isScrollControlled: true,
+        //           builder: (context) => const BottomSheetWidget(
+        //             title: "Gönüllü Başvuru Formu",
+        //             isMinPadding: true,
+        //             child: VolunteerForm(),
+        //           ),
+        //         );
+        //       },
+        //       text: "Gönüllü olmak istiyorum"),
+        // ),
         Container(
-          margin: const EdgeInsets.only(bottom: 15),
+          margin: const EdgeInsets.only(bottom: 15, top: 30),
           padding: EdgeInsets.symmetric(
             horizontal: deviceWidthSize(context, 20),
           ),
@@ -622,6 +587,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   _personalInfo(BuildContext context, List<Map<String, dynamic>> info) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...List.generate(
           info.length,
@@ -687,6 +653,55 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ),
           ),
         ),
+        (_tabController!.index == 0)
+            ? InkWell(
+                onTap: () {
+                  showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return const BottomSheetWidget(
+                            isMinPadding: true, title: "Kişisel Bilgiler", child: UserInformationForm());
+                      });
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(5)),
+                  margin: EdgeInsets.only(left: 20),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "Bilgileri Güncelle",
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.white,
+                            width: 2,
+                          ),
+                        ),
+                        padding: EdgeInsets.all(deviceWidthSize(context, 2)),
+                        child: const Icon(
+                          Icons.edit_rounded,
+                          color: AppTheme.white,
+                          size: 12,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              )
+            : SizedBox(),
       ],
     );
   }
@@ -758,20 +773,24 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  stkItem(BuildContext context, int index) {
-    StkModel stkModel = context.watch<STKProvider>().stkList[index];
+  stkItem(BuildContext context, StkModel stk) {
     return ListItemWidget(
       context,
-      title: stkModel.name ?? "",
-      logo: stkModel.logo ?? "",
-      desc: stkModel.detailText ?? "",
+      title: stk.name ?? "",
+      logo: stk.logo ?? "",
+      desc: stk.detailText ?? "",
+      logoHeight: deviceHeightSize(context, 60),
+      logoWidth: deviceWidthSize(context, 60),
+      paddingHorizontal: deviceWidthSize(context, 8),
+      paddingVertical: deviceHeightSize(context, 8),
+      nullFontSize: 12,
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
               return STKDetailPage(
-                stkModel: stkModel,
+                stkModel: stk,
               );
             },
           ),

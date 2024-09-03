@@ -31,6 +31,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
   final TextEditingController _stkNameController = TextEditingController();
   final TextEditingController _stkFullNameController = TextEditingController();
   final TextEditingController _stkSicilNoController = TextEditingController();
+  final TextEditingController _stkVergiNoController = TextEditingController();
 
   final TextEditingController _stkMailController = TextEditingController();
   final TextEditingController _stkPhoneController = TextEditingController();
@@ -108,7 +109,13 @@ class _stkFormWidgetState extends State<STKFormWidget> {
             FormFieldWidget(
               context,
               controller: _stkSicilNoController,
-              title: "STK Sicil No",
+              title: "STK Kütük No",
+              isRequired: true,
+            ),
+            FormFieldWidget(
+              context,
+              controller: _stkVergiNoController,
+              title: "STK Vergi No",
               isRequired: true,
             ),
             FormFieldWidget(
@@ -391,8 +398,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 if (_stkNameController.text.isNotEmpty &&
                     _stkFullNameController.text.isNotEmpty &&
                     _stkSicilNoController.text.isNotEmpty &&
+                    _stkVergiNoController.text.length >= 10 &&
                     _stkContactPersonController.text.isNotEmpty &&
-                    _stkContactPersonPhoneController.text.isNotEmpty &&
+                    _stkContactPersonPhoneController.text.length >= 10 &&
                     _stkContactPersonMailController.text.isNotEmpty &&
                     _stkContactPersonJob.text.isNotEmpty &&
                     _logoImage.isNotEmpty &&
@@ -415,22 +423,23 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                       .read<STKProvider>()
                       .sendForm(
                         stkFormModel: STKFormModel(
-                          name: _stkNameController.text,
-                          website: _stkWebsiteController.text,
-                          mail: _stkMailController.text,
-                          phone: _stkPhoneController.text,
-                          founder: _stkFounderController.text,
-                          contactPerson: _stkContactPersonController.text,
-                          contactPersonPhone: _stkContactPersonPhoneController.text,
-                          contactPersonMail: _stkContactPersonMailController.text,
-                          address: _stkAddressController.text,
-                          city: selectedIl!,
-                          district: selectedIlce!,
-                          neighborhood: selectedMahalle!,
-                          categories: _selectedCategories,
-                          bmCategories: selectedBMs,
-                          selectedSector: _sectors[_selectedSectorIndex],
-                        ),
+                            name: _stkNameController.text,
+                            website: _stkWebsiteController.text,
+                            mail: _stkMailController.text,
+                            phone: _stkPhoneController.text,
+                            founder: _stkFounderController.text,
+                            contactPerson: _stkContactPersonController.text,
+                            contactPersonPhone: _stkContactPersonPhoneController.text,
+                            contactPersonMail: _stkContactPersonMailController.text,
+                            address: _stkAddressController.text,
+                            city: selectedIl!,
+                            district: selectedIlce!,
+                            neighborhood: selectedMahalle!,
+                            categories: _selectedCategories,
+                            bmCategories: selectedBMs,
+                            selectedSector: _sectors[_selectedSectorIndex],
+                            sicilNo: _stkSicilNoController.text,
+                            vergiNo: _stkVergiNoController.text),
                         logoImage: _logoImage,
                         tuzukPDF: _tuzukPDF,
                         faaliyetImage: _faaliyetImage,

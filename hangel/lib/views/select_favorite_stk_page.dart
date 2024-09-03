@@ -14,13 +14,13 @@ import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/hive_helpers.dart';
-import '../models/general_response_model.dart';
 import '../models/user_model.dart';
 import 'vounteer_form.dart';
 
 class SelectFavoriteStkPage extends StatefulWidget {
-  const SelectFavoriteStkPage({Key? key}) : super(key: key);
+  const SelectFavoriteStkPage({Key? key, this.inTree = true}) : super(key: key);
   static const routeName = '/select-favorite-stk-page';
+  final bool inTree;
   @override
   State<SelectFavoriteStkPage> createState() => _SelectFavoriteStkPageState();
 }
@@ -55,11 +55,22 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
-          const AppBarWidget(
+          AppBarWidget(
             title: "Favori STK Seç",
             // leading: SizedBox(width: deviceWidthSize(context, 45)),
+            action: !widget.inTree
+                ? SizedBox(
+                    height: 30,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                              context, MaterialPageRoute(builder: (context) => AppView()), (route) => false);
+                        },
+                        child: Text("Atla")))
+                : null,
           ),
           context.watch<STKProvider>().loadingState == LoadingState.loading
               ? const LinearProgressIndicator()
@@ -104,28 +115,24 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
                               unselectedLabelStyle: AppTheme.normalTextStyle(context, 14),
                               indicatorSize: TabBarIndicatorSize.tab,
                               indicator: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: AppTheme.primaryColor.withOpacity(0.1),
-                              ),
-                              labelPadding: EdgeInsets.symmetric(
-                                horizontal: deviceWidthSize(context, 20),
-                              ),
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: AppTheme.primaryColor.withOpacity(0.1)),
+                              labelPadding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
                               dividerColor: Colors.transparent,
                               isScrollable: true,
                               overlayColor: WidgetStateProperty.all(Colors.transparent),
-                              tabs: _tabs
-                                  .map(
-                                    (e) => Tab(
-                                      text: e,
-                                    ),
-                                  )
-                                  .toList(),
+                              tabs: _tabs.map((e) => Tab(text: e)).toList(),
                             ),
                           ),
                           Expanded(
-                              child: TabBarView(
-                                  controller: _tabController,
-                                  children: List.generate(_tabs.length, (tabIndex) => viewWidget(context, tabIndex))))
+                            child: TabBarView(
+                              controller: _tabController,
+                              children: List.generate(
+                                _tabs.length,
+                                (tabIndex) => viewWidget(context, tabIndex),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const GradientWidget(height: 80),
@@ -173,13 +180,24 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
                                       (element) => element == -1,
                                     ) ==
                                 false) {
-                              if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                                Navigator.pushReplacementNamed(context, VolunteerForm.routeName);
-                                return;
+                              // if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                              //   Navigator.pushReplacementNamed(context, VolunteerForm.routeName);
+                              //   return;
+                              // }
+                              if (widget.inTree) {
+                                Navigator.pop(context);
+                                tabcontroller.jumpToTab(2);
+                              } else {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => AppView()));
                               }
+                              return;
+                            }
+                            if (widget.inTree) {
+                              Navigator.pop(context);
+                              tabcontroller.jumpToTab(2);
+                            } else {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => AppView()));
                             }
-                            Navigator.pop(context);
                           },
                           text: context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate),
                           isLoading: context.watch<STKProvider>().favoriteSTKState == LoadingState.loading,
@@ -188,72 +206,80 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
                       )
                     ],
                   ),
-                )
+                ),
         ],
       ),
     );
   }
 
-  Column viewWidget(BuildContext context, int tabIndex) {
+  Widget viewWidget(BuildContext context, int tabIndex) {
     return Column(
-        children: List.generate(
-      context.watch<STKProvider>().stkList.length,
-      (index) {
-        bool isSearch = context
-            .watch<STKProvider>()
-            .stkList[index]
-            .name!
-            .toLowerCase()
-            .contains(_searchController.text.toLowerCase());
-        bool isReturn = isSearch &&
-            (context.watch<STKProvider>().stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
-        return isReturn
-            ? Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: deviceWidthSize(context, 10),
-                  vertical: deviceHeightSize(context, 10),
-                ),
-                child: ListTile(
-                  leading: listItemImage2(
-                    context,
-                    logo: context.watch<STKProvider>().stkList[index].name,
-                    onTap: () {},
-                  ),
-                  title: Text(
-                    context.watch<STKProvider>().stkList[index].name ?? "",
-                    style: AppTheme.semiBoldTextStyle(
-                      context,
-                      16,
-                    ),
-                  ),
-                  trailing: Checkbox(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    value: selectedStkIdList.contains(
-                      context.read<STKProvider>().stkList[index].id.toString(),
-                    ),
-                    activeColor: AppTheme.primaryColor,
-                    onChanged: (value) {
-                      setState(() {
-                        if (value!) {
-                          if (selectedStkIdList.length == 2) {
-                            ToastWidgets.errorToast(context, "En fazla 2 STK seçebilirsiniz!");
-                            return;
-                          }
-                          selectedStkIdList.add(context.read<STKProvider>().stkList[index].id.toString());
-                        } else {
-                          selectedStkIdList.remove(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: context.watch<STKProvider>().stkList.length,
+            itemBuilder: (context, index) {
+              bool isSearch = context
+                  .watch<STKProvider>()
+                  .stkList[index]
+                  .name!
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase());
+              bool isReturn = isSearch &&
+                  (context.watch<STKProvider>().stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
+              return isReturn
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: deviceWidthSize(context, 10),
+                        vertical: deviceHeightSize(context, 10),
+                      ),
+                      child: ListTile(
+                        leading: listItemImage2(
+                          context,
+                          logo: context.watch<STKProvider>().stkList[index].name,
+                          onTap: () {},
+                        ),
+                        title: Text(
+                          context.watch<STKProvider>().stkList[index].name ?? "",
+                          style: AppTheme.semiBoldTextStyle(
+                            context,
+                            16,
+                          ),
+                        ),
+                        trailing: Checkbox(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          value: selectedStkIdList.contains(
                             context.read<STKProvider>().stkList[index].id.toString(),
-                          );
-                        }
-                      });
-                    },
-                  ),
-                ),
-              )
-            : Container();
-      },
-    ));
+                          ),
+                          activeColor: AppTheme.primaryColor,
+                          onChanged: (value) {
+                            setState(() {
+                              if (value!) {
+                                if (selectedStkIdList.length == 2) {
+                                  ToastWidgets.errorToast(context, "En fazla 2 STK seçebilirsiniz!");
+                                  return;
+                                }
+                                selectedStkIdList.add(context.read<STKProvider>().stkList[index].id.toString());
+                              } else {
+                                selectedStkIdList.remove(
+                                  context.read<STKProvider>().stkList[index].id.toString(),
+                                );
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    )
+                  : Container();
+            },
+          ),
+        ),
+        SizedBox(height: deviceHeightSize(context, 65)),
+      ],
+    );
   }
 }

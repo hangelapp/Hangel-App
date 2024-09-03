@@ -7,9 +7,10 @@ import '../widgets/app_name_widget.dart';
 import '../widgets/back_button_widget.dart';
 
 class AppBarWidget extends StatefulWidget {
-  const AppBarWidget({Key? key, this.leading, this.title}) : super(key: key);
+  const AppBarWidget({Key? key, this.leading, this.title, this.action}) : super(key: key);
   final String? title;
   final Widget? leading;
+  final Widget? action;
   @override
   State<AppBarWidget> createState() => _AppBarWidgetState();
 }
@@ -20,7 +21,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
     return Container(
       margin: EdgeInsets.only(top: deviceTopPadding(context)),
       padding: EdgeInsets.symmetric(
-        horizontal: deviceWidthSize(context, 20),
+        horizontal: deviceWidthSize(context, 5),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -36,7 +37,8 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                     style: AppTheme.boldTextStyle(context, 20, color: AppTheme.secondaryColor),
                   ),
                 ),
-          if (widget.title != null) SizedBox(width: deviceWidthSize(context, 45)),
+          widget.action == null ? SizedBox.shrink() : widget.action!,
+          // if (widget.title != null) SizedBox(width: deviceWidthSize(context, 45)),
         ],
       ),
     );

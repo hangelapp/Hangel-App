@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
       context.read<BrandProvider>().getBrands();
     });
     _scrollController.addListener(() async {
-      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && !_isLoading) {
+      if (_scrollController.position.pixels >= (_scrollController.position.maxScrollExtent - 250) && !_isLoading) {
         await _loadMoreData();
       }
     });
@@ -185,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
                                 child: Image.network(
-                                  offer.logo ?? "",
+                                  offer.logo!,
                                   fit: BoxFit.contain,
                                   alignment: Alignment.center,
                                   errorBuilder: (context, error, stackTrace) => Center(

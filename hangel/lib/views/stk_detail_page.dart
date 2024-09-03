@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:hangel/constants/app_theme.dart';
-import 'package:hangel/constants/size.dart';
-import 'package:hangel/helpers/date_format_helper.dart';
-import 'package:hangel/helpers/hive_helpers.dart';
-import 'package:hangel/models/stk_model.dart';
-import 'package:hangel/views/donation_history_page.dart';
-import 'package:hangel/views/home_page.dart';
-import 'package:hangel/views/select_favorite_stk_page.dart';
-import 'package:hangel/widgets/app_bar_widget.dart';
-import 'package:hangel/widgets/app_name_widget.dart';
-import 'package:hangel/widgets/general_button_widget.dart';
 
-import 'utilities.dart';
+import '../constants/app_theme.dart';
+import '../constants/size.dart';
+import '../helpers/date_format_helper.dart';
+import '../helpers/hive_helpers.dart';
+import '../models/stk_model.dart';
+import '../widgets/app_bar_widget.dart';
+import '../widgets/app_name_widget.dart';
+import 'select_favorite_stk_page.dart';
 
 class STKDetailPage extends StatefulWidget {
   const STKDetailPage({Key? key, required this.stkModel}) : super(key: key);
@@ -40,275 +36,229 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
         children: [
           const AppBarWidget(),
           Expanded(
-            child: Stack(
-              children: [
-                SizedBox(
-                  width: deviceWidth(context),
-                  height: deviceHeight(context),
-                  child: SingleChildScrollView(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: deviceWidthSize(context, 20),
+                    ),
                     child: Column(
                       children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: deviceWidthSize(context, 20),
-                          ),
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                height: deviceHeightSize(context, 10),
-                              ),
-                              listItemImage2(
-                                context,
-                                logo: widget.stkModel.name,
-                                onTap: () {},
-                              ),
-                              // Container(
-                              //   width: double.infinity,
-                              //   height: deviceHeightSize(context, 200),
-                              //   decoration: BoxDecoration(
-                              //     boxShadow: AppTheme.shadowListBig(),
-                              //     image: DecorationImage(
-                              //       image: NetworkImage(widget.stkModel.logo ?? ""),
-                              //       fit: BoxFit.cover,
-                              //     ),
-                              //     borderRadius: BorderRadius.circular(13),
-                              //   ),
-                              // ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 30),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                      width: deviceWidthSize(context, 50),
-                                      height: deviceHeightSize(context, 50),
-                                      decoration: BoxDecoration(
-                                        boxShadow: AppTheme.shadowList,
-                                        color: AppTheme.primaryColor,
-                                        shape: BoxShape.circle,
-                                        image: widget.stkModel.logo != null
-                                            ? DecorationImage(
-                                                image: NetworkImage(widget.stkModel.logo ?? ""),
-                                                fit: BoxFit.cover,
-                                              )
-                                            : null,
-                                      ),
-                                      child: widget.stkModel.logo == null
-                                          ? Center(
-                                              child: Text(
-                                                widget.stkModel.name![0],
-                                                style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
-                                              ),
-                                            )
-                                          : null),
-                                  SizedBox(
-                                    width: deviceWidthSize(context, 12),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      widget.stkModel.name ?? "",
-                                      style: AppTheme.boldTextStyle(context, 16),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: deviceWidthSize(context, 10),
-                                  ),
-                                  // Container(
-                                  //   padding: EdgeInsets.symmetric(
-                                  //     horizontal: deviceWidthSize(context, 10),
-                                  //     vertical: deviceHeightSize(context, 5),
-                                  //   ),
-                                  //   decoration: BoxDecoration(
-                                  //     color: AppTheme.primaryColor.withOpacity(0.1),
-                                  //     borderRadius: BorderRadius.circular(8),
-                                  //   ),
-                                  //   child: Row(
-                                  //     children: [
-                                  //       Icon(
-                                  //         Icons.volunteer_activism_rounded,
-                                  //         color: AppTheme.primaryColor,
-                                  //         size: deviceFontSize(context, 24),
-                                  //       ),
-                                  //       SizedBox(
-                                  //         width: deviceWidthSize(context, 6),
-                                  //       ),
-                                  //       Text(
-                                  //         "%${(widget.stkModel.donationRate ?? 0.12) * 100}",
-                                  //         style: AppTheme.semiBoldTextStyle(
-                                  //           context,
-                                  //           18,
-                                  //         ),
-                                  //       ),
-                                  //     ],
-                                  //   ),
-                                  // )
-                                  InkWell(
-                                    onTap: () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SelectFavoriteStkPage(),));
-                                      // context
-                                      //     .read<STKProvider>()
-                                      //     .addRemoveFavoriteSTK(
-                                      //         widget.stkModel.id)
-                                      //     .then((value) {
-                                      //   setState(() {});
-                                      //   if (value.success == true) {
-                                      //     ToastWidgets.successToast(
-                                      //         context, "İşlem Başarılı!");
-                                      //   }
-                                      // });
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: deviceWidthSize(context, 10),
-                                        vertical: deviceHeightSize(context, 5),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Icon(
-                                            HiveHelpers.getUserFromHive().favoriteStks.contains(widget.stkModel.id)
-                                                ? Icons.favorite
-                                                : Icons.favorite_border,
-                                            color: AppTheme.primaryColor,
-                                            size: deviceFontSize(context, 24),
-                                          ),
-                                          Text(
-                                            widget.stkModel.favoriteCount.toString(),
-                                            style: AppTheme.normalTextStyle(
-                                              context,
-                                              14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 10),
-                              ),
-                              Divider(
-                                color: AppTheme.secondaryColor.withOpacity(0.1),
-                                thickness: 1,
-                              ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 10),
-                              ),
-                            ],
-                          ),
-                        ),
-                        _tabView(context),
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: deviceWidthSize(context, 20),
-                          ),
-                          child: Column(
-                            children: [
-                              Divider(
-                                color: AppTheme.secondaryColor.withOpacity(0.1),
-                                thickness: 1,
-                              ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 4),
-                              ),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "Hakkında",
-                                  style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
-                                ),
-                              ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 10),
-                              ),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  (widget.stkModel.detailText ?? "") +
-                                      " " +
-                                      (widget.stkModel.detailText ?? "") +
-                                      " " +
-                                      (widget.stkModel.detailText ?? ""),
-                                  style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
-                                ),
-                              ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 10),
-                              ),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "Platforma Katılma Tarihi: ",
-                                        style: AppTheme.normalTextStyle(context, 14,
-                                            color: AppTheme.black.withOpacity(0.7)),
-                                      ),
-                                      TextSpan(
-                                        text: DateFormatHelper.getDate(
-                                            (widget.stkModel.creationDate ?? "").toString(), context),
-                                        style: AppTheme.normalTextStyle(context, 14, color: AppTheme.primaryColor),
-                                      ),
-                                    ],
+                        listItemImage2(
+                          context,
+                          img: widget.stkModel.logo,
+                          onTap: () {},
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 30),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1), // Gölgenin rengi (hafif şeffaf)
+                                    blurRadius: 8, // Gölgenin yumuşaklığı (yüksek değer daha yumuşak gölge)
+                                    offset: const Offset(2, 2), // Gölgenin konumu (x, y ekseninde)
                                   ),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: 35,
+                                backgroundColor: AppTheme.white,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(60),
+                                  child: widget.stkModel.logo != null
+                                      ? Image.network(
+                                          widget.stkModel.logo!,
+                                          fit: BoxFit.contain,
+                                          alignment: Alignment.center,
+                                          errorBuilder: (context, error, stackTrace) => Center(
+                                            child: Text(
+                                              widget.stkModel.name![0],
+                                              style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                            ),
+                                          ),
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            widget.stkModel.name![0],
+                                            style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                          ),
+                                        ),
                                 ),
                               ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 10),
+                            ),
+                            SizedBox(
+                              width: deviceWidthSize(context, 12),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.stkModel.name ?? "",
+                                    style: AppTheme.boldTextStyle(context, 16),
+                                  ),
+                                  SizedBox(
+                                    height: deviceHeightSize(context, 2),
+                                  ),
+                                  Text(
+                                    widget.stkModel.categories.first,
+                                    style:
+                                        AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
+                                  ),
+                                ],
                               ),
-                              SizedBox(
-                                width: deviceWidth(context),
-                                child: Wrap(
-                                  direction: Axis.horizontal,
-                                  alignment: WrapAlignment.start,
+                            ),
+                            SizedBox(
+                              width: deviceWidthSize(context, 10),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SelectFavoriteStkPage(
+                                        inTree: true,
+                                      ),
+                                    ));
+                                // context
+                                //     .read<STKProvider>()
+                                //     .addRemoveFavoriteSTK(
+                                //         widget.stkModel.id)
+                                //     .then((value) {
+                                //   setState(() {});
+                                //   if (value.success == true) {
+                                //     ToastWidgets.successToast(
+                                //         context, "İşlem Başarılı!");
+                                //   }
+                                // });
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: deviceWidthSize(context, 10),
+                                  vertical: deviceHeightSize(context, 5),
+                                ),
+                                child: Column(
                                   children: [
-                                    if (widget.stkModel.inEarthquakeZone == true)
-                                      tagItem(context, color: AppTheme.blue, text: "Deprem Bölgesi"),
+                                    Icon(
+                                      HiveHelpers.getUserFromHive().favoriteStks.contains(widget.stkModel.id)
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: AppTheme.primaryColor,
+                                      size: deviceFontSize(context, 24),
+                                    ),
+                                    Text(
+                                      widget.stkModel.favoriteCount.toString(),
+                                      style: AppTheme.normalTextStyle(
+                                        context,
+                                        14,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                height: deviceHeightSize(context, 30),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 10),
+                        ),
+                        Divider(
+                          color: AppTheme.secondaryColor.withOpacity(0.1),
+                          thickness: 1,
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 10),
                         ),
                       ],
                     ),
                   ),
-                ),
-
-                // const GradientWidget(height: 80),
-                // Positioned(
-                //     bottom: deviceHeightSize(context, 30),
-                //     left: deviceWidthSize(context, 20),
-                //     right: deviceWidthSize(context, 20),
-                //     child: GeneralButtonWidget(
-                //       onPressed: () {
-                //         //uygulama beta sürümünde dialog
-                //             UrlLauncherHelper()
-                //                 .launch("https://www.instagram.com/hangeltr");
-                //         // showDialog(
-                //         //   context: context,
-                //         //   builder: (context) =>
-                //         //       DialogWidgets().rowCircularButtonDialogWidget(
-                //         //     context,
-                //         //     onAcceptButtonPressed: () =>
-                //         //     title: "Beta Sürüm",
-                //         //     content: "Uygulama beta sürümündedir.",
-                //         //     color: AppTheme.primaryColor,
-                //         //   ),
-                //         // );
-                //       },
-                //       text: "Bağış Yap",
-                //       buttonColor: AppTheme.primaryColor,
-                //     ))
-              ],
+                  _tabView(context),
+                  SizedBox(
+                    height: deviceHeightSize(context, 10),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: deviceWidthSize(context, 20),
+                    ),
+                    child: Column(
+                      children: [
+                        Divider(
+                          color: AppTheme.secondaryColor.withOpacity(0.1),
+                          thickness: 1,
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 4),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Hakkında",
+                            style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
+                          ),
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 10),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            (widget.stkModel.detailText ?? ""),
+                            style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
+                          ),
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 10),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: "Platforma Katılma Tarihi: ",
+                                  style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
+                                ),
+                                TextSpan(
+                                  text: DateFormatHelper.getDate(
+                                      (widget.stkModel.creationDate ?? "").toString(), context),
+                                  style: AppTheme.normalTextStyle(context, 14, color: AppTheme.primaryColor),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 10),
+                        ),
+                        SizedBox(
+                          width: deviceWidth(context),
+                          child: Wrap(
+                            direction: Axis.horizontal,
+                            alignment: WrapAlignment.start,
+                            children: [
+                              if (widget.stkModel.inEarthquakeZone == true)
+                                tagItem(context, color: AppTheme.blue, text: "Deprem Bölgesi"),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: deviceHeightSize(context, 30),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -339,38 +289,53 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
 
   GestureDetector listItemImage2(
     BuildContext context, {
-    required String? logo,
+    String? img,
     required Function()? onTap,
   }) {
-    int randomIndex = (logo ?? "").length % randomColors.length;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
         width: deviceWidth(context),
-        height: deviceHeightSize(context, 200),
+        height: deviceHeight(context) * 0.1,
         margin: EdgeInsets.only(
           right: deviceWidthSize(context, 10),
         ),
         decoration: BoxDecoration(
-          color: randomColors[randomIndex],
+          color: AppTheme.white,
           boxShadow: AppTheme.shadowList,
           borderRadius: BorderRadius.circular(13),
         ),
+        duration: Durations.extralong4,
+        curve: Curves.fastOutSlowIn,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const AppNameWidget(
-              fontSize: 48,
-              color: AppTheme.white,
-            ),
-            SizedBox(
-              height: deviceHeightSize(context, 8),
-            ),
-            Text(
-              logo ?? "",
-              textAlign: TextAlign.center,
-              style: AppTheme.boldTextStyle(context, 20, color: AppTheme.white),
-            ),
+            img != null
+                ? Image.network(
+                    img,
+                    width: deviceWidth(context) * 0.4,
+                    height: deviceHeight(context) * 0.09,
+                    alignment: Alignment.center,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: AppNameWidget(
+                        fontSize: 32,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                  )
+                : const AppNameWidget(
+                    fontSize: 48,
+                    color: AppTheme.primaryColor,
+                  ),
+            // SizedBox(
+            //   height: deviceHeightSize(context, 8),
+            // ),
+            // Text(
+            //   (title ?? "").removeBrackets(),
+            //   textAlign: TextAlign.center,
+            //   style: AppTheme.boldTextStyle(context, 20, color: AppTheme.white),
+            // ),
           ],
         ),
       ),
@@ -379,26 +344,9 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
 
   _tabView(BuildContext context) {
     List<Map<String, dynamic>> statics = [
-      {
-        "title": "Toplam Bağış",
-        "value": "0",
-      },
-      {
-        "title": "Favori",
-        "value": "0",
-      },
-      {
-        "title": "İşlem Sayısı",
-        "value": "0",
-      },
-      {
-        "title": "Bağışçı Sayısı",
-        "value": "0",
-      },
-      {
-        "title": "Seçim Sayısı",
-        "value": "0",
-      }
+      {"title": "Toplam Bağış", "value": "${(widget.stkModel.totalDonation ?? 0).toString()} ₺", "icon": Icons.money},
+      {"title": "İşlem Sayısı", "value": "${(widget.stkModel.processCount ?? 0).toString()}", "icon": Icons.plus_one},
+      {"title": "Bağışçı Sayısı", "value": "${(widget.stkModel.totalDonor ?? 0).toString()}", "icon": Icons.people},
     ];
     List<Map<String, dynamic>> categories = [
       {
@@ -460,7 +408,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
           ),
         ),
         SizedBox(
-          height: deviceHeightSize(context, _tabController!.index == 0 ? 230 : 280),
+          height: deviceHeightSize(context, _tabController!.index == 0 ? 280 : 230),
           width: deviceWidth(context),
           child: TabBarView(
             controller: _tabController,
@@ -499,6 +447,8 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                if (info[index]["icon"] != null) Icon(info[index]["icon"]),
+                SizedBox(width: 15),
                 Expanded(
                   flex: _tabController!.index == 0 ? 1 : 2,
                   child: Text(

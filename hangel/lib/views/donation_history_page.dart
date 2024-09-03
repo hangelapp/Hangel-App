@@ -83,7 +83,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                           children: [
                             CircleLogoWidget(
                               logoUrl: donations[i].brandId ?? "",
-                              logoName: donations[i].brandId?[0] ?? "",
+                              logoName: donations[i].brandId[0] ?? "",
                             ),
                             const SizedBox(
                               width: 3,
@@ -95,7 +95,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                           children: [
                             CircleLogoWidget(
                               logoUrl: donations[i].stkId1 ?? "",
-                              logoName: donations[i].stkId1?[0] ?? "",
+                              logoName: donations[i].stkId1[0] ?? "",
                             ),
                             const SizedBox(
                               width: 3,
@@ -331,31 +331,45 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user.name ?? user.phone ?? "-",
-                  style: AppTheme.semiBoldTextStyle(context, 15, color: Colors.white),
+                SizedBox(
+                  width: deviceHeightSize(context, 150),
+                  child: Text(
+                    user.name ?? user.phone ?? "-",
+                    style: AppTheme.semiBoldTextStyle(context, 15, color: Colors.white),
+                  ),
                 ),
-                Text(
-                  "$totalDonationAmount TL",
-                  style: AppTheme.semiBoldTextStyle(context, 15, color: Colors.white),
+                Container(
+                  alignment: Alignment.centerRight,
+                  width: deviceHeightSize(context, 150),
+                  child: Text(
+                    "$totalDonationAmount TL",
+                    style: AppTheme.semiBoldTextStyle(context, 15, color: Colors.white),
+                  ),
                 ),
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  // "${totalDonationAmount.toStringAsFixed(2)} TL",
-                  "Gerçekleşen Bağış",
-                  style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
+                SizedBox(
+                  width: deviceHeightSize(context, 150),
+                  child: Text(
+                    // "${totalDonationAmount.toStringAsFixed(2)} TL",
+                    "Gerçekleşen Bağış",
+                    style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
+                  ),
                 ),
-                Text(
-                  "$totalDonationAmount TL",
-                  style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
+                Container(
+                  width: deviceHeightSize(context, 150),
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    "$totalDonationAmount TL",
+                    style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
+                  ),
                 ),
               ],
             ),
@@ -370,7 +384,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
             padding: EdgeInsets.zero,
             decoration:
                 BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: AppTheme.primaryColor)),
-            width: deviceHeightSize(context, 200),
+            width: deviceHeightSize(context, 150),
             height: size.height * 0.05,
             child: DropdownButton(
               value: "hepsi",
@@ -424,7 +438,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
             padding: EdgeInsets.zero,
             decoration:
                 BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: AppTheme.primaryColor)),
-            width: deviceHeightSize(context, 200),
+            width: deviceHeightSize(context, 150),
             height: size.height * 0.05,
             child: DropdownButton(
               value: "son-1-ay",

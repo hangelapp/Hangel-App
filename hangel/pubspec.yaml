@@ -56,7 +56,6 @@ dependencies:
   firebase_database_web: ^0.2.5+7
   dio: ^5.5.0+1
   flutter_typeahead: ^5.2.0
-  palette_generator: ^0.3.3+4
   firebase_auth_platform_interface: ^7.3.0
   persistent_bottom_nav_bar: ^6.2.1
   countup: ^0.1.4
@@ -64,6 +63,7 @@ dependencies:
   uuid: ^4.4.2
   cloud_functions: ^5.0.4
   image_cropper: ^8.0.2
+  firebase_pagination: ^4.0.1
 
 dev_dependencies:
   flutter_test:

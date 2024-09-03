@@ -103,7 +103,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
       titleText: "Doğum Tarihi Gir",
       confirmText: "Seç",
       cancelText: "İptal",
-      lastDate: DateTime(2050),
+      lastDate: DateTime.now(),
       dateFormat: "dd-MMMM-yyyy",
       locale: DateTimePickerLocale.tr,
       looping: true,

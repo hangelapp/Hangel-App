@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hangel/constants/size.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -88,6 +89,28 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
     if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      final fileSize = await file.length(); // Get the file size in bytes
+
+      if (fileSize > 3 * 1024 * 1024) {
+        // 3MB = 3 * 1024 * 1024 bytes
+        // Show an alert dialog if the file size is greater than 5MB
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Uyarı'),
+            content: Text('Resim boyutu 3MB\'dan büyük. Lütfen daha küçük bir resim seçin.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Tamam'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
         aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
@@ -98,9 +121,27 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
             lockAspectRatio: true,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+            ],
           ),
           IOSUiSettings(
+            title: "Resmi Kırp",
+            cancelButtonTitle: "İptal",
+            doneButtonTitle: "Tamamla",
             minimumAspectRatio: 1.0,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+            ],
+          ),
+          WebUiSettings(
+            context: context,
+            size: CropperSize(
+              width: (deviceWidth(context) * 0.5).toInt(),
+              height: (deviceHeight(context) * 0.5).toInt(),
+            ),
           ),
         ],
       );

@@ -20,6 +20,8 @@ class STKFormModel {
   String? faaliyetImage;
   String? type;
   String? neighborhood;
+  String? sicilNo;
+  String? vergiNo;
 
   STKFormModel({
     this.name,
@@ -43,6 +45,8 @@ class STKFormModel {
     this.faaliyetImage,
     this.type,
     this.neighborhood,
+    this.sicilNo,
+    this.vergiNo
   });
 
   factory STKFormModel.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,8 @@ class STKFormModel {
       faaliyetImage: json['faaliyetImage'],
       type: json['type'],
       neighborhood: json['neighborhood'],
+      sicilNo: json["sicilNo"],
+      vergiNo: json["vergiNo"]
     );
   }
 
@@ -94,9 +100,12 @@ class STKFormModel {
       'faaliyetImage': faaliyetImage,
       'type': type,
       'neighborhood': neighborhood,
+      "sicilNo":sicilNo,
+      "vergiNo":vergiNo
     };
   }
 
+  //Mail kısmı güncellenecek
   String toHTMLTable() {
     return """
     <table>

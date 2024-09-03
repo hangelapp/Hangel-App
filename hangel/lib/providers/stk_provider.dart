@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/controllers/stk_controller.dart';
@@ -12,6 +13,15 @@ import 'package:hangel/providers/login_register_page_provider.dart';
 
 class STKProvider with ChangeNotifier {
   final _stkController = locator<STKController>();
+
+  STKProvider() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await getSTKs();
+    });
+  }
+
+  int page = 1;
+  int limit = 10;
 
   List<StkModel> _stkList = [];
   List<StkModel> get stkList => _stkList;
@@ -94,16 +104,64 @@ class STKProvider with ChangeNotifier {
     }
   }
 
+  void nextPage() {
+    page++;
+    notifyListeners();
+  }
+
   //getSTK
   Future getSTKs() async {
-    if (stkList.isNotEmpty) {
-      return;
-    }
+    var firestore = FirebaseFirestore.instance;
+
+    // Calculate the starting index for pagination
+    int startAtIndex = (page - 1) * limit;
+
+    // Query to fetch paginated data
+    var query = firestore
+        .collection("stklar")
+        .where("isActive", isEqualTo: true)
+        .orderBy("creationDate") // Ensure that you are ordering by a field
+        .startAt([startAtIndex]) // Start at the calculated index
+        .limit(limit) // Limit the number of results
+        .snapshots();
+
     _loadingState = LoadingState.loading;
     notifyListeners();
-    _stkList = await _stkController.getSTKs();
+
+    try {
+      // Fetch the data
+      var querySnapshot = await query.first; // .first is used to get the first result of the snapshot
+
+      // Process the results
+      List<StkModel> fetchedStkList = querySnapshot.docs.map((doc) {
+        return StkModel.fromJson(doc.data());
+      }).toList();
+
+      stkList.clear();
+      // Add the results to the list
+      stkList.addAll(fetchedStkList);
+
+      _loadingState = LoadingState.loaded;
+      notifyListeners();
+    } catch (e) {
+      // Handle errors here
+      print("Error fetching STKs: $e");
+      _loadingState = LoadingState.error;
+      notifyListeners();
+    }
+  }
+
+  Future<List<StkModel>> getFavoriteSTKs() async {
+    if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
+      return [];
+    }
+    List<StkModel> tempData = [];
+    _loadingState = LoadingState.loading;
+    notifyListeners();
+    tempData = await _stkController.getFavoriteSTKs(HiveHelpers.getUserFromHive().favoriteStks);
     _loadingState = LoadingState.loaded;
     notifyListeners();
+    return tempData;
   }
 
   //addSTK
