@@ -19,6 +19,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'helpers/locator.dart';
 import 'helpers/provider_list.dart';
+import 'views/auth/widget_tree.dart';
 import 'views/splash_page.dart';
 
 void main() async {
@@ -70,8 +71,9 @@ class MyApp extends StatelessWidget {
       title: 'Hangel',
       debugShowCheckedModeBanner: false,
       theme: themeData,
-      initialRoute: SplashPage.routeName,
+      initialRoute: WidgetTree.routeName,
       routes: {
+        WidgetTree.routeName: (context) => const WidgetTree(),
         AppView.routeName: (context) => const AppView(),
         SplashPage.routeName: (context) => const SplashPage(),
         HomePage.routeName: (context) => const HomePage(),

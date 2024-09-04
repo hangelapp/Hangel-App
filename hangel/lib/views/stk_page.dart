@@ -1,16 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/models/stk_model.dart';
-import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/stk_detail_page.dart';
-import 'package:hangel/views/stk_form_widget.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
-import 'package:hangel/widgets/bottom_sheet_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
 import 'package:hangel/widgets/search_widget.dart';
 import 'package:provider/provider.dart';
@@ -23,41 +19,10 @@ class STKPage extends StatefulWidget {
 }
 
 class _STKPageState extends State<STKPage> {
-  List<StkModel> _stkList = [];
   final TextEditingController _searchController = TextEditingController();
-  final ScrollController scrollController = ScrollController();
-
-  bool _isLoading = false;
-
-  TabController? _tabController;
-
-  @override
-  void initState() {
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await context.read<STKProvider>().getSTKs();
-    });
-    // scrollController.addListener(() async {
-    //   if (scrollController.position.pixels >= (scrollController.position.maxScrollExtent - 10) && !_isLoading) {
-    //     await _loadMoreData();
-    //   }
-    // });
-    super.initState();
-  }
-
-  Future<void> _loadMoreData() async {
-    // context.watch<STKProvider>().loadingState = LoadingState.loading;
-    context.read<STKProvider>().nextPage();
-    await context
-        .read<STKProvider>()
-        .getSTKs()
-        .whenComplete(() => null //context.watch<STKProvider>().loadingState = LoadingState.loaded);
-            );
-  }
 
   @override
   Widget build(BuildContext context) {
-    _stkList = context.watch<STKProvider>().stkList;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: DefaultTabController(
@@ -93,7 +58,6 @@ class _STKPageState extends State<STKPage> {
               ),
               alignment: Alignment.centerLeft,
               child: TabBar(
-                controller: _tabController,
                 indicatorColor: Colors.transparent,
                 tabAlignment: TabAlignment.start,
                 labelColor: AppTheme.primaryColor,
@@ -120,124 +84,121 @@ class _STKPageState extends State<STKPage> {
               ),
             ),
             Expanded(
-              child: context.watch<STKProvider>().loadingState == LoadingState.loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : TabBarView(
-                      controller: _tabController,
-                      children: List.generate(
-                        _tabs.length,
-                        (tabIndex) => Column(
-                          children: [
-                            SizedBox(
-                              height: deviceHeightSize(context, 10),
+              child: TabBarView(
+                children: List.generate(
+                  _tabs.length,
+                  (tabIndex) => Column(
+                    children: [
+                      SizedBox(
+                        height: deviceHeightSize(context, 10),
+                      ),
+                      //filter and sort
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: deviceWidthSize(context, 20),
                             ),
-                            //filter and sort
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    left: deviceWidthSize(context, 20),
-                                  ),
-                                  child: Text(
-                                    "STK'lar",
-                                    style: AppTheme.boldTextStyle(context, 20),
+                            child: Text(
+                              "STK'lar",
+                              style: AppTheme.boldTextStyle(context, 20),
+                            ),
+                          ),
+                          filterAndSort(context),
+                        ],
+                      ),
+                      Expanded(
+                        child: FirestorePagination(
+                          padding: EdgeInsets.zero,
+                          limit: 5,
+                          initialLoader: Center(child: CircularProgressIndicator()),
+                          bottomLoader: LinearProgressIndicator(),
+                          query: FirebaseFirestore.instance
+                              .collection('stklar')
+                              .where("isActive", isEqualTo: true)
+                              .orderBy('favoriteCount', descending: true),
+                          itemBuilder: (context, docs, index) {
+                            final stk = StkModel.fromJson(docs[index].data() as Map<String, dynamic>);
+                            return ListItemWidget(context,
+                                logo: stk.logo,
+                                title: stk.name.toString(),
+                                sector: stk.categories.first,
+                                desc: stk.detailText, onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => STKDetailPage(
+                                    stkModel: stk,
                                   ),
                                 ),
-                                filterAndSort(context),
-                              ],
-                            ),
-                            Expanded(
-                              child: FirestorePagination(
-                                padding: EdgeInsets.zero,
-                                limit: 5,
-                                initialLoader: CircularProgressIndicator(),
-                                bottomLoader: LinearProgressIndicator(),
-                                query: FirebaseFirestore.instance
-                                    .collection('stklar')
-                                    .where("isActive",isEqualTo: true)
-                                    .orderBy('favoriteCount',descending: true),
-                                itemBuilder: (context, docs, index) {
-                                  final stk = StkModel.fromJson(docs[index].data() as Map<String, dynamic>);
-                                  return ListItemWidget(context,
-                                      logo: stk.logo,
-                                      title: stk.name.toString(),
-                                      sector: stk.categories.first,
-                                      desc: stk.detailText, onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => STKDetailPage(
-                                          stkModel: stk,
-                                        ),
-                                      ),
-                                    );
-                                  });
-                                  // Do something cool with the data
-                                },
-                              ),
-                            ),
-                            // Expanded(
-                            //   child: ListView.builder(
-                            //     padding: EdgeInsets.zero,
-                            //     controller: scrollController,
-                            //     itemCount: _stkList.length,
-                            //     shrinkWrap: true,
-                            //     itemBuilder: (context, index) {
-                            //       bool isSearch = _stkList[index]
-                            //           .name!
-                            //           .toLowerCase()
-                            //           .contains(_searchController.text.toLowerCase());
-                            //       bool isFilter = false;
-                            //       String filterText = context.read<STKProvider>().filterText;
-
-                            //       switch (filterText) {
-                            //         case "depremBolgesi":
-                            //           isFilter = _stkList[index].inEarthquakeZone!;
-                            //           break;
-                            //         case "specialStatus":
-                            //           isFilter = _stkList[index].specialStatus != null;
-                            //           break;
-                            //         default:
-                            //           isFilter = _stkList[index]
-                            //               .fieldOfBenefit!
-                            //               .toLowerCase()
-                            //               .contains(filterText.toLowerCase());
-                            //           break;
-                            //       }
-
-                            //       bool isReturn = isSearch &&
-                            //           isFilter &&
-                            //           (_stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
-
-                            //       if (isReturn) {
-                            //         return ListItemWidget(
-                            //           context,
-                            //           logo: _stkList[index].logo,
-                            //           title: _stkList[index].name.toString(),
-                            //           desc: _stkList[index].detailText,
-                            //           onTap: () {
-                            //             Navigator.push(
-                            //               context,
-                            //               MaterialPageRoute(
-                            //                 builder: (context) => STKDetailPage(
-                            //                   stkModel: _stkList[index],
-                            //                 ),
-                            //               ),
-                            //             );
-                            //           },
-                            //         );
-                            //       } else {
-                            //         // Return an empty container if the item does not match the criteria
-                            //         return Container();
-                            //       }
-                            //     },
-                            //   ),
-                            // ),
-                          ],
+                              );
+                            });
+                            // Do something cool with the data
+                          },
                         ),
                       ),
-                    ),
+                      // Expanded(
+                      //   child: ListView.builder(
+                      //     padding: EdgeInsets.zero,
+                      //     controller: scrollController,
+                      //     itemCount: _stkList.length,
+                      //     shrinkWrap: true,
+                      //     itemBuilder: (context, index) {
+                      //       bool isSearch = _stkList[index]
+                      //           .name!
+                      //           .toLowerCase()
+                      //           .contains(_searchController.text.toLowerCase());
+                      //       bool isFilter = false;
+                      //       String filterText = context.read<STKProvider>().filterText;
+
+                      //       switch (filterText) {
+                      //         case "depremBolgesi":
+                      //           isFilter = _stkList[index].inEarthquakeZone!;
+                      //           break;
+                      //         case "specialStatus":
+                      //           isFilter = _stkList[index].specialStatus != null;
+                      //           break;
+                      //         default:
+                      //           isFilter = _stkList[index]
+                      //               .fieldOfBenefit!
+                      //               .toLowerCase()
+                      //               .contains(filterText.toLowerCase());
+                      //           break;
+                      //       }
+
+                      //       bool isReturn = isSearch &&
+                      //           isFilter &&
+                      //           (_stkList[index].type == _tabs[tabIndex] || _tabs[tabIndex] == "Tümü");
+
+                      //       if (isReturn) {
+                      //         return ListItemWidget(
+                      //           context,
+                      //           logo: _stkList[index].logo,
+                      //           title: _stkList[index].name.toString(),
+                      //           desc: _stkList[index].detailText,
+                      //           onTap: () {
+                      //             Navigator.push(
+                      //               context,
+                      //               MaterialPageRoute(
+                      //                 builder: (context) => STKDetailPage(
+                      //                   stkModel: _stkList[index],
+                      //                 ),
+                      //               ),
+                      //             );
+                      //           },
+                      //         );
+                      //       } else {
+                      //         // Return an empty container if the item does not match the criteria
+                      //         return Container();
+                      //       }
+                      //     },
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+              ),
             )
           ],
         ),

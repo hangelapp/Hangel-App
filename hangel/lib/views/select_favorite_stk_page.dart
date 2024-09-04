@@ -15,7 +15,6 @@ import 'package:provider/provider.dart';
 
 import '../helpers/hive_helpers.dart';
 import '../models/user_model.dart';
-import 'vounteer_form.dart';
 
 class SelectFavoriteStkPage extends StatefulWidget {
   const SelectFavoriteStkPage({Key? key, this.inTree = true}) : super(key: key);
@@ -54,6 +53,8 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> with Sing
 
   @override
   Widget build(BuildContext context) {
+    user = HiveHelpers.getUserFromHive();
+    print(user.uid);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(

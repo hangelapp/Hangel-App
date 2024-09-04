@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/providers/app_view_provider.dart';
@@ -21,13 +23,12 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
-  double _opacity = 0;
+  // double _opacity = 0;
   // double _left = 50;
   // double _right = 50;
 
   @override
   void initState() {
-    super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -35,20 +36,21 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
         statusBarIconBrightness: Brightness.dark,
       ),
     );
-
-    _initialize();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await _initialize();
+    });
+    super.initState();
   }
 
   Future<void> _initialize() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() {
-      _opacity = 1;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 500));
+    // await Future.delayed(const Duration(milliseconds: 500));
+    // setState(() {
+    //   _opacity = 1;
+    // });
 
     if (HiveHelpers.getUid() != "") {
-      await context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid());
+      var result = await context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid(), context);
+      await Future.delayed(Duration(seconds: result == null ? 3 : 0));
       bool isAppView = false;
       Navigator.popUntil(context, (route) {
         print(route.settings.name);
@@ -95,8 +97,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       body: Center(
         child: SizedBox(
           width: deviceFontSize(context, 153),
-          child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 500), opacity: _opacity, child: const AppNameWidget(fontSize: 40)),
+          child: const AppNameWidget(fontSize: 40),
           // child: Stack(
           //   alignment: Alignment.center,
           //   children: [

@@ -11,6 +11,7 @@ import '../helpers/hive_helpers.dart';
 import '../helpers/locator.dart';
 import '../models/general_response_model.dart';
 import '../models/user_model.dart';
+import '../views/auth/register_page.dart';
 
 enum PhoneLoginPageType { register, login, verify }
 
@@ -150,7 +151,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
         // Belgeyi al
         var data = querySnapshot.docs.first.data() as Map<String, dynamic>;
         UserModel user = UserModel.fromJson(data);
-        
+
         // Kullanıcıyı Hive'a ekle
         HiveHelpers.addUserToHive(user);
         print(user);
@@ -347,12 +348,12 @@ class LoginRegisterPageProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
-      print('Error getting user by phone number: $e');
+      print('Error getting user by phone numbera: $e');
       return null;
     }
   }
 
-  Future<UserModel?> getUserById(String uid) async {
+  Future<UserModel?> getUserById(String uid, context) async {
     try {
       // Firestore'daki kullanıcı koleksiyonunu sorgula
       DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(uid).get();
@@ -363,7 +364,11 @@ class LoginRegisterPageProvider with ChangeNotifier {
       HiveHelpers.addUserToHive(user);
       return user;
     } catch (e) {
-      print('Error getting user by phone number: $e');
+      print('Error getting user by phone numberb: $e');
+      HiveHelpers.logout();
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => RegisterPage()), (route) => false);
+
       return null;
     }
   }
