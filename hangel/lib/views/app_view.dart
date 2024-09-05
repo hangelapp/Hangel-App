@@ -325,7 +325,7 @@ class _AppViewState extends State<AppView> {
             ),
             //app version
             Text(
-              "v1.0.0 (Beta)",
+              "v1.0.0",
               style: AppTheme.lightTextStyle(context, 14),
             ),
             MenuItemWidget(
