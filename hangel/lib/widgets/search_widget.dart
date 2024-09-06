@@ -16,9 +16,9 @@ Widget SearchWidget(BuildContext context,
     decoration: BoxDecoration(
       color: AppTheme.white,
       borderRadius: BorderRadius.circular(10),
-      border: Border.all(
-        color: AppTheme.secondaryColor.withOpacity(0.2),
-      ),
+      // border: Border.all(
+      //   color: AppTheme.secondaryColor.withOpacity(0.2),
+      // ),
     ),
     child: TextField(
       onChanged: (value) {

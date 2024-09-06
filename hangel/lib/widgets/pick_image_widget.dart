@@ -234,9 +234,9 @@ class _PickImageWidgetState extends State<PickImageWidget> {
         width: deviceWidthSize(context, 80),
         decoration: BoxDecoration(
           color: AppTheme.green.withOpacity(0.1),
-          border: Border.all(
-            color: AppTheme.green,
-          ),
+          // border: Border.all(
+          //   color: AppTheme.green,
+          // ),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Center(

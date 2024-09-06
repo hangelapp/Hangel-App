@@ -21,10 +21,10 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Hangel App">
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-storage-compat.js"></script>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -65,7 +65,9 @@
     };
 
     // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
+    const firebaseApp = firebase.initializeApp(firebaseConfig);
+    const db = firebaseApp.firestore();
+    const auth = firebaseApp.auth();
   </script>
   <script src="main.dart.js" type="application/javascript"></script>
   <script src="flutter.js" async></script>

@@ -33,7 +33,7 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
             margin: EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.blue, width: 5),
+              // border: Border.all(color: Colors.blue, width: 5),
               image: DecorationImage(
                 image: FileImage(File(_image!.path)),
                 fit: BoxFit.cover,

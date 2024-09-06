@@ -331,7 +331,7 @@ class _RegisterPageState extends State<RegisterPage> {
             errorPinTheme: PinTheme(
               decoration: BoxDecoration(
                 color: AppTheme.white,
-                border: Border.all(color: AppTheme.red),
+                // border: Border.all(color: AppTheme.red),
                 borderRadius: BorderRadius.circular(10),
               ),
               width: deviceWidthSize(context, 50),

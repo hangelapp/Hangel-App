@@ -383,7 +383,9 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
           Container(
             padding: EdgeInsets.zero,
             decoration:
-                BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: AppTheme.primaryColor)),
+                BoxDecoration(borderRadius: BorderRadius.circular(5)
+                // , border: Border.all(color: AppTheme.primaryColor),
+                ),
             width: deviceHeightSize(context, 150),
             height: size.height * 0.05,
             child: DropdownButton(
@@ -437,7 +439,9 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
           Container(
             padding: EdgeInsets.zero,
             decoration:
-                BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: AppTheme.primaryColor)),
+                BoxDecoration(borderRadius: BorderRadius.circular(5), 
+                // border: Border.all(color: AppTheme.primaryColor),
+                ),
             width: deviceHeightSize(context, 150),
             height: size.height * 0.05,
             child: DropdownButton(

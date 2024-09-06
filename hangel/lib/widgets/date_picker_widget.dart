@@ -65,9 +65,9 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                   ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: AppTheme.darkBlue.withOpacity(0.3),
-                    ),
+                    // border: Border.all(
+                    //   color: AppTheme.darkBlue.withOpacity(0.3),
+                    // ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

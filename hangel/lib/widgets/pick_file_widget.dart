@@ -73,9 +73,9 @@ class _PickFileWidgetState extends State<PickFileWidget> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppTheme.darkBlue.withOpacity(0.3),
-              ),
+              // border: Border.all(
+              //   color: AppTheme.darkBlue.withOpacity(0.3),
+              // ),
             ),
             child: isFilePicked ? fileWidget(context) : pickFileWidget(context),
           ),

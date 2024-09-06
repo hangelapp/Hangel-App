@@ -190,12 +190,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           decoration: const BoxDecoration(
             color: AppTheme.secondaryColor,
             shape: BoxShape.circle,
-            border: Border.fromBorderSide(
-              BorderSide(
-                color: Colors.white,
-                width: 4,
-              ),
-            ),
+            // border: Border.fromBorderSide(
+            //   BorderSide(
+            //     color: Colors.white,
+            //     width: 4,
+            //   ),
+            // ),
           ),
           child: CachedNetworkImage(
             imageUrl: user.image ?? "https://www.example.com/1.jpg",
@@ -250,12 +250,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               decoration: const BoxDecoration(
                 color: AppTheme.secondaryColor,
                 shape: BoxShape.circle,
-                border: Border.fromBorderSide(
-                  BorderSide(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                ),
+                // border: Border.fromBorderSide(
+                //   BorderSide(
+                //     color: Colors.white,
+                //     width: 2,
+                //   ),
+                // ),
               ),
               child: Center(
                 child: Icon(
@@ -667,7 +667,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(5)),
+                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      //  borderRadius: BorderRadius.circular(5),
+                       ),
                   margin: EdgeInsets.only(left: 20),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -685,10 +687,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.white,
-                            width: 2,
-                          ),
+                          // border: Border.all(
+                          //   color: AppTheme.white,
+                          //   width: 2,
+                          // ),
                         ),
                         padding: EdgeInsets.all(deviceWidthSize(context, 2)),
                         child: const Icon(
