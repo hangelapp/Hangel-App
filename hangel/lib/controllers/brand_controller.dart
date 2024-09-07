@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/locator.dart';
@@ -95,7 +94,7 @@ class BrandController {
         to: ["hangelturkiye@gmail.com"],
         subject: "Marka Başvurusu",
         body: "Marka Başvurusu",
-        html: brandFormModel.toHTMLTable(),
+        html: brandFormModel.toHtmlTable(),
       );
       await _firestoreService.addData("forms", {
         "subject": "Marka Başvurusu",

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/constants/size.dart';
-import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/models/volunteer_model.dart';
 import 'package:hangel/providers/volunteer_provider.dart';

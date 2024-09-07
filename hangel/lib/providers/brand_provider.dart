@@ -62,7 +62,7 @@ class BrandProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> get brandSectors => _brandList.map((e) => e.sector ?? "").toList().toSet().toList();
+  List<String> get brandSectors => _brandList.map((e) => e.sector ?? "Diğer").toList().toSet().toList();
 
   String _filterText = "";
   String get filterText => _filterText;

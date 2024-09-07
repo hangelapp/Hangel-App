@@ -1,0 +1,1 @@
+flutter build web --verbose --profile --web-renderer html --pwa-strategy=none --dart-define=BASE_URL="https://hangel.org/hangel_app"

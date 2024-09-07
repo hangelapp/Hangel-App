@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_holo_date_picker/date_picker.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';

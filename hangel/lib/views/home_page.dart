@@ -49,14 +49,6 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, String>> filters = [
     {
-      "name": "Deprem Bölgesi",
-      "value": "depremBolgesi",
-    },
-    {
-      "name": "Sosyal Girişim",
-      "value": "socialEnterprise",
-    },
-    {
       "name": "Tümü",
       "value": "",
     },
@@ -238,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                     decoration: InputDecoration(
                       hintText: "Marka Ara",
                       hintStyle: AppTheme.lightTextStyle(context, 14),
-                      border: InputBorder.none,
+                      // border: InputBorder.none,
                       prefixIcon: Icon(
                         Icons.search_rounded,
                         color: AppTheme.secondaryColor.withOpacity(0.5),
@@ -379,6 +371,16 @@ class _HomePageState extends State<HomePage> {
             surfaceTintColor: Colors.white,
             itemBuilder: (context) => [
               ...List.generate(
+                filters.length,
+                (index) => PopupMenuItem(
+                  value: filters[index]["value"],
+                  child: Text(filters[index]["name"] ?? "",
+                      style: context.read<BrandProvider>().filterText == filters[index]["value"]
+                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
+                          : AppTheme.normalTextStyle(context, 14)),
+                ),
+              ),
+              ...List.generate(
                 context.read<BrandProvider>().brandSectors.length,
                 (index) => PopupMenuItem(
                   value: context.read<BrandProvider>().brandSectors[index],
@@ -389,21 +391,11 @@ class _HomePageState extends State<HomePage> {
                               : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),
-              ...List.generate(
-                filters.length,
-                (index) => PopupMenuItem(
-                  value: filters[index]["value"],
-                  child: Text(filters[index]["name"] ?? "",
-                      style: context.read<BrandProvider>().filterText == filters[index]["value"]
-                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
-                          : AppTheme.normalTextStyle(context, 14)),
-                ),
-              ),
             ],
             onSelected: (value) {
-              if (value == "Tümü") {
-                value = "";
-              }
+              // if (value == "Tümü") {
+              //   value = "";
+              // }
               context.read<BrandProvider>().filterText = value;
             },
             child: Icon(

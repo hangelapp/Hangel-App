@@ -70,13 +70,12 @@ class _PickFileWidgetState extends State<PickFileWidget> {
           },
           child: Container(
             width: MediaQuery.of(context).size.width,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              // border: Border.all(
-              //   color: AppTheme.darkBlue.withOpacity(0.3),
-              // ),
-            ),
+            decoration:
+                BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), boxShadow: [BoxShadow(color: Colors.black87,offset: Offset(1, 1),blurRadius: 1)]
+                    // border: Border.all(
+                    //   color: AppTheme.darkBlue.withOpacity(0.3),
+                    // ),
+                    ),
             child: isFilePicked ? fileWidget(context) : pickFileWidget(context),
           ),
         ),

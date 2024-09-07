@@ -10,7 +10,6 @@ import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/home_page.dart';
-import 'package:hangel/views/auth/onboarding_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/views/vounteer_form.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -129,13 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
               context,
               controller: _nameController,
               title: "Ad Soyad",
-              ontap: () {
-                _scrollController.animateTo(
-                  deviceHeightSize(context, 200),
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.ease,
-                );
-              },
+              ontap: () {},
             ),
           FormFieldWidget(
             context,
@@ -164,13 +157,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ],
             ),
-            ontap: () {
-              _scrollController.animateTo(
-                deviceHeightSize(context, 200),
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.ease,
-              );
-            },
+            ontap: () {},
             title: "Telefon Numarası",
           ),
           SizedBox(
@@ -277,190 +264,183 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget verifySmsCodeWidget(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
-      child: Column(
-        children: [
-          Text(
-            "Lütfen telefonunuza gelen 6 haneli kodu giriniz.",
-            textAlign: TextAlign.center,
-            style: AppTheme.lightTextStyle(context, 28),
-          ),
-          SizedBox(
-            height: deviceHeightSize(context, 30),
-          ),
-          Pinput(
-            length: 6,
-            controller: _verifyController,
-            cursor: Text("_", style: AppTheme.boldTextStyle(context, 22, color: AppTheme.primaryColor)),
-            keyboardType: TextInputType.number,
-            defaultPinTheme: PinTheme(
-              decoration: BoxDecoration(
-                color: AppTheme.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.darkBlue.withOpacity(0.2),
-                    blurRadius: 11,
-                    offset: const Offset(0, 5),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
+        child: Column(
+          children: [
+            Text(
+              "Lütfen telefonunuza gelen 6 haneli kodu giriniz.",
+              textAlign: TextAlign.center,
+              style: AppTheme.lightTextStyle(context, 28),
+            ),
+            SizedBox(
+              height: deviceHeightSize(context, 30),
+            ),
+            Pinput(
+              length: 6,
+              autofocus: true,
+              scrollPadding: EdgeInsets.only(bottom: 100),
+              controller: _verifyController,
+              cursor: Text("_", style: AppTheme.boldTextStyle(context, 22, color: AppTheme.primaryColor)),
+              keyboardType: TextInputType.number,
+              defaultPinTheme: PinTheme(
+                decoration: BoxDecoration(
+                  color: AppTheme.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.darkBlue.withOpacity(0.2),
+                      blurRadius: 11,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                width: deviceWidthSize(context, 50),
+                height: deviceHeightSize(context, 60),
+                textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.primaryColor),
+              ),
+              onTap: () {
+                print("object");
+              },
+              onChanged: (value) {
+                if (value.length == 6) {}
+              },
+              forceErrorState: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.error,
+              errorPinTheme: PinTheme(
+                decoration: BoxDecoration(
+                  color: AppTheme.white,
+                  // border: Border.all(color: AppTheme.red),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                width: deviceWidthSize(context, 50),
+                height: deviceHeightSize(context, 60),
+                textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.yellow),
+              ),
+              errorText: "Hatalı Kod",
+              errorTextStyle: AppTheme.normalTextStyle(context, 16, color: AppTheme.red),
+            ),
+            SizedBox(
+              height: deviceHeightSize(context, 20),
+            ),
+            Column(
+              children: [
+                Text(
+                  Duration(seconds: resendSecond).toString().split(".")[0].padLeft(8, "0").substring(3, 8),
+                  style: AppTheme.lightTextStyle(
+                    context,
+                    32,
                   ),
-                ],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              width: deviceWidthSize(context, 50),
-              height: deviceHeightSize(context, 60),
-              textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.primaryColor),
-            ),
-            onTap: () {
-              print("object");
-              _scrollController.animateTo(
-                deviceHeightSize(context, 270),
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.ease,
-              );
-            },
-            onChanged: (value) {
-              if (value.length == 6) {
-                _scrollController.animateTo(
-                  _scrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut,
-                );
-              }
-            },
-            forceErrorState: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.error,
-            errorPinTheme: PinTheme(
-              decoration: BoxDecoration(
-                color: AppTheme.white,
-                // border: Border.all(color: AppTheme.red),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              width: deviceWidthSize(context, 50),
-              height: deviceHeightSize(context, 60),
-              textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.yellow),
-            ),
-            errorText: "Hatalı Kod",
-            errorTextStyle: AppTheme.normalTextStyle(context, 16, color: AppTheme.red),
-          ),
-          SizedBox(
-            height: deviceHeightSize(context, 20),
-          ),
-          Column(
-            children: [
-              Text(
-                Duration(seconds: resendSecond).toString().split(".")[0].padLeft(8, "0").substring(3, 8),
-                style: AppTheme.lightTextStyle(
-                  context,
-                  32,
                 ),
-              ),
-              Text(
-                "Doğrulama kodu gelmedi mi?",
-                style: AppTheme.lightTextStyle(context, 16),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (resendSecond == 0) {
-                    _verifyController.clear();
-                    context.read<LoginRegisterPageProvider>().sendVerificationCode();
-                    setState(() {
-                      resendSecond = 120;
-                    });
-                  }
-                },
-                child: Text(
-                  "Tekrar Gönder",
-                  style: AppTheme.boldTextStyle(context, 16,
-                      color: resendSecond == 0 ? AppTheme.darkBlue : AppTheme.darkBlue.withOpacity(0.3)),
+                Text(
+                  "Doğrulama kodu gelmedi mi?",
+                  style: AppTheme.lightTextStyle(context, 16),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: deviceHeightSize(context, 20),
-          ),
-          GeneralButtonWidget(
-            onPressed: () async {
-              if (context.read<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading) {
-                return;
-              }
-
-              if (_verifyController.text.length != 6) {
-                ToastWidgets.errorToast(context, "Lütfen kodu doğru giriniz!");
-              } else {
-                String phoneNum =
-                    "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
-                context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
-                if (kIsWeb) {
-                  await context
-                      .read<LoginRegisterPageProvider>()
-                      .authenticate(_verifyController.text, phoneNum, _nameController.text)
-                      .then(
-                    (value) {
-                      print(value.message);
-                      if (value.message == "true") {
-                        ToastWidgets.successToast(context, "Giriş yapılıyor...");
-                      }
-                      if (value.success == true) {
-                        if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                          Navigator.pushReplacement(
-                              context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
-                          return;
-                        }
-                        if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                  (element) => element == -1,
-                                ) ==
-                            false) {
-                          if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                            Navigator.pushReplacementNamed(
-                              context,
-                              VolunteerForm.routeName,
-                            );
-                            return;
-                          }
-                        }
-                        context.read<AppViewProvider>().selectedWidget = const HomePage();
-                        Navigator.pushReplacementNamed(context, AppView.routeName);
-                      } else {
-                        _verifyController.clear();
-                        ToastWidgets.errorToast(context, value.message ?? "");
-                      }
-                    },
-                  );
-                } else {
-                  context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
-                    (value) {
-                      if (value.success == true) {
-                        if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                          Navigator.pushReplacement(
-                              context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
-                          return;
-                        }
-                        if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                  (element) => element == -1,
-                                ) ==
-                            false) {
-                          if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                            Navigator.pushReplacementNamed(
-                              context,
-                              VolunteerForm.routeName,
-                            );
-                            return;
-                          }
-                        }
-                        context.read<AppViewProvider>().selectedWidget = const HomePage();
-                        Navigator.pushReplacementNamed(context, AppView.routeName);
-                      } else {
-                        ToastWidgets.errorToast(context, value.message ?? "");
-                      }
-                    },
-                  );
+                TextButton(
+                  onPressed: () {
+                    if (resendSecond == 0) {
+                      _verifyController.clear();
+                      context.read<LoginRegisterPageProvider>().sendVerificationCode();
+                      setState(() {
+                        resendSecond = 120;
+                      });
+                    }
+                  },
+                  child: Text(
+                    "Tekrar Gönder",
+                    style: AppTheme.boldTextStyle(context, 16,
+                        color: resendSecond == 0 ? AppTheme.darkBlue : AppTheme.darkBlue.withOpacity(0.3)),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: deviceHeightSize(context, 20),
+            ),
+            GeneralButtonWidget(
+              onPressed: () async {
+                if (context.read<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading) {
+                  return;
                 }
-              }
-            },
-            isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,
-            text: "Doğrula",
-          )
-        ],
+
+                if (_verifyController.text.length != 6) {
+                  ToastWidgets.errorToast(context, "Lütfen kodu doğru giriniz!");
+                } else {
+                  String phoneNum =
+                      "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
+                  context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
+                  if (kIsWeb) {
+                    await context
+                        .read<LoginRegisterPageProvider>()
+                        .authenticate(_verifyController.text, phoneNum, _nameController.text)
+                        .then(
+                      (value) {
+                        print(value.message);
+                        if (value.message == "true") {
+                          ToastWidgets.successToast(context, "Giriş yapılıyor...");
+                        }
+                        if (value.success == true) {
+                          if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
+                            Navigator.pushReplacement(
+                                context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
+                            return;
+                          }
+                          if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                    (element) => element == -1,
+                                  ) ==
+                              false) {
+                            if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                VolunteerForm.routeName,
+                              );
+                              return;
+                            }
+                          }
+                          context.read<AppViewProvider>().selectedWidget = const HomePage();
+                          Navigator.pushReplacementNamed(context, AppView.routeName);
+                        } else {
+                          _verifyController.clear();
+                          ToastWidgets.errorToast(context, value.message ?? "");
+                        }
+                      },
+                    );
+                  } else {
+                    context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
+                      (value) {
+                        if (value.success == true) {
+                          if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
+                            Navigator.pushReplacement(
+                                context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
+                            return;
+                          }
+                          if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                    (element) => element == -1,
+                                  ) ==
+                              false) {
+                            if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                VolunteerForm.routeName,
+                              );
+                              return;
+                            }
+                          }
+                          context.read<AppViewProvider>().selectedWidget = const HomePage();
+                          Navigator.pushReplacementNamed(context, AppView.routeName);
+                        } else {
+                          ToastWidgets.errorToast(context, value.message ?? "");
+                        }
+                      },
+                    );
+                  }
+                }
+              },
+              isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,
+              text: "Doğrula",
+            )
+          ],
+        ),
       ),
     );
   }

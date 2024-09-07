@@ -18,6 +18,7 @@ class FormFieldWidget extends StatelessWidget {
     this.ontap,
     this.leading = const SizedBox(),
     this.keyboardType,
+    this.isEditable = true,
   });
   final TextEditingController controller;
   final String title;
@@ -29,6 +30,7 @@ class FormFieldWidget extends StatelessWidget {
   final int minLines;
   final Function()? ontap;
   final String? Function(String?)? validator;
+  final bool isEditable;
 
   final TextInputType? keyboardType;
 
@@ -48,8 +50,7 @@ class FormFieldWidget extends StatelessWidget {
             if (isRequired)
               Text(
                 " *",
-                style: AppTheme.semiBoldTextStyle(context, 16,
-                    color: AppTheme.red),
+                style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.red),
               ),
           ],
         ),
@@ -82,11 +83,11 @@ class FormFieldWidget extends StatelessWidget {
                   maxLines: maxLines,
                   minLines: minLines,
                   cursorColor: AppTheme.darkBlue,
-                  textInputAction: maxLines > 2
-                      ? TextInputAction.newline
-                      : TextInputAction.done,
+                  scrollPadding: EdgeInsets.only(bottom: 100),
+                  textInputAction: maxLines > 2 ? TextInputAction.newline : TextInputAction.done,
                   style: AppTheme.normalTextStyle(context, 16),
                   validator: validator,
+                  enabled: isEditable,
                   inputFormatters: inputFormatters,
                   decoration: AppTheme.noneBorderInputDecoration(
                     hintText: hintText,

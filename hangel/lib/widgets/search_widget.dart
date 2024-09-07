@@ -28,7 +28,7 @@ Widget SearchWidget(BuildContext context,
       decoration: InputDecoration(
         hintText: "Ara",
         hintStyle: AppTheme.lightTextStyle(context, 14),
-        border: InputBorder.none,
+        // border: InputBorder.none,
         prefixIcon: Padding(
           padding: EdgeInsets.only(
             top: deviceHeightSize(context, 4),

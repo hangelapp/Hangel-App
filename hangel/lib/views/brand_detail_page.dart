@@ -12,7 +12,6 @@ import 'package:hangel/providers/stk_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/app_bar_widget.dart';
 import '../widgets/app_name_widget.dart';
-import '../widgets/dialog_widgets.dart';
 import '../widgets/general_button_widget.dart';
 import '../widgets/gradient_widget.dart';
 import '../widgets/toast_widgets.dart';

@@ -9,7 +9,6 @@ import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/views/donation_history_page.dart';
 import 'package:hangel/views/settings_page.dart';
 import 'package:hangel/views/splash_page.dart';
-import 'package:hangel/views/support_page.dart';
 import 'package:hangel/widgets/dialog_widgets.dart';
 import 'package:hangel/widgets/menu_item_widget.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';

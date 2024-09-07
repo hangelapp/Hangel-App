@@ -22,59 +22,63 @@ class STKFormModel {
   String? neighborhood;
   String? sicilNo;
   String? vergiNo;
+  String? iban;
+  DateTime? time;
 
-  STKFormModel({
-    this.name,
-    this.fullName,
-    this.website,
-    this.mail,
-    this.phone,
-    this.founder,
-    this.contactPerson,
-    this.contactPersonPhone,
-    this.contactPersonMail,
-    this.selectedSector,
-    this.address,
-    this.city,
-    this.district,
-    this.categories = const <String>[],
-    this.bmCategories = const <String>[],
-    this.logoImage,
-    this.bannerImage,
-    this.tuzukPDF,
-    this.faaliyetImage,
-    this.type,
-    this.neighborhood,
-    this.sicilNo,
-    this.vergiNo
-  });
+  STKFormModel(
+      {this.name,
+      this.fullName,
+      this.website,
+      this.mail,
+      this.phone,
+      this.founder,
+      this.contactPerson,
+      this.contactPersonPhone,
+      this.contactPersonMail,
+      this.selectedSector,
+      this.address,
+      this.city,
+      this.district,
+      this.categories = const <String>[],
+      this.bmCategories = const <String>[],
+      this.logoImage,
+      this.bannerImage,
+      this.tuzukPDF,
+      this.faaliyetImage,
+      this.type,
+      this.neighborhood,
+      this.sicilNo,
+      this.vergiNo,
+      this.iban,
+      this.time});
 
   factory STKFormModel.fromJson(Map<String, dynamic> json) {
     return STKFormModel(
-      name: json['name'],
-      fullName: json['fullName'],
-      website: json['website'],
-      mail: json['mail'],
-      phone: json['phone'],
-      founder: json['founder'],
-      contactPerson: json['contactPerson'],
-      contactPersonPhone: json['contactPersonPhone'],
-      contactPersonMail: json['contactPersonMail'],
-      selectedSector: json['sector'],
-      address: json['address'],
-      city: json['city'],
-      district: json['district'],
-      categories: json['categories'],
-      bmCategories: json['bmCategories'],
-      logoImage: json['logoImage'],
-      bannerImage: json['bannerImage'],
-      tuzukPDF: json['vergiImage'],
-      faaliyetImage: json['faaliyetImage'],
-      type: json['type'],
-      neighborhood: json['neighborhood'],
-      sicilNo: json["sicilNo"],
-      vergiNo: json["vergiNo"]
-    );
+        name: json['name'],
+        fullName: json['fullName'],
+        website: json['website'],
+        mail: json['mail'],
+        phone: json['phone'],
+        founder: json['founder'],
+        contactPerson: json['contactPerson'],
+        contactPersonPhone: json['contactPersonPhone'],
+        contactPersonMail: json['contactPersonMail'],
+        selectedSector: json['sector'],
+        address: json['address'],
+        city: json['city'],
+        district: json['district'],
+        categories: json['categories'],
+        bmCategories: json['bmCategories'],
+        logoImage: json['logoImage'],
+        bannerImage: json['bannerImage'],
+        tuzukPDF: json['vergiImage'],
+        faaliyetImage: json['faaliyetImage'],
+        type: json['type'],
+        neighborhood: json['neighborhood'],
+        sicilNo: json["sicilNo"],
+        vergiNo: json["vergiNo"],
+        iban: json["iban"],
+        time: json["time"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -100,8 +104,9 @@ class STKFormModel {
       'faaliyetImage': faaliyetImage,
       'type': type,
       'neighborhood': neighborhood,
-      "sicilNo":sicilNo,
-      "vergiNo":vergiNo
+      "sicilNo": sicilNo,
+      "vergiNo": vergiNo,
+      "iban": iban
     };
   }
 

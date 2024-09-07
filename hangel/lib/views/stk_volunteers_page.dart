@@ -6,7 +6,6 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
-import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/models/stk_volunteer_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
@@ -239,7 +238,7 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                     decoration: InputDecoration(
                       hintText: "Marka Ara",
                       hintStyle: AppTheme.lightTextStyle(context, 14),
-                      border: InputBorder.none,
+                      // border: InputBorder.none,
                       prefixIcon: Icon(
                         Icons.search_rounded,
                         color: AppTheme.secondaryColor.withOpacity(0.5),

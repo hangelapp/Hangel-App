@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +25,7 @@ class _SupportFormState extends State<SupportForm> {
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _telephoneController = TextEditingController();
-
+  bool isLoading = false;
   final List<String> _userTypes = ["Bireysel Kullanıcıyım", "STK Yöneticisiyim", "Marka Yöneticisiyim"];
 
   int selectedIndex = -1;
@@ -62,12 +63,14 @@ class _SupportFormState extends State<SupportForm> {
               controller: _nameController,
               title: "Ad Soyad",
               isRequired: true,
+              isEditable: false,
             ),
             FormFieldWidget(
               context,
               controller: _emailController,
               title: "E-Posta",
               isRequired: true,
+              isEditable: false,
             ),
             FormFieldWidget(
               context,
@@ -75,6 +78,7 @@ class _SupportFormState extends State<SupportForm> {
               title: "Telefon",
               keyboardType: TextInputType.phone,
               isRequired: true,
+              isEditable: false,
             ),
             DropdownWidget(
               context,
@@ -102,6 +106,16 @@ class _SupportFormState extends State<SupportForm> {
             ),
             GeneralButtonWidget(
               onPressed: () async {
+                setState(() {
+                  isLoading = true;
+                });
+                if (!_emailController.text.isValidEmail()) {
+                  ToastWidgets.errorToast(context, "E-posta adresinizde hata var!");
+                  setState(() {
+                    isLoading = false;
+                  });
+                  return;
+                }
                 if (_nameController.text.isEmpty ||
                     _emailController.text.isEmpty ||
                     _telephoneController.text.isEmpty ||
@@ -109,14 +123,23 @@ class _SupportFormState extends State<SupportForm> {
                     _messageController.text.isEmpty ||
                     selectedIndex == -1) {
                   ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurun");
+                  setState(() {
+                    isLoading = false;
+                  });
                   return;
                 }
                 if (!_emailController.text.contains("@") || !_emailController.text.contains(".")) {
                   ToastWidgets.errorToast(context, "Lütfen geçerli bir e-posta girin");
+                  setState(() {
+                    isLoading = false;
+                  });
                   return;
                 }
                 if (_telephoneController.text.length < 10) {
                   ToastWidgets.errorToast(context, "Lütfen geçerli bir telefon numarası girin");
+                  setState(() {
+                    isLoading = false;
+                  });
                   return;
                 }
                 await FirebaseFirestore.instance.collection("forms").add({
@@ -129,8 +152,8 @@ class _SupportFormState extends State<SupportForm> {
                     "message": _messageController.text
                   },
                 });
-                SendMailHelper.sendMail(
-                  to: ["hangelturkiye@gmail.com"],
+                await SendMailHelper.sendMail(
+                  to: [_emailController.text],
                   subject: _subjectController.text,
                   body: "",
                   html: """
@@ -141,9 +164,14 @@ class _SupportFormState extends State<SupportForm> {
                       """,
                 ).then((value) {
                   ToastWidgets.responseToast(context, value);
+                  setState(() {
+                    isLoading = false;
+                  });
+                  Navigator.pop(context);
                 });
               },
               text: "Gönder",
+              isLoading: isLoading,
             ),
             SizedBox(
               height: deviceHeightSize(context, 20) + MediaQuery.of(context).viewInsets.bottom,

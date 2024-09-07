@@ -64,6 +64,7 @@ dependencies:
   cloud_functions: ^5.0.4
   image_cropper: ^8.0.2
   firebase_pagination: ^4.0.1
+  iban: ^1.0.1
 
 dev_dependencies:
   flutter_test:

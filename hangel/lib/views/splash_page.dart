@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
-import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/auth/register_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';

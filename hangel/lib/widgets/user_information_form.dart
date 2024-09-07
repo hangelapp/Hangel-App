@@ -190,8 +190,8 @@ class _UserInformationFormState extends State<UserInformationForm> {
                 // if (_birthDate != DateTime.now()) {
                 //   userModel.birthDate = _birthDate;
                 // }
-                if (!(_nameController.text.length >= 4)) {
-                  ToastWidgets.errorToast(context, "İsim 4 harften büyük olmalıdır");
+                if (!(_nameController.text.length >= 3)) {
+                  ToastWidgets.errorToast(context, "İsim 3 harften büyük olmalıdır");
                   return;
                 }
                 userModel.name = _nameController.text;

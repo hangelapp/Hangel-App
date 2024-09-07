@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 import '../constants/app_theme.dart';
 import 'package:flutter/material.dart';

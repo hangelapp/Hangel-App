@@ -58,10 +58,24 @@ class STKProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  String _filterTextFav = "";
+  String get filterTextFav => _filterTextFav;
+  set filterTextFav(String value) {
+    _filterTextFav = value;
+    notifyListeners();
+  }
+
   String _sortText = "";
   String get sortText => _sortText;
   set sortText(String value) {
     _sortText = value;
+    notifyListeners();
+  }
+
+  String _sortTextFav = "";
+  String get sortTextFav => _sortTextFav;
+  set sortTextFav(String value) {
+    _sortTextFav = value;
     notifyListeners();
   }
 
@@ -222,7 +236,7 @@ class STKProvider with ChangeNotifier {
       {required STKFormModel stkFormModel,
       required List<ImageModel?> logoImage,
       required PlatformFile? tuzukPDF,
-      required List<ImageModel?> faaliyetImage}) async {
+      required PlatformFile? faaliyetImage}) async {
     _sendFormState = LoadingState.loading;
     notifyListeners();
     final response = await _stkController.sendForm(

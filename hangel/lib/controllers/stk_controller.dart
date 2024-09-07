@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -98,7 +97,7 @@ class STKController {
       {required STKFormModel stkFormModel,
       required List<ImageModel?> logoImage,
       required PlatformFile? tuzukPDF,
-      required List<ImageModel?> faaliyetImage}) async {
+      required PlatformFile? faaliyetImage}) async {
     try {
       //add stk form and get id
       final stkFormId = await _firestoreService.addData(_stksFormPath, stkFormModel.toJson());
@@ -117,12 +116,12 @@ class STKController {
 
       final faaliyetImageUrl = await _storageService.uploadImagebyByte(
         "$_stksFormPath/$stkFormId",
-        await faaliyetImage.first!.file!.readAsBytes(),
+        faaliyetImage?.bytes ?? Uint8List(0),
       );
       stkFormModel.logoImage = logoImageUrl;
       stkFormModel.tuzukPDF = tuzukPDFUrl;
       stkFormModel.faaliyetImage = faaliyetImageUrl;
-      SendMailHelper.sendMail(
+      await SendMailHelper.sendMail(
         to: ["hangelturkiye@gmail.com"],
         subject: "STK Başvurusu",
         body: "STK Başvurusu",

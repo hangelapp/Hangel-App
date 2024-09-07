@@ -148,21 +148,24 @@ Widget ListItemWidget(
               isSTKVolunteer == true && totalAplicant != null ? SizedBox(width: 4) : SizedBox.shrink(),
               // 6kGnMPHZdVTAUr9RC9Y885dvTZS2
               isSTKVolunteer == true && totalAplicant != null
-                  ? ElevatedButton(
-                      onPressed: () {
-                        if (stkEmail == null && stkId == null) {
-                          return;
-                        }
-                        applicantExist == true ? null : showApplyInfo(context, stkEmail!, stkId!);
-                      },
-                      child: applicantExist == true ? Text("Başvuruldu") : Text("Başvur"),
-                      style: ButtonStyle(
-                          padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
-                          backgroundColor:
-                              WidgetStatePropertyAll(applicantExist == true ? Colors.grey : AppTheme.primaryColor),
-                          foregroundColor: WidgetStatePropertyAll(Colors.white),
-                          shape:
-                              WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)))),
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (stkEmail == null && stkId == null) {
+                            return;
+                          }
+                          applicantExist == true ? null : showApplyInfo(context, stkEmail!, stkId!);
+                        },
+                        child: applicantExist == true ? Text("Başvuruldu") : Text("Başvur"),
+                        style: ButtonStyle(
+                            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
+                            backgroundColor:
+                                WidgetStatePropertyAll(applicantExist == true ? Colors.grey : AppTheme.primaryColor),
+                            foregroundColor: WidgetStatePropertyAll(Colors.white),
+                            shape:
+                                WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)))),
+                      ),
                     )
                   : SizedBox.shrink()
             ],
@@ -203,16 +206,22 @@ Future<void> showApplyInfo(context, String stkEmail, String stkId) async {
   bool isLoading = false;
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (context) => StatefulBuilder(
       builder: (BuildContext context, void Function(void Function()) setState) =>
           DialogWidgets().rowCircularButtonDialogWidget(
         context,
         title: 'Uyarı',
         content:
-            'Onayladığınızda kullanıcı bilgilerinizi STK ile paylaşıcağız.\nNot: Bilgileriniz sadece STK\'yla paylaşılacaktır.',
+            'Onayladığınızda kullanıcı bilgilerinizi STK ile paylaşıcağız.\nNot: Bilgileriniz sadece STK\'yla paylaşılacaktır.\nBu işlem 20 saniye kadar sürebilir.',
         color: AppTheme.primaryColor,
         buttonText: "Başvur",
         isLoading: isLoading,
+        onCancelButtonPressed: () {
+          if (!isLoading) {
+            Navigator.pop(context);
+          }
+        },
         cancelButtonText: "Vazgeç",
         onAcceptButtonPressed: () async {
           setState(() {
