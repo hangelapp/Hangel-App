@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
@@ -26,6 +27,7 @@ class BrandDetailPage extends StatefulWidget {
 
 class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProviderStateMixin {
   TabController? _tabController;
+  bool linkButtonLoading = false;
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
@@ -68,18 +70,6 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                           onTap: () {},
                         ),
 
-                        // Container(
-                        //   width: double.infinity,
-                        //   height: deviceHeightSize(context, 200),
-                        //   decoration: BoxDecoration(
-                        //     boxShadow: AppTheme.shadowListBig(),
-                        //     image: DecorationImage(
-                        //       image: NetworkImage(widget.brandModel.logo ?? ""),
-                        //       fit: BoxFit.cover,
-                        //     ),
-                        //     borderRadius: BorderRadius.circular(13),
-                        //   ),
-                        // ),
                         SizedBox(
                           height: deviceHeightSize(context, 30),
                         ),
@@ -123,35 +113,6 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                 ),
                               ),
                             ),
-                            // Container(
-                            //     width: deviceWidthSize(context, 50),
-                            //     height: deviceHeightSize(context, 50),
-                            //     decoration: BoxDecoration(
-                            //       boxShadow: AppTheme.shadowList,
-                            //       color: AppTheme.white,
-                            //       shape: BoxShape.circle,
-                            //     ),
-                            //     clipBehavior: Clip.antiAlias,
-                            //     child: widget.brandModel.logo != null
-                            //         ? Image.network(
-                            //             widget.brandModel.logo ?? "",
-                            //             fit: BoxFit.contain,
-                            //             width: deviceWidthSize(context, 50),
-                            //             height: deviceHeightSize(context, 50),
-                            //             alignment: Alignment.center,
-                            //             errorBuilder: (context, error, stackTrace) => Center(
-                            //               child: Text(
-                            //                 widget.brandModel.name![0],
-                            //                 style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
-                            //               ),
-                            //             ),
-                            //           )
-                            //         : Center(
-                            //             child: Text(
-                            //               widget.brandModel.name![0],
-                            //               style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
-                            //             ),
-                            //           )),
                             SizedBox(
                               width: deviceWidthSize(context, 12),
                             ),
@@ -177,36 +138,6 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             SizedBox(
                               width: deviceWidthSize(context, 10),
                             ),
-
-                            // Container(
-                            //   padding: EdgeInsets.symmetric(
-                            //     horizontal: deviceWidthSize(context, 10),
-                            //     vertical: deviceHeightSize(context, 5),
-                            //   ),
-                            //   decoration: BoxDecoration(
-                            //     color: AppTheme.primaryColor.withOpacity(0.1),
-                            //     borderRadius: BorderRadius.circular(8),
-                            //   ),
-                            //   child: Row(
-                            //     children: [
-                            //       Icon(
-                            //         Icons.volunteer_activism_rounded,
-                            //         color: AppTheme.primaryColor,
-                            //         size: deviceFontSize(context, 24),
-                            //       ),
-                            //       SizedBox(
-                            //         width: deviceWidthSize(context, 6),
-                            //       ),
-                            //       Text(
-                            //         "%${(widget.brandModel.donationRate ?? 0.12) * 100}",
-                            //         style: AppTheme.semiBoldTextStyle(
-                            //           context,
-                            //           18,
-                            //         ),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // )
                             GestureDetector(
                               onTap: () {
                                 context
@@ -406,71 +337,57 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                     left: deviceWidthSize(context, 20),
                     right: deviceWidthSize(context, 20),
                     child: GeneralButtonWidget(
-                      onPressed: () {
+                      onPressed: () async {
                         if (HiveHelpers.getUserFromHive().phone == null) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(SnackBar(content: Text("Sistemde kayıtlı cep telefonu bulunamadı!")));
                           return;
                         }
+                        if (HiveHelpers.getUid().isEmpty) {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(SnackBar(content: Text("Kullanıcı bilgilerinizde hata var!")));
+                          return;
+                        }
+                        if (HiveHelpers.getUserFromHive().favoriteStks.length != 2) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("En az 2 STK'yı favoriye eklemeniz gerekmektedir!")));
+                          return;
+                        }
+                        setState(() {
+                          linkButtonLoading = true;
+                        });
+                        String aff_sub = HiveHelpers.getUid(); // Kullanıcının id'si
+                        String aff_sub2 = generateShortHash(); // Unique değer
+
                         // htpss://ad.reklm.com/aff_c?offer_id={OFFER_ID}&aff_id=35329&aff_sub={AFF_SUB_ID}&aff_sub2={uniquedeger}
-                        print(
-                            "TRACKİNG LİNK\n${widget.brandModel.link}&aff_sub=${widget.brandModel.id}&aff_sub2=${HiveHelpers.getUserFromHive().phone}");
+                        print("TRACKİNG LİNK\n${widget.brandModel.link}&aff_sub=$aff_sub&aff_sub2=$aff_sub2");
+                        await FirebaseFirestore.instance.collection("clicks").add({
+                          "aff_sub": aff_sub,
+                          "aff_sub2": aff_sub2,
+                          "time": Timestamp.now(),
+                          "link": widget.brandModel.link,
+                          "offer_id": widget.brandModel.id,
+                          "stk_ids": HiveHelpers.getUserFromHive().favoriteStks,
+                          "donation_rate":widget.brandModel.donationRate
+                        }).then(
+                          (value) {
+                            setState(() {
+                              linkButtonLoading = false;
+                            });
+                          },
+                        );
                         UrlLauncherHelper()
-                            .launch(
-                                "${widget.brandModel.link}&aff_sub=${widget.brandModel.id}&aff_sub2=${HiveHelpers.getUserFromHive().phone}")
+                            .launch("${widget.brandModel.link}&aff_sub=$aff_sub&aff_sub2=$aff_sub2")
                             .whenComplete(
                               () => Navigator.pop(context),
                             );
-                        // showDialog(
-                        //   context: context,
-                        //   builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(
-                        //     context,
-                        //     onAcceptButtonPressed: () async {
-                        //       // if (HiveHelpers.getUserFromHive().phone == null) {
-                        //       //   ScaffoldMessenger.of(context)
-                        //       //       .showSnackBar(SnackBar(content: Text("Sistemde kayıtlı cep telefonu bulunamadı!")));
-                        //       //   return;
-                        //       // }
-                        //       // // htpss://ad.reklm.com/aff_c?offer_id={OFFER_ID}&aff_id=35329&aff_sub={AFF_SUB_ID}&aff_sub2={uniquedeger}
-                        //       // print(
-                        //       //     "TRACKİNG LİNK\n${widget.brandModel.link}&aff_sub=${widget.brandModel.id}&aff_sub2=${HiveHelpers.getUserFromHive().phone}");
-                        //       // UrlLauncherHelper()
-                        //       //     .launch(
-                        //       //         "${widget.brandModel.link}&aff_sub=${widget.brandModel.id}&aff_sub2=${HiveHelpers.getUserFromHive().phone}")
-                        //       //     .whenComplete(
-                        //       //       () => Navigator.pop(context),
-                        //       //     );
-                        //     },
-                        //     title: "Bilgilendirme",
-                        //     buttonText: "Yönlendir",
-                        //     content:
-                        //         "Şu an beta yayınındayız. Yapılan alışverişler bağışlarım menüsünde görünmeyebilir. Bu süre zarfında bizi sosyal medya hesaplarımızdan takip edebilirsiniz."
-                        //     // \n\nBu alışveriş ile hangi STK’ya bağış yapmak istersiniz?",
-                        //     // "Şu an beta yayınındayız. Yapılan alışverişler veya beta yayını süresince bağışa dönüşmeyecek. Bu süre zarfında bizi sosyal medya hesaplarımızdan takip edebilirsiniz.",
-
-                        //     // extraWidget: Wrap(
-                        //     //   runSpacing: deviceHeightSize(context, 10),
-                        //     //   spacing: deviceWidthSize(context, 10),
-                        //     //   alignment: WrapAlignment.center,
-                        //     //   runAlignment: WrapAlignment.center,
-                        //     //   children: List.generate(
-                        //     //       context.watch<STKProvider>().stkList.length,
-                        //     //       (index) => HiveHelpers.getUserFromHive()
-                        //     //               .favoriteStks
-                        //     //               .contains(context
-                        //     //                   .watch<STKProvider>()
-                        //     //                   .stkList[index]
-                        //     //                   .id)
-                        //     //           ? stkItem(context, index)
-                        //     //           : const SizedBox()),
-                        //     // ),
-                        //     ,
-                        //     color: AppTheme.primaryColor,
-                        //   ),
-                        // );
+                        setState(() {
+                          linkButtonLoading = false;
+                        });
                       },
                       text: "Alışverişe Başla",
                       buttonColor: AppTheme.primaryColor,
+                      isLoading: linkButtonLoading,
                     ))
               ],
             ),

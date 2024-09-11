@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/views/app_view.dart';
@@ -204,6 +206,17 @@ Widget nullBrandWidget(context) {
   );
 }
 
+String generateShortHash() {
+  // Rastgele bir değeri kullanarak hash üret
+  final randomValue = Random().nextInt(1000000).toString();
+
+  // SHA256 hash üret
+  var bytes = utf8.encode(randomValue);
+  var digest = sha256.convert(bytes);
+
+  // 64 karakterlik hash'in ilk 16 karakterini döndür
+  return digest.toString().substring(0, 16);
+}
 
 
   // List<StkModel> stkModels = [
