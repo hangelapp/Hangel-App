@@ -23,17 +23,21 @@ CORS(app)  # CORS ayarlarını yap
 @https_fn.on_request()
 def handle_postback(request: Request):
     try:
-        adv_sub = request.args.get('adv_sub')  # Sipariş Numarası
+        # Doğru parametre adları ile verileri alıyoruz
+        user_id = request.args.get('user_id')  # Kullanıcının id'si (aff_sub)
+        unique_id = request.args.get('unique_id')  # Unique değer (aff_sub2)
         sale_amount = float(request.args.get('sale_amount'))  # Satış Tutarı
-        aff_sub = request.args.get('aff_sub')  # Kullanıcının id'si
-        aff_sub2 = request.args.get('aff_sub2')  # Unique değer
+        order_number = request.args.get(
+            'order_number')  # Sipariş Numarası (adv_sub)
 
-        if not adv_sub or not sale_amount or not aff_sub or not aff_sub2:
+        # Parametre kontrolü
+        if not user_id or not unique_id or not sale_amount or not order_number:
             return {'status': 'error', 'message': 'Missing required parameters'}, 400
 
-        # Click document'ını aff_sub2 ile bul
+        # Click document'ını unique_id ile bul
         clicks_ref = db.collection('clicks')
-        matching_clicks = clicks_ref.where('aff_sub2', '==', aff_sub2).stream()
+        matching_clicks = clicks_ref.where(
+            'aff_sub2', '==', unique_id).stream()
 
         updated = False
         for click in matching_clicks:
@@ -42,7 +46,7 @@ def handle_postback(request: Request):
             # Click kaydını güncelle
             click_ref = clicks_ref.document(click.id)
             click_ref.update({
-                'adv_sub': adv_sub,
+                'adv_sub': order_number,
                 'sale_amount': sale_amount
             })
             updated = True
@@ -51,12 +55,11 @@ def handle_postback(request: Request):
             donation_rate = click_data.get('donation_rate', 0) / 100
             stk_ids = click_data.get('stk_ids', [])
             brand_id = click_data.get('offer_id', "")
-            user_id = aff_sub  # Kullanıcıyı tanımla (örnek olarak)
 
             if len(stk_ids) != 2:
                 return {'status': 'error', 'message': 'Expected exactly 2 stk_ids'}, 400
 
-            # Bağış miktarını hesapla (donation_rate yüzdelik orana çevrildi)
+            # Bağış miktarını hesapla
             donation_amount = sale_amount * donation_rate
 
             # Donation kaydını oluştur
@@ -67,13 +70,12 @@ def handle_postback(request: Request):
                 'stkId1': stk_ids[0],
                 'stkId2': stk_ids[1],
                 'saleAmount': donation_amount,
-                'orderNumber': adv_sub,
+                'orderNumber': order_number,
                 'shoppingDate': datetime.now()
             }
             donation_ref.set(donation_data)
 
             # STK güncelleme işlemi
-            # Artık 'id' alanına göre 'stklar' koleksiyonunda kayıt arıyoruz
             update_stk_donation(stk_ids[0], donation_amount / 2, user_id)
             update_stk_donation(stk_ids[1], donation_amount / 2, user_id)
 

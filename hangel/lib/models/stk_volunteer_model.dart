@@ -1,11 +1,11 @@
 class StkVolunteerModel {
-  String stkId;
-  String stkName;
-  String stkCategory;
-  String stkEmail;
-  String stkLogo;
-  bool isActive;
-  List<String> applicantIds;
+  String? stkId;
+  String? stkName;
+  String? stkCategory;
+  String? stkEmail;
+  String? stkLogo;
+  bool? isActive;
+  List<String>? applicantIds;
 
   // Constructor
   StkVolunteerModel({

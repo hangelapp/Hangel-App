@@ -5,26 +5,34 @@ import 'package:hangel/models/donation_model.dart';
 
 class DonationProvider with ChangeNotifier {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  List<DonationModel> donations = [
-    // DonationModel(
-    //   brandLogo: "assets/images/brand_logo.png",
-    //   brandName: "Güzel Otomotiv",
-    //   donationAmount: 12.36,
-    //   stkLogo: "assets/images/brand_logo.png",
-    //   stkName: "Türk Kızılayı",
-    //   shoppingDate: DateTime.now(),
-    //   cardAmount: 10000,
-    // ),
-    // DonationModel(
-    //   brandLogo: "assets/images/brand_logo.png",
-    //   brandName: "Sağlam İnşaat",
-    //   donationAmount: 14.86,
-    //   stkLogo: "assets/images/brand_logo.png",
-    //   stkName: "Güvercin Severler Derneği",
-    //   shoppingDate: DateTime.now().subtract(const Duration(days: 15)),
-    //   cardAmount: 8700,
-    // ),
+  List<DonationModel> _donations = [
+    DonationModel(
+        brandId: "12345",
+        userId: "userId",
+        stkId1: "stkId1",
+        stkId2: "stkId2",
+        saleAmount: 100,
+        orderNumber: "orderNumber",
+        shoppingDate: DateTime.now())
   ];
+  String totalDonationAmount = "";
+  List<DonationModel> get donations {
+    double total = _donations.fold(
+      0.0,
+      (sum, donation) {
+        double donationAmount = donation.saleAmount ?? 0; // saleAmount null olabilir
+        return sum + donationAmount;
+      },
+    );
+    totalDonationAmount = total.toStringAsFixed(2); // Toplam tutar formatlı
+    notifyListeners();
+    return _donations;
+  }
+
+  set donations(List<DonationModel> value) {
+    _donations = value;
+    notifyListeners();
+  }
 
   void addDonation(DonationModel donation) {
     donations.add(donation);
@@ -37,12 +45,24 @@ class DonationProvider with ChangeNotifier {
       if (userId == null) {
         throw Exception("Kullanıcı bulunamadı");
       }
-      var snapshot = await firestore.collection("donationHistory").where("userId", isEqualTo: userId).get();
+
+      // Firestore'dan bağış verilerini çekme
+      var snapshot = await firestore.collection("donations").where("userId", isEqualTo: userId).get();
+
       if (snapshot.docs.isNotEmpty) {
         List<DonationModel> tempDonations = [];
-        snapshot.docs.forEach((e) => tempDonations.add(DonationModel.fromMap(e.data())));
+        for (var doc in snapshot.docs) {
+          // Her belgeyi DonationModel'e çevir
+          var data = doc.data();
+          DonationModel donation = DonationModel.fromMap(data);
+          tempDonations.add(donation);
+        }
+
+        // Yeni verilerle bağış listemizi güncelle
         donations = tempDonations;
         notifyListeners();
+      } else {
+        print("Bağış verisi bulunamadı.");
       }
     } catch (e) {
       print("DONATİON ERROR\n$e");

@@ -1,42 +1,47 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class DonationModel {
-  final String userId;
-  final String brandId;
-  final String stkId1;
-  final String stkId2;
-  final double saleAmount;
-  final String orderNumber;
+  final String? brandId;
+  final String? orderNumber;
+  final double? saleAmount;
   final DateTime? shoppingDate;
+  final String? stkId1;
+  final String? stkId2;
+  final String? userId;
 
-  DonationModel(
-      {required this.brandId,
-      required this.userId,
-      required this.stkId1,
-      required this.stkId2,
-      required this.saleAmount,
-      required this.orderNumber,
-      required this.shoppingDate});
+  DonationModel({
+    required this.brandId,
+    required this.orderNumber,
+    required this.saleAmount,
+    required this.shoppingDate,
+    required this.stkId1,
+    required this.stkId2,
+    required this.userId,
+  });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'userId': userId,
-      'brandId': brandId,
-      'stkId1': stkId1,
-      'stkId2': stkId2,
-      'saleAmount': saleAmount,
-      'orderNumber': orderNumber,
-      'shoppingDate': shoppingDate,
-    };
-  }
-
+  // Firestore'dan veri almak için gerekli map fonksiyonu
   factory DonationModel.fromMap(Map<String, dynamic> map) {
     return DonationModel(
-      userId: map['userId'],
-      brandId: map['brandId'],
-      stkId1: map['stkId1'],
-      stkId2: map['stkId2'],
-      saleAmount: map['saleAmount'],
-      orderNumber: map['orderNumber'],
-      shoppingDate: map['shoppingDate'] == null ? null : DateTime.parse(map['shoppingDate'].toString()),
+      brandId: map['brandId'] ?? '',
+      orderNumber: map['orderNumber'] ?? '',
+      saleAmount: (map['saleAmount'] as num?)?.toDouble() ?? 0.0,
+      shoppingDate: (map['shoppingDate'] as Timestamp).toDate(),
+      stkId1: map['stkId1'] ?? '',
+      stkId2: map['stkId2'] ?? '',
+      userId: map['userId'] ?? '',
     );
+  }
+
+  // Firestore'a veri göndermek için gerekli map fonksiyonu
+  Map<String, dynamic> toMap() {
+    return {
+      'brandId': brandId,
+      'orderNumber': orderNumber,
+      'saleAmount': saleAmount,
+      'shoppingDate': shoppingDate,
+      'stkId1': stkId1,
+      'stkId2': stkId2,
+      'userId': userId,
+    };
   }
 }

@@ -123,6 +123,39 @@ class STKProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  //getSTKById
+  Future<StkModel?> getSTKById(String id) async {
+    _loadingState = LoadingState.loading;
+    notifyListeners();
+
+    try {
+      var firestore = FirebaseFirestore.instance;
+
+      // Query to get the specific STK by ID
+      var docSnapshot = await firestore.collection("stklar").where("id", isEqualTo: id).limit(1).get();
+
+      if (docSnapshot.docs.isNotEmpty) {
+        // If the document exists, convert it to STKModel
+        StkModel stkModel = StkModel.fromJson(docSnapshot.docs.first.data());
+
+        _loadingState = LoadingState.loaded;
+        notifyListeners();
+        return stkModel;
+      } else {
+        // If no such document exists, return null
+        _loadingState = LoadingState.error;
+        notifyListeners();
+        return null;
+      }
+    } catch (e) {
+      // Handle errors
+      print("Error fetching STK by ID: $e");
+      _loadingState = LoadingState.error;
+      notifyListeners();
+      return null;
+    }
+  }
+
   //getSTK
   Future getSTKs() async {
     var firestore = FirebaseFirestore.instance;

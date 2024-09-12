@@ -384,7 +384,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 ),
               PickFileWidget(
                 context,
-                title: "STK'nın Barkodlu Vergi Tüzüğü",
+                title: "STK'nın Barkodlu Tüzük",
                 onFilePicked: (PlatformFile file) {
                   setState(() {
                     _tuzukPDF = file;
@@ -420,13 +420,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 context,
                 controller: _stkFederasyonlar,
                 title: "STK'nın Bağlı Bulunduğu Federasyon ve Konfederasyonlar",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Federasyon';
-                  }
-                  return null;
-                },
+                isRequired: false,
               ),
               DropdownWidget(
                 context,

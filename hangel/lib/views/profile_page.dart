@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -44,7 +45,35 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         setState(() {});
       });
     });
+    // Bağış verilerini internetten çek
+    fetchDonationStatistics();
     super.initState();
+  }
+
+  // Toplam Bağış Miktarı ve Bağış İşlem Sayısı için state değerleri
+  double totalDonationAmount = 0.0;
+  int donationCount = 0;
+  // Bağış istatistiklerini çekme fonksiyonu
+  Future<void> fetchDonationStatistics() async {
+    try {
+      Query query = FirebaseFirestore.instance
+          .collection('donations')
+          .where('userId', isEqualTo: user.uid); // Kullanıcıya ait bağışlar
+
+      var snapshot = await query.get();
+
+      double totalAmount = snapshot.docs.fold(0.0, (sum, doc) {
+        double saleAmount = (doc['saleAmount'] as num?)?.toDouble() ?? 0.0;
+        return sum + saleAmount;
+      });
+
+      setState(() {
+        totalDonationAmount = totalAmount; // Toplam bağış miktarını ayarla
+        donationCount = snapshot.docs.length; // Bağış işlem sayısını ayarla
+      });
+    } catch (e) {
+      print("Bağış istatistiklerini çekerken hata oluştu: $e");
+    }
   }
 
   TabController? _tabController;
@@ -291,12 +320,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       {
         "icon": Icons.money_outlined,
         "title": "Toplam Bağış Miktarı",
-        "value": "0 TL",
+        "value": "${totalDonationAmount.toStringAsFixed(2)} TL",
       },
       {
         "icon": Icons.wifi_protected_setup_sharp,
         "title": "Bağış İşlem Sayısı",
-        "value": "0",
+        "value": "$donationCount",
       },
       {
         "icon": Icons.date_range_rounded,
@@ -667,9 +696,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
-                      //  borderRadius: BorderRadius.circular(5),
-                       ),
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    //  borderRadius: BorderRadius.circular(5),
+                  ),
                   margin: EdgeInsets.only(left: 20),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
