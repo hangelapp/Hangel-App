@@ -28,14 +28,16 @@ class DonationHistoryPage extends StatefulWidget {
 
 class _DonationHistoryPageState extends State<DonationHistoryPage> {
   String totalDonationAmount = "0";
-  UserModel user = HiveHelpers.getUserFromHive();
+  late UserModel user;
   String selectedFilter = "hepsi"; // Filtre için varsayılan değer
-  String selectedDateRange = "son-1-ay"; // Tarih aralığı için varsayılan değer
+  String selectedDateRange = "son-1-sene"; // Tarih aralığı için varsayılan değer
 
   @override
   void initState() {
     super.initState();
-    fetchDonations();
+    user = HiveHelpers.getUserFromHive();
+    // Kullanıcı UID'sini konsola yazdırarak doğrulayın
+    print("Current user UID: ${user.uid}");
     getTotalDonationAmount(); // Toplam bağışı Firestore'dan alıyoruz
   }
 
@@ -44,18 +46,34 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
     try {
       Query query = FirebaseFirestore.instance.collection('donations');
 
-      // Filtre ve tarih aralığına göre sorguyu oluştur
-      DateTime now = DateTime.now();
-      if (selectedDateRange == "son-1-ay") {
-        query = query.where('shoppingDate', isGreaterThanOrEqualTo: now.subtract(const Duration(days: 30)));
-      } else if (selectedDateRange == "son-1-hafta") {
-        query = query.where('shoppingDate', isGreaterThanOrEqualTo: now.subtract(const Duration(days: 7)));
-      } else if (selectedDateRange == "son-1-sene") {
-        query = query.where('shoppingDate', isGreaterThanOrEqualTo: now.subtract(const Duration(days: 365)));
+      // Kullanıcıya özgü filtre ekle
+      if (user.uid != null && user.uid!.isNotEmpty) {
+        query = query.where('userId', isEqualTo: user.uid);
+      } else {
+        throw Exception("Kullanıcı UID'si geçersiz veya boş.");
       }
 
-      // Toplam saleAmount değerini topla
+      // Filtreye göre sorguyu oluştur
+      DateTime now = DateTime.now();
+      DateTime startDate;
+      if (selectedDateRange == "son-1-ay") {
+        startDate = now.subtract(const Duration(days: 30));
+      } else if (selectedDateRange == "son-1-hafta") {
+        startDate = now.subtract(const Duration(days: 7));
+      } else if (selectedDateRange == "son-1-sene") {
+        startDate = now.subtract(const Duration(days: 365));
+      } else {
+        startDate = DateTime(2000); // Fallback date
+      }
+      query = query.where('shoppingDate', isGreaterThanOrEqualTo: startDate);
+
+      // Firestore'dan verileri çek
       var snapshot = await query.get();
+
+      // Gelen belge sayısını konsola yazdırarak doğrulayın
+      print("Toplam bağış sorgusundaki belge sayısı: ${snapshot.docs.length}");
+
+      // Toplam saleAmount değerini topla
       double total = snapshot.docs.fold(0.0, (sum, doc) {
         double saleAmount = (doc['saleAmount'] as num?)?.toDouble() ?? 0.0;
         return sum + saleAmount;
@@ -66,13 +84,14 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
       });
     } catch (e) {
       print("Error fetching total donation amount: $e");
+      // Hata durumunda kullanıcıya bildirim gönder
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Toplam bağış miktarı alınırken bir hata oluştu.')),
+      );
     }
   }
 
-  void fetchDonations() {
-    context.read<DonationProvider>().getDonations();
-  }
-
+  /// Filtre durumunu günceller ve toplam bağışı yeniden hesaplar
   void updateFilter(String newFilter) {
     setState(() {
       selectedFilter = newFilter;
@@ -80,6 +99,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
     });
   }
 
+  /// Tarih aralığını günceller ve toplam bağışı yeniden hesaplar
   void updateDateRange(String newRange) {
     setState(() {
       selectedDateRange = newRange;
@@ -89,29 +109,22 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.sizeOf(context);
-
     return Scaffold(
       body: Column(
         children: [
           const AppBarWidget(title: "Bağışlarım"),
+          buildDonationCount,
+          buildDonationFilter(),
+          const SizedBox(height: 20),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  buildDonationCount,
-                  buildDonationFilter(size),
-                  const SizedBox(height: 20),
-                  buildPaginatedDonations(size),
-                ],
-              ),
-            ),
+            child: buildPaginatedDonations(),
           ),
         ],
       ),
     );
   }
 
+  /// Toplam bağış miktarını ve kullanıcı bilgilerini gösteren widget
   Widget get buildDonationCount => Container(
         decoration: const BoxDecoration(
           color: AppTheme.primaryColor,
@@ -125,47 +138,39 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
         ),
         width: double.infinity,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(
-                  width: deviceHeightSize(context, 150),
+                Flexible(
                   child: Text(
                     user.name ?? user.phone ?? "-",
                     style: AppTheme.semiBoldTextStyle(context, 15, color: Colors.white),
                   ),
                 ),
-                Container(
-                  alignment: Alignment.centerRight,
-                  width: deviceHeightSize(context, 150),
-                  child: Text(
-                    "$totalDonationAmount TL",
-                    style: AppTheme.semiBoldTextStyle(context, 15, color: Colors.white),
-                  ),
+                Text(
+                  "$totalDonationAmount TL",
+                  style: AppTheme.semiBoldTextStyle(context, 15, color: Colors.white),
                 ),
               ],
             ),
+            const SizedBox(height: 4),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(
-                  width: deviceHeightSize(context, 150),
-                  child: Text(
-                    "Gerçekleşen Bağış",
-                    style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
+                const Text(
+                  "Gerçekleşen Bağış",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
                   ),
                 ),
-                Container(
-                  width: deviceHeightSize(context, 150),
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    "$totalDonationAmount TL",
-                    style: AppTheme.lightTextStyle(context, 14, color: Colors.white),
+                Text(
+                  "$totalDonationAmount TL",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -174,199 +179,135 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
         ),
       );
 
-  Widget buildDonationFilter(Size size) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-            padding: EdgeInsets.zero,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-            width: deviceHeightSize(context, 150),
-            height: size.height * 0.05,
-            child: DropdownButton(
-              value: selectedFilter,
-              padding: EdgeInsets.zero,
-              style: AppTheme.normalTextStyle(context, 13),
-              isExpanded: true,
-              underline: const SizedBox.shrink(),
-              icon: Card(
-                color: AppTheme.primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                child: const Icon(
+  /// Bağış filtrelerini seçmek için kullanılan widget
+  Widget buildDonationFilter() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Filtre Durumu Dropdown
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: selectedFilter,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+                ),
+                style: AppTheme.normalTextStyle(context, 13),
+                isExpanded: true,
+                icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AppTheme.white,
+                  color: AppTheme.primaryColor,
                 ),
+                items: const [
+                  DropdownMenuItem(
+                    value: "hepsi",
+                    child: Text("Hepsi"),
+                  ),
+                  DropdownMenuItem(
+                    value: "inceleniyor",
+                    child: Text("İnceleniyor"),
+                  ),
+                  DropdownMenuItem(
+                    value: "onaylandı",
+                    child: Text("Onaylandı"),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) updateFilter(value);
+                },
               ),
-              items: [
-                DropdownMenuItem(
-                  value: "hepsi",
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text("Hepsi", style: AppTheme.normalTextStyle(context, 13)),
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: "inceleniyor",
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text("İnceleniyor", style: AppTheme.normalTextStyle(context, 13)),
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: "onaylandı",
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text("Onaylandı", style: AppTheme.normalTextStyle(context, 13)),
-                  ),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) updateFilter(value);
-              },
             ),
-          ),
-          Container(
-            padding: EdgeInsets.zero,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-            width: deviceHeightSize(context, 150),
-            height: size.height * 0.05,
-            child: DropdownButton(
-              value: selectedDateRange,
-              padding: EdgeInsets.zero,
-              style: AppTheme.normalTextStyle(context, 13),
-              isExpanded: true,
-              underline: const SizedBox.shrink(),
-              icon: Card(
-                color: AppTheme.primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                child: const Icon(
+            const SizedBox(width: 16),
+            // Tarih Aralığı Dropdown
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: selectedDateRange,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+                ),
+                style: AppTheme.normalTextStyle(context, 13),
+                isExpanded: true,
+                icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AppTheme.white,
+                  color: AppTheme.primaryColor,
                 ),
+                items: const [
+                  DropdownMenuItem(
+                    value: "son-1-ay",
+                    child: Text("Son 1 Ay"),
+                  ),
+                  DropdownMenuItem(
+                    value: "son-1-hafta",
+                    child: Text("Son 1 Hafta"),
+                  ),
+                  DropdownMenuItem(
+                    value: "son-1-sene",
+                    child: Text("Son 1 Sene"),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) updateDateRange(value);
+                },
               ),
-              items: [
-                DropdownMenuItem(
-                  value: "son-1-ay",
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text("Son 1 ay", style: AppTheme.normalTextStyle(context, 13)),
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: "son-1-hafta",
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text("Son 1 hafta", style: AppTheme.normalTextStyle(context, 13)),
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: "son-1-sene",
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text("Son 1 sene", style: AppTheme.normalTextStyle(context, 13)),
-                  ),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) updateDateRange(value);
-              },
             ),
-          ),
-        ],
+          ],
+        ),
       );
 
-  Widget buildPaginatedDonations(Size size) {
-    return SizedBox(
-      height: 300,
-      child: FirestorePagination(
-        query: _buildQuery(), // Firestore'dan bağışları filtreleyerek çeker
-        isLive: true,
-        limit: 5,
-        padding: EdgeInsets.zero,
-        itemBuilder: (context, snapshot, index) {
-          DonationModel donation = DonationModel.fromMap(snapshot[index].data() as Map<String, dynamic>);
+  /// Bağışları sayfalı olarak listeleyen widget
+  Widget buildPaginatedDonations() {
+    return FirestorePagination(
+      query: _buildQuery(), // Firestore'dan bağışları filtreleyerek çeker
+      isLive: true,
+      limit: 10, // Daha iyi kullanıcı deneyimi için sayfa başına öğe sayısını artırdık
+      itemBuilder: (context, snapshot, index) {
+        DonationModel donation = DonationModel.fromMap(snapshot[index].data() as Map<String, dynamic>);
 
-          return FutureBuilder<BrandModel?>(
-            future: Provider.of<BrandProvider>(context, listen: false)
-                .getBrandById(donation.brandId ?? ""), // Brand'leri getiriyoruz
-            builder: (context, brandSnapshot) {
-              if (brandSnapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: const LinearProgressIndicator()); // Yükleniyor
-              }
-
-              if (!brandSnapshot.hasData || brandSnapshot.data == null) {
-                return const ListTile(
-                  title: Text("Marka bulunamadı"),
-                );
-              }
-
-              BrandModel brand = brandSnapshot.data!; // BrandModel'den bilgileri alıyoruz
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: ListTile(
-                  shape: StadiumBorder(),
-                  tileColor: AppTheme.white,
-                  contentPadding: EdgeInsets.all(8),
-                  leading: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        (donation.shoppingDate?.day).toString(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      Text(
-                        "${getTurkishMonth(donation.shoppingDate?.month)} ${donation.shoppingDate?.year}",
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      Text(
-                        "${(donation.shoppingDate?.hour).toString().padLeft(2, '0')}:${(donation.shoppingDate?.minute).toString().padLeft(2, '0')}",
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                    ],
-                  ),
-                  title: Row(
-                    children: [
-                      CircleLogoWidget(
-                        logoUrl: brand.logo ?? "", // Marka logosunu gösteriyoruz
-                        logoName: brand.name?[0] ?? "0", // Marka isminin ilk harfini gösteriyoruz
-                      ),
-                      const SizedBox(width: 3),
-                      Flexible(child: Text(brand.name ?? "-")), // Marka ismini gösteriyoruz
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Column(
-                        children: [
-                          Text("Tutar", style: AppTheme.boldTextStyle(context, 14)),
-                          Text("${(donation.saleAmount)?.toStringAsFixed(2)} TL"),
-                        ],
-                      ),
-                      const Icon(Icons.keyboard_arrow_right),
-                    ],
-                  ),
-                  onTap: () {
-                    showDonationDetailDialog(context, brand, donation);
-                  },
-                ),
-              );
-            },
-          );
-        },
-        onEmpty: const Center(child: Text('Hiç bağış bulunamadı.')),
-      ),
+        return DonationListItem(
+          donation: donation,
+          onTap: (BrandModel brand) {
+            showDonationDetailDialog(context, brand, donation);
+          },
+        );
+      },
+      onEmpty: const Center(child: Text('Hiç bağış bulunamadı.')),
+      // İsteğe bağlı: Yükleme göstergesini ve diğer UI öğelerini özelleştirin
     );
   }
 
+  /// Firestore sorgusunu oluşturur ve filtreleri uygular
+  Query _buildQuery() {
+    Query query = FirebaseFirestore.instance.collection('donations');
+
+    // Kullanıcıya özgü filtre ekle
+    if (user.uid != null && user.uid!.isNotEmpty) {
+      query = query.where('userId', isEqualTo: user.uid);
+    } else {
+      throw Exception("Kullanıcı UID'si geçersiz veya boş.");
+    }
+
+    // Tarih aralığına göre sorguyu oluştur
+    DateTime now = DateTime.now();
+    DateTime startDate;
+    if (selectedDateRange == "son-1-ay") {
+      startDate = now.subtract(const Duration(days: 30));
+    } else if (selectedDateRange == "son-1-hafta") {
+      startDate = now.subtract(const Duration(days: 7));
+    } else if (selectedDateRange == "son-1-sene") {
+      startDate = now.subtract(const Duration(days: 365));
+    } else {
+      startDate = DateTime(2000); // Fallback date
+    }
+    query = query.where('shoppingDate', isGreaterThanOrEqualTo: startDate);
+
+    // Tarihe göre sırala
+    query = query.orderBy('shoppingDate', descending: true);
+    return query;
+  }
+
+  /// Bağış detaylarını gösteren dialog
   void showDonationDetailDialog(BuildContext context, BrandModel brand, DonationModel donation) {
     // STK'ları almak için future'lar. STK bilgilerini sağlayacak STKProvider kullanıyoruz.
     Future<StkModel?> stk1Future = Provider.of<STKProvider>(context, listen: false).getSTKById(donation.stkId1 ?? "");
@@ -376,12 +317,14 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          title: const Text("Bağış Detayları"),
           contentPadding: EdgeInsets.zero,
           content: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Markanın logosu ve ismi
                   Row(
@@ -401,21 +344,21 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
 
                   // Sipariş Numarası
                   Text(
-                    "Sipariş Numarası: ${donation.orderNumber}",
+                    "Sipariş Numarası: ${donation.orderNumber ?? '-'}",
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 8),
 
                   // Bağış Tutarı
                   Text(
-                    "Bağış Tutarı: ${donation.saleAmount?.toStringAsFixed(2)} TL",
+                    "Bağış Tutarı: ${donation.saleAmount?.toStringAsFixed(2) ?? '0.00'} TL",
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
 
                   // Sipariş Tarihi
                   Text(
-                    "Sipariş Tarihi: ${DateFormat('dd.MM.yyyy').format(donation.shoppingDate ?? DateTime.now())}",
+                    "Sipariş Tarihi: ${donation.shoppingDate != null ? DateFormat('dd.MM.yyyy HH:mm').format(donation.shoppingDate!) : '-'}",
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
@@ -432,13 +375,16 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                     future: stk1Future,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          child: CircularProgressIndicator(),
+                        );
                       }
                       if (snapshot.hasError || !snapshot.hasData) {
                         return const Text("STK1 bilgisi alınamadı");
                       }
                       StkModel stk1 = snapshot.data!;
-                      return buildStkInfo(stk1, donation.saleAmount ?? 0 / 2);
+                      return buildStkInfo(stk1, ((donation.saleAmount ?? 0) / 2));
                     },
                   ),
                   const SizedBox(height: 16),
@@ -448,13 +394,16 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                     future: stk2Future,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          child: CircularProgressIndicator(),
+                        );
                       }
                       if (snapshot.hasError || !snapshot.hasData) {
                         return const Text("STK2 bilgisi alınamadı");
                       }
                       StkModel stk2 = snapshot.data!;
-                      return buildStkInfo(stk2, donation.saleAmount ?? 0 / 2);
+                      return buildStkInfo(stk2, ((donation.saleAmount ?? 0) / 2));
                     },
                   ),
                 ],
@@ -474,45 +423,259 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
     );
   }
 
-// STK bilgi kartı
+  /// STK bilgilerini gösteren widget
   Widget buildStkInfo(StkModel stk, double donationAmount) {
     return Row(
       children: [
         CircleAvatar(
           radius: 20,
           backgroundImage: NetworkImage(stk.logo ?? ""), // STK logosunu gösteriyoruz
+          child: stk.logo == null || stk.logo!.isEmpty ? const Icon(Icons.error, color: Colors.red) : null,
         ),
         const SizedBox(width: 10),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(stk.name ?? "-", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              stk.name ?? "-",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             Text("Bağış Tutarı: ${donationAmount.toStringAsFixed(2)} TL"),
           ],
         ),
       ],
     );
   }
+}
 
-  Query _buildQuery() {
-    Query query = FirebaseFirestore.instance.collection('donations');
+/// Her bir bağış listesi elemanını yöneten ayrı bir StatefulWidget
+class DonationListItem extends StatefulWidget {
+  final DonationModel donation;
+  final Function(BrandModel) onTap; // Callback to handle tap events
 
-    // Filtreye göre sorguyu oluştur
-    if (selectedFilter != "hepsi") {
-      query = query.where("status", isEqualTo: selectedFilter);
+  const DonationListItem({Key? key, required this.donation, required this.onTap}) : super(key: key);
+
+  @override
+  State<DonationListItem> createState() => _DonationListItemState();
+}
+
+class _DonationListItemState extends State<DonationListItem> {
+  BrandModel? _brand;
+  bool _isFetching = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBrand();
+  }
+
+  /// Marka verisini önbellekten alır veya Firestore'dan çeker
+  void _loadBrand() async {
+    String brandId = widget.donation.brandId ?? "";
+    if (brandId.isEmpty) return;
+
+    setState(() {
+      _isFetching = true;
+      _hasError = false;
+    });
+
+    try {
+      BrandModel? brand = await Provider.of<BrandProvider>(context, listen: false).getBrandById(brandId);
+      print(brand?.name ?? "HATA");
+      if (mounted) {
+        setState(() {
+          _brand = brand;
+          _isFetching = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching brand by ID: $e");
+      if (mounted) {
+        setState(() {
+          _isFetching = false;
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  /// Markayı yeniden yüklemeye çalışır
+  void _retryFetchBrand() {
+    _loadBrand();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isFetching) {
+      // Sadece ilk yüklemede gösterilecek yükleme göstergesi
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          tileColor: AppTheme.white,
+          contentPadding: const EdgeInsets.all(16),
+          leading: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              // Placeholder ikon
+              CircleAvatar(
+                radius: 20,
+                child: Icon(Icons.image_not_supported, color: Colors.grey),
+              ),
+            ],
+          ),
+          title: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  "Marka Yükleniyor...",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.blue),
+            onPressed: _retryFetchBrand,
+            tooltip: 'Markayı Yeniden Yükle',
+          ),
+          onTap: () {
+            // Marka yüklenmemişse dialog gösterme
+          },
+        ),
+      );
     }
 
-    // Tarih aralığına göre sorguyu güncelle
-    DateTime now = DateTime.now();
-    if (selectedDateRange == "son-1-ay") {
-      query = query.where('shoppingDate', isGreaterThanOrEqualTo: now.subtract(const Duration(days: 30)));
-    } else if (selectedDateRange == "son-1-hafta") {
-      query = query.where('shoppingDate', isGreaterThanOrEqualTo: now.subtract(const Duration(days: 7)));
-    } else if (selectedDateRange == "son-1-sene") {
-      query = query.where('shoppingDate', isGreaterThanOrEqualTo: now.subtract(const Duration(days: 365)));
+    if (_hasError || _brand == null) {
+      // Marka verisi yüklenemediğinde gösterilecek placeholder
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          tileColor: AppTheme.white,
+          contentPadding: const EdgeInsets.all(16),
+          leading: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              // Hata ikon
+              CircleAvatar(
+                radius: 20,
+                child: Icon(Icons.error, color: Colors.red),
+              ),
+            ],
+          ),
+          title: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  "Marka Bilgisi Alınamadı",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.blue),
+            onPressed: _retryFetchBrand,
+            tooltip: 'Markayı Yeniden Yükle',
+          ),
+          onTap: () {
+            // Marka yüklenmemişse dialog gösterme veya başka bir işlem yapma
+          },
+        ),
+      );
     }
 
-    query = query.orderBy('shoppingDate', descending: true); // Tarihe göre sırala
-    return query;
+    // Marka verisi yüklendiyse
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        tileColor: AppTheme.white,
+        contentPadding: const EdgeInsets.all(16),
+        leading: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              widget.donation.shoppingDate != null ? widget.donation.shoppingDate!.day.toString() : "-",
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              widget.donation.shoppingDate != null
+                  ? "${getTurkishMonth(widget.donation.shoppingDate!.month)} ${widget.donation.shoppingDate!.year}"
+                  : "-",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            Text(
+              widget.donation.shoppingDate != null
+                  ? "${widget.donation.shoppingDate!.hour.toString().padLeft(2, '0')}:${widget.donation.shoppingDate!.minute.toString().padLeft(2, '0')}"
+                  : "-",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ],
+        ),
+        title: Row(
+          children: [
+            CircleLogoWidget(
+              logoUrl: _brand!.logo ?? "",
+              logoName: (_brand!.name ?? "").isNotEmpty ? _brand!.name![0] : "0",
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                _brand!.name ?? "Yüklenemedi",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Tutar", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("${widget.donation.saleAmount?.toStringAsFixed(2)} TL"),
+              ],
+            ),
+            const SizedBox(width: 10),
+            const Icon(Icons.keyboard_arrow_right),
+          ],
+        ),
+        onTap: () {
+          if (_brand != null) {
+            widget.onTap(_brand!);
+          } else {
+            // Alternatif olarak kullanıcıya bilgi verebilirsiniz
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Marka bilgisi yüklenemediği için detay gösterilemiyor.')),
+            );
+          }
+        },
+      ),
+    );
   }
 }

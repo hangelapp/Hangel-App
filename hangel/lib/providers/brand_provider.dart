@@ -317,7 +317,6 @@ class BrandProvider with ChangeNotifier {
       Dio dio = Dio();
       var response = await dio.getUri(Uri.parse(
           "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&filters[payout_type]=cpa_percentage&limit=1&filters[id]=$brandId&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
-
       if (response.statusCode == 200 && response.data['response']['status'] == 1) {
         // API'den gelen veriyi doğru anahtarlardan alıyoruz
         var offerData = response.data['response']['data']['data'][brandId];
@@ -336,9 +335,16 @@ class BrandProvider with ChangeNotifier {
           // Gerekli alanları ayrıştırma
           String? id = offer['id'].toString();
           String? name = offer['name'];
-          String? sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
-              ? offerData['OfferVertical'].first['name']
-              : null;
+          String? sector = null;
+          try {
+            sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
+                ? offerData['OfferVertical'].first['name']
+                : null;
+          } catch (e) {
+            sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
+                ? offerData['OfferVertical']['name']
+                : null;
+          }
           double? donationRate = double.tryParse(offer['percent_payout'].toString());
           DateTime? creationDate = DateTime.now(); // API'den creationDate gelmediği için manuel atanıyor
           String? bannerImage = thumbnail != null ? thumbnail['url'] : null;
