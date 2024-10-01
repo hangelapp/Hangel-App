@@ -1,26 +1,27 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:hangel/constants/app_theme.dart';
-import 'package:hangel/firebase_options.dart';
-import 'package:hangel/views/about_us_page.dart';
-import 'package:hangel/views/app_view.dart';
-import 'package:hangel/views/stk_volunteers_page.dart';
-import 'package:hangel/views/donation_history_page.dart';
-import 'package:hangel/views/frequently_asked_questions_page.dart';
-import 'package:hangel/views/home_page.dart';
-import 'package:hangel/views/auth/onboarding_page.dart';
-import 'package:hangel/views/auth/register_page.dart';
-import 'package:hangel/views/select_favorite_stk_page.dart';
-import 'package:hangel/views/settings_page.dart';
-import 'package:hangel/views/support_page.dart';
-import 'package:hangel/views/vounteer_form.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
+
+import 'constants/app_theme.dart';
+import 'firebase_options.dart';
 import 'helpers/locator.dart';
 import 'helpers/provider_list.dart';
+import 'views/about_us_page.dart';
+import 'views/app_view.dart';
+import 'views/auth/onboarding_page.dart';
+import 'views/auth/register_page.dart';
 import 'views/auth/widget_tree.dart';
+import 'views/donation_history_page.dart';
+import 'views/frequently_asked_questions_page.dart';
+import 'views/home_page.dart';
+import 'views/select_favorite_stk_page.dart';
+import 'views/settings_page.dart';
 import 'views/splash_page.dart';
+import 'views/stk_volunteers_page.dart';
+import 'views/support_page.dart';
+import 'views/vounteer_form.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

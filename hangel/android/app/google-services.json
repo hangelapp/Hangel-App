@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "681395322694-ljene7v6nks8627psmfv4d984stnrklc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hangel.app",
+            "certificate_hash": "ae4ffbdfe7f5f28537224bc0a87f90a77d21ebf7"
+          }
+        },
+        {
           "client_id": "681395322694-c90728481gemttq5di8buarahdcs75vd.apps.googleusercontent.com",
           "client_type": 3
         }
