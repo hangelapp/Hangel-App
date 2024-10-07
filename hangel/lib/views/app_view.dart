@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
@@ -6,6 +8,7 @@ import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:hangel/views/auth/register_page.dart';
 import 'package:hangel/views/donation_history_page.dart';
 import 'package:hangel/views/settings_page.dart';
 import 'package:hangel/views/splash_page.dart';
@@ -30,6 +33,7 @@ final PersistentTabController tabcontroller = PersistentTabController(initialInd
 class _AppViewState extends State<AppView> {
   List<Widget> widgetOptions = <Widget>[];
   Widget? selectedWidget;
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     widgetOptions = context.watch<AppViewProvider>().widgetOptions;
@@ -345,9 +349,10 @@ class _AppViewState extends State<AppView> {
                     buttonText: "Çıkış Yap",
                     cancelButtonText: "Vazgeç",
                     content:
-                        "Alışverişlerin ile sosyal faydaya ortak olmaya devam etmeye devam etmen için çıkış yapmaman gerekiyor.",
+                        "Alışverişlerin ile sosyal faydaya ortak olmaya devam etmen için çıkış yapmaman gerekiyor.",
                     color: AppTheme.red,
-                    onAcceptButtonPressed: () {
+                    onAcceptButtonPressed: () async {
+                      await FirebaseAuth.instance.signOut();
                       HiveHelpers.logout();
                       context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
                       Navigator.pushNamedAndRemoveUntil(context, SplashPage.routeName, (route) => false);
@@ -359,8 +364,90 @@ class _AppViewState extends State<AppView> {
             SizedBox(
               height: deviceHeightSize(context, 40),
             ),
+            MenuItemWidget(
+              title: "Hesabımı Sil",
+              icon: Icon(
+                Icons.delete_forever_outlined,
+                color: Colors.grey,
+                size: deviceFontSize(context, 24),
+              ),
+              iconColor: Colors.grey,
+              titleColor: Colors.grey,
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(context,
+                      title: "Hesabımı Sil",
+                      buttonText: "Hesabımı Sil",
+                      cancelButtonText: "Vazgeç",
+                      isLoading: isLoading,
+                      cancelButtonColor: Colors.green,
+                      content:
+                          "Alışverişlerin ile sosyal faydaya ortak olmaya devam etmen için hesabını silmemen gerekiyor.\nBu işlem geri alınamaz!",
+                      color: Colors.grey, onAcceptButtonPressed: () async {
+                    setState(() {
+                      isLoading = true;
+                    });
+
+                    User? user = FirebaseAuth.instance.currentUser;
+
+                    if (user != null) {
+                      try {
+                        // Delete the user's Firestore document
+                        await FirebaseFirestore.instance.collection("users").doc(user.uid).delete();
+                        // Attempt to delete the user account
+                        await user.delete();
+                      } on FirebaseAuthException catch (e) {
+                        if (e.code == 'requires-recent-login') {
+                          // Inform the user that they need to re-authenticate
+                          _showReauthenticationDialog();
+                        } else {
+                          // Handle other errors
+                          print('Error deleting user: $e');
+                        }
+                      }
+                    }
+
+                    // Sign out the user
+                    await FirebaseAuth.instance.signOut();
+                    HiveHelpers.logout();
+                    context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
+
+                    setState(() {
+                      isLoading = false;
+                    });
+
+                    Navigator.pushNamedAndRemoveUntil(context, SplashPage.routeName, (route) => false);
+                  }
+
+// Helper method to show a dialog informing the user
+
+                      ),
+                );
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showReauthenticationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Session Expired'),
+        content: Text('Please log in again to delete your account.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+              // Navigate to the login screen
+              Navigator.pushNamed(context, RegisterPage.routeName);
+            },
+            child: Text('OK'),
+          ),
+        ],
       ),
     );
   }

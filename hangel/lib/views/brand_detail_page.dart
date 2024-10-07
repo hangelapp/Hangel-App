@@ -368,7 +368,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                           "link": widget.brandModel.link,
                           "offer_id": widget.brandModel.id,
                           "stk_ids": HiveHelpers.getUserFromHive().favoriteStks,
-                          "donation_rate":widget.brandModel.donationRate
+                          "donation_rate": widget.brandModel.donationRate
                         }).then(
                           (value) {
                             setState(() {
@@ -523,7 +523,8 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
             color: randomColors[randomIndex].withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
             border: context.watch<BrandProvider>().selectedSTKID == stkModel.id
-                ? Border.all(color: randomColors[randomIndex], width: 2)
+                ? null
+                // ? Border.all(color: randomColors[randomIndex], width: 2)
                 : null),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
