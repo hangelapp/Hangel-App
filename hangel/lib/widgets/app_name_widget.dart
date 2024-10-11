@@ -23,7 +23,7 @@ class AppNameWidget extends StatelessWidget {
           TextSpan(
             text: "angel",
             style: AppTheme.blackTextStyle(context, fontSize,
-                color: secondaryColor),
+                color: color),
           ),
         ],
       ),
