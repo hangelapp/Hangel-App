@@ -4,7 +4,6 @@ import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/donation_model.dart';
-import 'package:hangel/providers/donation_provider.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/circle_logo_widget.dart';
 import 'package:intl/intl.dart';
