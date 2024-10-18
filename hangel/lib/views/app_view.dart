@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -27,19 +30,80 @@ class AppView extends StatefulWidget {
   State<AppView> createState() => _AppViewState();
 }
 
-// final DrawerMenuController drawerController = DrawerMenuController();
 final PersistentTabController tabcontroller = PersistentTabController(initialIndex: 0);
 
 class _AppViewState extends State<AppView> {
   List<Widget> widgetOptions = <Widget>[];
   Widget? selectedWidget;
   bool isLoading = false;
+
+  Future<void> initAppTracking() async {
+    if (Platform.isIOS) {
+      final TrackingStatus status = await AppTrackingTransparency.trackingAuthorizationStatus;
+
+      if (status == TrackingStatus.notDetermined) {
+        await showCustomPrivacyDialog();
+
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+
+      final uuid = await AppTrackingTransparency.getAdvertisingIdentifier();
+      print("Reklam Tanımlayıcısı: $uuid");
+    } else {
+      print("İOS DEĞİL");
+    }
+  }
+
+  Future<void> showCustomPrivacyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Gizlilik ve İzinler'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  'Uygulamamız, size daha iyi ve kişiselleştirilmiş bir deneyim sunmak için izninize ihtiyaç duyar.',
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Lütfen devam etmek için "Onayla" butonuna tıklayın.',
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Onayla'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('İptal'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initAppTracking();
+  }
+
   @override
   Widget build(BuildContext context) {
     widgetOptions = context.watch<AppViewProvider>().widgetOptions;
     selectedWidget = context.watch<AppViewProvider>().selectedWidget;
     return Scaffold(
-      // key: scaffoldKey,
       drawer: drawerWidget(context),
       body: PersistentTabView(
         context,
@@ -52,7 +116,6 @@ class _AppViewState extends State<AppView> {
             navBarItemAnimation: ItemAnimationSettings(curve: Curves.linear, duration: Durations.extralong3),
             screenTransitionAnimation: ScreenTransitionAnimationSettings(
                 screenTransitionAnimationType: ScreenTransitionAnimationType.slide, animateTabTransition: true)),
-
         items: [
           PersistentBottomNavBarItem(
             icon: const Icon(Icons.shopping_bag_rounded),
@@ -102,64 +165,6 @@ class _AppViewState extends State<AppView> {
             inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
         ],
-
-        // child: Scaffold(
-        //   key: scaffoldKey,
-        //   bottomNavigationBar: BottomNavigationBar(
-        //     type: BottomNavigationBarType.fixed,
-        //     backgroundColor: Colors.white,
-        //     selectedItemColor: AppTheme.primaryColor,
-        //     unselectedItemColor: AppTheme.secondaryColor.withOpacity(0.5),
-        //     selectedLabelStyle: AppTheme.normalTextStyle(context, 14),
-        //     unselectedLabelStyle: AppTheme.lightTextStyle(context, 13, color: AppTheme.secondaryColor.withOpacity(0.5)),
-        //     showUnselectedLabels: true,
-        //     selectedIconTheme: IconThemeData(
-        //       size: deviceFontSize(context, 28),
-        //     ),
-        //     unselectedIconTheme: IconThemeData(
-        //       size: deviceFontSize(context, 24),
-        //     ),
-        //     currentIndex: !widgetOptions.contains(selectedWidget) ? 0 : widgetOptions.indexOf(selectedWidget),
-        //     onTap: (index) {
-        //       context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(index);
-        //     },
-        //     items: const [
-        //       BottomNavigationBarItem(
-        //         icon: Icon(Icons.home_rounded),
-        //         label: "Anasayfa",
-        //       ),
-        //       BottomNavigationBarItem(
-        //         icon: Icon(Icons.shopping_bag_rounded),
-        //         label: "Markalar",
-        //       ),
-        //       BottomNavigationBarItem(
-        //         icon: Icon(Icons.favorite_rounded),
-        //         label: "Favoriler",
-        //       ),
-        //       BottomNavigationBarItem(
-        //         icon: Icon(Icons.volunteer_activism_rounded),
-        //         label: "STK'lar",
-        //       ),
-        //       BottomNavigationBarItem(
-        //         icon: Icon(Icons.person_rounded),
-        //         label: "Profilim",
-        //       ),
-        //     ],
-        //   ),
-        //   drawer: drawerWidget(context),
-        //   floatingActionButton: FloatingActionButton(
-        //     onPressed: () {},
-        //     shape: const CircleBorder(),
-        //     elevation: 0,
-        //     backgroundColor: Colors.white,
-        //     child: const Icon(
-        //       Icons.favorite_border_outlined,
-        //       color: AppTheme.primaryColor,
-        //     ),
-        //   ),
-        //   floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        //   body: selectedWidget,
-        // ),
       ),
     );
   }
@@ -319,14 +324,12 @@ class _AppViewState extends State<AppView> {
                   builder: (context) =>
                       const BottomSheetWidget(isMinPadding: true, title: "İletişime Geç", child: SupportForm()),
                 );
-                // Navigator.pushNamed(context, SupportPage.routeName);
               },
             ),
             const Spacer(),
             SizedBox(
               height: deviceHeightSize(context, 6),
             ),
-            //app version
             Text(
               "v1.0.0",
               style: AppTheme.lightTextStyle(context, 14),
@@ -393,22 +396,18 @@ class _AppViewState extends State<AppView> {
 
                     if (user != null) {
                       try {
-                        // Delete the user's Firestore document
                         await FirebaseFirestore.instance.collection("users").doc(user.uid).delete();
-                        // Attempt to delete the user account
+
                         await user.delete();
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'requires-recent-login') {
-                          // Inform the user that they need to re-authenticate
                           _showReauthenticationDialog();
                         } else {
-                          // Handle other errors
                           print('Error deleting user: $e');
                         }
                       }
                     }
 
-                    // Sign out the user
                     await FirebaseAuth.instance.signOut();
                     HiveHelpers.logout();
                     context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
@@ -418,11 +417,7 @@ class _AppViewState extends State<AppView> {
                     });
 
                     Navigator.pushNamedAndRemoveUntil(context, SplashPage.routeName, (route) => false);
-                  }
-
-// Helper method to show a dialog informing the user
-
-                      ),
+                  }),
                 );
               },
             ),
@@ -441,8 +436,8 @@ class _AppViewState extends State<AppView> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Close the dialog
-              // Navigate to the login screen
+              Navigator.pop(context);
+
               Navigator.pushNamed(context, RegisterPage.routeName);
             },
             child: Text('OK'),

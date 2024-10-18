@@ -114,7 +114,7 @@ Bu Sözleşmeden kaynaklanan veya bu Sözleşmeyle ilgili herhangi bir uyuşmazl
 Bu Sözleşme, 12 Mart 2024 tarihinde yürürlüğe girmiştir.
 
 9. İletişim
-Bu Sözleşmeyle ilgili herhangi bir sorunuz varsa lütfen bize https://www.jotform.com/tr/form-templates/iletisim-sayfasi adresinden ulaşabilirsiniz.
+Bu Sözleşmeyle ilgili herhangi bir sorunuz varsa lütfen bizimle iletişime geçin.
 """),
                           ),
                         );
@@ -191,7 +191,7 @@ Taşınabilirlik: Kişisel bilgilerinizi başka bir kontrolcüye aktarma hakkın
 Bu Gizlilik Sözleşmesi'ni zaman zaman değiştirebiliriz. Değişiklikler yürürlüğe girdiğinde sizi bilgilendireceğiz.
 
 7. İletişim
-Bu Gizlilik Sözleşmesi ile ilgili herhangi bir sorunuz varsa lütfen bize https://www.jotform.com/tr/form-templates/iletisim-sayfasi adresinden ulaşabilirsiniz.
+Bu Gizlilik Sözleşmesi ile ilgili herhangi bir sorunuz varsa lütfen bizimle iletişime geçin.
 
 8. Yürürlük
 Bu Gizlilik Sözleşmesi, 12 Mart 2024 tarihinde yürürlüğe girmiştir.

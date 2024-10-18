@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
-import 'package:hangel/widgets/social_media_widget.dart';
 
 class AboutUsPage extends StatefulWidget {
   const AboutUsPage({Key? key}) : super(key: key);
@@ -68,11 +67,6 @@ Hangel'e katılarak siz de sevdiğiniz STK'lara katkıda bulunabilir ve topluma 
                     ),
                     SizedBox(
                       height: deviceHeightSize(context, 20),
-                    ),
-                    //Social media icons
-                    SocialMediaWidget(context),
-                    SizedBox(
-                      height: deviceHeightSize(context, 40),
                     ),
                   ],
                 ),
