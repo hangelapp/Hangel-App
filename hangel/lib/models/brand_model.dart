@@ -12,41 +12,45 @@ class BrandModel {
   final String? link; // Contain
   final List<CategoryModel>? categories; // Contain
   final int favoriteCount; // Default value 0 Closed for now
+  double? totalDonation; // Tüm donation değerleri toplanacak
+  int? processCount; // Her seferinde 1 artacak
 
-  BrandModel({
-    this.id,
-    this.name,
-    this.logo,
-    this.sector,
-    this.inEarthquakeZone,
-    this.isSocialEnterprise,
-    this.donationRate,
-    this.creationDate,
-    this.bannerImage,
-    this.detailText,
-    this.link,
-    this.categories,
-    this.favoriteCount = 157,
-  });
+  BrandModel(
+      {this.id,
+      this.name,
+      this.logo,
+      this.sector,
+      this.inEarthquakeZone,
+      this.isSocialEnterprise,
+      this.donationRate,
+      this.creationDate,
+      this.bannerImage,
+      this.detailText,
+      this.link,
+      this.categories,
+      this.favoriteCount = 157,
+      this.totalDonation,
+      this.processCount});
 
   factory BrandModel.fromJson(Map<String, dynamic> json) {
     return BrandModel(
-      id: json['id'],
-      name: json['name'],
-      logo: json['logo'],
-      sector: json['sector'],
-      inEarthquakeZone: json['inEarthquakeZone'],
-      isSocialEnterprise: json['isSocialEnterprise'],
-      donationRate: json['donationRate'],
-      creationDate: DateTime.tryParse(json['creationDate'].toString()),
-      bannerImage: json['bannerImage'],
-      detailText: json['detailText'],
-      link: json['link'],
-      categories: json['categories'] != null
-          ? (json['categories'] as List).map((e) => CategoryModel.fromJson(e)).toList()
-          : null,
-      favoriteCount: json['favoriteCount'] ?? 157,
-    );
+        id: json['id'],
+        name: json['name'],
+        logo: json['logo'],
+        sector: json['sector'],
+        inEarthquakeZone: json['inEarthquakeZone'],
+        isSocialEnterprise: json['isSocialEnterprise'],
+        donationRate: json['donationRate'],
+        creationDate: DateTime.tryParse(json['creationDate'].toString()),
+        bannerImage: json['bannerImage'],
+        detailText: json['detailText'],
+        link: json['link'],
+        categories: json['categories'] != null
+            ? (json['categories'] as List).map((e) => CategoryModel.fromJson(e)).toList()
+            : null,
+        favoriteCount: json['favoriteCount'] ?? 157,
+        totalDonation: json['totalDonation'],
+        processCount: json['processCount']);
   }
 
   Map<String, dynamic> toJson() {
@@ -64,6 +68,8 @@ class BrandModel {
       'link': link,
       'categories': categories?.map((e) => e.toJson()).toList(),
       'favoriteCount': favoriteCount,
+      'totalDonation': totalDonation,
+      'processCount': processCount
     };
   }
 }

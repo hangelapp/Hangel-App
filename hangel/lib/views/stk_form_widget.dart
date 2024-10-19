@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart'; // Import for input formatters
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/models/stk_form_model.dart';
-import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/widgets/dropdown_select_widget.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
@@ -19,16 +19,19 @@ import 'package:hangel/widgets/pick_image_widget.dart';
 import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:iban/iban.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
+
+import '../providers/login_register_page_provider.dart';
 
 class STKFormWidget extends StatefulWidget {
   const STKFormWidget({Key? key}) : super(key: key);
 
   @override
-  State<STKFormWidget> createState() => _stkFormWidgetState();
+  State<STKFormWidget> createState() => _STKFormWidgetState();
 }
 
-class _stkFormWidgetState extends State<STKFormWidget> {
+class _STKFormWidgetState extends State<STKFormWidget> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _stkNameController = TextEditingController();
@@ -65,18 +68,34 @@ class _stkFormWidgetState extends State<STKFormWidget> {
   String? selectedMahalle;
   String jsonData = "";
 
+  // Input formatters and regex patterns
+  final phoneMaskFormatter = MaskTextInputFormatter(
+    mask: '+90 ### ### ## ##',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
+
+  final numberFormatter = FilteringTextInputFormatter.digitsOnly;
+
+  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+  final urlRegex = RegExp(r'^(https?:\/\/)?' // protocol
+      r'((([a-zA-Z0-9\-\.]+)\.([a-zA-Z]{2,5}))|' // domain name
+      r'(([0-9]{1,3}\.){3}[0-9]{1,3}))' // OR ip (v4) address
+      r'(\:[0-9]{1,5})?' // port
+      r'(\/[^\s]*)?$' // path
+      );
+
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      //get iller from json file /assets/il-ilce.json
+      // Get iller from json file /assets/il-ilce.json
       jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
         final jsonResult = jsonDecode(jsonData);
         for (var item in jsonResult) {
-          if (iller.contains(item["İL"])) {
-            continue;
+          if (!iller.contains(item["İL"])) {
+            iller.add(item["İL"]);
           }
-          iller.add(item["İL"]);
         }
       });
     });
@@ -119,6 +138,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 title: "STK Kütük No",
                 isRequired: true,
                 keyboardType: TextInputType.number,
+                inputFormatters: [numberFormatter],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Geçersiz Kütük Numarası';
@@ -132,6 +152,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 title: "STK Vergi No",
                 isRequired: true,
                 keyboardType: TextInputType.number,
+                inputFormatters: [numberFormatter],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Geçersiz Vergi Numarası';
@@ -166,16 +187,16 @@ class _stkFormWidgetState extends State<STKFormWidget> {
               FormFieldWidget(
                 context,
                 controller: _stkIbanController,
-                title: "STK IBAN numarası",
+                title: "STK IBAN Numarası",
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty || !isValid(value.replaceAll(RegExp(r'\s+'), ''))) {
                     return 'Geçersiz IBAN Numarası';
                   }
-                  ;
                   return null;
                 },
               ),
+              SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -205,8 +226,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 title: "Telefon Numarası",
                 keyboardType: TextInputType.phone,
                 isRequired: true,
+                inputFormatters: [phoneMaskFormatter],
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.isEmpty || !phoneMaskFormatter.isFill()) {
                     return 'Geçersiz Telefon Numarası';
                   }
                   return null;
@@ -219,8 +241,8 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 keyboardType: TextInputType.emailAddress,
                 isRequired: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Mail adresi';
+                  if (value == null || value.isEmpty || !emailRegex.hasMatch(value)) {
+                    return 'Geçersiz Mail Adresi';
                   }
                   return null;
                 },
@@ -242,10 +264,12 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 title: "STK'nın Logosu",
                 onImagePicked: (List<XFile?> image) {
                   setState(() {
-                    _logoImage.add(ImageModel(
-                      imageType: ImageType.asset,
-                      file: image[0]!,
-                    ));
+                    _logoImage = [
+                      ImageModel(
+                        imageType: ImageType.asset,
+                        file: image[0]!,
+                      ),
+                    ];
                   });
                 },
                 selectedImages: _logoImage,
@@ -256,6 +280,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                   });
                 },
                 infoText: "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
+                isRequired: true,
               ),
               FormFieldWidget(
                 context,
@@ -263,8 +288,8 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 title: "STK'nın Web Sitesi",
                 isRequired: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Web site';
+                  if (value == null || value.isEmpty || !urlRegex.hasMatch(value)) {
+                    return 'Geçersiz Web sitesi';
                   }
                   return null;
                 },
@@ -276,7 +301,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 keyboardType: TextInputType.emailAddress,
                 isRequired: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.isEmpty || !emailRegex.hasMatch(value)) {
                     return 'Geçersiz Mail Adresi';
                   }
                   return null;
@@ -288,8 +313,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 title: "STK'nın Telefon Numarası",
                 keyboardType: TextInputType.phone,
                 isRequired: true,
+                inputFormatters: [phoneMaskFormatter],
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.isEmpty || !phoneMaskFormatter.isFill()) {
                     return 'Geçersiz Telefon Numarası';
                   }
                   return null;
@@ -310,7 +336,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
               DropdownWidget(
                 context,
                 titles: iller,
-                selectedIndex: iller.indexOf(selectedIl ?? ""),
+                selectedIndex: selectedIl != null ? iller.indexOf(selectedIl!) : -1,
                 onChanged: (value) {
                   setState(() {
                     selectedIl = value;
@@ -321,10 +347,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                     final jsonResult = jsonDecode(jsonData);
                     for (var item in jsonResult) {
                       if (item["İL"] == selectedIl) {
-                        if (ilceler.contains(item["İLÇE"])) {
-                          continue;
+                        if (!ilceler.contains(item["İLÇE"])) {
+                          ilceler.add(item["İLÇE"]);
                         }
-                        ilceler.add(item["İLÇE"]);
                       }
                     }
                   });
@@ -336,7 +361,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 DropdownWidget(
                   context,
                   titles: ilceler,
-                  selectedIndex: ilceler.indexOf(selectedIlce ?? ""),
+                  selectedIndex: selectedIlce != null ? ilceler.indexOf(selectedIlce!) : -1,
                   onChanged: (value) {
                     setState(() {
                       selectedIlce = value;
@@ -345,10 +370,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                       final jsonResult = jsonDecode(jsonData);
                       for (var item in jsonResult) {
                         if (item["İLÇE"] == selectedIlce) {
-                          if (mahalleler.contains(item["MAHALLE"])) {
-                            continue;
+                          if (!mahalleler.contains(item["MAHALLE"])) {
+                            mahalleler.add(item["MAHALLE"]);
                           }
-                          mahalleler.add(item["MAHALLE"]);
                         }
                       }
                     });
@@ -360,7 +384,7 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 DropdownWidget(
                   context,
                   titles: mahalleler,
-                  selectedIndex: mahalleler.indexOf(selectedMahalle ?? ""),
+                  selectedIndex: selectedMahalle != null ? mahalleler.indexOf(selectedMahalle!) : -1,
                   onChanged: (value) {
                     setState(() {
                       selectedMahalle = value;
@@ -439,7 +463,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 titles: _categories,
                 onSelect: (value) {
                   setState(() {
-                    _selectedCategories.add(value!);
+                    if (!_selectedCategories.contains(value)) {
+                      _selectedCategories.add(value!);
+                    }
                   });
                 },
                 onRemove: (value) {
@@ -457,7 +483,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                 titles: _bmItems,
                 onSelect: (value) {
                   setState(() {
-                    selectedBMs.add(value!);
+                    if (!selectedBMs.contains(value)) {
+                      selectedBMs.add(value!);
+                    }
                   });
                 },
                 onRemove: (value) {
@@ -516,6 +544,10 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                       ToastWidgets.errorToast(context, "Faaliyet alanı bilgisinde hata var.");
                       return;
                     }
+                    if (_selectedCategories.isEmpty) {
+                      ToastWidgets.errorToast(context, "Kategori bilgisinde hata var.");
+                      return;
+                    }
                     if (selectedBMs.isEmpty) {
                       ToastWidgets.errorToast(context, "BM amaçları bilgisinde hata var");
                       return;
@@ -528,25 +560,30 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                         .read<STKProvider>()
                         .sendForm(
                           stkFormModel: STKFormModel(
-                              name: _stkNameController.text,
-                              website: _stkWebsiteController.text,
-                              mail: _stkMailController.text,
-                              phone: _stkPhoneController.text,
-                              founder: _stkFounderController.text,
-                              contactPerson: _stkContactPersonController.text,
-                              contactPersonPhone: _stkContactPersonPhoneController.text,
-                              contactPersonMail: _stkContactPersonMailController.text,
-                              address: _stkAddressController.text,
-                              city: selectedIl!,
-                              district: selectedIlce!,
-                              neighborhood: selectedMahalle!,
-                              categories: _selectedCategories,
-                              bmCategories: selectedBMs,
-                              selectedSector: _sectors[_selectedSectorIndex],
-                              sicilNo: _stkSicilNoController.text,
-                              vergiNo: _stkVergiNoController.text,
-                              iban: _stkIbanController.text,
-                              time: DateTime.now()),
+                            name: _stkNameController.text,
+                            website: _stkWebsiteController.text,
+                            mail: _stkMailController.text,
+                            phone: _stkPhoneController.text,
+                            founder: _stkFounderController.text,
+                            contactPerson: _stkContactPersonController.text,
+                            contactPersonJob: _stkContactPersonJob.text,
+                            contactPersonPhone: _stkContactPersonPhoneController.text,
+                            contactPersonMail: _stkContactPersonMailController.text,
+                            address: _stkAddressController.text,
+                            city: selectedIl!,
+                            district: selectedIlce!,
+                            neighborhood: selectedMahalle!,
+                            categories: _selectedCategories,
+                            bmCategories: selectedBMs,
+                            selectedSector: _sectors[_selectedSectorIndex],
+                            sicilNo: _stkSicilNoController.text,
+                            vergiNo: _stkVergiNoController.text,
+                            iban: _stkIbanController.text,
+                            time: DateTime.now(),
+                            type: _types[_selectedType],
+                            federations: _stkFederasyonlar.text,
+                            fullName: _stkFullNameController.text,
+                          ),
                           logoImage: _logoImage,
                           tuzukPDF: _tuzukPDF,
                           faaliyetImage: _faaliyetPDF,
@@ -555,7 +592,6 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                       if (responseModel.success == true) {
                         Navigator.pop(context);
                       }
-
                       ToastWidgets.responseToast(context, responseModel);
                     });
                   } else {
@@ -565,7 +601,9 @@ class _stkFormWidgetState extends State<STKFormWidget> {
                   }
                 },
               ),
-              SizedBox(height: deviceHeightSize(context, 30) + MediaQuery.of(context).viewInsets.bottom),
+              SizedBox(
+                height: deviceHeightSize(context, 30) + MediaQuery.of(context).viewInsets.bottom,
+              ),
             ],
           ),
         ),
@@ -627,15 +665,15 @@ class _stkFormWidgetState extends State<STKFormWidget> {
     "Sağlık Ve Kaliteli Yaşam",
     "Nitelikli Eğitim",
     "Toplumsal Cinsiyet Eşitliği",
-    "Temiz Su Ve Sanitasyo",
+    "Temiz Su Ve Sanitasyon",
     "Erişilebilir Ve Temiz Enerji",
-    "İnsana Yakışır Iş Ve Ekonomik Büyüme",
+    "İnsana Yakışır İş Ve Ekonomik Büyüme",
     "Sanayi, Yenilikçilik Ve Altyapı",
     "Eşitsizliklerin Azaltılması",
     "Sürdürülebilir Şehirler Ve Topluluklar",
     "Sorumlu Üretim Ve Tüketim",
     "İklim Eylemi",
-    "Sudaki Yaşa",
+    "Sudaki Yaşam",
     "Karasal Yaşam",
     "Barış, Adalet Ve Güçlü Kurumlar",
     "Amaçlar İçin Ortaklıklar",

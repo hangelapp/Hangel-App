@@ -266,7 +266,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
 
         return DonationListItem(
           donation: donation,
-          onTap: (BrandModel brand) {
+          onTap: (BrandModel? brand) {
             showDonationDetailDialog(context, brand, donation);
           },
         );
@@ -307,7 +307,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
   }
 
   /// Bağış detaylarını gösteren dialog
-  void showDonationDetailDialog(BuildContext context, BrandModel brand, DonationModel donation) {
+  void showDonationDetailDialog(BuildContext context, BrandModel? brand, DonationModel donation) {
     // STK'ları almak için future'lar. STK bilgilerini sağlayacak STKProvider kullanıyoruz.
     Future<StkModel?> stk1Future = Provider.of<STKProvider>(context, listen: false).getSTKById(donation.stkId1 ?? "");
     Future<StkModel?> stk2Future = Provider.of<STKProvider>(context, listen: false).getSTKById(donation.stkId2 ?? "");
@@ -326,19 +326,33 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Markanın logosu ve ismi
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundImage: NetworkImage(brand.logo ?? ""),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        brand.name ?? "-",
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                  brand != null
+                      ? Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundImage: NetworkImage(brand.logo ?? ""),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              brand.name ?? "-",
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              child: Text("-"),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "Marka",
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                   const SizedBox(height: 16),
 
                   // Sipariş Numarası
@@ -450,7 +464,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
 /// Her bir bağış listesi elemanını yöneten ayrı bir StatefulWidget
 class DonationListItem extends StatefulWidget {
   final DonationModel donation;
-  final Function(BrandModel) onTap; // Callback to handle tap events
+  final Function(BrandModel?) onTap; // Callback to handle tap events
 
   const DonationListItem({Key? key, required this.donation, required this.onTap}) : super(key: key);
 
@@ -560,21 +574,45 @@ class _DonationListItemState extends State<DonationListItem> {
           contentPadding: const EdgeInsets.all(16),
           leading: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              // Hata ikon
-              CircleAvatar(
-                radius: 20,
-                child: Icon(Icons.error, color: Colors.red),
+            children: [
+              Text(
+                widget.donation.shoppingDate != null ? widget.donation.shoppingDate!.day.toString() : "-",
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                widget.donation.shoppingDate != null
+                    ? "${getTurkishMonth(widget.donation.shoppingDate!.month)} ${widget.donation.shoppingDate!.year}"
+                    : "-",
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              Text(
+                widget.donation.shoppingDate != null
+                    ? "${widget.donation.shoppingDate!.hour.toString().padLeft(2, '0')}:${widget.donation.shoppingDate!.minute.toString().padLeft(2, '0')}"
+                    : "-",
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w300,
+                ),
               ),
             ],
           ),
           title: Row(
             children: [
+              CircleLogoWidget(
+                logoUrl: '',
+                logoName: "-",
+              ),
               Flexible(
                 child: Text(
                   "Marka Bilgisi Alınamadı",
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -582,13 +620,22 @@ class _DonationListItemState extends State<DonationListItem> {
               ),
             ],
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.blue),
-            onPressed: _retryFetchBrand,
-            tooltip: 'Markayı Yeniden Yükle',
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Tutar", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("${widget.donation.saleAmount?.toStringAsFixed(2)} TL"),
+                ],
+              ),
+              const SizedBox(width: 10),
+              const Icon(Icons.keyboard_arrow_right),
+            ],
           ),
           onTap: () {
-            // Marka yüklenmemişse dialog gösterme veya başka bir işlem yapma
+            widget.onTap(_brand);
           },
         ),
       );
@@ -607,7 +654,7 @@ class _DonationListItemState extends State<DonationListItem> {
             Text(
               widget.donation.shoppingDate != null ? widget.donation.shoppingDate!.day.toString() : "-",
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -616,7 +663,7 @@ class _DonationListItemState extends State<DonationListItem> {
                   ? "${getTurkishMonth(widget.donation.shoppingDate!.month)} ${widget.donation.shoppingDate!.year}"
                   : "-",
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -665,14 +712,7 @@ class _DonationListItemState extends State<DonationListItem> {
           ],
         ),
         onTap: () {
-          if (_brand != null) {
-            widget.onTap(_brand!);
-          } else {
-            // Alternatif olarak kullanıcıya bilgi verebilirsiniz
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Marka bilgisi yüklenemediği için detay gösterilemiyor.')),
-            );
-          }
+          widget.onTap(_brand);
         },
       ),
     );

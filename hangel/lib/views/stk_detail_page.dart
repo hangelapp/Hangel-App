@@ -344,7 +344,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
 
   _tabView(BuildContext context) {
     List<Map<String, dynamic>> statics = [
-      {"title": "Toplam Bağış", "value": "${(widget.stkModel.totalDonation ?? 0).toString()} ₺", "icon": Icons.money},
+      {"title": "Toplam Bağış", "value": "${(widget.stkModel.totalDonation ?? 0).toStringAsFixed(0)} ₺", "icon": Icons.money},
       {"title": "İşlem Sayısı", "value": "${(widget.stkModel.processCount ?? 0).toString()}", "icon": Icons.plus_one},
       {"title": "Bağışçı Sayısı", "value": "${(widget.stkModel.totalDonor ?? 0).toString()}", "icon": Icons.people},
     ];

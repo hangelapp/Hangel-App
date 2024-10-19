@@ -627,7 +627,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
     List<Map<String, dynamic>> statics = [
       {
         "title": "Toplam Bağış",
-        "value": "0",
+        "value": widget.brandModel.totalDonation ?? "0",
       },
       {
         "title": "Favori",
@@ -635,7 +635,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
       },
       {
         "title": "İşlem Sayısı",
-        "value": "0",
+        "value": widget.brandModel.processCount ?? "0",
       },
     ];
     List<Map<String, dynamic>> categories = [

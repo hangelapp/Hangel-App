@@ -7,6 +7,7 @@ class STKFormModel {
   String? founder;
   String? contactPerson;
   String? contactPersonPhone;
+  String? contactPersonJob;
   String? contactPersonMail;
   String? selectedSector;
   String? address;
@@ -24,6 +25,7 @@ class STKFormModel {
   String? vergiNo;
   String? iban;
   DateTime? time;
+  String? federations;
 
   STKFormModel(
       {this.name,
@@ -33,6 +35,7 @@ class STKFormModel {
       this.phone,
       this.founder,
       this.contactPerson,
+      this.contactPersonJob,
       this.contactPersonPhone,
       this.contactPersonMail,
       this.selectedSector,
@@ -50,7 +53,8 @@ class STKFormModel {
       this.sicilNo,
       this.vergiNo,
       this.iban,
-      this.time});
+      this.time,
+      this.federations});
 
   factory STKFormModel.fromJson(Map<String, dynamic> json) {
     return STKFormModel(
@@ -61,6 +65,7 @@ class STKFormModel {
         phone: json['phone'],
         founder: json['founder'],
         contactPerson: json['contactPerson'],
+        contactPersonJob: json['contactPersonJob'],
         contactPersonPhone: json['contactPersonPhone'],
         contactPersonMail: json['contactPersonMail'],
         selectedSector: json['sector'],
@@ -78,7 +83,8 @@ class STKFormModel {
         sicilNo: json["sicilNo"],
         vergiNo: json["vergiNo"],
         iban: json["iban"],
-        time: json["time"]);
+        time: json["time"],
+        federations: json["federations"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -90,6 +96,7 @@ class STKFormModel {
       'phone': phone,
       'founder': founder,
       'contactPerson': contactPerson,
+      'contactPersonJob': contactPersonJob,
       'contactPersonPhone': contactPersonPhone,
       'contactPersonMail': contactPersonMail,
       'sector': selectedSector,
@@ -106,7 +113,8 @@ class STKFormModel {
       'neighborhood': neighborhood,
       "sicilNo": sicilNo,
       "vergiNo": vergiNo,
-      "iban": iban
+      "iban": iban,
+      "federations": federations,
     };
   }
 
@@ -141,6 +149,10 @@ class STKFormModel {
       <tr>
         <td>İletişim Kişisi</td>
         <td>$contactPerson</td>
+      </tr>
+      <tr>
+        <td>İletişim Kişisi Meslek</td>
+        <td>$contactPersonJob</td>
       </tr>
       <tr>
         <td>İletişim Kişisi Telefon</td>
@@ -187,7 +199,6 @@ class STKFormModel {
         <td>$bannerImage</td>
       </tr>
       <tr>
-        <td>Vergi</td>
         <td><img src="$tuzukPDF" /></td>
       </tr>
       <tr>
@@ -197,6 +208,10 @@ class STKFormModel {
       <tr>
         <td>Tür</td>
         <td>$type</td>
+      </tr>
+      <tr>
+        <td>Bağlı bulunduğu Federasyonlar</td>
+        <td>$federations</td>
       </tr>
     </table>
     """;
