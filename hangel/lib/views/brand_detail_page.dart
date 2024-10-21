@@ -6,6 +6,7 @@ import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/url_launcher_helper.dart';
+import 'package:hangel/models/brand_info_model.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
@@ -15,7 +16,6 @@ import '../widgets/app_bar_widget.dart';
 import '../widgets/app_name_widget.dart';
 import '../widgets/general_button_widget.dart';
 import '../widgets/gradient_widget.dart';
-import '../widgets/toast_widgets.dart';
 import 'utilities.dart';
 
 class BrandDetailPage extends StatefulWidget {
@@ -28,17 +28,36 @@ class BrandDetailPage extends StatefulWidget {
 class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProviderStateMixin {
   TabController? _tabController;
   bool linkButtonLoading = false;
+  BrandInfoModel? brandInfo;
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
     _tabController!.addListener(() {
       setState(() {});
     });
+    Future.delayed(Duration(milliseconds: 100), () async {
+      await context.read<BrandProvider>().getBrandInfo(widget.brandModel.id ?? "").then(
+        (value) {
+          if (!mounted) return;
+          setState(() {
+            brandInfo = value;
+          });
+          print("${brandInfo?.brandId.toString()} yüklendi");
+        },
+      );
+    });
     super.initState();
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _tabController!.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    bool favoriteButtonLoading = context.watch<BrandProvider>().favoriteButtonLoading;
     return Scaffold(
       backgroundColor: AppTheme.white,
       body: Column(
@@ -139,15 +158,19 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                               width: deviceWidthSize(context, 10),
                             ),
                             GestureDetector(
-                              onTap: () {
+                              onTap: () async {
+                                if (favoriteButtonLoading) return;
+                                if (brandInfo == null || brandInfo?.brandId == null) return;
                                 context
                                     .read<BrandProvider>()
                                     .addRemoveFavoriteBrand(widget.brandModel.id!)
                                     .then((value) {
                                   setState(() {});
-                                  if (value.success == true) {
-                                    ToastWidgets.successToast(context, "İşlem Başarılı!");
-                                  }
+                                });
+                                await context.read<BrandProvider>().setFavoriteBrand(brandInfo!.brandId!).then((value) {
+                                  setState(() {
+                                    brandInfo = value;
+                                  });
                                 });
                               },
                               child: Container(
@@ -155,24 +178,26 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                   horizontal: deviceWidthSize(context, 10),
                                   vertical: deviceHeightSize(context, 5),
                                 ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      HiveHelpers.getUserFromHive().favoriteBrands.contains(widget.brandModel.id)
-                                          ? Icons.favorite_rounded
-                                          : Icons.favorite_border_rounded,
-                                      color: AppTheme.primaryColor,
-                                      size: deviceFontSize(context, 24),
-                                    ),
-                                    // Text(
-                                    //   widget.brandModel.favoriteCount.toString(),
-                                    //   style: AppTheme.normalTextStyle(
-                                    //     context,
-                                    //     14,
-                                    //   ),
-                                    // ),
-                                  ],
-                                ),
+                                child: favoriteButtonLoading
+                                    ? const CircularProgressIndicator()
+                                    : Column(
+                                        children: [
+                                          Icon(
+                                            brandInfo?.favoriteIds?.contains(HiveHelpers.getUid()) == true
+                                                ? Icons.favorite_rounded
+                                                : Icons.favorite_border_rounded,
+                                            color: AppTheme.primaryColor,
+                                            size: deviceFontSize(context, 24),
+                                          ),
+                                          // Text(
+                                          //   widget.brandModel.favoriteCount.toString(),
+                                          //   style: AppTheme.normalTextStyle(
+                                          //     context,
+                                          //     14,
+                                          //   ),
+                                          // ),
+                                        ],
+                                      ),
                               ),
                             ),
                           ],
@@ -627,15 +652,15 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
     List<Map<String, dynamic>> statics = [
       {
         "title": "Toplam Bağış",
-        "value": widget.brandModel.totalDonation ?? "0",
+        "value": "${brandInfo?.totalDonation?.toStringAsFixed(1) ?? "0"} ₺",
       },
       {
         "title": "Favori",
-        "value": widget.brandModel.favoriteCount,
+        "value": "${brandInfo?.favoriteIds?.length ?? "0"}",
       },
       {
         "title": "İşlem Sayısı",
-        "value": widget.brandModel.processCount ?? "0",
+        "value": "${brandInfo?.processCount?.toStringAsFixed(0) ?? "0"}",
       },
     ];
     List<Map<String, dynamic>> categories = [

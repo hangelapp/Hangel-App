@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/general_response_model.dart';
@@ -12,6 +11,7 @@ import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/home_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/views/vounteer_form.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +35,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _maskFormatter = MaskTextInputFormatter(
       mask: '(###) ### ## ##', filter: {"#": RegExp(r'[0-9]')}, type: MaskAutoCompletionType.lazy);
+  PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'TR');
+  bool _isValidNumber = false;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -50,6 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      _phoneController.addListener(_formatPhoneNumber);
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (resendSecond > 0) {
           setState(() {
@@ -130,54 +133,83 @@ class _RegisterPageState extends State<RegisterPage> {
               title: "Ad Soyad",
               ontap: () {},
             ),
-          FormFieldWidget(
-            context,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly,
-              _maskFormatter,
+          // Uluslararası telefon numarası girişi
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Telefon Numarası",
+                style: AppTheme.semiBoldTextStyle(context, 16),
+              ),
+              SizedBox(height: deviceHeightSize(context, 5)),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: deviceWidthSize(context, 10),
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.darkBlue.withOpacity(0.2),
+                      blurRadius: 22,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: InternationalPhoneNumberInput(
+                  onInputChanged: (PhoneNumber number) {
+                    _phoneNumber = number;
+                  },
+                  onInputValidated: (bool value) {
+                    _isValidNumber = value;
+                  },
+                  selectorConfig: SelectorConfig(
+                    selectorType: PhoneInputSelectorType.DROPDOWN,
+                    showFlags: false,
+                    trailingSpace: false,
+                    setSelectorButtonAsPrefixIcon: true,
+                    useBottomSheetSafeArea: true,
+                  ),
+                  ignoreBlank: false,
+                  autoValidateMode: AutovalidateMode.disabled,
+                  selectorTextStyle: AppTheme.lightTextStyle(context, 16),
+                  initialValue: _phoneNumber,
+                  spaceBetweenSelectorAndTextField: 12,
+                  textFieldController: _phoneController,
+                  formatInput: false, // Formatlamayı manuel yapıyoruz
+                  inputDecoration: InputDecoration(
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: 'Telefon numaranızı girin',
+                    hintStyle: AppTheme.lightTextStyle(context, 14, color: Colors.grey),
+                  ),
+                ),
+              ),
             ],
-            keyboardType: TextInputType.phone,
-            controller: _phoneController,
-            leading: Row(
-              children: [
-                SizedBox(
-                  width: deviceWidthSize(context, 5),
-                ),
-                Text(
-                  "+90",
-                  style: AppTheme.lightTextStyle(context, 16),
-                ),
-                SizedBox(
-                  width: deviceWidthSize(context, 10),
-                ),
-                Container(
-                  width: deviceWidthSize(context, 1),
-                  height: deviceHeightSize(context, 20),
-                  color: Colors.grey,
-                ),
-              ],
-            ),
-            ontap: () {},
-            title: "Telefon Numarası",
           ),
           SizedBox(
             height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
           ),
-
-          //GİRİŞ YAP VEYA KAYDOL BUTONU
+          // GİRİŞ YAP VEYA KAYDOL BUTONU
           GeneralButtonWidget(
             onPressed: () async {
               try {
-// Null check
+                print(_phoneNumber.phoneNumber);
+                // Boşluk kontrolü
                 if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
-                    _phoneController.text.isEmpty) {
-                  ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurunuz!");
+                    _phoneController.text.isEmpty ||
+                    !_isValidNumber ||
+                    _phoneNumber.phoneNumber == null) {
+                  ToastWidgets.errorToast(context, "Lütfen tüm alanları doğru doldurunuz!");
                   return;
                 }
 
-                //Telefon numarası formatlama
-                context.read<LoginRegisterPageProvider>().phoneNumber =
-                    "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
+                // Telefon numarası formatlama
+                String formattedPhoneNumber = _phoneNumber.phoneNumber!;
+                context.read<LoginRegisterPageProvider>().phoneNumber = '$formattedPhoneNumber';
 
                 // Login olurken telefon numarası kontrolü
                 if (_phoneLoginPageType == PhoneLoginPageType.login) {
@@ -192,14 +224,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   }
                 }
 
-                // Onbarding'de cevaplanmamış soru varsa tekrar onboarding ekranına at
-                // if (_phoneLoginPageType == PhoneLoginPageType.register &&
-                //     (context.read<LoginRegisterPageProvider>().selectedOptions.any((element) => element == -1) ==
-                //         true)) {
-                //   Navigator.pushReplacementNamed(context, OnboardingPage.routeName);
-                //   return;
-                // }
-
                 // Süreyi ayarla
                 setState(() {
                   resendSecond = 120;
@@ -207,8 +231,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 // Provider verilerini güncelle
                 context.read<LoginRegisterPageProvider>().name = _nameController.text;
-                context.read<LoginRegisterPageProvider>().phoneNumber =
-                    "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
 
                 // KOD GÖNDERME AŞAMASI
                 GeneralResponseModel response;
@@ -220,11 +242,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
                 // Gönderilmediyse hata döndür ve kayıt ol sayfasına yönlendir.
                 if (response.success == true) {
-                  print("Sms code sended");
+                  print("Sms kodu gönderildi");
                 } else {
                   ToastWidgets.errorToast(context,
                       "Girilen telefon numarası sistemde zaten kayıtlı ya da girdiğiniz verilerde hata olabilir!");
-                  print("BURAYA GELDİ");
                   context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
                   Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
                 }
@@ -247,19 +268,44 @@ class _RegisterPageState extends State<RegisterPage> {
               }
             },
             child: RichText(
-                text: TextSpan(
-              text: _phoneLoginPageType == PhoneLoginPageType.login ? "Hesabınız yok mu? " : "Hesabınız var mı? ",
-              style: AppTheme.lightTextStyle(context, 16),
-              children: [
-                TextSpan(
-                  text: _phoneLoginPageType == PhoneLoginPageType.login ? "Kayıt Ol" : "Giriş Yap",
-                  style: AppTheme.boldTextStyle(context, 16, color: AppTheme.primaryColor),
-                ),
-              ],
-            )),
+              text: TextSpan(
+                text: _phoneLoginPageType == PhoneLoginPageType.login ? "Hesabınız yok mu? " : "Hesabınız var mı? ",
+                style: AppTheme.lightTextStyle(context, 16),
+                children: [
+                  TextSpan(
+                    text: _phoneLoginPageType == PhoneLoginPageType.login ? "Kayıt Ol" : "Giriş Yap",
+                    style: AppTheme.boldTextStyle(context, 16, color: AppTheme.primaryColor),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  void _formatPhoneNumber() {
+    String text = _phoneController.text;
+    // Sadece rakamları al
+    text = text.replaceAll(RegExp(r'[^\d]'), '');
+    // Maskeyi uygula
+    if (text.length > 0) {
+      text = '($text';
+    }
+    if (text.length > 4) {
+      text = text.substring(0, 4) + ') ' + text.substring(4);
+    }
+    if (text.length > 9) {
+      text = text.substring(0, 9) + ' ' + text.substring(9);
+    }
+    if (text.length > 12) {
+      text = text.substring(0, 12) + ' ' + text.substring(12);
+    }
+    // Metni güncelle
+    _phoneController.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 
@@ -310,7 +356,6 @@ class _RegisterPageState extends State<RegisterPage> {
               errorPinTheme: PinTheme(
                 decoration: BoxDecoration(
                   color: AppTheme.white,
-                  // border: Border.all(color: AppTheme.red),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 width: deviceWidthSize(context, 50),
@@ -366,8 +411,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 if (_verifyController.text.length != 6) {
                   ToastWidgets.errorToast(context, "Lütfen kodu doğru giriniz!");
                 } else {
-                  String phoneNum =
-                      "+90${_phoneController.text.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "")}";
+                  String phoneNum = _phoneNumber.phoneNumber!;
                   context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
                   if (kIsWeb) {
                     await context

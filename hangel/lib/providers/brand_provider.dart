@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/controllers/brand_controller.dart';
 import 'package:hangel/extension/string_extension.dart';
@@ -6,6 +8,7 @@ import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/locator.dart';
 
 import 'package:hangel/models/brand_form_model.dart';
+import 'package:hangel/models/brand_info_model.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/models/image_model.dart';
@@ -19,6 +22,13 @@ class BrandProvider with ChangeNotifier {
 
   int page = 1;
   int limit = 10;
+
+  bool _favoriteButtonLoading = false;
+  bool get favoriteButtonLoading => _favoriteButtonLoading;
+  set favoriteButtonLoading(bool value) {
+    _favoriteButtonLoading = value;
+    notifyListeners();
+  }
 
   Set<BrandModel> _favoriteBrandList = {};
   Set<BrandModel> get favoriteBrandList => _favoriteBrandList;
@@ -93,6 +103,49 @@ class BrandProvider with ChangeNotifier {
   }
 
   List<String> redIds = ["1209", "59291", "60179"];
+
+  Future<BrandInfoModel?> getBrandInfo(String id) async {
+    try {
+      var firebase = FirebaseFirestore.instance;
+      favoriteButtonLoading = true;
+      return await firebase.collection("brandInfo").doc(id).get().then((value) {
+        favoriteButtonLoading = false;
+        return BrandInfoModel.fromJson(value.data() ?? {"brandId": id} as Map<String, dynamic>);
+      });
+    } catch (e) {
+      print(e);
+      favoriteButtonLoading = false;
+      return BrandInfoModel.blank();
+    }
+  }
+
+  Future<BrandInfoModel?> setFavoriteBrand(String id) async {
+    try {
+      final uid = HiveHelpers.getUid();
+      favoriteButtonLoading = true;
+      BrandInfoModel? info = await getBrandInfo(id);
+      if (info?.brandId == null) {
+        favoriteButtonLoading = false;
+        return null;
+      }
+      if (!(info?.favoriteIds!.contains(uid) == true)) {
+        info?.favoriteIds!.add(uid);
+      } else {
+        info?.favoriteIds!.removeWhere((element) => element == uid);
+      }
+      await FirebaseFirestore.instance
+          .collection("brandInfo")
+          .doc(id)
+          .set(info?.toJson() ?? BrandInfoModel.blank().toJson());
+      favoriteButtonLoading = false;
+      return info;
+    } catch (e) {
+      print(e);
+      favoriteButtonLoading = false;
+    }
+    favoriteButtonLoading = false;
+    return null;
+  }
 
   Future<GeneralResponseModel> getOffers() async {
     try {

@@ -78,45 +78,15 @@ class AppTheme {
         hintText: hintText,
         fillColor: lightBlue.withOpacity(0.2),
         filled: true,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          // borderSide: BorderSide(
-          //   color: darkBlue.withOpacity(0.3),
-          // ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          // borderSide: const BorderSide(
-          //   color: lightBlue,
-          // ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          // borderSide: BorderSide(
-          //   color: darkBlue.withOpacity(0.3),
-          // ),
-        ),
+        border: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        enabledBorder: InputBorder.none
       );
 
   static InputDecoration noneBorderInputDecoration({String? hintText}) => InputDecoration(
         hintText: hintText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          // borderSide: const BorderSide(
-          //   color: Colors.transparent,
-          // ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          // borderSide: const BorderSide(
-          //   color: Colors.transparent,
-          // ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          // borderSide: const BorderSide(
-          //   color: Colors.transparent,
-          // ),
-        ),
+        border: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        enabledBorder: InputBorder.none,
       );
 }

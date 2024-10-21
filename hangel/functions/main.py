@@ -74,7 +74,9 @@ def handle_postback(request: Request):
                 'shoppingDate': datetime.now()
             }
             donation_ref.set(donation_data)
-
+            
+            # Marka bağış güncellemesi
+            update_brand_donation(brand_id, donation_amount)
             # STK güncelleme işlemi
             update_stk_donation(stk_ids[0], donation_amount / 2, user_id)
             update_stk_donation(stk_ids[1], donation_amount / 2, user_id)
@@ -118,3 +120,37 @@ def update_stk_donation(stk_id, half_donation_amount, user_id):
             stk_ref.update({
                 'totalDonor': total_donor + 1
             })
+
+
+def update_brand_donation(brand_id, donation_amount):
+    # 'brandInfo' koleksiyonunda brandId alanı ile eşleşen belgeyi bulalım
+    brand_ref_stream = db.collection('brandInfo').where(
+        'brandId', '==', brand_id).limit(1).stream()
+
+    brand_found = False
+    for brand in brand_ref_stream:
+        brand_found = True
+        brand_doc = brand.to_dict()
+
+        # Marka belgesinin referansını alalım
+        brand_ref = db.collection('brandInfo').document(brand.id)
+
+        # Toplam bağışı ve işlem sayısını arttır
+        total_donation = brand_doc.get('totalDonation', 0)
+        process_count = brand_doc.get('processCount', 0)
+        brand_ref.update({
+            'totalDonation': total_donation + donation_amount,
+            'processCount': process_count + 1
+        })
+
+    if not brand_found:
+        # Marka bulunamadıysa yeni bir belge oluştur
+        brand_ref = db.collection('brandInfo').document()
+        brand_data = {
+            'brandId': brand_id,
+            'brandName': get_brand_name(brand_id),  # Marka adını alıyoruz
+            'totalDonation': donation_amount,
+            'processCount': 1,
+            'favoriteIds': [],
+        }
+        brand_ref.set(brand_data)
