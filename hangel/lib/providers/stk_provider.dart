@@ -11,6 +11,8 @@ import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 
+import '../helpers/send_mail_helper.dart';
+
 class STKProvider with ChangeNotifier {
   final _stkController = locator<STKController>();
 
@@ -277,6 +279,34 @@ class STKProvider with ChangeNotifier {
       logoImage: logoImage,
       tuzukPDF: tuzukPDF,
       faaliyetImage: faaliyetImage,
+    );
+    await SendMailHelper.sendMail(
+      to: [stkFormModel.contactPersonMail!, stkFormModel.mail!],
+      subject: "STK Başvurusu",
+      body: "STK Başvurusu",
+      html: '''
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap');
+      .logo {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        color: orange;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="text-align: center;">
+      <div class="logo">hangel</div>
+      <h2>Başvurunuzu aldık, en kısa sürede sizinle iletişime geçeceğiz.</h2>
+    </div>
+  </body>
+</html>
+  ''',
     );
     _sendFormState = LoadingState.loaded;
     notifyListeners();

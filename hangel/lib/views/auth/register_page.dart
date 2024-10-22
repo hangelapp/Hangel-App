@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart'; // Import for TapGestureRecognizer
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -16,6 +17,7 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_theme.dart';
+import '../../constants/constants.dart';
 import '../../constants/size.dart';
 import '../../providers/login_register_page_provider.dart';
 import '../../widgets/app_bar_widget.dart';
@@ -48,6 +50,9 @@ class _RegisterPageState extends State<RegisterPage> {
   int resendSecond = 120;
 
   Timer? _timer;
+
+  bool _isUserAgreementAccepted = false; // User Agreement acceptance
+  bool _isPrivacyAgreementAccepted = false; // Privacy Agreement acceptance
 
   @override
   void initState() {
@@ -94,7 +99,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     _phoneLoginPageType == PhoneLoginPageType.verify
                         ? "assets/images/verification.svg"
                         : "assets/images/register.svg",
-                    height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.login ? 360 : 280),
+                    height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.login ? 200 : 150),
                   ),
                   SizedBox(
                     height: deviceHeightSize(context, 20),
@@ -193,6 +198,62 @@ class _RegisterPageState extends State<RegisterPage> {
           SizedBox(
             height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
           ),
+          // Agreements
+          if (_phoneLoginPageType == PhoneLoginPageType.register) ...[
+            CheckboxListTile(
+              value: _isUserAgreementAccepted,
+              onChanged: (bool? value) {
+                setState(() {
+                  _isUserAgreementAccepted = value ?? false;
+                });
+              },
+              title: RichText(
+                text: TextSpan(
+                  text: 'Kullanıcı Sözleşmesi\'ni ',
+                  style: AppTheme.lightTextStyle(context, 14),
+                  children: [
+                    TextSpan(
+                      text: 'okudum ve kabul ediyorum.',
+                      style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          _showAgreementDialog('Kullanıcı Sözleşmesi', AppConstants.USER_AGREEMENT);
+                        },
+                    ),
+                  ],
+                ),
+              ),
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+            CheckboxListTile(
+              value: _isPrivacyAgreementAccepted,
+              onChanged: (bool? value) {
+                setState(() {
+                  _isPrivacyAgreementAccepted = value ?? false;
+                });
+              },
+              title: RichText(
+                text: TextSpan(
+                  text: 'Gizlilik Sözleşmesi\'ni ',
+                  style: AppTheme.lightTextStyle(context, 14),
+                  children: [
+                    TextSpan(
+                      text: 'okudum ve kabul ediyorum.',
+                      style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          _showAgreementDialog('Gizlilik Sözleşmesi', AppConstants.SECRET_AGREEMENT);
+                        },
+                    ),
+                  ],
+                ),
+              ),
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+            SizedBox(
+              height: deviceHeightSize(context, 20),
+            ),
+          ],
           // GİRİŞ YAP VEYA KAYDOL BUTONU
           GeneralButtonWidget(
             onPressed: () async {
@@ -205,6 +266,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     _phoneNumber.phoneNumber == null) {
                   ToastWidgets.errorToast(context, "Lütfen tüm alanları doğru doldurunuz!");
                   return;
+                }
+
+                // Agreement checks
+                if (_phoneLoginPageType == PhoneLoginPageType.register) {
+                  if (!_isUserAgreementAccepted || !_isPrivacyAgreementAccepted) {
+                    ToastWidgets.errorToast(context, "Lütfen sözleşmeleri onaylayın!");
+                    return;
+                  }
                 }
 
                 // Telefon numarası formatlama
@@ -486,6 +555,28 @@ class _RegisterPageState extends State<RegisterPage> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showAgreementDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: Text(content),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Kapat'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,13 +1,14 @@
+// lib/providers/volunteer_provider.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hangel/models/stk_model.dart';
-
+import 'package:hangel/models/volunteer_model.dart'; // Güncellenmiş model
 import '../helpers/locator.dart';
 import '../helpers/send_mail_helper.dart';
 import '../models/general_response_model.dart';
 import '../models/image_model.dart';
-import '../models/volunteer_model.dart';
 import '../services/firestore_services.dart';
 import '../services/storage_service.dart';
 import 'login_register_page_provider.dart';
@@ -19,10 +20,10 @@ class VolunteerProvider with ChangeNotifier {
   List<StkModel> stkVolunteers = [];
   List<StkModel> tempStks = [
     StkModel(
-      categories: List.generate(3, (index) => "Deneme",)
+      categories: List.generate(3, (index) => "Deneme"),
     ),
     StkModel(
-      categories: List.generate(3, (index) => "Deneme",)
+      categories: List.generate(3, (index) => "Deneme"),
     ),
   ];
 
@@ -50,66 +51,35 @@ class VolunteerProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<GeneralResponseModel> sendForm(
-      {required VolunteerModel volunteerModel,
-      required ImageModel image,
-      required PlatformFile? cv,
-      required Uint8List imageByte,
-      required Uint8List cvByte}) async {
+  Future<GeneralResponseModel> sendForm({
+    required VolunteerModel volunteerModel,
+    ImageModel? image, // Opsiyonel
+    PlatformFile? cv, // Opsiyonel
+    Uint8List? imageByte, // Opsiyonel
+    Uint8List? cvByte, // Opsiyonel
+  }) async {
     _sendFormState = LoadingState.loading;
     notifyListeners();
     try {
       // Add form data to Firestore and get formId
       final formId = await _firestoreService.addData(_volunteerFormPath, volunteerModel.toJson());
 
-      String? imageUrl;
-      String? cvUrl;
-
-      imageUrl = await _storageService.uploadImagebyByte(
-        "$_volunteerFormPath/$formId",
-        imageByte, // ImageModel for web might need adjustment
-      );
-
-      cvUrl = await _storageService.uploadImagebyByte(
-        "$_volunteerFormPath/$formId",
-        cvByte,
-      );
-
-      // final cvFile = io.File(cv!.path!);
-      // final cvBytes = await cvFile.readAsBytes();
-      // cvUrl = await _storageService.uploadImagebyByte("$_volunteerFormPath/$formId", cvBytes);
-      // Handle file uploads for mobile platforms
-      // imageUrl = await _storageService.uploadImage(
-      //   "$_volunteerFormPath/$formId",
-      //   io.File(image.file!.path),
-      // );
-
-      // Update the volunteer model with URLs
-      volunteerModel.image = imageUrl;
-      volunteerModel.cv = cvUrl;
-
       // Send email with HTML table
       SendMailHelper.sendMail(
-        to: ["hangelturkiye@gmail.com"],
-        // to: ["cakirg685@gmail.com"],
+        to: ["turkiye@hangel.org"],
         subject: "Gönüllülük Başvurusu",
         body: "Gönüllülük Başvurusu",
         html: volunteerModel.toHtmlTable(),
       );
 
-
       await _firestoreService.addData("forms", {
         "subject": "Gönüllülük Başvurusu",
-        "status": "active",
+        "status": "waiting",
         "form": volunteerModel.toJson(),
       });
-      // Update Firestore with URLs
-      return await _firestoreService.updateData(
-        "$_volunteerFormPath/$formId",
-        {
-          "image": imageUrl,
-          "cv": cvUrl,
-        },
+      return GeneralResponseModel(
+        success: true,
+        message: "Gönüllülük başvurusu gönderildi.",
       );
     } catch (e) {
       print("HATA " + e.toString());

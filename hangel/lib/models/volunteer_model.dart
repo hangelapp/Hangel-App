@@ -1,102 +1,125 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// lib/models/volunteer_model.dart
+
 class VolunteerModel {
-  // Gönüllü olarak görev almak istediğiniz alanlar
-  String? volunteerAreas;
 
-  // Statü (Fiziki, Online, Her ikisi)
-  String? status;
-
-  // Yetkin olduğunuz alanlar (çoktan seçmeli)
-  String? expertiseAreas;
-
-  // Müsait olduğunuz gün saat aralığı
-  String? availableTimeSlots;
-
-  // Mezuniyet durumu (İlkokul, Lise, Üniversite, Yüksek lisans, Doktora)
-  String? educationLevel;
-
-  // Toplam çalışma hayatı (1-50 arası rakam)
-  int? totalYearsOfWork;
-
-  // Fotoğrafı
-  String? image;
-
-  // Özgeçmişi
-  String? cv;
-
-  // Adres bilgileri
-  String? city;
-  String? district;
-  String? neighborhood;
-  String? address;
+  // Yeni eklenen alanlar
+  String title;
+  String description;
+  DateTime startDate;
+  DateTime endDate;
+  String shape; // Online, Offline, Hibrit
+  String period; // Günlük, Haftalık, Aylık, Parttime, Cumartesi, Pazar, Hafta Sonu, Esnek
+  int totalWorkHours; // 1-225
+  int totalDays; // 1-365
+  int requiredPersons;
+  String ageLimit; // 16 ve üzeri, 18 ve üzeri, 21 ve üzeri
+  bool transportationCost;
+  bool accommodation;
+  bool meal;
 
   VolunteerModel({
-    this.volunteerAreas,
-    this.status,
-    this.expertiseAreas,
-    this.availableTimeSlots,
-    this.educationLevel,
-    this.totalYearsOfWork,
-    this.image,
-    this.cv,
-    this.city,
-    this.district,
-    this.neighborhood,
-    this.address,
+    // Yeni alanlar
+    required this.title,
+    required this.description,
+    required this.startDate,
+    required this.endDate,
+    required this.shape,
+    required this.period,
+    required this.totalWorkHours,
+    required this.totalDays,
+    required this.requiredPersons,
+    required this.ageLimit,
+    required this.transportationCost,
+    required this.accommodation,
+    required this.meal,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'volunteerAreas': volunteerAreas,
-      'status': status,
-      'expertiseAreas': expertiseAreas,
-      'availableTimeSlots': availableTimeSlots,
-      'educationLevel': educationLevel,
-      'totalYearsOfWork': totalYearsOfWork,
-      'image': image,
-      'cv': cv,
-      'city': city,
-      'district': district,
-      'neighborhood': neighborhood,
-      'address': address,
-    };
+  Map<String, dynamic> toJson() => {
+        // Yeni alanlar
+        "title": title,
+        "description": description,
+        "startDate": startDate.toIso8601String(),
+        "endDate": endDate.toIso8601String(),
+        "shape": shape,
+        "period": period,
+        "totalWorkHours": totalWorkHours,
+        "totalDays": totalDays,
+        "requiredPersons": requiredPersons,
+        "ageLimit": ageLimit,
+        "transportationCost": transportationCost,
+        "accommodation": accommodation,
+        "meal": meal,
+      };
+
+  String toHtmlTable() {
+    return '''
+      <h2>$title</h2>
+      <p>$description</p>
+      <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+          <th>Başlama Süresi</th>
+          <td>${startDate.day}/${startDate.month}/${startDate.year}</td>
+        </tr>
+        <tr>
+          <th>Bitiş Süresi</th>
+          <td>${endDate.day}/${endDate.month}/${endDate.year}</td>
+        </tr>
+        <tr>
+          <th>Şekli</th>
+          <td>$shape</td>
+        </tr>
+        <tr>
+          <th>Periyodu</th>
+          <td>$period</td>
+        </tr>
+        <tr>
+          <th>Toplam Çalışma Saati</th>
+          <td>$totalWorkHours</td>
+        </tr>
+        <tr>
+          <th>Toplam Gün</th>
+          <td>$totalDays</td>
+        </tr>
+        <tr>
+          <th>Kaç Kişi İhtiyaç</th>
+          <td>$requiredPersons</td>
+        </tr>
+        <tr>
+          <th>Yaş Sınırı</th>
+          <td>$ageLimit</td>
+        </tr>
+        <tr>
+          <th>Yol Masrafı</th>
+          <td>${transportationCost ? "Var" : "Yok"}</td>
+        </tr>
+        <tr>
+          <th>Konaklama</th>
+          <td>${accommodation ? "Var" : "Yok"}</td>
+        </tr>
+        <tr>
+          <th>Yemek</th>
+          <td>${meal ? "Var" : "Yok"}</td>
+        </tr>
+      </table>
+    ''';
   }
 
   factory VolunteerModel.fromJson(Map<String, dynamic> json) {
     return VolunteerModel(
-      volunteerAreas: json['volunteerAreas'] as String?,
-      status: json['status'] as String?,
-      expertiseAreas: json['expertiseAreas'] as String?,
-      availableTimeSlots: json['availableTimeSlots'] as String?,
-      educationLevel: json['educationLevel'] as String?,
-      totalYearsOfWork: json['totalYearsOfWork'] as int?,
-      image: json['image'] as String?,
-      cv: json['cv'] as String?,
-      city: json['city'] as String?,
-      district: json['district'] as String?,
-      neighborhood: json['neighborhood'] as String?,
-      address: json['address'] as String?,
+      // Yeni alanlar
+      title: json['title'],
+      description: json['description'],
+      startDate: DateTime.parse(json['startDate']),
+      endDate: DateTime.parse(json['endDate']),
+      shape: json['shape'],
+      period: json['period'],
+      totalWorkHours: json['totalWorkHours'],
+      totalDays: json['totalDays'],
+      requiredPersons: json['requiredPersons'],
+      ageLimit: json['ageLimit'],
+      transportationCost: json['transportationCost'],
+      accommodation: json['accommodation'],
+      meal: json['meal'],
     );
-  }
-
-  // Convert the model to an HTML table
-  String toHtmlTable() {
-    return '''
-      <table border="1" cellpadding="5" cellspacing="0">
-        <tr><th>Field</th><th>Value</th></tr>
-        <tr><td>Volunteer Areas</td><td>${volunteerAreas ?? 'N/A'}</td></tr>
-        <tr><td>Status</td><td>${status ?? 'N/A'}</td></tr>
-        <tr><td>Expertise Areas</td><td>${expertiseAreas ?? 'N/A'}</td></tr>
-        <tr><td>Available Time Slots</td><td>${availableTimeSlots ?? 'N/A'}</td></tr>
-        <tr><td>Education Level</td><td>${educationLevel ?? 'N/A'}</td></tr>
-        <tr><td>Total Years of Work</td><td>${totalYearsOfWork?.toString() ?? 'N/A'}</td></tr>
-        <tr><td>Image</td><td>${image ?? 'N/A'}</td></tr>
-        <tr><td>CV</td><td>${cv ?? 'N/A'}</td></tr>
-        <tr><td>City</td><td>${city ?? 'N/A'}</td></tr>
-        <tr><td>District</td><td>${district ?? 'N/A'}</td></tr>
-        <tr><td>Neighborhood</td><td>${neighborhood ?? 'N/A'}</td></tr>
-        <tr><td>Address</td><td>${address ?? 'N/A'}</td></tr>
-      </table>
-    ''';
   }
 }

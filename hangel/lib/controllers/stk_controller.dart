@@ -122,7 +122,7 @@ class STKController {
       stkFormModel.tuzukPDF = tuzukPDFUrl;
       stkFormModel.faaliyetImage = faaliyetImageUrl;
       await SendMailHelper.sendMail(
-        to: ["hangelturkiye@gmail.com"],
+        to: ["turkiye@hangel.org"],
         subject: "STK Başvurusu",
         body: "STK Başvurusu",
         html: stkFormModel.toHTMLTable(),

@@ -1,25 +1,19 @@
-import 'dart:convert';
+// lib/views/volunteer_form.dart
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:hangel/constants/size.dart';
-import 'package:hangel/models/image_model.dart';
-import 'package:hangel/models/volunteer_model.dart';
-import 'package:hangel/providers/volunteer_provider.dart';
-import 'package:hangel/views/app_view.dart';
-import 'package:hangel/widgets/dropdown_widget.dart';
-import 'package:hangel/widgets/form_field_widget.dart';
-import 'package:hangel/widgets/general_button_widget.dart';
-import 'package:hangel/widgets/pick_file_widget.dart';
-import 'package:hangel/widgets/pick_image_widget.dart';
-import 'package:hangel/widgets/toast_widgets.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-
-import '../helpers/send_mail_helper.dart';
+import '../constants/size.dart';
+import '../models/general_response_model.dart';
+import '../models/volunteer_model.dart'; // Güncellenmiş model
 import '../providers/login_register_page_provider.dart';
+import '../providers/volunteer_provider.dart';
+import '../widgets/dropdown_widget.dart';
+import '../widgets/form_field_widget.dart';
+import '../widgets/general_button_widget.dart';
+import '../widgets/toast_widgets.dart';
+import 'app_view.dart';
 
 class VolunteerForm extends StatefulWidget {
   const VolunteerForm({Key? key}) : super(key: key);
@@ -30,45 +24,28 @@ class VolunteerForm extends StatefulWidget {
 }
 
 class _VolunteerFormState extends State<VolunteerForm> {
-  final TextEditingController expertiseAreasController = TextEditingController();
-  final TextEditingController totalYearsOfWorkController = TextEditingController();
-  final TextEditingController stkAddressController = TextEditingController();
+  final TextEditingController baslikController = TextEditingController();
+  final TextEditingController aciklamaController = TextEditingController();
+  final TextEditingController toplamCalismaSaatiController = TextEditingController();
+  final TextEditingController toplamGunController = TextEditingController();
+  final TextEditingController kacKisiIhtiyacController = TextEditingController();
 
-  List<ImageModel?> volunteerImage = [];
-  PlatformFile? resumePDF;
-  Uint8List? cvByte;
-  Uint8List? imageByte;
+  DateTime? baslamaSuresi;
+  DateTime? bitisSuresi;
 
-  List<String> cities = [];
-  List<String> districts = [];
-  List<String> neighborhoods = [];
-  int selectedAlanIndex = -1;
-  int selectedStatuIndex = -1;
-  int selectedmusaitVakitIndex = -1;
-  int selectedMezunIndex = -1;
+  int selectedSekliIndex = -1;
+  int selectedPeriyoduIndex = -1;
+  int selectedYasSiniriIndex = -1;
+  int selectedYolMasrafiIndex = -1;
+  int selectedKonaklamaIndex = -1;
+  int selectedYemekIndex = -1;
 
-  List<String> iller = [];
-  List<String> ilceler = [];
-  List<String> mahalleler = [];
-  String? selectedIl;
-  String? selectedIlce;
-  String? selectedMahalle;
-  String jsonData = "";
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      //get iller from json file /assets/il-ilce.json
-      jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
-      setState(() {
-        final jsonResult = jsonDecode(jsonData);
-        for (var item in jsonResult) {
-          if (iller.contains(item["İL"])) {
-            continue;
-          }
-          iller.add(item["İL"]);
-        }
-      });
+      // Gerekirse başlatma işlemleri
     });
     super.initState();
   }
@@ -76,336 +53,396 @@ class _VolunteerFormState extends State<VolunteerForm> {
   @override
   void dispose() {
     super.dispose();
-    expertiseAreasController.dispose();
-    totalYearsOfWorkController.dispose();
-    stkAddressController.dispose();
+    baslikController.dispose();
+    aciklamaController.dispose();
+    toplamCalismaSaatiController.dispose();
+    toplamGunController.dispose();
+    kacKisiIhtiyacController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              DropdownWidget(
-                context,
-                titles: _alanlar,
-                selectedIndex: selectedAlanIndex,
-                title: "Gönüllü Olarak Görev Almak İstediğiniz Alan",
-                onChanged: (p0) {
-                  if (p0 == null) return;
-                  setState(() {
-                    selectedAlanIndex = _alanlar.indexOf(p0);
-                  });
-                },
-                isRequired: true,
-              ),
-              DropdownWidget(
-                context,
-                titles: _statuler,
-                selectedIndex: selectedStatuIndex,
-                title: "Statü (Fiziki, Online, Her ikisi)",
-                onChanged: (p0) {
-                  if (p0 == null) return;
-                  setState(() {
-                    selectedStatuIndex = _statuler.indexOf(p0);
-                  });
-                },
-                isRequired: true,
-              ),
-              FormFieldWidget(
-                context,
-                controller: expertiseAreasController,
-                title: "Yetkin Olduğunuz Alanlar",
-                hintText: "Örneğin: Yazılım, Sağlık",
-                isRequired: true,
-              ),
-              DropdownWidget(
-                context,
-                titles: _musaitVakitler,
-                selectedIndex: selectedmusaitVakitIndex,
-                title: "Müsait olduğunuz Gün Saat Aralığı",
-                onChanged: (p0) {
-                  if (p0 == null) return;
-                  setState(() {
-                    selectedmusaitVakitIndex = _musaitVakitler.indexOf(p0);
-                  });
-                },
-                isRequired: true,
-              ),
-              DropdownWidget(
-                context,
-                titles: _mezuniyetler,
-                selectedIndex: selectedMezunIndex,
-                title: "Mezuniyet Durumu",
-                onChanged: (p0) {
-                  if (p0 == null) return;
-                  setState(() {
-                    selectedMezunIndex = _mezuniyetler.indexOf(p0);
-                  });
-                },
-                isRequired: true,
-              ),
-              FormFieldWidget(
-                context,
-                controller: totalYearsOfWorkController,
-                title: "Toplam Çalışma Yılı",
-                hintText: "Örneğin: 5",
-                isRequired: true,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              PickImageWidget(
-                context,
-                title: "Gönüllü Fotoğrafı",
-                onImagePicked: (List<XFile?> image) async {
-                  print("Seçilen image: ${await image.first?.readAsBytes()}");
-                  if (image.isNotEmpty && (image[0] != null)) {
-                    try {
-                      imageByte = await image.first?.readAsBytes();
-                      setState(() {
-                        print("Adding image to volunteerImage list");
-                        ImageModel imageModel = ImageModel(
-                          imageType: ImageType.asset,
-                          file: image[0],
-                        );
-                        volunteerImage = [...volunteerImage, imageModel];
-                      });
-                    } catch (e) {
-                      print("HATA: " + e.toString());
-                    }
-                  } else {
-                    print("HATA: Seçilen görsel null veya boş.");
-                  }
-                },
-                selectedImages: volunteerImage.isNotEmpty
-                    ? volunteerImage.first != null
-                        ? volunteerImage
-                        : []
-                    : [],
-                isSelectOnlyOne: true,
-                onImageRemoved: (ImageModel? image) {
-                  print("Removing image");
-                  setState(() {
-                    volunteerImage = [];
-                  });
-                },
-                infoText: "Fotoğraf, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
-              ),
-              PickFileWidget(
-                context,
-                title: "Özgeçmiş (PDF)",
-                onFilePicked: (PlatformFile file) {
-                  setState(() {
-                    resumePDF = file;
-                    cvByte = file.bytes;
-                  });
-                },
-                onFileRemoved: () {
-                  setState(() {
-                    resumePDF = null;
-                  });
-                },
-                infoText: "Dosya, Pdf,Jpg ya da Png formatında ve 6mb'dan küçük olmalıdır.",
-                selectedFile: resumePDF,
-              ),
-              DropdownWidget(
-                context,
-                titles: iller,
-                selectedIndex: iller.indexOf(selectedIl ?? ""),
-                onChanged: (value) {
-                  setState(() {
-                    selectedIl = value;
-                    selectedIlce = null;
-                    selectedMahalle = null;
-                    ilceler = [];
-                    mahalleler = [];
-                    final jsonResult = jsonDecode(jsonData);
-                    for (var item in jsonResult) {
-                      if (item["İL"] == selectedIl) {
-                        if (ilceler.contains(item["İLÇE"])) {
-                          continue;
-                        }
-                        ilceler.add(item["İLÇE"]);
+        child: SafeArea(
+            child: SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey, // Form'un key'ini atıyoruz
+        child: Column(
+          children: [
+            // Başlık
+            FormFieldWidget(
+              context,
+              controller: baslikController,
+              title: "Başlık",
+              hintText: "İlan Başlığı",
+              isRequired: true,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Başlık boş olamaz.";
+                }
+                return null;
+              },
+            ),
+            // Açıklama
+            FormFieldWidget(
+              context,
+              controller: aciklamaController,
+              title: "Açıklama",
+              hintText: "İlan Açıklaması",
+              isRequired: true,
+              maxLines: 5,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Açıklama boş olamaz.";
+                }
+                return null;
+              },
+            ),
+            // Başlama ve Bitiş Süresi
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: baslamaSuresi ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null) {
+                        setState(() {
+                          baslamaSuresi = pickedDate;
+                        });
                       }
-                    }
-                  });
-                },
-                title: "İl",
-                isRequired: true,
-              ),
-              if (selectedIl != null)
-                DropdownWidget(
-                  context,
-                  titles: ilceler,
-                  selectedIndex: ilceler.indexOf(selectedIlce ?? ""),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedIlce = value;
-                      selectedMahalle = null;
-                      mahalleler = [];
-                      final jsonResult = jsonDecode(jsonData);
-                      for (var item in jsonResult) {
-                        if (item["İLÇE"] == selectedIlce) {
-                          if (mahalleler.contains(item["MAHALLE"])) {
-                            continue;
+                    },
+                    child: AbsorbPointer(
+                      child: FormFieldWidget(
+                        context,
+                        controller: TextEditingController(
+                          text: baslamaSuresi != null
+                              ? "${baslamaSuresi!.day}/${baslamaSuresi!.month}/${baslamaSuresi!.year}"
+                              : "",
+                        ),
+                        title: "Başlama Süresi",
+                        isRequired: true,
+                        validator: (value) {
+                          if (baslamaSuresi == null) {
+                            return "Başlama süresi seçilmelidir.";
                           }
-                          mahalleler.add(item["MAHALLE"]);
-                        }
-                      }
-                    });
-                  },
-                  title: "İlçe",
-                  isRequired: true,
-                ),
-              if (selectedIlce != null)
-                DropdownWidget(
-                  context,
-                  titles: mahalleler,
-                  selectedIndex: mahalleler.indexOf(selectedMahalle ?? ""),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedMahalle = value;
-                    });
-                  },
-                  title: "Mahalle",
-                  isRequired: true,
-                ),
-              if (selectedMahalle != null)
-                FormFieldWidget(
-                  context,
-                  controller: stkAddressController,
-                  title: "Sokak ve Kapı Numarası",
-                  isRequired: true,
-                ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SizedBox(
-                    width: deviceWidth(context) * 0.4,
-                    child: GeneralButtonWidget(
-                        onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            AppView.routeName,
-                            (route) => false,
-                          );
+                          return null;
                         },
-                        text: "Atla ->"),
+                      ),
+                    ),
                   ),
-                  SizedBox(
-                    width: deviceWidth(context) * 0.4,
-                    child: GeneralButtonWidget(
-                      isLoading: context.watch<VolunteerProvider>().sendFormState == LoadingState.loading,
-                      onPressed: () async {
-                        if ((expertiseAreasController.text.isNotEmpty &&
-                            totalYearsOfWorkController.text.isNotEmpty &&
-                            stkAddressController.text.isNotEmpty &&
-                            selectedIl != null &&
-                            selectedIlce != null &&
-                            selectedMahalle != null &&
-                            selectedAlanIndex != -1 &&
-                            selectedMezunIndex != -1 &&
-                            selectedStatuIndex != -1 &&
-                            selectedmusaitVakitIndex != -1 &&
-                            volunteerImage.isNotEmpty &&
-                            resumePDF != null)) {
-                          // Save form data
-                          VolunteerModel model = VolunteerModel(
-                              volunteerAreas: _alanlar.elementAt(selectedAlanIndex),
-                              status: _statuler.elementAt(selectedStatuIndex),
-                              expertiseAreas: expertiseAreasController.text,
-                              availableTimeSlots: _musaitVakitler.elementAt(selectedmusaitVakitIndex),
-                              educationLevel: _mezuniyetler.elementAt(selectedMezunIndex),
-                              totalYearsOfWork: int.parse(totalYearsOfWorkController.text),
-                              city: selectedIl,
-                              district: selectedIlce,
-                              neighborhood: selectedMahalle,
-                              address: stkAddressController.text,
-                              image: null,
-                              cv: null);
-                          print("${volunteerImage.first ?? "LAN"}");
-                          SendMailHelper.sendMail(
-                            to: ["hangelturkiye@gmail.com"],
-                            // to: ["cakirg685@gmail.com"],
-                            subject: "Gönüllülük Başvurusu",
-                            body: "Gönüllülük Başvurusu",
-                            html: "Başvurunuz alınmıştır",
-                          );
-                          await context
-                              .read<VolunteerProvider>()
-                              .sendForm(
-                                  imageByte: imageByte!,
-                                  cvByte: cvByte ?? resumePDF?.bytes ?? Uint8List(0),
-                                  volunteerModel: model,
-                                  image: volunteerImage.first!,
-                                  cv: resumePDF)
-                              .then(
-                            (value) {
-                              if (value.success == true) {
-                                ToastWidgets.successToast(
-                                  context,
-                                  "Form başarıyla gönderildi.",
-                                );
-                              } else {
-                                ToastWidgets.errorToast(
-                                  context,
-                                  "Beklenmeyen bir hatayla karşılaşıldı",
-                                );
-                              }
-                            },
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: bitisSuresi ?? DateTime.now(),
+                        firstDate: baslamaSuresi ?? DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null) {
+                        setState(() {
+                          bitisSuresi = pickedDate;
+                        });
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: FormFieldWidget(
+                        context,
+                        controller: TextEditingController(
+                          text: bitisSuresi != null
+                              ? "${bitisSuresi!.day}/${bitisSuresi!.month}/${bitisSuresi!.year}"
+                              : "",
+                        ),
+                        title: "Bitiş Süresi",
+                        isRequired: true,
+                        validator: (value) {
+                          if (bitisSuresi == null) {
+                            return "Bitiş süresi seçilmelidir.";
+                          }
+                          if (baslamaSuresi != null && bitisSuresi!.isBefore(baslamaSuresi!)) {
+                            return "Bitiş süresi, başlama süresinden önce olamaz.";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Şekli (online, offline, hibrit )
+            DropdownWidget(
+              context,
+              titles: _sekiller,
+              selectedIndex: selectedSekliIndex,
+              title: "Şekli",
+              onChanged: (p0) {
+                if (p0 == null) return;
+                setState(() {
+                  selectedSekliIndex = _sekiller.indexOf(p0);
+                });
+              },
+              isRequired: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Şekil seçilmelidir.";
+                }
+                return null;
+              },
+            ),
+            // Periyodu
+            DropdownWidget(
+              context,
+              titles: _periyotlar,
+              selectedIndex: selectedPeriyoduIndex,
+              title: "Periyodu",
+              onChanged: (p0) {
+                if (p0 == null) return;
+                setState(() {
+                  selectedPeriyoduIndex = _periyotlar.indexOf(p0);
+                });
+              },
+              isRequired: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Periyot seçilmelidir.";
+                }
+                return null;
+              },
+            ),
+            // Toplam Çalışma Saati
+            FormFieldWidget(
+              context,
+              controller: toplamCalismaSaatiController,
+              title: "Toplam Çalışma Saati",
+              hintText: "1 - 225",
+              isRequired: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(3),
+              ],
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Toplam çalışma saati boş olamaz.";
+                }
+                int? saati = int.tryParse(value);
+                if (saati == null || saati < 1 || saati > 225) {
+                  return "1 ile 225 arasında bir değer giriniz.";
+                }
+                return null;
+              },
+            ),
+            // Toplam Gün
+            FormFieldWidget(
+              context,
+              controller: toplamGunController,
+              title: "Toplam Gün",
+              hintText: "1 - 365",
+              isRequired: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(3),
+              ],
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Toplam gün boş olamaz.";
+                }
+                int? gunu = int.tryParse(value);
+                if (gunu == null || gunu < 1 || gunu > 365) {
+                  return "1 ile 365 arasında bir değer giriniz.";
+                }
+                return null;
+              },
+            ),
+            // Kaç Kişi İhtiyaç
+            FormFieldWidget(
+              context,
+              controller: kacKisiIhtiyacController,
+              title: "Kaç Kişiye İhtiyaç Var",
+              hintText: "Sayı Giriniz",
+              isRequired: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Kaç kişiye ihtiyaç var boş olamaz.";
+                }
+                int? kisi = int.tryParse(value);
+                if (kisi == null || kisi < 1) {
+                  return "Geçerli bir sayı giriniz.";
+                }
+                return null;
+              },
+            ),
+            // Yaş Sınırı
+            DropdownWidget(
+              context,
+              titles: _yasSinirlari,
+              selectedIndex: selectedYasSiniriIndex,
+              title: "Yaş Sınırı",
+              onChanged: (p0) {
+                if (p0 == null) return;
+                setState(() {
+                  selectedYasSiniriIndex = _yasSinirlari.indexOf(p0);
+                });
+              },
+              isRequired: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Yaş sınırı seçilmelidir.";
+                }
+                return null;
+              },
+            ),
+            // Yol Masrafı
+            DropdownWidget(
+              context,
+              titles: _varYok,
+              selectedIndex: selectedYolMasrafiIndex,
+              title: "Yol Masrafı",
+              onChanged: (p0) {
+                if (p0 == null) return;
+                setState(() {
+                  selectedYolMasrafiIndex = _varYok.indexOf(p0);
+                });
+              },
+              isRequired: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Yol masrafı seçilmelidir.";
+                }
+                return null;
+              },
+            ),
+            // Konaklama
+            DropdownWidget(
+              context,
+              titles: _varYok,
+              selectedIndex: selectedKonaklamaIndex,
+              title: "Konaklama",
+              onChanged: (p0) {
+                if (p0 == null) return;
+                setState(() {
+                  selectedKonaklamaIndex = _varYok.indexOf(p0);
+                });
+              },
+              isRequired: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Konaklama seçilmelidir.";
+                }
+                return null;
+              },
+            ),
+            // Yemek
+            DropdownWidget(
+              context,
+              titles: _varYok,
+              selectedIndex: selectedYemekIndex,
+              title: "Yemek",
+              onChanged: (p0) {
+                if (p0 == null) return;
+                setState(() {
+                  selectedYemekIndex = _varYok.indexOf(p0);
+                });
+              },
+              isRequired: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Yemek seçilmelidir.";
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                SizedBox(
+                  width: deviceWidth(context) * 0.8,
+                  child: GeneralButtonWidget(
+                    isLoading: context.watch<VolunteerProvider>().sendFormState == LoadingState.loading,
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        // Yeni model oluştur
+                        VolunteerModel opportunityModel = VolunteerModel(
+                          // Yeni alanlar
+                          title: baslikController.text.trim(),
+                          description: aciklamaController.text.trim(),
+                          startDate: baslamaSuresi!,
+                          endDate: bitisSuresi!,
+                          shape: _sekiller[selectedSekliIndex],
+                          period: _periyotlar[selectedPeriyoduIndex],
+                          totalWorkHours: int.parse(toplamCalismaSaatiController.text.trim()),
+                          totalDays: int.parse(toplamGunController.text.trim()),
+                          requiredPersons: int.parse(kacKisiIhtiyacController.text.trim()),
+                          ageLimit: _yasSinirlari[selectedYasSiniriIndex],
+                          transportationCost: _varYok[selectedYolMasrafiIndex] == "Var",
+                          accommodation: _varYok[selectedKonaklamaIndex] == "Var",
+                          meal: _varYok[selectedYemekIndex] == "Var",
+                        );
+
+                        // Provider'ın sendForm metodunu çağır
+                        GeneralResponseModel response = await context.read<VolunteerProvider>().sendForm(
+                              volunteerModel: opportunityModel,
+                              image: null, // Opsiyonel, gerekirse ekleyin
+                              cv: null, // Opsiyonel, gerekirse ekleyin
+                              imageByte: null, // Opsiyonel, gerekirse ekleyin
+                              cvByte: null, // Opsiyonel, gerekirse ekleyin
+                            );
+
+                        if (response.success == true) {
+                          ToastWidgets.successToast(
+                            context,
+                            "Başvurunuz alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.",
                           );
                           Navigator.pop(context);
                         } else {
                           ToastWidgets.errorToast(
                             context,
-                            "Lütfen tüm alanları doldurunuz.",
+                            "Beklenmeyen bir hatayla karşılaşıldı: ${response.message}",
                           );
                         }
-                      },
-                      text: "Kaydet",
-                      buttonColor: Colors.red,
-                    ),
+                      } else {
+                        ToastWidgets.errorToast(
+                          context,
+                          "Lütfen tüm alanları doğru doldurunuz.",
+                        );
+                      }
+                    },
+                    text: "Gönder",
+                    buttonColor: Colors.red,
                   ),
-                ],
-              )
-            ],
-          ),
+                ),
+              ],
+            )
+          ],
         ),
       ),
-    );
+    )));
   }
 
-  final List<String> _alanlar = [
-    "Hayvanlar",
-    "Yoksullar",
-    "Eğitim",
-    "Sağlık",
-    "Tarım",
-    "Mülteci",
-    "Hukuk",
-    "Deprem",
-    "Gıda",
-    "Dini",
-    "Sosyal girişimcilik",
-    "Girişimcilik",
-    "Kültür Sanat",
-    "Spor",
+  final List<String> _sekiller = ["Online", "Offline", "Hibrit"];
+  final List<String> _periyotlar = [
+    "Günlük",
+    "Haftalık",
+    "Aylık",
+    "Parttime",
+    "Cumartesi",
+    "Pazar",
+    "Hafta Sonu",
+    "Esnek"
   ];
-
-  final List<String> _statuler = ["Fiziki", "Online", "Her ikisi"];
-  final List<String> _musaitVakitler = ["Hafta içi 9:00 - 17:00", "Hafta sonu 9:00 - 17:00"];
-  final List<String> _mezuniyetler = [
-    "İlkokul Mezunu",
-    "Ortaokul Mezunu",
-    "Lise Mezunu",
-    "Ön Lisans Mezunu",
-    "Lisans Mezunu",
-    "Yüksek Lisans Mezunu",
-    "Doktora Mezunu",
-    "Diğer"
-  ];
+  final List<String> _yasSinirlari = ["16 ve üzeri", "18 ve üzeri", "21 ve üzeri"];
+  final List<String> _varYok = ["Var", "Yok"];
 }

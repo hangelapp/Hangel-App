@@ -91,7 +91,7 @@ class BrandController {
       brandFormModel.bannerImage = bannerImageUrls;
       brandFormModel.vergiImage = vergiImageUrls;
       SendMailHelper.sendMail(
-        to: ["hangelturkiye@gmail.com"],
+        to: ["turkiye@hangel.org"],
         subject: "Marka Başvurusu",
         body: "Marka Başvurusu",
         html: brandFormModel.toHtmlTable(),

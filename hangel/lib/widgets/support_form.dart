@@ -153,7 +153,7 @@ class _SupportFormState extends State<SupportForm> {
                   },
                 });
                 await SendMailHelper.sendMail(
-                  to: [_emailController.text],
+                  to: ["turkiye@hangel.org"],
                   subject: _subjectController.text,
                   body: "",
                   html: """
