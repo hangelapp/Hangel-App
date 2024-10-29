@@ -19,6 +19,7 @@ class FormFieldWidget extends StatelessWidget {
     this.leading = const SizedBox(),
     this.keyboardType,
     this.isEditable = true,
+    this.readOnly = false,
   });
   final TextEditingController controller;
   final String title;
@@ -31,6 +32,7 @@ class FormFieldWidget extends StatelessWidget {
   final Function()? ontap;
   final String? Function(String?)? validator;
   final bool isEditable;
+  final bool readOnly;
 
   final TextInputType? keyboardType;
 
@@ -80,6 +82,7 @@ class FormFieldWidget extends StatelessWidget {
                 child: TextFormField(
                   controller: controller,
                   onTap: ontap,
+                  readOnly: readOnly,
                   maxLines: maxLines,
                   minLines: minLines,
                   cursorColor: AppTheme.darkBlue,

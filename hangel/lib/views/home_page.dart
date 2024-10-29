@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:get/get.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
+import 'package:hangel/managers/language_manager.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/views/brand_detail_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
+import 'package:hangel/widgets/locale_text.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -49,34 +52,34 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, String>> filters = [
     {
-      "name": "Tümü",
+      "name": "home_page_all",
       "value": "",
     },
   ];
 
   List<Map<String, String>> sorts = [
     {
-      "name": "Bağış oranı yüksekten düşüğe",
+      "name": "home_page_sort_donation_rate_desc",
       "value": "bagisOraniYuksektenDusuge",
     },
     {
-      "name": "Bağış oranı düşükten yükseğe",
+      "name": "home_page_sort_donation_rate_asc",
       "value": "bagisOraniDusuktenYuksege",
     },
     {
-      "name": "En yeniden en eskiye",
+      "name": "home_page_sort_newest_oldest",
       "value": "enYenidenEnEskiye",
     },
     {
-      "name": "En eskiden en yeniye",
+      "name": "home_page_sort_oldest_newest",
       "value": "enEskidenEnYeniye",
     },
     {
-      "name": "A-Z",
+      "name": "home_page_sort_a_z",
       "value": "A-Z",
     },
     {
-      "name": "Z-A",
+      "name": "home_page_sort_z_a",
       "value": "Z-A",
     },
   ];
@@ -126,8 +129,8 @@ class _HomePageState extends State<HomePage> {
                     subtitle: Text(offer.sector ?? ""),
                     trailing: Column(
                       children: [
-                        Text(
-                          "Bağış Oranı",
+                        LocaleText(
+                          'home_page_donation_rate',
                           style: AppTheme.normalTextStyle(context, 14),
                         ),
                         Container(
@@ -199,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               emptyBuilder: (context) => const Text(""),
-              errorBuilder: (context, error) => const Text("Bağlantı Problemi!"),
+              errorBuilder: (context, error) => LocaleText('home_page_connection_problem'),
               builder: (context, search, focusNode) {
                 return Container(
                   alignment: Alignment.center,
@@ -228,7 +231,7 @@ class _HomePageState extends State<HomePage> {
                     },
                     controller: search,
                     decoration: InputDecoration(
-                      hintText: "Marka Ara",
+                      hintText: "home_page_search_brand".locale,
                       hintStyle: AppTheme.lightTextStyle(context, 14),
                       // border: InputBorder.none,
                       prefixIcon: Icon(
@@ -264,8 +267,8 @@ class _HomePageState extends State<HomePage> {
                             padding: EdgeInsets.only(
                               left: deviceWidthSize(context, 20),
                             ),
-                            child: Text(
-                              "Markalar",
+                            child: LocaleText(
+                              'home_page_brands',
                               style: AppTheme.boldTextStyle(context, 20),
                             ),
                           ),
@@ -346,10 +349,12 @@ class _HomePageState extends State<HomePage> {
                 sorts.length,
                 (index) => PopupMenuItem(
                   value: sorts[index]["value"],
-                  child: Text(sorts[index]["name"] ?? "",
-                      style: context.read<BrandProvider>().sortText == sorts[index]["value"]
-                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
-                          : AppTheme.normalTextStyle(context, 14)),
+                  child: LocaleText(
+                    sorts[index]["name"]!,
+                    style: context.read<BrandProvider>().sortText == sorts[index]["value"]
+                        ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
+                        : AppTheme.normalTextStyle(context, 14),
+                  ),
                 ),
               ),
             ],
@@ -374,10 +379,12 @@ class _HomePageState extends State<HomePage> {
                 filters.length,
                 (index) => PopupMenuItem(
                   value: filters[index]["value"],
-                  child: Text(filters[index]["name"] ?? "",
-                      style: context.read<BrandProvider>().filterText == filters[index]["value"]
-                          ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
-                          : AppTheme.normalTextStyle(context, 14)),
+                  child: LocaleText(
+                    filters[index]["name"]!,
+                    style: context.read<BrandProvider>().filterText == filters[index]["value"]
+                        ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
+                        : AppTheme.normalTextStyle(context, 14),
+                  ),
                 ),
               ),
               ...List.generate(

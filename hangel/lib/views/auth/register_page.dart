@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart'; // Import for TapGestureRecognizer
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/providers/app_view_provider.dart';
@@ -24,6 +25,7 @@ import '../../widgets/app_bar_widget.dart';
 import '../../widgets/form_field_widget.dart';
 import '../../widgets/general_button_widget.dart';
 import '../../widgets/toast_widgets.dart';
+import '../../widgets/locale_text.dart'; // Ensure LocaleText is imported
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -124,8 +126,10 @@ class _RegisterPageState extends State<RegisterPage> {
       padding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
       child: Column(
         children: [
-          Text(
-            _phoneLoginPageType == PhoneLoginPageType.register ? "Hesap oluşturun" : "Giriş yapın",
+          LocaleText(
+            _phoneLoginPageType == PhoneLoginPageType.register
+                ? 'register_page_create_account'.locale
+                : 'register_page_login'.locale,
             style: AppTheme.lightTextStyle(context, 28),
           ),
           SizedBox(
@@ -135,15 +139,15 @@ class _RegisterPageState extends State<RegisterPage> {
             FormFieldWidget(
               context,
               controller: _nameController,
-              title: "Ad Soyad",
+              title: 'register_page_full_name'.locale,
               ontap: () {},
             ),
           // Uluslararası telefon numarası girişi
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Telefon Numarası",
+              LocaleText(
+                'register_page_phone_number',
                 style: AppTheme.semiBoldTextStyle(context, 16),
               ),
               SizedBox(height: deviceHeightSize(context, 5)),
@@ -188,7 +192,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     enabledBorder: InputBorder.none,
                     disabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    hintText: 'Telefon numaranızı girin',
+                    hintText: 'register_page_enter_phone'.locale,
                     hintStyle: AppTheme.lightTextStyle(context, 14, color: Colors.grey),
                   ),
                 ),
@@ -209,11 +213,15 @@ class _RegisterPageState extends State<RegisterPage> {
               },
               title: RichText(
                 text: TextSpan(
-                  text: 'Kullanıcı Sözleşmesi\'ni ',
+                  text: '',
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'okudum ve kabul ediyorum.',
+                      text: 'register_page_user_agreement'.locale.split(' ').first,
+                      style: AppTheme.lightTextStyle(context, 14),
+                    ),
+                    TextSpan(
+                      text: 'register_page_user_agreement'.locale.substring('register_page_user_agreement'.locale.indexOf('\'ni ')),
                       style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
@@ -234,11 +242,15 @@ class _RegisterPageState extends State<RegisterPage> {
               },
               title: RichText(
                 text: TextSpan(
-                  text: 'Gizlilik Sözleşmesi\'ni ',
+                  text: '',
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'okudum ve kabul ediyorum.',
+                      text: 'register_page_privacy_agreement'.locale.split(' ').first,
+                      style: AppTheme.lightTextStyle(context, 14),
+                    ),
+                    TextSpan(
+                      text: 'register_page_privacy_agreement'.locale.substring('register_page_privacy_agreement'.locale.indexOf('\'ni ')),
                       style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
@@ -264,14 +276,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     _phoneController.text.isEmpty ||
                     !_isValidNumber ||
                     _phoneNumber.phoneNumber == null) {
-                  ToastWidgets.errorToast(context, "Lütfen tüm alanları doğru doldurunuz!");
+                  ToastWidgets.errorToast(context, 'register_page_error_fill_all_fields'.locale);
                   return;
                 }
 
                 // Agreement checks
                 if (_phoneLoginPageType == PhoneLoginPageType.register) {
                   if (!_isUserAgreementAccepted || !_isPrivacyAgreementAccepted) {
-                    ToastWidgets.errorToast(context, "Lütfen sözleşmeleri onaylayın!");
+                    ToastWidgets.errorToast(context, 'register_page_error_accept_agreements'.locale);
                     return;
                   }
                 }
@@ -314,18 +326,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   print("Sms kodu gönderildi");
                 } else {
                   ToastWidgets.errorToast(context,
-                      "Girilen telefon numarası sistemde zaten kayıtlı ya da girdiğiniz verilerde hata olabilir!");
+                      'register_page_error_unexpected'.locale);
                   context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
                   Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
                 }
               } catch (e) {
-                ToastWidgets.errorToast(context, "Beklenmeyen bir hatayla karşılaşıldı. Lütfen tekrar deneyin");
+                ToastWidgets.errorToast(context, 'register_page_error_unexpected'.locale);
                 Navigator.pushReplacementNamed(context, RegisterPage.routeName);
                 return;
               }
             },
             isLoading: context.watch<LoginRegisterPageProvider>().smsCodeSentState == LoadingState.loading,
-            text: _phoneLoginPageType == PhoneLoginPageType.login ? "Giriş Yap" : "Kayıt Ol",
+            text: _phoneLoginPageType == PhoneLoginPageType.login ? 'register_page_login'.locale : 'register_page_create_account'.locale,
           ),
           TextButton(
             onPressed: () {
@@ -338,11 +350,15 @@ class _RegisterPageState extends State<RegisterPage> {
             },
             child: RichText(
               text: TextSpan(
-                text: _phoneLoginPageType == PhoneLoginPageType.login ? "Hesabınız yok mu? " : "Hesabınız var mı? ",
+                text: _phoneLoginPageType == PhoneLoginPageType.login
+                    ? 'register_page_login_register_prompt_login'.locale
+                    : 'register_page_login_register_prompt_register'.locale,
                 style: AppTheme.lightTextStyle(context, 16),
                 children: [
                   TextSpan(
-                    text: _phoneLoginPageType == PhoneLoginPageType.login ? "Kayıt Ol" : "Giriş Yap",
+                    text: _phoneLoginPageType == PhoneLoginPageType.login
+                        ? 'register_page_login_register_action_register'.locale
+                        : 'register_page_login_register_action_login'.locale,
                     style: AppTheme.boldTextStyle(context, 16, color: AppTheme.primaryColor),
                   ),
                 ],
@@ -384,8 +400,8 @@ class _RegisterPageState extends State<RegisterPage> {
         padding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
         child: Column(
           children: [
-            Text(
-              "Lütfen telefonunuza gelen 6 haneli kodu giriniz.",
+            LocaleText(
+              'register_page_verify_code_prompt',
               textAlign: TextAlign.center,
               style: AppTheme.lightTextStyle(context, 28),
             ),
@@ -431,7 +447,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 height: deviceHeightSize(context, 60),
                 textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.yellow),
               ),
-              errorText: "Hatalı Kod",
+              errorText: 'register_page_error_invalid_code'.locale,
               errorTextStyle: AppTheme.normalTextStyle(context, 16, color: AppTheme.red),
             ),
             SizedBox(
@@ -446,8 +462,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     32,
                   ),
                 ),
-                Text(
-                  "Doğrulama kodu gelmedi mi?",
+                LocaleText(
+                  'register_page_didnt_receive_code',
                   style: AppTheme.lightTextStyle(context, 16),
                 ),
                 TextButton(
@@ -460,8 +476,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       });
                     }
                   },
-                  child: Text(
-                    "Tekrar Gönder",
+                  child: LocaleText(
+                    'register_page_resend_code',
                     style: AppTheme.boldTextStyle(context, 16,
                         color: resendSecond == 0 ? AppTheme.darkBlue : AppTheme.darkBlue.withOpacity(0.3)),
                   ),
@@ -478,7 +494,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
 
                 if (_verifyController.text.length != 6) {
-                  ToastWidgets.errorToast(context, "Lütfen kodu doğru giriniz!");
+                  ToastWidgets.errorToast(context, 'register_page_error_invalid_code'.locale);
                 } else {
                   String phoneNum = _phoneNumber.phoneNumber!;
                   context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
@@ -550,7 +566,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
               },
               isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,
-              text: "Doğrula",
+              text: 'register_page_verify'.locale,
             )
           ],
         ),
@@ -563,13 +579,13 @@ class _RegisterPageState extends State<RegisterPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(title),
+          title: LocaleText(title.toLowerCase().replaceAll(' ', '_')), // Assuming titles are fixed
           content: SingleChildScrollView(
             child: Text(content),
           ),
           actions: [
             TextButton(
-              child: Text('Kapat'),
+              child: LocaleText('close'), // You might want to add 'close' key to localization
               onPressed: () {
                 Navigator.of(context).pop();
               },

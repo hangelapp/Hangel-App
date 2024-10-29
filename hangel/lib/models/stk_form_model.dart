@@ -1,219 +1,261 @@
 class STKFormModel {
-  String? name;
-  String? fullName;
+  // Ortak alanlar
+  String? type;
+  String? iban;
   String? website;
-  String? mail;
+  String? email;
   String? phone;
-  String? founder;
-  String? contactPerson;
-  String? contactPersonPhone;
-  String? contactPersonJob;
-  String? contactPersonMail;
-  String? selectedSector;
-  String? address;
   String? city;
   String? district;
-  List<String?> categories;
-  List<String?> bmCategories;
-  String? logoImage;
-  String? bannerImage;
-  String? tuzukPDF;
-  String? faaliyetImage;
-  String? type;
   String? neighborhood;
-  String? sicilNo;
-  String? vergiNo;
-  String? iban;
-  DateTime? time;
-  String? federations;
+  String? address;
+  List<String>? beneficiaries;
+  List<String>? unSdgs;
+  String? applicantName;
+  String? applicantPhone;
+  String? applicantEmail;
+  String? applicantPosition; // Özel izin ile yardım toplayan dışındaki türler için
+  String? applicantRelation; // Özel izin ile yardım toplayan türü için
 
-  STKFormModel(
-      {this.name,
-      this.fullName,
-      this.website,
-      this.mail,
-      this.phone,
-      this.founder,
-      this.contactPerson,
-      this.contactPersonJob,
-      this.contactPersonPhone,
-      this.contactPersonMail,
-      this.selectedSector,
-      this.address,
-      this.city,
-      this.district,
-      this.categories = const <String>[],
-      this.bmCategories = const <String>[],
-      this.logoImage,
-      this.bannerImage,
-      this.tuzukPDF,
-      this.faaliyetImage,
-      this.type,
-      this.neighborhood,
-      this.sicilNo,
-      this.vergiNo,
-      this.iban,
-      this.time,
-      this.federations});
+  // Diğer türler için alanlar (Dernek, Vakıf, Spor Kulübü)
+  String? idNo;
+  String? taxNumber;
+  String? taxOffice;
+  String? shortName;
+  String? fullName;
+  String? establishmentYear;
+  String? logoImage; // Firebase URL'si
+  String? statuteFileUrl; // Firebase URL'si
+  String? activityCertificateFileUrl; // Firebase URL'si
+  String? activityArea;
+
+  // Özel izin ile yardım toplayan türü için alanlar
+  String? permissionStartDate;
+  String? permissionEndDate;
+  String? permissionGrantingGovernorate;
+  String? activityNumber;
+  String? campaignName;
+  String? birthDate;
+  String? photoImageUrl; // Firebase URL'si
+  String? permissionPurpose;
+  String? governoratePermissionDocumentUrl; // Firebase URL'si
+  String? stkIlMudurluguYetkiBelgesiUrl; // Firebase URL'si
+
+  STKFormModel({
+    this.type,
+    this.iban,
+    this.website,
+    this.email,
+    this.phone,
+    this.city,
+    this.district,
+    this.neighborhood,
+    this.address,
+    this.beneficiaries,
+    this.unSdgs,
+    this.applicantName,
+    this.applicantPhone,
+    this.applicantEmail,
+    this.applicantPosition,
+    this.applicantRelation,
+    this.idNo,
+    this.taxNumber,
+    this.taxOffice,
+    this.shortName,
+    this.fullName,
+    this.establishmentYear,
+    this.logoImage,
+    this.statuteFileUrl,
+    this.activityCertificateFileUrl,
+    this.activityArea,
+    this.permissionStartDate,
+    this.permissionEndDate,
+    this.permissionGrantingGovernorate,
+    this.activityNumber,
+    this.campaignName,
+    this.birthDate,
+    this.photoImageUrl,
+    this.permissionPurpose,
+    this.governoratePermissionDocumentUrl,
+    this.stkIlMudurluguYetkiBelgesiUrl,
+  });
 
   factory STKFormModel.fromJson(Map<String, dynamic> json) {
     return STKFormModel(
-        name: json['name'],
-        fullName: json['fullName'],
-        website: json['website'],
-        mail: json['mail'],
-        phone: json['phone'],
-        founder: json['founder'],
-        contactPerson: json['contactPerson'],
-        contactPersonJob: json['contactPersonJob'],
-        contactPersonPhone: json['contactPersonPhone'],
-        contactPersonMail: json['contactPersonMail'],
-        selectedSector: json['sector'],
-        address: json['address'],
-        city: json['city'],
-        district: json['district'],
-        categories: json['categories'],
-        bmCategories: json['bmCategories'],
-        logoImage: json['logoImage'],
-        bannerImage: json['bannerImage'],
-        tuzukPDF: json['vergiImage'],
-        faaliyetImage: json['faaliyetImage'],
-        type: json['type'],
-        neighborhood: json['neighborhood'],
-        sicilNo: json["sicilNo"],
-        vergiNo: json["vergiNo"],
-        iban: json["iban"],
-        time: json["time"],
-        federations: json["federations"]);
+      type: json['type'] as String?,
+      iban: json['iban'] as String?,
+      website: json['website'] as String?,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      city: json['city'] as String?,
+      district: json['district'] as String?,
+      neighborhood: json['neighborhood'] as String?,
+      address: json['address'] as String?,
+      beneficiaries: (json['beneficiaries'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      unSdgs: (json['unSdgs'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      applicantName: json['applicantName'] as String?,
+      applicantPhone: json['applicantPhone'] as String?,
+      applicantEmail: json['applicantEmail'] as String?,
+      applicantPosition: json['applicantPosition'] as String?,
+      applicantRelation: json['applicantRelation'] as String?,
+      idNo: json['idNo'] as String?,
+      taxNumber: json['taxNumber'] as String?,
+      taxOffice: json['taxOffice'] as String?,
+      shortName: json['shortName'] as String?,
+      fullName: json['fullName'] as String?,
+      establishmentYear: json['establishmentYear'] as String?,
+      logoImage: json['logoImage'] as String?,
+      statuteFileUrl: json['statuteFileUrl'] as String?,
+      activityCertificateFileUrl: json['activityCertificateFileUrl'] as String?,
+      activityArea: json['activityArea'] as String?,
+      permissionStartDate: json['permissionStartDate'] as String?,
+      permissionEndDate: json['permissionEndDate'] as String?,
+      permissionGrantingGovernorate:
+          json['permissionGrantingGovernorate'] as String?,
+      activityNumber: json['activityNumber'] as String?,
+      campaignName: json['campaignName'] as String?,
+      birthDate: json['birthDate'] as String?,
+      photoImageUrl: json['photoImageUrl'] as String?,
+      permissionPurpose: json['permissionPurpose'] as String?,
+      governoratePermissionDocumentUrl:
+          json['governoratePermissionDocumentUrl'] as String?,
+      stkIlMudurluguYetkiBelgesiUrl:
+          json['stkIlMudurluguYetkiBelgesiUrl'] as String?,
+    );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
-      'fullName': fullName,
+      'type': type,
+      'iban': iban,
       'website': website,
-      'mail': mail,
+      'email': email,
       'phone': phone,
-      'founder': founder,
-      'contactPerson': contactPerson,
-      'contactPersonJob': contactPersonJob,
-      'contactPersonPhone': contactPersonPhone,
-      'contactPersonMail': contactPersonMail,
-      'sector': selectedSector,
-      'address': address,
       'city': city,
       'district': district,
-      'categories': categories,
-      'bmCategories': bmCategories,
-      'logoImage': logoImage,
-      'bannerImage': bannerImage,
-      'vergiImage': tuzukPDF,
-      'faaliyetImage': faaliyetImage,
-      'type': type,
       'neighborhood': neighborhood,
-      "sicilNo": sicilNo,
-      "vergiNo": vergiNo,
-      "iban": iban,
-      "federations": federations,
+      'address': address,
+      'beneficiaries': beneficiaries,
+      'unSdgs': unSdgs,
+      'applicantName': applicantName,
+      'applicantPhone': applicantPhone,
+      'applicantEmail': applicantEmail,
+      'applicantPosition': applicantPosition,
+      'applicantRelation': applicantRelation,
+      'idNo': idNo,
+      'taxNumber': taxNumber,
+      'taxOffice': taxOffice,
+      'shortName': shortName,
+      'fullName': fullName,
+      'establishmentYear': establishmentYear,
+      'logoImage': logoImage,
+      'statuteFileUrl': statuteFileUrl,
+      'activityCertificateFileUrl': activityCertificateFileUrl,
+      'activityArea': activityArea,
+      'permissionStartDate': permissionStartDate,
+      'permissionEndDate': permissionEndDate,
+      'permissionGrantingGovernorate': permissionGrantingGovernorate,
+      'activityNumber': activityNumber,
+      'campaignName': campaignName,
+      'birthDate': birthDate,
+      'photoImageUrl': photoImageUrl,
+      'permissionPurpose': permissionPurpose,
+      'governoratePermissionDocumentUrl': governoratePermissionDocumentUrl,
+      'stkIlMudurluguYetkiBelgesiUrl': stkIlMudurluguYetkiBelgesiUrl,
     };
   }
 
-  //Mail kısmı güncellenecek
+  // Mail için HTML tablo formatı
   String toHTMLTable() {
-    return """
-    <table>
-      <tr>
-        <td>Adı</td>
-        <td>$name</td>
-      </tr>
-      <tr>
-        <td>Tam Adı</td>
-        <td>$fullName</td>
-      </tr>
-      <tr>
-        <td>Web Sitesi</td>
-        <td>$website</td>
-      </tr>
-      <tr>
-        <td>Mail</td>
-        <td>$mail</td>
-      </tr>
-      <tr>
-        <td>Telefon</td>
-        <td>$phone</td>
-      </tr>
-      <tr>
-        <td>Kurucu</td>
-        <td>$founder</td>
-      </tr>
-      <tr>
-        <td>İletişim Kişisi</td>
-        <td>$contactPerson</td>
-      </tr>
-      <tr>
-        <td>İletişim Kişisi Meslek</td>
-        <td>$contactPersonJob</td>
-      </tr>
-      <tr>
-        <td>İletişim Kişisi Telefon</td>
-        <td>$contactPersonPhone</td>
-      </tr>
-      <tr>
-        <td>İletişim Kişisi Mail</td>
-        <td>$contactPersonMail</td>
-      </tr>
-      <tr>
-        <td>Sektör</td>
-        <td>$selectedSector</td>
-      </tr>
-      <tr>
-        <td>Adres</td>
-        <td>$address</td>
-      </tr>
-      <tr>
-        <td>Şehir</td>
-        <td>$city</td>
-      </tr>
-      <tr>
-        <td>İlçe</td>
-        <td>$district</td>
-      </tr>
-      <tr>
-        <td>Mahalle</td>
-        <td>$neighborhood</td>
-      </tr>
-      <tr>
-        <td>Kategoriler</td>
-        <td$categories</td>
-      </tr>
-      <tr>
-        <td>BM Kategoriler</td>
-        <td$bmCategories</td>
-      </tr>
-      <tr>
-        <td>Logo</td>
-        <td>$logoImage</td>
-      </tr>
-      <tr>
-        <td>Banner</td>
-        <td>$bannerImage</td>
-      </tr>
-      <tr>
-        <td><img src="$tuzukPDF" /></td>
-      </tr>
-      <tr>
-        <td>Faaliyet</td>
-        <td><img src="$faaliyetImage" /></td>
-      </tr>
-      <tr>
-        <td>Tür</td>
-        <td>$type</td>
-      </tr>
-      <tr>
-        <td>Bağlı bulunduğu Federasyonlar</td>
-        <td>$federations</td>
-      </tr>
-    </table>
-    """;
+    String beneficiariesStr =
+        beneficiaries != null ? beneficiaries!.join(', ') : '-';
+    String unSdgsStr = unSdgs != null ? unSdgs!.join(', ') : '-';
+
+    StringBuffer html = StringBuffer();
+    html.writeln("<table>");
+
+    html.writeln("<tr><td><strong>Tür</strong></td><td>${type ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>IBAN</strong></td><td>${iban ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Web Sitesi</strong></td><td>${website ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Email</strong></td><td>${email ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Telefon</strong></td><td>${phone ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Şehir</strong></td><td>${city ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>İlçe</strong></td><td>${district ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Mahalle</strong></td><td>${neighborhood ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Adres</strong></td><td>${address ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Faydalanıcılar</strong></td><td>${beneficiariesStr}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>BM Sürdürülebilir Kalkınma Amaçları</strong></td><td>${unSdgsStr}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Başvuruyu Yapan Kişinin Adı</strong></td><td>${applicantName ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Başvuruyu Yapan Kişinin Telefonu</strong></td><td>${applicantPhone ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Başvuruyu Yapan Kişinin Emaili</strong></td><td>${applicantEmail ?? '-'}</td></tr>");
+
+    if (applicantPosition != null) {
+      html.writeln(
+          "<tr><td><strong>Başvuruyu Yapan Kişinin Görevi</strong></td><td>${applicantPosition}</td></tr>");
+    }
+
+    if (applicantRelation != null) {
+      html.writeln(
+          "<tr><td><strong>Başvuruyu Yapan Kişinin Yakınlık Derecesi</strong></td><td>${applicantRelation}</td></tr>");
+    }
+
+    if (type != 'stk_form_type_special_permission') {
+      // Diğer türler için alanlar
+      html.writeln(
+          "<tr><td><strong>ID No</strong></td><td>${idNo ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Vergi No</strong></td><td>${taxNumber ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Vergi Dairesi</strong></td><td>${taxOffice ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Kısa Adı</strong></td><td>${shortName ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Tam Adı</strong></td><td>${fullName ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Kuruluş Yılı</strong></td><td>${establishmentYear ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Faaliyet Alanı</strong></td><td>${activityArea ?? '-'}</td></tr>");
+    } else {
+      // Özel izin ile yardım toplayan türü için alanlar
+      html.writeln(
+          "<tr><td><strong>İzin Başlama Tarihi</strong></td><td>${permissionStartDate ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>İzin Bitiş Tarihi</strong></td><td>${permissionEndDate ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>İzni Veren Valilik</strong></td><td>${permissionGrantingGovernorate ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Faaliyet No</strong></td><td>${activityNumber ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Kampanyanın Adı</strong></td><td>${campaignName ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>Doğum Tarihi</strong></td><td>${birthDate ?? '-'}</td></tr>");
+      html.writeln(
+          "<tr><td><strong>İznin Amacı</strong></td><td>${permissionPurpose ?? '-'}</td></tr>");
+    }
+
+    // Dosya ve resim URL'lerini ekleyebilirsiniz
+    html.writeln(
+        "<tr><td><strong>Logo Resmi URL</strong></td><td>${logoImage ?? '-'}</td></tr>");
+    html.writeln(
+        "<tr><td><strong>Fotoğraf URL'si</strong></td><td>${photoImageUrl ?? '-'}</td></tr>");
+    // Diğer dosya ve resim URL'lerini de ekleyebilirsiniz
+
+    html.writeln("</table>");
+    return html.toString();
   }
 }

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:provider/provider.dart';
 import '../constants/size.dart';
 import '../models/general_response_model.dart';
@@ -74,12 +75,12 @@ class _VolunteerFormState extends State<VolunteerForm> {
             FormFieldWidget(
               context,
               controller: baslikController,
-              title: "Başlık",
-              hintText: "İlan Başlığı",
+              title: 'volunteer_form_title'.locale,
+              hintText: 'volunteer_form_hint_title'.locale,
               isRequired: true,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return "Başlık boş olamaz.";
+                  return 'volunteer_form_title_empty'.locale;
                 }
                 return null;
               },
@@ -88,13 +89,13 @@ class _VolunteerFormState extends State<VolunteerForm> {
             FormFieldWidget(
               context,
               controller: aciklamaController,
-              title: "Açıklama",
-              hintText: "İlan Açıklaması",
+              title: 'volunteer_form_description'.locale,
+              hintText: 'volunteer_form_hint_description'.locale,
               isRequired: true,
               maxLines: 5,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return "Açıklama boş olamaz.";
+                  return 'volunteer_form_description_empty'.locale;
                 }
                 return null;
               },
@@ -125,11 +126,11 @@ class _VolunteerFormState extends State<VolunteerForm> {
                               ? "${baslamaSuresi!.day}/${baslamaSuresi!.month}/${baslamaSuresi!.year}"
                               : "",
                         ),
-                        title: "Başlama Süresi",
+                        title: 'volunteer_form_start_date'.locale,
                         isRequired: true,
                         validator: (value) {
                           if (baslamaSuresi == null) {
-                            return "Başlama süresi seçilmelidir.";
+                            return 'volunteer_form_start_date_empty'.locale;
                           }
                           return null;
                         },
@@ -161,14 +162,14 @@ class _VolunteerFormState extends State<VolunteerForm> {
                               ? "${bitisSuresi!.day}/${bitisSuresi!.month}/${bitisSuresi!.year}"
                               : "",
                         ),
-                        title: "Bitiş Süresi",
+                        title: 'volunteer_form_end_date'.locale,
                         isRequired: true,
                         validator: (value) {
                           if (bitisSuresi == null) {
-                            return "Bitiş süresi seçilmelidir.";
+                            return 'volunteer_form_end_date_empty'.locale;
                           }
                           if (baslamaSuresi != null && bitisSuresi!.isBefore(baslamaSuresi!)) {
-                            return "Bitiş süresi, başlama süresinden önce olamaz.";
+                            return 'volunteer_form_end_before_start'.locale;
                           }
                           return null;
                         },
@@ -183,7 +184,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               context,
               titles: _sekiller,
               selectedIndex: selectedSekliIndex,
-              title: "Şekli",
+              title: 'volunteer_form_shape'.locale,
               onChanged: (p0) {
                 if (p0 == null) return;
                 setState(() {
@@ -193,7 +194,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Şekil seçilmelidir.";
+                  return 'volunteer_form_shape_empty'.locale;
                 }
                 return null;
               },
@@ -203,7 +204,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               context,
               titles: _periyotlar,
               selectedIndex: selectedPeriyoduIndex,
-              title: "Periyodu",
+              title: 'volunteer_form_period'.locale,
               onChanged: (p0) {
                 if (p0 == null) return;
                 setState(() {
@@ -213,7 +214,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Periyot seçilmelidir.";
+                  return 'volunteer_form_period_empty'.locale;
                 }
                 return null;
               },
@@ -222,8 +223,8 @@ class _VolunteerFormState extends State<VolunteerForm> {
             FormFieldWidget(
               context,
               controller: toplamCalismaSaatiController,
-              title: "Toplam Çalışma Saati",
-              hintText: "1 - 225",
+              title: 'volunteer_form_total_work_hours'.locale,
+              hintText: 'volunteer_form_hint_work_hours'.locale,
               isRequired: true,
               keyboardType: TextInputType.number,
               inputFormatters: [
@@ -232,11 +233,11 @@ class _VolunteerFormState extends State<VolunteerForm> {
               ],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return "Toplam çalışma saati boş olamaz.";
+                  return 'volunteer_form_work_hours_empty'.locale;
                 }
                 int? saati = int.tryParse(value);
                 if (saati == null || saati < 1 || saati > 225) {
-                  return "1 ile 225 arasında bir değer giriniz.";
+                  return 'volunteer_form_work_hours_invalid'.locale;
                 }
                 return null;
               },
@@ -245,8 +246,8 @@ class _VolunteerFormState extends State<VolunteerForm> {
             FormFieldWidget(
               context,
               controller: toplamGunController,
-              title: "Toplam Gün",
-              hintText: "1 - 365",
+              title: 'volunteer_form_total_days'.locale,
+              hintText: 'volunteer_form_hint_total_days'.locale,
               isRequired: true,
               keyboardType: TextInputType.number,
               inputFormatters: [
@@ -255,11 +256,11 @@ class _VolunteerFormState extends State<VolunteerForm> {
               ],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return "Toplam gün boş olamaz.";
+                  return 'volunteer_form_total_days_empty'.locale;
                 }
                 int? gunu = int.tryParse(value);
                 if (gunu == null || gunu < 1 || gunu > 365) {
-                  return "1 ile 365 arasında bir değer giriniz.";
+                  return 'volunteer_form_total_days_invalid'.locale;
                 }
                 return null;
               },
@@ -268,18 +269,18 @@ class _VolunteerFormState extends State<VolunteerForm> {
             FormFieldWidget(
               context,
               controller: kacKisiIhtiyacController,
-              title: "Kaç Kişiye İhtiyaç Var",
-              hintText: "Sayı Giriniz",
+              title: 'volunteer_form_required_persons'.locale,
+              hintText: 'volunteer_form_hint_required_persons'.locale,
               isRequired: true,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return "Kaç kişiye ihtiyaç var boş olamaz.";
+                  return 'volunteer_form_required_persons_empty'.locale;
                 }
                 int? kisi = int.tryParse(value);
                 if (kisi == null || kisi < 1) {
-                  return "Geçerli bir sayı giriniz.";
+                  return 'volunteer_form_required_persons_invalid'.locale;
                 }
                 return null;
               },
@@ -289,7 +290,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               context,
               titles: _yasSinirlari,
               selectedIndex: selectedYasSiniriIndex,
-              title: "Yaş Sınırı",
+              title: 'volunteer_form_age_limit'.locale,
               onChanged: (p0) {
                 if (p0 == null) return;
                 setState(() {
@@ -299,7 +300,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Yaş sınırı seçilmelidir.";
+                  return 'volunteer_form_age_limit_empty'.locale;
                 }
                 return null;
               },
@@ -309,7 +310,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               context,
               titles: _varYok,
               selectedIndex: selectedYolMasrafiIndex,
-              title: "Yol Masrafı",
+              title: 'volunteer_form_transportation_cost'.locale,
               onChanged: (p0) {
                 if (p0 == null) return;
                 setState(() {
@@ -319,7 +320,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Yol masrafı seçilmelidir.";
+                  return 'volunteer_form_transportation_cost_empty'.locale;
                 }
                 return null;
               },
@@ -329,7 +330,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               context,
               titles: _varYok,
               selectedIndex: selectedKonaklamaIndex,
-              title: "Konaklama",
+              title: 'volunteer_form_accommodation'.locale,
               onChanged: (p0) {
                 if (p0 == null) return;
                 setState(() {
@@ -339,7 +340,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Konaklama seçilmelidir.";
+                  return 'volunteer_form_accommodation_empty'.locale;
                 }
                 return null;
               },
@@ -349,7 +350,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               context,
               titles: _varYok,
               selectedIndex: selectedYemekIndex,
-              title: "Yemek",
+              title: 'volunteer_form_meal'.locale,
               onChanged: (p0) {
                 if (p0 == null) return;
                 setState(() {
@@ -359,7 +360,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
               isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Yemek seçilmelidir.";
+                  return 'volunteer_form_meal_empty'.locale;
                 }
                 return null;
               },
@@ -404,23 +405,23 @@ class _VolunteerFormState extends State<VolunteerForm> {
                         if (response.success == true) {
                           ToastWidgets.successToast(
                             context,
-                            "Başvurunuz alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.",
+                            'volunteer_form_success'.locale,
                           );
                           Navigator.pop(context);
                         } else {
                           ToastWidgets.errorToast(
                             context,
-                            "Beklenmeyen bir hatayla karşılaşıldı: ${response.message}",
+                            'volunteer_form_unexpected_error'.locale + (response.message ?? ""),
                           );
                         }
                       } else {
                         ToastWidgets.errorToast(
                           context,
-                          "Lütfen tüm alanları doğru doldurunuz.",
+                          'volunteer_form_fill_all_fields'.locale,
                         );
                       }
                     },
-                    text: "Gönder",
+                    text: 'volunteer_form_submit'.locale,
                     buttonColor: Colors.red,
                   ),
                 ),

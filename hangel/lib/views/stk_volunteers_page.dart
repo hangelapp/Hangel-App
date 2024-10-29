@@ -49,34 +49,34 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
 
   List<Map<String, String>> filters = [
     {
-      "name": "Deprem Bölgesi",
+      "name": "brand_detail_page_deprem_bolgesi".locale,
       "value": "depremBolgesi",
     },
     {
-      "name": "Sosyal Girişim",
+      "name": "brand_detail_page_sosyal_girisim".locale,
       "value": "socialEnterprise",
     },
     {
-      "name": "Tümü",
+      "name": "select_favorite_stk_all".locale,
       "value": "",
     },
   ];
 
   List<Map<String, String>> sorts = [
     {
-      "name": "Bağış oranı yüksekten düşüğe",
+      "name": "home_page_sort_donation_rate_desc".locale,
       "value": "bagisOraniYuksektenDusuge",
     },
     {
-      "name": "Bağış oranı düşükten yükseğe",
+      "name": "home_page_sort_donation_rate_asc".locale,
       "value": "bagisOraniDusuktenYuksege",
     },
     {
-      "name": "En yeniden en eskiye",
+      "name": "home_page_sort_newest_oldest".locale,
       "value": "enYenidenEnEskiye",
     },
     {
-      "name": "En eskiden en yeniye",
+      "name": "home_page_sort_oldest_newest".locale,
       "value": "enEskidenEnYeniye",
     },
     {
@@ -236,7 +236,7 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                     },
                     controller: search,
                     decoration: InputDecoration(
-                      hintText: "Marka Ara",
+                      hintText: "home_page_search_brand".locale,
                       hintStyle: AppTheme.lightTextStyle(context, 14),
                       // border: InputBorder.none,
                       prefixIcon: Icon(
@@ -273,7 +273,7 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                               left: deviceWidthSize(context, 20),
                             ),
                             child: Text(
-                              "STK Gönüllü İlanları",
+                              "gonullu_ilanlari".locale,
                               style: AppTheme.boldTextStyle(context, 20),
                             ),
                           ),

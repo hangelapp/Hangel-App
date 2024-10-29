@@ -5,6 +5,10 @@ import 'package:flutter/scheduler.dart';
 
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
+import 'package:hangel/helpers/date_format_helper.dart';
+import 'package:hangel/helpers/hive_helpers.dart';
+import 'package:hangel/helpers/url_launcher_helper.dart';
 import 'package:hangel/models/brand_form_model.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
@@ -65,7 +69,6 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      //get iller from json file /assets/il-ilce.json
       jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
         final jsonResult = jsonDecode(jsonData);
@@ -92,6 +95,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
     _brandContactPersonMailController.dispose();
     _brandContactPersonJob.dispose();
     _brandVergiNoController.dispose();
+    _brandVergiDaireController.dispose();
+    _brandIbanController.dispose();
     super.dispose();
   }
 
@@ -109,11 +114,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               FormFieldWidget(
                 context,
                 controller: _brandNameController,
-                title: "Marka Adı",
+                title: "brand_form_page_marka_adi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Marka Adı';
+                    return 'brand_form_page_gecersiz_marka_adi'.locale;
                   }
                   return null;
                 },
@@ -121,7 +126,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Marka Başvurusu Yapan Yetkili Kişi Bilgileri",
+                  "brand_form_page_yetkili_kisi_bilgileri".locale,
                   style: AppTheme.semiBoldTextStyle(
                     context,
                     16,
@@ -132,11 +137,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               FormFieldWidget(
                 context,
                 controller: _brandContactPersonController,
-                title: "Adı Soyadı",
+                title: "brand_form_page_ad_soyad".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Ad Soyad';
+                    return 'brand_form_page_gecersiz_ad_soyad'.locale;
                   }
                   return null;
                 },
@@ -145,11 +150,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 context,
                 controller: _brandContactPersonPhoneController,
                 keyboardType: TextInputType.phone,
-                title: "Telefon Numarası",
+                title: "brand_form_page_telefon_numarasi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Telefon Numarası';
+                    return 'brand_form_page_gecersiz_telefon_numarasi'.locale;
                   }
                   return null;
                 },
@@ -158,24 +163,23 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 context,
                 controller: _brandIbanController,
                 keyboardType: TextInputType.text,
-                title: "IBAN numarası",
+                title: "brand_form_page_iban_numarasi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty || !isValid(value.replaceAll(RegExp(r'\s+'), ''))) {
-                    return 'Geçersiz IBAN Numarası';
+                    return 'brand_form_page_gecersiz_iban_numarasi'.locale;
                   }
-                  ;
                   return null;
                 },
               ),
               FormFieldWidget(
                 context,
                 controller: _brandContactPersonMailController,
-                title: "Mail Adresi",
+                title: "brand_form_page_mail_adresi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Mail Adresi';
+                    return 'brand_form_page_gecersiz_mail_adresi'.locale;
                   }
                   return null;
                 },
@@ -183,18 +187,18 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               FormFieldWidget(
                 context,
                 controller: _brandContactPersonJob,
-                title: "Görevi/Pozisyonu",
+                title: "brand_form_page_gorevi_pozisyonu".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Görev Pozisyon';
+                    return 'brand_form_page_gecersiz_gorev_pozisyonu'.locale;
                   }
                   return null;
                 },
               ),
               PickImageWidget(
                 context,
-                title: "Markanın Logosu",
+                title: "brand_form_page_logo".locale,
                 onImagePicked: (List<XFile?> image) {
                   setState(() {
                     _logoImage.add(ImageModel(
@@ -210,12 +214,12 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     _logoImage = [];
                   });
                 },
-                infoText: "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
+                infoText: "brand_form_page_logo_info".locale,
               ),
 
               PickImageWidget(
                 context,
-                title: "Markanın Banner Görseli",
+                title: "brand_form_page_banner_gorseli".locale,
                 onImagePicked: (List<XFile?> image) {
                   setState(() {
                     _bannerImage.add(ImageModel(
@@ -231,16 +235,16 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     _bannerImage = [];
                   });
                 },
-                infoText: "Markanın logosu, 800x500 boyutlarında, png veya jpg formatında olmalıdır.",
+                infoText: "brand_form_page_banner_gorseli_info".locale,
               ),
               FormFieldWidget(
                 context,
                 controller: _brandWebsiteController,
-                title: "Markanın Web Sitesi",
+                title: "brand_form_page_web_sitesi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Web Site';
+                    return 'brand_form_page_gecersiz_web_sitesi'.locale;
                   }
                   return null;
                 },
@@ -248,11 +252,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               FormFieldWidget(
                 context,
                 controller: _brandMailController,
-                title: "Markanın Mail Adresi",
+                title: "brand_form_page_markanin_mail_adresi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Mail Adres';
+                    return 'brand_form_page_gecersiz_mail_adresi'.locale;
                   }
                   return null;
                 },
@@ -261,11 +265,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 context,
                 controller: _brandPhoneController,
                 keyboardType: TextInputType.phone,
-                title: "Markanın Telefon Numarası",
+                title: "brand_form_page_markanin_telefon_numarasi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Telefon numarası';
+                    return 'brand_form_page_gecersiz_telefon_numarasi'.locale;
                   }
                   return null;
                 },
@@ -273,11 +277,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               FormFieldWidget(
                 context,
                 controller: _brandFounderController,
-                title: "Markanın Kurucusunun Adı Soyadı",
+                title: "brand_form_page_kurucu_ad_soyad".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Ad Soyad';
+                    return 'brand_form_page_gecersiz_ad_soyad'.locale;
                   }
                   return null;
                 },
@@ -291,14 +295,14 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     selectedIndex = _sectors.indexOf(value!);
                   });
                 },
-                title: "Sektör",
+                title: "brand_form_page_sektor".locale,
                 isRequired: true,
               ),
 
               DropdownWidget(
                 context,
                 titles: iller,
-                selectedIndex: iller.indexOf(selectedIl ?? ""),
+                selectedIndex: selectedIl != null ? iller.indexOf(selectedIl!) : -1,
                 onChanged: (value) {
                   setState(() {
                     selectedIl = value;
@@ -309,22 +313,21 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     final jsonResult = jsonDecode(jsonData);
                     for (var item in jsonResult) {
                       if (item["İL"] == selectedIl) {
-                        if (ilceler.contains(item["İLÇE"])) {
-                          continue;
+                        if (!ilceler.contains(item["İLÇE"])) {
+                          ilceler.add(item["İLÇE"]);
                         }
-                        ilceler.add(item["İLÇE"]);
                       }
                     }
                   });
                 },
-                title: "İl",
+                title: "brand_form_page_il".locale,
                 isRequired: true,
               ),
               if (selectedIl != null)
                 DropdownWidget(
                   context,
                   titles: ilceler,
-                  selectedIndex: ilceler.indexOf(selectedIlce ?? ""),
+                  selectedIndex: selectedIlce != null ? ilceler.indexOf(selectedIlce!) : -1,
                   onChanged: (value) {
                     setState(() {
                       selectedIlce = value;
@@ -333,33 +336,32 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       final jsonResult = jsonDecode(jsonData);
                       for (var item in jsonResult) {
                         if (item["İLÇE"] == selectedIlce) {
-                          if (mahalleler.contains(item["MAHALLE"])) {
-                            continue;
+                          if (!mahalleler.contains(item["MAHALLE"])) {
+                            mahalleler.add(item["MAHALLE"]);
                           }
-                          mahalleler.add(item["MAHALLE"]);
                         }
                       }
                     });
                   },
-                  title: "İlçe",
+                  title: "brand_form_page_ilce".locale,
                   isRequired: true,
                 ),
               if (selectedIlce != null)
                 DropdownWidget(
                   context,
                   titles: mahalleler,
-                  selectedIndex: mahalleler.indexOf(selectedMahalle ?? ""),
+                  selectedIndex: selectedMahalle != null ? mahalleler.indexOf(selectedMahalle!) : -1,
                   onChanged: (value) {
                     setState(() {
                       selectedMahalle = value;
                     });
                   },
-                  title: "Mahalle",
+                  title: "brand_form_page_mahalle".locale,
                   isRequired: true,
                 ),
               PickImageWidget(
                 context,
-                title: "Markanın Vergi Levhası",
+                title: "brand_form_page_vergi_levhasi".locale,
                 isSelectOnlyOne: true,
                 onImagePicked: (List<XFile?> image) {
                   setState(() {
@@ -380,11 +382,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 context,
                 controller: _brandVergiNoController,
                 keyboardType: TextInputType.number,
-                title: "Markanın Vergi Numarası",
+                title: "brand_form_page_vergi_numarasi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Vergi Numarası';
+                    return 'brand_form_page_gecersiz_vergi_numarasi'.locale;
                   }
                   return null;
                 },
@@ -393,11 +395,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 context,
                 controller: _brandVergiDaireController,
                 keyboardType: TextInputType.text,
-                title: "Vergi Dairesi",
+                title: "brand_form_page_vergi_dairesi".locale,
                 isRequired: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Geçersiz Vergi Dairesi';
+                    return 'brand_form_page_gecersiz_vergi_dairesi'.locale;
                   }
                   return null;
                 },
@@ -415,7 +417,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 ),
                 activeColor: AppTheme.primaryColor,
                 title: Text(
-                  "Sosyal Girişim",
+                  "brand_form_page_sosyal_girisim".locale,
                   style: AppTheme.normalTextStyle(context, 16),
                 ),
               ),
@@ -434,14 +436,14 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                             selectedIndex: _selectedCategories[index],
                             onChanged: (value) {
                               if (_selectedCategories.any((element) => element == _categories.indexOf(value!))) {
-                                ToastWidgets.errorToast(context, "Bu kategori zaten ekli.");
+                                ToastWidgets.errorToast(context, "brand_form_page_kategori_zaten_ekli".locale);
                                 return;
                               }
                               setState(() {
                                 _selectedCategories[index] = _categories.indexOf(value!);
                               });
                             },
-                            title: "Kategori",
+                            title: "brand_form_page_kategori".locale,
                             isRequired: true,
                           ),
                         ),
@@ -466,6 +468,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                                 onPressed: () {
                                   setState(() {
                                     _selectedCategories.removeAt(index);
+                                    _categoryControllers.removeAt(index);
                                   });
                                 },
                               ),
@@ -485,11 +488,11 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                             decimal: true,
                             signed: false,
                           ),
-                          title: "Bağış Oranı",
+                          title: "brand_form_page_bagis_orani".locale,
                           isRequired: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Geçersiz Bağış Oranı';
+                              return 'brand_form_page_gecersiz_bagis_orani'.locale;
                             }
                             return null;
                           },
@@ -510,7 +513,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       });
                     },
                     child: Text(
-                      "+ Kategori Ekle",
+                      "brand_form_page_kategori_ekle".locale,
                       style: AppTheme.semiBoldTextStyle(
                         context,
                         16,
@@ -521,36 +524,36 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 ),
               SizedBox(height: deviceHeightSize(context, 20)),
               GeneralButtonWidget(
-                text: "Gönder",
+                text: "brand_form_page_gonder".locale,
                 isLoading: context.watch<BrandProvider>().sendFormState == LoadingState.loading,
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
                     if (_logoImage.isEmpty) {
-                      ToastWidgets.errorToast(context, "Logo bilgisinde hata var.");
+                      ToastWidgets.errorToast(context, "brand_form_page_logo_hatasi".locale);
                       return;
                     }
                     if (_bannerImage.isEmpty) {
-                      ToastWidgets.errorToast(context, "Banner bilgisinde hata var.");
+                      ToastWidgets.errorToast(context, "brand_form_page_banner_hatasi".locale);
                       return;
                     }
                     if (selectedIndex == -1) {
-                      ToastWidgets.errorToast(context, "Sektör bilgisinde hata var.");
+                      ToastWidgets.errorToast(context, "brand_form_page_sektor_hatasi".locale);
                       return;
                     }
                     if (selectedIl == null || selectedIlce == null || selectedMahalle == null) {
-                      ToastWidgets.errorToast(context, "Adres bilgisinde hata var.");
+                      ToastWidgets.errorToast(context, "brand_form_page_adres_hatasi".locale);
                       return;
                     }
                     if (_vergiImage.isEmpty) {
-                      ToastWidgets.errorToast(context, "Vergi levhası bilgisinde hata var.");
+                      ToastWidgets.errorToast(context, "brand_form_page_vergi_levhasi_hatasi".locale);
                       return;
                     }
                     if (_selectedCategories.any((element) => element == -1)) {
-                      ToastWidgets.errorToast(context, "Kategori bilgisinde hata var.");
+                      ToastWidgets.errorToast(context, "brand_form_page_kategori_hatasi".locale);
                       return;
                     }
                     if (_categoryControllers.every((element) => element.text.isEmpty)) {
-                      ToastWidgets.errorToast(context, "Kategori bilgisinde hata var.");
+                      ToastWidgets.errorToast(context, "brand_form_page_kategori_orani_hatasi".locale);
                       return;
                     }
                     context
@@ -593,8 +596,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       ToastWidgets.responseToast(context, value);
                     });
                   } else {
-                    ToastWidgets.errorToast(
-                        context, "Eksik bilgi girdiniz! Lütfen girdiğiniz verileri tekrar gözden geçirin");
+                    ToastWidgets.errorToast(context, "brand_form_page_eksik_bilgi".locale);
                     return;
                   }
                 },
@@ -608,97 +610,202 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   }
 
   final List<String> _sectors = [
-    "Tarim Ve Hayvancilik Avcilik Ve İlgili Hizmet Faaliyetleri",
-    "Ormancılık Ve Tomrukçuluk",
-    "Balikçilik Ve Su Ürünleri",
-    "Kömür Ve Linyit Madenciliğ",
-    "Ham Petrol Ve Doğal Gaz Çıkarılması",
-    "Gıda, İçecek Ve Tütün",
-    "Tekstil, Giyim Eşyası Ve Deri",
-    "Orman Ürünleri Ve Mobilya",
-    "Kağit Ve Kağit Ürünleri Basim",
-    "Kimya İlaç Petrol Lastik Ve Plastik Ürünler",
-    "Taş Ve Toprağa Dayalı",
-    "Ana Metal Sanayi",
-    "Metal Eşya Makine Elektrikli Cihazlar Ve Ulaşim Araçlari",
-    "Diğer İmalat Sanayii",
-    "Elektrik Gaz Ve Buhar",
-    "İnşaat Ve Bayındırlık İşleri",
-    "Ticaret Toptan Ticaret",
-    "Perakende Ticaret",
-    "Ulaştirma Ve Depolama",
-    "Finansman Şirketleri",
-    "Varlık Yönetim Şirketleri",
-    "Bankalar",
-    "Sigorta Şirketleri",
-    "Finansal Kiralama Ve Faktoring Şirketleri",
-    "Holdingler Ve Yatırım Şirketleri",
-    "Diğer Mali Kuruluşlar",
-    "Araci Kurumlar",
-    "Gayrimenkul Yatırım Ortaklıkları",
-    "Menkul Kiymet Yatirim Ortakliklari",
-    "Girişim Sermayesi Yatırım Ortaklıkları",
-    "Spor Eğlence Boş Zamanlari Değerlendirme Hizmetleri",
-    "İnsan Sağliği Ve Sosyal Hizmetler",
-    "Yaratici Sanatlar Gösteri Sanatlari Ve Eğlence Faaliyetleri",
-    "Spor Faaliyetleri Eğlence Ve Oyun Faaliyetleri",
-    "Bilişim",
-    "Savunma",
-    "Hukuk Ve Muhasebe Faaliyetleri",
-    "İdare Merkezi Faaliyetleri; İdari Danışmanlık Faaliyetleri",
-    "Mimarlik Ve Mühendislik Faaliyetleri; Teknik Muayene Ve Analiz",
-    "Bilimsel Araştirma Ve Geliştirme Faaliyetleri",
-    "Reklamcilik Ve Pazar Araştırması",
-    "Diğer Profesyonel, Bilimsel Ve Teknik Faaliyetler",
-    "Veterinerlik Hizmetleri",
-    "Kiralama Ve Leasing Faaliyetleri",
-    "İstihdam Faaliyetleri",
-    "Seyahat Acentesi, Tur Operatörü Ve Diğer Rezervasyon Hizmetleri İle İlgili Faaliyetler",
-    "Güvenlik Ve Soruşturma Faaliyetleri",
-    "Binalar Ve Çevre Düzenlemesi Faaliyetleri",
-    "Büro Yönetimi, Büro Desteği Ve Diğer Şirket Destek Faaliyetleri",
-    "Gayrimenkul Faaliyetleri",
-    "Konaklama",
-    "Yiyecek Ve İçecek Hizmetleri",
-    "Bilgi Hizmet Faaliyetleri",
-    "Yayımcılık",
-    "Telekomünikasyon",
-    "Diğer",
+    "brand_form_page_sektor_tarim".locale,
+    "brand_form_page_sektor_ormancilik".locale,
+    "brand_form_page_sektor_balikcilik".locale,
+    "brand_form_page_sektor_kumur".locale,
+    "brand_form_page_sektor_petroil".locale,
+    "brand_form_page_sektor_gida".locale,
+    "brand_form_page_sektor_tekstil".locale,
+    "brand_form_page_sektor_mobilya".locale,
+    "brand_form_page_sektor_kagit".locale,
+    "brand_form_page_sektor_kimya".locale,
+    "brand_form_page_sektor_tas".locale,
+    "brand_form_page_sektor_ana_metal".locale,
+    "brand_form_page_sektor_makine".locale,
+    "brand_form_page_sektor_diger_imalat".locale,
+    "brand_form_page_sektor_elektrik".locale,
+    "brand_form_page_sektor_insaat".locale,
+    "brand_form_page_sektor_ticaret_toptan".locale,
+    "brand_form_page_sektor_perakende".locale,
+    "brand_form_page_sektor_ulastirma".locale,
+    "brand_form_page_sektor_finansman".locale,
+    "brand_form_page_sektor_varlik_yonetim".locale,
+    "brand_form_page_sektor_bankalar".locale,
+    "brand_form_page_sektor_sigorta".locale,
+    "brand_form_page_sektor_faktoring".locale,
+    "brand_form_page_sektor_holding".locale,
+    "brand_form_page_sektor_diger_mali".locale,
+    "brand_form_page_sektor_aracilar".locale,
+    "brand_form_page_sektor_gayrimenkul".locale,
+    "brand_form_page_sektor_menkul_kıymet".locale,
+    "brand_form_page_sektor_girisim_sermayesi".locale,
+    "brand_form_page_sektor_spor".locale,
+    "brand_form_page_sektor_insan_sagligi".locale,
+    "brand_form_page_sektor_yaratici_sanatlar".locale,
+    "brand_form_page_sektor_bilisim".locale,
+    "brand_form_page_sektor_savunma".locale,
+    "brand_form_page_sektor_hukuk".locale,
+    "brand_form_page_sektor_mimarlik".locale,
+    "brand_form_page_sektor_bilimsel".locale,
+    "brand_form_page_sektor_reklamcilik".locale,
+    "brand_form_page_sektor_veterinerlik".locale,
+    "brand_form_page_sektor_kiralama".locale,
+    "brand_form_page_sektor_istihdam".locale,
+    "brand_form_page_sektor_seyahat".locale,
+    "brand_form_page_sektor_guvenlik".locale,
+    "brand_form_page_sektor_binalar".locale,
+    "brand_form_page_sektor_buro".locale,
+    "brand_form_page_sektor_gayrimenkul_faaliyetleri".locale,
+    "brand_form_page_sektor_konaklama".locale,
+    "brand_form_page_sektor_yeme_icme".locale,
+    "brand_form_page_sektor_mimar".locale,
+    "brand_form_page_sektor_beyaz_esya".locale,
+    "brand_form_page_sektor_elektrikli_ev_aletleri".locale,
+    "brand_form_page_sektor_kisisel_bakim".locale,
+    "brand_form_page_sektor_ev_ve_yasam".locale,
+    "brand_form_page_sektor_muzik_enstruman".locale,
+    "brand_form_page_sektor_telefon".locale,
+    "brand_form_page_sektor_televizyon".locale,
+    "brand_form_page_sektor_bilgisayar".locale,
+    "brand_form_page_sektor_konsol".locale,
+    "brand_form_page_sektor_kamera".locale,
+    "brand_form_page_sektor_ofis_malzemeleri".locale,
+    "brand_form_page_sektor_spor_outdoor".locale,
+    "brand_form_page_sektor_kitap".locale,
+    "brand_form_page_sektor_kirtasiye".locale,
+    "brand_form_page_sektor_5000_ustu".locale,
+    "brand_form_page_sektor_kampanyali_urunler".locale,
   ];
 
   final List<String> _categories = [
-    "Tekstil",
-    "Sağlık Gereçleri",
-    "Sağlık Hizmetleri",
-    "Elektronik",
-    "Yedek Parça",
-    "Teknik Servis",
-    "Danışmanlık",
-    "Gayrimenkul",
-    "Aracılık Hizmetleri",
-    "Yazılım",
-    "İnşaat Malzemeleri",
-    "İnşaat Hizmetleri",
-    "Lojistik",
-    "Otomotiv",
-    "Konaklama",
-    "Yeme içme",
-    "Mimar",
-    "Beyaz Eşya & Ankastre ",
-    "Elektrikli Ev Aletleri",
-    "Kişisel Bakım",
-    "Ev ve Yaşam",
-    "Müzik Enstrüman ve Ekipman",
-    "Telefon",
-    "Televizyon ve Ses Sistemleri ",
-    "Bilgisayar ve Tablet ",
-    "Konsol, Oyun & Oyuncu Ekipmanları ",
-    "Kamera & Fotoğraf Makinesi ",
-    "Ofis Malzeme Mobilyaları",
-    "Spor ve Outdoor",
-    "Kitap",
-    "Kırtasiye",
-    "5000 TL üzeri Alışverişler",
-    "Kampanyalı Ürünler",
+    "brand_form_page_kategori_tekstil".locale,
+    "brand_form_page_kategori_saglik_gerecleri".locale,
+    "brand_form_page_kategori_saglik_hizmetleri".locale,
+    "brand_form_page_kategori_elektronik".locale,
+    "brand_form_page_kategori_yedek_parca".locale,
+    "brand_form_page_kategori_teknik_servis".locale,
+    "brand_form_page_kategori_danismanlik".locale,
+    "brand_form_page_kategori_gayrimenkul".locale,
+    "brand_form_page_kategori_aracilik".locale,
+    "brand_form_page_kategori_yazilim".locale,
+    "brand_form_page_kategori_insaat_malzemeleri".locale,
+    "brand_form_page_kategori_insaat_hizmetleri".locale,
+    "brand_form_page_kategori_lojistik".locale,
+    "brand_form_page_kategori_otomotiv".locale,
+    "brand_form_page_kategori_konaklama".locale,
+    "brand_form_page_kategori_yeme_icme".locale,
+    "brand_form_page_kategori_mimar".locale,
+    "brand_form_page_kategori_beyaz_esya".locale,
+    "brand_form_page_kategori_elektrikli_ev_aletleri".locale,
+    "brand_form_page_kategori_kisisel_bakim".locale,
+    "brand_form_page_kategori_ev_ve_yasam".locale,
+    "brand_form_page_kategori_muzik_enstruman".locale,
+    "brand_form_page_kategori_telefon".locale,
+    "brand_form_page_kategori_televizyon".locale,
+    "brand_form_page_kategori_bilgisayar".locale,
+    "brand_form_page_kategori_konsol".locale,
+    "brand_form_page_kategori_kamera".locale,
+    "brand_form_page_kategori_ofis_malzemeleri".locale,
+    "brand_form_page_kategori_spor_outdoor".locale,
+    "brand_form_page_kategori_kitap".locale,
+    "brand_form_page_kategori_kirtasiye".locale,
+    "brand_form_page_kategori_5000_ustu".locale,
+    "brand_form_page_kategori_kampanyali_urunler".locale,
   ];
+
+  void showKosulDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            insetPadding:
+                EdgeInsets.symmetric(horizontal: deviceWidth(context) * 0.15, vertical: deviceHeight(context) * 0.2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "brand_form_page_sonraki_alisverisin".locale,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 16.0),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSection(
+                              context, "brand_form_page_adblock".locale, "brand_form_page_adblock_content".locale),
+                          _buildSection(context, "brand_form_page_internet_tarayicisi".locale,
+                              "brand_form_page_internet_tarayicisi_content".locale),
+                          _buildSection(context, "brand_form_page_gizli_pencere".locale,
+                              "brand_form_page_gizli_pencere_content".locale),
+                          _buildSection(context, "brand_form_page_diger_programlar".locale,
+                              "brand_form_page_diger_programlar_content".locale),
+                          _buildSection(context, "brand_form_page_kupon_kodu".locale,
+                              "brand_form_page_kupon_kodu_content".locale),
+                          _buildSection(context, "brand_form_page_fiyat_karsilastirma".locale,
+                              "brand_form_page_fiyat_karsilastirma_content".locale),
+                          _buildSection(context, "brand_form_page_mobil_uygulama".locale,
+                              "brand_form_page_mobil_uygulama_content".locale),
+                          _buildSection(
+                              context, "brand_form_page_sepet".locale, "brand_form_page_sepet_content".locale),
+                          _buildSection(context, "brand_form_page_diger_para_iadesi".locale,
+                              "brand_form_page_diger_para_iadesi_content".locale),
+                          _buildSection(context, "brand_form_page_site_ziyaret".locale,
+                              "brand_form_page_site_ziyaret_content".locale),
+                          _buildSection(context, "brand_form_page_ortak_sirketler".locale,
+                              "brand_form_page_ortak_sirketler_content".locale),
+                          _buildSection(context, "brand_form_page_telefon_siparis".locale,
+                              "brand_form_page_telefon_siparis_content".locale),
+                          _buildSection(context, "brand_form_page_farkli_ulke".locale,
+                              "brand_form_page_farkli_ulke_content".locale),
+                          _buildSection(context, "brand_form_page_markanin_ozel_kosullari".locale,
+                              "brand_form_page_markanin_ozel_kosullari_content".locale),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.0),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("brand_form_page_tamam".locale),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  Widget _buildSection(BuildContext context, String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppTheme.boldTextStyle(context, 14),
+          ),
+          SizedBox(height: 8.0),
+          Text(
+            content,
+            style: AppTheme.normalTextStyle(context, 14),
+          ),
+        ],
+      ),
+    );
+  }
 }

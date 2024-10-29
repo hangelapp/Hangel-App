@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/app_view.dart';
@@ -23,6 +25,7 @@ class SelectFavoriteStkPage extends StatefulWidget {
   const SelectFavoriteStkPage({Key? key, this.inTree = true}) : super(key: key);
   static const routeName = '/select-favorite-stk-page';
   final bool inTree;
+  
   @override
   State<SelectFavoriteStkPage> createState() => _SelectFavoriteStkPageState();
 }
@@ -33,11 +36,12 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
   bool isLoading = false;
   UserModel user = HiveHelpers.getUserFromHive();
   final List<String> _tabs = [
-    "Tümü",
-    "Dernek",
-    "Vakıf",
-    "Özel İzinli",
+    "select_favorite_stk_all",
+    "select_favorite_stk_association",
+    "select_favorite_stk_foundation",
+    "select_favorite_stk_special_permission",
   ];
+  
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -62,8 +66,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
         child: Column(
           children: [
             AppBarWidget(
-              title: "Favori STK Seç",
-              // leading: SizedBox(width: deviceWidthSize(context, 45)),
+              title: "select_favorite_stk_title".locale,
               action: !widget.inTree
                   ? SizedBox(
                       height: 30,
@@ -72,7 +75,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                             Navigator.pushAndRemoveUntil(
                                 context, MaterialPageRoute(builder: (context) => AppView()), (route) => false);
                           },
-                          child: Text("Atla")))
+                          child: Text("select_favorite_stk_skip".locale)))
                   : null,
             ),
             context.watch<STKProvider>().loadingState == LoadingState.loading
@@ -87,7 +90,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                 horizontal: deviceWidthSize(context, 20),
                               ),
                               child: Text(
-                                "30 gün süreyle desteklemek istediğin STK’yı seç. Unutma desteklediğin STK’yı 30 gün sonra değiştirebilirsin.",
+                                "select_favorite_stk_instruction".locale,
                                 textAlign: TextAlign.center,
                                 style: AppTheme.lightTextStyle(
                                   context,
@@ -122,8 +125,8 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                 labelPadding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
                                 dividerColor: Colors.transparent,
                                 isScrollable: true,
-                                overlayColor: WidgetStateProperty.all(Colors.transparent),
-                                tabs: _tabs.map((e) => Tab(text: e)).toList(),
+                                overlayColor: MaterialStateProperty.all(Colors.transparent),
+                                tabs: _tabs.map((e) => Tab(text: e.locale)).toList(),
                               ),
                             ),
                             Expanded(
@@ -143,27 +146,23 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                           right: deviceWidthSize(context, 20),
                           child: GeneralButtonWidget(
                             onPressed: () async {
-                              //Yükleniyorsa tıklanmasın
                               if (context.read<STKProvider>().favoriteSTKState == LoadingState.loading) {
                                 print("object");
                                 return;
                               }
-                              //Favori eklenme süresini kontrol et
                               String? control = context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate);
                               if (control != "Kaydet") {
                                 ToastWidgets.errorToast(context, control);
                                 return;
                               }
-                              //2 STK şartı kontrolü
                               if (selectedStkIdList.length < 2) {
-                                ToastWidgets.errorToast(context, "En az 2 STK seçmelisiniz!");
+                                ToastWidgets.errorToast(context, "select_favorite_stk_min_error".locale);
                                 return;
                               }
                               if (selectedStkIdList.length > 2) {
-                                ToastWidgets.errorToast(context, "En fazla 2 STK seçebilirsiniz!");
+                                ToastWidgets.errorToast(context, "select_favorite_stk_max_error".locale);
                                 return;
                               }
-                              //İşleme başlarken yükleniyor animasyonu
                               context.read<STKProvider>().favoriteSTKState = LoadingState.loading;
                               await context
                                   .read<STKProvider>()
@@ -171,11 +170,11 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                   .then((response) {
                                 if (response.success ?? false) {
                                   context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
-                                  ToastWidgets.successToast(context, "Favori STK'ları başarıyla güncellendi");
+                                  ToastWidgets.successToast(context, "select_favorite_stk_success".locale);
                                 } else {
                                   context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
                                   ToastWidgets.errorToast(
-                                      context, response.message ?? "Bir hata ile karşılaşıldı!\nHata Kodu:00321");
+                                      context, response.message ?? "select_favorite_stk_error_code".locale);
                                 }
                               });
                               context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
@@ -184,10 +183,6 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                         (element) => element == -1,
                                       ) ==
                                   false) {
-                                // if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                                //   Navigator.pushReplacementNamed(context, VolunteerForm.routeName);
-                                //   return;
-                                // }
                                 if (widget.inTree) {
                                   Navigator.pop(context);
                                   tabcontroller.jumpToTab(2);
@@ -203,7 +198,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => AppView()));
                               }
                             },
-                            text: context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate),
+                            text: context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate).locale,
                             isLoading: context.watch<STKProvider>().favoriteSTKState == LoadingState.loading,
                             buttonColor: AppTheme.primaryColor,
                           ),
@@ -218,17 +213,17 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
   }
 
   Widget viewWidget(BuildContext context, int tabIndex) {
-    final user = HiveHelpers.getUserFromHive(); // Access user data from Hive
+    final user = HiveHelpers.getUserFromHive();
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        filterAndSort(context), // Integrate the filter widget
+        filterAndSort(context),
         Expanded(
           child: isLoading
               ? CircularProgressIndicator()
               : FirestorePagination(
                   padding: EdgeInsets.only(bottom: 200),
-                  limit: 7, // Adjust limit as needed,
+                  limit: 7,
                   initialLoader: Center(child: CircularProgressIndicator()),
                   bottomLoader: LinearProgressIndicator(),
                   query: tabIndex == 0
@@ -249,14 +244,14 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                           ? FirebaseFirestore.instance
                               .collection('stklar')
                               .where('isActive', isEqualTo: true)
-                              .where('type', isEqualTo: _types[tabIndex]) // Apply tab filter
+                              .where('type', isEqualTo: _types[tabIndex])
                               .orderBy(context.read<STKProvider>().sortTextFav == ""
                                   ? "favoriteCount"
                                   : context.read<STKProvider>().sortTextFav)
                           : FirebaseFirestore.instance
                               .collection('stklar')
                               .where('isActive', isEqualTo: true)
-                              .where('type', isEqualTo: _types[tabIndex]) // Apply tab filter
+                              .where('type', isEqualTo: _types[tabIndex])
                               .where("categories",
                                   arrayContainsAny: [context.read<STKProvider>().filterTextFav]).orderBy(
                               context.read<STKProvider>().sortTextFav == ""
@@ -274,17 +269,23 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                             ),
                             child: ListTile(
                               leading: stk.logo != null
-                                  ? Image.network(
-                                      stk.logo ?? "",
-                                      alignment: Alignment.center,
-                                      fit: BoxFit.fitWidth,
-                                      errorBuilder: (context, error, stackTrace) {
+                                  ? CachedNetworkImage(
+                                      imageUrl: stk.logo ?? "",
+                                      width: deviceWidthSize(context, 50),
+                                      height: deviceWidthSize(context, 50),
+                                      fit: BoxFit.cover,
+                                      errorWidget: (context, error, stackTrace) {
                                         return listItemImage2(
                                           context,
                                           logo: stk.logo,
                                           onTap: () {},
                                         );
                                       },
+                                      placeholder: (context, url) => listItemImage2(
+                                        context,
+                                        logo: stk.logo,
+                                        onTap: () {},
+                                      ),
                                     )
                                   : listItemImage2(
                                       context,
@@ -310,7 +311,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                   setState(() {
                                     if (value!) {
                                       if (selectedStkIdList.length == 2) {
-                                        ToastWidgets.errorToast(context, "En fazla 2 STK seçebilirsiniz!");
+                                        ToastWidgets.errorToast(context, "select_favorite_stk_max_error".locale);
                                         return;
                                       }
                                       selectedStkIdList.add(stk.id.toString());
@@ -333,54 +334,54 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
 
   final List<String> _types = [
     "",
-    "Dernek",
-    "Vakıf",
-    "Özel İzinli",
+    "select_favorite_stk_association_type",
+    "select_favorite_stk_foundation_type",
+    "select_favorite_stk_special_permission_type",
   ];
   final List<String> _categories = [
     "",
-    "Hayvanlar",
-    "Yoksullar",
-    "Eğitim",
-    "Sağlık",
-    "Tarım",
-    "Mülteci",
-    "Hukuk",
-    "Deprem",
-    "Gıda",
-    "Dini",
-    "Sosyal girişimcilik",
-    "Girişimcilik",
-    "Kültür Sanat",
-    "Spor",
+    "select_favorite_stk_animals",
+    "select_favorite_stk_poverty",
+    "select_favorite_stk_education",
+    "select_favorite_stk_health",
+    "select_favorite_stk_agriculture",
+    "select_favorite_stk_refugees",
+    "select_favorite_stk_law",
+    "select_favorite_stk_earthquake",
+    "select_favorite_stk_food",
+    "select_favorite_stk_religious",
+    "select_favorite_stk_social_entrepreneurship",
+    "select_favorite_stk_entrepreneurship",
+    "select_favorite_stk_culture_art",
+    "select_favorite_stk_sports",
   ];
 
   List<Map<String, String>> filters = [
     {
-      "name": "Deprem Bölgesi",
+      "name": "select_favorite_stk_filter_earthquake",
       "value": "depremBolgesi",
     },
     {
-      "name": "Özel Statü",
+      "name": "select_favorite_stk_filter_special_status",
       "value": "specialStatus",
     },
     {
-      "name": "Tümü",
+      "name": "select_favorite_stk_filter_all",
       "value": "",
     },
   ];
 
   List<Map<String, String>> sorts = [
     {
-      "name": "İsme Göre",
+      "name": "select_favorite_stk_sort_name",
       "value": "name",
     },
     {
-      "name": "Favori Sayısına Göre",
+      "name": "select_favorite_stk_sort_favorite_count",
       "value": "favoriteCount",
     },
     {
-      "name": "Bağışçı Sayısına Göre",
+      "name": "select_favorite_stk_sort_donor_count",
       "value": "donorCount",
     },
   ];
@@ -393,7 +394,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          PopupMenuButton(
+          PopupMenuButton<String>(
             color: Colors.white,
             surfaceTintColor: Colors.white,
             itemBuilder: (context) => [
@@ -401,7 +402,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                 sorts.length,
                 (index) => PopupMenuItem(
                   value: sorts[index]["value"],
-                  child: Text(sorts[index]["name"] ?? "",
+                  child: Text(sorts[index]["name"]!.locale,
                       style: context.read<STKProvider>().sortTextFav == sorts[index]["value"]
                           ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
@@ -416,7 +417,6 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
               setState(() {
                 isLoading = false;
               });
-              // context.read<STKProvider>().sortSTK(value);
               context.read<STKProvider>().sortTextFav = value;
               print(value);
             },
@@ -430,7 +430,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
           SizedBox(
             width: deviceWidthSize(context, 10),
           ),
-          PopupMenuButton(
+          PopupMenuButton<String>(
             color: Colors.white,
             surfaceTintColor: Colors.white,
             itemBuilder: (context) => [
@@ -438,22 +438,12 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                 _categories.length,
                 (index) => PopupMenuItem(
                   value: _categories[index],
-                  child: Text(index == 0 ? "Tümü" : _categories[index],
+                  child: Text(index == 0 ? "select_favorite_stk_filter_all".locale : _categories[index].locale,
                       style: context.read<STKProvider>().filterTextFav == _categories[index]
                           ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),
-              // ...List.generate(
-              //   _categories.length,
-              //   (index) => PopupMenuItem(
-              //     value: _categories[index],
-              //     child: Text(_categories[index],
-              //         style: context.read<STKProvider>().filterTextFav == _categories[index]
-              //             ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
-              //             : AppTheme.normalTextStyle(context, 14)),
-              //   ),
-              // ),
             ],
             onSelected: (value) async {
               context.read<STKProvider>().filterTextFav = value;
@@ -476,4 +466,10 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
       ),
     );
   }
+}
+
+class SSSModel {
+  String? baslik;
+  String? tanim;
+  SSSModel({this.baslik, this.tanim});
 }

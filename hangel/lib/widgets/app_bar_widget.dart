@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+import 'package:hangel/managers/language_manager.dart';
 
 import '../constants/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +38,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                     style: AppTheme.boldTextStyle(context, 20, color: AppTheme.secondaryColor),
                   ),
                 ),
-          widget.action == null ? SizedBox.shrink() : widget.action!,
+          widget.action == null ? SizedBox() : widget.action!,
           // if (widget.title != null) SizedBox(width: deviceWidthSize(context, 45)),
         ],
       ),

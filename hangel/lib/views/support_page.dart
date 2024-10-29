@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/bottom_sheet_widget.dart';
 
 import '../widgets/general_button_widget.dart';
 import '../widgets/gradient_widget.dart';
+import '../widgets/locale_text.dart';
 import '../widgets/support_form.dart';
 
 class SupportPage extends StatefulWidget {
@@ -25,7 +27,7 @@ class _SupportPageState extends State<SupportPage> {
         children: [
           Column(
             children: [
-              const AppBarWidget(title: "Destek"),
+              AppBarWidget(title: 'support_page_title'.locale),
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
@@ -41,8 +43,8 @@ class _SupportPageState extends State<SupportPage> {
                         ),
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Bize Ulaşın",
+                          child: LocaleText(
+                            'support_page_contact_us',
                             style: AppTheme.semiBoldTextStyle(context, 20),
                           ),
                         ),
@@ -51,21 +53,8 @@ class _SupportPageState extends State<SupportPage> {
                         ),
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(
-                            """Merhaba Değerli Veliler,
-
-Anaokulu uygulamamızdaki destek sayfasına hoş geldiniz! Buradan bize sorularınızı iletebilir, taleplerinizi iletebilir veya geri bildirimde bulunabilirsiniz. Ancak, lütfen unutmayın, bu form aracılığıyla bizimle iletişime geçtiğinizde, okulla değil doğrudan "Obilsis" ile iletişim kuruyorsunuz.
-
-Anaokulu uygulamamızda sizlere daha iyi hizmet sunmak için elimizden geleni yapıyoruz. Sizlerden gelen her soru, talep ve geri bildirim bizim için değerlidir. Hızlı ve etkili bir şekilde size yanıt vermek için buradayız.
-
-Sorularınızı iletmek veya destek talebinde bulunmak için aşağıdaki iletişim formunu kullanabilirsiniz. Lütfen iletişim bilgilerinizi doğru ve eksiksiz olarak girin. En kısa sürede sizinle iletişime geçeceğiz.
-
-Teşekkür ederiz!
-
-Saygılarımızla,
-Obilsis Ekibi
-
-""",
+                          child: LocaleText(
+                            'support_page_description',
                             style: AppTheme.normalTextStyle(context, 16),
                           ),
                         ),
@@ -97,15 +86,15 @@ Obilsis Ekibi
                       topRight: Radius.circular(20),
                     ),
                   ),
-                  builder: (context) => const BottomSheetWidget(
+                  builder: (context) => BottomSheetWidget(
                     isMinPadding: true,
-                    title: "İletişime Geç",
+                    title: 'support_page_contact_modal_title'.locale,
                     child: SupportForm(),
                   ),
                 );
               },
               buttonColor: AppTheme.primaryColor,
-              text: 'İletişime Geç',
+              text: 'support_page_contact_button'.locale,
             ),
           )
         ],

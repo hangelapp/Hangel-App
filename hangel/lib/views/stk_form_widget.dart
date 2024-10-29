@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart'; // Import for input formatters
+import 'package:flutter/services.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart'; // Localization için gerekli
 import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/models/stk_form_model.dart';
@@ -34,31 +35,44 @@ class STKFormWidget extends StatefulWidget {
 class _STKFormWidgetState extends State<STKFormWidget> {
   final _formKey = GlobalKey<FormState>();
 
+  // Controllers for form fields
   final TextEditingController _stkNameController = TextEditingController();
   final TextEditingController _stkFullNameController = TextEditingController();
-  final TextEditingController _stkSicilNoController = TextEditingController();
+  final TextEditingController _stkIDNoController = TextEditingController();
   final TextEditingController _stkVergiNoController = TextEditingController();
+  final TextEditingController _stkVergiDairesiController = TextEditingController();
   final TextEditingController _stkIbanController = TextEditingController();
-
   final TextEditingController _stkMailController = TextEditingController();
   final TextEditingController _stkPhoneController = TextEditingController();
-  final TextEditingController _stkFounderController = TextEditingController();
   final TextEditingController _stkWebsiteController = TextEditingController();
-  final TextEditingController _stkContactPersonController = TextEditingController();
-  final TextEditingController _stkContactPersonPhoneController = TextEditingController();
-  final TextEditingController _stkContactPersonMailController = TextEditingController();
-  final TextEditingController _stkContactPersonJob = TextEditingController();
   final TextEditingController _stkAddressController = TextEditingController();
-  final TextEditingController _stkFederasyonlar = TextEditingController();
+  final TextEditingController _stkKurulusYiliController = TextEditingController();
+  final TextEditingController _stkIzinBaslamaController = TextEditingController();
+  final TextEditingController _stkIzinBitisController = TextEditingController();
+  final TextEditingController _stkFaaliyetNoController = TextEditingController();
+  final TextEditingController _stkKampanyaAdiController = TextEditingController();
+  final TextEditingController _stkDogumTarihiController = TextEditingController();
+  final TextEditingController _stkIzninAmaciController = TextEditingController();
+
+  // Başvuruyu yapan kişinin bilgileri
+  final TextEditingController _contactPersonNameController = TextEditingController();
+  final TextEditingController _contactPersonPhoneController = TextEditingController();
+  final TextEditingController _contactPersonMailController = TextEditingController();
+  final TextEditingController _contactPersonJobController = TextEditingController();
+  final TextEditingController _contactPersonRelationController = TextEditingController();
 
   List<ImageModel?> _logoImage = [];
+  List<ImageModel?> _photoImage = [];
   PlatformFile? _tuzukPDF;
   PlatformFile? _faaliyetPDF;
+  PlatformFile? _valilikIzinBelgesi;
+  PlatformFile? _stkIlMudurluguYetkiBelgesi;
 
-  final List<String> _selectedCategories = [];
+  List<String> _selectedCategories = [];
+  List<String> _selectedBeneficiaries = [];
   int _selectedSectorIndex = -1;
   List<String> selectedBMs = [];
-  int _selectedType = -1;
+  int _selectedTypeIndex = -1;
 
   List<String> iller = [];
   List<String> ilceler = [];
@@ -108,16 +122,24 @@ class _STKFormWidgetState extends State<STKFormWidget> {
     _stkFullNameController.dispose();
     _stkMailController.dispose();
     _stkPhoneController.dispose();
-    _stkFounderController.dispose();
     _stkWebsiteController.dispose();
-    _stkContactPersonController.dispose();
-    _stkContactPersonPhoneController.dispose();
-    _stkContactPersonMailController.dispose();
-    _stkContactPersonJob.dispose();
+    _contactPersonNameController.dispose();
+    _contactPersonPhoneController.dispose();
+    _contactPersonMailController.dispose();
+    _contactPersonJobController.dispose();
     _stkAddressController.dispose();
-    _stkSicilNoController.dispose();
-    _stkFederasyonlar.dispose();
+    _stkIDNoController.dispose();
+    _stkVergiNoController.dispose();
+    _stkVergiDairesiController.dispose();
     _stkIbanController.dispose();
+    _stkKurulusYiliController.dispose();
+    _stkIzinBaslamaController.dispose();
+    _stkIzinBitisController.dispose();
+    _stkFaaliyetNoController.dispose();
+    _stkKampanyaAdiController.dispose();
+    _stkDogumTarihiController.dispose();
+    _stkIzninAmaciController.dispose();
+    _contactPersonRelationController.dispose();
     super.dispose();
   }
 
@@ -132,474 +154,799 @@ class _STKFormWidgetState extends State<STKFormWidget> {
           key: _formKey,
           child: Column(
             children: [
-              FormFieldWidget(
-                context,
-                controller: _stkSicilNoController,
-                title: "STK Kütük No",
-                isRequired: true,
-                keyboardType: TextInputType.number,
-                inputFormatters: [numberFormatter],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Kütük Numarası';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkVergiNoController,
-                title: "STK Vergi No",
-                isRequired: true,
-                keyboardType: TextInputType.number,
-                inputFormatters: [numberFormatter],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Vergi Numarası';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkNameController,
-                title: "STK Kısa Adı",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Kısa İsim';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkFullNameController,
-                title: "STK Tam Adı",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Tam İsim';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkIbanController,
-                title: "STK IBAN Numarası",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty || !isValid(value.replaceAll(RegExp(r'\s+'), ''))) {
-                    return 'Geçersiz IBAN Numarası';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "STK Başvurusu Yapan Yetkili Kişi Bilgileri",
-                  style: AppTheme.semiBoldTextStyle(
-                    context,
-                    16,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkContactPersonController,
-                title: "Adı Soyadı",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Ad Soyad';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkContactPersonPhoneController,
-                title: "Telefon Numarası",
-                keyboardType: TextInputType.phone,
-                isRequired: true,
-                inputFormatters: [phoneMaskFormatter],
-                validator: (value) {
-                  if (value == null || value.isEmpty || !phoneMaskFormatter.isFill()) {
-                    return 'Geçersiz Telefon Numarası';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkContactPersonMailController,
-                title: "Mail Adresi",
-                keyboardType: TextInputType.emailAddress,
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty || !emailRegex.hasMatch(value)) {
-                    return 'Geçersiz Mail Adresi';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkContactPersonJob,
-                title: "Görevi/Pozisyonu",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Görev/Pozisyon';
-                  }
-                  return null;
-                },
-              ),
-              PickImageWidget(
-                context,
-                title: "STK'nın Logosu",
-                onImagePicked: (List<XFile?> image) {
-                  setState(() {
-                    _logoImage = [
-                      ImageModel(
-                        imageType: ImageType.asset,
-                        file: image[0]!,
-                      ),
-                    ];
-                  });
-                },
-                selectedImages: _logoImage,
-                isSelectOnlyOne: true,
-                onImageRemoved: (ImageModel? image) {
-                  setState(() {
-                    _logoImage = [];
-                  });
-                },
-                infoText: "Markanın logosu, 512x512 boyutlarında, png veya jpg formatında olmalıdır.",
-                isRequired: true,
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkWebsiteController,
-                title: "STK'nın Web Sitesi",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty || !urlRegex.hasMatch(value)) {
-                    return 'Geçersiz Web sitesi';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkMailController,
-                title: "STK'nın Mail Adresi",
-                keyboardType: TextInputType.emailAddress,
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty || !emailRegex.hasMatch(value)) {
-                    return 'Geçersiz Mail Adresi';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkPhoneController,
-                title: "STK'nın Telefon Numarası",
-                keyboardType: TextInputType.phone,
-                isRequired: true,
-                inputFormatters: [phoneMaskFormatter],
-                validator: (value) {
-                  if (value == null || value.isEmpty || !phoneMaskFormatter.isFill()) {
-                    return 'Geçersiz Telefon Numarası';
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkFounderController,
-                title: "STK'nın Kurucusunun Adı Soyadı",
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Geçersiz Kurucu Adı Soyadı';
-                  }
-                  return null;
-                },
-              ),
+              // Türü Dropdown
               DropdownWidget(
                 context,
-                titles: iller,
-                selectedIndex: selectedIl != null ? iller.indexOf(selectedIl!) : -1,
+                titles: _types.map((e) => e['label']!).toList(),
+                selectedIndex: _selectedTypeIndex,
                 onChanged: (value) {
                   setState(() {
-                    selectedIl = value;
-                    selectedIlce = null;
-                    selectedMahalle = null;
-                    ilceler = [];
-                    mahalleler = [];
-                    final jsonResult = jsonDecode(jsonData);
-                    for (var item in jsonResult) {
-                      if (item["İL"] == selectedIl) {
-                        if (!ilceler.contains(item["İLÇE"])) {
-                          ilceler.add(item["İLÇE"]);
-                        }
-                      }
-                    }
+                    _selectedTypeIndex = _types.indexWhere((e) => e['label'] == value);
                   });
                 },
-                title: "İl",
+                title: "stk_form_type".locale,
                 isRequired: true,
               ),
-              if (selectedIl != null)
+              SizedBox(height: 10),
+
+              // Conditional Fields Based on Type
+              if (_selectedTypeIndex != -1 &&
+                  _types[_selectedTypeIndex]['key'] != "stk_form_type_special_permission") ...[
+                // ID No
+                FormFieldWidget(
+                  context,
+                  controller: _stkIDNoController,
+                  title: _getIDNoTitle().locale,
+                  isRequired: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [numberFormatter],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_id_no'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Vergi No
+                FormFieldWidget(
+                  context,
+                  controller: _stkVergiNoController,
+                  title: "stk_form_tax_number".locale,
+                  isRequired: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [numberFormatter],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_tax_number'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Vergi Dairesi
+                FormFieldWidget(
+                  context,
+                  controller: _stkVergiDairesiController,
+                  title: "stk_form_tax_office".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_tax_office'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Kısa Adı
+                FormFieldWidget(
+                  context,
+                  controller: _stkNameController,
+                  title: "stk_form_short_name".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_short_name'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Tam Adı
+                FormFieldWidget(
+                  context,
+                  controller: _stkFullNameController,
+                  title: "stk_form_full_name".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_full_name'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Kuruluş Yılı
+                FormFieldWidget(
+                  context,
+                  controller: _stkKurulusYiliController,
+                  title: "stk_form_establishment_year".locale,
+                  isRequired: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [numberFormatter],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_establishment_year'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // IBAN No
+                FormFieldWidget(
+                  context,
+                  controller: _stkIbanController,
+                  title: "stk_form_iban_no".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !isValid(value.replaceAll(RegExp(r'\s+'), ''))) {
+                      return 'stk_form_invalid_iban'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Logosu
+                PickImageWidget(
+                  context,
+                  title: "stk_form_logo".locale,
+                  onImagePicked: (List<XFile?> image) {
+                    setState(() {
+                      _logoImage = [
+                        ImageModel(
+                          imageType: ImageType.asset,
+                          file: image[0]!,
+                        ),
+                      ];
+                    });
+                  },
+                  selectedImages: _logoImage,
+                  isSelectOnlyOne: true,
+                  onImageRemoved: (ImageModel? image) {
+                    setState(() {
+                      _logoImage = [];
+                    });
+                  },
+                  infoText: "stk_form_logo_info".locale,
+                  isRequired: true,
+                ),
+                // Web Sitesi
+                FormFieldWidget(
+                  context,
+                  controller: _stkWebsiteController,
+                  title: "stk_form_website".locale,
+                  isRequired: false,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !urlRegex.hasMatch(value)) {
+                      return 'stk_form_invalid_website'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Mail Adresi
+                FormFieldWidget(
+                  context,
+                  controller: _stkMailController,
+                  title: "stk_form_email".locale,
+                  keyboardType: TextInputType.emailAddress,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !emailRegex.hasMatch(value)) {
+                      return 'stk_form_invalid_email'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Telefon Numarası
+                FormFieldWidget(
+                  context,
+                  controller: _stkPhoneController,
+                  title: "stk_form_phone".locale,
+                  keyboardType: TextInputType.phone,
+                  isRequired: true,
+                  inputFormatters: [phoneMaskFormatter],
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !phoneMaskFormatter.isFill()) {
+                      return 'stk_form_invalid_phone'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // İl
                 DropdownWidget(
                   context,
-                  titles: ilceler,
-                  selectedIndex: selectedIlce != null ? ilceler.indexOf(selectedIlce!) : -1,
+                  titles: iller,
+                  selectedIndex: selectedIl != null ? iller.indexOf(selectedIl!) : -1,
                   onChanged: (value) {
                     setState(() {
-                      selectedIlce = value;
+                      selectedIl = value;
+                      selectedIlce = null;
                       selectedMahalle = null;
+                      ilceler = [];
                       mahalleler = [];
                       final jsonResult = jsonDecode(jsonData);
                       for (var item in jsonResult) {
-                        if (item["İLÇE"] == selectedIlce) {
-                          if (!mahalleler.contains(item["MAHALLE"])) {
-                            mahalleler.add(item["MAHALLE"]);
+                        if (item["İL"] == selectedIl) {
+                          if (!ilceler.contains(item["İLÇE"])) {
+                            ilceler.add(item["İLÇE"]);
                           }
                         }
                       }
                     });
                   },
-                  title: "İlçe",
+                  title: "stk_form_city".locale,
                   isRequired: true,
                 ),
-              if (selectedIlce != null)
-                DropdownWidget(
+                // İlçe
+                if (selectedIl != null)
+                  DropdownWidget(
+                    context,
+                    titles: ilceler,
+                    selectedIndex: selectedIlce != null ? ilceler.indexOf(selectedIlce!) : -1,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedIlce = value;
+                        selectedMahalle = null;
+                        mahalleler = [];
+                        final jsonResult = jsonDecode(jsonData);
+                        for (var item in jsonResult) {
+                          if (item["İLÇE"] == selectedIlce) {
+                            if (!mahalleler.contains(item["MAHALLE"])) {
+                              mahalleler.add(item["MAHALLE"]);
+                            }
+                          }
+                        }
+                      });
+                    },
+                    title: "stk_form_district".locale,
+                    isRequired: true,
+                  ),
+                // Mahalle
+                if (selectedIlce != null)
+                  DropdownWidget(
+                    context,
+                    titles: mahalleler,
+                    selectedIndex: selectedMahalle != null ? mahalleler.indexOf(selectedMahalle!) : -1,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedMahalle = value;
+                      });
+                    },
+                    title: "stk_form_neighborhood".locale,
+                    isRequired: true,
+                  ),
+                // Geriye Kalan Adres Bilgileri
+                if (selectedMahalle != null)
+                  FormFieldWidget(
+                    context,
+                    controller: _stkAddressController,
+                    title: "stk_form_remaining_address".locale,
+                    isRequired: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'stk_form_invalid_remaining_address'.locale;
+                      }
+                      return null;
+                    },
+                  ),
+                // Barkodlu Dernek Tüzüğü, Vakıf Senedi
+                PickFileWidget(
                   context,
-                  titles: mahalleler,
-                  selectedIndex: selectedMahalle != null ? mahalleler.indexOf(selectedMahalle!) : -1,
-                  onChanged: (value) {
+                  title: "stk_form_statute".locale,
+                  onFilePicked: (PlatformFile file) {
                     setState(() {
-                      selectedMahalle = value;
+                      _tuzukPDF = file;
                     });
                   },
-                  title: "Mahalle",
+                  onFileRemoved: () {
+                    setState(() {
+                      _tuzukPDF = null;
+                    });
+                  },
+                  infoText: "stk_form_statute_info".locale,
+                  selectedFile: _tuzukPDF,
                   isRequired: true,
                 ),
-              if (selectedMahalle != null)
+                // Faaliyet Belgesi
+                PickFileWidget(
+                  context,
+                  title: "stk_form_activity_certificate".locale,
+                  onFilePicked: (PlatformFile file) {
+                    setState(() {
+                      _faaliyetPDF = file;
+                    });
+                  },
+                  onFileRemoved: () {
+                    setState(() {
+                      _faaliyetPDF = null;
+                    });
+                  },
+                  infoText: "stk_form_activity_certificate_info".locale,
+                  selectedFile: _faaliyetPDF,
+                  isRequired: true,
+                ),
+                // STK Genel Müdürlüğündeki Faaliyet Alanı
+                DropdownWidget(
+                  context,
+                  titles: _sectors.map((e) => e['label']!).toList(),
+                  title: "stk_form_activity_area".locale,
+                  isRequired: true,
+                  selectedIndex: _selectedSectorIndex,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedSectorIndex = _sectors.indexWhere((e) => e['label'] == value);
+                    });
+                  },
+                ),
+                // Faydalanıcılar (Kategoriler yerine)
+                DropdownSelectWidget(
+                  context,
+                  titles: _beneficiaries.map((e) => e['label']!).toList(),
+                  onSelect: (value) {
+                    setState(() {
+                      if (!_selectedBeneficiaries.contains(value)) {
+                        _selectedBeneficiaries.add(value!);
+                      }
+                    });
+                  },
+                  onRemove: (value) {
+                    setState(() {
+                      _selectedBeneficiaries.remove(value!);
+                    });
+                  },
+                  title: "stk_form_beneficiaries".locale,
+                  isRequired: true,
+                  selectedItems: _selectedBeneficiaries,
+                  selectedIndex: -1,
+                ),
+                // BM'nin Sürdürülebilir Kalkınma Amaçları
+                DropdownSelectWidget(
+                  context,
+                  titles: _bmItems.map((e) => e['label']!).toList(),
+                  onSelect: (value) {
+                    setState(() {
+                      if (!selectedBMs.contains(value)) {
+                        selectedBMs.add(value!);
+                      }
+                    });
+                  },
+                  onRemove: (value) {
+                    setState(() {
+                      selectedBMs.remove(value!);
+                    });
+                  },
+                  title: "stk_form_un_sdgs".locale,
+                  isRequired: true,
+                  selectedItems: selectedBMs,
+                  isNumbered: true,
+                  selectedIndex: -1,
+                ),
+                SizedBox(height: 20),
+                // Başvuruyu Yapan Kişinin Bilgileri
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "stk_form_applicant_info".locale,
+                    style: AppTheme.semiBoldTextStyle(
+                      context,
+                      16,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ),
                 FormFieldWidget(
                   context,
-                  controller: _stkAddressController,
-                  title: "Sokak ve Kapı Numarası",
+                  controller: _contactPersonNameController,
+                  title: "stk_form_applicant_name".locale,
                   isRequired: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Geçersiz Sokak ve Kapı Numarası';
+                      return 'stk_form_invalid_applicant_name'.locale;
                     }
                     return null;
                   },
                 ),
-              PickFileWidget(
-                context,
-                title: "STK'nın Barkodlu Tüzük",
-                onFilePicked: (PlatformFile file) {
-                  setState(() {
-                    _tuzukPDF = file;
-                  });
-                },
-                onFileRemoved: () {
-                  setState(() {
-                    _tuzukPDF = null;
-                  });
-                },
-                infoText: "Dosya, Pdf formatında ve 6mb'dan küçük olmalıdır.",
-                selectedFile: _tuzukPDF,
-                isRequired: true,
-              ),
-              PickFileWidget(
-                context,
-                title: "STK'nın Faaliyet Belgesi",
-                onFilePicked: (PlatformFile file) {
-                  setState(() {
-                    _faaliyetPDF = file;
-                  });
-                },
-                onFileRemoved: () {
-                  setState(() {
-                    _faaliyetPDF = null;
-                  });
-                },
-                infoText: "Dosya, Pdf formatında ve 6mb'dan küçük olmalıdır.",
-                selectedFile: _faaliyetPDF,
-                isRequired: true,
-              ),
-              FormFieldWidget(
-                context,
-                controller: _stkFederasyonlar,
-                title: "STK'nın Bağlı Bulunduğu Federasyon ve Konfederasyonlar",
-                isRequired: false,
-              ),
-              DropdownWidget(
-                context,
-                titles: _sectors,
-                title: "STK Genel Müdürlüğündeki Faaliyet Alanı",
-                isRequired: true,
-                selectedIndex: _selectedSectorIndex,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedSectorIndex = _sectors.indexOf(value!);
-                  });
-                },
-              ),
-              DropdownSelectWidget(
-                context,
-                titles: _categories,
-                onSelect: (value) {
-                  setState(() {
-                    if (!_selectedCategories.contains(value)) {
-                      _selectedCategories.add(value!);
+                FormFieldWidget(
+                  context,
+                  controller: _contactPersonPhoneController,
+                  title: "stk_form_applicant_phone".locale,
+                  keyboardType: TextInputType.phone,
+                  isRequired: true,
+                  inputFormatters: [phoneMaskFormatter],
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !phoneMaskFormatter.isFill()) {
+                      return 'stk_form_invalid_applicant_phone'.locale;
                     }
-                  });
-                },
-                onRemove: (value) {
-                  setState(() {
-                    _selectedCategories.remove(value!);
-                  });
-                },
-                title: "Kategorisi",
-                isRequired: true,
-                selectedItems: _selectedCategories,
-                selectedIndex: -1,
-              ),
-              DropdownSelectWidget(
-                context,
-                titles: _bmItems,
-                onSelect: (value) {
-                  setState(() {
-                    if (!selectedBMs.contains(value)) {
-                      selectedBMs.add(value!);
+                    return null;
+                  },
+                ),
+                FormFieldWidget(
+                  context,
+                  controller: _contactPersonMailController,
+                  title: "stk_form_applicant_email".locale,
+                  keyboardType: TextInputType.emailAddress,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !emailRegex.hasMatch(value)) {
+                      return 'stk_form_invalid_applicant_email'.locale;
                     }
-                  });
-                },
-                onRemove: (value) {
-                  setState(() {
-                    selectedBMs.remove(value!);
-                  });
-                },
-                title:
-                    "BM’nin sürdürülebilir kalkınma amaçlarından hangilerini destekliyor? (Birden fazla amaç seçebilirsiniz.)",
-                isRequired: true,
-                selectedItems: selectedBMs,
-                isNumbered: true,
-                selectedIndex: -1,
-              ),
-              DropdownWidget(
-                context,
-                titles: _types,
-                selectedIndex: _selectedType,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = _types.indexOf(value!);
-                  });
-                },
-                title: "Türü",
-                isRequired: true,
-              ),
+                    return null;
+                  },
+                ),
+                FormFieldWidget(
+                  context,
+                  controller: _contactPersonJobController,
+                  title: "stk_form_applicant_position".locale,
+                  isRequired: _types[_selectedTypeIndex]['key'] != "stk_form_type_special_permission",
+                  validator: (value) {
+                    if ((_types[_selectedTypeIndex]['key'] != "stk_form_type_special_permission") &&
+                        (value == null || value.isEmpty)) {
+                      return 'stk_form_invalid_applicant_position'.locale;
+                    }
+                    return null;
+                  },
+                ),
+              ] else if (_selectedTypeIndex != -1 &&
+                  _types[_selectedTypeIndex]['key'] == "stk_form_type_special_permission") ...[
+                // Valilik İzin Belgesi
+                PickFileWidget(
+                  context,
+                  title: "stk_form_governorate_permission_document".locale,
+                  onFilePicked: (PlatformFile file) {
+                    setState(() {
+                      _valilikIzinBelgesi = file;
+                    });
+                  },
+                  onFileRemoved: () {
+                    setState(() {
+                      _valilikIzinBelgesi = null;
+                    });
+                  },
+                  infoText: "stk_form_governorate_permission_document_info".locale,
+                  selectedFile: _valilikIzinBelgesi,
+                  isRequired: true,
+                ),
+                // STK İl Müdürlüğü Yetki Belgesi
+                PickFileWidget(
+                  context,
+                  title: "stk_form_stk_il_mudurlugu_yetki_belgesi".locale,
+                  onFilePicked: (PlatformFile file) {
+                    setState(() {
+                      _stkIlMudurluguYetkiBelgesi = file;
+                    });
+                  },
+                  onFileRemoved: () {
+                    setState(() {
+                      _stkIlMudurluguYetkiBelgesi = null;
+                    });
+                  },
+                  infoText: "stk_form_stk_il_mudurlugu_yetki_belgesi_info".locale,
+                  selectedFile: _stkIlMudurluguYetkiBelgesi,
+                  isRequired: true,
+                ),
+                // İzin Başlama Tarihi
+                FormFieldWidget(
+                  context,
+                  controller: _stkIzinBaslamaController,
+                  title: "stk_form_permission_start_date".locale,
+                  isRequired: true,
+                  readOnly: true,
+                  ontap: () => _selectDate(context, _stkIzinBaslamaController),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_permission_start_date'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // İzin Bitiş Tarihi
+                FormFieldWidget(
+                  context,
+                  controller: _stkIzinBitisController,
+                  title: "stk_form_permission_end_date".locale,
+                  isRequired: true,
+                  readOnly: true,
+                  ontap: () => _selectDate(context, _stkIzinBitisController),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_permission_end_date'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // İzni Veren Valilik
+                DropdownWidget(
+                  context,
+                  titles: iller,
+                  selectedIndex: selectedIl != null ? iller.indexOf(selectedIl!) : -1,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedIl = value;
+                    });
+                  },
+                  title: "stk_form_permission_granting_governorate".locale,
+                  isRequired: true,
+                ),
+                // Faaliyet No
+                FormFieldWidget(
+                  context,
+                  controller: _stkFaaliyetNoController,
+                  title: "stk_form_activity_number".locale,
+                  isRequired: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [numberFormatter],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_activity_number'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Kampanyanın Adı
+                FormFieldWidget(
+                  context,
+                  controller: _stkKampanyaAdiController,
+                  title: "stk_form_campaign_name".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_campaign_name'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Doğum Tarihi
+                FormFieldWidget(
+                  context,
+                  controller: _stkDogumTarihiController,
+                  title: "stk_form_birth_date".locale,
+                  isRequired: true,
+                  readOnly: true,
+                  ontap: () => _selectDate(context, _stkDogumTarihiController),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_birth_date'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Fotoğrafı
+                PickImageWidget(
+                  context,
+                  title: "stk_form_photo".locale,
+                  onImagePicked: (List<XFile?> image) {
+                    setState(() {
+                      _photoImage = [
+                        ImageModel(
+                          imageType: ImageType.asset,
+                          file: image[0]!,
+                        ),
+                      ];
+                    });
+                  },
+                  selectedImages: _photoImage,
+                  isSelectOnlyOne: true,
+                  onImageRemoved: (ImageModel? image) {
+                    setState(() {
+                      _photoImage = [];
+                    });
+                  },
+                  infoText: "stk_form_photo_info".locale,
+                  isRequired: true,
+                ),
+                // IBAN No
+                FormFieldWidget(
+                  context,
+                  controller: _stkIbanController,
+                  title: "stk_form_iban_no".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !isValid(value.replaceAll(RegExp(r'\s+'), ''))) {
+                      return 'stk_form_invalid_iban'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Web Sitesi
+                FormFieldWidget(
+                  context,
+                  controller: _stkWebsiteController,
+                  title: "stk_form_website".locale,
+                  isRequired: false,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !urlRegex.hasMatch(value)) {
+                      return 'stk_form_invalid_website'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // İl
+                DropdownWidget(
+                  context,
+                  titles: iller,
+                  selectedIndex: selectedIl != null ? iller.indexOf(selectedIl!) : -1,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedIl = value;
+                      selectedIlce = null;
+                      selectedMahalle = null;
+                      ilceler = [];
+                      mahalleler = [];
+                      final jsonResult = jsonDecode(jsonData);
+                      for (var item in jsonResult) {
+                        if (item["İL"] == selectedIl) {
+                          if (!ilceler.contains(item["İLÇE"])) {
+                            ilceler.add(item["İLÇE"]);
+                          }
+                        }
+                      }
+                    });
+                  },
+                  title: "stk_form_city".locale,
+                  isRequired: true,
+                ),
+                // İlçe
+                if (selectedIl != null)
+                  DropdownWidget(
+                    context,
+                    titles: ilceler,
+                    selectedIndex: selectedIlce != null ? ilceler.indexOf(selectedIlce!) : -1,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedIlce = value;
+                        selectedMahalle = null;
+                        mahalleler = [];
+                        final jsonResult = jsonDecode(jsonData);
+                        for (var item in jsonResult) {
+                          if (item["İLÇE"] == selectedIlce) {
+                            if (!mahalleler.contains(item["MAHALLE"])) {
+                              mahalleler.add(item["MAHALLE"]);
+                            }
+                          }
+                        }
+                      });
+                    },
+                    title: "stk_form_district".locale,
+                    isRequired: true,
+                  ),
+                // Mahalle
+                if (selectedIlce != null)
+                  DropdownWidget(
+                    context,
+                    titles: mahalleler,
+                    selectedIndex: selectedMahalle != null ? mahalleler.indexOf(selectedMahalle!) : -1,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedMahalle = value;
+                      });
+                    },
+                    title: "stk_form_neighborhood".locale,
+                    isRequired: true,
+                  ),
+                // Geriye Kalan Adres Bilgileri
+                if (selectedMahalle != null)
+                  FormFieldWidget(
+                    context,
+                    controller: _stkAddressController,
+                    title: "stk_form_remaining_address".locale,
+                    isRequired: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'stk_form_invalid_remaining_address'.locale;
+                      }
+                      return null;
+                    },
+                  ),
+                // İznin Amacı
+                FormFieldWidget(
+                  context,
+                  controller: _stkIzninAmaciController,
+                  title: "stk_form_permission_purpose".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_permission_purpose'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Faydalanıcılar (Kategoriler yerine)
+                DropdownSelectWidget(
+                  context,
+                  titles: _beneficiaries.map((e) => e['label']!).toList(),
+                  onSelect: (value) {
+                    setState(() {
+                      if (!_selectedBeneficiaries.contains(value)) {
+                        _selectedBeneficiaries.add(value!);
+                      }
+                    });
+                  },
+                  onRemove: (value) {
+                    setState(() {
+                      _selectedBeneficiaries.remove(value!);
+                    });
+                  },
+                  title: "stk_form_beneficiaries".locale,
+                  isRequired: true,
+                  selectedItems: _selectedBeneficiaries,
+                  selectedIndex: -1,
+                ),
+                // BM'nin Sürdürülebilir Kalkınma Amaçları
+                DropdownSelectWidget(
+                  context,
+                  titles: _bmItems.map((e) => e['label']!).toList(),
+                  onSelect: (value) {
+                    setState(() {
+                      if (!selectedBMs.contains(value)) {
+                        selectedBMs.add(value!);
+                      }
+                    });
+                  },
+                  onRemove: (value) {
+                    setState(() {
+                      selectedBMs.remove(value!);
+                    });
+                  },
+                  title: "stk_form_un_sdgs".locale,
+                  isRequired: true,
+                  selectedItems: selectedBMs,
+                  isNumbered: true,
+                  selectedIndex: -1,
+                ),
+                SizedBox(height: 20),
+                // Başvuruyu Yapan Kişinin Bilgileri
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "stk_form_applicant_info".locale,
+                    style: AppTheme.semiBoldTextStyle(
+                      context,
+                      16,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ),
+                FormFieldWidget(
+                  context,
+                  controller: _contactPersonNameController,
+                  title: "stk_form_applicant_name".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_applicant_name'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                FormFieldWidget(
+                  context,
+                  controller: _contactPersonPhoneController,
+                  title: "stk_form_applicant_phone".locale,
+                  keyboardType: TextInputType.phone,
+                  isRequired: true,
+                  inputFormatters: [phoneMaskFormatter],
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !phoneMaskFormatter.isFill()) {
+                      return 'stk_form_invalid_applicant_phone'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                FormFieldWidget(
+                  context,
+                  controller: _contactPersonMailController,
+                  title: "stk_form_applicant_email".locale,
+                  keyboardType: TextInputType.emailAddress,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !emailRegex.hasMatch(value)) {
+                      return 'stk_form_invalid_applicant_email'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                FormFieldWidget(
+                  context,
+                  controller: _contactPersonRelationController,
+                  title: "stk_form_applicant_relation".locale,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_applicant_relation'.locale;
+                    }
+                    return null;
+                  },
+                ),
+              ],
+
               SizedBox(height: deviceHeightSize(context, 10)),
               GeneralButtonWidget(
-                text: "Gönder",
+                text: "stk_form_submit".locale,
                 isLoading: context.watch<STKProvider>().sendFormState == LoadingState.loading,
-                onPressed: () {
-                  if (context.read<STKProvider>().sendFormState == LoadingState.loading) {
-                    return;
-                  }
-                  if (_formKey.currentState?.validate() ?? false) {
-                    if (_logoImage.isEmpty) {
-                      ToastWidgets.errorToast(context, "Logo doğru biçimde yüklenmedi.");
-                      return;
-                    }
-                    if (selectedIl == null ||
-                        selectedIlce == null ||
-                        selectedMahalle == null ||
-                        _stkAddressController.text.isEmpty) {
-                      ToastWidgets.errorToast(context, "Adres bilgilerinde hata var.");
-                      return;
-                    }
-                    if (_tuzukPDF == null) {
-                      ToastWidgets.errorToast(context, "Tüzük dosyasında hata var.");
-                      return;
-                    }
-                    if (_faaliyetPDF == null) {
-                      ToastWidgets.errorToast(context, "Faaliyet belgesinde hata var.");
-                      return;
-                    }
-                    if (_selectedSectorIndex == -1) {
-                      ToastWidgets.errorToast(context, "Faaliyet alanı bilgisinde hata var.");
-                      return;
-                    }
-                    if (_selectedCategories.isEmpty) {
-                      ToastWidgets.errorToast(context, "Kategori bilgisinde hata var.");
-                      return;
-                    }
-                    if (selectedBMs.isEmpty) {
-                      ToastWidgets.errorToast(context, "BM amaçları bilgisinde hata var");
-                      return;
-                    }
-                    if (_selectedType == -1) {
-                      ToastWidgets.errorToast(context, "STK türünde hata var");
-                      return;
-                    }
-                    context
-                        .read<STKProvider>()
-                        .sendForm(
-                          stkFormModel: STKFormModel(
-                            name: _stkNameController.text,
-                            website: _stkWebsiteController.text,
-                            mail: _stkMailController.text,
-                            phone: _stkPhoneController.text,
-                            founder: _stkFounderController.text,
-                            contactPerson: _stkContactPersonController.text,
-                            contactPersonJob: _stkContactPersonJob.text,
-                            contactPersonPhone: _stkContactPersonPhoneController.text,
-                            contactPersonMail: _stkContactPersonMailController.text,
-                            address: _stkAddressController.text,
-                            city: selectedIl!,
-                            district: selectedIlce!,
-                            neighborhood: selectedMahalle!,
-                            categories: _selectedCategories,
-                            bmCategories: selectedBMs,
-                            selectedSector: _sectors[_selectedSectorIndex],
-                            sicilNo: _stkSicilNoController.text,
-                            vergiNo: _stkVergiNoController.text,
-                            iban: _stkIbanController.text,
-                            time: DateTime.now(),
-                            type: _types[_selectedType],
-                            federations: _stkFederasyonlar.text,
-                            fullName: _stkFullNameController.text,
-                          ),
-                          logoImage: _logoImage,
-                          tuzukPDF: _tuzukPDF,
-                          faaliyetImage: _faaliyetPDF,
-                        )
-                        .then((GeneralResponseModel responseModel) {
-                      if (responseModel.success == true) {
-                        Navigator.pop(context);
-                      }
-                      ToastWidgets.responseToast(context, responseModel);
-                    });
-                  } else {
-                    ToastWidgets.errorToast(
-                        context, "Eksik bilgi girdiniz! Lütfen girdiğiniz verileri tekrar gözden geçirin");
-                    return;
-                  }
-                },
+                onPressed: _submitForm,
               ),
               SizedBox(
                 height: deviceHeightSize(context, 30) + MediaQuery.of(context).viewInsets.bottom,
@@ -611,71 +958,235 @@ class _STKFormWidgetState extends State<STKFormWidget> {
     );
   }
 
-  final List<String> _sectors = [
-    "Mesleki Ve Dayanisma Dernekleri",
-    "Dini Hizmetlerin Gerçekleştirilmesine Yönelik Faaliyet Gösteren Dernekler",
-    "Spor Ve Spor İle İlgili Dernekleri",
-    "İnsani Yardim Dernekleri",
-    "Eğitim Araştırma Dernekleri",
-    "Kültür, Sanat Ve Turizm Dernekleri",
-    "Toplumsal Değerleri Yaşatma Dernekleri",
-    "Çevre Doğal Hayat Hayvanları Koruma Dernekleri",
-    "Sağlık Alanında Faaliyet Gösteren Dernekler",
-    "Bireysel Öğreti Ve Toplumsal Gelişim Dernekleri",
-    "İmar, Şehircilik Ve Kalkındırma Dernekleri",
-    "Hak Ve Savunuculuk Dernekleri",
-    "Engelli Dernekleri",
-    "Düşünce Temelli Dernekler",
-    "Kamu Kurumlari Ve Personelini Destekleyen Dernekleri",
-    "Gida, Tarim Ve Hayvancilik Alaninda Faaliyet Göste",
-    "Dış Türkler İle Dayanışma Dernekleri",
-    "Uluslararası Teşekküller Ve İşbirliği Dernekleri",
-    "Şehit Yakını Ve Gazi Dernekleri",
-    "Yasli Ve Çocuklara Yönelik Dernekler",
-    "Çocuk Dernekleri",
-    "Diğer",
+  // Get ID No title based on selected type
+  String _getIDNoTitle() {
+    if (_selectedTypeIndex != -1) {
+      String selectedKey = _types[_selectedTypeIndex]['key']!;
+      if (selectedKey == "stk_form_type_association" || selectedKey == "stk_form_type_sports_club") {
+        return "stk_form_registry_number";
+      } else if (selectedKey == "stk_form_type_foundation") {
+        return "stk_form_registry_number_foundation";
+      } else if (selectedKey == "stk_form_type_special_permission") {
+        return "stk_form_activity_number";
+      }
+    }
+    return "ID No";
+  }
+
+  // Date picker for selecting dates
+  void _selectDate(BuildContext context, TextEditingController controller) async {
+    DateTime initialDate = DateTime.now();
+    DateTime firstDate = DateTime(1900);
+    DateTime lastDate = DateTime(2100);
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      locale: Locale('tr'), // Dil ayarı
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        controller.text = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+      });
+    }
+  }
+
+  // Submit form
+  // Submit form
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      // Seçilen türün anahtarını alıyoruz
+      String selectedTypeKey = _types[_selectedTypeIndex]['key']!;
+
+      // Başvuruyu yapan kişinin bilgileri
+      String applicantName = _contactPersonNameController.text;
+      String applicantPhone = _contactPersonPhoneController.text;
+      String applicantEmail = _contactPersonMailController.text;
+      String? applicantPosition = _contactPersonJobController.text;
+      String? applicantRelation = _contactPersonRelationController.text;
+
+      // Ortak alanları alıyoruz
+      String iban = _stkIbanController.text;
+      String website = _stkWebsiteController.text;
+      String email = _stkMailController.text;
+      String phone = _stkPhoneController.text;
+      String city = selectedIl ?? '';
+      String district = selectedIlce ?? '';
+      String neighborhood = selectedMahalle ?? '';
+      String address = _stkAddressController.text;
+
+      // Faydalanıcılar ve BM amaçları
+      List<String> beneficiaries = _selectedBeneficiaries.map((e) {
+        int index = _beneficiaries.indexWhere((element) => element['label'] == e);
+        return _beneficiaries[index]['key']!;
+      }).toList();
+
+      List<String> unSdgs = selectedBMs.map((e) {
+        int index = _bmItems.indexWhere((element) => element['label'] == e);
+        return _bmItems[index]['key']!;
+      }).toList();
+
+      // STKFormModel'i oluşturuyoruz
+      STKFormModel stkFormModel = STKFormModel(
+        type: selectedTypeKey,
+        iban: iban,
+        website: website,
+        email: email,
+        phone: phone,
+        city: city,
+        district: district,
+        neighborhood: neighborhood,
+        address: address,
+        beneficiaries: beneficiaries.map((e) => e.locale,).toList(),
+        unSdgs: unSdgs.map((e) => e.locale,).toList(),
+        applicantName: applicantName,
+        applicantPhone: applicantPhone,
+        applicantEmail: applicantEmail,
+        applicantPosition: applicantPosition,
+        applicantRelation: applicantRelation,
+      );
+
+      // Seçilen türe göre alanları ekliyoruz
+      if (selectedTypeKey != "stk_form_type_special_permission") {
+        // Diğer türler için alanlar
+        stkFormModel.idNo = _stkIDNoController.text;
+        stkFormModel.taxNumber = _stkVergiNoController.text;
+        stkFormModel.taxOffice = _stkVergiDairesiController.text;
+        stkFormModel.shortName = _stkNameController.text;
+        stkFormModel.fullName = _stkFullNameController.text;
+        stkFormModel.establishmentYear = _stkKurulusYiliController.text;
+        stkFormModel.activityArea = _sectors[_selectedSectorIndex]['key'];
+      } else {
+        // Özel izin ile yardım toplayan için alanlar
+        stkFormModel.permissionStartDate = _stkIzinBaslamaController.text;
+        stkFormModel.permissionEndDate = _stkIzinBitisController.text;
+        stkFormModel.permissionGrantingGovernorate = selectedIl;
+        stkFormModel.activityNumber = _stkFaaliyetNoController.text;
+        stkFormModel.campaignName = _stkKampanyaAdiController.text;
+        stkFormModel.birthDate = _stkDogumTarihiController.text;
+        stkFormModel.permissionPurpose = _stkIzninAmaciController.text;
+      }
+
+      // Form verilerini gönderiyoruz
+      var response = await context.read<STKProvider>().sendForm(
+            stkFormModel,
+            logoImage: _logoImage.isNotEmpty ? _logoImage[0] : null,
+            statuteFile: _tuzukPDF,
+            activityCertificateFile: _faaliyetPDF,
+            photoImage: _photoImage.isNotEmpty ? _photoImage[0] : null,
+            governoratePermissionDocument: _valilikIzinBelgesi,
+            stkIlMudurluguYetkiBelgesi: _stkIlMudurluguYetkiBelgesi,
+          );
+
+      if (response.success ?? false) {
+        // Başarılı mesajı göster
+        ToastWidgets.successToast(context, response.message ?? "stk_form_submission_success".locale);
+        // Formu sıfırlayabilirsiniz veya başka bir sayfaya yönlendirebilirsiniz
+        _formKey.currentState!.reset();
+        setState(() {
+          _selectedTypeIndex = -1;
+          _selectedSectorIndex = -1;
+          _selectedBeneficiaries.clear();
+          selectedBMs.clear();
+          _logoImage.clear();
+          _photoImage.clear();
+          _tuzukPDF = null;
+          _faaliyetPDF = null;
+          _valilikIzinBelgesi = null;
+          _stkIlMudurluguYetkiBelgesi = null;
+          selectedIl = null;
+          selectedIlce = null;
+          selectedMahalle = null;
+          ilceler.clear();
+          mahalleler.clear();
+          Navigator.pop(context);
+        });
+      } else {
+        // Hata mesajı göster
+        ToastWidgets.errorToast(context, response.message ?? "stk_form_submission_error".locale);
+      }
+    } else {
+      // Validasyon hatası
+      ToastWidgets.errorToast(context, "stk_form_validation_error".locale);
+    }
+  }
+
+  // Türler listesi güncellendi
+  final List<Map<String, String>> _types = [
+    {"key": "stk_form_type_association", "label": "stk_form_type_association".locale},
+    {"key": "stk_form_type_foundation", "label": "stk_form_type_foundation".locale},
+    {"key": "stk_form_type_sports_club", "label": "stk_form_type_sports_club".locale},
+    {"key": "stk_form_type_special_permission", "label": "stk_form_type_special_permission".locale},
   ];
 
-  final List<String> _categories = [
-    "Hayvanlar",
-    "Yoksullar",
-    "Eğitim",
-    "Sağlık",
-    "Tarım",
-    "Mülteci",
-    "Hukuk",
-    "Deprem",
-    "Gıda",
-    "Dini",
-    "Sosyal girişimcilik",
-    "Girişimcilik",
-    "Kültür Sanat",
-    "Spor",
+  // Sektörler listesi güncellendi
+  final List<Map<String, String>> _sectors = [
+    {"key": "stk_form_sector_professional_associations", "label": "stk_form_sector_professional_associations".locale},
+    {"key": "stk_form_sector_religious_services", "label": "stk_form_sector_religious_services".locale},
+    {"key": "stk_form_sector_sports", "label": "stk_form_sector_sports".locale},
+    {"key": "stk_form_sector_humanitarian_aid", "label": "stk_form_sector_humanitarian_aid".locale},
+    {"key": "stk_form_sector_education_research", "label": "stk_form_sector_education_research".locale},
+    {"key": "stk_form_sector_culture_art_tourism", "label": "stk_form_sector_culture_art_tourism".locale},
+    {"key": "stk_form_sector_social_values", "label": "stk_form_sector_social_values".locale},
+    {"key": "stk_form_sector_environment", "label": "stk_form_sector_environment".locale},
+    {"key": "stk_form_sector_health", "label": "stk_form_sector_health".locale},
+    {"key": "stk_form_sector_personal_development", "label": "stk_form_sector_personal_development".locale},
+    {"key": "stk_form_sector_urban_development", "label": "stk_form_sector_urban_development".locale},
+    {"key": "stk_form_sector_advocacy", "label": "stk_form_sector_advocacy".locale},
+    {"key": "stk_form_sector_disabilities", "label": "stk_form_sector_disabilities".locale},
+    {"key": "stk_form_sector_thought_based", "label": "stk_form_sector_thought_based".locale},
+    {"key": "stk_form_sector_public_support", "label": "stk_form_sector_public_support".locale},
+    {"key": "stk_form_sector_food_agriculture", "label": "stk_form_sector_food_agriculture".locale},
+    {"key": "stk_form_sector_diaspora", "label": "stk_form_sector_diaspora".locale},
+    {"key": "stk_form_sector_international_cooperation", "label": "stk_form_sector_international_cooperation".locale},
+    {"key": "stk_form_sector_veterans", "label": "stk_form_sector_veterans".locale},
+    {"key": "stk_form_sector_elderly_children", "label": "stk_form_sector_elderly_children".locale},
+    {"key": "stk_form_sector_children", "label": "stk_form_sector_children".locale},
+    {"key": "stk_form_sector_other", "label": "stk_form_sector_other".locale},
   ];
 
-  final List<String> _types = [
-    "Dernek",
-    "Vakıf",
-    "Özel İzinli",
+  // Faydalanıcılar listesi güncellendi
+  final List<Map<String, String>> _beneficiaries = [
+    {"key": "stk_form_beneficiaries_animals", "label": "stk_form_beneficiaries_animals".locale},
+    {"key": "stk_form_beneficiaries_poor", "label": "stk_form_beneficiaries_poor".locale},
+    {"key": "stk_form_beneficiaries_education", "label": "stk_form_beneficiaries_education".locale},
+    {"key": "stk_form_beneficiaries_health", "label": "stk_form_beneficiaries_health".locale},
+    {"key": "stk_form_beneficiaries_agriculture", "label": "stk_form_beneficiaries_agriculture".locale},
+    {"key": "stk_form_beneficiaries_refugees", "label": "stk_form_beneficiaries_refugees".locale},
+    {"key": "stk_form_beneficiaries_law", "label": "stk_form_beneficiaries_law".locale},
+    {"key": "stk_form_beneficiaries_earthquake", "label": "stk_form_beneficiaries_earthquake".locale},
+    {"key": "stk_form_beneficiaries_food", "label": "stk_form_beneficiaries_food".locale},
+    {"key": "stk_form_beneficiaries_religious", "label": "stk_form_beneficiaries_religious".locale},
+    {
+      "key": "stk_form_beneficiaries_social_entrepreneurship",
+      "label": "stk_form_beneficiaries_social_entrepreneurship".locale
+    },
+    {"key": "stk_form_beneficiaries_entrepreneurship", "label": "stk_form_beneficiaries_entrepreneurship".locale},
+    {"key": "stk_form_beneficiaries_culture_art", "label": "stk_form_beneficiaries_culture_art".locale},
+    {"key": "stk_form_beneficiaries_sports", "label": "stk_form_beneficiaries_sports".locale},
   ];
 
-  final List<String> _bmItems = [
-    "Yoksulluğa Son",
-    "Açlığa Son",
-    "Sağlık Ve Kaliteli Yaşam",
-    "Nitelikli Eğitim",
-    "Toplumsal Cinsiyet Eşitliği",
-    "Temiz Su Ve Sanitasyon",
-    "Erişilebilir Ve Temiz Enerji",
-    "İnsana Yakışır İş Ve Ekonomik Büyüme",
-    "Sanayi, Yenilikçilik Ve Altyapı",
-    "Eşitsizliklerin Azaltılması",
-    "Sürdürülebilir Şehirler Ve Topluluklar",
-    "Sorumlu Üretim Ve Tüketim",
-    "İklim Eylemi",
-    "Sudaki Yaşam",
-    "Karasal Yaşam",
-    "Barış, Adalet Ve Güçlü Kurumlar",
-    "Amaçlar İçin Ortaklıklar",
+  // BM Sürdürülebilir Kalkınma Amaçları listesi güncellendi
+  final List<Map<String, String>> _bmItems = [
+    {"key": "stk_form_un_goal_no_poverty", "label": "stk_form_un_goal_no_poverty".locale},
+    {"key": "stk_form_un_goal_zero_hunger", "label": "stk_form_un_goal_zero_hunger".locale},
+    {"key": "stk_form_un_goal_good_health", "label": "stk_form_un_goal_good_health".locale},
+    {"key": "stk_form_un_goal_quality_education", "label": "stk_form_un_goal_quality_education".locale},
+    {"key": "stk_form_un_goal_gender_equality", "label": "stk_form_un_goal_gender_equality".locale},
+    {"key": "stk_form_un_goal_clean_water", "label": "stk_form_un_goal_clean_water".locale},
+    {"key": "stk_form_un_goal_clean_energy", "label": "stk_form_un_goal_clean_energy".locale},
+    {"key": "stk_form_un_goal_decent_work", "label": "stk_form_un_goal_decent_work".locale},
+    {"key": "stk_form_un_goal_industry", "label": "stk_form_un_goal_industry".locale},
+    {"key": "stk_form_un_goal_reduced_inequalities", "label": "stk_form_un_goal_reduced_inequalities".locale},
+    {"key": "stk_form_un_goal_sustainable_cities", "label": "stk_form_un_goal_sustainable_cities".locale},
+    {"key": "stk_form_un_goal_responsible_consumption", "label": "stk_form_un_goal_responsible_consumption".locale},
+    {"key": "stk_form_un_goal_climate_action", "label": "stk_form_un_goal_climate_action".locale},
+    {"key": "stk_form_un_goal_life_below_water", "label": "stk_form_un_goal_life_below_water".locale},
+    {"key": "stk_form_un_goal_life_on_land", "label": "stk_form_un_goal_life_on_land".locale},
+    {"key": "stk_form_un_goal_peace_justice", "label": "stk_form_un_goal_peace_justice".locale},
+    {"key": "stk_form_un_goal_partnerships", "label": "stk_form_un_goal_partnerships".locale},
   ];
 }

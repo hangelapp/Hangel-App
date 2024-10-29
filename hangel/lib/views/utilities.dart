@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/views/app_view.dart';
+import 'package:hangel/widgets/locale_text.dart';
 import '../constants/app_theme.dart';
 import '../constants/size.dart';
 import 'select_favorite_stk_page.dart';
@@ -150,7 +151,7 @@ Widget nullStkWidget(context) {
       child: Column(
         children: [
           Icon(Icons.now_widgets_outlined, size: 30),
-          Text("Henüz bir STK eklemediniz."),
+          LocaleText("stk_eklemediniz"),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.push(
@@ -185,7 +186,7 @@ Widget nullBrandWidget(context) {
       child: Column(
         children: [
           Icon(Icons.now_widgets_outlined, size: 30),
-          Text("Henüz bir Marka favorilemediniz."),
+          LocaleText("marka_favorilemediniz"),
           ElevatedButton.icon(
             onPressed: () {
               tabcontroller.jumpToTab(0);
@@ -193,8 +194,8 @@ Widget nullBrandWidget(context) {
             style: ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll(const Color(0xFF2B2D42)),
                 shadowColor: WidgetStatePropertyAll(Colors.transparent)),
-            label: Text(
-              "Markalara Göz At",
+            label: LocaleText(
+              "marka_gozat",
               style: TextStyle(color: Colors.white),
             ),
             icon: Icon(Icons.keyboard_double_arrow_right_rounded, color: Colors.white),

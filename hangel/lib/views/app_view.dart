@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/providers/brand_provider.dart';
@@ -22,6 +23,7 @@ import 'package:provider/provider.dart';
 
 import '../widgets/bottom_sheet_widget.dart';
 import '../widgets/support_form.dart';
+import '../widgets/locale_text.dart'; // LocaleText import edildi
 
 class AppView extends StatefulWidget {
   const AppView({Key? key}) : super(key: key);
@@ -60,29 +62,28 @@ class _AppViewState extends State<AppView> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Gizlilik ve İzinler'),
+          title: LocaleText('app_view_privacy_dialog_title'), // Başlık lokalize edildi
           content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  'Uygulamamız, size daha iyi ve kişiselleştirilmiş bir deneyim sunmak için izninize ihtiyaç duyar.',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LocaleText(
+                  'app_view_privacy_dialog_content_part1',
+                  style: AppTheme.lightTextStyle(context, 14),
                 ),
-                SizedBox(height: 10),
-                Text(
-                  'Lütfen devam etmek için "Onayla" butonuna tıklayın.',
-                ),
+                SizedBox(height: deviceHeightSize(context, 10)),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Onayla'),
+              child: LocaleText('app_view_privacy_dialog_button_cancel'), // "İptal"
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('İptal'),
+              child: LocaleText('app_view_privacy_dialog_button_accept'), // "Devam Et"
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -121,11 +122,11 @@ class _AppViewState extends State<AppView> {
             icon: const Icon(Icons.shopping_bag_rounded),
             activeColorPrimary: AppTheme.primaryColor,
             inactiveColorPrimary: CupertinoColors.systemGrey,
-            title: ("Markalar"),
+            title: 'app_view_bottom_nav_markets'.locale, // "Markalar"
           ),
           PersistentBottomNavBarItem(
             icon: const Icon(Icons.handshake_rounded),
-            title: ("Gönüllü"),
+            title: 'app_view_bottom_nav_volunteer'.locale, // "Gönüllü"
             activeColorPrimary: AppTheme.primaryColor,
             inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
@@ -148,19 +149,19 @@ class _AppViewState extends State<AppView> {
                 ),
               ),
             ),
-            title: ("Favoriler"),
+            title: 'app_view_bottom_nav_favorites'.locale, // "Favoriler"
             activeColorPrimary: AppTheme.white,
             inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
           PersistentBottomNavBarItem(
             icon: const Icon(Icons.volunteer_activism_rounded),
-            title: ("STK' lar"),
+            title: 'app_view_bottom_nav_stks'.locale, // "STK' lar"
             activeColorPrimary: AppTheme.primaryColor,
             inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
           PersistentBottomNavBarItem(
             icon: const Icon(Icons.person_rounded),
-            title: ("Profil"),
+            title: 'app_view_bottom_nav_profile'.locale, // "Profil"
             activeColorPrimary: AppTheme.primaryColor,
             inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
@@ -192,8 +193,8 @@ class _AppViewState extends State<AppView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    "Merhaba,",
+                  LocaleText(
+                    'app_view_drawer_greeting',
                     style: AppTheme.lightTextStyle(context, 32, color: AppTheme.white),
                   ),
                   Text(
@@ -205,7 +206,7 @@ class _AppViewState extends State<AppView> {
             ),
             const Spacer(),
             MenuItemWidget(
-              title: "Profilim",
+              title: 'app_view_drawer_profile'.locale, // "Profilim"
               icon: Icon(
                 Icons.person_rounded,
                 color: AppTheme.primaryColor,
@@ -222,7 +223,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             MenuItemWidget(
-              title: "Bağışlarım",
+              title: 'app_view_drawer_donations'.locale, // "Bağışlarım"
               icon: Icon(
                 Icons.history_rounded,
                 color: AppTheme.primaryColor,
@@ -237,7 +238,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             MenuItemWidget(
-              title: "Stk'lar",
+              title: 'app_view_drawer_stks'.locale, // "Stk'lar"
               icon: Icon(
                 Icons.volunteer_activism_rounded,
                 color: AppTheme.primaryColor,
@@ -245,6 +246,7 @@ class _AppViewState extends State<AppView> {
               ),
               iconColor: AppTheme.primaryColor,
               onTap: () {
+                context.read<BrandProvider>().filterText = "socialEnterprise";
                 context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(3);
                 tabcontroller.jumpToTab(3);
                 Navigator.pop(context);
@@ -254,7 +256,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             MenuItemWidget(
-              title: "Gönüllü",
+              title: 'app_view_drawer_volunteer'.locale, // "Gönüllü"
               icon: Icon(
                 Icons.shopping_bag_rounded,
                 color: AppTheme.primaryColor,
@@ -271,7 +273,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             MenuItemWidget(
-              title: "Sosyal Şirketler",
+              title: 'app_view_drawer_social_companies'.locale, // "Sosyal Şirketler"
               icon: Icon(
                 Icons.business_rounded,
                 color: AppTheme.primaryColor,
@@ -289,7 +291,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             MenuItemWidget(
-              title: "Ayarlar",
+              title: 'app_view_drawer_settings'.locale, // "Ayarlar"
               iconColor: AppTheme.primaryColor,
               onTap: () {
                 Navigator.pushNamed(context, SettingsPage.routeName);
@@ -304,7 +306,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             MenuItemWidget(
-              title: "İletişim",
+              title: 'app_view_drawer_contact'.locale, // "İletişim"
               icon: Icon(
                 Icons.phone_rounded,
                 color: AppTheme.primaryColor,
@@ -321,8 +323,10 @@ class _AppViewState extends State<AppView> {
                       topRight: Radius.circular(20),
                     ),
                   ),
-                  builder: (context) =>
-                      const BottomSheetWidget(isMinPadding: true, title: "İletişime Geç", child: SupportForm()),
+                  builder: (context) => BottomSheetWidget(
+                      isMinPadding: true,
+                      title: 'app_view_contact_support'.locale,
+                      child: SupportForm()), // "İletişime Geç"
                 );
               },
             ),
@@ -330,12 +334,12 @@ class _AppViewState extends State<AppView> {
             SizedBox(
               height: deviceHeightSize(context, 6),
             ),
-            Text(
-              "v1.0.0",
+            LocaleText(
+              'app_view_version', // "v1.0.0"
               style: AppTheme.lightTextStyle(context, 14),
             ),
             MenuItemWidget(
-              title: "Çıkış Yap",
+              title: 'app_view_drawer_logout'.locale, // "Çıkış Yap"
               icon: Icon(
                 Icons.logout_rounded,
                 color: AppTheme.red,
@@ -348,11 +352,10 @@ class _AppViewState extends State<AppView> {
                   context: context,
                   builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(
                     context,
-                    title: "Çıkış Yap",
-                    buttonText: "Çıkış Yap",
-                    cancelButtonText: "Vazgeç",
-                    content:
-                        "Alışverişlerin ile sosyal faydaya ortak olmaya devam etmen için çıkış yapmaman gerekiyor.",
+                    title: 'app_view_exit_dialog_title'.locale, // "Çıkış Yap"
+                    buttonText: 'app_view_exit_dialog_button_accept'.locale, // "Çıkış Yap"
+                    cancelButtonText: 'app_view_exit_dialog_button_cancel'.locale, // "Vazgeç"
+                    content: 'app_view_exit_dialog_content'.locale, // "Alışverişlerin ile ..."
                     color: AppTheme.red,
                     onAcceptButtonPressed: () async {
                       await FirebaseAuth.instance.signOut();
@@ -368,7 +371,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 40),
             ),
             MenuItemWidget(
-              title: "Hesabımı Sil",
+              title: 'app_view_drawer_delete_account'.locale, // "Hesabımı Sil"
               icon: Icon(
                 Icons.delete_forever_outlined,
                 color: Colors.grey,
@@ -380,13 +383,12 @@ class _AppViewState extends State<AppView> {
                 showDialog(
                   context: context,
                   builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(context,
-                      title: "Hesabımı Sil",
-                      buttonText: "Hesabımı Sil",
-                      cancelButtonText: "Vazgeç",
+                      title: 'app_view_delete_account_dialog_title'.locale, // "Hesabımı Sil"
+                      buttonText: 'app_view_delete_account_dialog_button_accept'.locale, // "Hesabımı Sil"
+                      cancelButtonText: 'app_view_delete_account_dialog_button_cancel'.locale, // "Vazgeç"
                       isLoading: isLoading,
                       cancelButtonColor: Colors.green,
-                      content:
-                          "Alışverişlerin ile sosyal faydaya ortak olmaya devam etmen için hesabını silmemen gerekiyor.\nBu işlem geri alınamaz!",
+                      content: 'app_view_delete_account_dialog_content'.locale, // "Alışverişlerin ile ..."
                       color: Colors.grey, onAcceptButtonPressed: () async {
                     setState(() {
                       isLoading = true;
@@ -431,8 +433,8 @@ class _AppViewState extends State<AppView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Session Expired'),
-        content: Text('Please log in again to delete your account.'),
+        title: LocaleText('app_view_reauth_dialog_title'), // "Oturum Süresi Doldu"
+        content: LocaleText('app_view_reauth_dialog_content'), // "Hesabınızı silmek için ..."
         actions: [
           TextButton(
             onPressed: () {
@@ -440,7 +442,7 @@ class _AppViewState extends State<AppView> {
 
               Navigator.pushNamed(context, RegisterPage.routeName);
             },
-            child: Text('OK'),
+            child: LocaleText('app_view_reauth_dialog_button_ok'), // "Tamam"
           ),
         ],
       ),

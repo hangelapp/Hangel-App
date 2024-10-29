@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
@@ -40,6 +41,39 @@ class StorageServices {
     } catch (e) {
       print("Error uploading image: $e");
       rethrow; // Rethrow the exception to handle it in the calling code
+    }
+  }
+
+  // Yeni eklenen: Dosyaları (örneğin PDF) yüklemek için genel bir metod
+  Future<String> uploadFile(String path, PlatformFile file) async {
+    try {
+      final fileName = file.name;
+      final ref = _firebaseStorage.ref().child(path).child(fileName);
+      final uploadTask = ref.putData(
+        file.bytes!,
+        SettableMetadata(contentType: _getContentType(file.extension)),
+      );
+      final snapshot = await uploadTask.whenComplete(() => null);
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print("Error uploading file: $e");
+      rethrow;
+    }
+  }
+
+  // Dosyanın Content-Type'ını belirlemek için yardımcı metod
+  String _getContentType(String? extension) {
+    switch (extension) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      default:
+        return 'application/octet-stream';
     }
   }
 }

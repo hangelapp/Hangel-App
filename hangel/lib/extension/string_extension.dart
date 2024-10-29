@@ -1,3 +1,5 @@
+import 'package:get/utils.dart';
+
 extension StringExtension on String {
   String removeBrackets() {
     RegExp regex = RegExp(r'\[.*?\]');
@@ -12,5 +14,15 @@ extension EmailValidator on String {
       r"[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
     );
     return emailRegex.hasMatch(this);
+  }
+
+  String get locale => tr;
+  String get unLocale => this;
+  String localeWithParams(Map<String, String> params) {
+    String localized = this.locale;
+    params.forEach((key, value) {
+      localized = localized.replaceAll('%{$key}', value);
+    });
+    return localized;
   }
 }

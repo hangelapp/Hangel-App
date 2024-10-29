@@ -267,21 +267,35 @@ class STKProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<GeneralResponseModel> sendForm(
-      {required STKFormModel stkFormModel,
-      required List<ImageModel?> logoImage,
-      required PlatformFile? tuzukPDF,
-      required PlatformFile? faaliyetImage}) async {
+  Future<GeneralResponseModel>  sendForm(
+    STKFormModel stkFormModel, {
+    ImageModel? logoImage,
+    PlatformFile? statuteFile,
+    PlatformFile? activityCertificateFile,
+    ImageModel? photoImage,
+    PlatformFile? governoratePermissionDocument,
+    PlatformFile? stkIlMudurluguYetkiBelgesi,
+  }) async {
     _sendFormState = LoadingState.loading;
     notifyListeners();
+
+    // Form verilerini ve dosyaları STKController'a gönderiyoruz
     final response = await _stkController.sendForm(
       stkFormModel: stkFormModel,
       logoImage: logoImage,
-      tuzukPDF: tuzukPDF,
-      faaliyetImage: faaliyetImage,
+      statuteFile: statuteFile,
+      activityCertificateFile: activityCertificateFile,
+      photoImage: photoImage,
+      governoratePermissionDocument: governoratePermissionDocument,
+      stkIlMudurluguYetkiBelgesi: stkIlMudurluguYetkiBelgesi,
     );
+
+    // Başvuruyu yapan kişiye ve STK email adresine bilgi maili gönderiyoruz
+    List<String> emails = [];
+    stkFormModel.email != "" ? emails.add(stkFormModel.email!) : null;
+    stkFormModel.applicantEmail != "" ? emails.add(stkFormModel.applicantEmail!) : null;
     await SendMailHelper.sendMail(
-      to: [stkFormModel.contactPersonMail!, stkFormModel.mail!],
+      to: emails,
       subject: "STK Başvurusu",
       body: "STK Başvurusu",
       html: '''
@@ -306,8 +320,9 @@ class STKProvider with ChangeNotifier {
     </div>
   </body>
 </html>
-  ''',
+    ''',
     );
+
     _sendFormState = LoadingState.loaded;
     notifyListeners();
     return response;

@@ -3,6 +3,7 @@ import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/stk_detail_page.dart';
@@ -77,7 +78,7 @@ class _STKPageState extends State<STKPage> {
                 tabs: _tabs
                     .map(
                       (e) => Tab(
-                        text: e,
+                        text: e.locale,
                       ),
                     )
                     .toList(),
@@ -101,7 +102,7 @@ class _STKPageState extends State<STKPage> {
                               left: deviceWidthSize(context, 20),
                             ),
                             child: Text(
-                              "STK'lar",
+                              "stk_page_stks".locale,
                               style: AppTheme.boldTextStyle(context, 20),
                             ),
                           ),
@@ -110,7 +111,7 @@ class _STKPageState extends State<STKPage> {
                       ),
                       Expanded(
                         child: isLoading
-                            ? CircularProgressIndicator()
+                            ? Center(child: CircularProgressIndicator())
                             : FirestorePagination(
                                 padding: EdgeInsets.zero,
                                 limit: 5,
@@ -186,64 +187,64 @@ class _STKPageState extends State<STKPage> {
 
   final List<String> _types = [
     "",
-    "Dernek",
-    "Vakıf",
-    "Özel İzinli",
+    "select_favorite_stk_association".locale,
+    "select_favorite_stk_foundation".locale,
+    "select_favorite_stk_special_permission".locale,
   ];
 
   final List<String> _tabs = [
-    "Tümü",
-    "Dernek",
-    "Vakıf",
-    "Özel İzinli",
+    "stk_page_all".locale,
+    "stk_page_associations".locale,
+    "stk_page_foundations".locale,
+    "stk_page_special_permissions".locale,
   ];
 
   List<Map<String, String>> filters = [
     {
-      "name": "Deprem Bölgesi",
+      "name": "stk_page_filter_earthquake_zone".locale,
       "value": "depremBolgesi",
     },
     {
-      "name": "Özel Statü",
+      "name": "stk_page_filter_special_status".locale,
       "value": "specialStatus",
     },
     {
-      "name": "Tümü",
+      "name": "stk_page_filter_all".locale,
       "value": "",
     },
   ];
 
   List<Map<String, String>> sorts = [
     {
-      "name": "İsme Göre",
+      "name": "stk_page_sort_by_name".locale,
       "value": "name",
     },
     {
-      "name": "Favori Sayısına Göre",
+      "name": "stk_page_sort_by_favorite".locale,
       "value": "favoriteCount",
     },
     {
-      "name": "Bağışçı Sayısına Göre",
+      "name": "stk_page_sort_by_donor".locale,
       "value": "donorCount",
     },
   ];
 
   final List<String> _categories = [
     "",
-    "Hayvanlar",
-    "Yoksullar",
-    "Eğitim",
-    "Sağlık",
-    "Tarım",
-    "Mülteci",
-    "Hukuk",
-    "Deprem",
-    "Gıda",
-    "Dini",
-    "Sosyal girişimcilik",
-    "Girişimcilik",
-    "Kültür Sanat",
-    "Spor",
+    "select_favorite_stk_animals".locale,
+    "select_favorite_stk_poverty".locale,
+    "select_favorite_stk_education".locale,
+    "select_favorite_stk_health".locale,
+    "select_favorite_stk_agriculture".locale,
+    "select_favorite_stk_refugees".locale,
+    "select_favorite_stk_law".locale,
+    "select_favorite_stk_earthquake".locale,
+    "select_favorite_stk_food".locale,
+    "select_favorite_stk_religious".locale,
+    "select_favorite_stk_social_entrepreneurship".locale,
+    "select_favorite_stk_entrepreneurship".locale,
+    "select_favorite_stk_culture_art".locale,
+    "select_favorite_stk_sports".locale,
   ];
 
   Padding filterAndSort(BuildContext context) {
@@ -277,7 +278,6 @@ class _STKPageState extends State<STKPage> {
               setState(() {
                 isLoading = false;
               });
-              // context.read<STKProvider>().sortSTK(value);
               context.read<STKProvider>().sortText = value;
               print(value);
             },
@@ -299,22 +299,12 @@ class _STKPageState extends State<STKPage> {
                 _categories.length,
                 (index) => PopupMenuItem(
                   value: _categories[index],
-                  child: Text(index == 0 ? "Tümü" : _categories[index],
+                  child: Text(index == 0 ? "stk_page_filter_all".locale : _categories[index],
                       style: context.read<STKProvider>().filterText == _categories[index]
                           ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
                           : AppTheme.normalTextStyle(context, 14)),
                 ),
               ),
-              // ...List.generate(
-              //   _categories.length,
-              //   (index) => PopupMenuItem(
-              //     value: _categories[index],
-              //     child: Text(_categories[index],
-              //         style: context.read<STKProvider>().filterText == _categories[index]
-              //             ? AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor)
-              //             : AppTheme.normalTextStyle(context, 14)),
-              //   ),
-              // ),
             ],
             onSelected: (value) async {
               context.read<STKProvider>().filterText = value;

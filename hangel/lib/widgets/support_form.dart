@@ -26,9 +26,14 @@ class _SupportFormState extends State<SupportForm> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _telephoneController = TextEditingController();
   bool isLoading = false;
-  final List<String> _userTypes = ["Bireysel Kullanıcıyım", "STK Yöneticisiyim", "Marka Yöneticisiyim"];
+  final List<String> _userTypes = [
+    "support_form_user_type_individual".locale,
+    "support_form_user_type_stk_manager".locale,
+    "support_form_user_type_brand_manager".locale
+  ];
 
   int selectedIndex = -1;
+
   @override
   void initState() {
     _telephoneController.text = HiveHelpers.getUserFromHive().phone ?? "";
@@ -61,21 +66,21 @@ class _SupportFormState extends State<SupportForm> {
             FormFieldWidget(
               context,
               controller: _nameController,
-              title: "Ad Soyad",
+              title: "support_form_name".locale,
               isRequired: true,
               isEditable: false,
             ),
             FormFieldWidget(
               context,
               controller: _emailController,
-              title: "E-Posta",
+              title: "support_form_email".locale,
               isRequired: true,
               isEditable: false,
             ),
             FormFieldWidget(
               context,
               controller: _telephoneController,
-              title: "Telefon",
+              title: "support_form_phone".locale,
               keyboardType: TextInputType.phone,
               isRequired: true,
               isEditable: false,
@@ -83,7 +88,7 @@ class _SupportFormState extends State<SupportForm> {
             DropdownWidget(
               context,
               titles: _userTypes,
-              title: "Kullanıcı Tipi",
+              title: "support_form_user_type".locale,
               selectedIndex: selectedIndex,
               isRequired: true,
               onChanged: (value) {
@@ -93,13 +98,13 @@ class _SupportFormState extends State<SupportForm> {
             FormFieldWidget(
               context,
               controller: _subjectController,
-              title: "Konu",
+              title: "support_form_subject".locale,
               isRequired: true,
             ),
             FormFieldWidget(
               context,
               controller: _messageController,
-              title: "Mesaj",
+              title: "support_form_message".locale,
               isRequired: true,
               maxLines: 5,
               minLines: 2,
@@ -110,7 +115,7 @@ class _SupportFormState extends State<SupportForm> {
                   isLoading = true;
                 });
                 if (!_emailController.text.isValidEmail()) {
-                  ToastWidgets.errorToast(context, "E-posta adresinizde hata var!");
+                  ToastWidgets.errorToast(context, "support_form_invalid_email".locale);
                   setState(() {
                     isLoading = false;
                   });
@@ -122,28 +127,28 @@ class _SupportFormState extends State<SupportForm> {
                     _subjectController.text.isEmpty ||
                     _messageController.text.isEmpty ||
                     selectedIndex == -1) {
-                  ToastWidgets.errorToast(context, "Lütfen tüm alanları doldurun");
+                  ToastWidgets.errorToast(context, "support_form_fill_all_fields".locale);
                   setState(() {
                     isLoading = false;
                   });
                   return;
                 }
                 if (!_emailController.text.contains("@") || !_emailController.text.contains(".")) {
-                  ToastWidgets.errorToast(context, "Lütfen geçerli bir e-posta girin");
+                  ToastWidgets.errorToast(context, "support_form_invalid_email".locale);
                   setState(() {
                     isLoading = false;
                   });
                   return;
                 }
                 if (_telephoneController.text.length < 10) {
-                  ToastWidgets.errorToast(context, "Lütfen geçerli bir telefon numarası girin");
+                  ToastWidgets.errorToast(context, "support_form_invalid_phone".locale);
                   setState(() {
                     isLoading = false;
                   });
                   return;
                 }
                 await FirebaseFirestore.instance.collection("forms").add({
-                  "subject": "İletişim",
+                  "subject": "iletişim", // Formun tipi burada kullanılıyor
                   "status": "active",
                   "form": {
                     "name": _nameController.text,
@@ -170,7 +175,7 @@ class _SupportFormState extends State<SupportForm> {
                   Navigator.pop(context);
                 });
               },
-              text: "Gönder",
+              text: "support_form_send".locale,
               isLoading: isLoading,
             ),
             SizedBox(

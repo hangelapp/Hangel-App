@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
-import 'package:hangel/extension/string_extension.dart';
+import 'package:hangel/extension/string_extension.dart'; // Assuming .locale is defined here
 import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/url_launcher_helper.dart';
@@ -16,11 +16,13 @@ import '../widgets/app_bar_widget.dart';
 import '../widgets/app_name_widget.dart';
 import '../widgets/general_button_widget.dart';
 import '../widgets/gradient_widget.dart';
+import '../widgets/locale_text.dart'; // Assuming LocaleText widget is defined here
 import 'utilities.dart';
 
 class BrandDetailPage extends StatefulWidget {
   const BrandDetailPage({Key? key, required this.brandModel}) : super(key: key);
   final BrandModel brandModel;
+
   @override
   State<BrandDetailPage> createState() => _BrandDetailPageState();
 }
@@ -29,6 +31,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
   TabController? _tabController;
   bool linkButtonLoading = false;
   BrandInfoModel? brandInfo;
+
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
@@ -76,19 +79,12 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
-                        // BackdropFilter(
-                        //   filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        //   child: Container(
-                        //     color: backgroundColor?.withOpacity(0.2) ?? Colors.grey.withOpacity(0.5),
-                        //   ),
-                        // ),
                         listItemImage2(
                           context,
                           title: widget.brandModel.name,
                           img: widget.brandModel.logo,
                           onTap: () {},
                         ),
-
                         SizedBox(
                           height: deviceHeightSize(context, 30),
                         ),
@@ -100,9 +96,9 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1), // Gölgenin rengi (hafif şeffaf)
-                                    blurRadius: 8, // Gölgenin yumuşaklığı (yüksek değer daha yumuşak gölge)
-                                    offset: const Offset(2, 2), // Gölgenin konumu (x, y ekseninde)
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(2, 2),
                                   ),
                                 ],
                               ),
@@ -148,8 +144,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                   ),
                                   Text(
                                     widget.brandModel.sector ?? "",
-                                    style:
-                                        AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
+                                    style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                   ),
                                 ],
                               ),
@@ -161,10 +156,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                               onTap: () async {
                                 if (favoriteButtonLoading) return;
                                 if (brandInfo == null || brandInfo?.brandId == null) return;
-                                context
-                                    .read<BrandProvider>()
-                                    .addRemoveFavoriteBrand(widget.brandModel.id!)
-                                    .then((value) {
+                                context.read<BrandProvider>().addRemoveFavoriteBrand(widget.brandModel.id!).then((value) {
                                   setState(() {});
                                 });
                                 await context.read<BrandProvider>().setFavoriteBrand(brandInfo!.brandId!).then((value) {
@@ -189,13 +181,6 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                             color: AppTheme.primaryColor,
                                             size: deviceFontSize(context, 24),
                                           ),
-                                          // Text(
-                                          //   widget.brandModel.favoriteCount.toString(),
-                                          //   style: AppTheme.normalTextStyle(
-                                          //     context,
-                                          //     14,
-                                          //   ),
-                                          // ),
                                         ],
                                       ),
                               ),
@@ -212,16 +197,14 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
-
                         _tabView(context),
-
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Bilgilendirmeler",
+                          child: LocaleText(
+                            "brand_detail_page_bilgilendirmeler",
                             style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
                           ),
                         ),
@@ -245,7 +228,9 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                               child: SizedBox(
                                 width: deviceWidth(context) * 0.75,
                                 child: Text(
-                                  "Yaptığın alışverişlerde %${(widget.brandModel.donationRate ?? 0.12)} oranında bağış yapma imkanı!",
+                                  "brand_detail_page_bagis_yansimama_mesaji1".locale +
+                                      "${(widget.brandModel.donationRate ?? 0.12)}" +
+                                      "brand_detail_page_bagis_yansimama_mesaji2".locale,
                                   style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
                                 ),
                               ),
@@ -266,7 +251,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                               child: SizedBox(
                                 width: deviceWidth(context) * 0.75,
                                 child: Text(
-                                  "Bağış ödemesi için ortalama zaman: 75 gün",
+                                  "brand_detail_page_bagis_yansimama_mesaji3".locale,
                                   style: AppTheme.semiBoldTextStyle(context, 14, color: AppTheme.black),
                                 ),
                               ),
@@ -285,9 +270,9 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             Align(
                               alignment: Alignment.topLeft,
                               child: TextButton(
-                                style: ButtonStyle(padding: WidgetStatePropertyAll(EdgeInsets.zero)),
+                                style: ButtonStyle(padding: MaterialStateProperty.all(EdgeInsets.zero)),
                                 child: Text(
-                                  "Genel Bonus Koşulları",
+                                  "brand_detail_page_genel_bonus_kosullari".locale,
                                   style: AppTheme.semiBoldTextStyleWithUnderline(context, 14, color: AppTheme.black),
                                 ),
                                 onPressed: () {
@@ -300,28 +285,16 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
-                        // Align(
-                        //   alignment: Alignment.centerLeft,
-                        //   child: Text(
-                        //     (widget.brandModel.detailText ?? "") +
-                        //         " " +
-                        //         (widget.brandModel.detailText ?? "") +
-                        //         " " +
-                        //         (widget.brandModel.detailText ?? ""),
-                        //     style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
-                        //   ),
-                        // ),
                         SizedBox(
                           height: deviceHeightSize(context, 10),
                         ),
-
                         Align(
                           alignment: Alignment.centerLeft,
                           child: RichText(
                             text: TextSpan(
                               children: [
                                 TextSpan(
-                                  text: "Platforma Katılma Tarihi: ",
+                                  text: "brand_detail_page_join_date_label".locale,
                                   style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                 ),
                                 TextSpan(
@@ -343,9 +316,17 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             alignment: WrapAlignment.start,
                             children: [
                               if (widget.brandModel.inEarthquakeZone == true)
-                                tagItem(context, color: AppTheme.blue, text: "Deprem Bölgesi"),
+                                tagItem(
+                                  context,
+                                  color: AppTheme.blue,
+                                  text: "brand_detail_page_deprem_bolgesi".locale,
+                                ),
                               if (widget.brandModel.isSocialEnterprise == true)
-                                tagItem(context, color: AppTheme.green, text: "Sosyal Girişim"),
+                                tagItem(
+                                  context,
+                                  color: AppTheme.green,
+                                  text: "brand_detail_page_sosyal_girisim".locale,
+                                ),
                             ],
                           ),
                         ),
@@ -364,28 +345,30 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                     child: GeneralButtonWidget(
                       onPressed: () async {
                         if (HiveHelpers.getUserFromHive().phone == null) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(SnackBar(content: Text("Sistemde kayıtlı cep telefonu bulunamadı!")));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("brand_detail_page_alisveris_hata_mesaji1".locale)),
+                          );
                           return;
                         }
                         if (HiveHelpers.getUid().isEmpty) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(SnackBar(content: Text("Kullanıcı bilgilerinizde hata var!")));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("brand_detail_page_alisveris_hata_mesaji2".locale)),
+                          );
                           return;
                         }
                         if (HiveHelpers.getUserFromHive().favoriteStks.length != 2) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("En az 2 STK'yı favoriye eklemeniz gerekmektedir!")));
+                            SnackBar(content: Text("brand_detail_page_alisveris_hata_mesaji3".locale)),
+                          );
                           return;
                         }
                         setState(() {
                           linkButtonLoading = true;
                         });
-                        String aff_sub = HiveHelpers.getUid(); // Kullanıcının id'si
-                        String aff_sub2 = generateShortHash(); // Unique değer
+                        String aff_sub = HiveHelpers.getUid();
+                        String aff_sub2 = generateShortHash();
 
-                        // htpss://ad.reklm.com/aff_c?offer_id={OFFER_ID}&aff_id=35329&aff_sub={AFF_SUB_ID}&aff_sub2={uniquedeger}
-                        print("TRACKİNG LİNK\n${widget.brandModel.link}&aff_sub=$aff_sub&aff_sub2=$aff_sub2");
+                        print("TRACKING LINK\n${widget.brandModel.link}&aff_sub=$aff_sub&aff_sub2=$aff_sub2");
                         await FirebaseFirestore.instance.collection("clicks").add({
                           "aff_sub": aff_sub,
                           "aff_sub2": aff_sub2,
@@ -410,7 +393,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                           linkButtonLoading = false;
                         });
                       },
-                      text: "Alışverişe Başla",
+                      text: "brand_detail_page_alisverise_basla".locale,
                       buttonColor: AppTheme.primaryColor,
                       isLoading: linkButtonLoading,
                     ))
@@ -438,8 +421,8 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Sonraki alışverişinden bağış kazanacağından emin olman için bilmen gerekenler",
+                Text(
+                  "brand_detail_page_sonraki_alisveris_kosullari_title".locale,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16.0),
@@ -448,46 +431,76 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSection(context, "Adblock ve diğer tarayıcı eklentilerini devre dışı bırakın",
-                            "Adblock gibi reklam önleyici programlar ve tarayıcı eklentileri çerezlerinizi kullanır ve/veya siler. Bu durumda Hangel üzerinden mağaza geçerek alışverişinizi tamamlasanız bile çerezleriniz takip edilemediğinden mağaza bağışlarınızı yansıtmayacaktır."),
                         _buildSection(
-                            context,
-                            "İnternet tarayıcınızın çerezlere izin verecek şekilde etkinleştirildiğinden emin olun",
-                            "Mağazalar, Hangel üzerinden yaptığınız satın alma işlemini tanımlamak için çerezleri kullanır. Tanımlaması yapıldıktan sonra bağış hesabınıza eklenir. Platformumuz üzerinden mağazaya gitmeden önce lütfen tarayıcınızın çerezlere izin verdiğinden emin olun."),
+                          context,
+                          "brand_form_page_adblock".locale,
+                          "brand_form_page_adblock_content".locale,
+                        ),
                         _buildSection(
-                            context,
-                            "Herhangi bir tarayıcıda özel veya gizli bir pencere ile alışverişinizi tamamlamayın",
-                            "Çerezlerinizin takibi gizli sekmede yapılamadığından, Hangel üzerinden gerçekleştirilen tıklama bilgileri mağazaya iletilemez. Bu nedenle bağışınız yansımayacaktır. Tıklama bilgisi bulunmadığından bağışınızın manuel eklenmesi de mümkün olmayacaktır."),
-                        _buildSection(context, "Diğer para iadesi/bağış programları kullanmayın",
-                            "Hangel gibi diğer para iadesi/bağış/ödül/puan programları kullanıldığında aynı şekilde çerez takibi yapıldığı için mağazalar bağışlarınızı yansıtmamaktadır. Bu nedenle, alışverişinizi tamamlarken yalnızca Hangel’in açık olmasını tavsiye ediyoruz."),
-                        _buildSection(context, "Yalnızca Hangel'de bulunan kupon kodlarını kullanın",
-                            "Hangel platformunda listelenmeyen bir kupon kodu kullandıysanız (mağazanın kupon kodları, kupon kodu sitelerinden alınan kod gibi), bağışınız genelde mağaza tarafından yansıtılmamaktadır. Mağazalar kendi koşullarını belirlemekte olduğu için sitemizde belirtilmeyen kupon kodları kullanıldığında bağış tanımı yapılmamaktadır."),
+                          context,
+                          "brand_form_page_internet_tarayicisi".locale,
+                          "brand_form_page_internet_tarayicisi_content".locale,
+                        ),
                         _buildSection(
-                            context,
-                            "Fiyat karşılaştırma veya kupon kodu sitelerini Hangel üzerinden alışverişiniz öncesinde ziyaret etmeyin",
-                            "Fiyat karşılaştırma ve kupon kodu siteleri, Hangel gibi mağazalardan satış komisyonu almaktadır. Bu işlem, yine Hangel gibi çerezlerinizin takibi ile sağlanmaktadır. Hangel ile alışverişinizi tamamlamadan önce bu siteleri ziyaret ettiğiniz takdirde çerezleriniz silinir/üzerine yazılır."),
+                          context,
+                          "brand_form_page_gizli_pencere".locale,
+                          "brand_form_page_gizli_pencere_content".locale,
+                        ),
                         _buildSection(
-                            context,
-                            "Mağazanın mobil uygulamasını (AliExpress ve/veya birkaç mağaza hariç) kullanmayın",
-                            "Bir mobil cihaz üzerinden alışveriş yapıyorsanız, yalnızca web mağazalarının / rezervasyon hizmetinin tarayıcı sürümlerini kullanın. Satın alma/rezervasyon işlemlerinizi gerçekleştirmek için mağazanın mobil uygulamasını kullandığınız takdirde birkaç mağaza haricinde bağış verilmemektedir."),
-                        _buildSection(context, "Alışveriş sepetinize yalnızca Hangel'e tıkladıktan sonra ürün ekleyin",
-                            "Bazı mağazalar, alışverişinizi tamamlayarak Hangel’den bağış kazanmanızın koşulu olarak alışveriş sepetinizin boş olmasını istemektedirler."),
-                        _buildSection(context, "Bağış yansımama problemini sık yaşıyorsanız çerezlerinizi temizleyin",
-                            "Bağış yansımama problemini sık yaşıyorsanız çerezlerinizi temizlemenizi tavsiye ediyoruz."),
-                        _buildSection(context, "Hangel üzerinden mağazaya tıklamadan alışverişinizi tamamlamayın",
-                            "Hangel'e tıklamadan önce mağazayı ziyaret ettiyseniz, mağaza ilk önce doğrudan çerez takibini yapamadığından Hangel bağışlarınızı yansıtmayacaktır."),
+                          context,
+                          "brand_form_page_diger_programlar".locale,
+                          "brand_form_page_diger_programlar_content".locale,
+                        ),
                         _buildSection(
-                            context,
-                            "Hangel ile ortak olan mağazaların reklamını yapan siteleri ziyaret etmekten kaçının",
-                            "Satın alma işleminiz sırasında reklam afişleri veya linkleri olan başka sekmeleriniz varsa, bağışınız yansımayacaktır."),
-                        _buildSection(context, "Telefonla sipariş vermeyin",
-                            "Telefonla sipariş/rezervasyonlarda hiçbir mağaza bağış vermemektedir."),
+                          context,
+                          "brand_form_page_kupon_kodu".locale,
+                          "brand_form_page_kupon_kodu_content".locale,
+                        ),
                         _buildSection(
-                            context,
-                            "Başka bir ülkenin mağaza sayfasından sipariş vermeyin (örn. AliExpress Rusya)",
-                            "Sadece Hangel platformunun linkleri üzerinden yapılan alışverişler için bağış kazanabilirsiniz."),
-                        _buildSection(context, "Alışverişinizi tamamlamadan önce mağazanın özel koşullarına göz atın",
-                            "Bazı ürünler veya satıcılar da bağış programına dahil edilmeyebilir."),
+                          context,
+                          "brand_form_page_fiyat_karsilastirma".locale,
+                          "brand_form_page_fiyat_karsilastirma_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_mobil_uygulama".locale,
+                          "brand_form_page_mobil_uygulama_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_sepet".locale,
+                          "brand_form_page_sepet_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_diger_para_iadesi".locale,
+                          "brand_form_page_diger_para_iadesi_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_site_ziyaret".locale,
+                          "brand_form_page_site_ziyaret_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_ortak_sirketler".locale,
+                          "brand_form_page_ortak_sirketler_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_telefon_siparis".locale,
+                          "brand_form_page_telefon_siparis_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_farkli_ulke".locale,
+                          "brand_form_page_farkli_ulke_content".locale,
+                        ),
+                        _buildSection(
+                          context,
+                          "brand_form_page_markanin_ozel_kosullari".locale,
+                          "brand_form_page_markanin_ozel_kosullari_content".locale,
+                        ),
                       ],
                     ),
                   ),
@@ -499,7 +512,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: const Text("Tamam"),
+                    child: Text("brand_form_page_tamam".locale),
                   ),
                 ),
               ],
@@ -526,47 +539,6 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
-      ),
-    );
-  }
-
-  GestureDetector stkItem(BuildContext context, int index) {
-    StkModel stkModel = context.watch<STKProvider>().stkList[index];
-    int randomIndex = (stkModel.name ?? "").length % randomColors.length;
-    return GestureDetector(
-      onTap: () {
-        context.read<BrandProvider>().selectedSTKID = stkModel.id ?? "";
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.symmetric(
-          horizontal: deviceWidthSize(context, 10),
-          vertical: deviceHeightSize(context, 5),
-        ),
-        width: deviceWidthSize(context, 100),
-        decoration: BoxDecoration(
-            color: randomColors[randomIndex].withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: context.watch<BrandProvider>().selectedSTKID == stkModel.id
-                ? null
-                // ? Border.all(color: randomColors[randomIndex], width: 2)
-                : null),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const AppNameWidget(
-              fontSize: 16,
-            ),
-            SizedBox(
-              height: deviceHeightSize(context, 8),
-            ),
-            Text(
-              stkModel.name ?? "",
-              textAlign: TextAlign.center,
-              style: AppTheme.boldTextStyle(context, 14, color: AppTheme.black),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -634,14 +606,6 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                     fontSize: 48,
                     color: AppTheme.white,
                   ),
-            // SizedBox(
-            //   height: deviceHeightSize(context, 8),
-            // ),
-            // Text(
-            //   (title ?? "").removeBrackets(),
-            //   textAlign: TextAlign.center,
-            //   style: AppTheme.boldTextStyle(context, 20, color: AppTheme.white),
-            // ),
           ],
         ),
       ),
@@ -651,31 +615,33 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
   _tabView(BuildContext context) {
     List<Map<String, dynamic>> statics = [
       {
-        "title": "Toplam Bağış",
+        "title": "brand_detail_page_toplam_bagis".locale,
         "value": "${brandInfo?.totalDonation?.toStringAsFixed(1) ?? "0"} ₺",
       },
       {
-        "title": "Favori",
+        "title": "brand_detail_page_favori".locale,
         "value": "${brandInfo?.favoriteIds?.length ?? "0"}",
       },
       {
-        "title": "İşlem Sayısı",
+        "title": "brand_detail_page_islem_sayisi".locale,
         "value": "${brandInfo?.processCount?.toStringAsFixed(0) ?? "0"}",
       },
     ];
     List<Map<String, dynamic>> categories = [
       {
-        "title": "Kategoriler",
-        "value": widget.brandModel.categories?.map(
-          (e) => e.name,
-        )
+        "title": "brand_detail_page_kategoriler".locale,
+        "value": widget.brandModel.categories?.map((e) => e.name).join(', ') ?? '',
       },
-      {"title": "Bağış Oranı", "value": widget.brandModel.donationRate.toString() + "%"},
-      {"title": "Deprem Bölgesi mi?", "value": (widget.brandModel.inEarthquakeZone ?? false) ? "Evet" : "Hayır"},
-      // {
-      //   "title":"Sosyal Şirket mi?",
-      //   "value": (widget.brandModel.isSocialEnterprise??false)?"Evet":"Hayır"
-      // },
+      {
+        "title": "brand_detail_page_bagis_orani".locale,
+        "value": "${widget.brandModel.donationRate.toString()}%",
+      },
+      {
+        "title": "brand_detail_page_deprem_bolgesi_mi".locale,
+        "value": (widget.brandModel.inEarthquakeZone ?? false)
+            ? "yes".locale // Assuming "yes" key in localization
+            : "no".locale,  // Assuming "no" key in localization
+      },
     ];
 
     return Column(
@@ -690,25 +656,21 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
           indicator: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: AppTheme.primaryColor.withOpacity(0.1),
-            // border: Border.all(
-            //   color: AppTheme.primaryColor,
-            //   width: 2,
-            // ),
           ),
           labelPadding: EdgeInsets.symmetric(
             horizontal: deviceWidthSize(context, 10),
           ),
           dividerColor: Colors.transparent,
-          overlayColor: WidgetStateProperty.all(Colors.transparent),
-          tabs: const [
+          overlayColor: MaterialStateProperty.all(Colors.transparent),
+          tabs: [
             Tab(
-              child: Text(
-                "Bilgiler",
+              child: LocaleText(
+                "info", // Assuming "info" key in localization
               ),
             ),
             Tab(
-              child: Text(
-                "İstatistikler",
+              child: LocaleText(
+                "statistics", // Assuming "statistics" key in localization
               ),
             ),
           ],

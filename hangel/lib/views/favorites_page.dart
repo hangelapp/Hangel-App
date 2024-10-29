@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/stk_provider.dart';
@@ -19,22 +20,35 @@ import 'brand_detail_page.dart';
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({Key? key}) : super(key: key);
   static const routeName = '/favorites';
+  
   @override
   State<FavoritesPage> createState() => _FavoritesPageState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage> {
+class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProviderStateMixin {
   List<StkModel> stkModels = [];
   List<BrandModel> brandModels = [];
-  TabController? _tabController;
+  late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  // UserModel userModel = userModel;
+
+  @override
+  void initState() {
+    super.initState();
+    // TabController'ı başlatın
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // stkModels = context.watch<STKProvider>().stkList;
-    // brandModels = context.watch<BrandProvider>().brandList;
     UserModel userModel = HiveHelpers.getUserFromHive();
+    
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -52,6 +66,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   size: deviceFontSize(context, 30),
                 ),
               ),
+              title: "favorites_page_title".locale,
             ),
             SizedBox(
               height: deviceHeightSize(context, 20),
@@ -62,12 +77,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 setState(() {});
               },
               controller: _searchController,
+              hintText: "favorites_page_search_hint".locale,
             ),
             Container(
               alignment: Alignment.centerLeft,
               padding: EdgeInsets.only(left: deviceWidthSize(context, 20), top: 20),
               child: Text(
-                "Favorilerim",
+                "favorites_page_favorilerim".locale,
                 style: AppTheme.boldTextStyle(context, 20),
               ),
             ),
@@ -85,19 +101,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 indicator: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: AppTheme.primaryColor.withOpacity(0.1),
-                  // border: Border.all(
-                  //   color: AppTheme.primaryColor,
-                  //   width: 2,
-                  // ),
                 ),
                 dividerColor: Colors.transparent,
-                overlayColor: WidgetStateProperty.all(Colors.transparent),
-                tabs: const [
+                overlayColor: MaterialStateProperty.all(Colors.transparent),
+                tabs:  [
                   Tab(
-                    text: "Markalar",
+                    text: "favorites_page_markalar".locale,
                   ),
                   Tab(
-                    text: "STK'lar",
+                    text: "favorites_page_stklar".locale,
                   ),
                 ],
               ),
@@ -114,11 +126,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         return Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
                         // Hata durumunu işlemek için.
-                        return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
+                        return Center(child: Text('favorites_page_error_occurred'.locale));
                       } else if (snapshot.hasData) {
                         Set<BrandModel>? data = context.read<BrandProvider>().favoriteBrandList;
 
-                        // Eğer veri boşsa, nullStkWidget gösterilir.
+                        // Eğer veri boşsa, nullBrandWidget gösterilir.
                         if (data.isEmpty) {
                           return nullBrandWidget(context);
                         }
@@ -129,7 +141,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                           uniqueData.add(item);
                         });
 
-                        // Veri varsa, stkItem widget'larını döndür.
+                        // Veri varsa, ListItemWidget'ları döndür.
                         return SingleChildScrollView(
                           child: Column(
                             children: uniqueData.map<Widget>((brand) {
@@ -162,36 +174,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       return nullBrandWidget(context);
                     },
                   ),
-                  // Expanded(
-                  //   child: FirestorePagination(
-                  //     padding: EdgeInsets.zero,
-                  //     limit: 5,
-                  //     initialLoader: CircularProgressIndicator(),
-                  //     bottomLoader: LinearProgressIndicator(),
-                  //     query: FirebaseFirestore.instance
-                  //         .collection("stklar")
-                  //         .where(FieldPath.documentId, whereIn: userModel.favoriteStks)
-                  //         .orderBy('favoriteCount', descending: true),
-                  //     itemBuilder: (context, docs, index) {
-                  //       final stk = StkModel.fromJson(docs[index].data() as Map<String, dynamic>);
-                  //       return ListItemWidget(context,
-                  //           logo: stk.logo,
-                  //           title: stk.name.toString(),
-                  //           sector: stk.categories.first,
-                  //           desc: stk.detailText, onTap: () {
-                  //         Navigator.push(
-                  //           context,
-                  //           MaterialPageRoute(
-                  //             builder: (context) => STKDetailPage(
-                  //               stkModel: stk,
-                  //             ),
-                  //           ),
-                  //         );
-                  //       });
-                  //       // Do something cool with the data
-                  //     },
-                  //   ),
-                  // ),
                   FutureBuilder(
                     future: context.read<STKProvider>().getFavoriteSTKs(),
                     builder: (context, snapshot) {
@@ -200,7 +182,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         return Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
                         // Hata durumunu işlemek için.
-                        return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
+                        return Center(child: Text('favorites_page_error_occurred'.locale));
                       } else if (snapshot.hasData) {
                         List<StkModel>? data = snapshot.data;
 
@@ -232,7 +214,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     );
   }
 
-  stkItem(BuildContext context, StkModel stk) {
+  Widget stkItem(BuildContext context, StkModel stk) {
     return ListItemWidget(
       context,
       title: stk.name ?? "",

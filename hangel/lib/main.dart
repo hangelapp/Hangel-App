@@ -1,13 +1,18 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'constants/app_theme.dart';
+import 'constants/preferences_keys.dart';
 import 'firebase_options.dart';
 import 'helpers/locator.dart';
 import 'helpers/provider_list.dart';
+import 'managers/language_manager.dart';
+import 'managers/locale_manager.dart';
 import 'views/about_us_page.dart';
 import 'views/app_view.dart';
 import 'views/auth/onboarding_page.dart';
@@ -22,6 +27,7 @@ import 'views/splash_page.dart';
 import 'views/stk_volunteers_page.dart';
 import 'views/support_page.dart';
 import 'views/vounteer_form.dart';
+import 'widgets/missing_donation_form_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,8 +35,26 @@ void main() async {
   setupLocator();
   await Hive.initFlutter();
   await Hive.openBox("user");
+  await LocaleManager.prefrencesInit();
 
-  await initializeDateFormatting('tr_TR', null);
+  final localeString = LocaleManager.instance.getStringValue(PreferencesKeys.LOCALE);
+  Locale? initialLocale;
+
+  if (localeString.isNotEmpty) {
+    final localeParts = localeString.split('_');
+    if (localeParts.length == 2) {
+      initialLocale = Locale(localeParts[0], localeParts[1]);
+    } else {
+      initialLocale = Locale(localeString);
+    }
+  } else {
+    initialLocale = Get.deviceLocale ?? const Locale('tr', 'TR');
+  }
+
+  await initializeDateFormatting(
+    initialLocale.toString(),
+    null,
+  );
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -38,13 +62,15 @@ void main() async {
   runApp(
     MultiProvider(
       providers: providers,
-      child: MyApp(),
+      child: MyApp(initialLocale: initialLocale),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({super.key});
+  final Locale initialLocale;
+
+  MyApp({Key? key, required this.initialLocale}) : super(key: key);
 
   final ThemeData themeData = ThemeData(
     primaryColor: AppTheme.primaryColor,
@@ -68,8 +94,40 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final langInstance = LanguageManager.instance;
+
+    // Desteklenen locale olup olmadığını kontrol et
+    Locale localeToUse = initialLocale;
+    if (!langInstance.supportedLocales.any((locale) => locale.languageCode == initialLocale.languageCode)) {
+      localeToUse = langInstance.trLocale;
+    } else {
+      // Tam eşleşen Locale nesnesini al
+      localeToUse =
+          langInstance.supportedLocales.firstWhere((locale) => locale.languageCode == initialLocale.languageCode);
+    }
+
+    return GetMaterialApp(
       title: 'Hangel',
+      locale: localeToUse,
+      translations: langInstance,
+      fallbackLocale: langInstance.trLocale,
+      supportedLocales: langInstance.supportedLocales,
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        if (deviceLocale == null) {
+          return langInstance.trLocale;
+        }
+        for (var locale in supportedLocales) {
+          if (locale.languageCode == deviceLocale.languageCode) {
+            return locale;
+          }
+        }
+        return langInstance.trLocale;
+      },
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       debugShowCheckedModeBanner: false,
       theme: themeData,
       initialRoute: WidgetTree.routeName,
@@ -87,7 +145,8 @@ class MyApp extends StatelessWidget {
         SupportPage.routeName: (context) => const SupportPage(),
         DonationHistoryPage.routeName: (context) => const DonationHistoryPage(),
         FrequentlyAskedQuestionsPage.routeName: (context) => const FrequentlyAskedQuestionsPage(),
-        VolunteerForm.routeName: (context) => const VolunteerForm()
+        VolunteerForm.routeName: (context) => const VolunteerForm(),
+        MissingDonationFormPage.routeName: (context) => const MissingDonationFormPage(),
       },
     );
   }

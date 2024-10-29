@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-
-import '../constants/app_theme.dart';
-import '../constants/size.dart';
-import '../helpers/date_format_helper.dart';
-import '../helpers/hive_helpers.dart';
-import '../models/stk_model.dart';
-import '../widgets/app_bar_widget.dart';
-import '../widgets/app_name_widget.dart';
-import 'select_favorite_stk_page.dart';
+import 'package:hangel/constants/app_theme.dart';
+import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
+import 'package:hangel/helpers/date_format_helper.dart';
+import 'package:hangel/helpers/hive_helpers.dart';
+import 'package:hangel/models/stk_model.dart';
+import 'package:hangel/widgets/app_bar_widget.dart';
+import 'package:hangel/widgets/app_name_widget.dart';
+import 'package:hangel/views/select_favorite_stk_page.dart';
 
 class STKDetailPage extends StatefulWidget {
   const STKDetailPage({Key? key, required this.stkModel}) : super(key: key);
   final StkModel stkModel;
+  
   @override
   State<STKDetailPage> createState() => _STKDetailPageState();
 }
@@ -64,9 +65,9 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1), // Gölgenin rengi (hafif şeffaf)
-                                    blurRadius: 8, // Gölgenin yumuşaklığı (yüksek değer daha yumuşak gölge)
-                                    offset: const Offset(2, 2), // Gölgenin konumu (x, y ekseninde)
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(2, 2),
                                   ),
                                 ],
                               ),
@@ -130,17 +131,6 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                                         inTree: true,
                                       ),
                                     ));
-                                // context
-                                //     .read<STKProvider>()
-                                //     .addRemoveFavoriteSTK(
-                                //         widget.stkModel.id)
-                                //     .then((value) {
-                                //   setState(() {});
-                                //   if (value.success == true) {
-                                //     ToastWidgets.successToast(
-                                //         context, "İşlem Başarılı!");
-                                //   }
-                                // });
                               },
                               child: Container(
                                 padding: EdgeInsets.symmetric(
@@ -202,7 +192,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Hakkında",
+                            "stk_detail_about".locale,
                             style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.black),
                           ),
                         ),
@@ -225,7 +215,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                             text: TextSpan(
                               children: [
                                 TextSpan(
-                                  text: "Platforma Katılma Tarihi: ",
+                                  text: "stk_detail_join_date_label".locale,
                                   style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                 ),
                                 TextSpan(
@@ -247,7 +237,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                             alignment: WrapAlignment.start,
                             children: [
                               if (widget.stkModel.inEarthquakeZone == true)
-                                tagItem(context, color: AppTheme.blue, text: "Deprem Bölgesi"),
+                                tagItem(context, color: AppTheme.blue, text: "stk_detail_earthquake_zone".locale),
                             ],
                           ),
                         ),
@@ -328,41 +318,37 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                     fontSize: 48,
                     color: AppTheme.primaryColor,
                   ),
-            // SizedBox(
-            //   height: deviceHeightSize(context, 8),
-            // ),
-            // Text(
-            //   (title ?? "").removeBrackets(),
-            //   textAlign: TextAlign.center,
-            //   style: AppTheme.boldTextStyle(context, 20, color: AppTheme.white),
-            // ),
           ],
         ),
       ),
     );
   }
 
-  _tabView(BuildContext context) {
+  Widget _tabView(BuildContext context) {
     List<Map<String, dynamic>> statics = [
-      {"title": "Toplam Bağış", "value": "${(widget.stkModel.totalDonation ?? 0).toStringAsFixed(0)} ₺", "icon": Icons.money},
-      {"title": "İşlem Sayısı", "value": "${(widget.stkModel.processCount ?? 0).toString()}", "icon": Icons.plus_one},
-      {"title": "Bağışçı Sayısı", "value": "${(widget.stkModel.totalDonor ?? 0).toString()}", "icon": Icons.people},
+      {
+        "title": "stk_detail_total_donation".locale,
+        "value": "${(widget.stkModel.totalDonation ?? 0).toStringAsFixed(0)} ₺",
+        "icon": Icons.money
+      },
+      {"title": "stk_detail_process_count".locale, "value": "${(widget.stkModel.processCount ?? 0).toString()}", "icon": Icons.plus_one},
+      {"title": "stk_detail_donor_count".locale, "value": "${(widget.stkModel.totalDonor ?? 0).toString()}", "icon": Icons.people},
     ];
     List<Map<String, dynamic>> categories = [
       {
-        "title": "Türü",
+        "title": "stk_detail_type".locale,
         "value": widget.stkModel.type ?? "",
       },
       {
-        "title": "Kategorileri",
+        "title": "stk_detail_categories".locale,
         "value": widget.stkModel.categories.join(", "),
       },
       {
-        "title": "BM Sürdürülebilirlik Amaçları",
+        "title": "stk_detail_un_goals".locale,
         "value": widget.stkModel.bmCategories.join(", "),
       },
       {
-        "title": "Alanı",
+        "title": "stk_detail_field".locale,
         "value": widget.stkModel.fieldOfBenefit,
       },
     ];
@@ -383,25 +369,21 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
             indicator: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: AppTheme.primaryColor.withOpacity(0.1),
-              // border: Border.all(
-              //   color: AppTheme.primaryColor,
-              //   width: 2,
-              // ),
             ),
             labelPadding: EdgeInsets.symmetric(
               horizontal: deviceWidthSize(context, 20),
             ),
             dividerColor: Colors.transparent,
             overlayColor: WidgetStateProperty.all(Colors.transparent),
-            tabs: const [
+            tabs: [
               Tab(
                 child: Text(
-                  "Genel Bilgiler",
+                  "stk_detail_general_info".locale,
                 ),
               ),
               Tab(
                 child: Text(
-                  "İstatistikler",
+                  "stk_detail_statistics".locale,
                 ),
               ),
             ],
@@ -447,7 +429,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if (info[index]["icon"] != null) Icon(info[index]["icon"]),
+                if (info[index]["icon"] != null) Icon(info[index]["icon"], color: AppTheme.primaryColor),
                 SizedBox(width: 15),
                 Expanded(
                   flex: _tabController!.index == 0 ? 1 : 2,

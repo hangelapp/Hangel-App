@@ -2,8 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
+import 'package:hangel/widgets/locale_text.dart';
 import 'package:hangel/widgets/toast_widgets.dart';
 
 import '../helpers/send_mail_helper.dart';
@@ -96,8 +98,8 @@ Widget ListItemWidget(
                         if (donationRate != null)
                           Column(
                             children: [
-                              Text(
-                                "Bağış Oranı",
+                              LocaleText(
+                                "home_page_donation_rate",
                                 style: AppTheme.normalTextStyle(context, 14),
                               ),
                               Container(
@@ -157,7 +159,7 @@ Widget ListItemWidget(
                           }
                           applicantExist == true ? null : showApplyInfo(context, stkEmail!, stkId!);
                         },
-                        child: applicantExist == true ? Text("Başvuruldu") : Text("Başvur"),
+                        child: applicantExist == true ? LocaleText("basvuruldu") : LocaleText("basvur"),
                         style: ButtonStyle(
                             padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
                             backgroundColor:
@@ -183,7 +185,7 @@ Widget ListItemWidget(
                   color: AppTheme.primaryColor,
                 ),
                 child: Text(
-                  "${totalAplicant.length} kişi başvurdu",
+                  "${totalAplicant.length} "+"kisi_basvurdu".locale,
                   style: TextStyle(color: AppTheme.white),
                 ),
               ))

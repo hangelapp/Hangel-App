@@ -2,19 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/donation_model.dart';
-import 'package:hangel/widgets/app_bar_widget.dart';
-import 'package:hangel/widgets/circle_logo_widget.dart';
+import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_pagination/firebase_pagination.dart'; // Pagination paketi
+
+// Yeni sayfa import edildi
 
 import '../models/brand_model.dart';
 import '../models/stk_model.dart';
 import '../models/user_model.dart';
 import '../providers/brand_provider.dart';
 import '../providers/stk_provider.dart';
+import '../widgets/app_bar_widget.dart';
+import '../widgets/bottom_sheet_widget.dart';
+import '../widgets/circle_logo_widget.dart';
+import '../widgets/missing_donation_form_widget.dart';
 import 'utilities.dart';
 
 class DonationHistoryPage extends StatefulWidget {
@@ -35,8 +40,6 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
   void initState() {
     super.initState();
     user = HiveHelpers.getUserFromHive();
-    // Kullanıcı UID'sini konsola yazdırarak doğrulayın
-    print("Current user UID: ${user.uid}");
     getTotalDonationAmount(); // Toplam bağışı Firestore'dan alıyoruz
   }
 
@@ -69,9 +72,6 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
       // Firestore'dan verileri çek
       var snapshot = await query.get();
 
-      // Gelen belge sayısını konsola yazdırarak doğrulayın
-      print("Toplam bağış sorgusundaki belge sayısı: ${snapshot.docs.length}");
-
       // Toplam saleAmount değerini topla
       double total = snapshot.docs.fold(0.0, (sum, doc) {
         double saleAmount = (doc['saleAmount'] as num?)?.toDouble() ?? 0.0;
@@ -85,7 +85,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
       print("Error fetching total donation amount: $e");
       // Hata durumunda kullanıcıya bildirim gönder
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Toplam bağış miktarı alınırken bir hata oluştu.')),
+        SnackBar(content: Text('donation_history_page_total_donation_error'.locale)),
       );
     }
   }
@@ -111,12 +111,37 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
     return Scaffold(
       body: Column(
         children: [
-          const AppBarWidget(title: "Bağışlarım"),
+          AppBarWidget(title: "donation_history_page_bagislarim".locale),
           buildDonationCount,
           buildDonationFilter(),
           const SizedBox(height: 20),
           Expanded(
             child: buildPaginatedDonations(),
+          ),
+          // Yeni eklenen buton
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    builder: (context) => BottomSheetWidget(
+                        isMinPadding: true,
+                        title: 'missing_donation_form_page_title'.locale,
+                        child: MissingDonationFormPage()), // "Bağışım Gözükmüyor"
+                  );
+                },
+                child: Text("donation_history_page_my_donation_not_showing".locale),
+              ),
+            ),
           ),
         ],
       ),
@@ -158,9 +183,9 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Gerçekleşen Bağış",
-                  style: TextStyle(
+                Text(
+                  "donation_history_page_realized_donation".locale,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
                   ),
@@ -260,7 +285,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
     return FirestorePagination(
       query: _buildQuery(), // Firestore'dan bağışları filtreleyerek çeker
       isLive: true,
-      limit: 10, // Daha iyi kullanıcı deneyimi için sayfa başına öğe sayısını artırdık
+      limit: 10,
       itemBuilder: (context, snapshot, index) {
         DonationModel donation = DonationModel.fromMap(snapshot[index].data() as Map<String, dynamic>);
 
@@ -271,8 +296,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
           },
         );
       },
-      onEmpty: const Center(child: Text('Hiç bağış bulunamadı.')),
-      // İsteğe bağlı: Yükleme göstergesini ve diğer UI öğelerini özelleştirin
+      onEmpty: Center(child: Text("donation_history_page_no_donations".locale)),
     );
   }
 
@@ -308,7 +332,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
 
   /// Bağış detaylarını gösteren dialog
   void showDonationDetailDialog(BuildContext context, BrandModel? brand, DonationModel donation) {
-    // STK'ları almak için future'lar. STK bilgilerini sağlayacak STKProvider kullanıyoruz.
+    // STK'ları almak için future'lar
     Future<StkModel?> stk1Future = Provider.of<STKProvider>(context, listen: false).getSTKById(donation.stkId1 ?? "");
     Future<StkModel?> stk2Future = Provider.of<STKProvider>(context, listen: false).getSTKById(donation.stkId2 ?? "");
 
@@ -316,7 +340,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Bağış Detayları"),
+          title: Text("donation_history_page_donation_details".locale),
           contentPadding: EdgeInsets.zero,
           content: SingleChildScrollView(
             child: Padding(
@@ -348,7 +372,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              "Marka",
+                              "donation_history_page_brand".locale,
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -357,29 +381,29 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
 
                   // Sipariş Numarası
                   Text(
-                    "Sipariş Numarası: ${donation.orderNumber ?? '-'}",
+                    "${"donation_history_page_order_number".locale}: ${donation.orderNumber ?? '-'}",
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 8),
 
                   // Bağış Tutarı
                   Text(
-                    "Bağış Tutarı: ${donation.saleAmount?.toStringAsFixed(2) ?? '0.00'} TL",
+                    "${"donation_history_page_donation_amount".locale}: ${donation.saleAmount?.toStringAsFixed(2) ?? '0.00'} TL",
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
 
                   // Sipariş Tarihi
                   Text(
-                    "Sipariş Tarihi: ${donation.shoppingDate != null ? DateFormat('dd.MM.yyyy HH:mm').format(donation.shoppingDate!) : '-'}",
+                    "${"donation_history_page_order_date".locale}: ${donation.shoppingDate != null ? DateFormat('dd.MM.yyyy HH:mm').format(donation.shoppingDate!) : '-'}",
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
 
                   // STK'lar
-                  const Text(
-                    "Bağış Yapılan STK'lar",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  Text(
+                    "donation_history_page_donated_stks".locale,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
@@ -394,7 +418,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                         );
                       }
                       if (snapshot.hasError || !snapshot.hasData) {
-                        return const Text("STK1 bilgisi alınamadı");
+                        return Text("donation_history_page_stk1_error".locale);
                       }
                       StkModel stk1 = snapshot.data!;
                       return buildStkInfo(stk1, ((donation.saleAmount ?? 0) / 2));
@@ -413,7 +437,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                         );
                       }
                       if (snapshot.hasError || !snapshot.hasData) {
-                        return const Text("STK2 bilgisi alınamadı");
+                        return Text("donation_history_page_stk2_error".locale);
                       }
                       StkModel stk2 = snapshot.data!;
                       return buildStkInfo(stk2, ((donation.saleAmount ?? 0) / 2));
@@ -428,7 +452,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text("Kapat"),
+              child: Text("donation_history_page_close".locale),
             ),
           ],
         );
@@ -453,7 +477,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
               stk.name ?? "-",
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            Text("Bağış Tutarı: ${donationAmount.toStringAsFixed(2)} TL"),
+            Text("${"donation_history_page_donation_amount".locale}: ${donationAmount.toStringAsFixed(2)} TL"),
           ],
         ),
       ],
@@ -495,7 +519,6 @@ class _DonationListItemState extends State<DonationListItem> {
 
     try {
       BrandModel? brand = await Provider.of<BrandProvider>(context, listen: false).getBrandById(brandId);
-      print(brand?.name ?? "HATA");
       if (mounted) {
         setState(() {
           _brand = brand;
@@ -542,7 +565,7 @@ class _DonationListItemState extends State<DonationListItem> {
             children: [
               Flexible(
                 child: Text(
-                  "Marka Yükleniyor...",
+                  "donation_history_page_brand_loading".locale,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -555,7 +578,7 @@ class _DonationListItemState extends State<DonationListItem> {
           trailing: IconButton(
             icon: const Icon(Icons.refresh, color: Colors.blue),
             onPressed: _retryFetchBrand,
-            tooltip: 'Markayı Yeniden Yükle',
+            tooltip: 'donation_history_page_retry_brand'.locale,
           ),
           onTap: () {
             // Marka yüklenmemişse dialog gösterme
@@ -610,7 +633,7 @@ class _DonationListItemState extends State<DonationListItem> {
               ),
               Flexible(
                 child: Text(
-                  "Marka Bilgisi Alınamadı",
+                  "donation_history_page_brand_info_error".locale,
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -626,7 +649,7 @@ class _DonationListItemState extends State<DonationListItem> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Tutar", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("donation_history_page_amount".locale, style: const TextStyle(fontWeight: FontWeight.bold)),
                   Text("${widget.donation.saleAmount?.toStringAsFixed(2)} TL"),
                 ],
               ),
@@ -687,7 +710,7 @@ class _DonationListItemState extends State<DonationListItem> {
             const SizedBox(width: 10),
             Flexible(
               child: Text(
-                _brand!.name ?? "Yüklenemedi",
+                _brand!.name ?? "donation_history_page_brand_loading".locale,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -703,7 +726,7 @@ class _DonationListItemState extends State<DonationListItem> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("Tutar", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("donation_history_page_amount".locale, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text("${widget.donation.saleAmount?.toStringAsFixed(2)} TL"),
               ],
             ),

@@ -93,53 +93,101 @@ class STKController {
     return stks;
   }
 
-  Future<GeneralResponseModel> sendForm(
-      {required STKFormModel stkFormModel,
-      required List<ImageModel?> logoImage,
-      required PlatformFile? tuzukPDF,
-      required PlatformFile? faaliyetImage}) async {
+  Future<GeneralResponseModel> sendForm({
+    required STKFormModel stkFormModel,
+    ImageModel? logoImage,
+    PlatformFile? statuteFile,
+    PlatformFile? activityCertificateFile,
+    ImageModel? photoImage,
+    PlatformFile? governoratePermissionDocument,
+    PlatformFile? stkIlMudurluguYetkiBelgesi,
+  }) async {
     try {
-      //add stk form and get id
-      final stkFormId = await _firestoreService.addData(_stksFormPath, stkFormModel.toJson());
-
-      //then add images to firebase storage and get urls and update stk
-      //form with urls
-      final logoImageUrl = await _storageService.uploadImagebyByte(
-        "$_stksFormPath/$stkFormId",
-        await logoImage.first!.file!.readAsBytes(),
+      // İlk olarak, STK formunu Firestore'a ekliyoruz ve belge ID'sini alıyoruz
+      final stkFormId = await _firestoreService.addData(
+        _stksFormPath,
+        stkFormModel.toJson(),
       );
 
-      final tuzukPDFUrl = await _storageService.uploadImagebyByte(
+      // Firebase Storage'a dosyaları yüklüyoruz ve URL'lerini alıyoruz
+      // 1. Logo resmi
+      if (logoImage != null && logoImage.file != null) {
+        final logoImageUrl = await _storageService.uploadImagebyByte(
+          "$_stksFormPath/$stkFormId/logo",
+          await logoImage.file!.readAsBytes(),
+        );
+        stkFormModel.logoImage = logoImageUrl;
+      }
+
+      // 2. Tüzük PDF
+      if (statuteFile != null) {
+        final statuteFileUrl = await _storageService.uploadFile(
+          "$_stksFormPath/$stkFormId/statute",
+          statuteFile,
+        );
+        stkFormModel.statuteFileUrl = statuteFileUrl;
+      }
+
+      // 3. Faaliyet Belgesi
+      if (activityCertificateFile != null) {
+        final activityCertificateFileUrl = await _storageService.uploadFile(
+          "$_stksFormPath/$stkFormId/activity_certificate",
+          activityCertificateFile,
+        );
+        stkFormModel.activityCertificateFileUrl = activityCertificateFileUrl;
+      }
+
+      // 4. Fotoğraf (Özel izinli yardım toplayan için)
+      if (photoImage != null && photoImage.file != null) {
+        final photoImageUrl = await _storageService.uploadImagebyByte(
+          "$_stksFormPath/$stkFormId/photo",
+          await photoImage.file!.readAsBytes(),
+        );
+        stkFormModel.photoImageUrl = photoImageUrl;
+      }
+
+      // 5. Valilik İzin Belgesi
+      if (governoratePermissionDocument != null) {
+        final governoratePermissionDocumentUrl = await _storageService.uploadFile(
+          "$_stksFormPath/$stkFormId/governorate_permission_document",
+          governoratePermissionDocument,
+        );
+        stkFormModel.governoratePermissionDocumentUrl = governoratePermissionDocumentUrl;
+      }
+
+      // 6. STK İl Müdürlüğü Yetki Belgesi
+      if (stkIlMudurluguYetkiBelgesi != null) {
+        final stkIlMudurluguYetkiBelgesiUrl = await _storageService.uploadFile(
+          "$_stksFormPath/$stkFormId/stk_il_mudurlugu_yetki_belgesi",
+          stkIlMudurluguYetkiBelgesi,
+        );
+        stkFormModel.stkIlMudurluguYetkiBelgesiUrl = stkIlMudurluguYetkiBelgesiUrl;
+      }
+
+      // Dosyaların URL'lerini içeren güncellenmiş STK formunu Firestore'da güncelliyoruz
+      await _firestoreService.updateData(
         "$_stksFormPath/$stkFormId",
-        tuzukPDF?.bytes ?? Uint8List(0),
+        stkFormModel.toJson(),
       );
 
-      final faaliyetImageUrl = await _storageService.uploadImagebyByte(
-        "$_stksFormPath/$stkFormId",
-        faaliyetImage?.bytes ?? Uint8List(0),
-      );
-      stkFormModel.logoImage = logoImageUrl;
-      stkFormModel.tuzukPDF = tuzukPDFUrl;
-      stkFormModel.faaliyetImage = faaliyetImageUrl;
+      // Admin email adresine başvuru detaylarını gönderiyoruz
       await SendMailHelper.sendMail(
-        to: ["turkiye@hangel.org"],
-        subject: "STK Başvurusu",
-        body: "STK Başvurusu",
+        to: ["turkiye@hangel.org"], // Admin email adresi
+        subject: "Yeni STK Başvurusu",
+        body: "Yeni STK Başvurusu",
         html: stkFormModel.toHTMLTable(),
       );
+
+      // Başvuru formunu genel "forms" koleksiyonuna ekliyoruz
       await _firestoreService.addData("forms", {
         "subject": "STK Başvurusu",
         "status": "active",
-        //
         "form": stkFormModel.toJson(),
       });
-      return await _firestoreService.updateData(
-        "$_stksFormPath/$stkFormId",
-        {
-          "logoImage": logoImageUrl,
-          "tuzukPDF": tuzukPDFUrl,
-          "faaliyetImage": faaliyetImageUrl,
-        },
+
+      return GeneralResponseModel(
+        success: true,
+        message: "Başvuru başarıyla gönderildi.",
       );
     } catch (e) {
       return GeneralResponseModel(

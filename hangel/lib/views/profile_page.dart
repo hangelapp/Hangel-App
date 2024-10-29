@@ -5,12 +5,14 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
+import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/views/stk_detail_page.dart';
+import 'package:hangel/views/stk_volunteers_page.dart';
 import 'package:hangel/views/vounteer_form.dart';
 import 'package:hangel/widgets/add_photo_form.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
@@ -41,25 +43,19 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      // context.read<ProfilePageProvider>().getProfile();
       _tabController!.addListener(() {
         setState(() {});
       });
     });
-    // Bağış verilerini internetten çek
     fetchDonationStatistics();
     super.initState();
   }
 
-  // Toplam Bağış Miktarı ve Bağış İşlem Sayısı için state değerleri
   double totalDonationAmount = 0.0;
   int donationCount = 0;
-  // Bağış istatistiklerini çekme fonksiyonu
   Future<void> fetchDonationStatistics() async {
     try {
-      Query query = FirebaseFirestore.instance
-          .collection('donations')
-          .where('userId', isEqualTo: user.uid); // Kullanıcıya ait bağışlar
+      Query query = FirebaseFirestore.instance.collection('donations').where('userId', isEqualTo: user.uid);
 
       var snapshot = await query.get();
 
@@ -69,8 +65,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       });
 
       setState(() {
-        totalDonationAmount = totalAmount; // Toplam bağış miktarını ayarla
-        donationCount = snapshot.docs.length; // Bağış işlem sayısını ayarla
+        totalDonationAmount = totalAmount;
+        donationCount = snapshot.docs.length;
       });
     } catch (e) {
       print("Bağış istatistiklerini çekerken hata oluştu: $e");
@@ -79,7 +75,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   TabController? _tabController;
 
-  //format phone number to +90 812 345 78 90
   String formatPhoneNumber(String phone) {
     String formattedPhone =
         "${phone.substring(0, 3)} ${phone.substring(3, 6)} ${phone.substring(6, 9)} ${phone.substring(9, 11)} ${phone.substring(11, 13)}";
@@ -105,6 +100,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 size: deviceFontSize(context, 30),
               ),
             ),
+            title: "profile_page_title".locale,
           ),
           Container(
             padding: EdgeInsets.only(
@@ -139,27 +135,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         textAlign: TextAlign.center,
                         style: AppTheme.semiBoldTextStyle(context, 24, color: Colors.white),
                       ),
-                      //İsim değiştirme artık Bilgileri Güncelle altında olacak.
-                      // Positioned(
-                      //   right: 0,
-                      //   child: GestureDetector(
-                      //     onTap: () {
-                      //       showModalBottomSheet(
-                      //         context: context,
-                      //         isScrollControlled: true,
-                      //         backgroundColor: Colors.transparent,
-                      //         builder: (dialogContext) {
-                      //           return const BottomSheetWidget(title: "İsim Değiştir", child: UserNameForm());
-                      //         },
-                      //       );
-                      //     },
-                      //     child: Icon(
-                      //       Icons.edit,
-                      //       color: AppTheme.white,
-                      //       size: deviceFontSize(context, 24),
-                      //     ),
-                      //   ),
-                      // )
                     ],
                   ),
                 ),
@@ -220,12 +195,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           decoration: const BoxDecoration(
             color: AppTheme.secondaryColor,
             shape: BoxShape.circle,
-            // border: Border.fromBorderSide(
-            //   BorderSide(
-            //     color: Colors.white,
-            //     width: 4,
-            //   ),
-            // ),
           ),
           child: CachedNetworkImage(
             imageUrl: user.image ?? "https://www.example.com/1.jpg",
@@ -271,7 +240,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => const BottomSheetWidget(title: "Fotoğraf Ekle", child: AddPhotoForm()),
+                builder: (context) => BottomSheetWidget(title: "profile_page_add_photo".locale, child: AddPhotoForm()),
               );
             },
             child: Container(
@@ -280,12 +249,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               decoration: const BoxDecoration(
                 color: AppTheme.secondaryColor,
                 shape: BoxShape.circle,
-                // border: Border.fromBorderSide(
-                //   BorderSide(
-                //     color: Colors.white,
-                //     width: 2,
-                //   ),
-                // ),
               ),
               child: Center(
                 child: Icon(
@@ -320,55 +283,55 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     List<Map<String, dynamic>> statics = [
       {
         "icon": Icons.money_outlined,
-        "title": "Toplam Bağış Miktarı",
+        "title": "profile_page_total_donation".locale,
         "value": "${totalDonationAmount.toStringAsFixed(2)} TL",
       },
       {
         "icon": Icons.wifi_protected_setup_sharp,
-        "title": "Bağış İşlem Sayısı",
+        "title": "profile_page_donation_count".locale,
         "value": "$donationCount",
       },
       {
         "icon": Icons.date_range_rounded,
-        "title": "Üye Olduğu Tarih",
+        "title": "profile_page_membership_date".locale,
         "value": HiveHelpers.getUserFromHive().createdAt == null
             ? "-"
             : DateFormatHelper.getDate(HiveHelpers.getUserFromHive().createdAt.toString(), context)
       },
     ];
     List<Map<String, dynamic>> volunteerInfo = [
-      {"icon": Icons.contact_emergency_outlined, "title": "Görev Aldığı Kuruluşlar", "value": "-"},
-      {"icon": Icons.account_tree_rounded, "title": "Proje Sayısı", "value": "0"},
-      {"icon": Icons.one_x_mobiledata_sharp, "title": "Toplam Saat", "value": "0"},
+      {"icon": Icons.contact_emergency_outlined, "title": "profile_page_volunteer_organizations".locale, "value": "-"},
+      {"icon": Icons.account_tree_rounded, "title": "profile_page_project_count".locale, "value": "0"},
+      {"icon": Icons.one_x_mobiledata_sharp, "title": "profile_page_total_hours".locale, "value": "0"},
     ];
     List<Map<String, dynamic>> info = [
       {
         "icon": Icons.person_rounded,
-        "title": "Cinsiyet",
+        "title": "profile_page_gender".locale,
         "value": HiveHelpers.getUserFromHive().gender ?? "-",
       },
       {
         "icon": Icons.email_rounded,
-        "title": "Email",
+        "title": "profile_page_email".locale,
         "value": HiveHelpers.getUserFromHive().email ?? "-",
       },
       {
         "icon": Icons.phone_rounded,
-        "title": "Telefon",
+        "title": "profile_page_phone".locale,
         "value": HiveHelpers.getUserFromHive().phone == null
             ? "-"
             : formatPhoneNumber(HiveHelpers.getUserFromHive().phone ?? ""),
       },
       {
         "icon": Icons.cake_rounded,
-        "title": "Doğum Tarihi",
+        "title": "profile_page_birth_date".locale,
         "value": HiveHelpers.getUserFromHive().birthDate == null
             ? "-"
             : DateFormatHelper.getDate(HiveHelpers.getUserFromHive().birthDate.toString(), context)
       },
       {
         "icon": Icons.location_on_rounded,
-        "title": "İl/İlçe/Mahalle",
+        "title": "profile_page_location".locale,
         "value": HiveHelpers.getUserFromHive().city == null
             ? "-"
             : HiveHelpers.getUserFromHive().city ??
@@ -394,29 +357,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             indicator: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: AppTheme.primaryColor.withOpacity(0.1),
-              // border: Border.all(
-              //   color: AppTheme.primaryColor,
-              //   width: 2,
-              // ),
             ),
             dividerColor: Colors.transparent,
             overlayColor: WidgetStateProperty.all(Colors.transparent),
             tabs: [
               Tab(
-                child: const Text(
-                  "Kişisel Bilgiler",
+                child: Text(
+                  "profile_page_personal_info".locale,
                   style: TextStyle(fontSize: 12),
                 ),
               ),
-              const Tab(
+              Tab(
                 child: Text(
-                  "Gönüllülük",
+                  "profile_page_volunteer".locale,
                   style: TextStyle(fontSize: 12),
                 ),
               ),
-              const Tab(
+              Tab(
                 child: Text(
-                  "İstatistikler",
+                  "profile_page_statistics".locale,
                   style: TextStyle(fontSize: 12),
                 ),
               ),
@@ -440,7 +399,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
           alignment: Alignment.centerLeft,
           child: Text(
-            "Desteklediğin STK'lar",
+            "profile_page_supported_ngos".locale,
             style: AppTheme.boldTextStyle(context, 16),
           ),
         ),
@@ -448,20 +407,16 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           future: context.read<STKProvider>().getFavoriteSTKs(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              // Veriler yüklenirken bir yükleniyor göstergesi göstermek için kullanılabilir.
               return CircularProgressIndicator();
             } else if (snapshot.hasError) {
-              // Hata durumunu işlemek için.
-              return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
+              return Center(child: Text('profile_page_error_occurred'.locale));
             } else if (snapshot.hasData) {
               List<StkModel>? data = snapshot.data;
 
-              // Eğer veri boşsa, nullStkWidget gösterilir.
               if (data == null || data.isEmpty) {
                 return nullStkWidget(context);
               }
 
-              // Veri varsa, stkItem widget'larını döndür.
               return Column(
                 children: data.map<Widget>((stk) {
                   return stkItem(context, stk);
@@ -469,39 +424,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               );
             }
 
-            // Diğer durumlar için, boş durum widget'ını döndür.
             return nullStkWidget(context);
           },
         ),
-
-        // ...List.generate(
-        //     HiveHelpers.getUserFromHive().favoriteStks.length == 0 ? 1 : context.watch<STKProvider>().stkList.length,
-        //     (index) => HiveHelpers.getUserFromHive().favoriteStks.length == 0
-        //         ? nullStkWidget(context)
-        //         : HiveHelpers.getUserFromHive().favoriteStks.contains(context.watch<STKProvider>().stkList[index].id)
-        //             ? stkItem(context, index)
-        //             : const SizedBox()),
-
-        //Bu kısım şimdlik kapalı
-        // Container(
-        //   margin: const EdgeInsets.symmetric(vertical: 15),
-        //   padding: EdgeInsets.symmetric(
-        //     horizontal: deviceWidthSize(context, 20),
-        //   ),
-        //   child: GeneralButtonWidget(
-        //       onPressed: () {
-        //         showModalBottomSheet(
-        //           context: context,
-        //           isScrollControlled: true,
-        //           builder: (context) => const BottomSheetWidget(
-        //             title: "Gönüllü Başvuru Formu",
-        //             isMinPadding: true,
-        //             child: VolunteerForm(),
-        //           ),
-        //         );
-        //       },
-        //       text: "Gönüllü olmak istiyorum"),
-        // ),
         Container(
           margin: const EdgeInsets.only(bottom: 15, top: 30),
           padding: EdgeInsets.symmetric(
@@ -512,14 +437,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
-                  builder: (context) => const BottomSheetWidget(
-                    title: "STK Başvuru Formu",
+                  builder: (context) => BottomSheetWidget(
+                    title: "profile_page_stk_application_form".locale,
                     isMinPadding: true,
                     child: STKFormWidget(),
                   ),
                 );
               },
-              text: "STK Başvuru Formu"),
+              text: "profile_page_stk_application_form_button".locale),
         ),
         Container(
           margin: const EdgeInsets.only(bottom: 150),
@@ -531,34 +456,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
-                  builder: (context) => const BottomSheetWidget(
-                    title: "Marka Başvuru Formu",
+                  builder: (context) => BottomSheetWidget(
+                    title: "profile_page_brand_application_form_button".locale,
                     isMinPadding: true,
                     child: BrandFormWidget(),
                   ),
                 );
               },
-              text: "Marka Başvuru Formu"),
+              text: "profile_page_brand_application_form_button".locale),
         ),
-        // Container(
-        //   margin: const EdgeInsets.only(bottom: 150),
-        //   padding: EdgeInsets.symmetric(
-        //     horizontal: deviceWidthSize(context, 20),
-        //   ),
-        //   child: GeneralButtonWidget(
-        //       onPressed: () {
-        //         showModalBottomSheet(
-        //           context: context,
-        //           isScrollControlled: true,
-        //           builder: (context) => const BottomSheetWidget(
-        //             title: "STK Gönüllü İlanı Formu",
-        //             isMinPadding: true,
-        //             child: VolunteerForm(),
-        //           ),
-        //         );
-        //       },
-        //       text: "STK Gönüllü İlanı Formu"),
-        // ),
       ],
     );
   }
@@ -709,15 +615,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       context: context,
                       isScrollControlled: true,
                       builder: (context) {
-                        return const BottomSheetWidget(
-                            isMinPadding: true, title: "Kişisel Bilgiler", child: UserInformationForm());
+                        return BottomSheetWidget(
+                            isMinPadding: true, title: "profile_page_update_info".locale, child: UserInformationForm());
                       });
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor.withOpacity(0.1),
-                    //  borderRadius: BorderRadius.circular(5),
                   ),
                   margin: EdgeInsets.only(left: 20),
                   child: Row(
@@ -726,7 +631,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        "Bilgileri Güncelle",
+                        "profile_page_update_info".locale,
                         style: TextStyle(
                           color: AppTheme.primaryColor,
                         ),
@@ -736,10 +641,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
                           shape: BoxShape.circle,
-                          // border: Border.all(
-                          //   color: AppTheme.white,
-                          //   width: 2,
-                          // ),
                         ),
                         padding: EdgeInsets.all(deviceWidthSize(context, 2)),
                         child: const Icon(
@@ -757,7 +658,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  _statistics(BuildContext context, List<Map<String, dynamic>> statics) {
+  Widget _statistics(BuildContext context, List<Map<String, dynamic>> statics) {
     return SizedBox(
       height: deviceHeightSize(context, 100),
       width: deviceWidth(context),
@@ -794,7 +695,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          statics[index]["title"]!,
+                          statics[index]["title"]!.locale,
                           textAlign: TextAlign.center,
                           style: AppTheme.normalTextStyle(
                             context,
