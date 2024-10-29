@@ -72,18 +72,22 @@ class _AppViewState extends State<AppView> {
                   style: AppTheme.lightTextStyle(context, 14),
                 ),
                 SizedBox(height: deviceHeightSize(context, 10)),
+
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
+
               child: LocaleText('app_view_privacy_dialog_button_cancel'), // "İptal"
+
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
               child: LocaleText('app_view_privacy_dialog_button_accept'), // "Devam Et"
+
               onPressed: () {
                 Navigator.of(context).pop();
               },
