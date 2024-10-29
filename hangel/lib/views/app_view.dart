@@ -339,7 +339,7 @@ class _AppViewState extends State<AppView> {
               height: deviceHeightSize(context, 6),
             ),
             LocaleText(
-              'app_view_version', // "v1.0.0"
+              'app_view_version', // "v1.0.1"
               style: AppTheme.lightTextStyle(context, 14),
             ),
             MenuItemWidget(

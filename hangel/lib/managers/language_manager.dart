@@ -253,7 +253,7 @@ class LanguageManager extends Translations {
           'app_view_drawer_social_companies': 'Sosyal Şirketler',
           'app_view_drawer_settings': 'Ayarlar',
           'app_view_drawer_contact': 'İletişim',
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': 'v1.0.1',
           'app_view_drawer_logout': 'Çıkış Yap',
           'app_view_drawer_delete_account': 'Hesabımı Sil',
 
@@ -286,7 +286,7 @@ class LanguageManager extends Translations {
           'app_view_privacy_dialog_button_cancel': 'İptal',
 
           'app_view_contact_support': 'İletişime Geç',
-          'app_view_version': 'v1.0.0',
+          'app_view_version': 'v1.0.1',
 
           // Close button in dialogs
           'close': 'Kapat',
@@ -1009,7 +1009,7 @@ class LanguageManager extends Translations {
 
           'app_view_drawer_contact': 'Contact',
 
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': 'v1.0.1',
 
           'app_view_drawer_logout': 'Log Out',
 
@@ -1060,7 +1060,7 @@ class LanguageManager extends Translations {
 
           'app_view_contact_support': 'Contact Support',
 
-          'app_view_version': 'v1.0.0',
+          'app_view_version': 'v1.0.1',
 
           // Close button in dialogs
 
@@ -2070,7 +2070,7 @@ class LanguageManager extends Translations {
 
           'app_view_drawer_contact': 'Contact',
 
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': 'v1.0.1',
 
           'app_view_drawer_logout': 'Déconnexion',
 
@@ -2121,7 +2121,7 @@ class LanguageManager extends Translations {
 
           'app_view_contact_support': 'Contacter le Support',
 
-          'app_view_version': 'v1.0.0',
+          'app_view_version': 'v1.0.1',
 
           // Close button in dialogs
 
@@ -3151,7 +3151,7 @@ class LanguageManager extends Translations {
 
           'app_view_drawer_contact': 'اتصل بنا',
 
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': 'v1.0.1',
 
           'app_view_drawer_logout': 'تسجيل الخروج',
 
@@ -3247,7 +3247,7 @@ class LanguageManager extends Translations {
 
           'app_view_contact_support': 'اتصل بالدعم',
 
-          'app_view_version': 'v1.0.0',
+          'app_view_version': 'v1.0.1',
 
           // Close button in dialogs
 
