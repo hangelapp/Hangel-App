@@ -217,15 +217,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_user_agreement'.locale.split(' ').first,
+                      text: 'register_page_user_agreement'.locale.substring(0,('register_page_user_agreement'.locale.length-1)~/2),
                       style: AppTheme.lightTextStyle(context, 14),
                     ),
                     TextSpan(
-                      text: 'register_page_user_agreement'.locale.substring('register_page_user_agreement'.locale.indexOf('\'ni ')),
+                      text: 'register_page_user_agreement'.locale.substring(('register_page_user_agreement'.locale.length-1)~/2),
                       style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          _showAgreementDialog('Kullanıcı Sözleşmesi', AppConstants.USER_AGREEMENT);
+                          _showAgreementDialog('settings_page_user_agreement', AppConstants.USER_AGREEMENT);
                         },
                     ),
                   ],
@@ -246,15 +246,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_privacy_agreement'.locale.split(' ').first,
+                      text: 'register_page_privacy_agreement'.locale.substring(0,('register_page_privacy_agreement'.locale.length-1)~/2),
                       style: AppTheme.lightTextStyle(context, 14),
                     ),
                     TextSpan(
-                      text: 'register_page_privacy_agreement'.locale.substring('register_page_privacy_agreement'.locale.indexOf('\'ni ')),
+                      text: 'register_page_privacy_agreement'.locale.substring(('register_page_privacy_agreement'.locale.length-1)~/2),
                       style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          _showAgreementDialog('Gizlilik Sözleşmesi', AppConstants.SECRET_AGREEMENT);
+                          _showAgreementDialog('settings_page_privacy_policy', AppConstants.SECRET_AGREEMENT);
                         },
                     ),
                   ],
@@ -325,8 +325,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 if (response.success == true) {
                   print("Sms kodu gönderildi");
                 } else {
-                  ToastWidgets.errorToast(context,
-                      'register_page_error_unexpected'.locale);
+                  ToastWidgets.errorToast(context, 'register_page_error_unexpected'.locale);
                   context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
                   Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
                 }
@@ -337,7 +336,9 @@ class _RegisterPageState extends State<RegisterPage> {
               }
             },
             isLoading: context.watch<LoginRegisterPageProvider>().smsCodeSentState == LoadingState.loading,
-            text: _phoneLoginPageType == PhoneLoginPageType.login ? 'register_page_login'.locale : 'register_page_create_account'.locale,
+            text: _phoneLoginPageType == PhoneLoginPageType.login
+                ? 'register_page_login'.locale
+                : 'register_page_create_account'.locale,
           ),
           TextButton(
             onPressed: () {
@@ -579,7 +580,7 @@ class _RegisterPageState extends State<RegisterPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: LocaleText(title.toLowerCase().replaceAll(' ', '_')), // Assuming titles are fixed
+          title: LocaleText(title), // Assuming titles are fixed
           content: SingleChildScrollView(
             child: Text(content),
           ),
