@@ -68,21 +68,18 @@ class _AppViewState extends State<AppView> {
                   'Uygulamamız, size daha iyi ve kişiselleştirilmiş bir deneyim sunmak için izninize ihtiyaç duyar.',
                 ),
                 SizedBox(height: 10),
-                Text(
-                  'Lütfen devam etmek için "Onayla" butonuna tıklayın.',
-                ),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Onayla'),
+              child: Text('İptal'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('İptal'),
+              child: Text('Devam Et'),
               onPressed: () {
                 Navigator.of(context).pop();
               },

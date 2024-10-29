@@ -41,8 +41,7 @@
 		<string>Uygulama kamera erişim izni istiyor, çünkü görsel yükleyebilmeniz için kameranızı
 			kullanmanız gerekebilir.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Uygulama fotoğraflarınıza erişim izni istiyor, çünkü görsel yükleyebilmeniz için
-			fotoğraflarınızı seçmeniz gerekebilir.</string>
+		<string>Profil fotoğrafınızı eklemek ve formlarda istenen görselleri yükleyebilmek için fotoğraf kütüphanenize erişmemiz gerekiyor.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true />
 		<key>UIBackgroundModes</key>
