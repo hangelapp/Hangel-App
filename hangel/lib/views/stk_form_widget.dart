@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart'; // Localization için gerekli
-import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/models/stk_form_model.dart';
 import 'package:hangel/providers/stk_provider.dart';

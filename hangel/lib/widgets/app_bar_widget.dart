@@ -1,5 +1,3 @@
-import 'package:get/get.dart';
-import 'package:hangel/managers/language_manager.dart';
 
 import '../constants/app_theme.dart';
 import 'package:flutter/material.dart';

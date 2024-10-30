@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:get/get.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
-import 'package:hangel/managers/language_manager.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';

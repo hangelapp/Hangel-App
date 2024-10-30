@@ -103,7 +103,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
                   color: AppTheme.primaryColor.withOpacity(0.1),
                 ),
                 dividerColor: Colors.transparent,
-                overlayColor: MaterialStateProperty.all(Colors.transparent),
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
                 tabs:  [
                   Tab(
                     text: "favorites_page_markalar".locale,

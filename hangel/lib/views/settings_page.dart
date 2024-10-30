@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hangel/constants/app_theme.dart';
-import 'package:hangel/constants/preferences_keys.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
-import 'package:hangel/managers/locale_manager.dart';
 import 'package:hangel/views/about_us_page.dart';
 import 'package:hangel/views/frequently_asked_questions_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';

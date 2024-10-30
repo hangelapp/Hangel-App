@@ -14,7 +14,6 @@ import '../widgets/dropdown_widget.dart';
 import '../widgets/form_field_widget.dart';
 import '../widgets/general_button_widget.dart';
 import '../widgets/toast_widgets.dart';
-import 'app_view.dart';
 
 class VolunteerForm extends StatefulWidget {
   const VolunteerForm({Key? key}) : super(key: key);

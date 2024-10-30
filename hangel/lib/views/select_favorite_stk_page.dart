@@ -125,7 +125,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                 labelPadding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 20)),
                                 dividerColor: Colors.transparent,
                                 isScrollable: true,
-                                overlayColor: MaterialStateProperty.all(Colors.transparent),
+                                overlayColor: WidgetStateProperty.all(Colors.transparent),
                                 tabs: _tabs.map((e) => Tab(text: e.locale)).toList(),
                               ),
                             ),

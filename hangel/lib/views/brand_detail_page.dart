@@ -270,7 +270,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             Align(
                               alignment: Alignment.topLeft,
                               child: TextButton(
-                                style: ButtonStyle(padding: MaterialStateProperty.all(EdgeInsets.zero)),
+                                style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
                                 child: Text(
                                   "brand_detail_page_genel_bonus_kosullari".locale,
                                   style: AppTheme.semiBoldTextStyleWithUnderline(context, 14, color: AppTheme.black),
@@ -661,7 +661,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
             horizontal: deviceWidthSize(context, 10),
           ),
           dividerColor: Colors.transparent,
-          overlayColor: MaterialStateProperty.all(Colors.transparent),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
           tabs: [
             Tab(
               child: LocaleText(
