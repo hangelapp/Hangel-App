@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
@@ -33,8 +32,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   setupLocator();
-  await Hive.initFlutter();
-  await Hive.openBox("user");
   await LocaleManager.prefrencesInit();
 
   final localeString = LocaleManager.instance.getStringValue(PreferencesKeys.LOCALE);

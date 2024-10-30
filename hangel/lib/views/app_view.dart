@@ -44,7 +44,7 @@ class _AppViewState extends State<AppView> {
       final TrackingStatus status = await AppTrackingTransparency.trackingAuthorizationStatus;
 
       if (status == TrackingStatus.notDetermined) {
-        await showCustomPrivacyDialog();
+        // await showCustomPrivacyDialog();
 
         await AppTrackingTransparency.requestTrackingAuthorization();
       }

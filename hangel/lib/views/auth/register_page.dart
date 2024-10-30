@@ -14,6 +14,7 @@ import 'package:hangel/views/home_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 import 'package:hangel/views/vounteer_form.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:libphonenumber/libphonenumber.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
@@ -40,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _maskFormatter = MaskTextInputFormatter(
       mask: '(###) ### ## ##', filter: {"#": RegExp(r'[0-9]')}, type: MaskAutoCompletionType.lazy);
   PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'TR');
-  bool _isValidNumber = false;
+  bool _isValidNumber = true;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -170,9 +171,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   onInputChanged: (PhoneNumber number) {
                     _phoneNumber = number;
                   },
-                  onInputValidated: (bool value) {
-                    _isValidNumber = value;
-                  },
                   selectorConfig: SelectorConfig(
                     selectorType: PhoneInputSelectorType.DROPDOWN,
                     showFlags: false,
@@ -217,11 +215,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_user_agreement'.locale.substring(0,('register_page_user_agreement'.locale.length-1)~/2),
+                      text: 'register_page_user_agreement'
+                          .locale
+                          .substring(0, ('register_page_user_agreement'.locale.length - 1) ~/ 2),
                       style: AppTheme.lightTextStyle(context, 14),
                     ),
                     TextSpan(
-                      text: 'register_page_user_agreement'.locale.substring(('register_page_user_agreement'.locale.length-1)~/2),
+                      text: 'register_page_user_agreement'
+                          .locale
+                          .substring(('register_page_user_agreement'.locale.length - 1) ~/ 2),
                       style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
@@ -246,11 +248,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_privacy_agreement'.locale.substring(0,('register_page_privacy_agreement'.locale.length-1)~/2),
+                      text: 'register_page_privacy_agreement'
+                          .locale
+                          .substring(0, ('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
                       style: AppTheme.lightTextStyle(context, 14),
                     ),
                     TextSpan(
-                      text: 'register_page_privacy_agreement'.locale.substring(('register_page_privacy_agreement'.locale.length-1)~/2),
+                      text: 'register_page_privacy_agreement'
+                          .locale
+                          .substring(('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
                       style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
@@ -273,9 +279,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 print(_phoneNumber.phoneNumber);
                 // Boşluk kontrolü
                 if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
-                    _phoneController.text.isEmpty ||
-                    !_isValidNumber ||
-                    _phoneNumber.phoneNumber == null) {
+                    (_phoneController.text.isEmpty || !_isValidNumber || _phoneNumber.phoneNumber == null)) {
                   ToastWidgets.errorToast(context, 'register_page_error_fill_all_fields'.locale);
                   return;
                 }
