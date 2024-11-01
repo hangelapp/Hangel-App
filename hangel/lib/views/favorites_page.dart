@@ -221,6 +221,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
       logo: stk.logo ?? "",
       desc: stk.detailText ?? "",
       sector: stk.categories.first,
+      isActive: stk.isActive,
       onTap: () {
         Navigator.push(
           context,

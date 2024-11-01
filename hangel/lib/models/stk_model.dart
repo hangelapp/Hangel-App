@@ -15,7 +15,7 @@ class StkModel {
   String? link;
   String? type;
   List<String> categories;
-  int favoriteCount;
+  List<String>? favoriteCount;
   List<String> bmCategories;
   String? federasyonlar;
   // String? sicilNo;
@@ -41,7 +41,7 @@ class StkModel {
       this.link,
       this.type,
       this.categories = const [],
-      this.favoriteCount = 0,
+      this.favoriteCount = const [],
       this.bmCategories = const <String>[],
       this.isActive,
       this.totalDonation,
@@ -70,7 +70,7 @@ class StkModel {
         link: json['link'] ?? "",
         type: json['type'] ?? "",
         categories: List<String>.from(json['categories'] ?? [""]),
-        favoriteCount: json['favoriteCount'] ?? 0,
+        favoriteCount: List<String>.from(json['favoriteCount'] ?? []),
         bmCategories: List<String>.from(
           json['bmCategories'] ?? [],
         ),

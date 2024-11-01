@@ -224,6 +224,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
               : FirestorePagination(
                   padding: EdgeInsets.only(bottom: 200),
                   limit: 7,
+                  isLive: true,
                   initialLoader: Center(child: CircularProgressIndicator()),
                   bottomLoader: LinearProgressIndicator(),
                   query: tabIndex == 0

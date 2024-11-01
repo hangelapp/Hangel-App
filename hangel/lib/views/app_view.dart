@@ -72,13 +72,11 @@ class _AppViewState extends State<AppView> {
                   style: AppTheme.lightTextStyle(context, 14),
                 ),
                 SizedBox(height: deviceHeightSize(context, 10)),
-
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-
               child: LocaleText('app_view_privacy_dialog_button_cancel'), // "İptal"
 
               onPressed: () {
@@ -115,12 +113,17 @@ class _AppViewState extends State<AppView> {
         controller: tabcontroller,
         stateManagement: false,
         screens: widgetOptions,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        navBarStyle: NavBarStyle.style15,
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        navBarStyle: NavBarStyle.style14,
+        backgroundColor: Colors.white,
         animationSettings: const NavBarAnimationSettings(
-            navBarItemAnimation: ItemAnimationSettings(curve: Curves.linear, duration: Durations.extralong3),
+            navBarItemAnimation: ItemAnimationSettings(curve: Curves.linear, duration: Durations.long2),
             screenTransitionAnimation: ScreenTransitionAnimationSettings(
-                screenTransitionAnimationType: ScreenTransitionAnimationType.slide, animateTabTransition: true)),
+              screenTransitionAnimationType: ScreenTransitionAnimationType.slide,
+              animateTabTransition: true,
+              curve: Curves.ease,
+              duration: Durations.medium4,
+            )),
         items: [
           PersistentBottomNavBarItem(
             icon: const Icon(Icons.shopping_bag_rounded),
@@ -136,7 +139,7 @@ class _AppViewState extends State<AppView> {
           ),
           PersistentBottomNavBarItem(
             icon: const Padding(
-              padding: EdgeInsets.only(top: 4.0),
+              padding: EdgeInsets.only(top: 0),
               child: Center(
                 child: Icon(
                   Icons.favorite_rounded,
@@ -146,7 +149,7 @@ class _AppViewState extends State<AppView> {
             ),
             inactiveIcon: const Center(
               child: Padding(
-                padding: EdgeInsets.only(top: 4.0),
+                padding: EdgeInsets.only(top: 0),
                 child: Icon(
                   Icons.favorite_outline_rounded,
                   color: AppTheme.primaryColor,
@@ -154,7 +157,7 @@ class _AppViewState extends State<AppView> {
               ),
             ),
             title: 'app_view_bottom_nav_favorites'.locale, // "Favoriler"
-            activeColorPrimary: AppTheme.white,
+            activeColorPrimary: AppTheme.red,
             inactiveColorPrimary: CupertinoColors.systemGrey,
           ),
           PersistentBottomNavBarItem(

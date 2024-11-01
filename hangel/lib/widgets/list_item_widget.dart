@@ -30,6 +30,7 @@ Widget ListItemWidget(
   double? logoWidth,
   double? logoHeight,
   double? nullFontSize,
+  bool? isActive,
 }) {
   bool? applicantExist;
   if (totalAplicant != null) {
@@ -64,7 +65,7 @@ Widget ListItemWidget(
                     ? Image.network(
                         logo,
                         alignment: Alignment.center,
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
                             listItemImage2(context, logo: logo, onTap: onTap, nullFontSize: nullFontSize),
                       )
@@ -185,11 +186,23 @@ Widget ListItemWidget(
                   color: AppTheme.primaryColor,
                 ),
                 child: Text(
-                  "${totalAplicant.length} "+"kisi_basvurdu".locale,
+                  "${totalAplicant.length} " + "kisi_basvurdu".locale,
                   style: TextStyle(color: AppTheme.white),
                 ),
               ))
           : SizedBox.shrink(),
+      isActive == false ? Positioned.fill(
+          child: Container(
+        color: Colors.white.withOpacity(0.9),
+        child: Center(
+            child: Text(
+          "Bu STK artık aktif değil",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 12
+          ),
+        )),
+      )):SizedBox(),
     ],
   );
 }

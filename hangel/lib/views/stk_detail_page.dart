@@ -12,7 +12,7 @@ import 'package:hangel/views/select_favorite_stk_page.dart';
 class STKDetailPage extends StatefulWidget {
   const STKDetailPage({Key? key, required this.stkModel}) : super(key: key);
   final StkModel stkModel;
-  
+
   @override
   State<STKDetailPage> createState() => _STKDetailPageState();
 }
@@ -112,7 +112,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                                     height: deviceHeightSize(context, 2),
                                   ),
                                   Text(
-                                    widget.stkModel.categories.first,
+                                    widget.stkModel.categories.length > 0 ? widget.stkModel.categories.first : "",
                                     style:
                                         AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                   ),
@@ -147,7 +147,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                                       size: deviceFontSize(context, 24),
                                     ),
                                     Text(
-                                      widget.stkModel.favoriteCount.toString(),
+                                      widget.stkModel.favoriteCount!.length.toString(),
                                       style: AppTheme.normalTextStyle(
                                         context,
                                         14,
@@ -331,8 +331,16 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
         "value": "${(widget.stkModel.totalDonation ?? 0).toStringAsFixed(0)} ₺",
         "icon": Icons.money
       },
-      {"title": "stk_detail_process_count".locale, "value": "${(widget.stkModel.processCount ?? 0).toString()}", "icon": Icons.plus_one},
-      {"title": "stk_detail_donor_count".locale, "value": "${(widget.stkModel.totalDonor ?? 0).toString()}", "icon": Icons.people},
+      {
+        "title": "stk_detail_process_count".locale,
+        "value": "${(widget.stkModel.processCount ?? 0).toString()}",
+        "icon": Icons.plus_one
+      },
+      {
+        "title": "stk_detail_donor_count".locale,
+        "value": "${(widget.stkModel.totalDonor ?? 0).toString()}",
+        "icon": Icons.people
+      },
     ];
     List<Map<String, dynamic>> categories = [
       {
@@ -390,7 +398,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
           ),
         ),
         SizedBox(
-          height: deviceHeightSize(context, _tabController!.index == 0 ? 280 : 230),
+          height: deviceHeightSize(context, _tabController!.index == 0 ? 300 : 230),
           width: deviceWidth(context),
           child: TabBarView(
             controller: _tabController,
@@ -460,7 +468,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                     textAlign: TextAlign.start,
                     style: AppTheme.semiBoldTextStyle(
                       context,
-                      14,
+                      12,
                     ),
                   ),
                 ),

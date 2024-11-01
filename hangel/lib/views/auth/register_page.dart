@@ -203,12 +203,15 @@ class _RegisterPageState extends State<RegisterPage> {
           if (_phoneLoginPageType == PhoneLoginPageType.register) ...[
             CheckboxListTile(
               value: _isUserAgreementAccepted,
+              contentPadding: EdgeInsets.zero,
               onChanged: (bool? value) {
                 setState(() {
                   _isUserAgreementAccepted = value ?? false;
                 });
               },
+              visualDensity: VisualDensity(horizontal: -4),
               title: RichText(
+                textAlign: TextAlign.start,
                 text: TextSpan(
                   text: '',
                   style: AppTheme.lightTextStyle(context, 14),
@@ -217,13 +220,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       text: 'register_page_user_agreement'
                           .locale
                           .substring(0, ('register_page_user_agreement'.locale.length - 1) ~/ 2),
-                      style: AppTheme.lightTextStyle(context, 14),
+                      style: AppTheme.lightTextStyle(context, 11),
                     ),
                     TextSpan(
                       text: 'register_page_user_agreement'
                           .locale
                           .substring(('register_page_user_agreement'.locale.length - 1) ~/ 2),
-                      style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
+                      style: AppTheme.boldTextStyle(context, 11, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
                           _showAgreementDialog('settings_page_user_agreement', AppConstants.USER_AGREEMENT);
@@ -236,12 +239,15 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             CheckboxListTile(
               value: _isPrivacyAgreementAccepted,
+              contentPadding: EdgeInsets.zero,
               onChanged: (bool? value) {
                 setState(() {
                   _isPrivacyAgreementAccepted = value ?? false;
                 });
               },
+              visualDensity: VisualDensity(horizontal: -4),
               title: RichText(
+                textAlign: TextAlign.start,
                 text: TextSpan(
                   text: '',
                   style: AppTheme.lightTextStyle(context, 14),
@@ -250,13 +256,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       text: 'register_page_privacy_agreement'
                           .locale
                           .substring(0, ('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
-                      style: AppTheme.lightTextStyle(context, 14),
+                      style: AppTheme.lightTextStyle(context, 11),
                     ),
                     TextSpan(
                       text: 'register_page_privacy_agreement'
                           .locale
                           .substring(('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
-                      style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
+                      style: AppTheme.boldTextStyle(context, 11, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
                           _showAgreementDialog('settings_page_privacy_policy', AppConstants.SECRET_AGREEMENT);

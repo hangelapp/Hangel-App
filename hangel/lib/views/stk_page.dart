@@ -117,6 +117,7 @@ class _STKPageState extends State<STKPage> {
                                 limit: 5,
                                 initialLoader: Center(child: CircularProgressIndicator()),
                                 bottomLoader: LinearProgressIndicator(),
+                                isLive: true,
                                 query: tabIndex == 0
                                     ? context.read<STKProvider>().filterText == ""
                                         ? FirebaseFirestore.instance
@@ -159,7 +160,7 @@ class _STKPageState extends State<STKPage> {
                                   return ListItemWidget(context,
                                       logo: stk.logo,
                                       title: stk.name.toString(),
-                                      sector: stk.categories.first,
+                                      sector: stk.categories.length > 0 ? stk.categories.first : "",
                                       desc: stk.detailText, onTap: () {
                                     Navigator.push(
                                       context,

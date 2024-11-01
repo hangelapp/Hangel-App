@@ -734,6 +734,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       paddingHorizontal: deviceWidthSize(context, 8),
       paddingVertical: deviceHeightSize(context, 8),
       nullFontSize: 12,
+      isActive: stk.isActive,
       onTap: () {
         Navigator.push(
           context,

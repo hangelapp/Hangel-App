@@ -998,7 +998,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       // Seçilen türün anahtarını alıyoruz
-      String selectedTypeKey = _types[_selectedTypeIndex]['key']!;
+      String selectedTypeKey = _types[_selectedTypeIndex]['label']!;
 
       // Başvuruyu yapan kişinin bilgileri
       String applicantName = _contactPersonNameController.text;
@@ -1057,7 +1057,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
         stkFormModel.shortName = _stkNameController.text;
         stkFormModel.fullName = _stkFullNameController.text;
         stkFormModel.establishmentYear = _stkKurulusYiliController.text;
-        stkFormModel.activityArea = _sectors[_selectedSectorIndex]['key'];
+        stkFormModel.activityArea = _sectors[_selectedSectorIndex]['label'];
       } else {
         // Özel izin ile yardım toplayan için alanlar
         stkFormModel.permissionStartDate = _stkIzinBaslamaController.text;

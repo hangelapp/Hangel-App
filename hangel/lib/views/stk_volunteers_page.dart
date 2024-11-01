@@ -285,6 +285,7 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                         child: FirestorePagination(
                           // padding: EdgeInsets.zero,
                           limit: 5,
+                          isLive: true,
                           initialLoader: Center(child: CircularProgressIndicator()),
                           bottomLoader: LinearProgressIndicator(),
                           query: FirebaseFirestore.instance
