@@ -5,6 +5,7 @@ import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/auth/register_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
+import 'package:hangel/views/user_ban_page.dart';
 
 import 'package:hangel/widgets/app_name_widget.dart';
 import 'package:provider/provider.dart';
@@ -38,6 +39,12 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   Future<void> _initialize() async {
     if (HiveHelpers.getUid() != "") {
       var result = await context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid(), context);
+      if (result?.isActive?["isActive"] == false) {
+          print("Kullanıcı banlanmış");
+      HiveHelpers.logout();
+        Navigator.pushNamedAndRemoveUntil(context, UserBanPage.routeName, (route) => false);
+        return null;
+      }
       await Future.delayed(Duration(seconds: result == null ? 3 : 0));
       bool isAppView = false;
       Navigator.popUntil(context, (route) {

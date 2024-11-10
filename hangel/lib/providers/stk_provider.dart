@@ -307,7 +307,7 @@ class STKProvider with ChangeNotifier {
       .logo {
         font-family: 'Poppins', sans-serif;
         font-weight: 800;
-        color: orange;
+        color: #DC4D01;
         font-size: 24px;
         margin-bottom: 20px;
       }

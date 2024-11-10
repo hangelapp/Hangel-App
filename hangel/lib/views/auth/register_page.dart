@@ -511,7 +511,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   if (kIsWeb) {
                     await context
                         .read<LoginRegisterPageProvider>()
-                        .authenticate(_verifyController.text, phoneNum, _nameController.text)
+                        .authenticate(_verifyController.text, phoneNum, _nameController.text,context)
                         .then(
                       (value) {
                         print(value.message);
@@ -545,7 +545,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     );
                   } else {
-                    context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
+                    context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text,context).then(
                       (value) {
                         if (value.success == true) {
                           if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {

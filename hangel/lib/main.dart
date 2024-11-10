@@ -25,6 +25,7 @@ import 'views/settings_page.dart';
 import 'views/splash_page.dart';
 import 'views/stk_volunteers_page.dart';
 import 'views/support_page.dart';
+import 'views/user_ban_page.dart';
 import 'views/vounteer_form.dart';
 import 'widgets/missing_donation_form_widget.dart';
 
@@ -144,6 +145,7 @@ class MyApp extends StatelessWidget {
         FrequentlyAskedQuestionsPage.routeName: (context) => const FrequentlyAskedQuestionsPage(),
         VolunteerForm.routeName: (context) => const VolunteerForm(),
         MissingDonationFormPage.routeName: (context) => const MissingDonationFormPage(),
+        UserBanPage.routeName: (context) => const UserBanPage(),
       },
     );
   }

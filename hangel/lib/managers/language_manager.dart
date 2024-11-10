@@ -24,6 +24,7 @@ class LanguageManager extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
         'tr_TR': {
+          "user_ban_page_description": "Hesabınız pasif olarak işaretlendi. Bir yanlışlık olduğunu düşünüyorsanız bizimle iletişime geçebilirsiniz.",
           "stk_form_validation_error": "Lütfen gerekli alanları doldurunuz",
           "stk_form_type": "Türü",
           "stk_form_type_association": "Dernek",
@@ -719,6 +720,7 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Platforma Katılma Tarihi: ',
         },
         'en_US': {
+          "user_ban_page_description": "Your account has been marked as inactive. If you think there is a mistake, you can contact us.",
           "stk_form_validation_error": "Please fill in the required fields",
           "stk_form_type": "Type",
           "stk_form_type_association": "Association",
@@ -1780,6 +1782,7 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date of Joining the Platform: '
         },
         'fr_FR': {
+          "user_ban_page_description": "Votre compte a été marqué comme inactif. Si vous pensez qu'il y a une erreur, vous pouvez nous contacter.",
           "stk_form_validation_error": "Veuillez remplir les champs obligatoires",
           "stk_form_type": "Type",
           "stk_form_type_association": "Association",
@@ -2905,6 +2908,7 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date d’Adhésion à la Plateforme: '
         },
         'ar': {
+          "user_ban_page_description": "لقد تم وضع علامة على حسابك على أنه غير نشط. إذا كنت تعتقد أن هناك خطأ، يمكنك الاتصال بنا.",
           "stk_form_validation_error": "يرجى تعبئة الحقول المطلوبة",
           "stk_form_type": "النوع",
           "stk_form_type_association": "جمعية",

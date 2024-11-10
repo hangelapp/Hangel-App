@@ -11,6 +11,7 @@ import '../helpers/locator.dart';
 import '../models/general_response_model.dart';
 import '../models/user_model.dart';
 import '../views/auth/register_page.dart';
+import '../views/user_ban_page.dart';
 
 enum PhoneLoginPageType { register, login, verify }
 
@@ -129,17 +130,13 @@ class LoginRegisterPageProvider with ChangeNotifier {
     }
   }
 
-  Future<GeneralResponseModel> verifyPhoneNumber(String smsCode) async {
+  Future<GeneralResponseModel> verifyPhoneNumber(String smsCode, context) async {
     try {
       smsCodeState = LoadingState.loading;
       notifyListeners();
 
       GeneralResponseModel responseModel = await _loginRegisterPageController.verifyPhoneNumber(
-        phoneNumber: _phoneNumber,
-        name: _name,
-        verificationId: _verificationId,
-        smsCode: smsCode,
-      );
+          phoneNumber: _phoneNumber, name: _name, verificationId: _verificationId, smsCode: smsCode, context: context);
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('phone', isEqualTo: phoneNumber.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", ""))
@@ -150,7 +147,17 @@ class LoginRegisterPageProvider with ChangeNotifier {
         // Belgeyi al
         var data = querySnapshot.docs.first.data() as Map<String, dynamic>;
         UserModel user = UserModel.fromJson(data);
-
+        if (user.isActive?["isActive"] == false) {
+          print("Kullanıcı banlanmış");
+          HiveHelpers.logout();
+          smsCodeState = LoadingState.loaded;
+          notifyListeners();
+          Navigator.pushNamedAndRemoveUntil(context, UserBanPage.routeName, (route) => false);
+          return GeneralResponseModel(
+            success: false,
+            message: "Kullanıcı banlandı",
+          );
+        }
         // Kullanıcıyı Hive'a ekle
         HiveHelpers.addUserToHive(user);
         print(user);
@@ -208,7 +215,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
     }
   }
 
-  Future<GeneralResponseModel> authenticate(String otp, String phoneNumber, String name) async {
+  Future<GeneralResponseModel> authenticate(String otp, String phoneNumber, String name, context) async {
     try {
       smsCodeState = LoadingState.loading;
       notifyListeners();
@@ -225,7 +232,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
       } else {
         print("Verify Phone Number Success : " + user.uid);
         UserModel userModel = UserModel.fromFirebaseUser(user);
-        if ((await _loginRegisterPageController.isUserExist(user.uid)) == false) {
+        if ((await _loginRegisterPageController.isUserExist(user.uid, context)) == false) {
           userModel.name = name;
           userModel.phone = phoneNumber;
           userModel.image = "";
@@ -261,7 +268,17 @@ class LoginRegisterPageProvider with ChangeNotifier {
         // Belgeyi al
         var data = querySnapshot.docs.first.data() as Map<String, dynamic>;
         UserModel user = UserModel.fromJson(data);
-
+        if (user.isActive?["isActive"] == false) {
+          print("Kullanıcı banlanmış");
+          HiveHelpers.logout();
+          smsCodeState = LoadingState.loaded;
+          notifyListeners();
+          Navigator.pushNamedAndRemoveUntil(context, UserBanPage.routeName, (route) => false);
+          return GeneralResponseModel(
+            success: false,
+            message: "Kullanıcı pasif!",
+          );
+        }
         // Kullanıcıyı Hive'a ekle
         HiveHelpers.addUserToHive(user);
         print(user);
@@ -325,7 +342,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
   }
 
   // Örnek kullanıcı kontrol fonksiyonu (Firebase Firestore gibi bir veritabanında kontrol edebilirsiniz)
-  Future<UserModel?> getUserByPhoneNumber(String phoneNumber) async {
+  Future<UserModel?> getUserByPhoneNumber(context, String phoneNumber) async {
     try {
       // Firestore'daki kullanıcı koleksiyonunu sorgula
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -339,7 +356,13 @@ class LoginRegisterPageProvider with ChangeNotifier {
         // Belgeyi al
         var data = querySnapshot.docs.first.data() as Map<String?, dynamic>;
         UserModel user = UserModel.fromJson(data);
+        if (user.isActive?["isActive"] == false) {
+          print("Kullanıcı banlanmış");
+          HiveHelpers.logout();
 
+          Navigator.pushNamedAndRemoveUntil(context, UserBanPage.routeName, (route) => false);
+          return null;
+        }
         // Kullanıcıyı Hive'a ekle
         HiveHelpers.addUserToHive(user);
         return user;
@@ -366,6 +389,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
       print('Error getting user by phone numberb: $e');
       HiveHelpers.logout();
       await FirebaseAuth.instance.signOut();
+      print("Kullanıcı banlanmış");
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => RegisterPage()), (route) => false);
 
       return null;

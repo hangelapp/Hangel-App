@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart'; // Localization için gerekli
@@ -996,6 +997,12 @@ class _STKFormWidgetState extends State<STKFormWidget> {
   // Submit form
   // Submit form
   void _submitForm() async {
+    if (context.read<STKProvider>().sendFormState == LoadingState.loading) return;
+    if (_formKey.currentState == null) return;
+    if (_logoImage.isEmpty) {
+      Get.snackbar("Eksik Veri", "Logo resmi secilmedi.");
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       // Seçilen türün anahtarını alıyoruz
       String selectedTypeKey = _types[_selectedTypeIndex]['label']!;
@@ -1039,8 +1046,16 @@ class _STKFormWidgetState extends State<STKFormWidget> {
         district: district,
         neighborhood: neighborhood,
         address: address,
-        beneficiaries: beneficiaries.map((e) => e.locale,).toList(),
-        unSdgs: unSdgs.map((e) => e.locale,).toList(),
+        beneficiaries: beneficiaries
+            .map(
+              (e) => e.locale,
+            )
+            .toList(),
+        unSdgs: unSdgs
+            .map(
+              (e) => e.locale,
+            )
+            .toList(),
         applicantName: applicantName,
         applicantPhone: applicantPhone,
         applicantEmail: applicantEmail,

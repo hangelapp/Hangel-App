@@ -16,8 +16,9 @@ class UserModel {
   List<String> favoriteBrands = [];
   List<String> favoriteStks = [];
   DateTime? favoriteAddedDate;
-  List<String> volunteers = []; // Bu field'a çok da gerek yok gibi
+  List<String> volunteers = [];
   DateTime? createdAt;
+  Map<String, dynamic>? isActive;
 
   UserModel({
     this.name,
@@ -35,6 +36,7 @@ class UserModel {
     this.favoriteStks = const [],
     this.favoriteAddedDate,
     this.createdAt,
+    this.isActive,
   });
 
   UserModel.fromJson(Map<String?, dynamic> json) {
@@ -44,23 +46,43 @@ class UserModel {
     image = json['image'] ?? "";
     email = json['email'] ?? "";
     doorAndHomeNumber = json["doorAndHomeNumber"] ?? "";
+
     birthDate = json['birthDate'] != null
-        ? (json['birthDate'] is Timestamp ? (json['birthDate'] as Timestamp).toDate() : json['birthDate'] as DateTime)
+        ? parseDateTime(json['birthDate'])
         : null;
+
     city = json['city'] ?? "";
     neighberhood = json['neighberhood'] ?? "";
     district = json['district'] ?? "";
     gender = json['gender'] ?? "";
-    favoriteBrands = json['favoriteBrands'] != null ? json['favoriteBrands'].cast<String>() : [];
-    favoriteStks = json['favoriteStks'] != null ? List.from(json['favoriteStks']) : [];
+
+    favoriteBrands = json['favoriteBrands'] != null
+        ? List<String>.from(json['favoriteBrands'])
+        : [];
+
+    favoriteStks = json['favoriteStks'] != null
+        ? List<String>.from(json['favoriteStks'])
+        : [];
+
     favoriteAddedDate = json['favoriteAddedDate'] != null
-        ? (json['favoriteAddedDate'] is Timestamp
-            ? (json['favoriteAddedDate'] as Timestamp).toDate()
-            : json['favoriteAddedDate'] as DateTime)
+        ? parseDateTime(json['favoriteAddedDate'])
         : null;
+
     createdAt = json['createdAt'] != null
-        ? (json['createdAt'] is Timestamp ? (json['createdAt'] as Timestamp).toDate() : json['createdAt'] as DateTime)
+        ? parseDateTime(json['createdAt'])
         : null;
+
+    if (json['isActive'] != null) {
+      isActive = {
+        'isActive': json['isActive']['isActive'],
+        'detail': json['isActive']['detail'],
+        'time': json['isActive']['time'] is Timestamp
+            ? (json['isActive']['time'] as Timestamp).toDate().toIso8601String()
+            : json['isActive']['time']?.toString() ?? '',
+      };
+    } else {
+      isActive = null;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -71,28 +93,68 @@ class UserModel {
       'image': image,
       'email': email,
       "doorAndHomeNumber": doorAndHomeNumber,
-      'birthDate': birthDate,
+      'birthDate': birthDate?.toIso8601String(),
       'city': city,
       'neighberhood': neighberhood,
       'district': district,
       'gender': gender,
       'favoriteBrands': favoriteBrands,
       'favoriteStks': favoriteStks,
-      "favoriteAddedDate": favoriteAddedDate,
-      'createdAt': createdAt,
+      "favoriteAddedDate": favoriteAddedDate?.toIso8601String(),
+      'createdAt': createdAt?.toIso8601String(),
+      'isActive': isActive != null
+          ? {
+              'isActive': isActive!['isActive'],
+              'detail': isActive!['detail'],
+              'time': isActive!['time'] is DateTime
+                  ? (isActive!['time'] as DateTime).toIso8601String()
+                  : isActive!['time'] is String
+                      ? isActive!['time']
+                      : '',
+            }
+          : null,
     };
   }
 
-  static UserModel fromFirebaseUser(User user) {
-    return UserModel(
-      name: user.displayName,
-      phone: user.phoneNumber,
-      uid: user.uid,
-      image: user.photoURL,
-      email: user.email,
-      createdAt: user.metadata.creationTime,
-    );
+  DateTime parseDateTime(dynamic value) {
+    if (value is Timestamp) {
+      return value.toDate();
+    } else if (value is DateTime) {
+      return value;
+    } else if (value is String) {
+      return DateTime.parse(value);
+    } else {
+      throw Exception("Invalid date format");
+    }
   }
+
+ 
+
+  // Diğer metodlar...
+  UserModel.fromFirebaseUser(User user) {
+    name = user.displayName ?? "";
+    phone = user.phoneNumber;
+    uid = user.uid;
+    image = user.photoURL ?? "";
+    email = user.email ?? "";
+    doorAndHomeNumber = "";
+    birthDate = null;
+    city = "";
+    neighberhood = "";
+    district = "";
+    gender = "";
+    favoriteBrands = [];
+    favoriteStks = [];
+    favoriteAddedDate = null;
+    createdAt = DateTime.now();
+    isActive = {
+      'isActive': true,
+      'detail': '',
+      'time': DateTime.now().toIso8601String(),
+    };
+  }
+
+
 
   String toHtmlTable() {
     return '''
