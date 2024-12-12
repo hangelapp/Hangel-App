@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/widgets/locale_text.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/app_theme.dart';
 import '../constants/size.dart';
 import 'select_favorite_stk_page.dart';
@@ -214,6 +215,21 @@ String generateShortHash() {
   var digest = sha256.convert(bytes);
 
   return digest.toString().substring(0, 16);
+}
+
+
+String generateDigit() {
+  final randomValue = Random().nextInt(1000000).toString();
+
+  var bytes = utf8.encode(randomValue);
+  var digest = sha256.convert(bytes);
+
+  return digest.toString().substring(0, 6);
+}
+
+Future<String> get getAppVersion async {
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  return packageInfo.version;
 }
 
 

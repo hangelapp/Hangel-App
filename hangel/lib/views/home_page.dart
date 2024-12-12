@@ -43,9 +43,10 @@ class _HomePageState extends State<HomePage> {
       _isLoading = true;
     });
     context.read<BrandProvider>().nextPage();
-    await context.read<BrandProvider>().getOffers().whenComplete(
-          () => setState(() => _isLoading = false),
-        );
+    await Future.wait([
+      context.read<BrandProvider>().getOffers2().whenComplete(() => setState(() => _isLoading = false)),
+      context.read<BrandProvider>().getOffers().whenComplete(() => setState(() => _isLoading = false))
+    ]);
   }
 
   List<Map<String, String>> filters = [
@@ -107,9 +108,7 @@ class _HomePageState extends State<HomePage> {
             width: double.infinity,
             height: deviceHeight(context) * 0.10,
             child: TypeAheadField(
-              itemSeparatorBuilder: (context, index) => Divider(
-                color: Colors.grey.shade300,
-              ),
+              itemSeparatorBuilder: (context, index) => Divider(color: Colors.grey.shade300),
               itemBuilder: (context, offer) {
                 return Padding(
                   padding: const EdgeInsets.all(8),
@@ -195,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                                   style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
                                 ),
                               )),
-                    title: Text(offer.name?.removeBrackets() ?? ""),
+                    title: Text(offer.name ?? ""),
                   ),
                 );
               },
@@ -244,8 +243,13 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               onSelected: (value) {},
+              hideOnEmpty: true,
+              hideWithKeyboard: false,
               suggestionsCallback: (search) async {
-                return await context.read<BrandProvider>().getOffersForSearch(search);
+                if (search.length < 2) return [];
+                var response1 = await context.read<BrandProvider>().getOffersForSearch(search);
+                var response2 = await context.read<BrandProvider>().getOffersForSearch2(search);
+                return response1 + response2;
               },
             ),
           ),

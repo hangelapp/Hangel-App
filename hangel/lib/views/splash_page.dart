@@ -14,7 +14,8 @@ import '../constants/size.dart';
 import '../providers/login_register_page_provider.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({Key? key}) : super(key: key);
+  final String? stkId;
+  const SplashPage({Key? key,this.stkId}) : super(key: key);
   static const routeName = '/';
   @override
   State<SplashPage> createState() => _SplashPageState();

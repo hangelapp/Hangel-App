@@ -182,7 +182,7 @@ class _MissingDonationFormPageState extends State<MissingDonationFormPage> {
           <p><b>Sipariş Numarası:</b> ${_orderNumberController.text}</p>
           <p><b>Tarih:</b> ${_dateController.text}</p>
           <p><b>Sepet Tutarı:</b> ${_cartAmountController.text}</p>
-          <p><b>Sicil ID:</b> ${_registryIdController.text}</p>
+          <p><b>Sicil ID Telefon numarası:</b> ${_registryIdController.text}</p>
           <p><b>Telefon Numarası:</b> ${_phoneController.text}</p>
         """,
       );

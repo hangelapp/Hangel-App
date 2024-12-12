@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 // import 'package:image_picker/image_picker.dart';
 
@@ -33,7 +33,13 @@ class StorageServices {
   Future<String> uploadImagebyByte(String path, Uint8List fileBytes) async {
     try {
       final fileName = const Uuid().v4();
-      final ref = FirebaseStorage.instance.ref().child(path).child(fileName);
+      final ref;
+      if (kIsWeb) {
+        ref =
+            FirebaseStorage.instance.refFromURL("gs://hangel-1.appspot.com").child(path).child(fileName);
+      } else {
+        ref = FirebaseStorage.instance.ref().child(path).child(fileName);
+      }
       final uploadTask = ref.putData(fileBytes);
       final snapshot = await uploadTask.whenComplete(() => null);
       final downloadUrl = await snapshot.ref.getDownloadURL();

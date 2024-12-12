@@ -130,12 +130,13 @@ class LoginRegisterPageProvider with ChangeNotifier {
     }
   }
 
-  Future<GeneralResponseModel> verifyPhoneNumber(String smsCode, context) async {
+  Future<GeneralResponseModel> verifyPhoneNumber(String smsCode,List<String>? favoriteStksList, context) async {
     try {
       smsCodeState = LoadingState.loading;
       notifyListeners();
 
       GeneralResponseModel responseModel = await _loginRegisterPageController.verifyPhoneNumber(
+          favoriteStksList: favoriteStksList,
           phoneNumber: _phoneNumber, name: _name, verificationId: _verificationId, smsCode: smsCode, context: context);
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('users')

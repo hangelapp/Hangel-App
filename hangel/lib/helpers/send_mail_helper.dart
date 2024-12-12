@@ -1,4 +1,4 @@
-import 'package:mailer/mailer.dart';
+import 'package:mailer/mailer.dart' show Address, MailerException, Message, send;
 import 'package:mailer/smtp_server/gmail.dart';
 
 import '../models/general_response_model.dart';

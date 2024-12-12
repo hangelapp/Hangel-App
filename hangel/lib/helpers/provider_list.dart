@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/donation_provider.dart';
-import 'package:hangel/providers/offer_provider.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/providers/volunteer_provider.dart';
@@ -16,7 +15,6 @@ List<SingleChildWidget> providers = [
   ChangeNotifierProvider<BrandProvider>(create: (BuildContext context) => BrandProvider()),
   ChangeNotifierProvider<ProfilePageProvider>(create: (BuildContext context) => ProfilePageProvider()),
   ChangeNotifierProvider<AppViewProvider>(create: (BuildContext context) => AppViewProvider()),
-  ChangeNotifierProvider<OfferProvider>(create: (BuildContext context) => OfferProvider()),
   ChangeNotifierProvider<DonationProvider>(create: (BuildContext context) => DonationProvider()),
   ChangeNotifierProvider<VolunteerProvider>(create: (BuildContext context) => VolunteerProvider()),
 ];

@@ -168,6 +168,13 @@ class STKController {
         stkFormModel.toJson(),
       );
 
+      // Başvuru formunu genel "forms" koleksiyonuna ekliyoruz
+      await _firestoreService.addData("forms", {
+        "subject": "STK Başvurusu",
+        "status": "active",
+        "form": stkFormModel.toJson(),
+      });
+
       // Admin email adresine başvuru detaylarını gönderiyoruz
       await SendMailHelper.sendMail(
         to: ["turkiye@hangel.org"], // Admin email adresi
@@ -175,13 +182,6 @@ class STKController {
         body: "Yeni STK Başvurusu",
         html: stkFormModel.toHTMLTable(),
       );
-
-      // Başvuru formunu genel "forms" koleksiyonuna ekliyoruz
-      await _firestoreService.addData("forms", {
-        "subject": "STK Başvurusu",
-        "status": "active",
-        "form": stkFormModel.toJson(),
-      });
 
       return GeneralResponseModel(
         success: true,

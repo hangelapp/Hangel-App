@@ -5,6 +5,10 @@ extension StringExtension on String {
     RegExp regex = RegExp(r'\[.*?\]');
     return replaceAll(regex, '').trim();
   }
+
+  String removeTypes() {
+    return this.substring(0,this.indexOf("|"));
+  }
 }
 
 extension EmailValidator on String {
@@ -25,4 +29,42 @@ extension EmailValidator on String {
     });
     return localized;
   }
+
+  String toTitleCaseTR() {
+    if (this.isEmpty) return this;
+
+    return this.split(' ').map((word) {
+      if (word.isEmpty) return word;
+
+      String firstLetter = word[0];
+      String remaining = word.substring(1);
+
+      // Handle Turkish-specific uppercase transformations
+      firstLetter = _turkishToUpper(firstLetter);
+
+      return '$firstLetter$remaining';
+    }).join(' ');
+  }
+
+  String _turkishToUpper(String char) {
+    switch (char) {
+      case 'i':
+        return 'İ';
+      case 'ı':
+        return 'I';
+      case 'ğ':
+        return 'Ğ';
+      case 'ü':
+        return 'Ü';
+      case 'ş':
+        return 'Ş';
+      case 'ö':
+        return 'Ö';
+      case 'ç':
+        return 'Ç';
+      default:
+        return char.toUpperCase();
+    }
+  }
+
 }

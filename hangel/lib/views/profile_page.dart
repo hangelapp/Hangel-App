@@ -98,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 size: deviceFontSize(context, 30),
               ),
             ),
-            title: "profile_page_title".locale,
+            // title: "profile_page_title".locale,
           ),
           Container(
             padding: EdgeInsets.only(
@@ -402,7 +402,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
         ),
         FutureBuilder(
-          future: context.read<STKProvider>().getFavoriteSTKs(),
+          future:  context.read<STKProvider>().getFavoriteSTKs(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();

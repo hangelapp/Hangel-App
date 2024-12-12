@@ -382,6 +382,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             });
                           },
                         );
+                        print(widget.brandModel.link);
                         UrlLauncherHelper()
                             .launch("${widget.brandModel.link}&aff_sub=$aff_sub&aff_sub2=$aff_sub2")
                             .whenComplete(

@@ -20,7 +20,7 @@ import 'brand_detail_page.dart';
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({Key? key}) : super(key: key);
   static const routeName = '/favorites';
-  
+
   @override
   State<FavoritesPage> createState() => _FavoritesPageState();
 }
@@ -48,7 +48,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     UserModel userModel = HiveHelpers.getUserFromHive();
-    
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -104,7 +104,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
                 ),
                 dividerColor: Colors.transparent,
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
-                tabs:  [
+                tabs: [
                   Tab(
                     text: "favorites_page_markalar".locale,
                   ),

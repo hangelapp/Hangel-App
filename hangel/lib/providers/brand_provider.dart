@@ -213,84 +213,90 @@ class BrandProvider with ChangeNotifier {
     }
   }
 
-  Future<GeneralResponseModel> getFilteredOffers(List<String> brandIds) async {
-    Dio dio = Dio();
+  Future<GeneralResponseModel> getOffers2() async {
+    try {
+      Dio dio = Dio();
+      var response = await dio.getUri(Uri.parse(
+          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
+      if (response.statusCode == 200) {
+        var json = response.data;
+        print(json);
+        // Offer <-> Brand argument match
+        for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
+          if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
+            String? id = val["Offer"]["id"];
+            if (redIds.contains(id)) {
+              continue;
+            }
+            String? name = val["Offer"]["name"];
+            String? logo = val["Thumbnail"]["url"];
+            // if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+            //   continue;
+            // }
+            List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
+                .values
+                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                .toList();
+            String? sector = (val["OfferVertical"] is Map<String, dynamic>)
+                ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
+                : categories.length <= 0
+                    ? null
+                    : categories.first.name;
+            bool? inEarthquakeZone = false;
+            bool? isSocialEnterprise = false;
+            double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
+            DateTime? creationDate = DateTime.now();
+            String? bannerImage = val["Thumbnail"]["thumbnail"];
+            String? detailText = "";
+            // String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
+            String? link = val["TrackingLink"]["click_url"];
+            // if (await dio.getUri(Uri.parse(link ?? "")).then((value) => value.statusCode != 200)) {
+            //   continue;
+            // }
 
+            int favoriteCount = 0;
+
+            _brandList.add(BrandModel(
+                id: id,
+                bannerImage: bannerImage,
+                categories: categories,
+                creationDate: creationDate,
+                detailText: detailText,
+                donationRate: donationRate,
+                favoriteCount: favoriteCount,
+                inEarthquakeZone: inEarthquakeZone,
+                isSocialEnterprise: isSocialEnterprise,
+                link: link,
+                logo: logo,
+                name: (name ?? "").removeTypes(),
+                sector: sector));
+          } else {
+            // print("Element with ID ${val["Offer"]["id"]} already exists.");
+          }
+        }
+        notifyListeners();
+        return GeneralResponseModel(success: true, data: brandList, message: "Successfully");
+      }
+      return GeneralResponseModel(success: false, data: response.data, message: "Error handled");
+    } catch (e) {
+      return GeneralResponseModel(success: false, message: e.toString(), data: null);
+    }
+  }
+
+  Future<GeneralResponseModel> getFilteredOffers(List<String> brandIds) async {
     try {
       // Listeyi her veri çağrımından önce sıfırlayın
       _favoriteBrandList.clear();
       List<BrandModel> fetchedBrands = [];
 
-      // İlk olarak teklif verilerini çekin
-      for (String id in brandIds) {
-        var response = await dio.getUri(Uri.parse(
-            "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=findById&id=$id"));
-
-        if (response.statusCode == 200) {
-          var offerData = response.data["response"]["data"]["Offer"];
-
-          if (offerData != null) {
-            String? name = offerData["name"];
-            String? sector = ""; // JSON'da sektör bilgisi yoksa, default boş string
-            bool? inEarthquakeZone = false;
-            bool? isSocialEnterprise = false;
-            double? donationRate = double.tryParse(offerData["percent_payout"]);
-            DateTime? creationDate = DateTime.now();
-            String? bannerImage = ""; // JSON'da banner resmi yoksa, default boş string
-            String? detailText = offerData["description"] ?? "";
-            String? link = offerData["preview_url"];
-            List<CategoryModel> categories = []; // JSON'da kategori bilgisi yoksa, boş liste
-
-            // Model oluşturun ve listeye ekleyin
-            fetchedBrands.add(BrandModel(
-              id: id,
-              bannerImage: bannerImage,
-              categories: categories,
-              creationDate: creationDate,
-              detailText: detailText,
-              donationRate: donationRate,
-              favoriteCount: 0,
-              inEarthquakeZone: inEarthquakeZone,
-              isSocialEnterprise: isSocialEnterprise,
-              link: link,
-              logo: "", // Logo URL'yi daha sonra güncelleyeceğiz
-              name: name?.removeBrackets() ?? "",
-              sector: sector,
-            ));
-          }
-        }
-      }
-
-      // İkinci olarak küçük resimleri çekin
-      var thumbnailResponse = await dio.getUri(Uri.parse(
-          "${AppConstants.REKLAM_ACTION_BASE_URL}?api_key=${AppConstants.REKLAM_ACTION_API_KEY}&Target=Affiliate_Offer&Method=getThumbnail&ids[]=${brandIds.join('&ids[]=')}"));
-
-      if (thumbnailResponse.statusCode == 200) {
-        var thumbnailData = thumbnailResponse.data["response"]["data"];
-
-        for (var item in thumbnailData) {
-          String offerId = item["offer_id"];
-          var thumbnail = item["Thumbnail"]?.values.first;
-
-          if (thumbnail != null) {
-            String? thumbnailUrl = thumbnail["url"];
-            // İlgili teklif modelini bulup logo URL'sini güncelleyin
-            var brand = fetchedBrands.firstWhere((b) => b.id == offerId,
-                orElse: () => BrandModel(
-                    id: offerId,
-                    name: '',
-                    logo: '',
-                    bannerImage: '',
-                    categories: [],
-                    creationDate: DateTime.now(),
-                    detailText: '',
-                    donationRate: 0.0,
-                    favoriteCount: 0,
-                    inEarthquakeZone: false,
-                    isSocialEnterprise: false,
-                    link: '',
-                    sector: ''));
-            brand.logo = thumbnailUrl ?? "";
+      for (String brandId in brandIds) {
+        var brand = await getBrandById(brandId);
+        if (brand != null) {
+          _favoriteBrandList.add(brand);
+        } else {
+          var brand = await getBrandById2(brandId);
+          if (brand != null) {
+            _favoriteBrandList.add(brand);
           }
         }
       }
@@ -299,6 +305,7 @@ class BrandProvider with ChangeNotifier {
       notifyListeners();
       return GeneralResponseModel(success: true, data: _favoriteBrandList, message: "Successfully");
     } catch (e) {
+      print(e);
       return GeneralResponseModel(success: false, message: e.toString(), data: null);
     }
   }
@@ -353,6 +360,68 @@ class BrandProvider with ChangeNotifier {
                 link: link,
                 logo: logo,
                 name: (name ?? "").removeBrackets(),
+                sector: sector));
+          }
+        }
+        notifyListeners();
+        return resultBrands;
+      }
+      throw Exception("Bağlantı problemi!");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<BrandModel>> getOffersForSearch2(String pattern) async {
+    try {
+      Dio dio = Dio();
+      List<BrandModel> resultBrands = [];
+      var response = await dio.getUri(Uri.parse(
+          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=250&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
+      if (response.statusCode == 200) {
+        var json = response.data;
+        // Offer <-> Brand argument match
+        for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
+          String offerName = val["Offer"]["name"].toString().toLowerCase().removeTypes().replaceAll(" ", "");
+          if (offerName.contains(pattern)) {
+            String? id = val["Offer"]["id"];
+            if (redIds.contains(id)) {
+              continue;
+            }
+            String? name = val["Offer"]["name"];
+            String? logo = val["Thumbnail"]["url"];
+            // if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
+            //   continue;
+            // }
+            String? sector = (val["OfferVertical"] is Map<String, dynamic>)
+                ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
+                : null;
+            bool? inEarthquakeZone = false;
+            bool? isSocialEnterprise = false;
+            double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
+            DateTime? creationDate = DateTime.now();
+            String? bannerImage = val["Thumbnail"]["thumbnail"];
+            String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
+            String? link = val["TrackingLink"]["click_url"];
+            List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
+                .values
+                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                .toList();
+            int favoriteCount = 0;
+
+            resultBrands.add(BrandModel(
+                id: id,
+                bannerImage: bannerImage,
+                categories: categories,
+                creationDate: creationDate,
+                detailText: detailText,
+                donationRate: donationRate,
+                favoriteCount: favoriteCount,
+                inEarthquakeZone: inEarthquakeZone,
+                isSocialEnterprise: isSocialEnterprise,
+                link: link,
+                logo: logo,
+                name: (name ?? "").removeTypes(),
                 sector: sector));
           }
         }
@@ -428,6 +497,69 @@ class BrandProvider with ChangeNotifier {
     return null;
   }
 
+  Future<BrandModel?> getBrandById2(String brandId) async {
+    try {
+      Dio dio = Dio();
+      var response = await dio.getUri(Uri.parse(
+          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&limit=1&filters[id]=$brandId&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
+      if (response.statusCode == 200 && response.data['response']['status'] == 1) {
+        // API'den gelen veriyi doğru anahtarlardan alıyoruz
+        var offerData = response.data['response']['data']['data'][brandId];
+
+        if (offerData != null) {
+          // API'den gelen Offer bilgileri
+          var offer = offerData['Offer'];
+          var trackingLink = offerData['TrackingLink'];
+          var categories = offerData['OfferCategory']
+                  ?.values
+                  ?.map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                  .toList() ??
+              [];
+          var thumbnail = offerData['Thumbnail'];
+
+          // Gerekli alanları ayrıştırma
+          String? id = offer['id'].toString();
+          String? name = offer['name'];
+          String? sector = null;
+          try {
+            sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
+                ? offerData['OfferVertical'].first['name']
+                : null;
+          } catch (e) {
+            sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
+                ? offerData['OfferVertical']['name']
+                : null;
+          }
+          double? donationRate = double.tryParse(offer['percent_payout'].toString());
+          DateTime? creationDate = DateTime.now(); // API'den creationDate gelmediği için manuel atanıyor
+          String? bannerImage = thumbnail != null ? thumbnail['url'] : null;
+          String? detailText = offer['description'] ?? ""; // Varsayılan boş metin
+          String? link = trackingLink != null ? trackingLink['click_url'] : null;
+
+          // BrandModel nesnesini döndürüyoruz
+          return BrandModel(
+            id: id,
+            bannerImage: bannerImage,
+            categories: categories,
+            creationDate: creationDate,
+            detailText: detailText,
+            donationRate: donationRate,
+            favoriteCount: 0,
+            inEarthquakeZone: false, // Veride bu bilgi olmadığı için manuel atanıyor
+            isSocialEnterprise: false, // Veride bu bilgi olmadığı için manuel atanıyor
+            link: link,
+            logo: bannerImage, // Thumbnail verisini logo olarak kullanıyoruz
+            name: name?.removeTypes() ?? "", // removeBrackets extension kullanımı
+            sector: sector,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching brand by ID: $e");
+    }
+    return null;
+  }
+
   //getBrand
   Future getBrands() async {
     if (_brandList.isNotEmpty) {
@@ -437,6 +569,7 @@ class BrandProvider with ChangeNotifier {
     notifyListeners();
     // Şuan markalar sadece API'den gelecek
     // _brandList = await _brandController.getBrands();
+    await getOffers2();
     await getOffers();
     _loadingState = LoadingState.loaded;
     notifyListeners();

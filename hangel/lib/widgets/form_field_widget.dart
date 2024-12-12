@@ -94,6 +94,7 @@ class FormFieldWidget extends StatelessWidget {
                   inputFormatters: inputFormatters,
                   decoration: AppTheme.noneBorderInputDecoration(
                     hintText: hintText,
+                    context: context
                   ),
                   keyboardType: keyboardType,
                 ),

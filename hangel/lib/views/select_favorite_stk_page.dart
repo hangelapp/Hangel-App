@@ -9,23 +9,25 @@ import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
 import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/app_view.dart';
+import 'package:hangel/views/auth/register_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/general_button_widget.dart';
 import 'package:hangel/widgets/gradient_widget.dart';
-import 'package:hangel/widgets/list_item_widget.dart';
-import 'package:hangel/widgets/search_widget.dart';
+import 'package:hangel/widgets/locale_text.dart';
 import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/hive_helpers.dart';
 import '../models/stk_model.dart';
 import '../models/user_model.dart';
+import '../widgets/stk_favorite_search_widget.dart';
 
 class SelectFavoriteStkPage extends StatefulWidget {
-  const SelectFavoriteStkPage({Key? key, this.inTree = true}) : super(key: key);
+  const SelectFavoriteStkPage({Key? key, this.inTree = true, this.selectedSTKIds}) : super(key: key);
   static const routeName = '/select-favorite-stk-page';
   final bool inTree;
-  
+  final List<String>? selectedSTKIds;
+
   @override
   State<SelectFavoriteStkPage> createState() => _SelectFavoriteStkPageState();
 }
@@ -41,7 +43,9 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
     "select_favorite_stk_foundation",
     "select_favorite_stk_special_permission",
   ];
-  
+
+  List<StkModel> _manuallyLoadedStks = [];
+
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -50,15 +54,41 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
         setState(() {
           selectedStkIdList.addAll(user.favoriteStks);
         });
+      } else {
+        if (widget.selectedSTKIds != null) {
+          setState(() {
+            selectedStkIdList.addAll(widget.selectedSTKIds!);
+          });
+        }
+      }
+      // Seçilen STK'ları manuel olarak yükle
+      if (selectedStkIdList.isNotEmpty) {
+        await _loadSelectedStks();
       }
     });
     super.initState();
   }
 
+  Future<void> _loadSelectedStks() async {
+    // Seçili olan STK'ların bilgilerini Firestore'dan çek
+    final List<String> ids = selectedStkIdList;
+    if (ids.isEmpty) return;
+
+    try {
+      final query = await FirebaseFirestore.instance.collection('stklar').where('id', whereIn: ids).get();
+
+      final loadedStks = query.docs.map((e) => StkModel.fromJson(e.data())).toList();
+      setState(() {
+        _manuallyLoadedStks = loadedStks;
+      });
+    } catch (e) {
+      // hata durumunda bir şey yapılabilir
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     user = HiveHelpers.getUserFromHive();
-    print(user.uid);
     return Scaffold(
       backgroundColor: Colors.white,
       body: DefaultTabController(
@@ -99,12 +129,24 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                               ),
                             ),
                             SizedBox(height: deviceHeightSize(context, 10)),
-                            SearchWidget(
-                              context,
-                              onChanged: (value) {
-                                context.read<STKProvider>().searchText = value;
-                              },
+                            STKFavoriteSearchWidget(
                               controller: _searchController,
+                              selectedStkIdList: selectedStkIdList,
+                              onSelectionChanged: (stkId, isSelected) async {
+                                setState(() {
+                                  if (isSelected) {
+                                    if (selectedStkIdList.length >= 2) {
+                                      ToastWidgets.errorToast(context, "select_favorite_stk_max_error".locale);
+                                      return;
+                                    }
+                                    selectedStkIdList.add(stkId);
+                                  } else {
+                                    selectedStkIdList.remove(stkId);
+                                  }
+                                });
+                                // Seçim değiştiğinde manuel listeyi güncelle
+                                await _loadSelectedStks();
+                              },
                             ),
                             SizedBox(height: deviceHeightSize(context, 10)),
                             Container(
@@ -147,7 +189,20 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                           child: GeneralButtonWidget(
                             onPressed: () async {
                               if (context.read<STKProvider>().favoriteSTKState == LoadingState.loading) {
-                                print("object");
+                                return;
+                              }
+                              if (user.uid == null) {
+                                if (selectedStkIdList.length < 2) {
+                                  ToastWidgets.errorToast(context, "select_favorite_stk_min_error".locale);
+                                  return;
+                                }
+                                if (selectedStkIdList.length > 2) {
+                                  ToastWidgets.errorToast(context, "select_favorite_stk_max_error".locale);
+                                  return;
+                                }
+                                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.register);
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) => RegisterPage(stkIds: selectedStkIdList)));
                                 return;
                               }
                               String? control = context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate);
@@ -179,9 +234,10 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                               });
                               context.read<STKProvider>().favoriteSTKState = LoadingState.loaded;
 
-                              if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                        (element) => element == -1,
-                                      ) ==
+                              if (context
+                                      .read<LoginRegisterPageProvider>()
+                                      .selectedOptions
+                                      .any((element) => element == -1) ==
                                   false) {
                                 if (widget.inTree) {
                                   Navigator.pop(context);
@@ -218,6 +274,90 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         filterAndSort(context),
+        // Önce manuel yüklenen STK'ları göster
+        if (_manuallyLoadedStks.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: AppTheme.shadowList,
+                color: Colors.white,
+              ),
+              child: Column(
+                children: [
+                  LocaleText("secilenler"),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    itemCount: _manuallyLoadedStks.length,
+                    itemBuilder: (context, index) {
+                      final stk = _manuallyLoadedStks[index];
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 5)),
+                        child: ListTile(
+                          leading: stk.logo != null
+                              ? CachedNetworkImage(
+                                  imageUrl: stk.logo ?? "",
+                                  width: deviceWidthSize(context, 30),
+                                  height: deviceWidthSize(context, 30),
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, error, stackTrace) {
+                                    return Container(
+                                      width: deviceWidthSize(context, 30),
+                                      height: deviceWidthSize(context, 30),
+                                      color: Colors.grey,
+                                    );
+                                  },
+                                  placeholder: (context, url) => Container(
+                                    width: deviceWidthSize(context, 30),
+                                    height: deviceWidthSize(context, 30),
+                                    color: Colors.grey,
+                                  ),
+                                )
+                              : Container(
+                                  width: deviceWidthSize(context, 30),
+                                  height: deviceWidthSize(context, 30),
+                                  color: Colors.grey,
+                                ),
+                          title: Text(
+                            stk.name ?? "",
+                            style: AppTheme.semiBoldTextStyle(
+                              context,
+                              14,
+                            ),
+                          ),
+                          trailing: Checkbox(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            value: selectedStkIdList.contains(stk.id.toString()),
+                            activeColor: AppTheme.primaryColor,
+                            onChanged: (value) async {
+                              setState(() {
+                                if (value!) {
+                                  if (selectedStkIdList.length >= 2) {
+                                    ToastWidgets.errorToast(context, "select_favorite_stk_max_error".locale);
+                                    return;
+                                  }
+                                  selectedStkIdList.add(stk.id.toString());
+                                } else {
+                                  selectedStkIdList.remove(stk.id.toString());
+                                }
+                              });
+                              await _loadSelectedStks();
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         Expanded(
           child: isLoading
               ? CircularProgressIndicator()
@@ -261,71 +401,72 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                             ),
                   itemBuilder: (context, docs, index) {
                     final stk = StkModel.fromJson(docs[index].data() as Map<String, dynamic>);
-                    return isLoading
-                        ? CircularProgressIndicator()
-                        : Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: deviceWidthSize(context, 10),
-                              vertical: deviceHeightSize(context, 10),
-                            ),
-                            child: ListTile(
-                              leading: stk.logo != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: stk.logo ?? "",
-                                      width: deviceWidthSize(context, 50),
-                                      height: deviceWidthSize(context, 50),
-                                      fit: BoxFit.cover,
-                                      errorWidget: (context, error, stackTrace) {
-                                        return listItemImage2(
-                                          context,
-                                          logo: stk.logo,
-                                          onTap: () {},
-                                        );
-                                      },
-                                      placeholder: (context, url) => listItemImage2(
-                                        context,
-                                        logo: stk.logo,
-                                        onTap: () {},
-                                      ),
-                                    )
-                                  : listItemImage2(
-                                      context,
-                                      logo: stk.logo,
-                                      onTap: () {},
-                                    ),
-                              title: Text(
-                                stk.name ?? "",
-                                style: AppTheme.semiBoldTextStyle(
-                                  context,
-                                  16,
-                                ),
-                              ),
-                              trailing: Checkbox(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                value: selectedStkIdList.contains(
-                                  stk.id.toString(),
-                                ),
-                                activeColor: AppTheme.primaryColor,
-                                onChanged: (value) {
-                                  setState(() {
-                                    if (value!) {
-                                      if (selectedStkIdList.length == 2) {
-                                        ToastWidgets.errorToast(context, "select_favorite_stk_max_error".locale);
-                                        return;
-                                      }
-                                      selectedStkIdList.add(stk.id.toString());
-                                    } else {
-                                      selectedStkIdList.remove(
-                                        stk.id.toString(),
-                                      );
-                                    }
-                                  });
+
+                    // Eğer bu STK manuel yüklenenler arasındaysa, tekrar gösterme
+                    if (_manuallyLoadedStks.any((element) => element.id == stk.id)) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: deviceWidthSize(context, 10),
+                        vertical: deviceHeightSize(context, 10),
+                      ),
+                      child: ListTile(
+                        leading: stk.logo != null
+                            ? CachedNetworkImage(
+                                imageUrl: stk.logo ?? "",
+                                width: deviceWidthSize(context, 50),
+                                height: deviceWidthSize(context, 50),
+                                fit: BoxFit.cover,
+                                errorWidget: (context, error, stackTrace) {
+                                  return Container(
+                                    width: deviceWidthSize(context, 50),
+                                    height: deviceWidthSize(context, 50),
+                                    color: Colors.grey,
+                                  );
                                 },
+                                placeholder: (context, url) => Container(
+                                  width: deviceWidthSize(context, 50),
+                                  height: deviceWidthSize(context, 50),
+                                  color: Colors.grey,
+                                ),
+                              )
+                            : Container(
+                                width: deviceWidthSize(context, 50),
+                                height: deviceWidthSize(context, 50),
+                                color: Colors.grey,
                               ),
-                            ),
-                          );
+                        title: Text(
+                          stk.name ?? "",
+                          style: AppTheme.semiBoldTextStyle(
+                            context,
+                            16,
+                          ),
+                        ),
+                        trailing: Checkbox(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          value: selectedStkIdList.contains(stk.id.toString()),
+                          activeColor: AppTheme.primaryColor,
+                          onChanged: (value) async {
+                            setState(() {
+                              if (value!) {
+                                if (selectedStkIdList.length >= 2) {
+                                  ToastWidgets.errorToast(context, "select_favorite_stk_max_error".locale);
+                                  return;
+                                }
+                                selectedStkIdList.add(stk.id.toString());
+                              } else {
+                                selectedStkIdList.remove(stk.id.toString());
+                              }
+                            });
+                            await _loadSelectedStks();
+                          },
+                        ),
+                      ),
+                    );
                   },
                 ),
         ),
@@ -414,12 +555,11 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Durations.short1);
+              await Future.delayed(Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });
               context.read<STKProvider>().sortTextFav = value;
-              print(value);
             },
             child: Icon(
               Icons.sort_rounded,
@@ -451,7 +591,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Durations.short1);
+              await Future.delayed(Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });
@@ -467,10 +607,4 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
       ),
     );
   }
-}
-
-class SSSModel {
-  String? baslik;
-  String? tanim;
-  SSSModel({this.baslik, this.tanim});
 }

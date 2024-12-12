@@ -43,7 +43,7 @@ Widget ListItemWidget(
         child: Container(
           margin: EdgeInsets.symmetric(
             vertical: deviceHeightSize(context, 4),
-            horizontal: deviceWidthSize(context, 20),
+            horizontal: deviceWidthSize(context, 10),
           ),
           padding: EdgeInsets.symmetric(
             horizontal: paddingHorizontal ?? deviceWidthSize(context, 16),
@@ -91,6 +91,8 @@ Widget ListItemWidget(
                               ),
                               Text(
                                 sector ?? "",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: AppTheme.lightTextStyle(context, 12),
                               ),
                             ],
@@ -191,18 +193,17 @@ Widget ListItemWidget(
                 ),
               ))
           : SizedBox.shrink(),
-      isActive == false ? Positioned.fill(
-          child: Container(
-        color: Colors.white.withOpacity(0.9),
-        child: Center(
-            child: Text(
-          "Bu STK artık aktif değil",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 12
-          ),
-        )),
-      )):SizedBox(),
+      isActive == false
+          ? Positioned.fill(
+              child: Container(
+              color: Colors.white.withOpacity(0.9),
+              child: Center(
+                  child: Text(
+                "Bu STK artık aktif değil",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              )),
+            ))
+          : SizedBox(),
     ],
   );
 }

@@ -3,6 +3,7 @@ class STKFormModel {
   String? type;
   String? iban;
   String? website;
+  String? description;
   String? email;
   String? phone;
   String? city;
@@ -45,6 +46,7 @@ class STKFormModel {
     this.type,
     this.iban,
     this.website,
+    this.description,
     this.email,
     this.phone,
     this.city,
@@ -85,18 +87,15 @@ class STKFormModel {
       type: json['type'] as String?,
       iban: json['iban'] as String?,
       website: json['website'] as String?,
+      description: json['description'] as String?,
       email: json['email'] as String?,
       phone: json['phone'] as String?,
       city: json['city'] as String?,
       district: json['district'] as String?,
       neighborhood: json['neighborhood'] as String?,
       address: json['address'] as String?,
-      beneficiaries: (json['beneficiaries'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      unSdgs: (json['unSdgs'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      beneficiaries: (json['beneficiaries'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      unSdgs: (json['unSdgs'] as List<dynamic>?)?.map((e) => e as String).toList(),
       applicantName: json['applicantName'] as String?,
       applicantPhone: json['applicantPhone'] as String?,
       applicantEmail: json['applicantEmail'] as String?,
@@ -114,17 +113,14 @@ class STKFormModel {
       activityArea: json['activityArea'] as String?,
       permissionStartDate: json['permissionStartDate'] as String?,
       permissionEndDate: json['permissionEndDate'] as String?,
-      permissionGrantingGovernorate:
-          json['permissionGrantingGovernorate'] as String?,
+      permissionGrantingGovernorate: json['permissionGrantingGovernorate'] as String?,
       activityNumber: json['activityNumber'] as String?,
       campaignName: json['campaignName'] as String?,
       birthDate: json['birthDate'] as String?,
       photoImageUrl: json['photoImageUrl'] as String?,
       permissionPurpose: json['permissionPurpose'] as String?,
-      governoratePermissionDocumentUrl:
-          json['governoratePermissionDocumentUrl'] as String?,
-      stkIlMudurluguYetkiBelgesiUrl:
-          json['stkIlMudurluguYetkiBelgesiUrl'] as String?,
+      governoratePermissionDocumentUrl: json['governoratePermissionDocumentUrl'] as String?,
+      stkIlMudurluguYetkiBelgesiUrl: json['stkIlMudurluguYetkiBelgesiUrl'] as String?,
     );
   }
 
@@ -133,6 +129,7 @@ class STKFormModel {
       'type': type,
       'iban': iban,
       'website': website,
+      'description': description,
       'email': email,
       'phone': phone,
       'city': city,
@@ -171,8 +168,7 @@ class STKFormModel {
 
   // Mail için HTML tablo formatı
   String toHTMLTable() {
-    String beneficiariesStr =
-        beneficiaries != null ? beneficiaries!.join(', ') : '-';
+    String beneficiariesStr = beneficiaries != null ? beneficiaries!.join(', ') : '-';
     String unSdgsStr = unSdgs != null ? unSdgs!.join(', ') : '-';
 
     StringBuffer html = StringBuffer();
@@ -180,33 +176,23 @@ class STKFormModel {
 
     html.writeln("<tr><td><strong>Tür</strong></td><td>${type ?? '-'}</td></tr>");
     html.writeln("<tr><td><strong>IBAN</strong></td><td>${iban ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Web Sitesi</strong></td><td>${website ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Email</strong></td><td>${email ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Telefon</strong></td><td>${phone ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Web Sitesi</strong></td><td>${website ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Acıklama</strong></td><td>${description ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Email</strong></td><td>${email ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Telefon</strong></td><td>${phone ?? '-'}</td></tr>");
     html.writeln("<tr><td><strong>Şehir</strong></td><td>${city ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>İlçe</strong></td><td>${district ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Mahalle</strong></td><td>${neighborhood ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Adres</strong></td><td>${address ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Faydalanıcılar</strong></td><td>${beneficiariesStr}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>BM Sürdürülebilir Kalkınma Amaçları</strong></td><td>${unSdgsStr}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Başvuruyu Yapan Kişinin Adı</strong></td><td>${applicantName ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>İlçe</strong></td><td>${district ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Mahalle</strong></td><td>${neighborhood ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Adres</strong></td><td>${address ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Faydalanıcılar</strong></td><td>${beneficiariesStr}</td></tr>");
+    html.writeln("<tr><td><strong>BM Sürdürülebilir Kalkınma Amaçları</strong></td><td>${unSdgsStr}</td></tr>");
+    html.writeln("<tr><td><strong>Başvuruyu Yapan Kişinin Adı</strong></td><td>${applicantName ?? '-'}</td></tr>");
     html.writeln(
         "<tr><td><strong>Başvuruyu Yapan Kişinin Telefonu</strong></td><td>${applicantPhone ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Başvuruyu Yapan Kişinin Emaili</strong></td><td>${applicantEmail ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Başvuruyu Yapan Kişinin Emaili</strong></td><td>${applicantEmail ?? '-'}</td></tr>");
 
     if (applicantPosition != null) {
-      html.writeln(
-          "<tr><td><strong>Başvuruyu Yapan Kişinin Görevi</strong></td><td>${applicantPosition}</td></tr>");
+      html.writeln("<tr><td><strong>Başvuruyu Yapan Kişinin Görevi</strong></td><td>${applicantPosition}</td></tr>");
     }
 
     if (applicantRelation != null) {
@@ -216,43 +202,28 @@ class STKFormModel {
 
     if (type != 'stk_form_type_special_permission') {
       // Diğer türler için alanlar
-      html.writeln(
-          "<tr><td><strong>ID No</strong></td><td>${idNo ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Vergi No</strong></td><td>${taxNumber ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Vergi Dairesi</strong></td><td>${taxOffice ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Kısa Adı</strong></td><td>${shortName ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Tam Adı</strong></td><td>${fullName ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Kuruluş Yılı</strong></td><td>${establishmentYear ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Faaliyet Alanı</strong></td><td>${activityArea ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>ID No</strong></td><td>${idNo ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Vergi No</strong></td><td>${taxNumber ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Vergi Dairesi</strong></td><td>${taxOffice ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Kısa Adı</strong></td><td>${shortName ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Tam Adı</strong></td><td>${fullName ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Kuruluş Yılı</strong></td><td>${establishmentYear ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Faaliyet Alanı</strong></td><td>${activityArea ?? '-'}</td></tr>");
     } else {
       // Özel izin ile yardım toplayan türü için alanlar
-      html.writeln(
-          "<tr><td><strong>İzin Başlama Tarihi</strong></td><td>${permissionStartDate ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>İzin Bitiş Tarihi</strong></td><td>${permissionEndDate ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>İzin Başlama Tarihi</strong></td><td>${permissionStartDate ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>İzin Bitiş Tarihi</strong></td><td>${permissionEndDate ?? '-'}</td></tr>");
       html.writeln(
           "<tr><td><strong>İzni Veren Valilik</strong></td><td>${permissionGrantingGovernorate ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Faaliyet No</strong></td><td>${activityNumber ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Kampanyanın Adı</strong></td><td>${campaignName ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>Doğum Tarihi</strong></td><td>${birthDate ?? '-'}</td></tr>");
-      html.writeln(
-          "<tr><td><strong>İznin Amacı</strong></td><td>${permissionPurpose ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Faaliyet No</strong></td><td>${activityNumber ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Kampanyanın Adı</strong></td><td>${campaignName ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>Doğum Tarihi</strong></td><td>${birthDate ?? '-'}</td></tr>");
+      html.writeln("<tr><td><strong>İznin Amacı</strong></td><td>${permissionPurpose ?? '-'}</td></tr>");
     }
 
     // Dosya ve resim URL'lerini ekleyebilirsiniz
-    html.writeln(
-        "<tr><td><strong>Logo Resmi URL</strong></td><td>${logoImage ?? '-'}</td></tr>");
-    html.writeln(
-        "<tr><td><strong>Fotoğraf URL'si</strong></td><td>${photoImageUrl ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Logo Resmi URL</strong></td><td>${logoImage ?? '-'}</td></tr>");
+    html.writeln("<tr><td><strong>Fotoğraf URL'si</strong></td><td>${photoImageUrl ?? '-'}</td></tr>");
     // Diğer dosya ve resim URL'lerini de ekleyebilirsiniz
 
     html.writeln("</table>");

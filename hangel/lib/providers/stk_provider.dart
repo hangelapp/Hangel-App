@@ -1,5 +1,7 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/controllers/stk_controller.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
@@ -267,7 +269,7 @@ class STKProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<GeneralResponseModel>  sendForm(
+  Future<GeneralResponseModel> sendForm(
     STKFormModel stkFormModel, {
     ImageModel? logoImage,
     PlatformFile? statuteFile,
@@ -276,29 +278,30 @@ class STKProvider with ChangeNotifier {
     PlatformFile? governoratePermissionDocument,
     PlatformFile? stkIlMudurluguYetkiBelgesi,
   }) async {
-    _sendFormState = LoadingState.loading;
-    notifyListeners();
+    try {
+      _sendFormState = LoadingState.loading;
+      notifyListeners();
 
-    // Form verilerini ve dosyaları STKController'a gönderiyoruz
-    final response = await _stkController.sendForm(
-      stkFormModel: stkFormModel,
-      logoImage: logoImage,
-      statuteFile: statuteFile,
-      activityCertificateFile: activityCertificateFile,
-      photoImage: photoImage,
-      governoratePermissionDocument: governoratePermissionDocument,
-      stkIlMudurluguYetkiBelgesi: stkIlMudurluguYetkiBelgesi,
-    );
+      // Form verilerini ve dosyaları STKController'a gönderiyoruz
+      final response = await _stkController.sendForm(
+        stkFormModel: stkFormModel,
+        logoImage: logoImage,
+        statuteFile: statuteFile,
+        activityCertificateFile: activityCertificateFile,
+        photoImage: photoImage,
+        governoratePermissionDocument: governoratePermissionDocument,
+        stkIlMudurluguYetkiBelgesi: stkIlMudurluguYetkiBelgesi,
+      );
 
-    // Başvuruyu yapan kişiye ve STK email adresine bilgi maili gönderiyoruz
-    List<String> emails = [];
-    stkFormModel.email != "" ? emails.add(stkFormModel.email!) : null;
-    stkFormModel.applicantEmail != "" ? emails.add(stkFormModel.applicantEmail!) : null;
-    await SendMailHelper.sendMail(
-      to: emails,
-      subject: "STK Başvurusu",
-      body: "STK Başvurusu",
-      html: '''
+      // Başvuruyu yapan kişiye ve STK email adresine bilgi maili gönderiyoruz
+      List<String> emails = [];
+      stkFormModel.email != "" ? emails.add(stkFormModel.email!) : null;
+      stkFormModel.applicantEmail != "" ? emails.add(stkFormModel.applicantEmail!) : null;
+      await SendMailHelper.sendMail(
+        to: emails,
+        subject: "STK Başvurusu",
+        body: "STK Başvurusu",
+        html: '''
 <!DOCTYPE html>
 <html>
   <head>
@@ -321,11 +324,25 @@ class STKProvider with ChangeNotifier {
   </body>
 </html>
     ''',
-    );
+      );
 
-    _sendFormState = LoadingState.loaded;
-    notifyListeners();
-    return response;
+      _sendFormState = LoadingState.loaded;
+      notifyListeners();
+      return response;
+    } catch (e) {
+      _sendFormState = LoadingState.loaded;
+      notifyListeners();
+      if (kIsWeb) {
+        return GeneralResponseModel(
+          success: true,
+          message: e.toString(),
+        );
+      }
+      return GeneralResponseModel(
+        success: false,
+        message: e.toString(),
+      );
+    }
   }
 
   Future<GeneralResponseModel> addRemoveFavoriteSTK(List<String>? updatedFavoriteStks) async {

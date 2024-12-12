@@ -15,7 +15,7 @@ class LoginRegisterPageController {
   final _firestoreServices = locator<FirestoreServices>();
   // final _apiServices = locator<ApiServices>();
   // final _usersPath = 'users';
-  Future<GeneralResponseModel> verifyPhoneNumber({required String phoneNumber,required String name,required String verificationId,required String smsCode,context}) async {
+  Future<GeneralResponseModel> verifyPhoneNumber({required String phoneNumber,required String name,required String verificationId,required String smsCode,List<String>? favoriteStksList,context}) async {
 
     try {
       User user = await _firebaseAuthServices.verifyPhoneNumber(verificationId, smsCode);
@@ -31,6 +31,7 @@ class LoginRegisterPageController {
         if ((await isUserExist(user.uid,context)) == false) {
           userModel.name = name;
           userModel.image = "";
+          userModel.favoriteStks = favoriteStksList ?? [];
           userModel.createdAt = DateTime.now();
 
           GeneralResponseModel responseModel = await _firestoreServices.setData(

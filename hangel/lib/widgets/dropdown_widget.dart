@@ -1,3 +1,4 @@
+import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_theme.dart';
 import '../constants/size.dart';
@@ -81,28 +82,29 @@ class DropdownWidget extends StatelessWidget {
                   ),
                   width: double.infinity,
                   child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      alignment: Alignment.centerLeft,
-                      dropdownColor: color,
-                      borderRadius: BorderRadius.circular(10),
-                      focusColor: color,
-                      menuMaxHeight: deviceHeightSize(context, 400),
-                      style: isBold ? AppTheme.semiBoldTextStyle(context, 16) : AppTheme.normalTextStyle(context, 16),
-                      icon: const Icon(
-                        Icons.arrow_drop_down,
-                        color: AppTheme.darkBlue,
-                      ),
-                      items: items,
+                    child: DropdownFlutter<String>.search(
+                      hintText: "",
+                      // isExpanded: true,
+                      // alignment: Alignment.centerLeft,
+                      // dropdownColor: color,
+                      // borderRadius: BorderRadius.circular(10),
+                      // focusColor: color,
+                      // menuMaxHeight: deviceHeightSize(context, 400),
+                      // style: isBold ? AppTheme.semiBoldTextStyle(context, 16) : AppTheme.normalTextStyle(context, 16),
+                      // icon: const Icon(
+                      //   Icons.arrow_drop_down,
+                      //   color: AppTheme.darkBlue,
+                      // ),
+                      items: titles,
                       onChanged: (String? newValue) {
                         onChanged?.call(newValue);
                         state.didChange(newValue); // FormField durumunu güncelle
                       },
-                      value: selectedIndex == -1 ? null : items[selectedIndex].value,
-                      hint: Text(
-                        hintText,
-                        style: AppTheme.normalTextStyle(context, 16, color: AppTheme.darkBlue.withOpacity(0.5)),
-                      ),
+                      // value: selectedIndex == -1 ? null : items[selectedIndex].value,
+                      // hint: Text(
+                      //   hintText,
+                      //   style: AppTheme.normalTextStyle(context, 16, color: AppTheme.darkBlue.withOpacity(0.5)),
+                      // ),
                     ),
                   ),
                 ),

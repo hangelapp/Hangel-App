@@ -5,8 +5,9 @@ import 'package:hangel/views/splash_page.dart';
 import 'auth.dart';
 
 class WidgetTree extends StatefulWidget {
-  const WidgetTree({super.key});
+  const WidgetTree({super.key, this.stkId});
   static const routeName = '/widget-tree';
+  final String? stkId; // DEEP LINK İLE ALINAN STK ID
 
   @override
   State<WidgetTree> createState() => _WidgetTreeState();
@@ -19,9 +20,11 @@ class _WidgetTreeState extends State<WidgetTree> {
       stream: Auth().authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return SplashPage();
+          // Eğer kullanıcı giriş yapmışsa SplashPage'e stkId ile gidiyoruz
+          return SplashPage(stkId: widget.stkId);
         } else {
-          return const RegisterPage();
+          // Kullanıcı giriş yapmamışsa RegisterPage'e stkId ile gidiyoruz
+          return RegisterPage();
         }
       },
     );
