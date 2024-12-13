@@ -137,17 +137,21 @@ Future<void> initializeLocalNotifications() async {
     alert: true,
     badge: true,
     sound: true,
+    provisional: false
   );
   print('User granted permission: ${settings.authorizationStatus}');
-
-  String? apnsToken = await messaging.getAPNSToken();
-  if (apnsToken != null) {
-    LocaleManager.instance.setStringValue(PreferencesKeys.APN, apnsToken);
-    print("APNS Token: $apnsToken");
-    String? firebaseToken = await messaging.getToken();
-    print("Firebase Token: $firebaseToken");
-  } else {
-    print("APNS token henüz ayarlanmadı, Firebase token alınamıyor.");
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    try {
+      String? apnsToken = await messaging.getAPNSToken();
+      if (apnsToken != null) {
+        LocaleManager.instance.setStringValue(PreferencesKeys.APN, apnsToken);
+        print("APNS Token: $apnsToken");
+        String? firebaseToken = await messaging.getToken();
+        print("Firebase Token: $firebaseToken");
+      } else {
+        print("APNS token henüz ayarlanmadı, Firebase token alınamıyor.");
+      }
+    } catch (e) {}
   }
 
   String? firebaseToken = await messaging.getToken();
