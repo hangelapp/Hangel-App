@@ -220,7 +220,6 @@ class BrandProvider with ChangeNotifier {
           "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
       if (response.statusCode == 200) {
         var json = response.data;
-        print(json);
         // Offer <-> Brand argument match
         for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
           if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
