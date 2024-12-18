@@ -73,30 +73,35 @@ void main() async {
 
   // Deep link için STK ID
   String? stkId = await _handleInitialDynamicLink();
-
-  // Uygulama çalışırken deep link gelirse dinle
-  FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
-    final Uri deepLink = dynamicLinkData.link;
-    final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
-    if (deepLinkStkId != null) {
-      // Bu noktada istenirse bir state management yöntemiyle (GetX, Provider, vs.)
-      // uygulama içinde bu veriyi güncelleyebilirsiniz.
-      // Şimdilik basitlik olsun diye print atıyoruz.
-      print("Runtime deep link STK ID: $deepLinkStkId");
-      if (Auth().currentUser != null) {
-        await FirebaseFirestore.instance.collection("stklar").where("id", isEqualTo: deepLinkStkId).get().then((value) {
-          if (value.docs.isNotEmpty) {
-            StkModel stkModel = StkModel.fromJson(value.docs.first.data());
-            Get.to(() => STKDetailPage(stkModel: stkModel));
-          }
-        });
-      } else {
-        Get.to(() => SelectFavoriteStkPage(inTree: false, selectedSTKIds: [deepLinkStkId]));
+  if (!kIsWeb) {
+    // Uygulama çalışırken deep link gelirse dinle
+    FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
+      final Uri deepLink = dynamicLinkData.link;
+      final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
+      if (deepLinkStkId != null) {
+        // Bu noktada istenirse bir state management yöntemiyle (GetX, Provider, vs.)
+        // uygulama içinde bu veriyi güncelleyebilirsiniz.
+        // Şimdilik basitlik olsun diye print atıyoruz.
+        print("Runtime deep link STK ID: $deepLinkStkId");
+        if (Auth().currentUser != null) {
+          await FirebaseFirestore.instance
+              .collection("stklar")
+              .where("id", isEqualTo: deepLinkStkId)
+              .get()
+              .then((value) {
+            if (value.docs.isNotEmpty) {
+              StkModel stkModel = StkModel.fromJson(value.docs.first.data());
+              Get.to(() => STKDetailPage(stkModel: stkModel));
+            }
+          });
+        } else {
+          Get.to(() => SelectFavoriteStkPage(inTree: false, selectedSTKIds: [deepLinkStkId]));
+        }
       }
-    }
-  }).onError((error) {
-    print('onLink error: $error');
-  });
+    }).onError((error) {
+      print('onLink error: $error');
+    });
+  }
 
   runApp(
     MultiProvider(
@@ -133,12 +138,8 @@ void _showNotification(RemoteNotification notification) async {
 Future<void> initializeLocalNotifications() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-    provisional: false
-  );
+  NotificationSettings settings =
+      await messaging.requestPermission(alert: true, badge: true, sound: true, provisional: false);
   print('User granted permission: ${settings.authorizationStatus}');
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     try {
@@ -182,6 +183,7 @@ Future<void> initializeLocalNotifications() async {
 
 // İlk olarak uygulama açıldığında deep link var mı kontrol et
 Future<String?> _handleInitialDynamicLink() async {
+  if (kIsWeb) return null;
   final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
   if (initialLink != null) {
     final Uri deepLink = initialLink.link;
