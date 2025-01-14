@@ -13,12 +13,12 @@ class STKFavoriteSearchWidget extends StatelessWidget {
   final List<String> selectedStkIdList;
   final Function(String stkId, bool isSelected) onSelectionChanged;
 
-  STKFavoriteSearchWidget({
-    Key? key,
+  const STKFavoriteSearchWidget({
+    super.key,
     required this.controller,
     required this.selectedStkIdList,
     required this.onSelectionChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

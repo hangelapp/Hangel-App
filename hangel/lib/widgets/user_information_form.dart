@@ -15,7 +15,7 @@ import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:provider/provider.dart';
 
 class UserInformationForm extends StatefulWidget {
-  const UserInformationForm({Key? key}) : super(key: key);
+  const UserInformationForm({super.key});
 
   @override
   State<UserInformationForm> createState() => _UserInformationFormState();

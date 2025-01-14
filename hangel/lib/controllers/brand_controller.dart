@@ -99,6 +99,8 @@ class BrandController {
       await _firestoreService.addData("forms", {
         "subject": "Marka Başvurusu",
         "status": "active",
+        "applicantUid": HiveHelpers.getUid(),
+        "applicantTime": DateTime.now(),
         "form": brandFormModel.toJson(),
       });
       return await _firestoreService.updateData(

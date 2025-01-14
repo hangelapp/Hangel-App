@@ -3,8 +3,7 @@ import '../constants/app_theme.dart';
 import '../constants/size.dart';
 
 class BottomSheetWidget extends StatefulWidget {
-  const BottomSheetWidget({Key? key, required this.title, required this.child, this.isMinPadding = false})
-      : super(key: key);
+  const BottomSheetWidget({super.key, required this.title, required this.child, this.isMinPadding = false});
   final String title;
   final Widget child;
   final bool isMinPadding;

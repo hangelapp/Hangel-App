@@ -12,7 +12,7 @@ import 'package:hangel/widgets/text_view_bottom_sheet.dart';
 import '../managers/language_manager.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
   static const routeName = '/settings';
 
   @override

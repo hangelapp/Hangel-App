@@ -31,9 +31,9 @@ class VolunteerProvider with ChangeNotifier {
     List<StkModel> stks = [];
     var instance = FirebaseFirestore.instance;
     var data = await instance.collection("stkVolunteers").get();
-    data.docs.forEach((e) {
+    for (var e in data.docs) {
       stks.add(StkModel.fromJson(e.data()));
-    });
+    }
     return stks;
   }
 

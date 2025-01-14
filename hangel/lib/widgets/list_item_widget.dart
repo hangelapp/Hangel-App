@@ -150,7 +150,7 @@ Widget ListItemWidget(
                   ],
                 ),
               ),
-              isSTKVolunteer == true && totalAplicant != null ? SizedBox(width: 4) : SizedBox.shrink(),
+              isSTKVolunteer == true && totalAplicant != null ? const SizedBox(width: 4) : const SizedBox.shrink(),
               // 6kGnMPHZdVTAUr9RC9Y885dvTZS2
               isSTKVolunteer == true && totalAplicant != null
                   ? Padding(
@@ -162,17 +162,17 @@ Widget ListItemWidget(
                           }
                           applicantExist == true ? null : showApplyInfo(context, stkEmail!, stkId!);
                         },
-                        child: applicantExist == true ? LocaleText("basvuruldu") : LocaleText("basvur"),
                         style: ButtonStyle(
-                            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
+                            padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
                             backgroundColor:
                                 WidgetStatePropertyAll(applicantExist == true ? Colors.grey : AppTheme.primaryColor),
-                            foregroundColor: WidgetStatePropertyAll(Colors.white),
+                            foregroundColor: const WidgetStatePropertyAll(Colors.white),
                             shape:
                                 WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)))),
+                        child: applicantExist == true ? LocaleText("basvuruldu") : LocaleText("basvur"),
                       ),
                     )
-                  : SizedBox.shrink()
+                  : const SizedBox.shrink()
             ],
           ),
         ),
@@ -182,28 +182,28 @@ Widget ListItemWidget(
               right: deviceWidthSize(context, 20),
               top: deviceHeightSize(context, 4),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), topRight: Radius.circular(10)),
                   color: AppTheme.primaryColor,
                 ),
                 child: Text(
                   "${totalAplicant.length} " + "kisi_basvurdu".locale,
-                  style: TextStyle(color: AppTheme.white),
+                  style: const TextStyle(color: AppTheme.white),
                 ),
               ))
-          : SizedBox.shrink(),
+          : const SizedBox.shrink(),
       isActive == false
           ? Positioned.fill(
               child: Container(
               color: Colors.white.withOpacity(0.9),
-              child: Center(
+              child: const Center(
                   child: Text(
                 "Bu STK artık aktif değil",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               )),
             ))
-          : SizedBox(),
+          : const SizedBox(),
     ],
   );
 }

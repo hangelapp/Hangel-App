@@ -69,13 +69,13 @@ class STKController {
   Future<List<StkModel>> getSTKs() async {
     List stkList = await _firestoreService.getData(_stksPath);
     List<StkModel> stks = [];
-    stkList.forEach((e) {
+    for (var e in stkList) {
       StkModel model = StkModel.fromJson(e.data() as Map<String, dynamic>);
       if (model.isActive == true) {
         model.id = e.id;
         stks = [...stks, model];
       }
-    });
+    }
     return stks;
   }
 
@@ -85,9 +85,9 @@ class STKController {
         await FirebaseFirestore.instance.collection("stklar").where("id", whereIn: favoriteIds).get();
     List<StkModel> stks = [];
     // Sorgu sonucunu StkModel listesine dönüştürüyoruz.
-    snapshot.docs.forEach((doc) {
+    for (var doc in snapshot.docs) {
       stks.add(StkModel.fromJson(doc.data() as Map<String, dynamic>));
-    });
+    }
     return stks;
   }
 
@@ -172,6 +172,8 @@ class STKController {
       await _firestoreService.addData("forms", {
         "subject": "STK Başvurusu",
         "status": "active",
+        "applicantUid": HiveHelpers.getUid(),
+        "applicantTime": DateTime.now(),
         "form": stkFormModel.toJson(),
       });
 

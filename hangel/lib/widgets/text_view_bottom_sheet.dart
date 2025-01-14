@@ -3,7 +3,7 @@ import '/constants/app_theme.dart';
 import '/constants/size.dart';
 
 class TextViewBottomSheet extends StatefulWidget {
-  const TextViewBottomSheet({Key? key, required this.text}) : super(key: key);
+  const TextViewBottomSheet({super.key, required this.text});
   final String text;
   @override
   State<TextViewBottomSheet> createState() => _TextViewBottomSheetState();

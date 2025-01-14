@@ -10,7 +10,7 @@ import '../../models/onboarding_model.dart';
 import 'register_page.dart';
 
 class OnboardingPage extends StatefulWidget {
-  const OnboardingPage({Key? key}) : super(key: key);
+  const OnboardingPage({super.key});
   static const String routeName = '/onboarding';
   @override
   State<OnboardingPage> createState() => _OnboardingPageState();

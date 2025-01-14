@@ -3,11 +3,10 @@ import '../constants/app_theme.dart';
 
 class AppNameWidget extends StatelessWidget {
   const AppNameWidget(
-      {Key? key,
+      {super.key,
       required this.fontSize,
       this.color = AppTheme.primaryColor,
-      this.secondaryColor = AppTheme.secondaryColor})
-      : super(key: key);
+      this.secondaryColor = AppTheme.secondaryColor});
   final double fontSize;
   final Color color;
   final Color secondaryColor;

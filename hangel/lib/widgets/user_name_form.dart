@@ -10,7 +10,7 @@ import 'package:hangel/widgets/toast_widgets.dart';
 import 'package:provider/provider.dart';
 
 class UserNameForm extends StatefulWidget {
-  const UserNameForm({Key? key}) : super(key: key);
+  const UserNameForm({super.key});
 
   @override
   State<UserNameForm> createState() => _UserNameFormState();

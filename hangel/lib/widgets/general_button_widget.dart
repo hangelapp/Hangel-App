@@ -4,19 +4,19 @@ import '../constants/size.dart';
 
 class GeneralButtonWidget extends StatelessWidget {
   const GeneralButtonWidget({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.text,
     this.buttonColor = const Color(0xFF2B2D42),
     this.textColor = const Color(0xFFFFFFFF),
     this.isLoading = false,
-  }) : super(key: key);
+  });
   final Function()? onPressed;
   final Color? buttonColor;
   final String text;
   final Color? textColor;
   final bool isLoading;
-  
+
   @override
   Widget build(BuildContext context) {
     return ButtonTheme(
@@ -28,9 +28,9 @@ class GeneralButtonWidget extends StatelessWidget {
             Radius.circular(20),
           ),
         ),
-        color: buttonColor,
+        color: onPressed!=null? buttonColor:Colors.grey,
         elevation: 0,
-        onPressed: onPressed,
+        onPressed: onPressed ?? () {},
         child: isLoading
             ? const Center(
                 child: CircularProgressIndicator(
@@ -40,8 +40,7 @@ class GeneralButtonWidget extends StatelessWidget {
             : Text(
                 text,
                 textAlign: TextAlign.center,
-                style: AppTheme.semiBoldTextStyle(context, 16,
-                    color: textColor ?? Colors.white),
+                style: AppTheme.semiBoldTextStyle(context, 16, color: textColor ?? Colors.white),
               ),
       ),
     );

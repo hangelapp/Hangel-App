@@ -23,7 +23,7 @@ import '../widgets/missing_donation_form_widget.dart';
 import 'utilities.dart';
 
 class DonationHistoryPage extends StatefulWidget {
-  const DonationHistoryPage({Key? key}) : super(key: key);
+  const DonationHistoryPage({super.key});
   static const routeName = '/donation-history-page';
 
   @override
@@ -136,7 +136,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                     builder: (context) => BottomSheetWidget(
                         isMinPadding: true,
                         title: 'missing_donation_form_page_title'.locale,
-                        child: MissingDonationFormPage()), // "Bağışım Gözükmüyor"
+                        child: const MissingDonationFormPage()), // "Bağışım Gözükmüyor"
                   );
                 },
                 child: Text("donation_history_page_my_donation_not_showing".locale),
@@ -366,7 +366,7 @@ class _DonationHistoryPageState extends State<DonationHistoryPage> {
                         )
                       : Row(
                           children: [
-                            CircleAvatar(
+                            const CircleAvatar(
                               radius: 30,
                               child: Text("-"),
                             ),
@@ -490,7 +490,7 @@ class DonationListItem extends StatefulWidget {
   final DonationModel donation;
   final Function(BrandModel?) onTap; // Callback to handle tap events
 
-  const DonationListItem({Key? key, required this.donation, required this.onTap}) : super(key: key);
+  const DonationListItem({super.key, required this.donation, required this.onTap});
 
   @override
   State<DonationListItem> createState() => _DonationListItemState();
@@ -551,9 +551,9 @@ class _DonationListItemState extends State<DonationListItem> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           tileColor: AppTheme.white,
           contentPadding: const EdgeInsets.all(16),
-          leading: Column(
+          leading: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               // Placeholder ikon
               CircleAvatar(
                 radius: 20,
@@ -627,7 +627,7 @@ class _DonationListItemState extends State<DonationListItem> {
           ),
           title: Row(
             children: [
-              CircleLogoWidget(
+              const CircleLogoWidget(
                 logoUrl: '',
                 logoName: "-",
               ),

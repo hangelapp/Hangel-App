@@ -6,7 +6,7 @@ import '../widgets/app_name_widget.dart';
 import '../widgets/back_button_widget.dart';
 
 class AppBarWidget extends StatefulWidget {
-  const AppBarWidget({Key? key, this.leading, this.title, this.action}) : super(key: key);
+  const AppBarWidget({super.key, this.leading, this.title, this.action});
   final String? title;
   final Widget? leading;
   final Widget? action;
@@ -36,7 +36,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                     style: AppTheme.boldTextStyle(context, 20, color: AppTheme.secondaryColor),
                   ),
                 ),
-          widget.action == null ? SizedBox() : widget.action!,
+          widget.action == null ? const SizedBox() : widget.action!,
           // if (widget.title != null) SizedBox(width: deviceWidthSize(context, 45)),
         ],
       ),

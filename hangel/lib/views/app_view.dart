@@ -31,7 +31,7 @@ import '../widgets/support_form.dart';
 import '../widgets/locale_text.dart'; // LocaleText import edildi
 
 class AppView extends StatefulWidget {
-  const AppView({Key? key}) : super(key: key);
+  const AppView({super.key});
   static const routeName = '/app';
   @override
   State<AppView> createState() => _AppViewState();
@@ -124,7 +124,7 @@ class _AppViewState extends State<AppView> {
               ? isSTKUser = true
               : isSTKUser = false;
         });
-        if (!kIsWeb)
+        if (!kIsWeb) {
           FirebaseFirestore.instance.collection('users').doc(HiveHelpers.getUid()).set(
               {'fcm_token': LocaleManager.instance.getStringValue(PreferencesKeys.FIREBASE_TOKEN)},
               SetOptions(merge: true)).then(
@@ -132,6 +132,7 @@ class _AppViewState extends State<AppView> {
               print('fcm token updated');
             },
           );
+        }
       });
     });
   }
@@ -370,7 +371,7 @@ class _AppViewState extends State<AppView> {
                           builder: (context) => BottomSheetWidget(
                               isMinPadding: true,
                               title: 'app_view_contact_support'.locale,
-                              child: SupportForm()), // "İletişime Geç"
+                              child: const SupportForm()), // "İletişime Geç"
                         );
                       },
                     ),
@@ -387,12 +388,12 @@ class _AppViewState extends State<AppView> {
                               Navigator.pushNamed(context, STKPanel.routeName);
                             },
                           )
-                        : SizedBox(),
+                        : const SizedBox(),
                     SizedBox(
                       height: deviceHeightSize(context, 3),
                     ),
                     Text(
-                      "v${appversion}",
+                      "v$appversion",
                       style: AppTheme.lightTextStyle(context, 14),
                     ),
                     Column(

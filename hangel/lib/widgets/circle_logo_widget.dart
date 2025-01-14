@@ -7,10 +7,10 @@ class CircleLogoWidget extends StatelessWidget {
   final String logoUrl;
   final String? logoName;
   const CircleLogoWidget({
-    Key? key,
+    super.key,
     required this.logoUrl,
     this.logoName,
-  }) : super(key: key);
+  });
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(

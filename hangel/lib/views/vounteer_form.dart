@@ -16,7 +16,7 @@ import '../widgets/general_button_widget.dart';
 import '../widgets/toast_widgets.dart';
 
 class VolunteerForm extends StatefulWidget {
-  const VolunteerForm({Key? key}) : super(key: key);
+  const VolunteerForm({super.key});
   static const routeName = 'volunteer-form';
 
   @override
@@ -137,7 +137,7 @@ class _VolunteerFormState extends State<VolunteerForm> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: GestureDetector(
                     onTap: () async {

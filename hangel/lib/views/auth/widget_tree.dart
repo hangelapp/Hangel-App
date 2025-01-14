@@ -24,7 +24,7 @@ class _WidgetTreeState extends State<WidgetTree> {
           return SplashPage(stkId: widget.stkId);
         } else {
           // Kullanıcı giriş yapmamışsa RegisterPage'e stkId ile gidiyoruz
-          return RegisterPage();
+          return const RegisterPage();
         }
       },
     );

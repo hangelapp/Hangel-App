@@ -16,7 +16,7 @@ import 'package:provider/provider.dart';
 import '../widgets/stk_search_widget.dart';
 
 class STKPage extends StatefulWidget {
-  const STKPage({Key? key}) : super(key: key);
+  const STKPage({super.key});
   static const routeName = '/STK';
   @override
   State<STKPage> createState() => _STKPageState();
@@ -30,7 +30,7 @@ class _STKPageState extends State<STKPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: Drawer(), // Add this line if you have a drawer
+      drawer: const Drawer(), // Add this line if you have a drawer
       body: DefaultTabController(
         length: 4,
         child: Column(
@@ -113,12 +113,12 @@ class _STKPageState extends State<STKPage> {
                       ),
                       Expanded(
                         child: isLoading
-                            ? Center(child: CircularProgressIndicator())
+                            ? const Center(child: CircularProgressIndicator())
                             : FirestorePagination(
                                 padding: EdgeInsets.zero,
                                 limit: 5,
-                                initialLoader: Center(child: CircularProgressIndicator()),
-                                bottomLoader: LinearProgressIndicator(),
+                                initialLoader: const Center(child: CircularProgressIndicator()),
+                                bottomLoader: const LinearProgressIndicator(),
                                 isLive: true,
                                 query: _buildQuery(context, tabIndex),
                                 itemBuilder: (context, docs, index) {
@@ -127,7 +127,7 @@ class _STKPageState extends State<STKPage> {
                                     context,
                                     logo: stk.logo,
                                     title: stk.name.toString(),
-                                    sector: stk.categories.length > 0 ? stk.categories.first : "",
+                                    sector: stk.categories.isNotEmpty ? stk.categories.first : "",
                                     desc: stk.detailText,
                                     onTap: () {
                                       Navigator.push(
@@ -263,7 +263,7 @@ class _STKPageState extends State<STKPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Duration(milliseconds: 500));
+              await Future.delayed(const Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });
@@ -299,7 +299,7 @@ class _STKPageState extends State<STKPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Duration(milliseconds: 500));
+              await Future.delayed(const Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });

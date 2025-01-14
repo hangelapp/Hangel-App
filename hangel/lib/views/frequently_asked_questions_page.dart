@@ -6,7 +6,7 @@ import '../constants/app_theme.dart';
 import '../constants/size.dart';
 
 class FrequentlyAskedQuestionsPage extends StatefulWidget {
-  const FrequentlyAskedQuestionsPage({Key? key}) : super(key: key);
+  const FrequentlyAskedQuestionsPage({super.key});
   static const routeName = '/frequently-asked-questions';
 
   @override
@@ -33,7 +33,7 @@ class _FrequentlyAskedQuestionsPageState extends State<FrequentlyAskedQuestionsP
     return Scaffold(
       backgroundColor: AppTheme.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(80),
         child: AppBarWidget(
           title: "faq_page_title".locale,
         ),

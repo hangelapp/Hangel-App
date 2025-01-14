@@ -13,7 +13,7 @@ import 'locale_text.dart';
 class STKSearchWidget extends StatelessWidget {
   final TextEditingController controller;
 
-  STKSearchWidget({Key? key, required this.controller}) : super(key: key);
+  const STKSearchWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {

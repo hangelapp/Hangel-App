@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -11,10 +13,11 @@ import 'package:hangel/views/brand_detail_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
 import 'package:hangel/widgets/locale_text.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
   static const routeName = '/home';
   @override
   State<HomePage> createState() => _HomePageState();
@@ -27,8 +30,9 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = false;
   @override
   void initState() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      context.read<BrandProvider>().getBrands();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await context.read<BrandProvider>().getBrands();
+      await showAppRateDialog();
     });
     _scrollController.addListener(() async {
       if (_scrollController.position.pixels >= (_scrollController.position.maxScrollExtent - 250) && !_isLoading) {
@@ -36,6 +40,16 @@ class _HomePageState extends State<HomePage> {
       }
     });
     super.initState();
+  }
+
+  Future<void> showAppRateDialog() async {
+    int rand = Random().nextInt(100);
+    if (rand < 99) return;
+    final InAppReview inAppReview = InAppReview.instance;
+
+    if (await inAppReview.isAvailable()) {
+      await inAppReview.requestReview();
+    }
   }
 
   Future<void> _loadMoreData() async {

@@ -47,30 +47,20 @@ class UserModel {
     email = json['email'] ?? "";
     doorAndHomeNumber = json["doorAndHomeNumber"] ?? "";
 
-    birthDate = json['birthDate'] != null
-        ? parseDateTime(json['birthDate'])
-        : null;
+    birthDate = json['birthDate'] != null ? parseDateTime(json['birthDate']) : null;
 
     city = json['city'] ?? "";
     neighberhood = json['neighberhood'] ?? "";
     district = json['district'] ?? "";
     gender = json['gender'] ?? "";
 
-    favoriteBrands = json['favoriteBrands'] != null
-        ? List<String>.from(json['favoriteBrands'])
-        : [];
+    favoriteBrands = json['favoriteBrands'] != null ? List<String>.from(json['favoriteBrands']) : [];
 
-    favoriteStks = json['favoriteStks'] != null
-        ? List<String>.from(json['favoriteStks'])
-        : [];
+    favoriteStks = json['favoriteStks'] != null ? List<String>.from(json['favoriteStks']) : [];
 
-    favoriteAddedDate = json['favoriteAddedDate'] != null
-        ? parseDateTime(json['favoriteAddedDate'])
-        : null;
+    favoriteAddedDate = json['favoriteAddedDate'] != null ? parseDateTime(json['favoriteAddedDate']) : null;
 
-    createdAt = json['createdAt'] != null
-        ? parseDateTime(json['createdAt'])
-        : null;
+    createdAt = json['createdAt'] != null ? parseDateTime(json['createdAt']) : null;
 
     if (json['isActive'] != null) {
       isActive = {
@@ -128,7 +118,65 @@ class UserModel {
     }
   }
 
- 
+  /// Profil doluluk oranını yüzdelik olarak hesaplar (dinamik).
+  int getDynamicProfileCompleteness() {
+    // Modeldeki bütün alanları toJson() ile Map olarak alıyoruz.
+    final Map<String, dynamic> data = toJson();
+
+    // Doluluk hesabına katılmasını istemediğimiz alanları hariç tutuyoruz.
+    // (örneğin otomatik atanan 'uid', 'favoriteBrands', 'favoriteStks', 'isActive', vb.)
+    final excludedKeys = [
+      'uid',
+      'createdAt',
+      'favoriteBrands',
+      'favoriteStks',
+      'volunteers',
+      'isActive',
+      'favoriteAddedDate',
+    ];
+    for (var key in excludedKeys) {
+      data.remove(key);
+    }
+
+    // Şu aşamada 'data' sadece doluluk oranını hesaplayacağımız alanları içeriyor.
+    final int totalFields = data.length;
+    if (totalFields == 0) {
+      // Profilde hiç kontrol edilecek alan yoksa 0 döndürüyoruz
+      return 0;
+    }
+
+    int filledCount = 0;
+
+    // Her bir alana göre dolu mu (null veya boş mu) kontrolü yapıyoruz.
+    data.forEach((key, value) {
+      if (value == null) {
+        return; // null ise doldurulmamış kabul edelim
+      }
+
+      // String tipinde verilerde içeriğin dolu/boş olmasına bakıyoruz
+      if (value is String && value.trim().isNotEmpty) {
+        filledCount++;
+      }
+      // Tarih alanları null değilse dolu kabul ediyoruz
+      else if (value is DateTime) {
+        filledCount++;
+      }
+      // Örneğin List tipinde bir veri varsa ve boş değilse dolu kabul edilebilir
+      else if (value is List && value.isNotEmpty) {
+        filledCount++;
+      }
+      // Map tipinde bir veri varsa ve boş değilse dolu kabul edilebilir
+      else if (value is Map && value.isNotEmpty) {
+        filledCount++;
+      }
+      // Eğer bunların haricinde ek tipleriniz varsa onlara göre de kontrol ekleyebilirsiniz.
+      // Örneğin bool tipinde 'true' ise dolu, 'false' ise boş gibi...
+    });
+
+    // Doldurulmuş alanların sayısını toplam alana bölerek yüzdelik oranı döndürüyoruz.
+    final double ratio = (filledCount * 100) / totalFields;
+    return ratio.round(); // İsteğe bağlı: .toInt(), .floor(), vs.
+  }
 
   // Diğer metodlar...
   UserModel.fromFirebaseUser(User user) {
@@ -153,8 +201,6 @@ class UserModel {
       'time': DateTime.now().toIso8601String(),
     };
   }
-
-
 
   String toHtmlTable() {
     return '''

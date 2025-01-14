@@ -23,7 +23,7 @@ import '../models/user_model.dart';
 import '../widgets/stk_favorite_search_widget.dart';
 
 class SelectFavoriteStkPage extends StatefulWidget {
-  const SelectFavoriteStkPage({Key? key, this.inTree = true, this.selectedSTKIds}) : super(key: key);
+  const SelectFavoriteStkPage({super.key, this.inTree = true, this.selectedSTKIds});
   static const routeName = '/select-favorite-stk-page';
   final bool inTree;
   final List<String>? selectedSTKIds;
@@ -103,7 +103,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                       child: ElevatedButton(
                           onPressed: () {
                             Navigator.pushAndRemoveUntil(
-                                context, MaterialPageRoute(builder: (context) => AppView()), (route) => false);
+                                context, MaterialPageRoute(builder: (context) => const AppView()), (route) => false);
                           },
                           child: Text("select_favorite_stk_skip".locale)))
                   : null,
@@ -243,7 +243,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                   Navigator.pop(context);
                                   tabcontroller.jumpToTab(2);
                                 } else {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AppView()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AppView()));
                                 }
                                 return;
                               }
@@ -251,7 +251,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
                                 Navigator.pop(context);
                                 tabcontroller.jumpToTab(2);
                               } else {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => AppView()));
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const AppView()));
                               }
                             },
                             text: context.read<STKProvider>().checkAddedTime(user.favoriteAddedDate).locale,
@@ -360,13 +360,13 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
           ),
         Expanded(
           child: isLoading
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : FirestorePagination(
-                  padding: EdgeInsets.only(bottom: 200),
+                  padding: const EdgeInsets.only(bottom: 200),
                   limit: 7,
                   isLive: true,
-                  initialLoader: Center(child: CircularProgressIndicator()),
-                  bottomLoader: LinearProgressIndicator(),
+                  initialLoader: const Center(child: CircularProgressIndicator()),
+                  bottomLoader: const LinearProgressIndicator(),
                   query: tabIndex == 0
                       ? context.read<STKProvider>().filterTextFav == ""
                           ? FirebaseFirestore.instance.collection('stklar').where('isActive', isEqualTo: true).orderBy(
@@ -555,7 +555,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Duration(milliseconds: 500));
+              await Future.delayed(const Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });
@@ -591,7 +591,7 @@ class _SelectFavoriteStkPageState extends State<SelectFavoriteStkPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Duration(milliseconds: 500));
+              await Future.delayed(const Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });

@@ -56,14 +56,14 @@ class _STKPanelState extends State<STKPanel> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Scaffold(body: Center(child: CircularProgressIndicator()))
+        ? const Scaffold(body: Center(child: CircularProgressIndicator()))
         : Scaffold(
-            appBar: AppBar(title: Text('STK Yönetim Paneli')),
+            appBar: AppBar(title: const Text('STK Yönetim Paneli')),
             body: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SizedBox(height: 20),
-                Text(
+                const SizedBox(height: 20),
+                const Text(
                   'Yönettiğiniz STK',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
@@ -78,31 +78,31 @@ class _STKPanelState extends State<STKPanel> {
                           backgroundImage: NetworkImage(stkModel?.logo ?? ""),
                           child: stkModel?.logo == null || (stkModel?.logo!.isEmpty ?? false)
                               ? const Icon(Icons.error, color: Colors.red)
-                              : SizedBox(),
+                              : const SizedBox(),
                         ),
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.only(left: 10),
                             child: Text(
                               (stkModel?.name ?? "-"),
-                              style: TextStyle(fontSize: 17),
+                              style: const TextStyle(fontSize: 17),
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 5),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 5),
                           child: Icon(Icons.verified, color: Colors.blue),
                         ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 15),
-                Text(
+                const SizedBox(height: 15),
+                const Text(
                   'İşlemler',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 Expanded(
                   child: SingleChildScrollView(
                     child: GridView.count(
@@ -111,8 +111,8 @@ class _STKPanelState extends State<STKPanel> {
                         shrinkWrap: true,
                         mainAxisSpacing: 6,
                         crossAxisSpacing: 6,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        physics: NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        physics: const NeverScrollableScrollPhysics(),
                         children: [
                           buildQrCreate(),
                           buildNullItem(),
@@ -124,13 +124,13 @@ class _STKPanelState extends State<STKPanel> {
                         ]),
                   ),
                 ),
-                Text(
+                const Text(
                   'Bilgiler',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Table(
-                  columnWidths: {0: IntrinsicColumnWidth()},
+                  columnWidths: const {0: const IntrinsicColumnWidth()},
                   border: TableBorder(
                     horizontalInside: BorderSide(width: 0.5, color: Colors.grey.shade300),
                   ),
@@ -138,8 +138,8 @@ class _STKPanelState extends State<STKPanel> {
                   children: [
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "STK ID",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -153,8 +153,8 @@ class _STKPanelState extends State<STKPanel> {
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "STK Aktif",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -174,8 +174,8 @@ class _STKPanelState extends State<STKPanel> {
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "Katılma Tarihi",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -191,8 +191,8 @@ class _STKPanelState extends State<STKPanel> {
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "STK Türü",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -206,8 +206,8 @@ class _STKPanelState extends State<STKPanel> {
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "STK Adres",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -221,8 +221,8 @@ class _STKPanelState extends State<STKPanel> {
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "Kategori",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -236,8 +236,8 @@ class _STKPanelState extends State<STKPanel> {
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "Deprem Bölgesi",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -245,14 +245,14 @@ class _STKPanelState extends State<STKPanel> {
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text("${stkModel?.inEarthquakeZone == true ? "Evet" : "Hayır"}"),
+                          child: Text(stkModel?.inEarthquakeZone == true ? "Evet" : "Hayır"),
                         ),
                       ],
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "Fayda Alanı",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -266,8 +266,8 @@ class _STKPanelState extends State<STKPanel> {
                     ),
                     TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Text(
                             "Özel Durum",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -304,7 +304,7 @@ class _STKPanelState extends State<STKPanel> {
             // color: Colors.grey.shade200,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Center(
+          child: const Center(
             child: Text(
               "QR Kod Görüntüle",
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -331,7 +331,7 @@ class _STKPanelState extends State<STKPanel> {
             // color: Colors.grey.shade200,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Center(
+          child: const Center(
             child: Text(
               "Yakında...",
               style: TextStyle(fontWeight: FontWeight.bold),

@@ -17,7 +17,7 @@ import 'package:hangel/widgets/stk_search_widget.dart';
 import 'package:provider/provider.dart';
 
 class STKVolunteersPage extends StatefulWidget {
-  const STKVolunteersPage({Key? key}) : super(key: key);
+  const STKVolunteersPage({super.key});
   static const routeName = '/stkVolunteers';
   @override
   State<STKVolunteersPage> createState() => _STKVolunteersPageState();
@@ -139,8 +139,8 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                           // padding: EdgeInsets.zero,
                           limit: 5,
                           isLive: true,
-                          initialLoader: Center(child: CircularProgressIndicator()),
-                          bottomLoader: LinearProgressIndicator(),
+                          initialLoader: const Center(child: CircularProgressIndicator()),
+                          bottomLoader: const LinearProgressIndicator(),
                           query: FirebaseFirestore.instance
                               .collection('stkVolunteers')
                               .where("isActive", isEqualTo: true)
@@ -148,7 +148,7 @@ class _STKVolunteersPageState extends State<STKVolunteersPage> {
                           itemBuilder: (context, docs, index) {
                             final stk = StkVolunteerModel.fromJson((docs[index].data() as Map<String, dynamic>));
                             return isLoading
-                                ? Center(child: LinearProgressIndicator())
+                                ? const Center(child: LinearProgressIndicator())
                                 : ListItemWidget(
                                     context,
                                     logo: stk.stkLogo,

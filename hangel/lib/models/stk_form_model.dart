@@ -184,20 +184,20 @@ class STKFormModel {
     html.writeln("<tr><td><strong>İlçe</strong></td><td>${district ?? '-'}</td></tr>");
     html.writeln("<tr><td><strong>Mahalle</strong></td><td>${neighborhood ?? '-'}</td></tr>");
     html.writeln("<tr><td><strong>Adres</strong></td><td>${address ?? '-'}</td></tr>");
-    html.writeln("<tr><td><strong>Faydalanıcılar</strong></td><td>${beneficiariesStr}</td></tr>");
-    html.writeln("<tr><td><strong>BM Sürdürülebilir Kalkınma Amaçları</strong></td><td>${unSdgsStr}</td></tr>");
+    html.writeln("<tr><td><strong>Faydalanıcılar</strong></td><td>$beneficiariesStr</td></tr>");
+    html.writeln("<tr><td><strong>BM Sürdürülebilir Kalkınma Amaçları</strong></td><td>$unSdgsStr</td></tr>");
     html.writeln("<tr><td><strong>Başvuruyu Yapan Kişinin Adı</strong></td><td>${applicantName ?? '-'}</td></tr>");
     html.writeln(
         "<tr><td><strong>Başvuruyu Yapan Kişinin Telefonu</strong></td><td>${applicantPhone ?? '-'}</td></tr>");
     html.writeln("<tr><td><strong>Başvuruyu Yapan Kişinin Emaili</strong></td><td>${applicantEmail ?? '-'}</td></tr>");
 
     if (applicantPosition != null) {
-      html.writeln("<tr><td><strong>Başvuruyu Yapan Kişinin Görevi</strong></td><td>${applicantPosition}</td></tr>");
+      html.writeln("<tr><td><strong>Başvuruyu Yapan Kişinin Görevi</strong></td><td>$applicantPosition</td></tr>");
     }
 
     if (applicantRelation != null) {
       html.writeln(
-          "<tr><td><strong>Başvuruyu Yapan Kişinin Yakınlık Derecesi</strong></td><td>${applicantRelation}</td></tr>");
+          "<tr><td><strong>Başvuruyu Yapan Kişinin Yakınlık Derecesi</strong></td><td>$applicantRelation</td></tr>");
     }
 
     if (type != 'stk_form_type_special_permission') {

@@ -22,7 +22,7 @@ import 'package:provider/provider.dart';
 import '../models/brand_model.dart';
 
 class BrandFormWidget extends StatefulWidget {
-  const BrandFormWidget({Key? key}) : super(key: key);
+  const BrandFormWidget({super.key});
 
   @override
   State<BrandFormWidget> createState() => _BrandFormWidgetState();
@@ -729,9 +729,9 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 children: [
                   Text(
                     "brand_form_page_sonraki_alisverisin".locale,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
@@ -769,7 +769,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -796,7 +796,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
             title,
             style: AppTheme.boldTextStyle(context, 14),
           ),
-          SizedBox(height: 8.0),
+          const SizedBox(height: 8.0),
           Text(
             content,
             style: AppTheme.normalTextStyle(context, 14),

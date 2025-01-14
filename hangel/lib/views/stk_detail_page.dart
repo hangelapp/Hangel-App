@@ -10,7 +10,7 @@ import 'package:hangel/widgets/app_name_widget.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
 
 class STKDetailPage extends StatefulWidget {
-  const STKDetailPage({Key? key, required this.stkModel}) : super(key: key);
+  const STKDetailPage({super.key, required this.stkModel});
   final StkModel stkModel;
 
   @override
@@ -112,7 +112,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
                                     height: deviceHeightSize(context, 2),
                                   ),
                                   Text(
-                                    widget.stkModel.categories.length > 0 ? widget.stkModel.categories.first : "",
+                                    widget.stkModel.categories.isNotEmpty ? widget.stkModel.categories.first : "",
                                     style:
                                         AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                   ),
@@ -333,12 +333,12 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
       },
       {
         "title": "stk_detail_process_count".locale,
-        "value": "${(widget.stkModel.processCount ?? 0).toString()}",
+        "value": (widget.stkModel.processCount ?? 0).toString(),
         "icon": Icons.plus_one
       },
       {
         "title": "stk_detail_donor_count".locale,
-        "value": "${(widget.stkModel.totalDonor ?? 0).toString()}",
+        "value": (widget.stkModel.totalDonor ?? 0).toString(),
         "icon": Icons.people
       },
     ];
@@ -438,7 +438,7 @@ class _STKDetailPageState extends State<STKDetailPage> with SingleTickerProvider
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 if (info[index]["icon"] != null) Icon(info[index]["icon"], color: AppTheme.primaryColor),
-                SizedBox(width: 15),
+                const SizedBox(width: 15),
                 Expanded(
                   flex: _tabController!.index == 0 ? 1 : 2,
                   child: Text(

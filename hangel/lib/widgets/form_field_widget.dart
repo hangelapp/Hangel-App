@@ -86,7 +86,7 @@ class FormFieldWidget extends StatelessWidget {
                   maxLines: maxLines,
                   minLines: minLines,
                   cursorColor: AppTheme.darkBlue,
-                  scrollPadding: EdgeInsets.only(bottom: 100),
+                  scrollPadding: const EdgeInsets.only(bottom: 100),
                   textInputAction: maxLines > 2 ? TextInputAction.newline : TextInputAction.done,
                   style: AppTheme.normalTextStyle(context, 16),
                   validator: validator,

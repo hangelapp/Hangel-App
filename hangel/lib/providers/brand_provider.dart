@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -216,13 +215,17 @@ class BrandProvider with ChangeNotifier {
   Future<GeneralResponseModel> getOffers2() async {
     try {
       Dio dio = Dio();
+      // var response = await dio.getUri(Uri.parse(
+      //     "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
       var response = await dio.getUri(Uri.parse(
-          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
+          "https://gelirortaklari.api.hasoffers.com/Apiv3/json?api_key=891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=name&fields[]=id&fields[]=percent_payout&filters[percent_payout]=0&contain[]=Thumbnail&contain[]=OfferCategory&contain[]=TrackingLink&contain[]=OfferVertical"));
       if (response.statusCode == 200) {
         var json = response.data;
+        print(json["response"]["data"]);
         // Offer <-> Brand argument match
-        for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
+        for (Map<String, dynamic> val in (json["response"]["data"] as Map<String, dynamic>).values) {
           if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
+            print("Eklendi!");
             String? id = val["Offer"]["id"];
             if (redIds.contains(id)) {
               continue;
@@ -232,13 +235,15 @@ class BrandProvider with ChangeNotifier {
             // if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
             //   continue;
             // }
-            List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
-                .values
-                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
-                .toList();
+            List<CategoryModel>? categories = val["OfferCategory"] is Map<String, dynamic>
+                ? (val["OfferCategory"] as Map<String, dynamic>)
+                    .values
+                    .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                    .toList()
+                : [];
             String? sector = (val["OfferVertical"] is Map<String, dynamic>)
                 ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
-                : categories.length <= 0
+                : categories.isEmpty
                     ? null
                     : categories.first.name;
             bool? inEarthquakeZone = false;
@@ -270,6 +275,7 @@ class BrandProvider with ChangeNotifier {
                 name: (name ?? "").removeTypes(),
                 sector: sector));
           } else {
+            print("Bu id'de bir kayıt zaten var!");
             // print("Element with ID ${val["Offer"]["id"]} already exists.");
           }
         }
@@ -278,6 +284,7 @@ class BrandProvider with ChangeNotifier {
       }
       return GeneralResponseModel(success: false, data: response.data, message: "Error handled");
     } catch (e) {
+      print(e);
       return GeneralResponseModel(success: false, message: e.toString(), data: null);
     }
   }
@@ -456,7 +463,7 @@ class BrandProvider with ChangeNotifier {
           // Gerekli alanları ayrıştırma
           String? id = offer['id'].toString();
           String? name = offer['name'];
-          String? sector = null;
+          String? sector;
           try {
             sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
                 ? offerData['OfferVertical'].first['name']
@@ -519,7 +526,7 @@ class BrandProvider with ChangeNotifier {
           // Gerekli alanları ayrıştırma
           String? id = offer['id'].toString();
           String? name = offer['name'];
-          String? sector = null;
+          String? sector;
           try {
             sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
                 ? offerData['OfferVertical'].first['name']

@@ -208,7 +208,7 @@ class MyApp extends StatelessWidget {
   final Locale initialLocale;
   final String? stkId; // DEEP LINK STK ID PARAMETRESİ
 
-  MyApp({Key? key, required this.initialLocale, this.stkId}) : super(key: key);
+  MyApp({super.key, required this.initialLocale, this.stkId});
 
   final ThemeData themeData = ThemeData(
     primaryColor: AppTheme.primaryColor,

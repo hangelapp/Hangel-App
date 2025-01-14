@@ -7,7 +7,7 @@ extension StringExtension on String {
   }
 
   String removeTypes() {
-    return this.substring(0,this.indexOf("|"));
+    return substring(0,indexOf("|"));
   }
 }
 
@@ -23,7 +23,7 @@ extension EmailValidator on String {
   String get locale => tr;
   String get unLocale => this;
   String localeWithParams(Map<String, String> params) {
-    String localized = this.locale;
+    String localized = locale;
     params.forEach((key, value) {
       localized = localized.replaceAll('%{$key}', value);
     });
@@ -31,9 +31,9 @@ extension EmailValidator on String {
   }
 
   String toTitleCaseTR() {
-    if (this.isEmpty) return this;
+    if (isEmpty) return this;
 
-    return this.split(' ').map((word) {
+    return split(' ').map((word) {
       if (word.isEmpty) return word;
 
       String firstLetter = word[0];

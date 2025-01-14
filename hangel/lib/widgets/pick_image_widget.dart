@@ -13,7 +13,7 @@ import '../widgets/toast_widgets.dart';
 class PickImageWidget extends StatefulWidget {
   const PickImageWidget(
     BuildContext context, {
-    Key? key,
+    super.key,
     required this.title,
     required this.onImagePicked,
     required this.onImageRemoved,
@@ -24,7 +24,7 @@ class PickImageWidget extends StatefulWidget {
     this.isSelectOnlyOne = false,
     this.widgetSize = 80,
     this.infoText = "",
-  }) : super(key: key);
+  });
   final String title;
   final Function onImagePicked;
   final Function onImageRemoved;

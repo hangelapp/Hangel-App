@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 
 class MenuItemWidget extends StatelessWidget {
   const MenuItemWidget(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.icon,
       required this.iconColor,
       this.titleColor = Colors.black,
-      required this.onTap})
-      : super(key: key);
+      required this.onTap});
   final String title;
   final Widget icon;
   final Color iconColor;

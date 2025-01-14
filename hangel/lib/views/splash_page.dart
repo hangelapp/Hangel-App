@@ -15,7 +15,7 @@ import '../providers/login_register_page_provider.dart';
 
 class SplashPage extends StatefulWidget {
   final String? stkId;
-  const SplashPage({Key? key,this.stkId}) : super(key: key);
+  const SplashPage({super.key,this.stkId});
   static const routeName = '/';
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -44,7 +44,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           print("Kullanıcı banlanmış");
       HiveHelpers.logout();
         Navigator.pushNamedAndRemoveUntil(context, UserBanPage.routeName, (route) => false);
-        return null;
+        return;
       }
       await Future.delayed(Duration(seconds: result == null ? 3 : 0));
       bool isAppView = false;
@@ -64,7 +64,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
         );
       } else if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
+            context, MaterialPageRoute(builder: (context) => const SelectFavoriteStkPage(inTree: false)));
       }
     } else {
       bool isAppView = false;

@@ -7,7 +7,7 @@ import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/locale_text.dart'; // LocaleText import edildi
 
 class AboutUsPage extends StatefulWidget {
-  const AboutUsPage({Key? key}) : super(key: key);
+  const AboutUsPage({super.key});
   static const routeName = '/about_us';
   @override
   State<AboutUsPage> createState() => _AboutUsPageState();

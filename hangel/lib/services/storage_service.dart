@@ -33,7 +33,7 @@ class StorageServices {
   Future<String> uploadImagebyByte(String path, Uint8List fileBytes) async {
     try {
       final fileName = const Uuid().v4();
-      final ref;
+      final Reference ref;
       if (kIsWeb) {
         ref =
             FirebaseStorage.instance.refFromURL("gs://hangel-1.appspot.com").child(path).child(fileName);

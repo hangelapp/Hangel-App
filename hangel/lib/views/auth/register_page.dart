@@ -29,7 +29,7 @@ import '../../widgets/locale_text.dart'; // Ensure LocaleText is imported
 
 class RegisterPage extends StatefulWidget {
   final List<String>? stkIds;
-  const RegisterPage({Key? key, this.stkIds}) : super(key: key);
+  const RegisterPage({super.key, this.stkIds});
 
   static const routeName = '/register';
 
@@ -41,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _maskFormatter = MaskTextInputFormatter(
       mask: '(###) ### ## ##', filter: {"#": RegExp(r'[0-9]')}, type: MaskAutoCompletionType.lazy);
   PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'TR');
-  bool _isValidNumber = true;
+  final bool _isValidNumber = true;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -151,7 +151,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               if (value.success == true) {
                                 if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
                                   Navigator.pushReplacement(context,
-                                      MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
+                                      MaterialPageRoute(builder: (context) => const SelectFavoriteStkPage(inTree: false)));
                                   return;
                                 }
                                 if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
@@ -242,7 +242,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         // Telefon numarası formatlama
                         String formattedPhoneNumber = _phoneNumber.phoneNumber!;
-                        context.read<LoginRegisterPageProvider>().phoneNumber = '$formattedPhoneNumber';
+                        context.read<LoginRegisterPageProvider>().phoneNumber = formattedPhoneNumber;
 
                         // Login olurken telefon numarası kontrolü
                         if (_phoneLoginPageType == PhoneLoginPageType.login) {
@@ -347,7 +347,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   onInputChanged: (PhoneNumber number) {
                     _phoneNumber = number;
                   },
-                  selectorConfig: SelectorConfig(
+                  selectorConfig: const SelectorConfig(
                     selectorType: PhoneInputSelectorType.DROPDOWN,
                     showFlags: false,
                     trailingSpace: false,
@@ -384,7 +384,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   _isUserAgreementAccepted = value ?? false;
                 });
               },
-              visualDensity: VisualDensity(horizontal: -4),
+              visualDensity: const VisualDensity(horizontal: -4),
               title: RichText(
                 textAlign: TextAlign.start,
                 text: TextSpan(
@@ -420,7 +420,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   _isPrivacyAgreementAccepted = value ?? false;
                 });
               },
-              visualDensity: VisualDensity(horizontal: -4),
+              visualDensity: const VisualDensity(horizontal: -4),
               title: RichText(
                 textAlign: TextAlign.start,
                 text: TextSpan(
@@ -490,7 +490,7 @@ class _RegisterPageState extends State<RegisterPage> {
     // Sadece rakamları al
     text = text.replaceAll(RegExp(r'[^\d]'), '');
     // Maskeyi uygula
-    if (text.length > 0) {
+    if (text.isNotEmpty) {
       text = '($text';
     }
     if (text.length > 4) {
@@ -526,7 +526,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Pinput(
               length: 6,
               autofocus: true,
-              scrollPadding: EdgeInsets.only(bottom: 100),
+              scrollPadding: const EdgeInsets.only(bottom: 100),
               controller: _verifyController,
               cursor: Text("_", style: AppTheme.boldTextStyle(context, 22, color: AppTheme.primaryColor)),
               keyboardType: TextInputType.number,

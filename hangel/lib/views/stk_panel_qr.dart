@@ -76,11 +76,11 @@ class _STKPanelQrState extends State<STKPanelQr> {
           (value) {
             if (value.docs.isEmpty) return;
             setState(() {
-              value.docs.forEach((data) {
+              for (var data in value.docs) {
                 try {
                   qrSubmisionsData.add(STKSubmissionsModel.fromJson(value.docs.first.data()));
                 } catch (e) {}
-              });
+              }
               isLoading = false;
             });
           },
@@ -123,7 +123,7 @@ class _STKPanelQrState extends State<STKPanelQr> {
                     docId = value.docs.first.id;
                     var stkModel = StkModel.fromJson(value.docs.first.data());
                     STKSubmissionsModel submission = STKSubmissionsModel(
-                      id: "${generateDigit()}",
+                      id: generateDigit(),
                       type: "qr",
                       content: controller.text,
                       status: "bekliyor",
@@ -150,7 +150,7 @@ class _STKPanelQrState extends State<STKPanelQr> {
                 text: "Başvuruyu Gönder",
                 isLoading: isLoading,
               ),
-              SizedBox(height: 20)
+              const SizedBox(height: 20)
             ],
           ),
         ),
@@ -171,48 +171,48 @@ class _STKPanelQrState extends State<STKPanelQr> {
                 child: Column(
                   children: [
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text("Başvuru Tipi: "),
+                      const Text("Başvuru Tipi: "),
                       Text(submission.type ?? "-"),
                     ]),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Başvuru Mesajı: "),
+                        const Text("Başvuru Mesajı: "),
                         Expanded(
                           child: Text(
                             submission.content == "" ? "---" : submission.content ?? "-",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                             textAlign: TextAlign.end,
                           ),
                         ),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Başvuru Durumu: "),
+                        const Text("Başvuru Durumu: "),
                         Text(submission.status ?? "-"),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Cevap: "),
+                        const Text("Cevap: "),
                         Expanded(
                           child: Text(
                             submission.response == "" ? "---" : submission.response ?? "-",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                             textAlign: TextAlign.end,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     GeneralButtonWidget(onPressed: () => Navigator.pop(context), text: "Tamam"),
-                    SizedBox(height: 20)
+                    const SizedBox(height: 20)
                   ],
                 ),
               )
@@ -254,12 +254,12 @@ class _STKPanelQrState extends State<STKPanelQr> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Scaffold(body: Center(child: CircularProgressIndicator()))
+        ? const Scaffold(body: Center(child: CircularProgressIndicator()))
         : Scaffold(
-            backgroundColor: Color(0xfff2f2f2),
+            backgroundColor: const Color(0xfff2f2f2),
             appBar: AppBar(
-              title: Text("QR Kod"),
-              backgroundColor: Color(0xfff2f2f2),
+              title: const Text("QR Kod"),
+              backgroundColor: const Color(0xfff2f2f2),
             ),
             body: SingleChildScrollView(
               child: Column(
@@ -277,27 +277,27 @@ class _STKPanelQrState extends State<STKPanelQr> {
                               size: 300,
                               backgroundColor: Colors.white,
                               dataModuleStyle:
-                                  QrDataModuleStyle(color: Colors.black, dataModuleShape: QrDataModuleShape.square),
+                                  const QrDataModuleStyle(color: Colors.black, dataModuleShape: QrDataModuleShape.square),
                             ),
                           )
-                        : SizedBox(),
+                        : const SizedBox(),
                   ),
                   stkModel?.qrUrl != ""
                       ? Center(
                           child: ElevatedButton.icon(
                             onPressed: _shareQrCode,
-                            icon: Icon(Icons.share),
-                            label: Text("QR Kodu Paylaş"),
+                            icon: const Icon(Icons.share),
+                            label: const Text("QR Kodu Paylaş"),
                           ),
                         )
-                      : Center(child: Text("Henüz QR Kod'unuz yok. Başvuru yapabilirsiniz.")),
-                  Divider(),
+                      : const Center(child: Text("Henüz QR Kod'unuz yok. Başvuru yapabilirsiniz.")),
+                  const Divider(),
                   Padding(
                     padding: const EdgeInsets.only(left: 16, top: 16, right: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Qr Kod Başvurularım',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                         ),
@@ -305,16 +305,16 @@ class _STKPanelQrState extends State<STKPanelQr> {
                             onPressed: () {
                               _basvuruYap();
                             },
-                            child: Text("Başvuru Yap"))
+                            child: const Text("Başvuru Yap"))
                       ],
                     ),
                   ),
                   SizedBox(
                     height: deviceHeight(context) * 0.3,
                     child: ListView.builder(
-                      itemCount: qrSubmisionsData.length == 0 ? 1 : qrSubmisionsData.length,
+                      itemCount: qrSubmisionsData.isEmpty ? 1 : qrSubmisionsData.length,
                       itemBuilder: (context, index) {
-                        if (qrSubmisionsData.length == 0) return Center(child: Text("Henüz bir başvuru yok..."));
+                        if (qrSubmisionsData.isEmpty) return const Center(child: Text("Henüz bir başvuru yok..."));
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ListTile(
@@ -337,7 +337,7 @@ class _STKPanelQrState extends State<STKPanelQr> {
                             },
                             title: Text(
                               qrSubmisionsData[index].content ?? "",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -360,7 +360,7 @@ class _STKPanelQrState extends State<STKPanelQr> {
                                   )
                                 ],
                                 text: "Durum",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                   decoration: TextDecoration.underline,

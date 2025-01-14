@@ -18,7 +18,7 @@ import '../widgets/search_widget.dart';
 import 'brand_detail_page.dart';
 
 class FavoritesPage extends StatefulWidget {
-  const FavoritesPage({Key? key}) : super(key: key);
+  const FavoritesPage({super.key});
   static const routeName = '/favorites';
 
   @override
@@ -123,7 +123,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         // Veriler yüklenirken bir yükleniyor göstergesi göstermek için kullanılabilir.
-                        return Center(child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
                         // Hata durumunu işlemek için.
                         return Center(child: Text('favorites_page_error_occurred'.locale));
@@ -179,7 +179,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         // Veriler yüklenirken bir yükleniyor göstergesi göstermek için kullanılabilir.
-                        return Center(child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
                         // Hata durumunu işlemek için.
                         return Center(child: Text('favorites_page_error_occurred'.locale));

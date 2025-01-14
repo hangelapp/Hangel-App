@@ -391,7 +391,7 @@ class LoginRegisterPageProvider with ChangeNotifier {
       HiveHelpers.logout();
       await FirebaseAuth.instance.signOut();
       print("Kullanıcı banlanmış");
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => RegisterPage()), (route) => false);
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const RegisterPage()), (route) => false);
 
       return null;
     }

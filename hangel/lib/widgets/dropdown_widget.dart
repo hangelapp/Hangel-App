@@ -15,8 +15,8 @@ class DropdownWidget extends StatelessWidget {
     this.color = const Color(0xFFFFFFFF),
     this.isBold = false,
     this.validator, // Validator parametresi eklendi
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final List<String>? titles;
   final String? title;

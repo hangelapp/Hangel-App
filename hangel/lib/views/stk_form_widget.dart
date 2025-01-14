@@ -26,7 +26,7 @@ import 'package:provider/provider.dart';
 import '../providers/login_register_page_provider.dart';
 
 class STKFormWidget extends StatefulWidget {
-  const STKFormWidget({Key? key}) : super(key: key);
+  const STKFormWidget({super.key});
 
   @override
   State<STKFormWidget> createState() => _STKFormWidgetState();
@@ -69,8 +69,8 @@ class _STKFormWidgetState extends State<STKFormWidget> {
   PlatformFile? _valilikIzinBelgesi;
   PlatformFile? _stkIlMudurluguYetkiBelgesi;
 
-  List<String> _selectedCategories = [];
-  List<String> _selectedBeneficiaries = [];
+  final List<String> _selectedCategories = [];
+  final List<String> _selectedBeneficiaries = [];
   int _selectedSectorIndex = -1;
   List<String> selectedBMs = [];
   int _selectedTypeIndex = -1;
@@ -174,7 +174,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                 title: "stk_form_type".locale,
                 isRequired: true,
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Conditional Fields Based on Type
               if (_selectedTypeIndex != -1 &&
@@ -531,7 +531,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   isNumbered: true,
                   selectedIndex: -1,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // Başvuruyu Yapan Kişinin Bilgileri
                 Align(
                   alignment: Alignment.centerLeft,
@@ -923,7 +923,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   isNumbered: true,
                   selectedIndex: -1,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // Başvuruyu Yapan Kişinin Bilgileri
                 Align(
                   alignment: Alignment.centerLeft,
@@ -1031,7 +1031,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      locale: Locale('tr'), // Dil ayarı
+      locale: const Locale('tr'), // Dil ayarı
     );
 
     if (pickedDate != null) {

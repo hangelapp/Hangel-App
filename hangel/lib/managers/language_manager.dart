@@ -25,6 +25,9 @@ class LanguageManager extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
         'tr_TR': {
+          "profile_doluluk": "Profil doluluk oranınız: ",
+          "profile_page_appeal_status": "Başvurularım",
+          "profile_page_stk_application_form_button_disabled": "Başvuruldu ✓",
           "secilenler": "Seçilenler",
           "stk_page_search": "Stk Ara",
           "user_ban_page_description":
@@ -761,6 +764,11 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Platforma Katılma Tarihi: ',
         },
         'en_US': {
+          "profile_doluluk": "Your profile fill rate: ",
+          "profile_page_appeal_status": "My applications",
+
+          "profile_page_stk_application_form_button_disabled": "Applied ✓",
+
           "secilenler": "Selected",
 
           "brand_form_page_kategori_tekstil": "Textile",
@@ -1865,6 +1873,10 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date of Joining the Platform: '
         },
         'fr_FR': {
+          "profile_doluluk": "Taux de remplissage de votre profil: ",
+          "profile_page_appeal_status": "Mes candidatures",
+          "profile_page_stk_application_form_button_disabled": "Appliqué ✓",
+
           "secilenler": "les élus",
 
           "brand_form_page_kategori_tekstil": "Textile",
@@ -2141,9 +2153,9 @@ class LanguageManager extends Translations {
 
   Comment ça marche?
 
-  Téléchargez l\'application Hangel et créez un compte.
+  Téléchargez l'application Hangel et créez un compte.
 
-  Sélectionnez vos ONG préférées dans l\'application.
+  Sélectionnez vos ONG préférées dans l'application.
 
   Lors de vos achats, choisissez Hangel comme mode de paiement avec votre carte de crédit ou carte bancaire.
 
@@ -3033,6 +3045,10 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date d’Adhésion à la Plateforme: '
         },
         'ar': {
+          "profile_doluluk": "معدل ملء ملفك الشخصي: ",
+          "profile_page_appeal_status": "تطبيقاتي",
+          "profile_page_stk_application_form_button_disabled": "مُطبَّق ✓",
+
           "secilenler": "المختارون",
           "brand_form_page_kategori_tekstil": "المنسوجات",
           "brand_form_page_kategori_saglik_gerecleri": "معدات صحية",
