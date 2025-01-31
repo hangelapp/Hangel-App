@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/views/stk_panel_qr.dart';
+import 'package:hangel/widgets/app_name_widget.dart';
 
 import 'app_view.dart';
+import 'stk_panel_support.dart';
 
 class STKPanel extends StatefulWidget {
   const STKPanel({super.key});
@@ -114,9 +117,9 @@ class _STKPanelState extends State<STKPanel> {
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          buildQrCreate(),
-                          buildNullItem(),
-                          buildNullItem(),
+                          buildProcessButton(
+                              "QR Kod Görüntüle", () => Navigator.pushNamed(context, STKPanelQr.routeName)),
+                          buildProcessButton("Destek", () => Navigator.pushNamed(context, StkPanelSupport.routeName)),
                           buildNullItem(),
                           buildNullItem(),
                           buildNullItem(),
@@ -130,7 +133,7 @@ class _STKPanelState extends State<STKPanel> {
                 ),
                 const SizedBox(height: 10),
                 Table(
-                  columnWidths: const {0: const IntrinsicColumnWidth()},
+                  columnWidths: const {0: IntrinsicColumnWidth()},
                   border: TableBorder(
                     horizontalInside: BorderSide(width: 0.5, color: Colors.grey.shade300),
                   ),
@@ -286,30 +289,56 @@ class _STKPanelState extends State<STKPanel> {
           );
   }
 
-  Widget buildQrCreate() {
+  Widget buildProcessButton(String title, void Function()? onTap) {
     return Material(
-      color: Colors.grey.shade300,
+      color: Colors.white70,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         splashColor: Colors.grey.shade200,
-        onTap: () {
-          Navigator.pushNamed(context, STKPanelQr.routeName);
-        },
-        child: Container(
-          height: 100,
-          width: 100,
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            // color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Center(
-            child: Text(
-              "QR Kod Görüntüle",
-              style: TextStyle(fontWeight: FontWeight.bold),
+        onTap: onTap ?? () {},
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: AppTheme.primaryColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.info_outline,
+                  color: Colors.white,
+                  size: 15,
+                ),
+              ),
             ),
-          ),
+            Center(
+                child: AppNameWidget(
+              fontSize: 40,
+              color: AppTheme.primaryColor.withOpacity(0.05),
+            )),
+            Container(
+              height: 100,
+              width: 100,
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

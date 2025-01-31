@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hangel/controllers/brand_controller.dart';
 import 'package:hangel/extension/string_extension.dart';
@@ -11,8 +12,10 @@ import 'package:hangel/models/brand_info_model.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/models/image_model.dart';
+import 'package:hangel/models/sector_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../constants/constants.dart';
 
@@ -33,6 +36,20 @@ class BrandProvider with ChangeNotifier {
   Set<BrandModel> get favoriteBrandList => _favoriteBrandList;
   set favoriteBrandList(Set<BrandModel> value) {
     _favoriteBrandList = value;
+    notifyListeners();
+  }
+
+  bool _sectorsLoaded = false;
+  bool get sectorsLoaded => _sectorsLoaded;
+  set sectorsLoaded(bool value) {
+    _sectorsLoaded = value;
+    notifyListeners();
+  }
+
+  List<SectorModel> _sectorsList = [];
+  List<SectorModel> get sectorsList => _sectorsList;
+  set sectorsList(List<SectorModel> value) {
+    _sectorsList = value;
     notifyListeners();
   }
 
@@ -102,6 +119,22 @@ class BrandProvider with ChangeNotifier {
   }
 
   List<String> redIds = ["1209", "59291", "60179"];
+
+  Future<void> getSectorsList() async {
+    try {
+      sectorsLoaded = false;
+      notifyListeners();
+      var firebase = FirebaseFirestore.instance;
+      final listResult = await firebase.collection("sectors").get();
+      sectorsList = listResult.docs.map((e) => SectorModel.fromJson(e.data())).toList();
+      sectorsLoaded = true;
+      notifyListeners();
+    } catch (e) {
+      print(e);
+      sectorsLoaded = false;
+      notifyListeners();
+    }
+  }
 
   Future<BrandInfoModel?> getBrandInfo(String id) async {
     try {
@@ -215,15 +248,22 @@ class BrandProvider with ChangeNotifier {
   Future<GeneralResponseModel> getOffers2() async {
     try {
       Dio dio = Dio();
-      // var response = await dio.getUri(Uri.parse(
-      //     "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
+      dio.interceptors.add(PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+      ));
       var response = await dio.getUri(Uri.parse(
-          "https://gelirortaklari.api.hasoffers.com/Apiv3/json?api_key=891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=name&fields[]=id&fields[]=percent_payout&filters[percent_payout]=0&contain[]=Thumbnail&contain[]=OfferCategory&contain[]=TrackingLink&contain[]=OfferVertical"));
+          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=name&fields[]=id&limit=9999&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&contain[]=Goal"));
+      // var response = await dio.getUri(Uri.parse(
+      //     "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
       if (response.statusCode == 200) {
         var json = response.data;
-        print(json["response"]["data"]);
         // Offer <-> Brand argument match
-        for (Map<String, dynamic> val in (json["response"]["data"] as Map<String, dynamic>).values) {
+        for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
           if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
             print("Eklendi!");
             String? id = val["Offer"]["id"];
@@ -248,7 +288,21 @@ class BrandProvider with ChangeNotifier {
                     : categories.first.name;
             bool? inEarthquakeZone = false;
             bool? isSocialEnterprise = false;
-            double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
+            double? donationRate;
+            if (val["Goal"] is Map<String, dynamic>) {
+              Map<String, dynamic> goal = val["Goal"] as Map<String, dynamic>;
+              for (var e in goal.entries) {
+                if (e.value["payout_type"] == "cpa_percentage") {
+                  donationRate = double.tryParse(e.value["percent_payout"] ?? "");
+                  // print(e.value);
+                  continue;
+                }
+              }
+            }
+            if ((donationRate ?? 0) <= 0) {
+              continue;
+            }
+            print(id);
             DateTime? creationDate = DateTime.now();
             String? bannerImage = val["Thumbnail"]["thumbnail"];
             String? detailText = "";
@@ -685,5 +739,38 @@ class BrandProvider with ChangeNotifier {
     HiveHelpers.addUserToHive(userModel);
     final response = await _brandController.addRemoveFavoriteBrand(id);
     return response;
+  }
+
+  List<String> _bannerImages = [];
+  List<String> get bannerImages => _bannerImages;
+  set bannerImages(List<String> value) {
+    _bannerImages = value;
+    notifyListeners();
+  }
+
+  bool _bannerLoaded = false;
+  bool get bannerLoaded => _bannerLoaded;
+  set bannerLoaded(bool value) {
+    _bannerLoaded = value;
+    notifyListeners();
+  }
+
+  Future<void> getBanners() async {
+    try {
+      bannerLoaded = false;
+      notifyListeners();
+      var firebase = FirebaseStorage.instance;
+      final listResult = await firebase.ref('banners').listAll();
+      List<String> urls = [];
+      for (var item in listResult.items) {
+        final url = await item.getDownloadURL();
+        urls.add(url);
+      }
+      bannerImages = urls;
+      bannerLoaded = true;
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
   }
 }

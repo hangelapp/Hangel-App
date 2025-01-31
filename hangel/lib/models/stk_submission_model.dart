@@ -5,7 +5,7 @@ class STKSubmissionsModel {
   String? type;
   String? content;
   String? status;
-  String? response;
+  List<String>? messages;
   DateTime? createdAt;
   DateTime? updatedAt;
 
@@ -16,12 +16,25 @@ class STKSubmissionsModel {
     this.type,
     this.content,
     this.status,
-    this.response,
+    this.messages,
     this.createdAt,
     this.updatedAt,
   });
 
   factory STKSubmissionsModel.fromJson(Map<String, dynamic> data) {
+    List<String> safeStringList(dynamic data) {
+      if (data == null) return [];
+      // data'nın Liste olup olmadığını kontrol edelim
+      if (data is List) {
+        // Liste içindeki null değerleri filtreleyip string'e çeviriyoruz
+        return data
+            .where((element) => element != null) // null değerleri at
+            .map((element) => element.toString()) // hepsini stringe çevir
+            .toList();
+      }
+      return [];
+    }
+
     return STKSubmissionsModel(
       id: data['id'],
       stkId: data['stkId'],
@@ -29,7 +42,7 @@ class STKSubmissionsModel {
       type: data['type'],
       content: data['content'],
       status: data['status'],
-      response: data['response'],
+      messages: safeStringList(data['messages']),
       createdAt: data['createdAt'] != null ? DateTime.tryParse(data['createdAt']) : null,
       updatedAt: data['updatedAt'] != null ? DateTime.tryParse(data['updatedAt']) : null,
     );
@@ -43,7 +56,7 @@ class STKSubmissionsModel {
       'type': type,
       'content': content,
       'status': status,
-      'response': response,
+      'messages': messages,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
