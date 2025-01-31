@@ -218,14 +218,13 @@ class BrandProvider with ChangeNotifier {
       // var response = await dio.getUri(Uri.parse(
       //     "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
       var response = await dio.getUri(Uri.parse(
-          "https://gelirortaklari.api.hasoffers.com/Apiv3/json?api_key=891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=name&fields[]=id&fields[]=percent_payout&filters[percent_payout]=0&contain[]=Thumbnail&contain[]=OfferCategory&contain[]=TrackingLink&contain[]=OfferVertical"));
+          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=name&fields[]=id&limit=$limit&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&contain[]=Goal"));
       if (response.statusCode == 200) {
         var json = response.data;
-        print(json["response"]["data"]);
         // Offer <-> Brand argument match
-        for (Map<String, dynamic> val in (json["response"]["data"] as Map<String, dynamic>).values) {
+        for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
           if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
-            print("Eklendi!");
+            // print("Eklendi!");
             String? id = val["Offer"]["id"];
             if (redIds.contains(id)) {
               continue;
@@ -248,7 +247,21 @@ class BrandProvider with ChangeNotifier {
                     : categories.first.name;
             bool? inEarthquakeZone = false;
             bool? isSocialEnterprise = false;
-            double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
+            double? donationRate;
+            if (val["Goal"] is Map<String, dynamic>) {
+              Map<String, dynamic> goal = val["Goal"] as Map<String, dynamic>;
+              for (var e in goal.entries) {
+                if (e.value["payout_type"] == "cpa_percentage") {
+                  donationRate = double.tryParse(e.value["percent_payout"] ?? "");
+                  // print(e.value);
+                  continue;
+                }
+              }
+            }
+            if ((donationRate ?? 0) <= 0) {
+              continue;
+            }
+            // print(id);
             DateTime? creationDate = DateTime.now();
             String? bannerImage = val["Thumbnail"]["thumbnail"];
             String? detailText = "";
@@ -383,7 +396,8 @@ class BrandProvider with ChangeNotifier {
       Dio dio = Dio();
       List<BrandModel> resultBrands = [];
       var response = await dio.getUri(Uri.parse(
-          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=percent_payout&fields[]=name&fields[]=id&limit=250&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&filters[percent_payout][GREATER_THAN]=0"));
+          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=name&fields[]=id&limit=9999&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&contain[]=Goal"));
+
       if (response.statusCode == 200) {
         var json = response.data;
         // Offer <-> Brand argument match
@@ -399,20 +413,43 @@ class BrandProvider with ChangeNotifier {
             // if (await dio.getUri(Uri.parse(logo ?? "")).then((value) => value.statusCode != 200)) {
             //   continue;
             // }
+            List<CategoryModel>? categories = val["OfferCategory"] is Map<String, dynamic>
+                ? (val["OfferCategory"] as Map<String, dynamic>)
+                    .values
+                    .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                    .toList()
+                : [];
             String? sector = (val["OfferVertical"] is Map<String, dynamic>)
                 ? (val["OfferVertical"] as Map<String, dynamic>).values.first["name"]
-                : null;
+                : categories.isEmpty
+                    ? null
+                    : categories.first.name;
             bool? inEarthquakeZone = false;
             bool? isSocialEnterprise = false;
-            double? donationRate = double.tryParse(val["Offer"]["percent_payout"]);
+            double? donationRate;
+            if (val["Goal"] is Map<String, dynamic>) {
+              Map<String, dynamic> goal = val["Goal"] as Map<String, dynamic>;
+              for (var e in goal.entries) {
+                if (e.value["payout_type"] == "cpa_percentage") {
+                  donationRate = double.tryParse(e.value["percent_payout"] ?? "");
+                  // print(e.value);
+                  continue;
+                }
+              }
+            }
+            if ((donationRate ?? 0) <= 0) {
+              continue;
+            }
+            // print(id);
             DateTime? creationDate = DateTime.now();
             String? bannerImage = val["Thumbnail"]["thumbnail"];
-            String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
+            String? detailText = "";
+            // String? detailText = AppConstants.DETAIL_TEXT(val["Offer"]["name"]);
             String? link = val["TrackingLink"]["click_url"];
-            List<CategoryModel>? categories = (val["OfferCategory"] as Map<String, dynamic>)
-                .values
-                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
-                .toList();
+            // if (await dio.getUri(Uri.parse(link ?? "")).then((value) => value.statusCode != 200)) {
+            //   continue;
+            // }
+
             int favoriteCount = 0;
 
             resultBrands.add(BrandModel(
