@@ -41,9 +41,7 @@ import 'widgets/missing_donation_form_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   setupLocator();
-
   await LocaleManager.prefrencesInit();
 
   final localeString = LocaleManager.instance.getStringValue(PreferencesKeys.LOCALE);
@@ -65,24 +63,39 @@ void main() async {
     null,
   );
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Firebase initialize
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e, s) {
+    debugPrint("Error during Firebase initialization: $e\n$s");
+  }
 
-  if (!kIsWeb) await initializeLocalNotifications();
-
-  // Deep link için STK ID
-  String? stkId = await _handleInitialDynamicLink();
+  // Bildirimler
   if (!kIsWeb) {
-    // Uygulama çalışırken deep link gelirse dinle
-    FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
+    try {
+      await initializeLocalNotifications();
+    } catch (e, s) {
+      debugPrint("Error during local notifications initialization: $e\n$s");
+    }
+  }
+
+  // Deep link STK ID
+  String? stkId;
+  try {
+    stkId = await _handleInitialDynamicLink();
+  } catch (e, s) {
+    debugPrint("Error during handling initial dynamic link: $e\n$s");
+  }
+
+  if (!kIsWeb) {
+    // Uygulama çalışırken gelen deep linkleri dinle
+    try {
+      FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
       final Uri deepLink = dynamicLinkData.link;
       final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
       if (deepLinkStkId != null) {
-        // Bu noktada istenirse bir state management yöntemiyle (GetX, Provider, vs.)
-        // uygulama içinde bu veriyi güncelleyebilirsiniz.
-        // Şimdilik basitlik olsun diye print atıyoruz.
-        print("Runtime deep link STK ID: $deepLinkStkId");
         if (Auth().currentUser != null) {
           await FirebaseFirestore.instance
               .collection("stklar")
@@ -99,8 +112,12 @@ void main() async {
         }
       }
     }).onError((error) {
-      print('onLink error: $error');
+      debugPrint('onLink error: $error');
     });
+    } catch (e) {
+      
+    }
+    
   }
 
   runApp(
@@ -114,8 +131,12 @@ void main() async {
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  print("Handling a background message: ${message.messageId}");
+  try {
+    await Firebase.initializeApp();
+  } catch (e, s) {
+    debugPrint("Error in background handler Firebase init: $e\n$s");
+  }
+  debugPrint("Handling a background message: ${message.messageId}");
 }
 
 void _showNotification(RemoteNotification notification) async {
@@ -140,23 +161,25 @@ Future<void> initializeLocalNotifications() async {
 
   NotificationSettings settings =
       await messaging.requestPermission(alert: true, badge: true, sound: true, provisional: false);
-  print('User granted permission: ${settings.authorizationStatus}');
+  debugPrint('User granted permission: ${settings.authorizationStatus}');
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     try {
       String? apnsToken = await messaging.getAPNSToken();
       if (apnsToken != null) {
         LocaleManager.instance.setStringValue(PreferencesKeys.APN, apnsToken);
-        print("APNS Token: $apnsToken");
+        debugPrint("APNS Token: $apnsToken");
         String? firebaseToken = await messaging.getToken();
-        print("Firebase Token: $firebaseToken");
+        debugPrint("Firebase Token: $firebaseToken");
       } else {
-        print("APNS token henüz ayarlanmadı, Firebase token alınamıyor.");
+        debugPrint("APNS token henüz ayarlanmadı, Firebase token alınamıyor.");
       }
-    } catch (e) {}
+    } catch (e, s) {
+      debugPrint("Error getting token: $e\n$s");
+    }
   }
 
   String? firebaseToken = await messaging.getToken();
-  print("Firebase Token: $firebaseToken");
+  debugPrint("Firebase Token: $firebaseToken");
   if (firebaseToken != null) {
     LocaleManager.instance.setStringValue(PreferencesKeys.FIREBASE_TOKEN, firebaseToken);
   }
@@ -172,16 +195,15 @@ Future<void> initializeLocalNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    debugPrint('Got a message whilst in the foreground!');
+    debugPrint('Message data: ${message.data}');
     if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
+      debugPrint('Message also contained a notification: ${message.notification}');
       _showNotification(message.notification!);
     }
   });
 }
 
-// İlk olarak uygulama açıldığında deep link var mı kontrol et
 Future<String?> _handleInitialDynamicLink() async {
   if (kIsWeb) return null;
   final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
@@ -192,11 +214,7 @@ Future<String?> _handleInitialDynamicLink() async {
   return null;
 }
 
-// Linkten stkId'yi çek
 String? _extractStkIdFromLink(String link) {
-  // Örnek: www.hangel.org/123456
-  // Bu durumda linkin sonunda yer alan kısım STK ID varsayılıyor
-  // Link formatına göre değiştirebilirsiniz
   final uri = Uri.parse(link);
   if (uri.host == 'www.hangel.org' && uri.pathSegments.isNotEmpty) {
     return uri.pathSegments.last; // "123456"
@@ -238,8 +256,8 @@ class MyApp extends StatelessWidget {
     if (!langInstance.supportedLocales.any((locale) => locale.languageCode == initialLocale.languageCode)) {
       localeToUse = langInstance.trLocale;
     } else {
-      localeToUse =
-          langInstance.supportedLocales.firstWhere((locale) => locale.languageCode == initialLocale.languageCode);
+      localeToUse = langInstance.supportedLocales
+          .firstWhere((locale) => locale.languageCode == initialLocale.languageCode);
     }
 
     return GetMaterialApp(
@@ -268,13 +286,12 @@ class MyApp extends StatelessWidget {
       theme: themeData,
       initialRoute: WidgetTree.routeName,
       routes: {
-        WidgetTree.routeName: (context) => WidgetTree(stkId: stkId), // STK ID WidgetTree'ye gönderiliyor
+        WidgetTree.routeName: (context) => WidgetTree(stkId: stkId),
         AppView.routeName: (context) => const AppView(),
-        SplashPage.routeName: (context) => SplashPage(stkId: stkId), // STK ID SplashPage'e gönderiliyor
+        SplashPage.routeName: (context) => SplashPage(stkId: stkId),
         HomePage.routeName: (context) => const HomePage(),
         OnboardingPage.routeName: (context) => const OnboardingPage(),
-        RegisterPage.routeName: (context) =>
-            RegisterPage(stkIds: [if (stkId != null) stkId!]), // STK ID RegisterPage'e gönderiliyor
+        RegisterPage.routeName: (context) => RegisterPage(stkIds: [if (stkId != null) stkId!]),
         STKVolunteersPage.routeName: (context) => const STKVolunteersPage(),
         SettingsPage.routeName: (context) => const SettingsPage(),
         AboutUsPage.routeName: (context) => const AboutUsPage(),
