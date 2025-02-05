@@ -25,6 +25,15 @@ class LanguageManager extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
         'tr_TR': {
+          "brand_form_page_markahakkinda": "Marka Hakkında",
+          "brand_form_page_basvuru_tipi": "Başvuru Tipi",
+          "brand_form_type_social": "Sosyal İşletmeler",
+          "brand_form_type_commercial": "Ticari İşletmeler",
+          "brand_form_type_cooperative": "Kooperatifler",
+          "brand_form_page_faydalanicilar": "Faydalanıcılar",
+          "brand_form_page_un_sdgs": "BM'nin Sürdürülebilir Kalkınma Amaçları",
+          "brand_form_page_deprem_bolgesi": "Deprem Bölgesi",
+
           "profile_doluluk": "Profil doluluk oranınız: ",
           "profile_page_appeal_status": "Başvurularım",
           "profile_page_stk_application_form_button_disabled": "Başvuruldu ✓",
@@ -764,6 +773,15 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Platforma Katılma Tarihi: ',
         },
         'en_US': {
+          "brand_form_page_markahakkinda": "About Brand",
+          "brand_form_page_basvuru_tipi": "Application Type",
+          "brand_form_type_social": "Social Enterprises",
+          "brand_form_type_commercial": "Commercial Enterprises",
+          "brand_form_type_cooperative": "Cooperatives",
+          "brand_form_page_faydalanicilar": "Beneficiaries",
+          "brand_form_page_un_sdgs": "UN Sustainable Development Goals",
+          "brand_form_page_deprem_bolgesi": "Earthquake Zone",
+
           "profile_doluluk": "Your profile fill rate: ",
           "profile_page_appeal_status": "My applications",
 
@@ -1873,6 +1891,15 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date of Joining the Platform: '
         },
         'fr_FR': {
+          "brand_form_page_markahakkinda": "A propos de la marque",
+
+          "brand_form_page_basvuru_tipi": "Type de candidature",
+          "brand_form_type_social": "Entreprises sociales",
+          "brand_form_type_commercial": "Entreprises commerciales",
+          "brand_form_type_cooperative": "Coopératives",
+          "brand_form_page_faydalanicilar": "Bénéficiaires",
+          "brand_form_page_un_sdgs": "Objectifs de Développement Durable de l'ONU",
+          "brand_form_page_deprem_bolgesi": "Zone sismique",
           "profile_doluluk": "Taux de remplissage de votre profil: ",
           "profile_page_appeal_status": "Mes candidatures",
           "profile_page_stk_application_form_button_disabled": "Appliqué ✓",
@@ -3045,6 +3072,14 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date d’Adhésion à la Plateforme: '
         },
         'ar': {
+          "brand_form_page_markahakkinda": "معلومات الشخصية",
+          "brand_form_page_basvuru_tipi": "نوع الطلب",
+          "brand_form_type_social": "المؤسسات الاجتماعية",
+          "brand_form_type_commercial": "المؤسسات التجارية",
+          "brand_form_type_cooperative": "التعاونية",
+          "brand_form_page_faydalanicilar": "المستفيدين",
+          "brand_form_page_un_sdgs": "أهداف التنمية المستدامة للأمم المتحدة",
+          "brand_form_page_deprem_bolgesi": "منطقة الزلزال",
           "profile_doluluk": "معدل ملء ملفك الشخصي: ",
           "profile_page_appeal_status": "تطبيقاتي",
           "profile_page_stk_application_form_button_disabled": "مُطبَّق ✓",

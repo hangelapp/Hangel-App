@@ -248,14 +248,14 @@ class BrandProvider with ChangeNotifier {
   Future<GeneralResponseModel> getOffers2() async {
     try {
       Dio dio = Dio();
-      dio.interceptors.add(PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-      ));
+      // dio.interceptors.add(PrettyDioLogger(
+      //   requestHeader: true,
+      //   requestBody: true,
+      //   responseBody: true,
+      //   responseHeader: false,
+      //   error: true,
+      //   compact: true,
+      // ));
       var response = await dio.getUri(Uri.parse(
           "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findMyApprovedOffers&fields[]=name&fields[]=id&limit=9999&page=$page&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail&contain[]=Goal"));
       // var response = await dio.getUri(Uri.parse(
@@ -265,7 +265,7 @@ class BrandProvider with ChangeNotifier {
         // Offer <-> Brand argument match
         for (Map<String, dynamic> val in (json["response"]["data"]["data"] as Map<String, dynamic>).values) {
           if (!brandList.any((e) => e.id == val["Offer"]["id"])) {
-            print("Eklendi!");
+            // print("Eklendi!");
             String? id = val["Offer"]["id"];
             if (redIds.contains(id)) {
               continue;
@@ -302,7 +302,7 @@ class BrandProvider with ChangeNotifier {
             if ((donationRate ?? 0) <= 0) {
               continue;
             }
-            print(id);
+            // print(id);
             DateTime? creationDate = DateTime.now();
             String? bannerImage = val["Thumbnail"]["thumbnail"];
             String? detailText = "";

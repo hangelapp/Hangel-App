@@ -12,6 +12,7 @@ class BrandFormModel {
   String? contactPersonMail;
   String? city;
   String? district;
+  String? about; // Yeni: Marka Hakkında
   String? neighborhood;
   List<CategoryModel>? categories;
   String? logoImage;
@@ -32,6 +33,7 @@ class BrandFormModel {
     this.contactPersonPhone,
     this.contactPersonMail,
     this.city,
+    this.about,
     this.district,
     this.neighborhood,
     this.categories,
@@ -54,21 +56,17 @@ class BrandFormModel {
       contactPersonPhone: json['contactPersonPhone'],
       contactPersonMail: json['contactPersonMail'],
       city: json['city'],
+      about: json['about'],
       district: json['district'],
       neighborhood: json['neighborhood'],
       categories: json['categories'] != null
-          ? (json['categories'] as List)
-              .map((e) => CategoryModel.fromJson(e))
-              .toList()
+          ? (json['categories'] as List).map((e) => CategoryModel.fromJson(e)).toList()
           : null,
       logoImage: json['logoImage'],
       vergiNo: json['vergiNo'],
       iban: json['iban'],
-      beneficiaries: json['beneficiaries'] != null
-          ? List<String>.from(json['beneficiaries'])
-          : null,
-      unSdgs:
-          json['unSdgs'] != null ? List<String>.from(json['unSdgs']) : null,
+      beneficiaries: json['beneficiaries'] != null ? List<String>.from(json['beneficiaries']) : null,
+      unSdgs: json['unSdgs'] != null ? List<String>.from(json['unSdgs']) : null,
       isDepremBolgesi: json['isDepremBolgesi'],
     );
   }
@@ -84,6 +82,7 @@ class BrandFormModel {
       'contactPersonPhone': contactPersonPhone,
       'contactPersonMail': contactPersonMail,
       'city': city,
+      'about': about,
       'district': district,
       'neighborhood': neighborhood,
       'categories': categories?.map((e) => e.toJson()).toList(),
@@ -112,6 +111,7 @@ class BrandFormModel {
         <tr><td>İlçe</td><td>${district ?? '-'}</td></tr>
         <tr><td>Mahalle</td><td>${neighborhood ?? '-'}</td></tr>
         <tr><td>Kategoriler</td><td>${categories != null ? categories!.map((e) => e.name).join(', ') : '-'}</td></tr>
+        <tr><td>Marka Hakkında</td><td>${about ?? '-'}</td></tr>
         <tr><td>Logo Resmi</td><td>${logoImage ?? '-'}</td></tr>
         <tr><td>Vergi Numarası</td><td>${vergiNo ?? '-'}</td></tr>
         <tr><td>IBAN</td><td>${iban ?? '-'}</td></tr>

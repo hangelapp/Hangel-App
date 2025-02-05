@@ -308,86 +308,87 @@ class _HomePageState extends State<HomePage> {
                       Expanded(
                         child: Row(
                           children: [
-                            Container(
-                              width: size.width * 0.2,
-                              height: size.height,
-                              decoration: BoxDecoration(color: Colors.grey.shade100, boxShadow: [
-                                BoxShadow(
-                                  offset: const Offset(1, 2),
-                                  blurRadius: 2,
-                                  color: Colors.black.withOpacity(0.1),
-                                )
-                              ]),
-                              child: ListView.builder(
-                                padding: EdgeInsets.zero,
-                                itemCount: categories.length,
-                                itemBuilder: (context, index) {
-                                  if (selectedCategory == index) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedCategory = index;
-                                        });
-                                      },
-                                      child: Stack(
-                                        children: [
-                                          Positioned(
-                                            child: Container(
-                                              alignment: Alignment.center,
-                                              height: size.height * 0.05,
-                                              width: size.width * 0.2,
-                                              color: Colors.white,
-                                              child: AutoSizeText(
-                                                categories[index].name ?? "",
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                maxLines: 2,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                          ),
-                                          Positioned(
-                                            top: size.height * 0.015,
-                                            bottom: size.height * 0.015,
-                                            width: 3,
-                                            child: Container(color: AppTheme.primaryColor),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        selectedCategory = index;
-                                      });
-                                    },
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      height: size.height * 0.05,
-                                      width: size.width,
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          border: const Border(
-                                            bottom: BorderSide(
-                                              width: 0.5,
-                                              color: Colors.white
-                                            ),
-                                          )),
-                                      child: AutoSizeText(
-                                        categories[index].name ?? "",
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 2,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+                            //Filtered ListView
+                            // Container(
+                            //   width: size.width * 0.2,
+                            //   height: size.height,
+                            //   decoration: BoxDecoration(color: Colors.grey.shade100, boxShadow: [
+                            //     BoxShadow(
+                            //       offset: const Offset(1, 2),
+                            //       blurRadius: 2,
+                            //       color: Colors.black.withOpacity(0.1),
+                            //     )
+                            //   ]),
+                            //   child: ListView.builder(
+                            //     padding: EdgeInsets.zero,
+                            //     itemCount: categories.length,
+                            //     itemBuilder: (context, index) {
+                            //       if (selectedCategory == index) {
+                            //         return GestureDetector(
+                            //           onTap: () {
+                            //             setState(() {
+                            //               selectedCategory = index;
+                            //             });
+                            //           },
+                            //           child: Stack(
+                            //             children: [
+                            //               Positioned(
+                            //                 child: Container(
+                            //                   alignment: Alignment.center,
+                            //                   height: size.height * 0.05,
+                            //                   width: size.width * 0.2,
+                            //                   color: Colors.white,
+                            //                   child: AutoSizeText(
+                            //                     categories[index].name ?? "",
+                            //                     style: const TextStyle(
+                            //                       fontWeight: FontWeight.bold,
+                            //                     ),
+                            //                     maxLines: 2,
+                            //                     textAlign: TextAlign.center,
+                            //                   ),
+                            //                 ),
+                            //               ),
+                            //               Positioned(
+                            //                 top: size.height * 0.015,
+                            //                 bottom: size.height * 0.015,
+                            //                 width: 3,
+                            //                 child: Container(color: AppTheme.primaryColor),
+                            //               ),
+                            //             ],
+                            //           ),
+                            //         );
+                            //       }
+                            //       return InkWell(
+                            //         onTap: () {
+                            //           setState(() {
+                            //             selectedCategory = index;
+                            //           });
+                            //         },
+                            //         child: Container(
+                            //           alignment: Alignment.center,
+                            //           height: size.height * 0.05,
+                            //           width: size.width,
+                            //           decoration: BoxDecoration(
+                            //               color: Colors.grey.shade100,
+                            //               border: const Border(
+                            //                 bottom: BorderSide(
+                            //                   width: 0.5,
+                            //                   color: Colors.white
+                            //                 ),
+                            //               )),
+                            //           child: AutoSizeText(
+                            //             categories[index].name ?? "",
+                            //             style: const TextStyle(
+                            //               fontWeight: FontWeight.bold,
+                            //             ),
+                            //             maxLines: 2,
+                            //             textAlign: TextAlign.center,
+                            //           ),
+                            //         ),
+                            //       );
+                            //     },
+                            //   ),
+                            // ),
                             Expanded(
                               child: ListView.builder(
                                 padding: EdgeInsets.zero,
