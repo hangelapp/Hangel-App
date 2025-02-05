@@ -1,15 +1,15 @@
+// brand_form_widget.dart
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/models/brand_form_model.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
-import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:hangel/widgets/dropdown_select_widget.dart';
 import 'package:hangel/widgets/dropdown_widget.dart';
 import 'package:hangel/widgets/form_field_widget.dart';
 import 'package:hangel/widgets/general_button_widget.dart';
@@ -20,6 +20,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/brand_model.dart';
+import '../providers/login_register_page_provider.dart';
 
 class BrandFormWidget extends StatefulWidget {
   const BrandFormWidget({super.key});
@@ -31,11 +32,11 @@ class BrandFormWidget extends StatefulWidget {
 class _BrandFormWidgetState extends State<BrandFormWidget> {
   final _formKey = GlobalKey<FormState>();
 
-  int selectedIndex = -1;
+  // Controllers for form fields
   final TextEditingController _brandNameController = TextEditingController();
   final TextEditingController _brandMailController = TextEditingController();
   final TextEditingController _brandPhoneController = TextEditingController();
-  final TextEditingController _brandFounderController = TextEditingController();
+  // Removed: Brand founder is no longer needed.
   final TextEditingController _brandWebsiteController = TextEditingController();
   final TextEditingController _brandContactPersonController = TextEditingController();
   final TextEditingController _brandContactPersonPhoneController = TextEditingController();
@@ -46,14 +47,9 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   final TextEditingController _brandIbanController = TextEditingController();
 
   List<ImageModel?> _logoImage = [];
-  List<ImageModel?> _bannerImage = [];
-  List<ImageModel?> _vergiImage = [];
+  // Removed: Banner and vergi levhası image fields are no longer needed.
 
-  final List<int> _selectedCategories = [-1];
-  final List<TextEditingController> _categoryControllers = [
-    TextEditingController(),
-  ];
-
+  // Address data
   List<String> iller = [];
   List<String> ilceler = [];
   List<String> mahalleler = [];
@@ -61,23 +57,114 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   String? selectedIlce;
   String? selectedMahalle;
   String jsonData = "";
-  bool isSocialEnterprise = false;
+
+  // Başvuru Tipi (Application Type) – options: Sosyal İşletmeler, Ticari İşletmeler, Kooperatifler
+  int _selectedApplicationTypeIndex = -1;
+  final List<Map<String, String>> _applicationTypes = [
+    {"key": "brand_form_type_social", "label": "brand_form_type_social".locale},
+    {"key": "brand_form_type_commercial", "label": "brand_form_type_commercial".locale},
+    {"key": "brand_form_type_cooperative", "label": "brand_form_type_cooperative".locale},
+  ];
+
+  // Additional fields for Sosyal İşletmeler ve Kooperatifler
+  final List<Map<String, String>> _beneficiaries = [
+    {"key": "stk_form_beneficiaries_animals", "label": "stk_form_beneficiaries_animals".locale},
+    {"key": "stk_form_beneficiaries_poor", "label": "stk_form_beneficiaries_poor".locale},
+    {"key": "stk_form_beneficiaries_education", "label": "stk_form_beneficiaries_education".locale},
+    {"key": "stk_form_beneficiaries_health", "label": "stk_form_beneficiaries_health".locale},
+    {"key": "stk_form_beneficiaries_agriculture", "label": "stk_form_beneficiaries_agriculture".locale},
+    {"key": "stk_form_beneficiaries_refugees", "label": "stk_form_beneficiaries_refugees".locale},
+    {"key": "stk_form_beneficiaries_law", "label": "stk_form_beneficiaries_law".locale},
+    {"key": "stk_form_beneficiaries_earthquake", "label": "stk_form_beneficiaries_earthquake".locale},
+    {"key": "stk_form_beneficiaries_food", "label": "stk_form_beneficiaries_food".locale},
+    {"key": "stk_form_beneficiaries_religious", "label": "stk_form_beneficiaries_religious".locale},
+    {"key": "stk_form_beneficiaries_social_entrepreneurship", "label": "stk_form_beneficiaries_social_entrepreneurship".locale},
+    {"key": "stk_form_beneficiaries_entrepreneurship", "label": "stk_form_beneficiaries_entrepreneurship".locale},
+    {"key": "stk_form_beneficiaries_culture_art", "label": "stk_form_beneficiaries_culture_art".locale},
+    {"key": "stk_form_beneficiaries_sports", "label": "stk_form_beneficiaries_sports".locale},
+    {"key": "stk_form_beneficiaries_nature", "label": "stk_form_beneficiaries_nature".locale},
+  ];
+  final List<String> _selectedBeneficiaries = [];
+
+  final List<Map<String, String>> _bmItems = [
+    {"key": "stk_form_un_goal_no_poverty", "label": "stk_form_un_goal_no_poverty".locale},
+    {"key": "stk_form_un_goal_zero_hunger", "label": "stk_form_un_goal_zero_hunger".locale},
+    {"key": "stk_form_un_goal_good_health", "label": "stk_form_un_goal_good_health".locale},
+    {"key": "stk_form_un_goal_quality_education", "label": "stk_form_un_goal_quality_education".locale},
+    {"key": "stk_form_un_goal_gender_equality", "label": "stk_form_un_goal_gender_equality".locale},
+    {"key": "stk_form_un_goal_clean_water", "label": "stk_form_un_goal_clean_water".locale},
+    {"key": "stk_form_un_goal_clean_energy", "label": "stk_form_un_goal_clean_energy".locale},
+    {"key": "stk_form_un_goal_decent_work", "label": "stk_form_un_goal_decent_work".locale},
+    {"key": "stk_form_un_goal_industry", "label": "stk_form_un_goal_industry".locale},
+    {"key": "stk_form_un_goal_reduced_inequalities", "label": "stk_form_un_goal_reduced_inequalities".locale},
+    {"key": "stk_form_un_goal_sustainable_cities", "label": "stk_form_un_goal_sustainable_cities".locale},
+    {"key": "stk_form_un_goal_responsible_consumption", "label": "stk_form_un_goal_responsible_consumption".locale},
+    {"key": "stk_form_un_goal_climate_action", "label": "stk_form_un_goal_climate_action".locale},
+    {"key": "stk_form_un_goal_life_below_water", "label": "stk_form_un_goal_life_below_water".locale},
+    {"key": "stk_form_un_goal_life_on_land", "label": "stk_form_un_goal_life_on_land".locale},
+    {"key": "stk_form_un_goal_peace_justice", "label": "stk_form_un_goal_peace_justice".locale},
+    {"key": "stk_form_un_goal_partnerships", "label": "stk_form_un_goal_partnerships".locale},
+  ];
+  final List<String> _selectedBMItems = [];
+
+  // Deprem Bölgesi (Earthquake Zone) switch value
+  bool _isDepremBolgesi = false;
+
+  // Kategori ve bağış oranı alanları (her kategori için ayrı)
+  final List<int> _selectedCategories = [-1];
+  final List<TextEditingController> _categoryControllers = [
+    TextEditingController(),
+  ];
+  final List<String> _categories = [
+    "brand_form_page_kategori_tekstil".locale,
+    "brand_form_page_kategori_saglik_gerecleri".locale,
+    "brand_form_page_kategori_saglik_hizmetleri".locale,
+    "brand_form_page_kategori_elektronik".locale,
+    "brand_form_page_kategori_yedek_parca".locale,
+    "brand_form_page_kategori_teknik_servis".locale,
+    "brand_form_page_kategori_danismanlik".locale,
+    "brand_form_page_kategori_gayrimenkul".locale,
+    "brand_form_page_kategori_aracilik".locale,
+    "brand_form_page_kategori_yazilim".locale,
+    "brand_form_page_kategori_insaat_malzemeleri".locale,
+    "brand_form_page_kategori_insaat_hizmetleri".locale,
+    "brand_form_page_kategori_lojistik".locale,
+    "brand_form_page_kategori_otomotiv".locale,
+    "brand_form_page_kategori_konaklama".locale,
+    "brand_form_page_kategori_yeme_icme".locale,
+    "brand_form_page_kategori_mimar".locale,
+    "brand_form_page_kategori_beyaz_esya".locale,
+    "brand_form_page_kategori_elektrikli_ev_aletleri".locale,
+    "brand_form_page_kategori_kisisel_bakim".locale,
+    "brand_form_page_kategori_ev_ve_yasam".locale,
+    "brand_form_page_kategori_muzik_enstruman".locale,
+    "brand_form_page_kategori_telefon".locale,
+    "brand_form_page_kategori_televizyon".locale,
+    "brand_form_page_kategori_bilgisayar".locale,
+    "brand_form_page_kategori_konsol".locale,
+    "brand_form_page_kategori_kamera".locale,
+    "brand_form_page_kategori_ofis_malzemeleri".locale,
+    "brand_form_page_kategori_spor_outdoor".locale,
+    "brand_form_page_kategori_kitap".locale,
+    "brand_form_page_kategori_kirtasiye".locale,
+    "brand_form_page_kategori_5000_ustu".locale,
+    "brand_form_page_kategori_kampanyali_urunler".locale,
+  ];
 
   @override
   void initState() {
+    super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       jsonData = await DefaultAssetBundle.of(context).loadString("assets/il-ilce.json");
       setState(() {
         final jsonResult = jsonDecode(jsonData);
         for (var item in jsonResult) {
-          if (iller.contains(item["İL"])) {
-            continue;
+          if (!iller.contains(item["İL"])) {
+            iller.add(item["İL"]);
           }
-          iller.add(item["İL"]);
         }
       });
     });
-    super.initState();
   }
 
   @override
@@ -85,7 +172,6 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
     _brandNameController.dispose();
     _brandMailController.dispose();
     _brandPhoneController.dispose();
-    _brandFounderController.dispose();
     _brandWebsiteController.dispose();
     _brandContactPersonController.dispose();
     _brandContactPersonPhoneController.dispose();
@@ -94,6 +180,9 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
     _brandVergiNoController.dispose();
     _brandVergiDaireController.dispose();
     _brandIbanController.dispose();
+    for (var controller in _categoryControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -101,13 +190,12 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: deviceWidthSize(context, 22),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: deviceWidthSize(context, 22)),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
+              // Marka Adı
               FormFieldWidget(
                 context,
                 controller: _brandNameController,
@@ -120,15 +208,28 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   return null;
                 },
               ),
+              const SizedBox(height: 10),
+              // Başvuru Tipi Dropdown
+              DropdownWidget(
+                context,
+                titles: _applicationTypes.map((e) => e['label']!).toList(),
+                selectedIndex: _selectedApplicationTypeIndex,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedApplicationTypeIndex =
+                        _applicationTypes.indexWhere((e) => e['label'] == value);
+                  });
+                },
+                title: "brand_form_page_basvuru_tipi".locale,
+                isRequired: true,
+              ),
+              const SizedBox(height: 10),
+              // Yetkili Kişi Bilgileri
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "brand_form_page_yetkili_kisi_bilgileri".locale,
-                  style: AppTheme.semiBoldTextStyle(
-                    context,
-                    16,
-                    color: AppTheme.primaryColor,
-                  ),
+                  style: AppTheme.semiBoldTextStyle(context, 16, color: AppTheme.primaryColor),
                 ),
               ),
               FormFieldWidget(
@@ -158,19 +259,6 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
               ),
               FormFieldWidget(
                 context,
-                controller: _brandIbanController,
-                keyboardType: TextInputType.text,
-                title: "brand_form_page_iban_numarasi".locale,
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty || !isValid(value.replaceAll(RegExp(r'\s+'), ''))) {
-                    return 'brand_form_page_gecersiz_iban_numarasi'.locale;
-                  }
-                  return null;
-                },
-              ),
-              FormFieldWidget(
-                context,
                 controller: _brandContactPersonMailController,
                 title: "brand_form_page_mail_adresi".locale,
                 isRequired: true,
@@ -193,15 +281,19 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   return null;
                 },
               ),
+              const SizedBox(height: 10),
+              // Logo Görseli
               PickImageWidget(
                 context,
                 title: "brand_form_page_logo".locale,
                 onImagePicked: (List<XFile?> image) {
                   setState(() {
-                    _logoImage.add(ImageModel(
-                      imageType: ImageType.asset,
-                      file: image[0]!,
-                    ));
+                    _logoImage = [
+                      ImageModel(
+                        imageType: ImageType.asset,
+                        file: image[0]!,
+                      ),
+                    ];
                   });
                 },
                 selectedImages: _logoImage,
@@ -213,27 +305,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                 },
                 infoText: "brand_form_page_logo_info".locale,
               ),
-
-              PickImageWidget(
-                context,
-                title: "brand_form_page_banner_gorseli".locale,
-                onImagePicked: (List<XFile?> image) {
-                  setState(() {
-                    _bannerImage.add(ImageModel(
-                      imageType: ImageType.asset,
-                      file: image[0]!,
-                    ));
-                  });
-                },
-                selectedImages: _bannerImage,
-                isSelectOnlyOne: true,
-                onImageRemoved: (ImageModel? image) {
-                  setState(() {
-                    _bannerImage = [];
-                  });
-                },
-                infoText: "brand_form_page_banner_gorseli_info".locale,
-              ),
+              const SizedBox(height: 10),
+              // Web Sitesi
               FormFieldWidget(
                 context,
                 controller: _brandWebsiteController,
@@ -246,6 +319,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   return null;
                 },
               ),
+              const SizedBox(height: 10),
+              // Marka Mail Adresi
               FormFieldWidget(
                 context,
                 controller: _brandMailController,
@@ -258,6 +333,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   return null;
                 },
               ),
+              const SizedBox(height: 10),
+              // Marka Telefon Numarası
               FormFieldWidget(
                 context,
                 controller: _brandPhoneController,
@@ -271,31 +348,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   return null;
                 },
               ),
-              FormFieldWidget(
-                context,
-                controller: _brandFounderController,
-                title: "brand_form_page_kurucu_ad_soyad".locale,
-                isRequired: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'brand_form_page_gecersiz_ad_soyad'.locale;
-                  }
-                  return null;
-                },
-              ),
-              DropdownWidget(
-                context,
-                titles: _sectors,
-                selectedIndex: selectedIndex,
-                onChanged: (value) {
-                  setState(() {
-                    selectedIndex = _sectors.indexOf(value!);
-                  });
-                },
-                title: "brand_form_page_sektor".locale,
-                isRequired: true,
-              ),
-
+              const SizedBox(height: 10),
+              // Adres Bölümü: İl, İlçe, Mahalle
               DropdownWidget(
                 context,
                 titles: iller,
@@ -356,25 +410,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   title: "brand_form_page_mahalle".locale,
                   isRequired: true,
                 ),
-              PickImageWidget(
-                context,
-                title: "brand_form_page_vergi_levhasi".locale,
-                isSelectOnlyOne: true,
-                onImagePicked: (List<XFile?> image) {
-                  setState(() {
-                    _vergiImage.add(ImageModel(
-                      imageType: ImageType.asset,
-                      file: image[0]!,
-                    ));
-                  });
-                },
-                selectedImages: _vergiImage,
-                onImageRemoved: (ImageModel? image) {
-                  setState(() {
-                    _vergiImage = [];
-                  });
-                },
-              ),
+              const SizedBox(height: 10),
+              // Vergi Numarası
               FormFieldWidget(
                 context,
                 controller: _brandVergiNoController,
@@ -388,6 +425,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   return null;
                 },
               ),
+              const SizedBox(height: 10),
+              // Vergi Dairesi
               FormFieldWidget(
                 context,
                 controller: _brandVergiDaireController,
@@ -401,25 +440,84 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   return null;
                 },
               ),
-              CheckboxListTile(
-                value: isSocialEnterprise,
-                contentPadding: EdgeInsets.zero,
-                onChanged: (value) {
-                  setState(() {
-                    isSocialEnterprise = value!;
-                  });
+              const SizedBox(height: 10),
+              // Ekstra Alanlar: Sosyal İşletme ve Kooperatifler için
+              if (_selectedApplicationTypeIndex == 0 || _selectedApplicationTypeIndex == 2) ...[
+                // Faydalanıcılar (Beneficiaries)
+                DropdownSelectWidget(
+                  context,
+                  titles: _beneficiaries.map((e) => e['label']!).toList(),
+                  onSelect: (value) {
+                    setState(() {
+                      if (!_selectedBeneficiaries.contains(value)) {
+                        _selectedBeneficiaries.add(value!);
+                      }
+                    });
+                  },
+                  onRemove: (value) {
+                    setState(() {
+                      _selectedBeneficiaries.remove(value!);
+                    });
+                  },
+                  title: "brand_form_page_faydalanicilar".locale,
+                  isRequired: true,
+                  selectedItems: _selectedBeneficiaries,
+                  selectedIndex: -1,
+                ),
+                const SizedBox(height: 10),
+                // BM'nin Sürdürülebilir Kalkınma Amaçları
+                DropdownSelectWidget(
+                  context,
+                  titles: _bmItems.map((e) => e['label']!).toList(),
+                  onSelect: (value) {
+                    setState(() {
+                      if (!_selectedBMItems.contains(value)) {
+                        _selectedBMItems.add(value!);
+                      }
+                    });
+                  },
+                  onRemove: (value) {
+                    setState(() {
+                      _selectedBMItems.remove(value!);
+                    });
+                  },
+                  title: "brand_form_page_un_sdgs".locale,
+                  isRequired: true,
+                  selectedItems: _selectedBMItems,
+                  isNumbered: true,
+                  selectedIndex: -1,
+                ),
+                const SizedBox(height: 10),
+                // Deprem Bölgesi Switch
+                SwitchListTile(
+                  title: Text("brand_form_page_deprem_bolgesi".locale),
+                  value: _isDepremBolgesi,
+                  onChanged: (value) {
+                    setState(() {
+                      _isDepremBolgesi = value;
+                    });
+                  },
+                  activeColor: AppTheme.primaryColor,
+                ),
+              ],
+              const SizedBox(height: 10),
+              // IBAN
+              FormFieldWidget(
+                context,
+                controller: _brandIbanController,
+                title: "brand_form_page_iban_numarasi".locale,
+                isRequired: true,
+                validator: (value) {
+                  if (value == null ||
+                      value.isEmpty ||
+                      !isValid(value.replaceAll(RegExp(r'\s+'), ''))) {
+                    return 'brand_form_page_gecersiz_iban_numarasi'.locale;
+                  }
+                  return null;
                 },
-                checkboxShape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                activeColor: AppTheme.primaryColor,
-                title: Text(
-                  "brand_form_page_sosyal_girisim".locale,
-                  style: AppTheme.normalTextStyle(context, 16),
-                ),
               ),
-
-              //! Kategori ve bağış oranı (her kategori için ayrı ayrı)
+              const SizedBox(height: 10),
+              // Kategori ve Bağış Oranı (her kategori için ayrı)
               ...List.generate(
                 _selectedCategories.length,
                 (index) => Column(
@@ -432,12 +530,15 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                             titles: _categories,
                             selectedIndex: _selectedCategories[index],
                             onChanged: (value) {
-                              if (_selectedCategories.any((element) => element == _categories.indexOf(value!))) {
-                                ToastWidgets.errorToast(context, "brand_form_page_kategori_zaten_ekli".locale);
+                              if (_selectedCategories
+                                  .any((element) => element == _categories.indexOf(value!))) {
+                                ToastWidgets.errorToast(
+                                    context, "brand_form_page_kategori_zaten_ekli".locale);
                                 return;
                               }
                               setState(() {
-                                _selectedCategories[index] = _categories.indexOf(value!);
+                                _selectedCategories[index] =
+                                    _categories.indexOf(value!);
                               });
                             },
                             title: "brand_form_page_kategori".locale,
@@ -447,7 +548,8 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                         if (index != 0)
                           Padding(
                             padding: EdgeInsets.only(
-                                left: deviceHeightSize(context, 10), top: deviceHeightSize(context, 16)),
+                                left: deviceHeightSize(context, 10),
+                                top: deviceHeightSize(context, 16)),
                             child: ButtonTheme(
                               minWidth: deviceWidthSize(context, 50),
                               height: deviceHeightSize(context, 50),
@@ -475,16 +577,14 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     ),
                     if (_selectedCategories[index] != -1)
                       Padding(
-                        padding: EdgeInsets.only(
-                          left: deviceWidthSize(context, 30),
-                        ),
+                        padding:
+                            EdgeInsets.only(left: deviceWidthSize(context, 30)),
                         child: FormFieldWidget(
                           context,
                           controller: _categoryControllers[index],
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                            signed: false,
-                          ),
+                          keyboardType:
+                              const TextInputType.numberWithOptions(
+                                  decimal: true, signed: false),
                           title: "brand_form_page_bagis_orani".locale,
                           isRequired: true,
                           validator: (value) {
@@ -498,7 +598,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                   ],
                 ),
               ),
-              //kategori ekle butonu
+              // Kategori ekle butonu
               if (_selectedCategories.length < 3)
                 Align(
                   alignment: Alignment.centerRight,
@@ -512,80 +612,105 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     child: Text(
                       "brand_form_page_kategori_ekle".locale,
                       style: AppTheme.semiBoldTextStyle(
-                        context,
-                        16,
-                        color: AppTheme.primaryColor,
-                      ),
+                          context, 16, color: AppTheme.primaryColor),
                     ),
                   ),
                 ),
-              SizedBox(height: deviceHeightSize(context, 20)),
+              SizedBox(
+                  height: deviceHeightSize(context, 20) +
+                      MediaQuery.of(context).viewInsets.bottom),
               GeneralButtonWidget(
                 text: "brand_form_page_gonder".locale,
-                isLoading: context.watch<BrandProvider>().sendFormState == LoadingState.loading,
+                isLoading: context.watch<BrandProvider>().sendFormState ==
+                    LoadingState.loading,
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
                     if (_logoImage.isEmpty) {
-                      ToastWidgets.errorToast(context, "brand_form_page_logo_hatasi".locale);
+                      ToastWidgets.errorToast(
+                          context, "brand_form_page_logo_hatasi".locale);
                       return;
                     }
-                    if (_bannerImage.isEmpty) {
-                      ToastWidgets.errorToast(context, "brand_form_page_banner_hatasi".locale);
+                    if (_selectedApplicationTypeIndex == -1) {
+                      ToastWidgets.errorToast(
+                          context, "brand_form_page_basvuru_tipi_hatasi".locale);
                       return;
                     }
-                    if (selectedIndex == -1) {
-                      ToastWidgets.errorToast(context, "brand_form_page_sektor_hatasi".locale);
-                      return;
-                    }
-                    if (selectedIl == null || selectedIlce == null || selectedMahalle == null) {
-                      ToastWidgets.errorToast(context, "brand_form_page_adres_hatasi".locale);
-                      return;
-                    }
-                    if (_vergiImage.isEmpty) {
-                      ToastWidgets.errorToast(context, "brand_form_page_vergi_levhasi_hatasi".locale);
+                    if (selectedIl == null ||
+                        selectedIlce == null ||
+                        selectedMahalle == null) {
+                      ToastWidgets.errorToast(
+                          context, "brand_form_page_adres_hatasi".locale);
                       return;
                     }
                     if (_selectedCategories.any((element) => element == -1)) {
-                      ToastWidgets.errorToast(context, "brand_form_page_kategori_hatasi".locale);
+                      ToastWidgets.errorToast(
+                          context, "brand_form_page_kategori_hatasi".locale);
                       return;
                     }
-                    if (_categoryControllers.every((element) => element.text.isEmpty)) {
-                      ToastWidgets.errorToast(context, "brand_form_page_kategori_orani_hatasi".locale);
+                    if (_categoryControllers
+                        .every((element) => element.text.isEmpty)) {
+                      ToastWidgets.errorToast(
+                          context, "brand_form_page_kategori_orani_hatasi".locale);
                       return;
                     }
+                    // Oluşturulan model
+                    BrandFormModel brandFormModel = BrandFormModel(
+                      applicationType: _applicationTypes[_selectedApplicationTypeIndex]
+                          ['key'],
+                      name: _brandNameController.text,
+                      website: _brandWebsiteController.text,
+                      mail: _brandMailController.text,
+                      phone: _brandPhoneController.text,
+                      contactPerson: _brandContactPersonController.text,
+                      contactPersonPhone: _brandContactPersonPhoneController.text,
+                      contactPersonMail: _brandContactPersonMailController.text,
+                      city: selectedIl,
+                      district: selectedIlce,
+                      neighborhood: selectedMahalle,
+                      categories: _selectedCategories
+                          .map(
+                            (e) => CategoryModel(
+                              name: _categories[e],
+                              donationRate: double.parse(
+                                _categoryControllers[_selectedCategories.indexOf(e)]
+                                    .text
+                                    .replaceAll(",", "."),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      logoImage: _logoImage.isNotEmpty ? _logoImage[0]?.file?.path : null,
+                      vergiNo: _brandVergiNoController.text,
+                      iban: _brandIbanController.text,
+                      // Ekstra alanlar (Sosyal İşletme ve Kooperatifler için)
+                      beneficiaries: (_selectedApplicationTypeIndex == 0 ||
+                              _selectedApplicationTypeIndex == 2)
+                          ? _selectedBeneficiaries
+                              .map((e) {
+                                int index = _beneficiaries.indexWhere(
+                                    (element) => element['label'] == e);
+                                return _beneficiaries[index]['key']!;
+                              })
+                              .toList()
+                          : null,
+                      unSdgs: (_selectedApplicationTypeIndex == 0 ||
+                              _selectedApplicationTypeIndex == 2)
+                          ? _selectedBMItems
+                              .map((e) {
+                                int index = _bmItems.indexWhere(
+                                    (element) => element['label'] == e);
+                                return _bmItems[index]['key']!;
+                              })
+                              .toList()
+                          : null,
+                      isDepremBolgesi: (_selectedApplicationTypeIndex == 0 ||
+                              _selectedApplicationTypeIndex == 2)
+                          ? _isDepremBolgesi
+                          : null,
+                    );
                     context
                         .read<BrandProvider>()
-                        .sendForm(
-                          BrandFormModel(
-                              name: _brandNameController.text,
-                              website: _brandWebsiteController.text,
-                              mail: _brandMailController.text,
-                              phone: _brandPhoneController.text,
-                              founder: _brandFounderController.text,
-                              contactPerson: _brandContactPersonController.text,
-                              contactPersonPhone: _brandContactPersonPhoneController.text,
-                              contactPersonMail: _brandContactPersonMailController.text,
-                              sector: _sectors[selectedIndex],
-                              city: selectedIl!,
-                              district: selectedIlce!,
-                              neighborhood: selectedMahalle!,
-                              categories: _selectedCategories
-                                  .map(
-                                    (e) => CategoryModel(
-                                      name: _categories[e],
-                                      donationRate: double.parse(_categoryControllers[_selectedCategories.indexOf(e)]
-                                          .text
-                                          .replaceAll(",", ".")),
-                                    ),
-                                  )
-                                  .toList(),
-                              isSocialEnterprise: isSocialEnterprise,
-                              vergiNo: _brandVergiNoController.text,
-                              iban: _brandIbanController.text),
-                          logoImage: _logoImage,
-                          bannerImage: _bannerImage,
-                          vergiImage: _vergiImage,
-                        )
+                        .sendForm(brandFormModel, logoImage: _logoImage)
                         .then((value) {
                       if (value.success == true) {
                         Navigator.pop(context);
@@ -593,12 +718,15 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       ToastWidgets.responseToast(context, value);
                     });
                   } else {
-                    ToastWidgets.errorToast(context, "brand_form_page_eksik_bilgi".locale);
+                    ToastWidgets.errorToast(
+                        context, "brand_form_page_eksik_bilgi".locale);
                     return;
                   }
                 },
               ),
-              SizedBox(height: deviceHeightSize(context, 30) + MediaQuery.of(context).viewInsets.bottom),
+              SizedBox(
+                  height: deviceHeightSize(context, 30) +
+                      MediaQuery.of(context).viewInsets.bottom),
             ],
           ),
         ),

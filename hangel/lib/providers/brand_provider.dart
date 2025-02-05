@@ -710,17 +710,12 @@ class BrandProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<GeneralResponseModel> sendForm(BrandFormModel brandFormModel,
-      {required List<ImageModel?> logoImage,
-      required List<ImageModel?> bannerImage,
-      required List<ImageModel?> vergiImage}) async {
+  Future<GeneralResponseModel> sendForm(BrandFormModel brandFormModel, {required List<ImageModel?> logoImage}) async {
     _sendFormState = LoadingState.loading;
     notifyListeners();
     final response = await _brandController.sendForm(
       brandFormModel: brandFormModel,
       logoImage: logoImage,
-      bannerImage: bannerImage,
-      vergiImage: vergiImage,
     );
 
     _sendFormState = LoadingState.loaded;

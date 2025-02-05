@@ -85,7 +85,7 @@ class StkModel {
       qrUrl: json['qrUrl'] ?? "",
       type: json['type'] ?? "",
       categories: safeStringList(json['categories']),
-      favoriteCount: safeStringList(json['favoriteCount']),
+      favoriteCount: json['favoriteCount'] is int ? json['favoriteCount'] ?? 0 : 0,
       bmCategories: safeStringList(json['bmCategories']),
       isActive: json["isActive"] ?? true,
       totalDonation: double.tryParse(((json["totalDonation"]) ?? 0.0).toString()),
