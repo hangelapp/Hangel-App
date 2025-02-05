@@ -633,7 +633,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                     }
                     // Oluşturulan model
                     BrandFormModel brandFormModel = BrandFormModel(
-                      applicationType: _applicationTypes[_selectedApplicationTypeIndex]['key'],
+                      applicationType: _applicationTypes[_selectedApplicationTypeIndex]['label'],
                       name: _brandNameController.text,
                       website: _brandWebsiteController.text,
                       mail: _brandMailController.text,
@@ -648,7 +648,7 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       categories: _selectedCategories
                           .map(
                             (e) => CategoryModel(
-                              name: _categories[e],
+                              name: _categories[e].locale,
                               donationRate: double.parse(
                                 _categoryControllers[_selectedCategories.indexOf(e)]
                                     .text
@@ -664,13 +664,13 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
                       beneficiaries: (_selectedApplicationTypeIndex == 0 || _selectedApplicationTypeIndex == 2)
                           ? _selectedBeneficiaries.map((e) {
                               int index = _beneficiaries.indexWhere((element) => element['label'] == e);
-                              return _beneficiaries[index]['key']!;
+                              return _beneficiaries[index]['label']!;
                             }).toList()
                           : null,
                       unSdgs: (_selectedApplicationTypeIndex == 0 || _selectedApplicationTypeIndex == 2)
                           ? _selectedBMItems.map((e) {
                               int index = _bmItems.indexWhere((element) => element['label'] == e);
-                              return _bmItems[index]['key']!;
+                              return _bmItems[index]['label']!;
                             }).toList()
                           : null,
                       isDepremBolgesi: (_selectedApplicationTypeIndex == 0 || _selectedApplicationTypeIndex == 2)

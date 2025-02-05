@@ -302,7 +302,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => BottomSheetWidget(title: "profile_page_add_photo".locale, child: const AddPhotoForm()),
+                builder: (context) =>
+                    BottomSheetWidget(title: "profile_page_add_photo".locale, child: const AddPhotoForm()),
               );
             },
             child: Container(
@@ -342,8 +343,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _tabView(BuildContext context) {
-    bool appealAvailable = appealStatuses
-        .where((element) => element.appealStatus != null && element.appealStatus!.contains("active"))
+    // bool appealAvailable = appealStatuses
+    //     .where((element) => element.appealStatus != null && element.appealStatus!.contains("active"))
+    //     .isEmpty;
+    bool stkAvailable = appealStatuses
+        .where((element) =>
+            element.appealStatus != null &&
+            element.appealStatus!.contains("active") &&
+            (element.appealType ?? "").toLowerCase().contains("stk"))
+        .isEmpty;
+
+    bool brandAvailable = appealStatuses
+        .where((element) =>
+            element.appealStatus != null &&
+            element.appealStatus!.contains("active") &&
+            (element.appealType ?? "").toLowerCase().contains("marka"))
         .isEmpty;
     List<Map<String, dynamic>> statics = [
       {
@@ -499,7 +513,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
           child: GeneralButtonWidget(
             isLoading: context.watch<ProfilePageProvider>().appealloadingState == LoadingState.loading,
-            onPressed: appealAvailable
+            onPressed: stkAvailable
                 ? () async {
                     //STK başvuru butonu
                     await showModalBottomSheet(
@@ -517,7 +531,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     );
                   }
                 : null,
-            text: appealAvailable
+            text: stkAvailable
                 ? "profile_page_stk_application_form_button".locale
                 : "profile_page_stk_application_form_button_disabled".locale,
           ),
@@ -528,22 +542,27 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             horizontal: deviceWidthSize(context, 20),
           ),
           child: GeneralButtonWidget(
-              onPressed: () async {
-                await showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) => BottomSheetWidget(
-                    title: "profile_page_brand_application_form_button".locale,
-                    isMinPadding: true,
-                    child: const BrandFormWidget(),
-                  ),
-                ).then(
-                  (value) async {
-                    await context.read<ProfilePageProvider>().checkApplicationStatus();
-                  },
-                );
-              },
-              text: "profile_page_brand_application_form_button".locale),
+              isLoading: context.watch<ProfilePageProvider>().appealloadingState == LoadingState.loading,
+              onPressed: brandAvailable
+                  ? () async {
+                      await showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (context) => BottomSheetWidget(
+                          title: "profile_page_brand_application_form_button".locale,
+                          isMinPadding: true,
+                          child: const BrandFormWidget(),
+                        ),
+                      ).then(
+                        (value) async {
+                          await context.read<ProfilePageProvider>().checkApplicationStatus();
+                        },
+                      );
+                    }
+                  : null,
+              text: brandAvailable
+                  ? "profile_page_brand_application_form_button".locale
+                  : "profile_page_stk_application_form_button_disabled".locale),
         ),
         Container(
           margin: const EdgeInsets.only(bottom: 15),
@@ -744,7 +763,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       isScrollControlled: true,
                       builder: (context) {
                         return BottomSheetWidget(
-                            isMinPadding: true, title: "profile_page_update_info".locale, child: const UserInformationForm());
+                            isMinPadding: true,
+                            title: "profile_page_update_info".locale,
+                            child: const UserInformationForm());
                       });
                 },
                 child: Container(
