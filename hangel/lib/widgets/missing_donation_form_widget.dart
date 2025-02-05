@@ -9,7 +9,7 @@ import 'package:hangel/widgets/general_button_widget.dart';
 import 'package:hangel/widgets/toast_widgets.dart';
 
 class MissingDonationFormPage extends StatefulWidget {
-  const MissingDonationFormPage({Key? key}) : super(key: key);
+  const MissingDonationFormPage({super.key});
   static const routeName = '/missing-donation-form';
 
   @override
@@ -119,7 +119,7 @@ class _MissingDonationFormPageState extends State<MissingDonationFormPage> {
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      locale: Locale('tr'), // Dil ayarı
+      locale: const Locale('tr'), // Dil ayarı
     );
 
     if (pickedDate != null) {
@@ -162,6 +162,8 @@ class _MissingDonationFormPageState extends State<MissingDonationFormPage> {
       await FirebaseFirestore.instance.collection("forms").add({
         "subject": "Bağışım Gözükmüyor",
         "status": "active",
+        "applicantUid": HiveHelpers.getUid(),
+        "applicantTime": DateTime.now(),
         "form": {
           "brand": _brandController.text,
           "orderNumber": _orderNumberController.text,
@@ -182,7 +184,7 @@ class _MissingDonationFormPageState extends State<MissingDonationFormPage> {
           <p><b>Sipariş Numarası:</b> ${_orderNumberController.text}</p>
           <p><b>Tarih:</b> ${_dateController.text}</p>
           <p><b>Sepet Tutarı:</b> ${_cartAmountController.text}</p>
-          <p><b>Sicil ID:</b> ${_registryIdController.text}</p>
+          <p><b>Sicil ID Telefon numarası:</b> ${_registryIdController.text}</p>
           <p><b>Telefon Numarası:</b> ${_phoneController.text}</p>
         """,
       );

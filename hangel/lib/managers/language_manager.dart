@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hangel/views/utilities.dart';
 
 import '../constants/preferences_keys.dart';
 import 'locale_manager.dart';
@@ -24,6 +25,13 @@ class LanguageManager extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
         'tr_TR': {
+          "profile_doluluk": "Profil doluluk oranınız: ",
+          "profile_page_appeal_status": "Başvurularım",
+          "profile_page_stk_application_form_button_disabled": "Başvuruldu ✓",
+          "secilenler": "Seçilenler",
+          "stk_page_search": "Stk Ara",
+          "user_ban_page_description":
+              "Hesabınız pasif olarak işaretlendi. Bir yanlışlık olduğunu düşünüyorsanız bizimle iletişime geçebilirsiniz.",
           "stk_form_validation_error": "Lütfen gerekli alanları doldurunuz",
           "stk_form_type": "Türü",
           "stk_form_type_association": "Dernek",
@@ -38,7 +46,9 @@ class LanguageManager extends Translations {
           "stk_form_short_name": "Kısa Adı",
           "stk_form_invalid_short_name": "Lütfen geçerli bir kısa ad giriniz",
           "stk_form_full_name": "Tam Adı",
+          "stk_form_description": "Hakkında",
           "stk_form_invalid_full_name": "Lütfen geçerli bir tam ad giriniz",
+          "stk_form_invalid_description": "Lütfen hakkında bilgilerini giriniz",
           "stk_form_establishment_year": "Kuruluş Yılı",
           "stk_form_invalid_establishment_year": "Lütfen geçerli bir kuruluş yılı giriniz",
           "stk_form_iban_no": "IBAN No",
@@ -134,6 +144,7 @@ class LanguageManager extends Translations {
           "stk_form_beneficiaries_entrepreneurship": "Girişimcilik",
           "stk_form_beneficiaries_culture_art": "Kültür Sanat",
           "stk_form_beneficiaries_sports": "Spor",
+          "stk_form_beneficiaries_nature": "Çevre",
           "stk_form_un_goal_no_poverty": "Yoksulluğa Son",
           "stk_form_un_goal_zero_hunger": "Açlığa Son",
           "stk_form_un_goal_good_health": "Sağlık ve Kaliteli Yaşam",
@@ -253,9 +264,10 @@ class LanguageManager extends Translations {
           'app_view_drawer_social_companies': 'Sosyal Şirketler',
           'app_view_drawer_settings': 'Ayarlar',
           'app_view_drawer_contact': 'İletişim',
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': "${getAppVersion.then((e) => e)}", //'v1.0.1',
           'app_view_drawer_logout': 'Çıkış Yap',
           'app_view_drawer_delete_account': 'Hesabımı Sil',
+          'app_view_drawer_isstk': "STK Paneli",
 
           'app_view_bottom_nav_markets': 'Markalar',
           'app_view_bottom_nav_volunteer': 'Gönüllü',
@@ -286,7 +298,7 @@ class LanguageManager extends Translations {
           'app_view_privacy_dialog_button_cancel': 'İptal',
 
           'app_view_contact_support': 'İletişime Geç',
-          'app_view_version': 'v1.0.0',
+          'app_view_version': "${getAppVersion.then((e) => e)}", //'v1.0.1',
 
           // Close button in dialogs
           'close': 'Kapat',
@@ -365,6 +377,39 @@ class LanguageManager extends Translations {
           'brand_form_page_vergi_dairesi': 'Vergi Dairesi',
           'brand_form_page_gecersiz_vergi_dairesi': 'Geçersiz Vergi Dairesi',
           'brand_form_page_sosyal_girisim': 'Sosyal Girişim',
+          "brand_form_page_kategori_tekstil": "Tekstil",
+          "brand_form_page_kategori_saglik_gerecleri": "Sağlık Gereçleri",
+          "brand_form_page_kategori_saglik_hizmetleri": "Sağlık Hizmetleri",
+          "brand_form_page_kategori_elektronik": "Elektronik",
+          "brand_form_page_kategori_yedek_parca": "Yedek Parça",
+          "brand_form_page_kategori_teknik_servis": "Teknik Servis",
+          "brand_form_page_kategori_danismanlik": "Danışmanlık",
+          "brand_form_page_kategori_gayrimenkul": "Gayrimenkul",
+          "brand_form_page_kategori_aracilik": "Aracılık",
+          "brand_form_page_kategori_yazilim": "Yazılım",
+          "brand_form_page_kategori_insaat_malzemeleri": "İnşaat Malzemeleri",
+          "brand_form_page_kategori_insaat_hizmetleri": "İnşaat Hizmetleri",
+          "brand_form_page_kategori_lojistik": "Lojistik",
+          "brand_form_page_kategori_otomotiv": "Otomotiv",
+          "brand_form_page_kategori_konaklama": "Konaklama",
+          "brand_form_page_kategori_yeme_icme": "Yeme İçme",
+          "brand_form_page_kategori_mimar": "Mimar",
+          "brand_form_page_kategori_beyaz_esya": "Beyaz Eşya",
+          "brand_form_page_kategori_elektrikli_ev_aletleri": "Elektrikli Ev Aletleri",
+          "brand_form_page_kategori_kisisel_bakim": "Kişisel Bakım",
+          "brand_form_page_kategori_ev_ve_yasam": "Ev ve Yaşam",
+          "brand_form_page_kategori_muzik_enstruman": "Müzik Enstrümanları",
+          "brand_form_page_kategori_telefon": "Telefon",
+          "brand_form_page_kategori_televizyon": "Televizyon",
+          "brand_form_page_kategori_bilgisayar": "Bilgisayar",
+          "brand_form_page_kategori_konsol": "Konsol",
+          "brand_form_page_kategori_kamera": "Kamera",
+          "brand_form_page_kategori_ofis_malzemeleri": "Ofis Malzemeleri",
+          "brand_form_page_kategori_spor_outdoor": "Spor & Outdoor",
+          "brand_form_page_kategori_kitap": "Kitap",
+          "brand_form_page_kategori_kirtasiye": "Kırtasiye",
+          "brand_form_page_kategori_5000_ustu": "5000 Üstü",
+          "brand_form_page_kategori_kampanyali_urunler": "Kampanyalı Ürünler",
           'brand_form_page_kategori': 'Kategori',
           'brand_form_page_gecersiz_kategori': 'Geçersiz Kategori',
           'brand_form_page_bagis_orani': 'Bağış Oranı',
@@ -719,6 +764,51 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Platforma Katılma Tarihi: ',
         },
         'en_US': {
+          "profile_doluluk": "Your profile fill rate: ",
+          "profile_page_appeal_status": "My applications",
+
+          "profile_page_stk_application_form_button_disabled": "Applied ✓",
+
+          "secilenler": "Selected",
+
+          "brand_form_page_kategori_tekstil": "Textile",
+          "brand_form_page_kategori_saglik_gerecleri": "Health Equipment",
+          "brand_form_page_kategori_saglik_hizmetleri": "Health Services",
+          "brand_form_page_kategori_elektronik": "Electronics",
+          "brand_form_page_kategori_yedek_parca": "Spare Parts",
+          "brand_form_page_kategori_teknik_servis": "Technical Service",
+          "brand_form_page_kategori_danismanlik": "Consultancy",
+          "brand_form_page_kategori_gayrimenkul": "Real Estate",
+          "brand_form_page_kategori_aracilik": "Brokerage",
+          "brand_form_page_kategori_yazilim": "Software",
+          "brand_form_page_kategori_insaat_malzemeleri": "Construction Materials",
+          "brand_form_page_kategori_insaat_hizmetleri": "Construction Services",
+          "brand_form_page_kategori_lojistik": "Logistics",
+          "brand_form_page_kategori_otomotiv": "Automotive",
+          "brand_form_page_kategori_konaklama": "Accommodation",
+          "brand_form_page_kategori_yeme_icme": "Food and Beverage",
+          "brand_form_page_kategori_mimar": "Architecture",
+          "brand_form_page_kategori_beyaz_esya": "Home Appliances",
+          "brand_form_page_kategori_elektrikli_ev_aletleri": "Electrical Home Appliances",
+          "brand_form_page_kategori_kisisel_bakim": "Personal Care",
+          "brand_form_page_kategori_ev_ve_yasam": "Home and Living",
+          "brand_form_page_kategori_muzik_enstruman": "Musical Instruments",
+          "brand_form_page_kategori_telefon": "Phone",
+          "brand_form_page_kategori_televizyon": "Television",
+          "brand_form_page_kategori_bilgisayar": "Computer",
+          "brand_form_page_kategori_konsol": "Console",
+          "brand_form_page_kategori_kamera": "Camera",
+          "brand_form_page_kategori_ofis_malzemeleri": "Office Supplies",
+          "brand_form_page_kategori_spor_outdoor": "Sports & Outdoor",
+          "brand_form_page_kategori_kitap": "Book",
+          "brand_form_page_kategori_kirtasiye": "Stationery",
+          "brand_form_page_kategori_5000_ustu": "Above 5000",
+          "brand_form_page_kategori_kampanyali_urunler": "Promotional Products",
+          "stk_page_search": "Search NGO",
+          'app_view_drawer_isstk': "NGO Panel",
+
+          "user_ban_page_description":
+              "Your account has been marked as inactive. If you think there is a mistake, you can contact us.",
           "stk_form_validation_error": "Please fill in the required fields",
           "stk_form_type": "Type",
           "stk_form_type_association": "Association",
@@ -733,6 +823,8 @@ class LanguageManager extends Translations {
           "stk_form_short_name": "Short Name",
           "stk_form_invalid_short_name": "Please enter a valid short name",
           "stk_form_full_name": "Full Name",
+          "stk_form_invalid_description": "Please enter a valid description",
+          "stk_form_description": "Description",
           "stk_form_invalid_full_name": "Please enter a valid full name",
           "stk_form_establishment_year": "Establishment Year",
           "stk_form_invalid_establishment_year": "Please enter a valid establishment year",
@@ -828,6 +920,7 @@ class LanguageManager extends Translations {
           "stk_form_beneficiaries_entrepreneurship": "Entrepreneurship",
           "stk_form_beneficiaries_culture_art": "Culture and Art",
           "stk_form_beneficiaries_sports": "Sports",
+          "stk_form_beneficiaries_nature": "Environment",
           "stk_form_un_goal_no_poverty": "No Poverty",
           "stk_form_un_goal_zero_hunger": "Zero Hunger",
           "stk_form_un_goal_good_health": "Good Health and Well-being",
@@ -1009,7 +1102,7 @@ class LanguageManager extends Translations {
 
           'app_view_drawer_contact': 'Contact',
 
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': 'v1.0.1',
 
           'app_view_drawer_logout': 'Log Out',
 
@@ -1060,7 +1153,7 @@ class LanguageManager extends Translations {
 
           'app_view_contact_support': 'Contact Support',
 
-          'app_view_version': 'v1.0.0',
+          'app_view_version': 'v1.0.1',
 
           // Close button in dialogs
 
@@ -1780,6 +1873,50 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date of Joining the Platform: '
         },
         'fr_FR': {
+          "profile_doluluk": "Taux de remplissage de votre profil: ",
+          "profile_page_appeal_status": "Mes candidatures",
+          "profile_page_stk_application_form_button_disabled": "Appliqué ✓",
+
+          "secilenler": "les élus",
+
+          "brand_form_page_kategori_tekstil": "Textile",
+          "brand_form_page_kategori_saglik_gerecleri": "Équipement de Santé",
+          "brand_form_page_kategori_saglik_hizmetleri": "Services de Santé",
+          "brand_form_page_kategori_elektronik": "Électronique",
+          "brand_form_page_kategori_yedek_parca": "Pièces de Rechange",
+          "brand_form_page_kategori_teknik_servis": "Service Technique",
+          "brand_form_page_kategori_danismanlik": "Conseil",
+          "brand_form_page_kategori_gayrimenkul": "Immobilier",
+          "brand_form_page_kategori_aracilik": "Courtage",
+          "brand_form_page_kategori_yazilim": "Logiciel",
+          "brand_form_page_kategori_insaat_malzemeleri": "Matériaux de Construction",
+          "brand_form_page_kategori_insaat_hizmetleri": "Services de Construction",
+          "brand_form_page_kategori_lojistik": "Logistique",
+          "brand_form_page_kategori_otomotiv": "Automobile",
+          "brand_form_page_kategori_konaklama": "Hébergement",
+          "brand_form_page_kategori_yeme_icme": "Restauration",
+          "brand_form_page_kategori_mimar": "Architecture",
+          "brand_form_page_kategori_beyaz_esya": "Électroménager",
+          "brand_form_page_kategori_elektrikli_ev_aletleri": "Appareils Électroménagers",
+          "brand_form_page_kategori_kisisel_bakim": "Soins Personnels",
+          "brand_form_page_kategori_ev_ve_yasam": "Maison et Vie",
+          "brand_form_page_kategori_muzik_enstruman": "Instruments de Musique",
+          "brand_form_page_kategori_telefon": "Téléphone",
+          "brand_form_page_kategori_televizyon": "Télévision",
+          "brand_form_page_kategori_bilgisayar": "Ordinateur",
+          "brand_form_page_kategori_konsol": "Console",
+          "brand_form_page_kategori_kamera": "Caméra",
+          "brand_form_page_kategori_ofis_malzemeleri": "Fournitures de Bureau",
+          "brand_form_page_kategori_spor_outdoor": "Sports & Plein Air",
+          "brand_form_page_kategori_kitap": "Livre",
+          "brand_form_page_kategori_kirtasiye": "Papeterie",
+          "brand_form_page_kategori_5000_ustu": "Plus de 5000",
+          "brand_form_page_kategori_kampanyali_urunler": "Produits Promotionnels",
+          "stk_page_search": "Rechercher une ONG",
+          'app_view_drawer_isstk': "Panel d'ONG",
+
+          "user_ban_page_description":
+              "Votre compte a été marqué comme inactif. Si vous pensez qu'il y a une erreur, vous pouvez nous contacter.",
           "stk_form_validation_error": "Veuillez remplir les champs obligatoires",
           "stk_form_type": "Type",
           "stk_form_type_association": "Association",
@@ -1794,7 +1931,9 @@ class LanguageManager extends Translations {
           "stk_form_short_name": "Nom court",
           "stk_form_invalid_short_name": "Veuillez entrer un nom court valide",
           "stk_form_full_name": "Nom complet",
+          "stk_form_description": "à propos",
           "stk_form_invalid_full_name": "Veuillez entrer un nom complet valide",
+          "stk_form_invalid_description": "Veuillez entrer une description valide",
           "stk_form_establishment_year": "Année de fondation",
           "stk_form_invalid_establishment_year": "Veuillez entrer une année de fondation valide",
           "stk_form_iban_no": "IBAN",
@@ -1889,6 +2028,7 @@ class LanguageManager extends Translations {
           "stk_form_beneficiaries_entrepreneurship": "Entrepreneuriat",
           "stk_form_beneficiaries_culture_art": "Culture et art",
           "stk_form_beneficiaries_sports": "Sports",
+          "stk_form_beneficiaries_nature": "Environnement",
           "stk_form_un_goal_no_poverty": "Pas de pauvreté",
           "stk_form_un_goal_zero_hunger": "Faim zéro",
           "stk_form_un_goal_good_health": "Bonne santé et bien-être",
@@ -2013,9 +2153,9 @@ class LanguageManager extends Translations {
 
   Comment ça marche?
 
-  Téléchargez l\'application Hangel et créez un compte.
+  Téléchargez l'application Hangel et créez un compte.
 
-  Sélectionnez vos ONG préférées dans l\'application.
+  Sélectionnez vos ONG préférées dans l'application.
 
   Lors de vos achats, choisissez Hangel comme mode de paiement avec votre carte de crédit ou carte bancaire.
 
@@ -2070,7 +2210,7 @@ class LanguageManager extends Translations {
 
           'app_view_drawer_contact': 'Contact',
 
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': 'v1.0.1',
 
           'app_view_drawer_logout': 'Déconnexion',
 
@@ -2121,7 +2261,7 @@ class LanguageManager extends Translations {
 
           'app_view_contact_support': 'Contacter le Support',
 
-          'app_view_version': 'v1.0.0',
+          'app_view_version': 'v1.0.1',
 
           // Close button in dialogs
 
@@ -2905,6 +3045,49 @@ class LanguageManager extends Translations {
           'brand_detail_page_join_date_label': 'Date d’Adhésion à la Plateforme: '
         },
         'ar': {
+          "profile_doluluk": "معدل ملء ملفك الشخصي: ",
+          "profile_page_appeal_status": "تطبيقاتي",
+          "profile_page_stk_application_form_button_disabled": "مُطبَّق ✓",
+
+          "secilenler": "المختارون",
+          "brand_form_page_kategori_tekstil": "المنسوجات",
+          "brand_form_page_kategori_saglik_gerecleri": "معدات صحية",
+          "brand_form_page_kategori_saglik_hizmetleri": "خدمات صحية",
+          "brand_form_page_kategori_elektronik": "إلكترونيات",
+          "brand_form_page_kategori_yedek_parca": "قطع غيار",
+          "brand_form_page_kategori_teknik_servis": "خدمة فنية",
+          "brand_form_page_kategori_danismanlik": "استشارات",
+          "brand_form_page_kategori_gayrimenkul": "عقارات",
+          "brand_form_page_kategori_aracilik": "وساطة",
+          "brand_form_page_kategori_yazilim": "برمجيات",
+          "brand_form_page_kategori_insaat_malzemeleri": "مواد البناء",
+          "brand_form_page_kategori_insaat_hizmetleri": "خدمات البناء",
+          "brand_form_page_kategori_lojistik": "الخدمات اللوجستية",
+          "brand_form_page_kategori_otomotiv": "السيارات",
+          "brand_form_page_kategori_konaklama": "الإقامة",
+          "brand_form_page_kategori_yeme_icme": "الطعام والشراب",
+          "brand_form_page_kategori_mimar": "هندسة معمارية",
+          "brand_form_page_kategori_beyaz_esya": "الأجهزة المنزلية",
+          "brand_form_page_kategori_elektrikli_ev_aletleri": "الأجهزة المنزلية الكهربائية",
+          "brand_form_page_kategori_kisisel_bakim": "العناية الشخصية",
+          "brand_form_page_kategori_ev_ve_yasam": "المنزل والحياة",
+          "brand_form_page_kategori_muzik_enstruman": "الآلات الموسيقية",
+          "brand_form_page_kategori_telefon": "هاتف",
+          "brand_form_page_kategori_televizyon": "تلفزيون",
+          "brand_form_page_kategori_bilgisayar": "حاسوب",
+          "brand_form_page_kategori_konsol": "جهاز الألعاب",
+          "brand_form_page_kategori_kamera": "كاميرا",
+          "brand_form_page_kategori_ofis_malzemeleri": "لوازم المكتب",
+          "brand_form_page_kategori_spor_outdoor": "الرياضة والأنشطة الخارجية",
+          "brand_form_page_kategori_kitap": "كتاب",
+          "brand_form_page_kategori_kirtasiye": "قرطاسية",
+          "brand_form_page_kategori_5000_ustu": "فوق 5000",
+          "brand_form_page_kategori_kampanyali_urunler": "منتجات ترويجية",
+          'stk_page_search': "بحث عن المنظمات",
+          'app_view_drawer_isstk': "لوحة المنظمات غير الحكومية",
+
+          "user_ban_page_description":
+              "لقد تم وضع علامة على حسابك على أنه غير نشط. إذا كنت تعتقد أن هناك خطأ، يمكنك الاتصال بنا.",
           "stk_form_validation_error": "يرجى تعبئة الحقول المطلوبة",
           "stk_form_type": "النوع",
           "stk_form_type_association": "جمعية",
@@ -2919,7 +3102,9 @@ class LanguageManager extends Translations {
           "stk_form_short_name": "الاسم المختصر",
           "stk_form_invalid_short_name": "يرجى إدخال اسم مختصر صالح",
           "stk_form_full_name": "الاسم الكامل",
+          "stk_form_description": "وصف",
           "stk_form_invalid_full_name": "يرجى إدخال اسم كامل صالح",
+          "stk_form_invalid_description": "يرجى إدخال وصف صالح",
           "stk_form_establishment_year": "سنة التأسيس",
           "stk_form_invalid_establishment_year": "يرجى إدخال سنة تأسيس صالحة",
           "stk_form_iban_no": "رقم IBAN",
@@ -3014,6 +3199,7 @@ class LanguageManager extends Translations {
           "stk_form_beneficiaries_entrepreneurship": "ريادة الأعمال",
           "stk_form_beneficiaries_culture_art": "الثقافة والفنون",
           "stk_form_beneficiaries_sports": "الرياضة",
+          "stk_form_beneficiaries_nature": "بيئة",
           "stk_form_un_goal_no_poverty": "لا للفقر",
           "stk_form_un_goal_zero_hunger": "لا للجوع",
           "stk_form_un_goal_good_health": "الصحة الجيدة والرفاه",
@@ -3151,7 +3337,7 @@ class LanguageManager extends Translations {
 
           'app_view_drawer_contact': 'اتصل بنا',
 
-          'app_view_drawer_version': 'v1.0.0',
+          'app_view_drawer_version': 'v1.0.1',
 
           'app_view_drawer_logout': 'تسجيل الخروج',
 
@@ -3247,7 +3433,7 @@ class LanguageManager extends Translations {
 
           'app_view_contact_support': 'اتصل بالدعم',
 
-          'app_view_version': 'v1.0.0',
+          'app_view_version': 'v1.0.1',
 
           // Close button in dialogs
 

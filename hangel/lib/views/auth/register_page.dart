@@ -28,7 +28,8 @@ import '../../widgets/toast_widgets.dart';
 import '../../widgets/locale_text.dart'; // Ensure LocaleText is imported
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  final List<String>? stkIds;
+  const RegisterPage({super.key, this.stkIds});
 
   static const routeName = '/register';
 
@@ -40,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _maskFormatter = MaskTextInputFormatter(
       mask: '(###) ### ## ##', filter: {"#": RegExp(r'[0-9]')}, type: MaskAutoCompletionType.lazy);
   PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'TR');
-  bool _isValidNumber = false;
+  final bool _isValidNumber = true;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -59,6 +60,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      if (!mounted) return;
       _phoneController.addListener(_formatPhoneNumber);
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (resendSecond > 0) {
@@ -86,36 +88,211 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneLoginPageType = context.watch<LoginRegisterPageProvider>().phoneLoginPageType;
     return Scaffold(
       backgroundColor: AppTheme.white,
-      body: Column(
+      body: Stack(
         children: [
-          const AppBarWidget(
-            leading: SizedBox(),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SvgPicture.asset(
-                    _phoneLoginPageType == PhoneLoginPageType.verify
-                        ? "assets/images/verification.svg"
-                        : "assets/images/register.svg",
-                    height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.login ? 200 : 150),
-                  ),
-                  SizedBox(
-                    height: deviceHeightSize(context, 20),
-                  ),
-                  _phoneLoginPageType == PhoneLoginPageType.verify
-                      ? verifySmsCodeWidget(context)
-                      : loginRegisterWidget(context),
-                  SizedBox(
-                    height: deviceHeightSize(context, 20),
-                  )
-                ],
+          Column(
+            children: [
+              const AppBarWidget(
+                leading: SizedBox(),
               ),
-            ),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SvgPicture.asset(
+                        _phoneLoginPageType == PhoneLoginPageType.verify
+                            ? "assets/images/verification.svg"
+                            : "assets/images/register.svg",
+                        height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.login ? 200 : 150),
+                      ),
+                      SizedBox(
+                        height: deviceHeightSize(context, 20),
+                      ),
+                      _phoneLoginPageType == PhoneLoginPageType.verify
+                          ? verifySmsCodeWidget(context)
+                          : loginRegisterWidget(context),
+                      SizedBox(
+                        height: deviceHeightSize(context, 20),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
+          _phoneLoginPageType == PhoneLoginPageType.verify
+              ? Positioned(
+                  bottom: 5,
+                  right: 30,
+                  left: 30,
+                  child: GeneralButtonWidget(
+                    onPressed: () async {
+                      if (context.read<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading) {
+                        return;
+                      }
+
+                      if (_verifyController.text.length != 6) {
+                        ToastWidgets.errorToast(context, 'register_page_error_invalid_code'.locale);
+                      } else {
+                        String phoneNum = _phoneNumber.phoneNumber!;
+                        context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
+                        if (kIsWeb) {
+                          await context
+                              .read<LoginRegisterPageProvider>()
+                              .authenticate(_verifyController.text, phoneNum, _nameController.text, context)
+                              .then(
+                            (value) {
+                              print(value.message);
+                              if (value.message == "true") {
+                                ToastWidgets.successToast(context, "Giriş yapılıyor...");
+                              }
+                              if (value.success == true) {
+                                if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
+                                  Navigator.pushReplacement(context,
+                                      MaterialPageRoute(builder: (context) => const SelectFavoriteStkPage(inTree: false)));
+                                  return;
+                                }
+                                if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                          (element) => element == -1,
+                                        ) ==
+                                    false) {
+                                  if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      VolunteerForm.routeName,
+                                    );
+                                    return;
+                                  }
+                                }
+                                context.read<AppViewProvider>().selectedWidget = const HomePage();
+                                Navigator.pushReplacementNamed(context, AppView.routeName);
+                              } else {
+                                _verifyController.clear();
+                                ToastWidgets.errorToast(context, value.message ?? "");
+                              }
+                            },
+                          );
+                        } else {
+                          context
+                              .read<LoginRegisterPageProvider>()
+                              .verifyPhoneNumber(_verifyController.text,widget.stkIds, context)
+                              .then(
+                            (value) async {
+                              if (value.success == true) {
+                                if (HiveHelpers.getUserFromHive().favoriteStks.length != 2) {
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => SelectFavoriteStkPage(
+                                                inTree: false,
+                                                selectedSTKIds: HiveHelpers.getUserFromHive().favoriteStks,
+                                              )));
+                                  return;
+                                }
+                                if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
+                                          (element) => element == -1,
+                                        ) ==
+                                    false) {
+                                  if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      VolunteerForm.routeName,
+                                    );
+                                    return;
+                                  }
+                                }
+                                context.read<AppViewProvider>().selectedWidget = const HomePage();
+                                Navigator.pushReplacementNamed(context, AppView.routeName);
+                              } else {
+                                ToastWidgets.errorToast(context, value.message ?? "");
+                              }
+                            },
+                          );
+                        }
+                      }
+                    },
+                    isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,
+                    text: 'register_page_verify'.locale,
+                  ),
+                )
+              : Positioned(
+                  bottom: 5,
+                  right: 30,
+                  left: 30,
+                  child: GeneralButtonWidget(
+                    onPressed: () async {
+                      try {
+                        print(_phoneNumber.phoneNumber);
+                        // Boşluk kontrolü
+                        if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
+                            (_phoneController.text.isEmpty || !_isValidNumber || _phoneNumber.phoneNumber == null)) {
+                          ToastWidgets.errorToast(context, 'register_page_error_fill_all_fields'.locale);
+                          return;
+                        }
+
+                        // Agreement checks
+                        if (_phoneLoginPageType == PhoneLoginPageType.register) {
+                          if (!_isUserAgreementAccepted || !_isPrivacyAgreementAccepted) {
+                            ToastWidgets.errorToast(context, 'register_page_error_accept_agreements'.locale);
+                            return;
+                          }
+                        }
+
+                        // Telefon numarası formatlama
+                        String formattedPhoneNumber = _phoneNumber.phoneNumber!;
+                        context.read<LoginRegisterPageProvider>().phoneNumber = formattedPhoneNumber;
+
+                        // Login olurken telefon numarası kontrolü
+                        if (_phoneLoginPageType == PhoneLoginPageType.login) {
+                          GeneralResponseModel generalResponseModel =
+                              await context.read<LoginRegisterPageProvider>().isPhoneNumberExist();
+                          if (generalResponseModel.success == false) {
+                            ToastWidgets.errorToast(context, generalResponseModel.message ?? "");
+                            FocusScope.of(context).unfocus();
+                            context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
+                            Navigator.pushReplacementNamed(context, RegisterPage.routeName);
+                            return;
+                          }
+                        }
+
+                        // Süreyi ayarla
+                        setState(() {
+                          resendSecond = 120;
+                        });
+
+                        // Provider verilerini güncelle
+                        context.read<LoginRegisterPageProvider>().name = _nameController.text;
+
+                        // KOD GÖNDERME AŞAMASI
+                        GeneralResponseModel response;
+                        if (kIsWeb) {
+                          await context.read<LoginRegisterPageProvider>().sendOTP();
+                          response = GeneralResponseModel(success: true);
+                        } else {
+                          response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
+                        }
+                        // Gönderilmediyse hata döndür ve kayıt ol sayfasına yönlendir.
+                        if (response.success == true) {
+                          print("Sms kodu gönderildi");
+                        } else {
+                          ToastWidgets.errorToast(context, 'register_page_error_unexpected'.locale);
+                          context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
+                          Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
+                        }
+                      } catch (e) {
+                        ToastWidgets.errorToast(context, 'register_page_error_unexpected'.locale);
+                        Navigator.pushReplacementNamed(context, RegisterPage.routeName);
+                        return;
+                      }
+                    },
+                    isLoading: context.watch<LoginRegisterPageProvider>().smsCodeSentState == LoadingState.loading,
+                    text: _phoneLoginPageType == PhoneLoginPageType.login
+                        ? 'register_page_login'.locale
+                        : 'register_page_create_account'.locale,
+                  ),
+                ),
         ],
       ),
     );
@@ -170,10 +347,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   onInputChanged: (PhoneNumber number) {
                     _phoneNumber = number;
                   },
-                  onInputValidated: (bool value) {
-                    _isValidNumber = value;
-                  },
-                  selectorConfig: SelectorConfig(
+                  selectorConfig: const SelectorConfig(
                     selectorType: PhoneInputSelectorType.DROPDOWN,
                     showFlags: false,
                     trailingSpace: false,
@@ -199,33 +373,38 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ],
           ),
-          SizedBox(
-            height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
-          ),
+          SizedBox(height: deviceHeightSize(context, 10)),
           // Agreements
           if (_phoneLoginPageType == PhoneLoginPageType.register) ...[
             CheckboxListTile(
               value: _isUserAgreementAccepted,
+              contentPadding: EdgeInsets.zero,
               onChanged: (bool? value) {
                 setState(() {
                   _isUserAgreementAccepted = value ?? false;
                 });
               },
+              visualDensity: const VisualDensity(horizontal: -4),
               title: RichText(
+                textAlign: TextAlign.start,
                 text: TextSpan(
                   text: '',
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_user_agreement'.locale.split(' ').first,
-                      style: AppTheme.lightTextStyle(context, 14),
+                      text: 'register_page_user_agreement'
+                          .locale
+                          .substring(0, ('register_page_user_agreement'.locale.length - 1) ~/ 2),
+                      style: AppTheme.lightTextStyle(context, 11),
                     ),
                     TextSpan(
-                      text: 'register_page_user_agreement'.locale.substring('register_page_user_agreement'.locale.indexOf('\'ni ')),
-                      style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
+                      text: 'register_page_user_agreement'
+                          .locale
+                          .substring(('register_page_user_agreement'.locale.length - 1) ~/ 2),
+                      style: AppTheme.boldTextStyle(context, 11, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          _showAgreementDialog('Kullanıcı Sözleşmesi', AppConstants.USER_AGREEMENT);
+                          _showAgreementDialog('settings_page_user_agreement', AppConstants.USER_AGREEMENT);
                         },
                     ),
                   ],
@@ -235,26 +414,33 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             CheckboxListTile(
               value: _isPrivacyAgreementAccepted,
+              contentPadding: EdgeInsets.zero,
               onChanged: (bool? value) {
                 setState(() {
                   _isPrivacyAgreementAccepted = value ?? false;
                 });
               },
+              visualDensity: const VisualDensity(horizontal: -4),
               title: RichText(
+                textAlign: TextAlign.start,
                 text: TextSpan(
                   text: '',
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_privacy_agreement'.locale.split(' ').first,
-                      style: AppTheme.lightTextStyle(context, 14),
+                      text: 'register_page_privacy_agreement'
+                          .locale
+                          .substring(0, ('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
+                      style: AppTheme.lightTextStyle(context, 11),
                     ),
                     TextSpan(
-                      text: 'register_page_privacy_agreement'.locale.substring('register_page_privacy_agreement'.locale.indexOf('\'ni ')),
-                      style: AppTheme.boldTextStyle(context, 14, color: AppTheme.primaryColor),
+                      text: 'register_page_privacy_agreement'
+                          .locale
+                          .substring(('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
+                      style: AppTheme.boldTextStyle(context, 11, color: AppTheme.primaryColor),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          _showAgreementDialog('Gizlilik Sözleşmesi', AppConstants.SECRET_AGREEMENT);
+                          _showAgreementDialog('settings_page_privacy_policy', AppConstants.SECRET_AGREEMENT);
                         },
                     ),
                   ],
@@ -262,83 +448,12 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               controlAffinity: ListTileControlAffinity.leading,
             ),
-            SizedBox(
-              height: deviceHeightSize(context, 20),
-            ),
+            // SizedBox(
+            //   height: deviceHeightSize(context, 20),
+            // ),
           ],
           // GİRİŞ YAP VEYA KAYDOL BUTONU
-          GeneralButtonWidget(
-            onPressed: () async {
-              try {
-                print(_phoneNumber.phoneNumber);
-                // Boşluk kontrolü
-                if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
-                    _phoneController.text.isEmpty ||
-                    !_isValidNumber ||
-                    _phoneNumber.phoneNumber == null) {
-                  ToastWidgets.errorToast(context, 'register_page_error_fill_all_fields'.locale);
-                  return;
-                }
 
-                // Agreement checks
-                if (_phoneLoginPageType == PhoneLoginPageType.register) {
-                  if (!_isUserAgreementAccepted || !_isPrivacyAgreementAccepted) {
-                    ToastWidgets.errorToast(context, 'register_page_error_accept_agreements'.locale);
-                    return;
-                  }
-                }
-
-                // Telefon numarası formatlama
-                String formattedPhoneNumber = _phoneNumber.phoneNumber!;
-                context.read<LoginRegisterPageProvider>().phoneNumber = '$formattedPhoneNumber';
-
-                // Login olurken telefon numarası kontrolü
-                if (_phoneLoginPageType == PhoneLoginPageType.login) {
-                  GeneralResponseModel generalResponseModel =
-                      await context.read<LoginRegisterPageProvider>().isPhoneNumberExist();
-                  if (generalResponseModel.success == false) {
-                    ToastWidgets.errorToast(context, generalResponseModel.message ?? "");
-                    FocusScope.of(context).unfocus();
-                    context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
-                    Navigator.pushReplacementNamed(context, RegisterPage.routeName);
-                    return;
-                  }
-                }
-
-                // Süreyi ayarla
-                setState(() {
-                  resendSecond = 120;
-                });
-
-                // Provider verilerini güncelle
-                context.read<LoginRegisterPageProvider>().name = _nameController.text;
-
-                // KOD GÖNDERME AŞAMASI
-                GeneralResponseModel response;
-                if (kIsWeb) {
-                  await context.read<LoginRegisterPageProvider>().sendOTP();
-                  response = GeneralResponseModel(success: true);
-                } else {
-                  response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
-                }
-                // Gönderilmediyse hata döndür ve kayıt ol sayfasına yönlendir.
-                if (response.success == true) {
-                  print("Sms kodu gönderildi");
-                } else {
-                  ToastWidgets.errorToast(context,
-                      'register_page_error_unexpected'.locale);
-                  context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
-                  Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
-                }
-              } catch (e) {
-                ToastWidgets.errorToast(context, 'register_page_error_unexpected'.locale);
-                Navigator.pushReplacementNamed(context, RegisterPage.routeName);
-                return;
-              }
-            },
-            isLoading: context.watch<LoginRegisterPageProvider>().smsCodeSentState == LoadingState.loading,
-            text: _phoneLoginPageType == PhoneLoginPageType.login ? 'register_page_login'.locale : 'register_page_create_account'.locale,
-          ),
           TextButton(
             onPressed: () {
               if (_phoneLoginPageType == PhoneLoginPageType.login) {
@@ -375,7 +490,7 @@ class _RegisterPageState extends State<RegisterPage> {
     // Sadece rakamları al
     text = text.replaceAll(RegExp(r'[^\d]'), '');
     // Maskeyi uygula
-    if (text.length > 0) {
+    if (text.isNotEmpty) {
       text = '($text';
     }
     if (text.length > 4) {
@@ -411,7 +526,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Pinput(
               length: 6,
               autofocus: true,
-              scrollPadding: EdgeInsets.only(bottom: 100),
+              scrollPadding: const EdgeInsets.only(bottom: 100),
               controller: _verifyController,
               cursor: Text("_", style: AppTheme.boldTextStyle(context, 22, color: AppTheme.primaryColor)),
               keyboardType: TextInputType.number,
@@ -487,87 +602,6 @@ class _RegisterPageState extends State<RegisterPage> {
             SizedBox(
               height: deviceHeightSize(context, 20),
             ),
-            GeneralButtonWidget(
-              onPressed: () async {
-                if (context.read<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading) {
-                  return;
-                }
-
-                if (_verifyController.text.length != 6) {
-                  ToastWidgets.errorToast(context, 'register_page_error_invalid_code'.locale);
-                } else {
-                  String phoneNum = _phoneNumber.phoneNumber!;
-                  context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
-                  if (kIsWeb) {
-                    await context
-                        .read<LoginRegisterPageProvider>()
-                        .authenticate(_verifyController.text, phoneNum, _nameController.text)
-                        .then(
-                      (value) {
-                        print(value.message);
-                        if (value.message == "true") {
-                          ToastWidgets.successToast(context, "Giriş yapılıyor...");
-                        }
-                        if (value.success == true) {
-                          if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                            Navigator.pushReplacement(
-                                context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
-                            return;
-                          }
-                          if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                    (element) => element == -1,
-                                  ) ==
-                              false) {
-                            if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                              Navigator.pushReplacementNamed(
-                                context,
-                                VolunteerForm.routeName,
-                              );
-                              return;
-                            }
-                          }
-                          context.read<AppViewProvider>().selectedWidget = const HomePage();
-                          Navigator.pushReplacementNamed(context, AppView.routeName);
-                        } else {
-                          _verifyController.clear();
-                          ToastWidgets.errorToast(context, value.message ?? "");
-                        }
-                      },
-                    );
-                  } else {
-                    context.read<LoginRegisterPageProvider>().verifyPhoneNumber(_verifyController.text).then(
-                      (value) {
-                        if (value.success == true) {
-                          if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                            Navigator.pushReplacement(
-                                context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
-                            return;
-                          }
-                          if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                    (element) => element == -1,
-                                  ) ==
-                              false) {
-                            if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                              Navigator.pushReplacementNamed(
-                                context,
-                                VolunteerForm.routeName,
-                              );
-                              return;
-                            }
-                          }
-                          context.read<AppViewProvider>().selectedWidget = const HomePage();
-                          Navigator.pushReplacementNamed(context, AppView.routeName);
-                        } else {
-                          ToastWidgets.errorToast(context, value.message ?? "");
-                        }
-                      },
-                    );
-                  }
-                }
-              },
-              isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,
-              text: 'register_page_verify'.locale,
-            )
           ],
         ),
       ),
@@ -579,7 +613,7 @@ class _RegisterPageState extends State<RegisterPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: LocaleText(title.toLowerCase().replaceAll(' ', '_')), // Assuming titles are fixed
+          title: LocaleText(title), // Assuming titles are fixed
           content: SingleChildScrollView(
             child: Text(content),
           ),

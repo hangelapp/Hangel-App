@@ -13,7 +13,7 @@ import 'general_button_widget.dart';
 import 'toast_widgets.dart';
 
 class SupportForm extends StatefulWidget {
-  const SupportForm({Key? key}) : super(key: key);
+  const SupportForm({super.key});
 
   @override
   State<SupportForm> createState() => _SupportFormState();
@@ -150,6 +150,8 @@ class _SupportFormState extends State<SupportForm> {
                 await FirebaseFirestore.instance.collection("forms").add({
                   "subject": "iletişim", // Formun tipi burada kullanılıyor
                   "status": "active",
+                  "applicantUid": HiveHelpers.getUid(),
+                  "applicantTime": DateTime.now(),
                   "form": {
                     "name": _nameController.text,
                     "mail": _emailController.text,

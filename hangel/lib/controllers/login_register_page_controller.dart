@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/models/where_model.dart';
@@ -7,14 +8,15 @@ import 'package:hangel/services/firestore_services.dart';
 import '../helpers/locator.dart';
 import '../models/general_response_model.dart';
 import '../services/firebase_auth_services.dart';
+import '../views/user_ban_page.dart';
 
 class LoginRegisterPageController {
   final _firebaseAuthServices = locator<FirebaseAuthServices>();
   final _firestoreServices = locator<FirestoreServices>();
   // final _apiServices = locator<ApiServices>();
   // final _usersPath = 'users';
+  Future<GeneralResponseModel> verifyPhoneNumber({required String phoneNumber,required String name,required String verificationId,required String smsCode,List<String>? favoriteStksList,context}) async {
 
-  Future<GeneralResponseModel> verifyPhoneNumber({required String phoneNumber,required String name,required String verificationId,required String smsCode}) async {
     try {
       User user = await _firebaseAuthServices.verifyPhoneNumber(verificationId, smsCode);
       if (user.uid.isEmpty) {
@@ -26,9 +28,10 @@ class LoginRegisterPageController {
         print("Verify Phone Number Success : " + user.uid);
         UserModel userModel = UserModel.fromFirebaseUser(user);
 
-        if ((await isUserExist(user.uid)) == false) {
+        if ((await isUserExist(user.uid,context)) == false) {
           userModel.name = name;
           userModel.image = "";
+          userModel.favoriteStks = favoriteStksList ?? [];
           userModel.createdAt = DateTime.now();
 
           GeneralResponseModel responseModel = await _firestoreServices.setData(
@@ -60,7 +63,7 @@ class LoginRegisterPageController {
     }
   }
 
-  Future<bool> isUserExist(String uid) async {
+  Future<bool> isUserExist(String uid,context) async {
     try {
       var data = await _firestoreServices.getData('users', wheres: [
         WhereModel(
@@ -73,6 +76,10 @@ class LoginRegisterPageController {
         print("User zaten var");
       }
       UserModel userModel = UserModel.fromJson(data.first.data() as Map<String, dynamic>);
+      if (userModel.isActive == false) {
+          Navigator.pushNamedAndRemoveUntil(context, UserBanPage.routeName, (route) => false);
+          return true;
+        }
       if (userModel.uid == null || userModel.phone == null) {
         return false;
       } else {

@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 
 class TestInfoWidget extends StatelessWidget {
   const TestInfoWidget({
-    Key? key,
+    super.key,
     required this.text,
     required this.value,
     required this.icon,
     this.color = AppTheme.green,
     this.width = 106,
-  }) : super(key: key);
+  });
   final String text;
   final String value;
   final IconData icon;

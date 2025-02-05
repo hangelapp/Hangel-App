@@ -1,8 +1,9 @@
 from firebase_functions import https_fn
-from firebase_admin import initialize_app, firestore, credentials
+from firebase_admin import initialize_app, firestore, credentials, messaging
 from flask import Flask, Request, jsonify
 from flask_cors import CORS
 import os
+import requests
 from datetime import datetime
 
 # Servis hesabı kimlik bilgilerini ayarlayın
@@ -33,6 +34,8 @@ def handle_postback(request: Request):
         # Parametre kontrolü
         if not user_id or not unique_id or not sale_amount or not order_number:
             return {'status': 'error', 'message': 'Missing required parameters'}, 400
+
+        send_notification_to_user(user_id, sale_amount)
 
         # Click document'ını unique_id ile bul
         clicks_ref = db.collection('clicks')
@@ -74,7 +77,7 @@ def handle_postback(request: Request):
                 'shoppingDate': datetime.now()
             }
             donation_ref.set(donation_data)
-            
+
             # Marka bağış güncellemesi
             update_brand_donation(brand_id, donation_amount)
             # STK güncelleme işlemi
@@ -154,3 +157,84 @@ def update_brand_donation(brand_id, donation_amount):
             'favoriteIds': [],
         }
         brand_ref.set(brand_data)
+
+
+def send_notification_to_user(user_id, sale_amount):
+    # 'users' koleksiyonundan kullanıcı id'sini alalım
+    user_ref = db.collection('users').document(user_id)
+    user = user_ref.get()
+
+    if user.exists:
+        user_data = user.to_dict()
+        fcm_token = user_data.get('fcm_token')
+
+        if fcm_token:
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title="Desteğin için Teşekkürler!",
+                    body=f"{sale_amount} TL bağışınızı işleme aldık.",
+                ),
+                token=fcm_token,
+            )
+
+            try:
+                response = messaging.send(message)
+                print('Bildirim başarıyla gönderildi:', response)
+            except Exception as e:
+                print('Bildirim gönderilirken hata oluştu:', e)
+        else:
+            print('Kullanıcının FCM tokenı bulunamadı.')
+    else:
+        print('Kullanıcı bulunamadı.')
+
+
+@https_fn.on_request()
+def handle_stk_deeplink(request: Request):
+    # Örneğin GET parametresinden stk_id'yi alıyoruz:
+    stk_id = request.args.get('stk_id')
+    if not stk_id:
+        return {"error": "stk_id parametresi eksik."}, 400
+
+    try:
+        # Dynamic link oluştur
+        dynamic_link = create_dynamic_link(stk_id)
+
+        # Oluşturulan linki döndür
+        return {"status": "success", "dynamic_link": dynamic_link}, 200
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+
+
+def create_dynamic_link(stk_id: str) -> str:
+    url = "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=AIzaSyCRvxqC1JQsCWNvNZzuZPsfJGu07XIxRu8"
+
+    # Deeplink'in yönlendireceği link. Örneğin: www.example.com/{stk_id}
+    # Bu link uygulama yüklü değilse web'e yönlendirme amaçlı kullanılabilir.
+    deep_link_url = f"https://www.hangel.org/{stk_id}"
+
+    payload = {
+        "dynamicLinkInfo": {
+            "domainUriPrefix":
+            "https://hangel.page.link",
+            "link": deep_link_url,
+            "androidInfo": {
+                "androidPackageName": "com.hangel.app"
+            },
+            "iosInfo": {
+                "iosBundleId": "com.hangel.ios.app"
+            }
+        },
+        "suffix": {
+            "option": "SHORT"
+        }
+    }
+
+    response = requests.post(url, json=payload)
+    response_data = response.json()
+    if response.status_code == 200 and "shortLink" in response_data:
+        return response_data["shortLink"]
+    else:
+        print("Dynamic Link oluşturulurken hata:", response_data)
+        raise Exception("Dynamic Link oluşturulamadı.")

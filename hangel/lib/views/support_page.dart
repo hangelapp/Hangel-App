@@ -12,7 +12,7 @@ import '../widgets/locale_text.dart';
 import '../widgets/support_form.dart';
 
 class SupportPage extends StatefulWidget {
-  const SupportPage({Key? key}) : super(key: key);
+  const SupportPage({super.key});
   static const String routeName = "/supportPage";
 
   @override
@@ -89,7 +89,7 @@ class _SupportPageState extends State<SupportPage> {
                   builder: (context) => BottomSheetWidget(
                     isMinPadding: true,
                     title: 'support_page_contact_modal_title'.locale,
-                    child: SupportForm(),
+                    child: const SupportForm(),
                   ),
                 );
               },

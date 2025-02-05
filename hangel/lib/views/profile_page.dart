@@ -1,26 +1,30 @@
+import 'dart:math';
+
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/date_format_helper.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
+import 'package:hangel/models/appeal_status_model.dart';
 import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/profile_page_provider.dart';
+import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/stk_detail_page.dart';
-import 'package:hangel/views/stk_volunteers_page.dart';
-import 'package:hangel/views/vounteer_form.dart';
 import 'package:hangel/widgets/add_photo_form.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
 import 'package:hangel/widgets/bottom_sheet_widget.dart';
 import 'package:hangel/widgets/general_button_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
+import 'package:hangel/widgets/locale_text.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/login_register_page_provider.dart';
 import '../providers/stk_provider.dart';
 import '../widgets/app_bar_widget.dart';
 import '../widgets/user_information_form.dart';
@@ -29,7 +33,7 @@ import 'stk_form_widget.dart';
 import 'utilities.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   static const routeName = '/profile';
 
@@ -39,16 +43,73 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   UserModel user = HiveHelpers.getUserFromHive();
+  List<AppealStatusModel> appealStatuses = [];
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _tabController!.addListener(() {
         setState(() {});
       });
+      await fetchDonationStatistics();
+      await context.read<ProfilePageProvider>().checkApplicationStatus();
+      await showUpdateUserInformationDialog(context);
     });
-    fetchDonationStatistics();
     super.initState();
+  }
+
+  Future<void> showUpdateUserInformationDialog(context) async {
+    ScaffoldMessenger.of(context).clearMaterialBanners();
+    if (user.getDynamicProfileCompleteness() < 70) return;
+    int rand = Random().nextInt(100);
+    if (rand < 95) return;
+    ScaffoldMessenger.of(context).showMaterialBanner(
+      MaterialBanner(
+        elevation: 0,
+        leading: InkWell(
+          onTap: () {
+            ScaffoldMessenger.of(context).clearMaterialBanners();
+          },
+          child: const Padding(
+            padding: EdgeInsets.all(2.0),
+            child: Icon(
+              Icons.close,
+            ),
+          ),
+        ),
+        content:
+            AutoSizeText("${"profile_doluluk".locale}${user.getDynamicProfileCompleteness().toString()}%", maxLines: 2),
+        actions: [
+          TextButton(
+            child: LocaleText("profile_page_update_info"),
+            onPressed: () async {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                ScaffoldMessenger.of(context).clearMaterialBanners();
+                tabcontroller.jumpToTab(4);
+                showBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return BottomSheetWidget(
+                      isMinPadding: true,
+                      title: "profile_page_update_info".locale,
+                      child: const UserInformationForm(),
+                    );
+                  },
+                );
+              });
+            },
+          ),
+        ],
+      ),
+    );
+    // showCupertinoModalPopup(
+    //   context: context,
+    //   builder: (context) => BottomSheetWidget(
+    //     title: "title",
+    //     child: SizedBox(height: Get.height / 3, child: Text(user.getDynamicProfileCompleteness().toString())),
+    //     isMinPadding: true,
+    //   ),
+    // );
   }
 
   double totalDonationAmount = 0.0;
@@ -84,6 +145,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     user = context.watch<ProfilePageProvider>().user;
+    appealStatuses = context.watch<ProfilePageProvider>().appealStatusList;
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
@@ -100,7 +162,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 size: deviceFontSize(context, 30),
               ),
             ),
-            title: "profile_page_title".locale,
+            // title: "profile_page_title".locale,
           ),
           Container(
             padding: EdgeInsets.only(
@@ -143,7 +205,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
           Expanded(
             child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   children: [
                     _tabView(context),
@@ -240,7 +302,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => BottomSheetWidget(title: "profile_page_add_photo".locale, child: AddPhotoForm()),
+                builder: (context) => BottomSheetWidget(title: "profile_page_add_photo".locale, child: const AddPhotoForm()),
               );
             },
             child: Container(
@@ -280,6 +342,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _tabView(BuildContext context) {
+    bool appealAvailable = appealStatuses
+        .where((element) => element.appealStatus != null && element.appealStatus!.contains("active"))
+        .isEmpty;
     List<Map<String, dynamic>> statics = [
       {
         "icon": Icons.money_outlined,
@@ -364,19 +429,19 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               Tab(
                 child: Text(
                   "profile_page_personal_info".locale,
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ),
               Tab(
                 child: Text(
                   "profile_page_volunteer".locale,
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ),
               Tab(
                 child: Text(
                   "profile_page_statistics".locale,
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ),
             ],
@@ -407,7 +472,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           future: context.read<STKProvider>().getFavoriteSTKs(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
+              return const CircularProgressIndicator();
             } else if (snapshot.hasError) {
               return Center(child: Text('profile_page_error_occurred'.locale));
             } else if (snapshot.hasData) {
@@ -433,37 +498,100 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             horizontal: deviceWidthSize(context, 20),
           ),
           child: GeneralButtonWidget(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) => BottomSheetWidget(
-                    title: "profile_page_stk_application_form".locale,
-                    isMinPadding: true,
-                    child: STKFormWidget(),
-                  ),
-                );
-              },
-              text: "profile_page_stk_application_form_button".locale),
+            isLoading: context.watch<ProfilePageProvider>().appealloadingState == LoadingState.loading,
+            onPressed: appealAvailable
+                ? () async {
+                    //STK başvuru butonu
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) => BottomSheetWidget(
+                        title: "profile_page_stk_application_form".locale,
+                        isMinPadding: true,
+                        child: const STKFormWidget(),
+                      ),
+                    ).then(
+                      (value) async {
+                        await context.read<ProfilePageProvider>().checkApplicationStatus();
+                      },
+                    );
+                  }
+                : null,
+            text: appealAvailable
+                ? "profile_page_stk_application_form_button".locale
+                : "profile_page_stk_application_form_button_disabled".locale,
+          ),
         ),
         Container(
-          margin: const EdgeInsets.only(bottom: 150),
+          margin: const EdgeInsets.only(bottom: 15),
           padding: EdgeInsets.symmetric(
             horizontal: deviceWidthSize(context, 20),
           ),
           child: GeneralButtonWidget(
-              onPressed: () {
-                showModalBottomSheet(
+              onPressed: () async {
+                await showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   builder: (context) => BottomSheetWidget(
                     title: "profile_page_brand_application_form_button".locale,
                     isMinPadding: true,
-                    child: BrandFormWidget(),
+                    child: const BrandFormWidget(),
                   ),
+                ).then(
+                  (value) async {
+                    await context.read<ProfilePageProvider>().checkApplicationStatus();
+                  },
                 );
               },
               text: "profile_page_brand_application_form_button".locale),
+        ),
+        Container(
+          margin: const EdgeInsets.only(bottom: 15),
+          padding: EdgeInsets.symmetric(
+            horizontal: deviceWidthSize(context, 20),
+          ),
+          child: Column(
+            children: [
+              Container(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "profile_page_appeal_status".locale,
+                  style: AppTheme.boldTextStyle(context, 16),
+                ),
+              ),
+              SizedBox(
+                width: deviceWidth(context),
+                height: deviceHeightSize(context, 200),
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: appealStatuses.isEmpty ? 1 : appealStatuses.length,
+                  itemBuilder: (context, index) {
+                    if (appealStatuses.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        // Localization ekle->
+                        child: Text("Henüz başvurunuz yok!"),
+                      );
+                    }
+                    return ListTile(
+                      titleTextStyle: AppTheme.lightTextStyle(context, 14),
+                      shape: const StadiumBorder(),
+                      leading: const Icon(Icons.people_alt),
+                      title: Text((appealStatuses[index].appealName != null
+                          ? appealStatuses[index].appealName! +
+                              " (${appealStatuses[index].appealStatus == 'active' ? 'Aktif' : appealStatuses[index].appealStatus == 'passive' ? 'Pasif' : appealStatuses[index].appealStatus ?? '---'})"
+                          : "---")),
+                      subtitle: Text(appealStatuses[index].appealTime != null
+                          ? "${appealStatuses[index].appealTime!.day}.${appealStatuses[index].appealTime!.month}.${appealStatuses[index].appealTime!.year}"
+                          : "---"),
+                      trailing: const Icon(Icons.arrow_circle_right_outlined),
+                      onTap: () {},
+                    );
+                  },
+                ),
+              )
+            ],
+          ),
         ),
       ],
     );
@@ -616,15 +744,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       isScrollControlled: true,
                       builder: (context) {
                         return BottomSheetWidget(
-                            isMinPadding: true, title: "profile_page_update_info".locale, child: UserInformationForm());
+                            isMinPadding: true, title: "profile_page_update_info".locale, child: const UserInformationForm());
                       });
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor.withOpacity(0.1),
                   ),
-                  margin: EdgeInsets.only(left: 20),
+                  margin: const EdgeInsets.only(left: 20),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -632,13 +760,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     children: [
                       Text(
                         "profile_page_update_info".locale,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.primaryColor,
                         ),
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppTheme.primaryColor,
                           shape: BoxShape.circle,
                         ),
@@ -653,7 +781,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   ),
                 ),
               )
-            : SizedBox(),
+            : const SizedBox(),
       ],
     );
   }
@@ -736,6 +864,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       paddingHorizontal: deviceWidthSize(context, 8),
       paddingVertical: deviceHeightSize(context, 8),
       nullFontSize: 12,
+      isActive: stk.isActive,
       onTap: () {
         Navigator.push(
           context,

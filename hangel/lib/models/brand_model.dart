@@ -28,7 +28,7 @@ class BrandModel {
       this.detailText,
       this.link,
       this.categories,
-      this.favoriteCount = 157,
+      this.favoriteCount = 0,
       this.totalDonation,
       this.processCount});
 
@@ -48,7 +48,7 @@ class BrandModel {
         categories: json['categories'] != null
             ? (json['categories'] as List).map((e) => CategoryModel.fromJson(e)).toList()
             : null,
-        favoriteCount: json['favoriteCount'] ?? 157,
+        favoriteCount: json['favoriteCount'] ?? 0,
         totalDonation: json['totalDonation'],
         processCount: json['processCount']);
   }

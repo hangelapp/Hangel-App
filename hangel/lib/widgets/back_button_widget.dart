@@ -3,8 +3,7 @@ import '../constants/app_theme.dart';
 import '../constants/size.dart';
 
 class BackButtonWidget extends StatelessWidget {
-  const BackButtonWidget({Key? key, this.color = AppTheme.secondaryColor})
-      : super(key: key);
+  const BackButtonWidget({super.key, this.color = AppTheme.secondaryColor});
   final Color color;
   @override
   Widget build(BuildContext context) {

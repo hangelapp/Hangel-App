@@ -6,9 +6,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
-import 'package:hangel/helpers/date_format_helper.dart';
-import 'package:hangel/helpers/hive_helpers.dart';
-import 'package:hangel/helpers/url_launcher_helper.dart';
 import 'package:hangel/models/brand_form_model.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
@@ -26,7 +23,7 @@ import '../models/brand_model.dart';
 import '../providers/login_register_page_provider.dart';
 
 class BrandFormWidget extends StatefulWidget {
-  const BrandFormWidget({Key? key}) : super(key: key);
+  const BrandFormWidget({super.key});
 
   @override
   State<BrandFormWidget> createState() => _BrandFormWidgetState();
@@ -733,6 +730,206 @@ class _BrandFormWidgetState extends State<BrandFormWidget> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  final List<String> _sectors = [
+    "brand_form_page_sektor_tarim".locale,
+    "brand_form_page_sektor_ormancilik".locale,
+    "brand_form_page_sektor_balikcilik".locale,
+    "brand_form_page_sektor_kumur".locale,
+    "brand_form_page_sektor_petroil".locale,
+    "brand_form_page_sektor_gida".locale,
+    "brand_form_page_sektor_tekstil".locale,
+    "brand_form_page_sektor_mobilya".locale,
+    "brand_form_page_sektor_kagit".locale,
+    "brand_form_page_sektor_kimya".locale,
+    "brand_form_page_sektor_tas".locale,
+    "brand_form_page_sektor_ana_metal".locale,
+    "brand_form_page_sektor_makine".locale,
+    "brand_form_page_sektor_diger_imalat".locale,
+    "brand_form_page_sektor_elektrik".locale,
+    "brand_form_page_sektor_insaat".locale,
+    "brand_form_page_sektor_ticaret_toptan".locale,
+    "brand_form_page_sektor_perakende".locale,
+    "brand_form_page_sektor_ulastirma".locale,
+    "brand_form_page_sektor_finansman".locale,
+    "brand_form_page_sektor_varlik_yonetim".locale,
+    "brand_form_page_sektor_bankalar".locale,
+    "brand_form_page_sektor_sigorta".locale,
+    "brand_form_page_sektor_faktoring".locale,
+    "brand_form_page_sektor_holding".locale,
+    "brand_form_page_sektor_diger_mali".locale,
+    "brand_form_page_sektor_aracilar".locale,
+    "brand_form_page_sektor_gayrimenkul".locale,
+    "brand_form_page_sektor_menkul_kıymet".locale,
+    "brand_form_page_sektor_girisim_sermayesi".locale,
+    "brand_form_page_sektor_spor".locale,
+    "brand_form_page_sektor_insan_sagligi".locale,
+    "brand_form_page_sektor_yaratici_sanatlar".locale,
+    "brand_form_page_sektor_bilisim".locale,
+    "brand_form_page_sektor_savunma".locale,
+    "brand_form_page_sektor_hukuk".locale,
+    "brand_form_page_sektor_mimarlik".locale,
+    "brand_form_page_sektor_bilimsel".locale,
+    "brand_form_page_sektor_reklamcilik".locale,
+    "brand_form_page_sektor_veterinerlik".locale,
+    "brand_form_page_sektor_kiralama".locale,
+    "brand_form_page_sektor_istihdam".locale,
+    "brand_form_page_sektor_seyahat".locale,
+    "brand_form_page_sektor_guvenlik".locale,
+    "brand_form_page_sektor_binalar".locale,
+    "brand_form_page_sektor_buro".locale,
+    "brand_form_page_sektor_gayrimenkul_faaliyetleri".locale,
+    "brand_form_page_sektor_konaklama".locale,
+    "brand_form_page_sektor_yeme_icme".locale,
+    "brand_form_page_sektor_mimar".locale,
+    "brand_form_page_sektor_beyaz_esya".locale,
+    "brand_form_page_sektor_elektrikli_ev_aletleri".locale,
+    "brand_form_page_sektor_kisisel_bakim".locale,
+    "brand_form_page_sektor_ev_ve_yasam".locale,
+    "brand_form_page_sektor_muzik_enstruman".locale,
+    "brand_form_page_sektor_telefon".locale,
+    "brand_form_page_sektor_televizyon".locale,
+    "brand_form_page_sektor_bilgisayar".locale,
+    "brand_form_page_sektor_konsol".locale,
+    "brand_form_page_sektor_kamera".locale,
+    "brand_form_page_sektor_ofis_malzemeleri".locale,
+    "brand_form_page_sektor_spor_outdoor".locale,
+    "brand_form_page_sektor_kitap".locale,
+    "brand_form_page_sektor_kirtasiye".locale,
+    "brand_form_page_sektor_5000_ustu".locale,
+    "brand_form_page_sektor_kampanyali_urunler".locale,
+  ];
+
+  final List<String> _categories = [
+    "brand_form_page_kategori_tekstil".locale,
+    "brand_form_page_kategori_saglik_gerecleri".locale,
+    "brand_form_page_kategori_saglik_hizmetleri".locale,
+    "brand_form_page_kategori_elektronik".locale,
+    "brand_form_page_kategori_yedek_parca".locale,
+    "brand_form_page_kategori_teknik_servis".locale,
+    "brand_form_page_kategori_danismanlik".locale,
+    "brand_form_page_kategori_gayrimenkul".locale,
+    "brand_form_page_kategori_aracilik".locale,
+    "brand_form_page_kategori_yazilim".locale,
+    "brand_form_page_kategori_insaat_malzemeleri".locale,
+    "brand_form_page_kategori_insaat_hizmetleri".locale,
+    "brand_form_page_kategori_lojistik".locale,
+    "brand_form_page_kategori_otomotiv".locale,
+    "brand_form_page_kategori_konaklama".locale,
+    "brand_form_page_kategori_yeme_icme".locale,
+    "brand_form_page_kategori_mimar".locale,
+    "brand_form_page_kategori_beyaz_esya".locale,
+    "brand_form_page_kategori_elektrikli_ev_aletleri".locale,
+    "brand_form_page_kategori_kisisel_bakim".locale,
+    "brand_form_page_kategori_ev_ve_yasam".locale,
+    "brand_form_page_kategori_muzik_enstruman".locale,
+    "brand_form_page_kategori_telefon".locale,
+    "brand_form_page_kategori_televizyon".locale,
+    "brand_form_page_kategori_bilgisayar".locale,
+    "brand_form_page_kategori_konsol".locale,
+    "brand_form_page_kategori_kamera".locale,
+    "brand_form_page_kategori_ofis_malzemeleri".locale,
+    "brand_form_page_kategori_spor_outdoor".locale,
+    "brand_form_page_kategori_kitap".locale,
+    "brand_form_page_kategori_kirtasiye".locale,
+    "brand_form_page_kategori_5000_ustu".locale,
+    "brand_form_page_kategori_kampanyali_urunler".locale,
+  ];
+
+  void showKosulDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            insetPadding:
+                EdgeInsets.symmetric(horizontal: deviceWidth(context) * 0.15, vertical: deviceHeight(context) * 0.2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "brand_form_page_sonraki_alisverisin".locale,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16.0),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSection(
+                              context, "brand_form_page_adblock".locale, "brand_form_page_adblock_content".locale),
+                          _buildSection(context, "brand_form_page_internet_tarayicisi".locale,
+                              "brand_form_page_internet_tarayicisi_content".locale),
+                          _buildSection(context, "brand_form_page_gizli_pencere".locale,
+                              "brand_form_page_gizli_pencere_content".locale),
+                          _buildSection(context, "brand_form_page_diger_programlar".locale,
+                              "brand_form_page_diger_programlar_content".locale),
+                          _buildSection(context, "brand_form_page_kupon_kodu".locale,
+                              "brand_form_page_kupon_kodu_content".locale),
+                          _buildSection(context, "brand_form_page_fiyat_karsilastirma".locale,
+                              "brand_form_page_fiyat_karsilastirma_content".locale),
+                          _buildSection(context, "brand_form_page_mobil_uygulama".locale,
+                              "brand_form_page_mobil_uygulama_content".locale),
+                          _buildSection(
+                              context, "brand_form_page_sepet".locale, "brand_form_page_sepet_content".locale),
+                          _buildSection(context, "brand_form_page_diger_para_iadesi".locale,
+                              "brand_form_page_diger_para_iadesi_content".locale),
+                          _buildSection(context, "brand_form_page_site_ziyaret".locale,
+                              "brand_form_page_site_ziyaret_content".locale),
+                          _buildSection(context, "brand_form_page_ortak_sirketler".locale,
+                              "brand_form_page_ortak_sirketler_content".locale),
+                          _buildSection(context, "brand_form_page_telefon_siparis".locale,
+                              "brand_form_page_telefon_siparis_content".locale),
+                          _buildSection(context, "brand_form_page_farkli_ulke".locale,
+                              "brand_form_page_farkli_ulke_content".locale),
+                          _buildSection(context, "brand_form_page_markanin_ozel_kosullari".locale,
+                              "brand_form_page_markanin_ozel_kosullari_content".locale),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16.0),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("brand_form_page_tamam".locale),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  Widget _buildSection(BuildContext context, String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppTheme.boldTextStyle(context, 14),
+          ),
+          const SizedBox(height: 8.0),
+          Text(
+            content,
+            style: AppTheme.normalTextStyle(context, 14),
+          ),
+        ],
       ),
     );
   }

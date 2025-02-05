@@ -4,10 +4,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart'; // Localization için gerekli
-import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/models/image_model.dart';
 import 'package:hangel/models/stk_form_model.dart';
 import 'package:hangel/providers/stk_provider.dart';
@@ -26,7 +26,7 @@ import 'package:provider/provider.dart';
 import '../providers/login_register_page_provider.dart';
 
 class STKFormWidget extends StatefulWidget {
-  const STKFormWidget({Key? key}) : super(key: key);
+  const STKFormWidget({super.key});
 
   @override
   State<STKFormWidget> createState() => _STKFormWidgetState();
@@ -38,6 +38,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
   // Controllers for form fields
   final TextEditingController _stkNameController = TextEditingController();
   final TextEditingController _stkFullNameController = TextEditingController();
+  final TextEditingController _stkDescriptionController = TextEditingController();
   final TextEditingController _stkIDNoController = TextEditingController();
   final TextEditingController _stkVergiNoController = TextEditingController();
   final TextEditingController _stkVergiDairesiController = TextEditingController();
@@ -68,8 +69,8 @@ class _STKFormWidgetState extends State<STKFormWidget> {
   PlatformFile? _valilikIzinBelgesi;
   PlatformFile? _stkIlMudurluguYetkiBelgesi;
 
-  List<String> _selectedCategories = [];
-  List<String> _selectedBeneficiaries = [];
+  final List<String> _selectedCategories = [];
+  final List<String> _selectedBeneficiaries = [];
   int _selectedSectorIndex = -1;
   List<String> selectedBMs = [];
   int _selectedTypeIndex = -1;
@@ -98,6 +99,11 @@ class _STKFormWidgetState extends State<STKFormWidget> {
       r'(\:[0-9]{1,5})?' // port
       r'(\/[^\s]*)?$' // path
       );
+
+  final _idNoFormatter = MaskTextInputFormatter(
+    mask: '##-###-##',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
 
   @override
   void initState() {
@@ -141,6 +147,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
     _stkIzninAmaciController.dispose();
     _contactPersonRelationController.dispose();
     super.dispose();
+    context.read<STKProvider>().loadingState = LoadingState.loaded;
   }
 
   @override
@@ -167,7 +174,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                 title: "stk_form_type".locale,
                 isRequired: true,
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Conditional Fields Based on Type
               if (_selectedTypeIndex != -1 &&
@@ -178,10 +185,14 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   controller: _stkIDNoController,
                   title: _getIDNoTitle().locale,
                   isRequired: true,
+                  hintText: "11-222-33",
                   keyboardType: TextInputType.number,
-                  inputFormatters: [numberFormatter],
+                  inputFormatters: [_idNoFormatter],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_id_no'.locale;
+                    }
+                    if (!_idNoFormatter.isFill()) {
                       return 'stk_form_invalid_id_no'.locale;
                     }
                     return null;
@@ -237,6 +248,21 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'stk_form_invalid_full_name'.locale;
+                    }
+                    return null;
+                  },
+                ),
+                // Hakkında
+                FormFieldWidget(
+                  context,
+                  controller: _stkDescriptionController,
+                  title: "stk_form_description".locale,
+                  maxLines: 3,
+                  minLines: 3,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_description'.locale;
                     }
                     return null;
                   },
@@ -300,7 +326,8 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   title: "stk_form_website".locale,
                   isRequired: false,
                   validator: (value) {
-                    if (value == null || value.isEmpty || !urlRegex.hasMatch(value)) {
+                    if (value == null || value.isEmpty) return null;
+                    if (!urlRegex.hasMatch(value)) {
                       return 'stk_form_invalid_website'.locale;
                     }
                     return null;
@@ -504,7 +531,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   isNumbered: true,
                   selectedIndex: -1,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // Başvuruyu Yapan Kişinin Bilgileri
                 Align(
                   alignment: Alignment.centerLeft,
@@ -657,9 +684,13 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   title: "stk_form_activity_number".locale,
                   isRequired: true,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [numberFormatter],
+                  hintText: "11-222-33",
+                  inputFormatters: [_idNoFormatter],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_activity_number'.locale;
+                    }
+                    if (!_idNoFormatter.isFill()) {
                       return 'stk_form_invalid_activity_number'.locale;
                     }
                     return null;
@@ -737,7 +768,8 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   title: "stk_form_website".locale,
                   isRequired: false,
                   validator: (value) {
-                    if (value == null || value.isEmpty || !urlRegex.hasMatch(value)) {
+                    if (value == null || value.isEmpty) return null;
+                    if (!urlRegex.hasMatch(value)) {
                       return 'stk_form_invalid_website'.locale;
                     }
                     return null;
@@ -833,6 +865,21 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                     return null;
                   },
                 ),
+                // Hakkında
+                FormFieldWidget(
+                  context,
+                  controller: _stkDescriptionController,
+                  title: "stk_form_description".locale,
+                  maxLines: 3,
+                  minLines: 3,
+                  isRequired: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'stk_form_invalid_description'.locale;
+                    }
+                    return null;
+                  },
+                ),
                 // Faydalanıcılar (Kategoriler yerine)
                 DropdownSelectWidget(
                   context,
@@ -876,7 +923,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   isNumbered: true,
                   selectedIndex: -1,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // Başvuruyu Yapan Kişinin Bilgileri
                 Align(
                   alignment: Alignment.centerLeft,
@@ -984,7 +1031,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      locale: Locale('tr'), // Dil ayarı
+      locale: const Locale('tr'), // Dil ayarı
     );
 
     if (pickedDate != null) {
@@ -997,9 +1044,15 @@ class _STKFormWidgetState extends State<STKFormWidget> {
   // Submit form
   // Submit form
   void _submitForm() async {
+    if (context.read<STKProvider>().sendFormState == LoadingState.loading) return;
+    if (_formKey.currentState == null) return;
+    if (_logoImage.isEmpty) {
+      Get.snackbar("Eksik Veri", "Logo resmi secilmedi.");
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       // Seçilen türün anahtarını alıyoruz
-      String selectedTypeKey = _types[_selectedTypeIndex]['key']!;
+      String selectedTypeKey = _types[_selectedTypeIndex]['label']!;
 
       // Başvuruyu yapan kişinin bilgileri
       String applicantName = _contactPersonNameController.text;
@@ -1017,7 +1070,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
       String district = selectedIlce ?? '';
       String neighborhood = selectedMahalle ?? '';
       String address = _stkAddressController.text;
-
+      String description = _stkDescriptionController.text;
       // Faydalanıcılar ve BM amaçları
       List<String> beneficiaries = _selectedBeneficiaries.map((e) {
         int index = _beneficiaries.indexWhere((element) => element['label'] == e);
@@ -1039,9 +1092,18 @@ class _STKFormWidgetState extends State<STKFormWidget> {
         city: city,
         district: district,
         neighborhood: neighborhood,
+        description: description,
         address: address,
-        beneficiaries: beneficiaries.map((e) => e.locale,).toList(),
-        unSdgs: unSdgs.map((e) => e.locale,).toList(),
+        beneficiaries: beneficiaries
+            .map(
+              (e) => e.locale,
+            )
+            .toList(),
+        unSdgs: unSdgs
+            .map(
+              (e) => e.locale,
+            )
+            .toList(),
         applicantName: applicantName,
         applicantPhone: applicantPhone,
         applicantEmail: applicantEmail,
@@ -1058,7 +1120,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
         stkFormModel.shortName = _stkNameController.text;
         stkFormModel.fullName = _stkFullNameController.text;
         stkFormModel.establishmentYear = _stkKurulusYiliController.text;
-        stkFormModel.activityArea = _sectors[_selectedSectorIndex]['key'];
+        stkFormModel.activityArea = _sectors[_selectedSectorIndex]['label'];
       } else {
         // Özel izin ile yardım toplayan için alanlar
         stkFormModel.permissionStartDate = _stkIzinBaslamaController.text;
@@ -1167,6 +1229,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
     {"key": "stk_form_beneficiaries_entrepreneurship", "label": "stk_form_beneficiaries_entrepreneurship".locale},
     {"key": "stk_form_beneficiaries_culture_art", "label": "stk_form_beneficiaries_culture_art".locale},
     {"key": "stk_form_beneficiaries_sports", "label": "stk_form_beneficiaries_sports".locale},
+    {"key": "stk_form_beneficiaries_nature", "label": "stk_form_beneficiaries_nature".locale},
   ];
 
   // BM Sürdürülebilir Kalkınma Amaçları listesi güncellendi

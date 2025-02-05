@@ -1,3 +1,5 @@
+// stk_page.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_pagination/firebase_pagination.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +11,12 @@ import 'package:hangel/providers/stk_provider.dart';
 import 'package:hangel/views/stk_detail_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
-import 'package:hangel/widgets/search_widget.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/stk_search_widget.dart';
+
 class STKPage extends StatefulWidget {
-  const STKPage({Key? key}) : super(key: key);
+  const STKPage({super.key});
   static const routeName = '/STK';
   @override
   State<STKPage> createState() => _STKPageState();
@@ -22,10 +25,12 @@ class STKPage extends StatefulWidget {
 class _STKPageState extends State<STKPage> {
   final TextEditingController _searchController = TextEditingController();
   bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      drawer: const Drawer(), // Add this line if you have a drawer
       body: DefaultTabController(
         length: 4,
         child: Column(
@@ -43,11 +48,8 @@ class _STKPageState extends State<STKPage> {
               ),
             ),
             SizedBox(height: deviceTopPadding(context)),
-            SearchWidget(
-              context,
-              onChanged: (value) {
-                context.read<STKProvider>().searchText = value;
-              },
+            // Replace SearchWidget with STKSearchWidget
+            STKSearchWidget(
               controller: _searchController,
             ),
             SizedBox(
@@ -93,7 +95,7 @@ class _STKPageState extends State<STKPage> {
                       SizedBox(
                         height: deviceHeightSize(context, 10),
                       ),
-                      //filter and sort
+                      // Filter and sort
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -111,66 +113,33 @@ class _STKPageState extends State<STKPage> {
                       ),
                       Expanded(
                         child: isLoading
-                            ? Center(child: CircularProgressIndicator())
+                            ? const Center(child: CircularProgressIndicator())
                             : FirestorePagination(
                                 padding: EdgeInsets.zero,
                                 limit: 5,
-                                initialLoader: Center(child: CircularProgressIndicator()),
-                                bottomLoader: LinearProgressIndicator(),
-                                query: tabIndex == 0
-                                    ? context.read<STKProvider>().filterText == ""
-                                        ? FirebaseFirestore.instance
-                                            .collection('stklar')
-                                            .where('isActive', isEqualTo: true)
-                                            .orderBy(
-                                              context.read<STKProvider>().sortText == ""
-                                                  ? "favoriteCount"
-                                                  : context.read<STKProvider>().sortText,
-                                            )
-                                        : FirebaseFirestore.instance
-                                            .collection('stklar')
-                                            .where('isActive', isEqualTo: true)
-                                            .where("categories",
-                                                arrayContainsAny: [context.read<STKProvider>().filterText]).orderBy(
-                                            context.read<STKProvider>().sortText == ""
-                                                ? "favoriteCount"
-                                                : context.read<STKProvider>().sortText,
-                                          )
-                                    : context.read<STKProvider>().filterText == ""
-                                        ? FirebaseFirestore.instance
-                                            .collection('stklar')
-                                            .where('isActive', isEqualTo: true)
-                                            .where('type', isEqualTo: _types[tabIndex]) // Apply tab filter
-                                            .orderBy(context.read<STKProvider>().sortText == ""
-                                                ? "favoriteCount"
-                                                : context.read<STKProvider>().sortText)
-                                        : FirebaseFirestore.instance
-                                            .collection('stklar')
-                                            .where('isActive', isEqualTo: true)
-                                            .where('type', isEqualTo: _types[tabIndex]) // Apply tab filter
-                                            .where("categories",
-                                                arrayContainsAny: [context.read<STKProvider>().filterText]).orderBy(
-                                            context.read<STKProvider>().sortText == ""
-                                                ? "favoriteCount"
-                                                : context.read<STKProvider>().sortText,
-                                          ),
+                                initialLoader: const Center(child: CircularProgressIndicator()),
+                                bottomLoader: const LinearProgressIndicator(),
+                                isLive: true,
+                                query: _buildQuery(context, tabIndex),
                                 itemBuilder: (context, docs, index) {
                                   final stk = StkModel.fromJson(docs[index].data() as Map<String, dynamic>);
-                                  return ListItemWidget(context,
-                                      logo: stk.logo,
-                                      title: stk.name.toString(),
-                                      sector: stk.categories.first,
-                                      desc: stk.detailText, onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => STKDetailPage(
-                                          stkModel: stk,
+                                  return ListItemWidget(
+                                    context,
+                                    logo: stk.logo,
+                                    title: stk.name.toString(),
+                                    sector: stk.categories.isNotEmpty ? stk.categories.first : "",
+                                    desc: stk.detailText,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => STKDetailPage(
+                                            stkModel: stk,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  });
-                                  // Do something cool with the data
+                                      );
+                                    },
+                                  );
                                 },
                               ),
                       ),
@@ -183,6 +152,26 @@ class _STKPageState extends State<STKPage> {
         ),
       ),
     );
+  }
+
+  Query _buildQuery(BuildContext context, int tabIndex) {
+    var baseQuery = FirebaseFirestore.instance.collection('stklar').where('isActive', isEqualTo: true);
+
+    if (_types[tabIndex] != "") {
+      baseQuery = baseQuery.where('type', isEqualTo: _types[tabIndex]);
+    }
+
+    if (context.read<STKProvider>().filterText != "") {
+      baseQuery = baseQuery.where("categories", arrayContainsAny: [context.read<STKProvider>().filterText]);
+    }
+
+    if (context.read<STKProvider>().sortText != "") {
+      baseQuery = baseQuery.orderBy(context.read<STKProvider>().sortText);
+    } else {
+      baseQuery = baseQuery.orderBy("favoriteCount");
+    }
+
+    return baseQuery;
   }
 
   final List<String> _types = [
@@ -274,12 +263,11 @@ class _STKPageState extends State<STKPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Durations.short1);
+              await Future.delayed(const Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });
               context.read<STKProvider>().sortText = value;
-              print(value);
             },
             child: Icon(
               Icons.sort_rounded,
@@ -311,7 +299,7 @@ class _STKPageState extends State<STKPage> {
               setState(() {
                 isLoading = true;
               });
-              await Future.delayed(Durations.short1);
+              await Future.delayed(const Duration(milliseconds: 500));
               setState(() {
                 isLoading = false;
               });

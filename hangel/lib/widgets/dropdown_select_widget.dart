@@ -12,11 +12,10 @@ class DropdownSelectWidget extends StatelessWidget {
       this.hintText = "Seçiniz",
       this.color = const Color(0xFFFFFFFF),
       this.isBold = false,
-      Key? key,
+      super.key,
       required this.selectedItems,
       this.onRemove,
-      this.isNumbered})
-      : super(key: key);
+      this.isNumbered});
   final List<String>? titles;
   final String? title;
   final int selectedIndex;

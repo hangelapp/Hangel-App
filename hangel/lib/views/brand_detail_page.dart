@@ -8,9 +8,7 @@ import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/url_launcher_helper.dart';
 import 'package:hangel/models/brand_info_model.dart';
 import 'package:hangel/models/brand_model.dart';
-import 'package:hangel/models/stk_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
-import 'package:hangel/providers/stk_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/app_bar_widget.dart';
 import '../widgets/app_name_widget.dart';
@@ -20,7 +18,7 @@ import '../widgets/locale_text.dart'; // Assuming LocaleText widget is defined h
 import 'utilities.dart';
 
 class BrandDetailPage extends StatefulWidget {
-  const BrandDetailPage({Key? key, required this.brandModel}) : super(key: key);
+  const BrandDetailPage({super.key, required this.brandModel});
   final BrandModel brandModel;
 
   @override
@@ -38,7 +36,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
     _tabController!.addListener(() {
       setState(() {});
     });
-    Future.delayed(Duration(milliseconds: 100), () async {
+    Future.delayed(const Duration(milliseconds: 100), () async {
       await context.read<BrandProvider>().getBrandInfo(widget.brandModel.id ?? "").then(
         (value) {
           if (!mounted) return;
@@ -220,7 +218,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Icon(Icons.info_outline),
-                            SizedBox(
+                            const SizedBox(
                               width: 10,
                             ),
                             Align(
@@ -237,13 +235,13 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             ),
                           ],
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Icon(Icons.info_outline),
-                            SizedBox(
+                            const SizedBox(
                               width: 10,
                             ),
                             Align(
@@ -258,19 +256,19 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             ),
                           ],
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const Icon(Icons.info_outline),
-                            SizedBox(
+                            const SizedBox(
                               width: 10,
                             ),
                             Align(
                               alignment: Alignment.topLeft,
                               child: TextButton(
-                                style: ButtonStyle(padding: MaterialStateProperty.all(EdgeInsets.zero)),
+                                style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
                                 child: Text(
                                   "brand_detail_page_genel_bonus_kosullari".locale,
                                   style: AppTheme.semiBoldTextStyleWithUnderline(context, 14, color: AppTheme.black),
@@ -365,13 +363,13 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                         setState(() {
                           linkButtonLoading = true;
                         });
-                        String aff_sub = HiveHelpers.getUid();
-                        String aff_sub2 = generateShortHash();
+                        String affSub = HiveHelpers.getUid();
+                        String affSub2 = generateShortHash();
 
-                        print("TRACKING LINK\n${widget.brandModel.link}&aff_sub=$aff_sub&aff_sub2=$aff_sub2");
+                        print("TRACKING LINK\n${widget.brandModel.link}&aff_sub=$affSub&aff_sub2=$affSub2");
                         await FirebaseFirestore.instance.collection("clicks").add({
-                          "aff_sub": aff_sub,
-                          "aff_sub2": aff_sub2,
+                          "aff_sub": affSub,
+                          "aff_sub2": affSub2,
                           "time": Timestamp.now(),
                           "link": widget.brandModel.link,
                           "offer_id": widget.brandModel.id,
@@ -384,8 +382,9 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                             });
                           },
                         );
+                        print(widget.brandModel.link);
                         UrlLauncherHelper()
-                            .launch("${widget.brandModel.link}&aff_sub=$aff_sub&aff_sub2=$aff_sub2")
+                            .launch("${widget.brandModel.link}&aff_sub=$affSub&aff_sub2=$affSub2")
                             .whenComplete(
                               () => Navigator.pop(context),
                             );
@@ -423,7 +422,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
               children: [
                 Text(
                   "brand_detail_page_sonraki_alisveris_kosullari_title".locale,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16.0),
                 Expanded(
@@ -624,7 +623,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
       },
       {
         "title": "brand_detail_page_islem_sayisi".locale,
-        "value": "${brandInfo?.processCount?.toStringAsFixed(0) ?? "0"}",
+        "value": brandInfo?.processCount?.toStringAsFixed(0) ?? "0",
       },
     ];
     List<Map<String, dynamic>> categories = [
@@ -661,7 +660,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
             horizontal: deviceWidthSize(context, 10),
           ),
           dividerColor: Colors.transparent,
-          overlayColor: MaterialStateProperty.all(Colors.transparent),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
           tabs: [
             Tab(
               child: LocaleText(

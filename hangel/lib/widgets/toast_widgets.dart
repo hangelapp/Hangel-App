@@ -10,9 +10,9 @@ class ToastWidgets {
       {ToastGravity gravity = ToastGravity.TOP,
       int millisecondsDuration = 2000}) {
     print("toast : $text");
-    FToast _fToast = FToast();
-    _fToast.init(context);
-    _fToast.showToast(
+    FToast fToast = FToast();
+    fToast.init(context);
+    fToast.showToast(
         gravity: gravity,
         toastDuration: Duration(milliseconds: millisecondsDuration),
         child: Container(

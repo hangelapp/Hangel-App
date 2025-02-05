@@ -12,7 +12,7 @@ enum FormType { add, edit }
 class PickFileWidget extends StatefulWidget {
   const PickFileWidget(
     BuildContext context, {
-    Key? key,
+    super.key,
     required this.title,
     required this.onFilePicked,
     required this.onFileRemoved,
@@ -21,7 +21,7 @@ class PickFileWidget extends StatefulWidget {
     this.selectedFile,
     this.fileURL = "",
     this.infoText = "",
-  }) : super(key: key);
+  });
   final String title;
   final Function onFilePicked;
   final Function onFileRemoved;
@@ -73,7 +73,7 @@ class _PickFileWidgetState extends State<PickFileWidget> {
             decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [BoxShadow(color: Colors.black87, offset: Offset(1, 1), blurRadius: 1)]
+                boxShadow: const [BoxShadow(color: Colors.black87, offset: Offset(1, 1), blurRadius: 1)]
                 // border: Border.all(
                 //   color: AppTheme.darkBlue.withOpacity(0.3),
                 // ),

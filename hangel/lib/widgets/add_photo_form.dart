@@ -11,7 +11,7 @@ import 'general_button_widget.dart';
 import 'toast_widgets.dart';
 
 class AddPhotoForm extends StatefulWidget {
-  const AddPhotoForm({Key? key}) : super(key: key);
+  const AddPhotoForm({super.key});
 
   @override
   State<AddPhotoForm> createState() => _AddPhotoFormState();
@@ -30,7 +30,7 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
           Container(
             width: 200,
             height: 200,
-            margin: EdgeInsets.only(bottom: 20),
+            margin: const EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               // border: Border.all(color: Colors.blue, width: 5),
@@ -52,7 +52,7 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
                 ),
               ),
             ),
-            SizedBox(width: 20),
+            const SizedBox(width: 20),
             Expanded(
               child: GestureDetector(
                 onTap: () => _pickImage(ImageSource.gallery),
@@ -65,7 +65,7 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
             ),
           ],
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         GeneralButtonWidget(
           onPressed: () {
             if (_image != null) {
@@ -81,7 +81,7 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
           buttonColor: _image == null ? Colors.grey.withOpacity(0.4) : Colors.blue,
           text: "Kaydet",
         ),
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
       ],
     );
   }
@@ -98,12 +98,12 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Uyarı'),
-            content: Text('Resim boyutu 3MB\'dan büyük. Lütfen daha küçük bir resim seçin.'),
+            title: const Text('Uyarı'),
+            content: const Text('Resim boyutu 3MB\'dan büyük. Lütfen daha küçük bir resim seçin.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Tamam'),
+                child: const Text('Tamam'),
               ),
             ],
           ),
@@ -113,7 +113,7 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
 
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
-        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Resmi Kırp',
@@ -157,7 +157,7 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
 
   Widget _buildOptionButton(BuildContext context, {required IconData icon, required String text}) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.blue.withOpacity(0.1),
         borderRadius: BorderRadius.circular(13),
@@ -165,11 +165,11 @@ class _AddPhotoFormState extends State<AddPhotoForm> {
       child: Column(
         children: [
           Icon(icon, size: 50, color: Colors.blue),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ],
       ),

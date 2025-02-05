@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/widgets/locale_text.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/app_theme.dart';
 import '../constants/size.dart';
 import 'select_favorite_stk_page.dart';
@@ -147,28 +148,28 @@ Widget nullStkWidget(context) {
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppTheme.primaryColor.withOpacity(0.05)),
     width: deviceWidth(context) * 0.9,
     child: Padding(
-      padding: EdgeInsets.all(15),
+      padding: const EdgeInsets.all(15),
       child: Column(
         children: [
-          Icon(Icons.now_widgets_outlined, size: 30),
+          const Icon(Icons.now_widgets_outlined, size: 30),
           LocaleText("stk_eklemediniz"),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => SelectFavoriteStkPage(
+                      builder: (context) => const SelectFavoriteStkPage(
                             inTree: true,
                           )));
             },
-            style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(const Color(0xFF2B2D42)),
+            style: const ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Color(0xFF2B2D42)),
                 shadowColor: WidgetStatePropertyAll(Colors.transparent)),
-            label: Text(
+            label: const Text(
               "STK SEÇ",
               style: TextStyle(color: Colors.white),
             ),
-            icon: Icon(Icons.keyboard_double_arrow_right_rounded, color: Colors.white),
+            icon: const Icon(Icons.keyboard_double_arrow_right_rounded, color: Colors.white),
             iconAlignment: IconAlignment.end,
           )
         ],
@@ -182,23 +183,23 @@ Widget nullBrandWidget(context) {
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppTheme.primaryColor.withOpacity(0.05)),
     width: deviceWidth(context) * 0.9,
     child: Padding(
-      padding: EdgeInsets.all(15),
+      padding: const EdgeInsets.all(15),
       child: Column(
         children: [
-          Icon(Icons.now_widgets_outlined, size: 30),
+          const Icon(Icons.now_widgets_outlined, size: 30),
           LocaleText("marka_favorilemediniz"),
           ElevatedButton.icon(
             onPressed: () {
               tabcontroller.jumpToTab(0);
             },
-            style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(const Color(0xFF2B2D42)),
+            style: const ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Color(0xFF2B2D42)),
                 shadowColor: WidgetStatePropertyAll(Colors.transparent)),
             label: LocaleText(
               "marka_gozat",
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
-            icon: Icon(Icons.keyboard_double_arrow_right_rounded, color: Colors.white),
+            icon: const Icon(Icons.keyboard_double_arrow_right_rounded, color: Colors.white),
             iconAlignment: IconAlignment.end,
           )
         ],
@@ -208,15 +209,27 @@ Widget nullBrandWidget(context) {
 }
 
 String generateShortHash() {
-  // Rastgele bir değeri kullanarak hash üret
   final randomValue = Random().nextInt(1000000).toString();
 
-  // SHA256 hash üret
   var bytes = utf8.encode(randomValue);
   var digest = sha256.convert(bytes);
 
-  // 64 karakterlik hash'in ilk 16 karakterini döndür
   return digest.toString().substring(0, 16);
+}
+
+
+String generateDigit() {
+  final randomValue = Random().nextInt(1000000).toString();
+
+  var bytes = utf8.encode(randomValue);
+  var digest = sha256.convert(bytes);
+
+  return digest.toString().substring(0, 6);
+}
+
+Future<String> get getAppVersion async {
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  return packageInfo.version;
 }
 
 

@@ -5,6 +5,7 @@ import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/views/app_view.dart';
 import 'package:hangel/views/auth/register_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
+import 'package:hangel/views/user_ban_page.dart';
 
 import 'package:hangel/widgets/app_name_widget.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,8 @@ import '../constants/size.dart';
 import '../providers/login_register_page_provider.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({Key? key}) : super(key: key);
+  final String? stkId;
+  const SplashPage({super.key,this.stkId});
   static const routeName = '/';
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -38,6 +40,12 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   Future<void> _initialize() async {
     if (HiveHelpers.getUid() != "") {
       var result = await context.read<LoginRegisterPageProvider>().getUserById(HiveHelpers.getUid(), context);
+      if (result?.isActive?["isActive"] == false) {
+          print("Kullanıcı banlanmış");
+      HiveHelpers.logout();
+        Navigator.pushNamedAndRemoveUntil(context, UserBanPage.routeName, (route) => false);
+        return;
+      }
       await Future.delayed(Duration(seconds: result == null ? 3 : 0));
       bool isAppView = false;
       Navigator.popUntil(context, (route) {
@@ -56,7 +64,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
         );
       } else if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => SelectFavoriteStkPage(inTree: false)));
+            context, MaterialPageRoute(builder: (context) => const SelectFavoriteStkPage(inTree: false)));
       }
     } else {
       bool isAppView = false;

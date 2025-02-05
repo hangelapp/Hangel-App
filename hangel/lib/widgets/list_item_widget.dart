@@ -30,6 +30,8 @@ Widget ListItemWidget(
   double? logoWidth,
   double? logoHeight,
   double? nullFontSize,
+  double? fontSize,
+  bool? isActive,
 }) {
   bool? applicantExist;
   if (totalAplicant != null) {
@@ -42,7 +44,7 @@ Widget ListItemWidget(
         child: Container(
           margin: EdgeInsets.symmetric(
             vertical: deviceHeightSize(context, 4),
-            horizontal: deviceWidthSize(context, 20),
+            horizontal: deviceWidthSize(context, 10),
           ),
           padding: EdgeInsets.symmetric(
             horizontal: paddingHorizontal ?? deviceWidthSize(context, 16),
@@ -64,7 +66,7 @@ Widget ListItemWidget(
                     ? Image.network(
                         logo,
                         alignment: Alignment.center,
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
                             listItemImage2(context, logo: logo, onTap: onTap, nullFontSize: nullFontSize),
                       )
@@ -86,11 +88,13 @@ Widget ListItemWidget(
                             children: [
                               Text(
                                 title ?? "",
-                                style: AppTheme.boldTextStyle(context, 15),
+                                style: AppTheme.boldTextStyle(context, (fontSize ?? 12) + 3),
                               ),
                               Text(
                                 sector ?? "",
-                                style: AppTheme.lightTextStyle(context, 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTheme.lightTextStyle(context, fontSize ?? 12),
                               ),
                             ],
                           ),
@@ -100,7 +104,7 @@ Widget ListItemWidget(
                             children: [
                               LocaleText(
                                 "home_page_donation_rate",
-                                style: AppTheme.normalTextStyle(context, 14),
+                                style: AppTheme.normalTextStyle(context, (fontSize ?? 12) + 2),
                               ),
                               Container(
                                 padding: EdgeInsets.symmetric(
@@ -125,7 +129,7 @@ Widget ListItemWidget(
                                       "%${(donationRate)}",
                                       style: AppTheme.semiBoldTextStyle(
                                         context,
-                                        14,
+                                        (fontSize ?? 12) + 2,
                                       ),
                                     ),
                                   ],
@@ -147,7 +151,7 @@ Widget ListItemWidget(
                   ],
                 ),
               ),
-              isSTKVolunteer == true && totalAplicant != null ? SizedBox(width: 4) : SizedBox.shrink(),
+              isSTKVolunteer == true && totalAplicant != null ? const SizedBox(width: 4) : const SizedBox.shrink(),
               // 6kGnMPHZdVTAUr9RC9Y885dvTZS2
               isSTKVolunteer == true && totalAplicant != null
                   ? Padding(
@@ -159,17 +163,17 @@ Widget ListItemWidget(
                           }
                           applicantExist == true ? null : showApplyInfo(context, stkEmail!, stkId!);
                         },
-                        child: applicantExist == true ? LocaleText("basvuruldu") : LocaleText("basvur"),
                         style: ButtonStyle(
-                            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
+                            padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
                             backgroundColor:
                                 WidgetStatePropertyAll(applicantExist == true ? Colors.grey : AppTheme.primaryColor),
-                            foregroundColor: WidgetStatePropertyAll(Colors.white),
+                            foregroundColor: const WidgetStatePropertyAll(Colors.white),
                             shape:
                                 WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)))),
+                        child: applicantExist == true ? LocaleText("basvuruldu") : LocaleText("basvur"),
                       ),
                     )
-                  : SizedBox.shrink()
+                  : const SizedBox.shrink()
             ],
           ),
         ),
@@ -179,17 +183,28 @@ Widget ListItemWidget(
               right: deviceWidthSize(context, 20),
               top: deviceHeightSize(context, 4),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), topRight: Radius.circular(10)),
                   color: AppTheme.primaryColor,
                 ),
                 child: Text(
-                  "${totalAplicant.length} "+"kisi_basvurdu".locale,
-                  style: TextStyle(color: AppTheme.white),
+                  "${totalAplicant.length} " + "kisi_basvurdu".locale,
+                  style: const TextStyle(color: AppTheme.white),
                 ),
               ))
-          : SizedBox.shrink(),
+          : const SizedBox.shrink(),
+      isActive == false
+          ? Positioned.fill(
+              child: Container(
+              color: Colors.white.withOpacity(0.9),
+              child: const Center(
+                  child: Text(
+                "Bu STK artık aktif değil",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              )),
+            ))
+          : const SizedBox(),
     ],
   );
 }

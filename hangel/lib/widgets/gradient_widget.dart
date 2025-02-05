@@ -3,11 +3,10 @@ import 'package:hangel/constants/size.dart';
 
 class GradientWidget extends StatelessWidget {
   const GradientWidget(
-      {Key? key,
+      {super.key,
       required this.height,
       this.color = const Color(0xFFFFFFFF),
-      this.opacity = 1})
-      : super(key: key);
+      this.opacity = 1});
   final double height;
   final Color color;
   final double opacity;

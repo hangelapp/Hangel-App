@@ -83,8 +83,9 @@ class AppTheme {
         enabledBorder: InputBorder.none
       );
 
-  static InputDecoration noneBorderInputDecoration({String? hintText}) => InputDecoration(
+  static InputDecoration noneBorderInputDecoration({String? hintText,context}) => InputDecoration(
         hintText: hintText,
+        hintStyle: TextStyle(fontSize: deviceFontSize(context, 14),fontFamily: appFontFamily,color: Colors.grey),
         border: InputBorder.none,
         focusedBorder: InputBorder.none,
         enabledBorder: InputBorder.none,

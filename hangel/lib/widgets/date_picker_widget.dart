@@ -9,12 +9,12 @@ import 'package:provider/provider.dart';
 
 class DatePickerWidget extends StatefulWidget {
   const DatePickerWidget({
-    Key? key,
+    super.key,
     required this.title,
     this.isRequired = false,
     this.isTime = false,
     this.id = 0,
-  }) : super(key: key);
+  });
   final String title;
   final bool isRequired;
   final bool isTime;

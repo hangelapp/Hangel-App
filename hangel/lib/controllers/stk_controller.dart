@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
@@ -71,13 +69,13 @@ class STKController {
   Future<List<StkModel>> getSTKs() async {
     List stkList = await _firestoreService.getData(_stksPath);
     List<StkModel> stks = [];
-    stkList.forEach((e) {
+    for (var e in stkList) {
       StkModel model = StkModel.fromJson(e.data() as Map<String, dynamic>);
       if (model.isActive == true) {
         model.id = e.id;
         stks = [...stks, model];
       }
-    });
+    }
     return stks;
   }
 
@@ -87,9 +85,9 @@ class STKController {
         await FirebaseFirestore.instance.collection("stklar").where("id", whereIn: favoriteIds).get();
     List<StkModel> stks = [];
     // Sorgu sonucunu StkModel listesine dönüştürüyoruz.
-    snapshot.docs.forEach((doc) {
+    for (var doc in snapshot.docs) {
       stks.add(StkModel.fromJson(doc.data() as Map<String, dynamic>));
-    });
+    }
     return stks;
   }
 
@@ -170,6 +168,15 @@ class STKController {
         stkFormModel.toJson(),
       );
 
+      // Başvuru formunu genel "forms" koleksiyonuna ekliyoruz
+      await _firestoreService.addData("forms", {
+        "subject": "STK Başvurusu",
+        "status": "active",
+        "applicantUid": HiveHelpers.getUid(),
+        "applicantTime": DateTime.now(),
+        "form": stkFormModel.toJson(),
+      });
+
       // Admin email adresine başvuru detaylarını gönderiyoruz
       await SendMailHelper.sendMail(
         to: ["turkiye@hangel.org"], // Admin email adresi
@@ -177,13 +184,6 @@ class STKController {
         body: "Yeni STK Başvurusu",
         html: stkFormModel.toHTMLTable(),
       );
-
-      // Başvuru formunu genel "forms" koleksiyonuna ekliyoruz
-      await _firestoreService.addData("forms", {
-        "subject": "STK Başvurusu",
-        "status": "active",
-        "form": stkFormModel.toJson(),
-      });
 
       return GeneralResponseModel(
         success: true,
@@ -202,18 +202,42 @@ class STKController {
       String userId = HiveHelpers.getUid();
       UserModel userModel = HiveHelpers.getUserFromHive();
 
+      // Kullanıcı dokümanını güncelle
       await _firestoreService.updateData("users/$userId", {
         'favoriteAddedDate': userModel.favoriteAddedDate,
         'favoriteStks': userModel.favoriteStks,
       });
+
+      // Kullanıcının favori STK'larını işle
+      for (String stkId in userModel.favoriteStks) {
+        // 'id' alanı stkId'ye eşit olan STK dokümanını sorgula
+        QuerySnapshot stkQuerySnapshot =
+            await FirebaseFirestore.instance.collection("stklar").where('id', isEqualTo: stkId).get();
+
+        if (stkQuerySnapshot.docs.isNotEmpty) {
+          // İlk eşleşen dokümanı al
+          DocumentSnapshot stkDoc = stkQuerySnapshot.docs.first;
+          List<dynamic> favoriteCount = (stkDoc.data() as Map<String, dynamic>?)?['favoriteCount'] ?? [];
+
+          // Kullanıcı ID'si favoriteCount içinde yoksa ekle
+          if (!favoriteCount.contains(userModel.uid)) {
+            await stkDoc.reference.update({
+              'favoriteCount': FieldValue.arrayUnion([userModel.uid]),
+            });
+          }
+        } else {
+          // Eşleşen STK dokümanı bulunamadıysa işlem yapma veya logla
+          print("STK with id $stkId not found.");
+        }
+      }
+
       print("UPDATE RESPONSE: ");
-      // print(response);
       return GeneralResponseModel(
         success: true,
-        message: "Brand added successfully",
+        message: "İşlem başarıyla tamamlandı",
       );
     } catch (e) {
-      print("addRemoveFavoriteStks Error : " + e.toString());
+      print("addRemoveFavoriteSTK Error: " + e.toString());
       return GeneralResponseModel(
         success: false,
         message: e.toString(),

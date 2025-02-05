@@ -1,11 +1,12 @@
+import 'dart:math';
+
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:get/get.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/constants/size.dart';
 import 'package:hangel/extension/string_extension.dart';
-import 'package:hangel/managers/language_manager.dart';
 import 'package:hangel/models/brand_model.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
@@ -13,10 +14,11 @@ import 'package:hangel/views/brand_detail_page.dart';
 import 'package:hangel/widgets/app_bar_widget.dart';
 import 'package:hangel/widgets/list_item_widget.dart';
 import 'package:hangel/widgets/locale_text.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
   static const routeName = '/home';
   @override
   State<HomePage> createState() => _HomePageState();
@@ -27,10 +29,19 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
+  int selectedCategory = 0;
+  List<CategoryModel> categories = [
+    CategoryModel(name: "Öne Çıkan", donationRate: 0.0),
+    CategoryModel(name: "Tekstil", donationRate: 0.0),
+    CategoryModel(name: "E-Ticaret", donationRate: 0.0),
+  ];
   @override
   void initState() {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      context.read<BrandProvider>().getBrands();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<BrandProvider>().getSectorsList();
+      await context.read<BrandProvider>().getBrands();
+      await context.read<BrandProvider>().getBanners();
+      await showAppRateDialog();
     });
     _scrollController.addListener(() async {
       if (_scrollController.position.pixels >= (_scrollController.position.maxScrollExtent - 250) && !_isLoading) {
@@ -40,14 +51,25 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
+  Future<void> showAppRateDialog() async {
+    int rand = Random().nextInt(100);
+    if (rand < 99) return;
+    final InAppReview inAppReview = InAppReview.instance;
+
+    if (await inAppReview.isAvailable()) {
+      await inAppReview.requestReview();
+    }
+  }
+
   Future<void> _loadMoreData() async {
     setState(() {
       _isLoading = true;
     });
     context.read<BrandProvider>().nextPage();
-    await context.read<BrandProvider>().getOffers().whenComplete(
-          () => setState(() => _isLoading = false),
-        );
+    await Future.wait([
+      context.read<BrandProvider>().getOffers2().whenComplete(() => setState(() => _isLoading = false)),
+      context.read<BrandProvider>().getOffers().whenComplete(() => setState(() => _isLoading = false))
+    ]);
   }
 
   List<Map<String, String>> filters = [
@@ -84,9 +106,14 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
+  final CarouselSliderController _carouselController = CarouselSliderController();
+
   @override
   Widget build(BuildContext context) {
     _brandList = context.watch<BrandProvider>().brandList;
+    Size size = MediaQuery.of(context).size;
+    bool bannerLoaded = context.watch<BrandProvider>().bannerLoaded;
+    List<String> banners = context.watch<BrandProvider>().bannerImages;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -103,15 +130,13 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          SizedBox(height: deviceTopPadding(context)),
+          bannerArea(banners, bannerLoaded, size),
           Container(
             padding: const EdgeInsets.all(8),
             width: double.infinity,
-            height: deviceHeight(context) * 0.10,
+            height: deviceHeight(context) * 0.09,
             child: TypeAheadField(
-              itemSeparatorBuilder: (context, index) => Divider(
-                color: Colors.grey.shade300,
-              ),
+              itemSeparatorBuilder: (context, index) => Divider(color: Colors.grey.shade300),
               itemBuilder: (context, offer) {
                 return Padding(
                   padding: const EdgeInsets.all(8),
@@ -197,7 +222,7 @@ class _HomePageState extends State<HomePage> {
                                   style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
                                 ),
                               )),
-                    title: Text(offer.name?.removeBrackets() ?? ""),
+                    title: Text(offer.name ?? ""),
                   ),
                 );
               },
@@ -246,8 +271,13 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               onSelected: (value) {},
+              hideOnEmpty: true,
+              hideWithKeyboard: false,
               suggestionsCallback: (search) async {
-                return await context.read<BrandProvider>().getOffersForSearch(search);
+                if (search.length < 2) return [];
+                var response1 = await context.read<BrandProvider>().getOffersForSearch(search);
+                var response2 = await context.read<BrandProvider>().getOffersForSearch2(search);
+                return response1 + response2;
               },
             ),
           ),
@@ -276,53 +306,146 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       Expanded(
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          itemCount: _brandList.length,
-                          itemBuilder: (context, index) {
-                            bool isSearch =
-                                _brandList[index].name!.toLowerCase().contains(_searchController.text.toLowerCase());
-                            bool isFilter = false;
-                            String filterText = context.read<BrandProvider>().filterText;
-                            switch (filterText) {
-                              case "depremBolgesi":
-                                isFilter = _brandList[index].inEarthquakeZone!;
-                                break;
-                              case "socialEnterprise":
-                                isFilter = _brandList[index].isSocialEnterprise!;
-                                break;
-                              default:
-                                isFilter =
-                                    (_brandList[index].sector ?? "").toLowerCase().contains(filterText.toLowerCase());
-                                break;
-                            }
-
-                            (_brandList[index].sector ?? "")
-                                .toLowerCase()
-                                .contains(context.read<BrandProvider>().filterText.toLowerCase());
-
-                            bool isReturn = isSearch && isFilter;
-                            return isReturn
-                                ? ListItemWidget(
-                                    context,
-                                    sector: _brandList[index].sector,
-                                    logo: _brandList[index].logo,
-                                    title: (_brandList[index].name ?? "").removeBrackets(),
-                                    desc: _brandList[index].detailText,
-                                    donationRate: _brandList[index].donationRate,
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => BrandDetailPage(
-                                            brandModel: _brandList[index],
+                        child: Row(
+                          children: [
+                            Container(
+                              width: size.width * 0.2,
+                              height: size.height,
+                              decoration: BoxDecoration(color: Colors.grey.shade100, boxShadow: [
+                                BoxShadow(
+                                  offset: const Offset(1, 2),
+                                  blurRadius: 2,
+                                  color: Colors.black.withOpacity(0.1),
+                                )
+                              ]),
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) {
+                                  if (selectedCategory == index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedCategory = index;
+                                        });
+                                      },
+                                      child: Stack(
+                                        children: [
+                                          Positioned(
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              height: size.height * 0.05,
+                                              width: size.width * 0.2,
+                                              color: Colors.white,
+                                              child: AutoSizeText(
+                                                categories[index].name ?? "",
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 2,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      );
+                                          Positioned(
+                                            top: size.height * 0.015,
+                                            bottom: size.height * 0.015,
+                                            width: 3,
+                                            child: Container(color: AppTheme.primaryColor),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedCategory = index;
+                                      });
                                     },
-                                  )
-                                : Container();
-                          },
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      height: size.height * 0.05,
+                                      width: size.width,
+                                      decoration: BoxDecoration(
+                                          color: Colors.grey.shade100,
+                                          border: const Border(
+                                            bottom: BorderSide(
+                                              width: 0.5,
+                                              color: Colors.white
+                                            ),
+                                          )),
+                                      child: AutoSizeText(
+                                        categories[index].name ?? "",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 2,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            Expanded(
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                controller: _scrollController,
+                                itemCount: _brandList.length,
+                                itemBuilder: (context, index) {
+                                  bool isSearch = _brandList[index]
+                                      .name!
+                                      .toLowerCase()
+                                      .contains(_searchController.text.toLowerCase());
+                                  bool isFilter = false;
+                                  String filterText = context.read<BrandProvider>().filterText;
+                                  switch (filterText) {
+                                    case "depremBolgesi":
+                                      isFilter = _brandList[index].inEarthquakeZone!;
+                                      break;
+                                    case "socialEnterprise":
+                                      isFilter = _brandList[index].isSocialEnterprise!;
+                                      break;
+                                    default:
+                                      isFilter = (_brandList[index].sector ?? "")
+                                          .toLowerCase()
+                                          .contains(filterText.toLowerCase());
+                                      break;
+                                  }
+
+                                  (_brandList[index].sector ?? "")
+                                      .toLowerCase()
+                                      .contains(context.read<BrandProvider>().filterText.toLowerCase());
+
+                                  bool isReturn = isSearch && isFilter;
+                                  return isReturn
+                                      ? ListItemWidget(
+                                          context,
+                                          sector: _brandList[index].sector,
+                                          logo: _brandList[index].logo,
+                                          title: (_brandList[index].name ?? "").removeBrackets(),
+                                          desc: _brandList[index].detailText,
+                                          donationRate: _brandList[index].donationRate,
+                                          logoWidth: deviceWidthSize(context, 50),
+                                          logoHeight: deviceWidthSize(context, 50),
+                                          fontSize: 9,
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => BrandDetailPage(
+                                                  brandModel: _brandList[index],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : Container();
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       _isLoading ? const LinearProgressIndicator() : const SizedBox.shrink()
@@ -415,5 +538,71 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Widget bannerArea(List<String> banners, bool bannerLoaded, Size size) {
+    return bannerLoaded && banners.isNotEmpty
+        ? Container(
+            width: size.width,
+            height: size.height * 0.1,
+            margin: const EdgeInsets.all(8),
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: CarouselSlider.builder(
+              itemBuilder: (context, index, realIndex) {
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      banners[index],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return LinearProgressIndicator(
+                          color: Colors.grey.shade100,
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                              : null,
+                          backgroundColor: Colors.transparent,
+                        );
+                      },
+                    ),
+                    Positioned(
+                      right: 10,
+                      bottom: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          "${index + 1}/${banners.length}",
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+              options: CarouselOptions(
+                autoPlay: true,
+                enlargeCenterPage: true,
+                viewportFraction: 1,
+                aspectRatio: 16 / 9,
+                initialPage: 0,
+                autoPlayInterval: const Duration(seconds: 10),
+                autoPlayAnimationDuration: const Duration(milliseconds: 400),
+                autoPlayCurve: Curves.fastOutSlowIn,
+              ),
+              carouselController: _carouselController,
+              itemCount: banners.length,
+            ),
+          )
+        : const SizedBox();
   }
 }
