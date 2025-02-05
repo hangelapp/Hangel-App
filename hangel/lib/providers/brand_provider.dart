@@ -15,7 +15,6 @@ import 'package:hangel/models/image_model.dart';
 import 'package:hangel/models/sector_model.dart';
 import 'package:hangel/models/user_model.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../constants/constants.dart';
 

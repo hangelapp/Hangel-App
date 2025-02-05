@@ -75,33 +75,37 @@ void main() async {
   // Deep link için STK ID
   String? stkId = await _handleInitialDynamicLink();
   if (!kIsWeb) {
-    // Uygulama çalışırken deep link gelirse dinle
-    FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
-      final Uri deepLink = dynamicLinkData.link;
-      final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
-      if (deepLinkStkId != null) {
-        // Bu noktada istenirse bir state management yöntemiyle (GetX, Provider, vs.)
-        // uygulama içinde bu veriyi güncelleyebilirsiniz.
-        // Şimdilik basitlik olsun diye print atıyoruz.
-        print("Runtime deep link STK ID: $deepLinkStkId");
-        if (Auth().currentUser != null) {
-          await FirebaseFirestore.instance
-              .collection("stklar")
-              .where("id", isEqualTo: deepLinkStkId)
-              .get()
-              .then((value) {
-            if (value.docs.isNotEmpty) {
-              StkModel stkModel = StkModel.fromJson(value.docs.first.data());
-              Get.to(() => STKDetailPage(stkModel: stkModel));
-            }
-          });
-        } else {
-          Get.to(() => SelectFavoriteStkPage(inTree: false, selectedSTKIds: [deepLinkStkId]));
+    try {
+      // Uygulama çalışırken deep link gelirse dinle
+      FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
+        final Uri deepLink = dynamicLinkData.link;
+        final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
+        if (deepLinkStkId != null) {
+          // Bu noktada istenirse bir state management yöntemiyle (GetX, Provider, vs.)
+          // uygulama içinde bu veriyi güncelleyebilirsiniz.
+          // Şimdilik basitlik olsun diye print atıyoruz.
+          print("Runtime deep link STK ID: $deepLinkStkId");
+          if (Auth().currentUser != null) {
+            await FirebaseFirestore.instance
+                .collection("stklar")
+                .where("id", isEqualTo: deepLinkStkId)
+                .get()
+                .then((value) {
+              if (value.docs.isNotEmpty) {
+                StkModel stkModel = StkModel.fromJson(value.docs.first.data());
+                Get.to(() => STKDetailPage(stkModel: stkModel));
+              }
+            });
+          } else {
+            Get.to(() => SelectFavoriteStkPage(inTree: false, selectedSTKIds: [deepLinkStkId]));
+          }
         }
-      }
-    }).onError((error) {
-      print('onLink error: $error');
-    });
+      }).onError((error) {
+        print('onLink error: $error');
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   runApp(
@@ -184,13 +188,18 @@ Future<void> initializeLocalNotifications() async {
 
 // İlk olarak uygulama açıldığında deep link var mı kontrol et
 Future<String?> _handleInitialDynamicLink() async {
-  if (kIsWeb) return null;
-  final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
-  if (initialLink != null) {
-    final Uri deepLink = initialLink.link;
-    return _extractStkIdFromLink(deepLink.toString());
+  try {
+    if (kIsWeb) return null;
+    final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
+    if (initialLink != null) {
+      final Uri deepLink = initialLink.link;
+      return _extractStkIdFromLink(deepLink.toString());
+    }
+    return null;
+  } catch (e) {
+    print(e);
+    return null;
   }
-  return null;
 }
 
 // Linkten stkId'yi çek
