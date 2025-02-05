@@ -1,4 +1,3 @@
-
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/helpers/locator.dart';
 import 'package:hangel/helpers/send_mail_helper.dart';
@@ -75,21 +74,14 @@ class BrandController {
   }
 
   Future<GeneralResponseModel> sendForm(
-      {required BrandFormModel brandFormModel,
-      required List<ImageModel?> logoImage,
-      required List<ImageModel?> bannerImage,
-      required List<ImageModel?> vergiImage}) async {
+      {required BrandFormModel brandFormModel, required List<ImageModel?> logoImage}) async {
     try {
       final formId = await _firestoreService.addData(brandFormsPath, brandFormModel.toJson());
       final logoImageUrls = await _storageService.uploadImagebyByte(
           "$brandFormsPath/$formId", await logoImage.first!.file!.readAsBytes());
-      final bannerImageUrls = await _storageService.uploadImagebyByte(
-          "$brandFormsPath/$formId", await bannerImage.first!.file!.readAsBytes());
-      final vergiImageUrls = await _storageService.uploadImagebyByte(
-          "$brandFormsPath/$formId", await vergiImage.first!.file!.readAsBytes());
+
       brandFormModel.logoImage = logoImageUrls;
-      brandFormModel.bannerImage = bannerImageUrls;
-      brandFormModel.vergiImage = vergiImageUrls;
+
       SendMailHelper.sendMail(
         to: ["turkiye@hangel.org"],
         subject: "Marka Başvurusu",
@@ -105,8 +97,6 @@ class BrandController {
         "$brandFormsPath/$formId",
         {
           'logoImage': logoImageUrls,
-          'bannerImage': bannerImageUrls,
-          'vergiImage': vergiImageUrls,
         },
       );
     } catch (e) {

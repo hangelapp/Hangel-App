@@ -70,7 +70,7 @@ class StkModel {
         link: json['link'] ?? "",
         type: json['type'] ?? "",
         categories: List<String>.from(json['categories'] ?? [""]),
-        favoriteCount: json['favoriteCount'] ?? 0,
+        favoriteCount: json['favoriteCount'] is int ? json['favoriteCount'] ?? 0 : 0,
         bmCategories: List<String>.from(
           json['bmCategories'] ?? [],
         ),
