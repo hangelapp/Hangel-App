@@ -101,7 +101,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
       );
 
   final _idNoFormatter = MaskTextInputFormatter(
-    mask: '##-###-##',
+    mask: '##-###-###',
     filter: {"#": RegExp(r'[0-9]')},
   );
 
@@ -185,7 +185,7 @@ class _STKFormWidgetState extends State<STKFormWidget> {
                   controller: _stkIDNoController,
                   title: _getIDNoTitle().locale,
                   isRequired: true,
-                  hintText: "11-222-33",
+                  hintText: "11-222-333",
                   keyboardType: TextInputType.number,
                   inputFormatters: [_idNoFormatter],
                   validator: (value) {

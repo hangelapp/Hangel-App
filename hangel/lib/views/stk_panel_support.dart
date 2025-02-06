@@ -92,68 +92,70 @@ class _StkPanelSupportState extends State<StkPanelSupport> {
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Text("Destek Taleplerim", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
             const Divider(),
-            SizedBox(
-              height: deviceHeight(context) * 0.3,
-              child: ListView.builder(
-                itemCount: submissionList.isEmpty ? 1 : submissionList.length,
-                itemBuilder: (context, index) {
-                  if (submissionList.isEmpty) return const Center(child: Text("Henüz bir talep yok..."));
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ListTile(
-                      tileColor: submissionList[index].status == "sonuclandı"
-                          ? Colors.green.shade100
-                          : submissionList[index].status == "bekliyor"
-                              ? Colors.red.shade100
-                              : Colors.blue.shade100,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: BorderSide(
-                              color: submissionList[index].status == "sonuclandı"
-                                  ? Colors.green
-                                  : submissionList[index].status == "bekliyor"
-                                      ? Colors.red
-                                      : Colors.blue,
-                              width: 2)),
-                      onTap: () async {
-                        await showSubmissionDetail(context, submissionList[index]);
-                      },
-                      title: Text(
-                        submissionList[index].content ?? "",
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text("Başvuru no: " + (submissionList[index].id ?? "-")),
-                      trailing: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "\n" + (submissionList[index].status?.toUpperCase() ?? ""),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.none,
-                                fontSize: 15,
+            Material(
+              child: SizedBox(
+                height: deviceHeight(context) * 0.6,
+                child: ListView.builder(
+                  itemCount: submissionList.isEmpty ? 1 : submissionList.length,
+                  itemBuilder: (context, index) {
+                    if (submissionList.isEmpty) return const Center(child: Text("Henüz bir talep yok..."));
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        tileColor: submissionList[index].status == "sonuclandı"
+                            ? Colors.green.shade100
+                            : submissionList[index].status == "bekliyor"
+                                ? Colors.red.shade100
+                                : Colors.blue.shade100,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
                                 color: submissionList[index].status == "sonuclandı"
                                     ? Colors.green
                                     : submissionList[index].status == "bekliyor"
                                         ? Colors.red
                                         : Colors.blue,
-                              ),
-                            )
-                          ],
-                          text: "Durum",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
+                                width: 2)),
+                        onTap: () async {
+                          await showSubmissionDetail(context, submissionList[index]);
+                        },
+                        title: Text(
+                          submissionList[index].content ?? "",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        textAlign: TextAlign.center,
+                        subtitle: Text("Başvuru no: " + (submissionList[index].id ?? "-")),
+                        trailing: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "\n" + (submissionList[index].status?.toUpperCase() ?? ""),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.none,
+                                  fontSize: 15,
+                                  color: submissionList[index].status == "sonuclandı"
+                                      ? Colors.green
+                                      : submissionList[index].status == "bekliyor"
+                                          ? Colors.red
+                                          : Colors.blue,
+                                ),
+                              )
+                            ],
+                            text: "Durum",
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ],

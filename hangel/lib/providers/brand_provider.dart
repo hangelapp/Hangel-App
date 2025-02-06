@@ -135,14 +135,15 @@ class BrandProvider with ChangeNotifier {
     }
   }
 
-  Future<BrandInfoModel?> getBrandInfo(String id) async {
+  Future<BrandInfoModel?> getBrandInfo({required String id}) async {
     try {
       var firebase = FirebaseFirestore.instance;
       favoriteButtonLoading = true;
-      return await firebase.collection("brandInfo").doc(id).get().then((value) {
+      var value = await firebase.collection("brandInfo").doc(id).get().then((value) {
         favoriteButtonLoading = false;
         return BrandInfoModel.fromJson(value.data() ?? {"brandId": id} as Map<String, dynamic>);
-      });
+      }).then((value) => value);
+      return value;
     } catch (e) {
       print(e);
       favoriteButtonLoading = false;
@@ -150,11 +151,11 @@ class BrandProvider with ChangeNotifier {
     }
   }
 
-  Future<BrandInfoModel?> setFavoriteBrand(String id) async {
+  Future<BrandInfoModel?> setFavoriteBrand({required String id, required String name}) async {
     try {
       final uid = HiveHelpers.getUid();
       favoriteButtonLoading = true;
-      BrandInfoModel? info = await getBrandInfo(id);
+      BrandInfoModel? info = await getBrandInfo(id: id);
       if (info?.brandId == null) {
         favoriteButtonLoading = false;
         return null;
@@ -164,6 +165,7 @@ class BrandProvider with ChangeNotifier {
       } else {
         info?.favoriteIds!.removeWhere((element) => element == uid);
       }
+      info?.brandName = name;
       await FirebaseFirestore.instance
           .collection("brandInfo")
           .doc(id)
@@ -559,59 +561,87 @@ class BrandProvider with ChangeNotifier {
   Future<BrandModel?> getBrandById2(String brandId) async {
     try {
       Dio dio = Dio();
-      var response = await dio.getUri(Uri.parse(
-          "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}&Target=Affiliate_Offer&Method=findAll&fields[]=percent_payout&fields[]=name&fields[]=id&limit=1&filters[id]=$brandId&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory&contain[]=Thumbnail"));
-      if (response.statusCode == 200 && response.data['response']['status'] == 1) {
-        // API'den gelen veriyi doğru anahtarlardan alıyoruz
-        var offerData = response.data['response']['data']['data'][brandId];
+      // URL oluşturulurken getOffers2 ile aynı endpoint ve parametreler kullanılıyor,
+      // sadece filters[id] ile belirli bir ID’ye göre filtreleme yapılıyor.
+      final url = "${AppConstants.GELIR_ORTAKLARI_BASE_URL}?api_key=${AppConstants.GELIR_ORTAKLARI_API_KEY}"
+          "&Target=Affiliate_Offer&Method=findMyApprovedOffers"
+          "&fields[]=name&fields[]=id"
+          "&limit=1&filters[id]=$brandId"
+          "&contain[]=OfferVertical&contain[]=TrackingLink&contain[]=OfferCategory"
+          "&contain[]=Thumbnail&contain[]=Goal";
 
-        if (offerData != null) {
-          // API'den gelen Offer bilgileri
-          var offer = offerData['Offer'];
-          var trackingLink = offerData['TrackingLink'];
-          var categories = offerData['OfferCategory']
-                  ?.values
-                  ?.map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
-                  .toList() ??
-              [];
-          var thumbnail = offerData['Thumbnail'];
+      final response = await dio.getUri(Uri.parse(url));
 
-          // Gerekli alanları ayrıştırma
-          String? id = offer['id'].toString();
-          String? name = offer['name'];
-          String? sector;
-          try {
-            sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
-                ? offerData['OfferVertical'].first['name']
+      if (response.statusCode == 200) {
+        final json = response.data;
+        // API cevabında offer’lar "response" -> "data" -> "data" anahtarları altında bir Map olarak geliyor.
+        final Map<String, dynamic> dataMap = json["response"]["data"]["data"] as Map<String, dynamic>;
+
+        if (dataMap.isEmpty) return null;
+
+        // Filtreleme yapıldığından, key'in brandId olması bekleniyor;
+        // yoksa ilk değeri alıyoruz.
+        final Map<String, dynamic> offerData = dataMap.containsKey(brandId)
+            ? dataMap[brandId] as Map<String, dynamic>
+            : dataMap.values.first as Map<String, dynamic>;
+
+        // Offer içerisinden temel alanların ayrıştırılması
+        final String? id = offerData["Offer"]["id"];
+        final String? name = offerData["Offer"]["name"];
+        final String? logo = offerData["Thumbnail"]["url"];
+
+        // Kategori ayrıştırması
+        final List<CategoryModel> categories = offerData["OfferCategory"] is Map<String, dynamic>
+            ? (offerData["OfferCategory"] as Map<String, dynamic>)
+                .values
+                .map<CategoryModel>((categoryJson) => CategoryModel.fromJson(categoryJson))
+                .toList()
+            : [];
+
+        // Sektör bilgisi: OfferVertical içerisinden ya da kategorilerden alınıyor.
+        final String? sector = offerData["OfferVertical"] is Map<String, dynamic>
+            ? (offerData["OfferVertical"] as Map<String, dynamic>).values.first["name"]
+            : categories.isNotEmpty
+                ? categories.first.name
                 : null;
-          } catch (e) {
-            sector = offerData['OfferVertical'] != null && offerData['OfferVertical'].isNotEmpty
-                ? offerData['OfferVertical']['name']
-                : null;
+
+        // Goal içerisinden donationRate (yüzde) çekiliyor
+        double? donationRate;
+        if (offerData["Goal"] is Map<String, dynamic>) {
+          final Map<String, dynamic> goal = offerData["Goal"] as Map<String, dynamic>;
+          for (var entry in goal.entries) {
+            if (entry.value["payout_type"] == "cpa_percentage") {
+              donationRate = double.tryParse(entry.value["percent_payout"] ?? "");
+              break;
+            }
           }
-          double? donationRate = double.tryParse(offer['percent_payout'].toString());
-          DateTime? creationDate = DateTime.now(); // API'den creationDate gelmediği için manuel atanıyor
-          String? bannerImage = thumbnail != null ? thumbnail['url'] : null;
-          String? detailText = offer['description'] ?? ""; // Varsayılan boş metin
-          String? link = trackingLink != null ? trackingLink['click_url'] : null;
-
-          // BrandModel nesnesini döndürüyoruz
-          return BrandModel(
-            id: id,
-            bannerImage: bannerImage,
-            categories: categories,
-            creationDate: creationDate,
-            detailText: detailText,
-            donationRate: donationRate,
-            favoriteCount: 0,
-            inEarthquakeZone: false, // Veride bu bilgi olmadığı için manuel atanıyor
-            isSocialEnterprise: false, // Veride bu bilgi olmadığı için manuel atanıyor
-            link: link,
-            logo: bannerImage, // Thumbnail verisini logo olarak kullanıyoruz
-            name: name?.removeTypes() ?? "", // removeBrackets extension kullanımı
-            sector: sector,
-          );
         }
+        // Eğer donationRate 0 veya altındaysa, veri geçerli sayılmıyor
+        if ((donationRate ?? 0) <= 0) {
+          return null;
+        }
+
+        final DateTime creationDate = DateTime.now(); // API’den creationDate gelmediği için
+        final String? bannerImage = offerData["Thumbnail"]["thumbnail"];
+        const String detailText = ""; // İhtiyaca göre detay metni eklenebilir
+        final String? link = offerData["TrackingLink"]["click_url"];
+        const int favoriteCount = 0;
+
+        return BrandModel(
+          id: id,
+          bannerImage: bannerImage,
+          categories: categories,
+          creationDate: creationDate,
+          detailText: detailText,
+          donationRate: donationRate,
+          favoriteCount: favoriteCount,
+          inEarthquakeZone: false, // Bu bilgi API’den gelmediği için false atanıyor
+          isSocialEnterprise: false, // Aynı şekilde
+          link: link,
+          logo: logo,
+          name: (name ?? "").removeTypes(), // removeTypes() extension’ı kullanılıyor
+          sector: sector,
+        );
       }
     } catch (e) {
       debugPrint("Error fetching brand by ID: $e");

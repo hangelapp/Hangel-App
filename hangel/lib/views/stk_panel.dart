@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/stk_model.dart';
+import 'package:hangel/views/stk_panel_info.dart';
 import 'package:hangel/views/stk_panel_qr.dart';
 import 'package:hangel/widgets/app_name_widget.dart';
 
@@ -120,169 +121,13 @@ class _STKPanelState extends State<STKPanel> {
                           buildProcessButton(
                               "QR Kod Görüntüle", () => Navigator.pushNamed(context, STKPanelQr.routeName)),
                           buildProcessButton("Destek", () => Navigator.pushNamed(context, StkPanelSupport.routeName)),
-                          buildNullItem(),
+                          buildProcessButton(
+                              "Bilgileri Güncelle", () => Navigator.pushNamed(context, STKPanelInfo.routeName)),
                           buildNullItem(),
                           buildNullItem(),
                           buildNullItem(),
                         ]),
                   ),
-                ),
-                const Text(
-                  'Bilgiler',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 10),
-                Table(
-                  columnWidths: const {0: IntrinsicColumnWidth()},
-                  border: TableBorder(
-                    horizontalInside: BorderSide(width: 0.5, color: Colors.grey.shade300),
-                  ),
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  children: [
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK ID",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.id ?? "-"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK Aktif",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            stkModel?.isActive == true ? "Evet" : "Hayır",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: stkModel?.isActive == true ? Colors.green : Colors.red,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Katılma Tarihi",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "${stkModel?.creationDate?.day}/${stkModel?.creationDate?.month}/${stkModel?.creationDate?.year}",
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK Türü",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.type ?? "-"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK Adres",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.city ?? "-"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Kategori",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("${stkModel?.categories.join(", ")}"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Deprem Bölgesi",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.inEarthquakeZone == true ? "Evet" : "Hayır"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Fayda Alanı",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("${stkModel?.fieldOfBenefit}"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Özel Durum",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("${stkModel?.specialStatus}"),
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
               ]),
             ),

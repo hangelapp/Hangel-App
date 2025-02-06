@@ -33,6 +33,7 @@ import 'views/select_favorite_stk_page.dart';
 import 'views/settings_page.dart';
 import 'views/splash_page.dart';
 import 'views/stk_panel.dart';
+import 'views/stk_panel_info.dart';
 import 'views/stk_panel_support.dart';
 import 'views/stk_volunteers_page.dart';
 import 'views/support_page.dart';
@@ -298,6 +299,7 @@ class MyApp extends StatelessWidget {
         STKPanel.routeName: (context) => const STKPanel(),
         STKPanelQr.routeName: (context) => const STKPanelQr(),
         StkPanelSupport.routeName: (context) => const StkPanelSupport(),
+        STKPanelInfo.routeName: (context) => const STKPanelInfo(),
       },
     );
   }
