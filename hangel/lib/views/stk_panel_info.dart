@@ -153,6 +153,13 @@ class _STKPanelInfoState extends State<STKPanelInfo> {
                           const Padding(
                             padding: EdgeInsets.only(top: 4.0),
                             child: Text(
+                              "ℹ️ Başvuru durumunuzu destek bölümünden takip edebilirsiniz.",
+                              style: TextStyle(color: Colors.red, fontSize: 12),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4.0),
+                            child: Text(
                               "ℹ️ Aynı anda 3 aktif güncelleme isteğinden fazla bildirimde bulunamazsınız.",
                               style: TextStyle(color: Colors.red, fontSize: 12),
                             ),
