@@ -169,6 +169,7 @@ class _StkPanelSupportState extends State<StkPanelSupport> {
     TextEditingController subjectController = TextEditingController();
     List<Map<String, dynamic>> list = [
       {"title": "QR Kod", "value": "qr"},
+      {"title": "Bilgi Güncelleme", "value": "stk_edit"},
     ];
     int selectedIndex = 0;
     bool isLoading = false;
