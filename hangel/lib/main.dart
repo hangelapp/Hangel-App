@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart'; // YENİ
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -44,7 +44,9 @@ void main() async {
   setupLocator();
   await LocaleManager.prefrencesInit();
 
-  final localeString = LocaleManager.instance.getStringValue(PreferencesKeys.LOCALE);
+  final localeString = LocaleManager.instance.getStringValue(
+    PreferencesKeys.LOCALE,
+  );
   Locale? initialLocale;
 
   if (localeString.isNotEmpty) {
@@ -58,10 +60,7 @@ void main() async {
     initialLocale = Get.deviceLocale ?? const Locale('tr', 'TR');
   }
 
-  await initializeDateFormatting(
-    initialLocale.toString(),
-    null,
-  );
+  await initializeDateFormatting(initialLocale.toString(), null);
 
   // Firebase initialize
   try {
@@ -92,32 +91,38 @@ void main() async {
   if (!kIsWeb) {
     // Uygulama çalışırken gelen deep linkleri dinle
     try {
-      FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
-      final Uri deepLink = dynamicLinkData.link;
-      final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
-      if (deepLinkStkId != null) {
-        if (Auth().currentUser != null) {
-          await FirebaseFirestore.instance
-              .collection("stklar")
-              .where("id", isEqualTo: deepLinkStkId)
-              .get()
-              .then((value) {
-            if (value.docs.isNotEmpty) {
-              StkModel stkModel = StkModel.fromJson(value.docs.first.data());
-              Get.to(() => STKDetailPage(stkModel: stkModel));
+      FirebaseDynamicLinks.instance.onLink
+          .listen((PendingDynamicLinkData dynamicLinkData) async {
+            final Uri deepLink = dynamicLinkData.link;
+            final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
+            if (deepLinkStkId != null) {
+              if (Auth().currentUser != null) {
+                await FirebaseFirestore.instance
+                    .collection("stklar")
+                    .where("id", isEqualTo: deepLinkStkId)
+                    .get()
+                    .then((value) {
+                      if (value.docs.isNotEmpty) {
+                        StkModel stkModel = StkModel.fromJson(
+                          value.docs.first.data(),
+                        );
+                        Get.to(() => STKDetailPage(stkModel: stkModel));
+                      }
+                    });
+              } else {
+                Get.to(
+                  () => SelectFavoriteStkPage(
+                    inTree: false,
+                    selectedSTKIds: [deepLinkStkId],
+                  ),
+                );
+              }
             }
+          })
+          .onError((error) {
+            debugPrint('onLink error: $error');
           });
-        } else {
-          Get.to(() => SelectFavoriteStkPage(inTree: false, selectedSTKIds: [deepLinkStkId]));
-        }
-      }
-    }).onError((error) {
-      debugPrint('onLink error: $error');
-    });
-    } catch (e) {
-      
-    }
-    
+    } catch (e) {}
   }
 
   runApp(
@@ -128,7 +133,8 @@ void main() async {
   );
 }
 
-FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
@@ -146,7 +152,9 @@ void _showNotification(RemoteNotification notification) async {
     importance: Importance.max,
     priority: Priority.high,
   );
-  var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+  var platformChannelSpecifics = NotificationDetails(
+    android: androidPlatformChannelSpecifics,
+  );
   await flutterLocalNotificationsPlugin.show(
     0,
     notification.title,
@@ -159,20 +167,20 @@ void _showNotification(RemoteNotification notification) async {
 Future<void> initializeLocalNotifications() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-  NotificationSettings settings =
-      await messaging.requestPermission(alert: true, badge: true, sound: true, provisional: false);
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+    provisional: false,
+  );
   debugPrint('User granted permission: ${settings.authorizationStatus}');
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     try {
       String? apnsToken = await messaging.getAPNSToken();
-      if (apnsToken != null) {
-        LocaleManager.instance.setStringValue(PreferencesKeys.APN, apnsToken);
-        debugPrint("APNS Token: $apnsToken");
-        String? firebaseToken = await messaging.getToken();
-        debugPrint("Firebase Token: $firebaseToken");
-      } else {
-        debugPrint("APNS token henüz ayarlanmadı, Firebase token alınamıyor.");
-      }
+      LocaleManager.instance.setStringValue(PreferencesKeys.APN, apnsToken);
+      debugPrint("APNS Token: $apnsToken");
+      String? firebaseToken = await messaging.getToken();
+      debugPrint("Firebase Token: $firebaseToken");
     } catch (e, s) {
       debugPrint("Error getting token: $e\n$s");
     }
@@ -180,13 +188,16 @@ Future<void> initializeLocalNotifications() async {
 
   String? firebaseToken = await messaging.getToken();
   debugPrint("Firebase Token: $firebaseToken");
-  if (firebaseToken != null) {
-    LocaleManager.instance.setStringValue(PreferencesKeys.FIREBASE_TOKEN, firebaseToken);
-  }
+  LocaleManager.instance.setStringValue(
+    PreferencesKeys.FIREBASE_TOKEN,
+    firebaseToken,
+  );
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  var initializationSettingsAndroid = const AndroidInitializationSettings('@mipmap/ic_launcher');
+  var initializationSettingsAndroid = const AndroidInitializationSettings(
+    '@mipmap/ic_launcher',
+  );
   var initializationSettingsIOS = const DarwinInitializationSettings();
   var initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
@@ -198,7 +209,9 @@ Future<void> initializeLocalNotifications() async {
     debugPrint('Got a message whilst in the foreground!');
     debugPrint('Message data: ${message.data}');
     if (message.notification != null) {
-      debugPrint('Message also contained a notification: ${message.notification}');
+      debugPrint(
+        'Message also contained a notification: ${message.notification}',
+      );
       _showNotification(message.notification!);
     }
   });
@@ -206,7 +219,9 @@ Future<void> initializeLocalNotifications() async {
 
 Future<String?> _handleInitialDynamicLink() async {
   if (kIsWeb) return null;
-  final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
+  final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks
+      .instance
+      .getInitialLink();
   if (initialLink != null) {
     final Uri deepLink = initialLink.link;
     return _extractStkIdFromLink(deepLink.toString());
@@ -230,21 +245,18 @@ class MyApp extends StatelessWidget {
 
   final ThemeData themeData = ThemeData(
     primaryColor: AppTheme.primaryColor,
-    primarySwatch: MaterialColor(
-      AppTheme.primaryColor.value,
-      const {
-        50: AppTheme.primaryColor,
-        100: AppTheme.primaryColor,
-        200: AppTheme.primaryColor,
-        300: AppTheme.primaryColor,
-        400: AppTheme.primaryColor,
-        500: AppTheme.primaryColor,
-        600: AppTheme.primaryColor,
-        700: AppTheme.primaryColor,
-        800: AppTheme.primaryColor,
-        900: AppTheme.primaryColor,
-      },
-    ),
+    primarySwatch: MaterialColor(AppTheme.primaryColor.value, const {
+      50: AppTheme.primaryColor,
+      100: AppTheme.primaryColor,
+      200: AppTheme.primaryColor,
+      300: AppTheme.primaryColor,
+      400: AppTheme.primaryColor,
+      500: AppTheme.primaryColor,
+      600: AppTheme.primaryColor,
+      700: AppTheme.primaryColor,
+      800: AppTheme.primaryColor,
+      900: AppTheme.primaryColor,
+    }),
     useMaterial3: true,
   );
 
@@ -253,11 +265,14 @@ class MyApp extends StatelessWidget {
     final langInstance = LanguageManager.instance;
 
     Locale localeToUse = initialLocale;
-    if (!langInstance.supportedLocales.any((locale) => locale.languageCode == initialLocale.languageCode)) {
+    if (!langInstance.supportedLocales.any(
+      (locale) => locale.languageCode == initialLocale.languageCode,
+    )) {
       localeToUse = langInstance.trLocale;
     } else {
-      localeToUse = langInstance.supportedLocales
-          .firstWhere((locale) => locale.languageCode == initialLocale.languageCode);
+      localeToUse = langInstance.supportedLocales.firstWhere(
+        (locale) => locale.languageCode == initialLocale.languageCode,
+      );
     }
 
     return GetMaterialApp(
@@ -287,23 +302,27 @@ class MyApp extends StatelessWidget {
       initialRoute: WidgetTree.routeName,
       routes: {
         WidgetTree.routeName: (context) => WidgetTree(stkId: stkId),
-        AppView.routeName: (context) => const AppView(),
-        SplashPage.routeName: (context) => SplashPage(stkId: stkId),
-        HomePage.routeName: (context) => const HomePage(),
-        OnboardingPage.routeName: (context) => const OnboardingPage(),
-        RegisterPage.routeName: (context) => RegisterPage(stkIds: [if (stkId != null) stkId!]),
-        STKVolunteersPage.routeName: (context) => const STKVolunteersPage(),
-        SettingsPage.routeName: (context) => const SettingsPage(),
         AboutUsPage.routeName: (context) => const AboutUsPage(),
-        SelectFavoriteStkPage.routeName: (context) => const SelectFavoriteStkPage(),
-        SupportPage.routeName: (context) => const SupportPage(),
+        AppView.routeName: (context) => const AppView(),
         DonationHistoryPage.routeName: (context) => const DonationHistoryPage(),
-        FrequentlyAskedQuestionsPage.routeName: (context) => const FrequentlyAskedQuestionsPage(),
-        VolunteerForm.routeName: (context) => const VolunteerForm(),
-        MissingDonationFormPage.routeName: (context) => const MissingDonationFormPage(),
-        UserBanPage.routeName: (context) => const UserBanPage(),
+        FrequentlyAskedQuestionsPage.routeName: (context) =>
+            const FrequentlyAskedQuestionsPage(),
+        HomePage.routeName: (context) => const HomePage(),
+        MissingDonationFormPage.routeName: (context) =>
+            const MissingDonationFormPage(),
+        OnboardingPage.routeName: (context) => const OnboardingPage(),
+        RegisterPage.routeName: (context) =>
+            RegisterPage(stkIds: [if (stkId != null) stkId!]),
         STKPanel.routeName: (context) => const STKPanel(),
         STKPanelQr.routeName: (context) => const STKPanelQr(),
+        STKVolunteersPage.routeName: (context) => const STKVolunteersPage(),
+        SelectFavoriteStkPage.routeName: (context) =>
+            const SelectFavoriteStkPage(),
+        SettingsPage.routeName: (context) => const SettingsPage(),
+        SplashPage.routeName: (context) => SplashPage(stkId: stkId),
+        SupportPage.routeName: (context) => const SupportPage(),
+        UserBanPage.routeName: (context) => const UserBanPage(),
+        VolunteerForm.routeName: (context) => const VolunteerForm(),
       },
     );
   }
