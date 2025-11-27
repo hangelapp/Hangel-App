@@ -7,6 +7,7 @@ extension StringExtension on String {
   }
 
   String removeTypes() {
+    if(indexOf("|") == -1) return this;
     return substring(0,indexOf("|"));
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -34,6 +35,7 @@ class _HomePageState extends State<HomePage> {
     CategoryModel(name: "Tekstil", donationRate: 0.0),
     CategoryModel(name: "E-Ticaret", donationRate: 0.0),
   ];
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -41,6 +43,9 @@ class _HomePageState extends State<HomePage> {
       await context.read<BrandProvider>().getBrands();
       await context.read<BrandProvider>().getBanners();
       await showAppRateDialog();
+    });
+    _searchController.addListener(() {
+      setState(() {});
     });
     _scrollController.addListener(() async {
       if (_scrollController.position.pixels >= (_scrollController.position.maxScrollExtent - 250) && !_isLoading) {
@@ -115,345 +120,73 @@ class _HomePageState extends State<HomePage> {
     List<String> banners = context.watch<BrandProvider>().bannerImages;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          AppBarWidget(
-            leading: IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: Icon(
-                Icons.menu,
-                color: AppTheme.secondaryColor,
-                size: deviceFontSize(context, 30),
+      body: DefaultTabController(
+        length: 3,
+        child: Column(
+          children: [
+            AppBarWidget(
+              leading: IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: Icon(
+                  Icons.menu,
+                  color: AppTheme.secondaryColor,
+                  size: deviceFontSize(context, 30),
+                ),
               ),
             ),
-          ),
-          bannerArea(banners, bannerLoaded, size),
-          Container(
-            padding: const EdgeInsets.all(8),
-            width: double.infinity,
-            height: deviceHeight(context) * 0.09,
-            child: TypeAheadField(
-              itemSeparatorBuilder: (context, index) => Divider(color: Colors.grey.shade300),
-              itemBuilder: (context, offer) {
-                return Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BrandDetailPage(
-                            brandModel: offer,
-                          ),
-                        ),
-                      );
-                    },
-                    subtitle: Text(offer.sector ?? ""),
-                    trailing: Column(
-                      children: [
-                        LocaleText(
-                          'home_page_donation_rate',
-                          style: AppTheme.normalTextStyle(context, 14),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: deviceWidthSize(context, 10),
-                            vertical: deviceHeightSize(context, 5),
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: SizedBox(
-                            // height: 50,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.volunteer_activism_rounded,
-                                  color: AppTheme.primaryColor,
-                                  size: deviceFontSize(context, 18),
-                                ),
-                                SizedBox(
-                                  width: deviceWidthSize(context, 6),
-                                ),
-                                Text(
-                                  "%${(offer.donationRate)}",
-                                  style: AppTheme.semiBoldTextStyle(
-                                    context,
-                                    14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    leading: Container(
-                        width: deviceWidthSize(context, 50),
-                        height: deviceHeightSize(context, 50),
-                        decoration: BoxDecoration(
-                          boxShadow: AppTheme.shadowList,
-                          color: AppTheme.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: offer.logo != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(100),
-                                child: Image.network(
-                                  offer.logo!,
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.center,
-                                  errorBuilder: (context, error, stackTrace) => Center(
-                                    child: Text(
-                                      offer.name![0],
-                                      style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : Center(
-                                child: Text(
-                                  offer.name![0],
-                                  style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
-                                ),
-                              )),
-                    title: Text(offer.name ?? ""),
-                  ),
-                );
-              },
-              emptyBuilder: (context) => const Text(""),
-              errorBuilder: (context, error) => LocaleText('home_page_connection_problem'),
-              builder: (context, search, focusNode) {
-                return Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.symmetric(
-                    horizontal: deviceWidthSize(context, 10),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: deviceWidthSize(context, 5),
-                    vertical: deviceHeightSize(context, 4),
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    borderRadius: BorderRadius.circular(10),
-                    // border: Border.all(
-                    //   color: AppTheme.secondaryColor.withOpacity(0.2),
-                    // ),
-                  ),
-                  child: TextField(
-                    focusNode: focusNode,
-                    onTap: () {
-                      _scrollController.animateTo(
-                        deviceHeightSize(context, 200),
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.ease,
-                      );
-                    },
-                    controller: search,
-                    decoration: InputDecoration(
-                      hintText: "home_page_search_brand".locale,
-                      hintStyle: AppTheme.lightTextStyle(context, 14),
-                      // border: InputBorder.none,
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                        color: AppTheme.secondaryColor.withOpacity(0.5),
+            bannerArea(banners, bannerLoaded, size),
+            buildSearchArea(size),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: deviceWidthSize(context, 20),
+              ),
+              alignment: Alignment.centerLeft,
+              child: TabBar(
+                indicatorColor: Colors.transparent,
+                tabAlignment: TabAlignment.start,
+                labelColor: AppTheme.primaryColor,
+                labelStyle: AppTheme.boldTextStyle(context, 14),
+                unselectedLabelStyle: AppTheme.normalTextStyle(context, 14),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.primaryColor.withOpacity(0.1),
+                ),
+                labelPadding: EdgeInsets.symmetric(
+                  horizontal: deviceWidthSize(context, 20),
+                ),
+                dividerColor: Colors.transparent,
+                isScrollable: true,
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                tabs: ["home_page_brands".locale, "Sosyal İşletmeler", "Kooperatifler"]
+                    .map(
+                      (e) => Tab(
+                        text: e.locale,
                       ),
-                      suffixIcon: (search.text.isNotEmpty)
-                          ? IconButton(onPressed: search.clear, icon: const Icon(Icons.close))
-                          : null,
-                    ),
-                  ),
-                );
-              },
-              onSelected: (value) {},
-              hideOnEmpty: true,
-              hideWithKeyboard: false,
-              suggestionsCallback: (search) async {
-                if (search.length < 2) return [];
-                var response1 = await context.read<BrandProvider>().getOffersForSearch(search);
-                var response2 = await context.read<BrandProvider>().getOffersForSearch2(search);
-                return response1 + response2;
-              },
+                    )
+                    .toList(),
+              ),
             ),
-          ),
-          Expanded(
-            child: context.watch<BrandProvider>().loadingState == LoadingState.loading
-                ? const Center(child: CircularProgressIndicator())
-                : Column(
-                    children: [
-                      SizedBox(
-                        height: deviceHeightSize(context, 10),
-                      ),
-                      //filter and sort
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                              left: deviceWidthSize(context, 20),
-                            ),
-                            child: LocaleText(
-                              'home_page_brands',
-                              style: AppTheme.boldTextStyle(context, 20),
-                            ),
-                          ),
-                          filterAndSort(context),
-                        ],
-                      ),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            //Filtered ListView
-                            // Container(
-                            //   width: size.width * 0.2,
-                            //   height: size.height,
-                            //   decoration: BoxDecoration(color: Colors.grey.shade100, boxShadow: [
-                            //     BoxShadow(
-                            //       offset: const Offset(1, 2),
-                            //       blurRadius: 2,
-                            //       color: Colors.black.withOpacity(0.1),
-                            //     )
-                            //   ]),
-                            //   child: ListView.builder(
-                            //     padding: EdgeInsets.zero,
-                            //     itemCount: categories.length,
-                            //     itemBuilder: (context, index) {
-                            //       if (selectedCategory == index) {
-                            //         return GestureDetector(
-                            //           onTap: () {
-                            //             setState(() {
-                            //               selectedCategory = index;
-                            //             });
-                            //           },
-                            //           child: Stack(
-                            //             children: [
-                            //               Positioned(
-                            //                 child: Container(
-                            //                   alignment: Alignment.center,
-                            //                   height: size.height * 0.05,
-                            //                   width: size.width * 0.2,
-                            //                   color: Colors.white,
-                            //                   child: AutoSizeText(
-                            //                     categories[index].name ?? "",
-                            //                     style: const TextStyle(
-                            //                       fontWeight: FontWeight.bold,
-                            //                     ),
-                            //                     maxLines: 2,
-                            //                     textAlign: TextAlign.center,
-                            //                   ),
-                            //                 ),
-                            //               ),
-                            //               Positioned(
-                            //                 top: size.height * 0.015,
-                            //                 bottom: size.height * 0.015,
-                            //                 width: 3,
-                            //                 child: Container(color: AppTheme.primaryColor),
-                            //               ),
-                            //             ],
-                            //           ),
-                            //         );
-                            //       }
-                            //       return InkWell(
-                            //         onTap: () {
-                            //           setState(() {
-                            //             selectedCategory = index;
-                            //           });
-                            //         },
-                            //         child: Container(
-                            //           alignment: Alignment.center,
-                            //           height: size.height * 0.05,
-                            //           width: size.width,
-                            //           decoration: BoxDecoration(
-                            //               color: Colors.grey.shade100,
-                            //               border: const Border(
-                            //                 bottom: BorderSide(
-                            //                   width: 0.5,
-                            //                   color: Colors.white
-                            //                 ),
-                            //               )),
-                            //           child: AutoSizeText(
-                            //             categories[index].name ?? "",
-                            //             style: const TextStyle(
-                            //               fontWeight: FontWeight.bold,
-                            //             ),
-                            //             maxLines: 2,
-                            //             textAlign: TextAlign.center,
-                            //           ),
-                            //         ),
-                            //       );
-                            //     },
-                            //   ),
-                            // ),
-                            Expanded(
-                              child: ListView.builder(
-                                padding: EdgeInsets.zero,
-                                controller: _scrollController,
-                                itemCount: _brandList.length,
-                                itemBuilder: (context, index) {
-                                  bool isSearch = _brandList[index]
-                                      .name!
-                                      .toLowerCase()
-                                      .contains(_searchController.text.toLowerCase());
-                                  bool isFilter = false;
-                                  String filterText = context.read<BrandProvider>().filterText;
-                                  switch (filterText) {
-                                    case "depremBolgesi":
-                                      isFilter = _brandList[index].inEarthquakeZone!;
-                                      break;
-                                    case "socialEnterprise":
-                                      isFilter = _brandList[index].isSocialEnterprise!;
-                                      break;
-                                    default:
-                                      isFilter = (_brandList[index].sector ?? "")
-                                          .toLowerCase()
-                                          .contains(filterText.toLowerCase());
-                                      break;
-                                  }
-
-                                  (_brandList[index].sector ?? "")
-                                      .toLowerCase()
-                                      .contains(context.read<BrandProvider>().filterText.toLowerCase());
-
-                                  bool isReturn = isSearch && isFilter;
-                                  return isReturn
-                                      ? ListItemWidget(
-                                          context,
-                                          sector: _brandList[index].sector,
-                                          logo: _brandList[index].logo,
-                                          title: (_brandList[index].name ?? "").removeBrackets(),
-                                          desc: _brandList[index].detailText,
-                                          donationRate: _brandList[index].donationRate,
-                                          logoWidth: deviceWidthSize(context, 50),
-                                          logoHeight: deviceWidthSize(context, 50),
-                                          fontSize: 9,
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => BrandDetailPage(
-                                                  brandModel: _brandList[index],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        )
-                                      : Container();
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      _isLoading ? const LinearProgressIndicator() : const SizedBox.shrink()
-                    ],
-                  ),
-          )
-        ],
+            SizedBox(height: deviceHeightSize(context, 10)),
+            Expanded(
+              flex: 3,
+              child: TabBarView(children: [
+                buildBrandsArea(size),
+                const Text("data"),
+                const Text("data"),
+              ]),
+            )
+          ],
+        ),
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   child: const Text("data"),
+      //   onPressed: () {
+      //     copyFileToExternal();
+      //   },
+      // ),
     );
   }
 
@@ -604,5 +337,314 @@ class _HomePageState extends State<HomePage> {
             ),
           )
         : const SizedBox();
+  }
+
+  Widget buildFilteredListView(Size size) {
+    return Container(
+      width: size.width * 0.2,
+      height: size.height,
+      decoration: BoxDecoration(color: Colors.grey.shade100, boxShadow: [
+        BoxShadow(
+          offset: const Offset(1, 2),
+          blurRadius: 2,
+          color: Colors.black.withOpacity(0.1),
+        )
+      ]),
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          if (selectedCategory == index) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedCategory = index;
+                });
+              },
+              child: Stack(
+                children: [
+                  Positioned(
+                    child: Container(
+                      alignment: Alignment.center,
+                      height: size.height * 0.05,
+                      width: size.width * 0.2,
+                      color: Colors.white,
+                      child: AutoSizeText(
+                        categories[index].name ?? "",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: size.height * 0.015,
+                    bottom: size.height * 0.015,
+                    width: 3,
+                    child: Container(color: AppTheme.primaryColor),
+                  ),
+                ],
+              ),
+            );
+          }
+          return InkWell(
+            onTap: () {
+              setState(() {
+                selectedCategory = index;
+              });
+            },
+            child: Container(
+              alignment: Alignment.center,
+              height: size.height * 0.05,
+              width: size.width,
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  border: const Border(
+                    bottom: BorderSide(width: 0.5, color: Colors.white),
+                  )),
+              child: AutoSizeText(
+                categories[index].name ?? "",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 2,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget buildSearchArea(Size size) {
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          width: double.infinity,
+          height: deviceHeight(context) * 0.08,
+          child: TypeAheadField(
+            controller: _searchController,
+            itemSeparatorBuilder: (context, index) => Divider(color: Colors.grey.shade300),
+            itemBuilder: (context, offer) {
+              return Padding(
+                padding: const EdgeInsets.all(8),
+                child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BrandDetailPage(
+                          brandModel: offer,
+                        ),
+                      ),
+                    );
+                  },
+                  subtitle: Text(offer.sector ?? ""),
+                  trailing: Column(
+                    children: [
+                      LocaleText(
+                        'home_page_donation_rate',
+                        style: AppTheme.normalTextStyle(context, 14),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: deviceWidthSize(context, 10),
+                          vertical: deviceHeightSize(context, 5),
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: SizedBox(
+                          // height: 50,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.volunteer_activism_rounded,
+                                color: AppTheme.primaryColor,
+                                size: deviceFontSize(context, 18),
+                              ),
+                              SizedBox(
+                                width: deviceWidthSize(context, 6),
+                              ),
+                              Text(
+                                "%${(offer.donationRate)}",
+                                style: AppTheme.semiBoldTextStyle(
+                                  context,
+                                  14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  leading: Container(
+                      width: deviceWidthSize(context, 50),
+                      height: deviceHeightSize(context, 50),
+                      decoration: BoxDecoration(
+                        boxShadow: AppTheme.shadowList,
+                        color: AppTheme.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: offer.logo != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(100),
+                              child: Image.network(
+                                offer.logo!,
+                                fit: BoxFit.contain,
+                                alignment: Alignment.center,
+                                errorBuilder: (context, error, stackTrace) => Center(
+                                  child: Text(
+                                    offer.name![0],
+                                    style: AppTheme.boldTextStyle(context, 28, color: AppTheme.black),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                offer.name![0],
+                                style: AppTheme.boldTextStyle(context, 28, color: AppTheme.white),
+                              ),
+                            )),
+                  title: Text(offer.name ?? ""),
+                ),
+              );
+            },
+            emptyBuilder: (context) => const Text(""),
+            errorBuilder: (context, error) => LocaleText('home_page_connection_problem'),
+            builder: (context, search, focusNode) {
+              return Container(
+                alignment: Alignment.center,
+                margin: EdgeInsets.symmetric(
+                  horizontal: deviceWidthSize(context, 10),
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: deviceWidthSize(context, 5),
+                  vertical: deviceHeightSize(context, 4),
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.white,
+                  borderRadius: BorderRadius.circular(10),
+                  // border: Border.all(
+                  //   color: AppTheme.secondaryColor.withOpacity(0.2),
+                  // ),
+                ),
+                child: TextField(
+                  focusNode: focusNode,
+                  onTap: () {
+                    _scrollController.animateTo(
+                      deviceHeightSize(context, 200),
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.ease,
+                    );
+                  },
+                  controller: search,
+                  decoration: InputDecoration(
+                    hintText: "home_page_search_brand".locale,
+                    hintStyle: AppTheme.lightTextStyle(context, 14),
+                    fillColor: AppTheme.primaryColor.withOpacity(0.1),
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    prefixIcon: (search.text.isNotEmpty)
+                        ? IconButton(onPressed: search.clear, icon: const Icon(Icons.close))
+                        : Icon(Icons.search_rounded, color: AppTheme.secondaryColor.withOpacity(0.5)),
+                  ),
+                ),
+              );
+            },
+            onSelected: (value) {},
+            hideOnEmpty: true,
+            hideWithKeyboard: false,
+            suggestionsCallback: (search) async {
+              if (search.length < 2) return [];
+              var response1 = await context.read<BrandProvider>().getOffersForSearch(search);
+              var response2 = await context.read<BrandProvider>().getOffersForSearch2(search);
+              var result = response1 + response2;
+              return result;
+            },
+          ),
+        ),
+        Positioned(right: 10, top: 0, bottom: 0, child: filterAndSort(context)),
+      ],
+    );
+  }
+
+  Widget buildBrandsArea(Size size) {
+    return context.watch<BrandProvider>().loadingState == LoadingState.loading
+        ? const Center(child: CircularProgressIndicator())
+        : Column(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    //buildFilteredListView(size),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        controller: _scrollController,
+                        itemCount: _brandList.length,
+                        itemBuilder: (context, index) {
+                          bool isSearch = true;
+                          //  _brandList[index].name!.toLowerCase().contains(_searchController.text.toLowerCase());
+                          bool isFilter = false;
+                          String filterText = context.read<BrandProvider>().filterText;
+                          switch (filterText) {
+                            case "depremBolgesi":
+                              isFilter = _brandList[index].inEarthquakeZone!;
+                              break;
+                            case "socialEnterprise":
+                              isFilter = _brandList[index].isSocialEnterprise!;
+                              break;
+                            default:
+                              isFilter =
+                                  (_brandList[index].sector ?? "").toLowerCase().contains(filterText.toLowerCase());
+                              break;
+                          }
+
+                          (_brandList[index].sector ?? "")
+                              .toLowerCase()
+                              .contains(context.read<BrandProvider>().filterText.toLowerCase());
+
+                          bool isReturn = isSearch && isFilter;
+                          return isReturn
+                              ? ListItemWidget(
+                                  context,
+                                  sector: _brandList[index].sector,
+                                  logo: _brandList[index].logo,
+                                  title: (_brandList[index].name ?? "").removeBrackets(),
+                                  desc: _brandList[index].detailText,
+                                  donationRate: _brandList[index].donationRate,
+                                  logoWidth: deviceWidthSize(context, 50),
+                                  logoHeight: deviceWidthSize(context, 50),
+                                  fontSize: 9,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BrandDetailPage(
+                                          brandModel: _brandList[index],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _isLoading ? const LinearProgressIndicator() : const SizedBox.shrink()
+            ],
+          );
   }
 }

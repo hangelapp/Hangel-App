@@ -14,6 +14,7 @@ class BrandModel {
   final int favoriteCount; // Default value 0 Closed for now
   double? totalDonation; // Tüm donation değerleri toplanacak
   int? processCount; // Her seferinde 1 artacak
+  final String? type;
 
   BrandModel(
       {this.id,
@@ -30,7 +31,8 @@ class BrandModel {
       this.categories,
       this.favoriteCount = 0,
       this.totalDonation,
-      this.processCount});
+      this.processCount,
+      this.type});
 
   factory BrandModel.fromJson(Map<String, dynamic> json) {
     return BrandModel(
@@ -50,7 +52,8 @@ class BrandModel {
             : null,
         favoriteCount: json['favoriteCount'] ?? 0,
         totalDonation: json['totalDonation'],
-        processCount: json['processCount']);
+        processCount: json['processCount'],
+        type: json['type']);
   }
 
   Map<String, dynamic> toJson() {
@@ -69,7 +72,8 @@ class BrandModel {
       'categories': categories?.map((e) => e.toJson()).toList(),
       'favoriteCount': favoriteCount,
       'totalDonation': totalDonation,
-      'processCount': processCount
+      'processCount': processCount,
+      'type': type
     };
   }
 }
