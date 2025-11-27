@@ -81,6 +81,7 @@ class DropdownWidget extends StatelessWidget {
                     vertical: deviceHeightSize(context, 5),
                   ),
                   width: double.infinity,
+                  height: deviceHeightSize(context, 50),
                   child: DropdownButtonHideUnderline(
                     child: DropdownFlutter<String>.search(
                       hintText: "",

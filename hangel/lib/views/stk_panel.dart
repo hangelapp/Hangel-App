@@ -1,10 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hangel/constants/app_theme.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/stk_model.dart';
+import 'package:hangel/views/stk_panel_info.dart';
 import 'package:hangel/views/stk_panel_qr.dart';
+import 'package:hangel/widgets/app_name_widget.dart';
 
 import 'app_view.dart';
+import 'stk_panel_support.dart';
 
 class STKPanel extends StatefulWidget {
   const STKPanel({super.key});
@@ -114,202 +118,72 @@ class _STKPanelState extends State<STKPanel> {
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          buildQrCreate(),
-                          buildNullItem(),
-                          buildNullItem(),
-                          buildNullItem(),
+                          buildProcessButton(
+                              "QR Kod Görüntüle", () => Navigator.pushNamed(context, STKPanelQr.routeName)),
+                          buildProcessButton("Destek", () => Navigator.pushNamed(context, StkPanelSupport.routeName)),
+                          buildProcessButton(
+                              "Bilgileri Güncelle", () => Navigator.pushNamed(context, STKPanelInfo.routeName)),
                           buildNullItem(),
                           buildNullItem(),
                           buildNullItem(),
                         ]),
                   ),
                 ),
-                const Text(
-                  'Bilgiler',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 10),
-                Table(
-                  columnWidths: const {0: const IntrinsicColumnWidth()},
-                  border: TableBorder(
-                    horizontalInside: BorderSide(width: 0.5, color: Colors.grey.shade300),
-                  ),
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  children: [
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK ID",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.id ?? "-"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK Aktif",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            stkModel?.isActive == true ? "Evet" : "Hayır",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: stkModel?.isActive == true ? Colors.green : Colors.red,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Katılma Tarihi",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "${stkModel?.creationDate?.day}/${stkModel?.creationDate?.month}/${stkModel?.creationDate?.year}",
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK Türü",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.type ?? "-"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "STK Adres",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.city ?? "-"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Kategori",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("${stkModel?.categories.join(", ")}"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Deprem Bölgesi",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(stkModel?.inEarthquakeZone == true ? "Evet" : "Hayır"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Fayda Alanı",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("${stkModel?.fieldOfBenefit}"),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Özel Durum",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("${stkModel?.specialStatus}"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
               ]),
             ),
           );
   }
 
-  Widget buildQrCreate() {
+  Widget buildProcessButton(String title, void Function()? onTap) {
     return Material(
-      color: Colors.grey.shade300,
+      color: Colors.white70,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         splashColor: Colors.grey.shade200,
-        onTap: () {
-          Navigator.pushNamed(context, STKPanelQr.routeName);
-        },
-        child: Container(
-          height: 100,
-          width: 100,
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            // color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Center(
-            child: Text(
-              "QR Kod Görüntüle",
-              style: TextStyle(fontWeight: FontWeight.bold),
+        onTap: onTap ?? () {},
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: AppTheme.primaryColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.info_outline,
+                  color: Colors.white,
+                  size: 15,
+                ),
+              ),
             ),
-          ),
+            Center(
+                child: AppNameWidget(
+              fontSize: 40,
+              color: AppTheme.primaryColor.withOpacity(0.05),
+            )),
+            Container(
+              height: 100,
+              width: 100,
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

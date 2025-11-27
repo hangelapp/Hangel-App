@@ -33,6 +33,8 @@ import 'views/select_favorite_stk_page.dart';
 import 'views/settings_page.dart';
 import 'views/splash_page.dart';
 import 'views/stk_panel.dart';
+import 'views/stk_panel_info.dart';
+import 'views/stk_panel_support.dart';
 import 'views/stk_volunteers_page.dart';
 import 'views/support_page.dart';
 import 'views/user_ban_page.dart';
@@ -89,40 +91,37 @@ void main() async {
   }
 
   if (!kIsWeb) {
-    // Uygulama çalışırken gelen deep linkleri dinle
     try {
-      FirebaseDynamicLinks.instance.onLink
-          .listen((PendingDynamicLinkData dynamicLinkData) async {
-            final Uri deepLink = dynamicLinkData.link;
-            final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
-            if (deepLinkStkId != null) {
-              if (Auth().currentUser != null) {
-                await FirebaseFirestore.instance
-                    .collection("stklar")
-                    .where("id", isEqualTo: deepLinkStkId)
-                    .get()
-                    .then((value) {
-                      if (value.docs.isNotEmpty) {
-                        StkModel stkModel = StkModel.fromJson(
-                          value.docs.first.data(),
-                        );
-                        Get.to(() => STKDetailPage(stkModel: stkModel));
-                      }
-                    });
-              } else {
-                Get.to(
-                  () => SelectFavoriteStkPage(
-                    inTree: false,
-                    selectedSTKIds: [deepLinkStkId],
-                  ),
-                );
+      // Uygulama çalışırken deep link gelirse dinle
+      FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData dynamicLinkData) async {
+        final Uri deepLink = dynamicLinkData.link;
+        final deepLinkStkId = _extractStkIdFromLink(deepLink.toString());
+        if (deepLinkStkId != null) {
+          // Bu noktada istenirse bir state management yöntemiyle (GetX, Provider, vs.)
+          // uygulama içinde bu veriyi güncelleyebilirsiniz.
+          // Şimdilik basitlik olsun diye print atıyoruz.
+          print("Runtime deep link STK ID: $deepLinkStkId");
+          if (Auth().currentUser != null) {
+            await FirebaseFirestore.instance
+                .collection("stklar")
+                .where("id", isEqualTo: deepLinkStkId)
+                .get()
+                .then((value) {
+              if (value.docs.isNotEmpty) {
+                StkModel stkModel = StkModel.fromJson(value.docs.first.data());
+                Get.to(() => STKDetailPage(stkModel: stkModel));
               }
-            }
-          })
-          .onError((error) {
-            debugPrint('onLink error: $error');
-          });
-    } catch (e) {}
+            });
+          } else {
+            Get.to(() => SelectFavoriteStkPage(inTree: false, selectedSTKIds: [deepLinkStkId]));
+          }
+        }
+      }).onError((error) {
+        print('onLink error: $error');
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   runApp(
@@ -218,15 +217,18 @@ Future<void> initializeLocalNotifications() async {
 }
 
 Future<String?> _handleInitialDynamicLink() async {
-  if (kIsWeb) return null;
-  final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks
-      .instance
-      .getInitialLink();
-  if (initialLink != null) {
-    final Uri deepLink = initialLink.link;
-    return _extractStkIdFromLink(deepLink.toString());
+  try {
+    if (kIsWeb) return null;
+    final PendingDynamicLinkData? initialLink = await FirebaseDynamicLinks.instance.getInitialLink();
+    if (initialLink != null) {
+      final Uri deepLink = initialLink.link;
+      return _extractStkIdFromLink(deepLink.toString());
+    }
+    return null;
+  } catch (e) {
+    print(e);
+    return null;
   }
-  return null;
 }
 
 String? _extractStkIdFromLink(String link) {
@@ -322,6 +324,10 @@ class MyApp extends StatelessWidget {
         SplashPage.routeName: (context) => SplashPage(stkId: stkId),
         SupportPage.routeName: (context) => const SupportPage(),
         UserBanPage.routeName: (context) => const UserBanPage(),
+        STKPanel.routeName: (context) => const STKPanel(),
+        STKPanelQr.routeName: (context) => const STKPanelQr(),
+        StkPanelSupport.routeName: (context) => const StkPanelSupport(),
+        STKPanelInfo.routeName: (context) => const STKPanelInfo(),
         VolunteerForm.routeName: (context) => const VolunteerForm(),
       },
     );

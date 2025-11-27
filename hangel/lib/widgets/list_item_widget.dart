@@ -30,6 +30,7 @@ Widget ListItemWidget(
   double? logoWidth,
   double? logoHeight,
   double? nullFontSize,
+  double? fontSize,
   bool? isActive,
 }) {
   bool? applicantExist;
@@ -87,13 +88,13 @@ Widget ListItemWidget(
                             children: [
                               Text(
                                 title ?? "",
-                                style: AppTheme.boldTextStyle(context, 15),
+                                style: AppTheme.boldTextStyle(context, (fontSize ?? 12) + 3),
                               ),
                               Text(
                                 sector ?? "",
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppTheme.lightTextStyle(context, 12),
+                                style: AppTheme.lightTextStyle(context, fontSize ?? 12),
                               ),
                             ],
                           ),
@@ -103,7 +104,7 @@ Widget ListItemWidget(
                             children: [
                               LocaleText(
                                 "home_page_donation_rate",
-                                style: AppTheme.normalTextStyle(context, 14),
+                                style: AppTheme.normalTextStyle(context, (fontSize ?? 12) + 2),
                               ),
                               Container(
                                 padding: EdgeInsets.symmetric(
@@ -128,7 +129,7 @@ Widget ListItemWidget(
                                       "%${(donationRate)}",
                                       style: AppTheme.semiBoldTextStyle(
                                         context,
-                                        14,
+                                        (fontSize ?? 12) + 2,
                                       ),
                                     ),
                                   ],

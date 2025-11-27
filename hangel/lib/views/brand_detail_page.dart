@@ -37,7 +37,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
       setState(() {});
     });
     Future.delayed(const Duration(milliseconds: 100), () async {
-      await context.read<BrandProvider>().getBrandInfo(widget.brandModel.id ?? "").then(
+      await context.read<BrandProvider>().getBrandInfo(id: widget.brandModel.id ?? "").then(
         (value) {
           if (!mounted) return;
           setState(() {
@@ -142,7 +142,8 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                                   ),
                                   Text(
                                     widget.brandModel.sector ?? "",
-                                    style: AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
+                                    style:
+                                        AppTheme.normalTextStyle(context, 14, color: AppTheme.black.withOpacity(0.7)),
                                   ),
                                 ],
                               ),
@@ -154,10 +155,16 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
                               onTap: () async {
                                 if (favoriteButtonLoading) return;
                                 if (brandInfo == null || brandInfo?.brandId == null) return;
-                                context.read<BrandProvider>().addRemoveFavoriteBrand(widget.brandModel.id!).then((value) {
+                                context
+                                    .read<BrandProvider>()
+                                    .addRemoveFavoriteBrand(widget.brandModel.id!)
+                                    .then((value) {
                                   setState(() {});
                                 });
-                                await context.read<BrandProvider>().setFavoriteBrand(brandInfo!.brandId!).then((value) {
+                                await context
+                                    .read<BrandProvider>()
+                                    .setFavoriteBrand(id: brandInfo!.brandId!, name: widget.brandModel.name ?? "")
+                                    .then((value) {
                                   setState(() {
                                     brandInfo = value;
                                   });
@@ -639,7 +646,7 @@ class _BrandDetailPageState extends State<BrandDetailPage> with SingleTickerProv
         "title": "brand_detail_page_deprem_bolgesi_mi".locale,
         "value": (widget.brandModel.inEarthquakeZone ?? false)
             ? "yes".locale // Assuming "yes" key in localization
-            : "no".locale,  // Assuming "no" key in localization
+            : "no".locale, // Assuming "no" key in localization
       },
     ];
 
