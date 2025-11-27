@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart'; // Import for TapGestureRecognizer
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,23 +9,28 @@ import 'package:hangel/extension/string_extension.dart';
 import 'package:hangel/helpers/hive_helpers.dart';
 import 'package:hangel/models/general_response_model.dart';
 import 'package:hangel/providers/app_view_provider.dart';
+import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/views/app_view.dart';
+import 'package:hangel/views/brand_form_widget.dart';
 import 'package:hangel/views/home_page.dart';
 import 'package:hangel/views/select_favorite_stk_page.dart';
+import 'package:hangel/views/stk_form_widget.dart';
 import 'package:hangel/views/vounteer_form.dart';
+import 'package:hangel/widgets/bottom_sheet_widget.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
+
 import '../../constants/app_theme.dart';
 import '../../constants/constants.dart';
 import '../../constants/size.dart';
-import '../../providers/login_register_page_provider.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/form_field_widget.dart';
 import '../../widgets/general_button_widget.dart';
+import '../../widgets/locale_text.dart';
 import '../../widgets/toast_widgets.dart';
-import '../../widgets/locale_text.dart'; // Ensure LocaleText is imported
 
 class RegisterPage extends StatefulWidget {
   final List<String>? stkIds;
@@ -38,8 +43,13 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final bool appealAvailable =
+      true; // Controls STK application button availability
   final _maskFormatter = MaskTextInputFormatter(
-      mask: '(###) ### ## ##', filter: {"#": RegExp(r'[0-9]')}, type: MaskAutoCompletionType.lazy);
+    mask: '(###) ### ## ##',
+    filter: {"#": RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
   PhoneNumber _phoneNumber = PhoneNumber(isoCode: 'TR');
   final bool _isValidNumber = true;
 
@@ -85,16 +95,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    _phoneLoginPageType = context.watch<LoginRegisterPageProvider>().phoneLoginPageType;
+    _phoneLoginPageType = context
+        .watch<LoginRegisterPageProvider>()
+        .phoneLoginPageType;
     return Scaffold(
       backgroundColor: AppTheme.white,
       body: Stack(
         children: [
           Column(
             children: [
-              const AppBarWidget(
-                leading: SizedBox(),
-              ),
+              const AppBarWidget(leading: SizedBox()),
               Expanded(
                 child: SingleChildScrollView(
                   controller: _scrollController,
@@ -105,17 +115,18 @@ class _RegisterPageState extends State<RegisterPage> {
                         _phoneLoginPageType == PhoneLoginPageType.verify
                             ? "assets/images/verification.svg"
                             : "assets/images/register.svg",
-                        height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.login ? 200 : 150),
+                        height: deviceHeightSize(
+                          context,
+                          _phoneLoginPageType == PhoneLoginPageType.login
+                              ? 200
+                              : 150,
+                        ),
                       ),
-                      SizedBox(
-                        height: deviceHeightSize(context, 20),
-                      ),
+                      SizedBox(height: deviceHeightSize(context, 20)),
                       _phoneLoginPageType == PhoneLoginPageType.verify
                           ? verifySmsCodeWidget(context)
                           : loginRegisterWidget(context),
-                      SizedBox(
-                        height: deviceHeightSize(context, 20),
-                      )
+                      SizedBox(height: deviceHeightSize(context, 20)),
                     ],
                   ),
                 ),
@@ -129,91 +140,153 @@ class _RegisterPageState extends State<RegisterPage> {
                   left: 30,
                   child: GeneralButtonWidget(
                     onPressed: () async {
-                      if (context.read<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading) {
+                      if (context
+                              .read<LoginRegisterPageProvider>()
+                              .smsCodeState ==
+                          LoadingState.loading) {
                         return;
                       }
 
                       if (_verifyController.text.length != 6) {
-                        ToastWidgets.errorToast(context, 'register_page_error_invalid_code'.locale);
+                        ToastWidgets.errorToast(
+                          context,
+                          'register_page_error_invalid_code'.locale,
+                        );
                       } else {
                         String phoneNum = _phoneNumber.phoneNumber!;
-                        context.read<LoginRegisterPageProvider>().phoneNumber = phoneNum;
+                        context.read<LoginRegisterPageProvider>().phoneNumber =
+                            phoneNum;
                         if (kIsWeb) {
                           await context
                               .read<LoginRegisterPageProvider>()
-                              .authenticate(_verifyController.text, phoneNum, _nameController.text, context)
-                              .then(
-                            (value) {
-                              print(value.message);
-                              if (value.message == "true") {
-                                ToastWidgets.successToast(context, "Giriş yapılıyor...");
-                              }
-                              if (value.success == true) {
-                                if (HiveHelpers.getUserFromHive().favoriteStks.isEmpty) {
-                                  Navigator.pushReplacement(context,
-                                      MaterialPageRoute(builder: (context) => const SelectFavoriteStkPage(inTree: false)));
-                                  return;
+                              .authenticate(
+                                _verifyController.text,
+                                phoneNum,
+                                _nameController.text,
+                                context,
+                              )
+                              .then((value) {
+                                print(value.message);
+                                if (value.message == "true") {
+                                  ToastWidgets.successToast(
+                                    context,
+                                    "Giriş yapılıyor...",
+                                  );
                                 }
-                                if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                          (element) => element == -1,
-                                        ) ==
-                                    false) {
-                                  if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                                    Navigator.pushReplacementNamed(
+                                if (value.success == true) {
+                                  if (HiveHelpers.getUserFromHive()
+                                      .favoriteStks
+                                      .isEmpty) {
+                                    Navigator.pushReplacement(
                                       context,
-                                      VolunteerForm.routeName,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SelectFavoriteStkPage(
+                                              inTree: false,
+                                            ),
+                                      ),
                                     );
                                     return;
                                   }
+                                  if (context
+                                          .read<LoginRegisterPageProvider>()
+                                          .selectedOptions
+                                          .any((element) => element == -1) ==
+                                      false) {
+                                    if (context
+                                            .read<LoginRegisterPageProvider>()
+                                            .selectedOptions[0] ==
+                                        2) {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        VolunteerForm.routeName,
+                                      );
+                                      return;
+                                    }
+                                  }
+                                  context
+                                          .read<AppViewProvider>()
+                                          .selectedWidget =
+                                      const HomePage();
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    AppView.routeName,
+                                  );
+                                } else {
+                                  _verifyController.clear();
+                                  ToastWidgets.errorToast(
+                                    context,
+                                    value.message ?? "",
+                                  );
                                 }
-                                context.read<AppViewProvider>().selectedWidget = const HomePage();
-                                Navigator.pushReplacementNamed(context, AppView.routeName);
-                              } else {
-                                _verifyController.clear();
-                                ToastWidgets.errorToast(context, value.message ?? "");
-                              }
-                            },
-                          );
+                              });
                         } else {
                           context
                               .read<LoginRegisterPageProvider>()
-                              .verifyPhoneNumber(_verifyController.text,widget.stkIds, context)
-                              .then(
-                            (value) async {
-                              if (value.success == true) {
-                                if (HiveHelpers.getUserFromHive().favoriteStks.length != 2) {
-                                  Navigator.pushReplacement(
+                              .verifyPhoneNumber(
+                                _verifyController.text,
+                                widget.stkIds,
+                                context,
+                              )
+                              .then((value) async {
+                                if (value.success == true) {
+                                  if (HiveHelpers.getUserFromHive()
+                                          .favoriteStks
+                                          .length !=
+                                      2) {
+                                    Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => SelectFavoriteStkPage(
-                                                inTree: false,
-                                                selectedSTKIds: HiveHelpers.getUserFromHive().favoriteStks,
-                                              )));
-                                  return;
-                                }
-                                if (context.read<LoginRegisterPageProvider>().selectedOptions.any(
-                                          (element) => element == -1,
-                                        ) ==
-                                    false) {
-                                  if (context.read<LoginRegisterPageProvider>().selectedOptions[0] == 2) {
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      VolunteerForm.routeName,
+                                        builder: (context) =>
+                                            SelectFavoriteStkPage(
+                                              inTree: false,
+                                              selectedSTKIds:
+                                                  HiveHelpers.getUserFromHive()
+                                                      .favoriteStks,
+                                            ),
+                                      ),
                                     );
                                     return;
                                   }
+                                  if (context
+                                          .read<LoginRegisterPageProvider>()
+                                          .selectedOptions
+                                          .any((element) => element == -1) ==
+                                      false) {
+                                    if (context
+                                            .read<LoginRegisterPageProvider>()
+                                            .selectedOptions[0] ==
+                                        2) {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        VolunteerForm.routeName,
+                                      );
+                                      return;
+                                    }
+                                  }
+                                  context
+                                          .read<AppViewProvider>()
+                                          .selectedWidget =
+                                      const HomePage();
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    AppView.routeName,
+                                  );
+                                } else {
+                                  ToastWidgets.errorToast(
+                                    context,
+                                    value.message ?? "",
+                                  );
                                 }
-                                context.read<AppViewProvider>().selectedWidget = const HomePage();
-                                Navigator.pushReplacementNamed(context, AppView.routeName);
-                              } else {
-                                ToastWidgets.errorToast(context, value.message ?? "");
-                              }
-                            },
-                          );
+                              });
                         }
                       }
                     },
-                    isLoading: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.loading,
+                    isLoading:
+                        context
+                            .watch<LoginRegisterPageProvider>()
+                            .smsCodeState ==
+                        LoadingState.loading,
                     text: 'register_page_verify'.locale,
                   ),
                 )
@@ -226,33 +299,58 @@ class _RegisterPageState extends State<RegisterPage> {
                       try {
                         print(_phoneNumber.phoneNumber);
                         // Boşluk kontrolü
-                        if ((_nameController.text.isEmpty && _phoneLoginPageType == PhoneLoginPageType.register) ||
-                            (_phoneController.text.isEmpty || !_isValidNumber || _phoneNumber.phoneNumber == null)) {
-                          ToastWidgets.errorToast(context, 'register_page_error_fill_all_fields'.locale);
+                        if ((_nameController.text.isEmpty &&
+                                _phoneLoginPageType ==
+                                    PhoneLoginPageType.register) ||
+                            (_phoneController.text.isEmpty ||
+                                !_isValidNumber ||
+                                _phoneNumber.phoneNumber == null)) {
+                          ToastWidgets.errorToast(
+                            context,
+                            'register_page_error_fill_all_fields'.locale,
+                          );
                           return;
                         }
 
                         // Agreement checks
-                        if (_phoneLoginPageType == PhoneLoginPageType.register) {
-                          if (!_isUserAgreementAccepted || !_isPrivacyAgreementAccepted) {
-                            ToastWidgets.errorToast(context, 'register_page_error_accept_agreements'.locale);
+                        if (_phoneLoginPageType ==
+                            PhoneLoginPageType.register) {
+                          if (!_isUserAgreementAccepted ||
+                              !_isPrivacyAgreementAccepted) {
+                            ToastWidgets.errorToast(
+                              context,
+                              'register_page_error_accept_agreements'.locale,
+                            );
                             return;
                           }
                         }
 
                         // Telefon numarası formatlama
                         String formattedPhoneNumber = _phoneNumber.phoneNumber!;
-                        context.read<LoginRegisterPageProvider>().phoneNumber = formattedPhoneNumber;
+                        context.read<LoginRegisterPageProvider>().phoneNumber =
+                            formattedPhoneNumber;
 
                         // Login olurken telefon numarası kontrolü
                         if (_phoneLoginPageType == PhoneLoginPageType.login) {
                           GeneralResponseModel generalResponseModel =
-                              await context.read<LoginRegisterPageProvider>().isPhoneNumberExist();
+                              await context
+                                  .read<LoginRegisterPageProvider>()
+                                  .isPhoneNumberExist();
                           if (generalResponseModel.success == false) {
-                            ToastWidgets.errorToast(context, generalResponseModel.message ?? "");
+                            ToastWidgets.errorToast(
+                              context,
+                              generalResponseModel.message ?? "",
+                            );
                             FocusScope.of(context).unfocus();
-                            context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
-                            Navigator.pushReplacementNamed(context, RegisterPage.routeName);
+                            context
+                                .read<LoginRegisterPageProvider>()
+                                .setPhoneLoginPageType(
+                                  PhoneLoginPageType.login,
+                                );
+                            Navigator.pushReplacementNamed(
+                              context,
+                              RegisterPage.routeName,
+                            );
                             return;
                           }
                         }
@@ -263,31 +361,55 @@ class _RegisterPageState extends State<RegisterPage> {
                         });
 
                         // Provider verilerini güncelle
-                        context.read<LoginRegisterPageProvider>().name = _nameController.text;
+                        context.read<LoginRegisterPageProvider>().name =
+                            _nameController.text;
 
                         // KOD GÖNDERME AŞAMASI
                         GeneralResponseModel response;
                         if (kIsWeb) {
-                          await context.read<LoginRegisterPageProvider>().sendOTP();
+                          await context
+                              .read<LoginRegisterPageProvider>()
+                              .sendOTP();
                           response = GeneralResponseModel(success: true);
                         } else {
-                          response = await context.read<LoginRegisterPageProvider>().sendVerificationCode();
+                          response = await context
+                              .read<LoginRegisterPageProvider>()
+                              .sendVerificationCode();
                         }
                         // Gönderilmediyse hata döndür ve kayıt ol sayfasına yönlendir.
                         if (response.success == true) {
                           print("Sms kodu gönderildi");
                         } else {
-                          ToastWidgets.errorToast(context, 'register_page_error_unexpected'.locale);
-                          context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
-                          Navigator.pushNamedAndRemoveUntil(context, RegisterPage.routeName, (route) => false);
+                          ToastWidgets.errorToast(
+                            context,
+                            'register_page_error_unexpected'.locale,
+                          );
+                          context
+                              .read<LoginRegisterPageProvider>()
+                              .setPhoneLoginPageType(PhoneLoginPageType.login);
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            RegisterPage.routeName,
+                            (route) => false,
+                          );
                         }
                       } catch (e) {
-                        ToastWidgets.errorToast(context, 'register_page_error_unexpected'.locale);
-                        Navigator.pushReplacementNamed(context, RegisterPage.routeName);
+                        ToastWidgets.errorToast(
+                          context,
+                          'register_page_error_unexpected'.locale,
+                        );
+                        Navigator.pushReplacementNamed(
+                          context,
+                          RegisterPage.routeName,
+                        );
                         return;
                       }
                     },
-                    isLoading: context.watch<LoginRegisterPageProvider>().smsCodeSentState == LoadingState.loading,
+                    isLoading:
+                        context
+                            .watch<LoginRegisterPageProvider>()
+                            .smsCodeSentState ==
+                        LoadingState.loading,
                     text: _phoneLoginPageType == PhoneLoginPageType.login
                         ? 'register_page_login'.locale
                         : 'register_page_create_account'.locale,
@@ -310,7 +432,10 @@ class _RegisterPageState extends State<RegisterPage> {
             style: AppTheme.lightTextStyle(context, 28),
           ),
           SizedBox(
-            height: deviceHeightSize(context, _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30),
+            height: deviceHeightSize(
+              context,
+              _phoneLoginPageType == PhoneLoginPageType.register ? 20 : 30,
+            ),
           ),
           if (_phoneLoginPageType == PhoneLoginPageType.register)
             FormFieldWidget(
@@ -367,14 +492,51 @@ class _RegisterPageState extends State<RegisterPage> {
                     disabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     hintText: 'register_page_enter_phone'.locale,
-                    hintStyle: AppTheme.lightTextStyle(context, 14, color: Colors.grey),
+                    hintStyle: AppTheme.lightTextStyle(
+                      context,
+                      14,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
           SizedBox(height: deviceHeightSize(context, 10)),
-          // Agreements
+          TextButton(
+            onPressed: () {
+              if (_phoneLoginPageType == PhoneLoginPageType.login) {
+                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(
+                  PhoneLoginPageType.register,
+                );
+                Navigator.pushReplacementNamed(context, RegisterPage.routeName);
+              } else {
+                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(
+                  PhoneLoginPageType.login,
+                );
+              }
+            },
+            child: RichText(
+              text: TextSpan(
+                text: _phoneLoginPageType == PhoneLoginPageType.login
+                    ? 'register_page_login_register_prompt_login'.locale
+                    : 'register_page_login_register_prompt_register'.locale,
+                style: AppTheme.lightTextStyle(context, 16),
+                children: [
+                  TextSpan(
+                    text: _phoneLoginPageType == PhoneLoginPageType.login
+                        ? 'register_page_login_register_action_register'.locale
+                        : 'register_page_login_register_action_login'.locale,
+                    style: AppTheme.boldTextStyle(
+                      context,
+                      16,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           if (_phoneLoginPageType == PhoneLoginPageType.register) ...[
             CheckboxListTile(
               value: _isUserAgreementAccepted,
@@ -392,19 +554,27 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_user_agreement'
-                          .locale
-                          .substring(0, ('register_page_user_agreement'.locale.length - 1) ~/ 2),
+                      text: 'register_page_user_agreement'.locale.substring(
+                        0,
+                        ('register_page_user_agreement'.locale.length - 1) ~/ 2,
+                      ),
                       style: AppTheme.lightTextStyle(context, 11),
                     ),
                     TextSpan(
-                      text: 'register_page_user_agreement'
-                          .locale
-                          .substring(('register_page_user_agreement'.locale.length - 1) ~/ 2),
-                      style: AppTheme.boldTextStyle(context, 11, color: AppTheme.primaryColor),
+                      text: 'register_page_user_agreement'.locale.substring(
+                        ('register_page_user_agreement'.locale.length - 1) ~/ 2,
+                      ),
+                      style: AppTheme.boldTextStyle(
+                        context,
+                        11,
+                        color: AppTheme.primaryColor,
+                      ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          _showAgreementDialog('settings_page_user_agreement', AppConstants.USER_AGREEMENT);
+                          _showAgreementDialog(
+                            'settings_page_user_agreement',
+                            AppConstants.USER_AGREEMENT,
+                          );
                         },
                     ),
                   ],
@@ -428,19 +598,29 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: AppTheme.lightTextStyle(context, 14),
                   children: [
                     TextSpan(
-                      text: 'register_page_privacy_agreement'
-                          .locale
-                          .substring(0, ('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
+                      text: 'register_page_privacy_agreement'.locale.substring(
+                        0,
+                        ('register_page_privacy_agreement'.locale.length - 1) ~/
+                            2,
+                      ),
                       style: AppTheme.lightTextStyle(context, 11),
                     ),
                     TextSpan(
-                      text: 'register_page_privacy_agreement'
-                          .locale
-                          .substring(('register_page_privacy_agreement'.locale.length - 1) ~/ 2),
-                      style: AppTheme.boldTextStyle(context, 11, color: AppTheme.primaryColor),
+                      text: 'register_page_privacy_agreement'.locale.substring(
+                        ('register_page_privacy_agreement'.locale.length - 1) ~/
+                            2,
+                      ),
+                      style: AppTheme.boldTextStyle(
+                        context,
+                        11,
+                        color: AppTheme.primaryColor,
+                      ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          _showAgreementDialog('settings_page_privacy_policy', AppConstants.SECRET_AGREEMENT);
+                          _showAgreementDialog(
+                            'settings_page_privacy_policy',
+                            AppConstants.SECRET_AGREEMENT,
+                          );
                         },
                     ),
                   ],
@@ -452,33 +632,69 @@ class _RegisterPageState extends State<RegisterPage> {
             //   height: deviceHeightSize(context, 20),
             // ),
           ],
-          // GİRİŞ YAP VEYA KAYDOL BUTONU
 
-          TextButton(
-            onPressed: () {
-              if (_phoneLoginPageType == PhoneLoginPageType.login) {
-                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.register);
-                Navigator.pushReplacementNamed(context, RegisterPage.routeName);
-              } else {
-                context.read<LoginRegisterPageProvider>().setPhoneLoginPageType(PhoneLoginPageType.login);
-              }
-            },
-            child: RichText(
-              text: TextSpan(
-                text: _phoneLoginPageType == PhoneLoginPageType.login
-                    ? 'register_page_login_register_prompt_login'.locale
-                    : 'register_page_login_register_prompt_register'.locale,
-                style: AppTheme.lightTextStyle(context, 16),
-                children: [
-                  TextSpan(
-                    text: _phoneLoginPageType == PhoneLoginPageType.login
-                        ? 'register_page_login_register_action_register'.locale
-                        : 'register_page_login_register_action_login'.locale,
-                    style: AppTheme.boldTextStyle(context, 16, color: AppTheme.primaryColor),
-                  ),
-                ],
-              ),
+          // GİRİŞ YAP VEYA KAYDOL BUTONU
+          Container(
+            margin: const EdgeInsets.only(bottom: 15, top: 30),
+            padding: EdgeInsets.symmetric(
+              horizontal: deviceWidthSize(context, 20),
             ),
+            child: GeneralButtonWidget(
+              isLoading:
+                  context.watch<ProfilePageProvider>().appealloadingState ==
+                  LoadingState.loading,
+              onPressed: appealAvailable
+                  ? () async {
+                      //STK başvuru butonu
+                      await showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (context) => BottomSheetWidget(
+                          title: "profile_page_stk_application_form".locale,
+                          isMinPadding: true,
+                          child: const STKFormWidget(),
+                        ),
+                      ).then((value) async {
+                        await context
+                            .read<ProfilePageProvider>()
+                            .checkApplicationStatus();
+                      });
+                    }
+                  : null,
+              text: appealAvailable
+                  ? "profile_page_stk_application_form_button".locale
+                  : "profile_page_stk_application_form_button_disabled".locale,
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 15),
+            padding: EdgeInsets.symmetric(
+              horizontal: deviceWidthSize(context, 20),
+            ),
+            child: GeneralButtonWidget(
+              onPressed: () async {
+                await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => BottomSheetWidget(
+                    title: "profile_page_brand_application_form_button".locale,
+                    isMinPadding: true,
+                    child: const BrandFormWidget(),
+                  ),
+                ).then((value) async {
+                  await context
+                      .read<ProfilePageProvider>()
+                      .checkApplicationStatus();
+                });
+              },
+              text: "profile_page_brand_application_form_button".locale,
+            ),
+          ),
+          SizedBox(height: deviceHeightSize(context, 20)),
+          Container(
+            width: double.infinity,
+            height: 1,
+            color: AppTheme.darkBlue.withOpacity(0.2),
           ),
         ],
       ),
@@ -520,15 +736,20 @@ class _RegisterPageState extends State<RegisterPage> {
               textAlign: TextAlign.center,
               style: AppTheme.lightTextStyle(context, 28),
             ),
-            SizedBox(
-              height: deviceHeightSize(context, 30),
-            ),
+            SizedBox(height: deviceHeightSize(context, 30)),
             Pinput(
               length: 6,
               autofocus: true,
               scrollPadding: const EdgeInsets.only(bottom: 100),
               controller: _verifyController,
-              cursor: Text("_", style: AppTheme.boldTextStyle(context, 22, color: AppTheme.primaryColor)),
+              cursor: Text(
+                "_",
+                style: AppTheme.boldTextStyle(
+                  context,
+                  22,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
               keyboardType: TextInputType.number,
               defaultPinTheme: PinTheme(
                 decoration: BoxDecoration(
@@ -544,7 +765,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 width: deviceWidthSize(context, 50),
                 height: deviceHeightSize(context, 60),
-                textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.primaryColor),
+                textStyle: AppTheme.boldTextStyle(
+                  context,
+                  24,
+                  color: AppTheme.primaryColor,
+                ),
               ),
               onTap: () {
                 print("object");
@@ -552,7 +777,9 @@ class _RegisterPageState extends State<RegisterPage> {
               onChanged: (value) {
                 if (value.length == 6) {}
               },
-              forceErrorState: context.watch<LoginRegisterPageProvider>().smsCodeState == LoadingState.error,
+              forceErrorState:
+                  context.watch<LoginRegisterPageProvider>().smsCodeState ==
+                  LoadingState.error,
               errorPinTheme: PinTheme(
                 decoration: BoxDecoration(
                   color: AppTheme.white,
@@ -560,22 +787,27 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 width: deviceWidthSize(context, 50),
                 height: deviceHeightSize(context, 60),
-                textStyle: AppTheme.boldTextStyle(context, 24, color: AppTheme.yellow),
+                textStyle: AppTheme.boldTextStyle(
+                  context,
+                  24,
+                  color: AppTheme.yellow,
+                ),
               ),
               errorText: 'register_page_error_invalid_code'.locale,
-              errorTextStyle: AppTheme.normalTextStyle(context, 16, color: AppTheme.red),
+              errorTextStyle: AppTheme.normalTextStyle(
+                context,
+                16,
+                color: AppTheme.red,
+              ),
             ),
-            SizedBox(
-              height: deviceHeightSize(context, 20),
-            ),
+            SizedBox(height: deviceHeightSize(context, 20)),
             Column(
               children: [
                 Text(
-                  Duration(seconds: resendSecond).toString().split(".")[0].padLeft(8, "0").substring(3, 8),
-                  style: AppTheme.lightTextStyle(
-                    context,
-                    32,
-                  ),
+                  Duration(
+                    seconds: resendSecond,
+                  ).toString().split(".")[0].padLeft(8, "0").substring(3, 8),
+                  style: AppTheme.lightTextStyle(context, 32),
                 ),
                 LocaleText(
                   'register_page_didnt_receive_code',
@@ -585,7 +817,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   onPressed: () {
                     if (resendSecond == 0) {
                       _verifyController.clear();
-                      context.read<LoginRegisterPageProvider>().sendVerificationCode();
+                      context
+                          .read<LoginRegisterPageProvider>()
+                          .sendVerificationCode();
                       setState(() {
                         resendSecond = 120;
                       });
@@ -593,15 +827,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                   child: LocaleText(
                     'register_page_resend_code',
-                    style: AppTheme.boldTextStyle(context, 16,
-                        color: resendSecond == 0 ? AppTheme.darkBlue : AppTheme.darkBlue.withOpacity(0.3)),
+                    style: AppTheme.boldTextStyle(
+                      context,
+                      16,
+                      color: resendSecond == 0
+                          ? AppTheme.darkBlue
+                          : AppTheme.darkBlue.withOpacity(0.3),
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(
-              height: deviceHeightSize(context, 20),
-            ),
+            SizedBox(height: deviceHeightSize(context, 20)),
           ],
         ),
       ),
@@ -614,12 +851,12 @@ class _RegisterPageState extends State<RegisterPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: LocaleText(title), // Assuming titles are fixed
-          content: SingleChildScrollView(
-            child: Text(content),
-          ),
+          content: SingleChildScrollView(child: Text(content)),
           actions: [
             TextButton(
-              child: LocaleText('close'), // You might want to add 'close' key to localization
+              child: LocaleText(
+                'close',
+              ), // You might want to add 'close' key to localization
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -630,3 +867,5 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
+
+// -----------------------------------------------------------------------------

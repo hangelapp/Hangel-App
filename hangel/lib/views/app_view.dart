@@ -14,10 +14,13 @@ import 'package:hangel/managers/locale_manager.dart';
 import 'package:hangel/providers/app_view_provider.dart';
 import 'package:hangel/providers/brand_provider.dart';
 import 'package:hangel/providers/login_register_page_provider.dart';
+import 'package:hangel/providers/profile_page_provider.dart';
 import 'package:hangel/views/auth/register_page.dart';
+import 'package:hangel/views/brand_form_widget.dart';
 import 'package:hangel/views/donation_history_page.dart';
 import 'package:hangel/views/settings_page.dart';
 import 'package:hangel/views/splash_page.dart';
+import 'package:hangel/views/stk_form_widget.dart';
 import 'package:hangel/views/stk_panel.dart';
 import 'package:hangel/views/utilities.dart';
 import 'package:hangel/widgets/dialog_widgets.dart';
@@ -27,8 +30,8 @@ import 'package:provider/provider.dart';
 
 import '../constants/preferences_keys.dart';
 import '../widgets/bottom_sheet_widget.dart';
-import '../widgets/support_form.dart';
 import '../widgets/locale_text.dart'; // LocaleText import edildi
+import '../widgets/support_form.dart';
 
 class AppView extends StatefulWidget {
   const AppView({super.key});
@@ -37,7 +40,9 @@ class AppView extends StatefulWidget {
   State<AppView> createState() => _AppViewState();
 }
 
-final PersistentTabController tabcontroller = PersistentTabController(initialIndex: 0);
+final PersistentTabController tabcontroller = PersistentTabController(
+  initialIndex: 0,
+);
 
 class _AppViewState extends State<AppView> {
   List<Widget> widgetOptions = <Widget>[];
@@ -48,7 +53,8 @@ class _AppViewState extends State<AppView> {
 
   Future<void> initAppTracking() async {
     if (Platform.isIOS) {
-      final TrackingStatus status = await AppTrackingTransparency.trackingAuthorizationStatus;
+      final TrackingStatus status =
+          await AppTrackingTransparency.trackingAuthorizationStatus;
 
       if (status == TrackingStatus.notDetermined) {
         // await showCustomPrivacyDialog();
@@ -69,7 +75,9 @@ class _AppViewState extends State<AppView> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: LocaleText('app_view_privacy_dialog_title'), // Başlık lokalize edildi
+          title: LocaleText(
+            'app_view_privacy_dialog_title',
+          ), // Başlık lokalize edildi
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,14 +92,18 @@ class _AppViewState extends State<AppView> {
           ),
           actions: <Widget>[
             TextButton(
-              child: LocaleText('app_view_privacy_dialog_button_cancel'), // "İptal"
+              child: LocaleText(
+                'app_view_privacy_dialog_button_cancel',
+              ), // "İptal"
 
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: LocaleText('app_view_privacy_dialog_button_accept'), // "Devam Et"
+              child: LocaleText(
+                'app_view_privacy_dialog_button_accept',
+              ), // "Devam Et"
 
               onPressed: () {
                 Navigator.of(context).pop();
@@ -108,32 +120,41 @@ class _AppViewState extends State<AppView> {
     super.initState();
     initAppTracking();
     Future.delayed(Duration.zero, () async {
-      await getAppVersion.then(
-        (value) {
-          setState(() {
-            appversion = value;
-          });
-        },
-      );
+      await getAppVersion.then((value) {
+        setState(() {
+          appversion = value;
+        });
+      });
     });
     Future.delayed(Duration.zero, () async {
-      await FirebaseFirestore.instance.collection("users").doc(HiveHelpers.getUid()).get().then((value) {
-        setState(() {
-          (value.data() as Map<String, dynamic>)["isSTKUser"] != null &&
-                  (value.data() as Map<String, dynamic>)["isSTKUser"].split(",").first == "true"
-              ? isSTKUser = true
-              : isSTKUser = false;
-        });
-        if (!kIsWeb) {
-          FirebaseFirestore.instance.collection('users').doc(HiveHelpers.getUid()).set(
-              {'fcm_token': LocaleManager.instance.getStringValue(PreferencesKeys.FIREBASE_TOKEN)},
-              SetOptions(merge: true)).then(
-            (value) {
-              print('fcm token updated');
-            },
-          );
-        }
-      });
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(HiveHelpers.getUid())
+          .get()
+          .then((value) {
+            setState(() {
+              (value.data() as Map<String, dynamic>)["isSTKUser"] != null &&
+                      (value.data() as Map<String, dynamic>)["isSTKUser"]
+                              .split(",")
+                              .first ==
+                          "true"
+                  ? isSTKUser = true
+                  : isSTKUser = false;
+            });
+            if (!kIsWeb) {
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(HiveHelpers.getUid())
+                  .set({
+                    'fcm_token': LocaleManager.instance.getStringValue(
+                      PreferencesKeys.FIREBASE_TOKEN,
+                    ),
+                  }, SetOptions(merge: true))
+                  .then((value) {
+                    print('fcm token updated');
+                  });
+            }
+          });
     });
   }
 
@@ -152,13 +173,17 @@ class _AppViewState extends State<AppView> {
         navBarStyle: NavBarStyle.style14,
         backgroundColor: Colors.white,
         animationSettings: const NavBarAnimationSettings(
-            navBarItemAnimation: ItemAnimationSettings(curve: Curves.linear, duration: Durations.long2),
-            screenTransitionAnimation: ScreenTransitionAnimationSettings(
-              screenTransitionAnimationType: ScreenTransitionAnimationType.slide,
-              animateTabTransition: true,
-              curve: Curves.ease,
-              duration: Durations.medium4,
-            )),
+          navBarItemAnimation: ItemAnimationSettings(
+            curve: Curves.linear,
+            duration: Durations.long2,
+          ),
+          screenTransitionAnimation: ScreenTransitionAnimationSettings(
+            screenTransitionAnimationType: ScreenTransitionAnimationType.slide,
+            animateTabTransition: true,
+            curve: Curves.ease,
+            duration: Durations.medium4,
+          ),
+        ),
         items: [
           PersistentBottomNavBarItem(
             icon: const Icon(Icons.shopping_bag_rounded),
@@ -228,20 +253,26 @@ class _AppViewState extends State<AppView> {
                 left: deviceWidthSize(context, 30),
               ),
               alignment: Alignment.centerLeft,
-              decoration: const BoxDecoration(
-                color: AppTheme.primaryColor,
-              ),
+              decoration: const BoxDecoration(color: AppTheme.primaryColor),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   LocaleText(
                     'app_view_drawer_greeting',
-                    style: AppTheme.lightTextStyle(context, 32, color: AppTheme.white),
+                    style: AppTheme.lightTextStyle(
+                      context,
+                      32,
+                      color: AppTheme.white,
+                    ),
                   ),
                   Text(
                     (HiveHelpers.getUserFromHive().name ?? "").split(" ").first,
-                    style: AppTheme.boldTextStyle(context, 32, color: AppTheme.white),
+                    style: AppTheme.boldTextStyle(
+                      context,
+                      32,
+                      color: AppTheme.white,
+                    ),
                   ),
                 ],
               ),
@@ -260,13 +291,12 @@ class _AppViewState extends State<AppView> {
                       iconColor: AppTheme.primaryColor,
                       onTap: () {
                         tabcontroller.jumpToTab(4);
-                        context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(4);
+                        context.read<AppViewProvider>().selectedWidget =
+                            widgetOptions.elementAt(4);
                         Navigator.pop(context);
                       },
                     ),
-                    SizedBox(
-                      height: deviceHeightSize(context, 3),
-                    ),
+                    SizedBox(height: deviceHeightSize(context, 3)),
                     MenuItemWidget(
                       title: 'app_view_drawer_donations'.locale, // "Bağışlarım"
                       icon: Icon(
@@ -276,12 +306,13 @@ class _AppViewState extends State<AppView> {
                       ),
                       iconColor: AppTheme.primaryColor,
                       onTap: () {
-                        Navigator.pushNamed(context, DonationHistoryPage.routeName);
+                        Navigator.pushNamed(
+                          context,
+                          DonationHistoryPage.routeName,
+                        );
                       },
                     ),
-                    SizedBox(
-                      height: deviceHeightSize(context, 3),
-                    ),
+                    SizedBox(height: deviceHeightSize(context, 3)),
                     MenuItemWidget(
                       title: 'app_view_drawer_stks'.locale, // "Stk'lar"
                       icon: Icon(
@@ -291,15 +322,15 @@ class _AppViewState extends State<AppView> {
                       ),
                       iconColor: AppTheme.primaryColor,
                       onTap: () {
-                        context.read<BrandProvider>().filterText = "socialEnterprise";
-                        context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(3);
+                        context.read<BrandProvider>().filterText =
+                            "socialEnterprise";
+                        context.read<AppViewProvider>().selectedWidget =
+                            widgetOptions.elementAt(3);
                         tabcontroller.jumpToTab(3);
                         Navigator.pop(context);
                       },
                     ),
-                    SizedBox(
-                      height: deviceHeightSize(context, 3),
-                    ),
+                    SizedBox(height: deviceHeightSize(context, 3)),
                     MenuItemWidget(
                       title: 'app_view_drawer_volunteer'.locale, // "Gönüllü"
                       icon: Icon(
@@ -310,15 +341,15 @@ class _AppViewState extends State<AppView> {
                       iconColor: AppTheme.primaryColor,
                       onTap: () {
                         tabcontroller.jumpToTab(1);
-                        context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(1);
+                        context.read<AppViewProvider>().selectedWidget =
+                            widgetOptions.elementAt(1);
                         Navigator.pop(context);
                       },
                     ),
-                    SizedBox(
-                      height: deviceHeightSize(context, 3),
-                    ),
+                    SizedBox(height: deviceHeightSize(context, 3)),
                     MenuItemWidget(
-                      title: 'app_view_drawer_social_companies'.locale, // "Sosyal Şirketler"
+                      title: 'app_view_drawer_social_companies'
+                          .locale, // "Sosyal Şirketler"
                       icon: Icon(
                         Icons.business_rounded,
                         color: AppTheme.primaryColor,
@@ -326,15 +357,15 @@ class _AppViewState extends State<AppView> {
                       ),
                       iconColor: AppTheme.primaryColor,
                       onTap: () {
-                        context.read<BrandProvider>().filterText = "socialEnterprise";
-                        context.read<AppViewProvider>().selectedWidget = widgetOptions.elementAt(1);
+                        context.read<BrandProvider>().filterText =
+                            "socialEnterprise";
+                        context.read<AppViewProvider>().selectedWidget =
+                            widgetOptions.elementAt(1);
                         tabcontroller.jumpToTab(1);
                         Navigator.pop(context);
                       },
                     ),
-                    SizedBox(
-                      height: deviceHeightSize(context, 3),
-                    ),
+                    SizedBox(height: deviceHeightSize(context, 3)),
                     MenuItemWidget(
                       title: 'app_view_drawer_settings'.locale, // "Ayarlar"
                       iconColor: AppTheme.primaryColor,
@@ -347,9 +378,7 @@ class _AppViewState extends State<AppView> {
                         size: deviceFontSize(context, 24),
                       ),
                     ),
-                    SizedBox(
-                      height: deviceHeightSize(context, 3),
-                    ),
+                    SizedBox(height: deviceHeightSize(context, 3)),
                     MenuItemWidget(
                       title: 'app_view_drawer_contact'.locale, // "İletişim"
                       icon: Icon(
@@ -369,15 +398,17 @@ class _AppViewState extends State<AppView> {
                             ),
                           ),
                           builder: (context) => BottomSheetWidget(
-                              isMinPadding: true,
-                              title: 'app_view_contact_support'.locale,
-                              child: const SupportForm()), // "İletişime Geç"
+                            isMinPadding: true,
+                            title: 'app_view_contact_support'.locale,
+                            child: const SupportForm(),
+                          ), // "İletişime Geç"
                         );
                       },
                     ),
                     isSTKUser
                         ? MenuItemWidget(
-                            title: 'app_view_drawer_isstk'.locale, // "STK paneli"
+                            title:
+                                'app_view_drawer_isstk'.locale, // "STK paneli"
                             icon: Icon(
                               Icons.manage_accounts_rounded,
                               color: AppTheme.primaryColor,
@@ -389,9 +420,7 @@ class _AppViewState extends State<AppView> {
                             },
                           )
                         : const SizedBox(),
-                    SizedBox(
-                      height: deviceHeightSize(context, 3),
-                    ),
+                    SizedBox(height: deviceHeightSize(context, 3)),
                     Text(
                       "v$appversion",
                       style: AppTheme.lightTextStyle(context, 14),
@@ -413,30 +442,42 @@ class _AppViewState extends State<AppView> {
                           onTap: () {
                             showDialog(
                               context: context,
-                              builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(
-                                context,
-                                title: 'app_view_exit_dialog_title'.locale, // "Çıkış Yap"
-                                buttonText: 'app_view_exit_dialog_button_accept'.locale, // "Çıkış Yap"
-                                cancelButtonText: 'app_view_exit_dialog_button_cancel'.locale, // "Vazgeç"
-                                content: 'app_view_exit_dialog_content'.locale, // "Alışverişlerin ile ..."
-                                color: AppTheme.red,
-                                onAcceptButtonPressed: () async {
-                                  await FirebaseAuth.instance.signOut();
-                                  HiveHelpers.logout();
-                                  context
-                                      .read<LoginRegisterPageProvider>()
-                                      .setPhoneLoginPageType(PhoneLoginPageType.login);
-                                  Navigator.pushNamedAndRemoveUntil(context, SplashPage.routeName, (route) => false);
-                                },
-                              ),
+                              builder: (context) =>
+                                  DialogWidgets().rowCircularButtonDialogWidget(
+                                    context,
+                                    title: 'app_view_exit_dialog_title'
+                                        .locale, // "Çıkış Yap"
+                                    buttonText:
+                                        'app_view_exit_dialog_button_accept'
+                                            .locale, // "Çıkış Yap"
+                                    cancelButtonText:
+                                        'app_view_exit_dialog_button_cancel'
+                                            .locale, // "Vazgeç"
+                                    content: 'app_view_exit_dialog_content'
+                                        .locale, // "Alışverişlerin ile ..."
+                                    color: AppTheme.red,
+                                    onAcceptButtonPressed: () async {
+                                      await FirebaseAuth.instance.signOut();
+                                      HiveHelpers.logout();
+                                      context
+                                          .read<LoginRegisterPageProvider>()
+                                          .setPhoneLoginPageType(
+                                            PhoneLoginPageType.login,
+                                          );
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        SplashPage.routeName,
+                                        (route) => false,
+                                      );
+                                    },
+                                  ),
                             );
                           },
                         ),
-                        SizedBox(
-                          height: deviceHeightSize(context, 10),
-                        ),
+                        SizedBox(height: deviceHeightSize(context, 10)),
                         MenuItemWidget(
-                          title: 'app_view_drawer_delete_account'.locale, // "Hesabımı Sil"
+                          title: 'app_view_drawer_delete_account'
+                              .locale, // "Hesabımı Sil"
                           icon: Icon(
                             Icons.delete_forever_outlined,
                             color: Colors.grey,
@@ -447,47 +488,123 @@ class _AppViewState extends State<AppView> {
                           onTap: () {
                             showDialog(
                               context: context,
-                              builder: (context) => DialogWidgets().rowCircularButtonDialogWidget(context,
-                                  title: 'app_view_delete_account_dialog_title'.locale, // "Hesabımı Sil"
-                                  buttonText: 'app_view_delete_account_dialog_button_accept'.locale, // "Hesabımı Sil"
-                                  cancelButtonText: 'app_view_delete_account_dialog_button_cancel'.locale, // "Vazgeç"
-                                  isLoading: isLoading,
-                                  cancelButtonColor: Colors.green,
-                                  content: 'app_view_delete_account_dialog_content'.locale, // "Alışverişlerin ile ..."
-                                  color: Colors.grey, onAcceptButtonPressed: () async {
-                                setState(() {
-                                  isLoading = true;
-                                });
+                              builder: (context) =>
+                                  DialogWidgets().rowCircularButtonDialogWidget(
+                                    context,
+                                    title:
+                                        'app_view_delete_account_dialog_title'
+                                            .locale, // "Hesabımı Sil"
+                                    buttonText:
+                                        'app_view_delete_account_dialog_button_accept'
+                                            .locale, // "Hesabımı Sil"
+                                    cancelButtonText:
+                                        'app_view_delete_account_dialog_button_cancel'
+                                            .locale, // "Vazgeç"
+                                    isLoading: isLoading,
+                                    cancelButtonColor: Colors.green,
+                                    content:
+                                        'app_view_delete_account_dialog_content'
+                                            .locale, // "Alışverişlerin ile ..."
+                                    color: Colors.grey,
+                                    onAcceptButtonPressed: () async {
+                                      setState(() {
+                                        isLoading = true;
+                                      });
 
-                                User? user = FirebaseAuth.instance.currentUser;
+                                      User? user =
+                                          FirebaseAuth.instance.currentUser;
 
-                                if (user != null) {
-                                  try {
-                                    await FirebaseFirestore.instance.collection("users").doc(user.uid).delete();
+                                      if (user != null) {
+                                        try {
+                                          await FirebaseFirestore.instance
+                                              .collection("users")
+                                              .doc(user.uid)
+                                              .delete();
 
-                                    await user.delete();
-                                  } on FirebaseAuthException catch (e) {
-                                    if (e.code == 'requires-recent-login') {
-                                      _showReauthenticationDialog();
-                                    } else {
-                                      print('Error deleting user: $e');
-                                    }
-                                  }
-                                }
+                                          await user.delete();
+                                        } on FirebaseAuthException catch (e) {
+                                          if (e.code ==
+                                              'requires-recent-login') {
+                                            _showReauthenticationDialog();
+                                          } else {
+                                            print('Error deleting user: $e');
+                                          }
+                                        }
+                                      }
 
-                                await FirebaseAuth.instance.signOut();
-                                HiveHelpers.logout();
-                                context
-                                    .read<LoginRegisterPageProvider>()
-                                    .setPhoneLoginPageType(PhoneLoginPageType.login);
+                                      await FirebaseAuth.instance.signOut();
+                                      HiveHelpers.logout();
+                                      context
+                                          .read<LoginRegisterPageProvider>()
+                                          .setPhoneLoginPageType(
+                                            PhoneLoginPageType.login,
+                                          );
 
-                                setState(() {
-                                  isLoading = false;
-                                });
+                                      setState(() {
+                                        isLoading = false;
+                                      });
 
-                                Navigator.pushNamedAndRemoveUntil(context, SplashPage.routeName, (route) => false);
-                              }),
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        SplashPage.routeName,
+                                        (route) => false,
+                                      );
+                                    },
+                                  ),
                             );
+                          },
+                        ),
+                        MenuItemWidget(
+                          title:
+                              "profile_page_stk_application_form_button".locale,
+                          icon: Icon(
+                            Icons.assignment_turned_in_rounded,
+                            color: AppTheme.primaryColor,
+                            size: deviceFontSize(context, 24),
+                          ),
+                          iconColor: AppTheme.primaryColor,
+                          onTap: () async {
+                            await showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) => BottomSheetWidget(
+                                title:
+                                    "profile_page_stk_application_form".locale,
+                                isMinPadding: true,
+                                child: const STKFormWidget(),
+                              ),
+                            ).then((value) async {
+                              await context
+                                  .read<ProfilePageProvider>()
+                                  .checkApplicationStatus();
+                            });
+                          },
+                        ),
+                        MenuItemWidget(
+                          title: "profile_page_brand_application_form_button"
+                              .locale,
+                          icon: Icon(
+                            Icons.store_mall_directory_rounded,
+                            color: AppTheme.primaryColor,
+                            size: deviceFontSize(context, 24),
+                          ),
+                          iconColor: AppTheme.primaryColor,
+                          onTap: () async {
+                            await showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) => BottomSheetWidget(
+                                title:
+                                    "profile_page_brand_application_form_button"
+                                        .locale,
+                                isMinPadding: true,
+                                child: const BrandFormWidget(),
+                              ),
+                            ).then((value) async {
+                              await context
+                                  .read<ProfilePageProvider>()
+                                  .checkApplicationStatus();
+                            });
                           },
                         ),
                       ],
@@ -506,8 +623,12 @@ class _AppViewState extends State<AppView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: LocaleText('app_view_reauth_dialog_title'), // "Oturum Süresi Doldu"
-        content: LocaleText('app_view_reauth_dialog_content'), // "Hesabınızı silmek için ..."
+        title: LocaleText(
+          'app_view_reauth_dialog_title',
+        ), // "Oturum Süresi Doldu"
+        content: LocaleText(
+          'app_view_reauth_dialog_content',
+        ), // "Hesabınızı silmek için ..."
         actions: [
           TextButton(
             onPressed: () {
