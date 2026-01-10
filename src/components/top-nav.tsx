@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Menu, Bell, Siren, UserCircle } from 'lucide-react';
+import { Menu, Bell, ShieldAlert, UserCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { HangelLogo } from './icons';
 
@@ -23,7 +23,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
           </Button>
           <Button variant="ghost" size="icon" asChild>
             <Link href="/emergency">
-              <Siren className="h-5 w-5 text-destructive" />
+              <ShieldAlert className="h-5 w-5 text-destructive" />
             </Link>
           </Button>
           <Button variant="ghost" size="icon" asChild>

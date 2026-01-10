@@ -4,17 +4,21 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Gift,
-  Handshake,
   Star,
   Users,
   Settings,
   Info,
   LogOut,
   ChevronRight,
-  ShieldHalf,
   Heart,
   Store,
   BookUser,
+  LayoutGrid,
+  Building,
+  School,
+  Briefcase,
+  HelpCircle,
+  BarChart,
 } from 'lucide-react';
 import TopNav from '@/components/top-nav';
 import BottomNav from '@/components/bottom-nav';
@@ -22,21 +26,25 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { HangelLogo } from './icons';
+import { Button } from './ui/button';
 
 const sideMenuItems = [
-  { href: '#', icon: Gift, label: 'Bağışlarım' },
-  { href: '#', icon: BookUser, label: 'Başvurularım' },
-  { href: '/profile', icon: Star, label: 'Rozetlerim' },
-  { href: '#', icon: ShieldHalf, label: 'Bağış Yaptığım STK’lar' },
-  { href: '#', icon: Heart, label: 'Gönüllüsü Olduğum STK’lar' },
-  { href: '#', icon: Store, label: 'Favorilere Eklediğim Markalar' },
-  { href: '#', icon: Users, label: 'Arkadaşlarını Davet Et' },
-];
-
-const secondaryMenuItems = [
-  { href: '#', icon: Settings, label: 'Ayarlar' },
-  { href: '#', icon: Info, label: 'Hakkımızda' },
-];
+    { href: '#', icon: BarChart, label: 'hangel Impact Story' },
+    { href: '#', icon: Gift, label: 'Bağışlarım' },
+    { href: '#', icon: BookUser, label: 'Başvurularım' },
+    { href: '/profile', icon: Star, label: 'Rozetlerim' },
+    { href: '#', icon: Building, label: 'Sivil Toplum Kuruluşları' },
+    { href: '#', icon: Store, label: 'Markalar' },
+    { href: '#', icon: School, label: 'Öğrenci Kulüpleri' },
+    { href: '#', icon: LayoutGrid, label: 'Yönetim Paneli' },
+    { href: '#', icon: Users, label: 'Arkadaşlarını Davet Et' },
+  ];
+  
+  const secondaryMenuItems = [
+    { href: '#', icon: Settings, label: 'Ayarlar' },
+    { href: '#', icon: Info, label: 'Hakkımızda' },
+    { href: '#', icon: HelpCircle, label: 'Destek' },
+  ];
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -80,6 +88,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                   </li>
                 ))}
               </ul>
+              <Separator className="my-2" />
+               <div className="px-4 py-2">
+                 <Button variant="outline" className="w-full justify-between">
+                    Kuruluş Değiştir
+                    <ChevronRight className="h-4 w-4" />
+                 </Button>
+               </div>
               <Separator className="my-2" />
               <ul>
                 {secondaryMenuItems.map((item) => (

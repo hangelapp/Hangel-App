@@ -15,6 +15,7 @@ export interface Post {
   timestamp: string;
   likes: number;
   comments: number;
+  sponsored?: boolean;
 }
 
 export interface Brand {
@@ -69,6 +70,7 @@ export const timelinePosts: Post[] = [
     timestamp: '2 saat önce',
     likes: 154,
     comments: 12,
+    sponsored: false,
   },
   {
     id: '2',
@@ -79,14 +81,15 @@ export const timelinePosts: Post[] = [
     timestamp: '5 saat önce',
     likes: 321,
     comments: 45,
+    sponsored: true,
   },
 ];
 
 export const marketBrands: Brand[] = [
     { id: '1', name: 'Doğa Dostu Giyim', category: 'Tekstil', donationRate: 15, logoUrl: getImage('brand-logo-1')?.imageUrl || '', logoHint: getImage('brand-logo-1')?.imageHint },
     { id: '2', name: 'Lezzet Köyü', category: 'Gıda', donationRate: 10, logoUrl: getImage('brand-logo-2')?.imageUrl || '', logoHint: getImage('brand-logo-2')?.imageHint },
-    { id: '3', name: 'Gezgin Rotalar', category: 'Seyahat', donationRate: 8, logoUrl: 'https://picsum.photos/seed/brand3/200/200', imageHint: 'compass logo' },
-    { id: '4', name: 'Tekno Market', category: 'Teknoloji', donationRate: 5, logoUrl: 'https://picsum.photos/seed/brand4/200/200', imageHint: 'circuit logo' },
+    { id: '3', name: 'Gezgin Rotalar', category: 'Seyahat', donationRate: 8, logoUrl: 'https://picsum.photos/seed/brand3/200/200', logoHint: 'compass logo' },
+    { id: '4', name: 'Tekno Market', category: 'Teknoloji', donationRate: 5, logoUrl: 'https://picsum.photos/seed/brand4/200/200', logoHint: 'circuit logo' },
 ];
 
 export const events: Event[] = [

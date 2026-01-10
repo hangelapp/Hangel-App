@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timelinePosts } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react';
+import { Heart, Share2, MoreHorizontal, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -44,9 +44,17 @@ export default function TimelinePage() {
                 <p className="text-xs text-muted-foreground">{post.timestamp}</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
+             <div className="flex items-center gap-2">
+              {post.sponsored && (
+                <div className="flex items-center gap-1 text-xs text-amber-500">
+                  <Star className="h-4 w-4" />
+                  <span>Sponsorlu</span>
+                </div>
+              )}
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-5 w-5" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <p className="mb-4">{post.content}</p>
@@ -59,9 +67,6 @@ export default function TimelinePage() {
           <CardFooter className="flex justify-around">
             <Button variant="ghost" className="flex items-center gap-2">
               <Heart className="h-5 w-5" /> {post.likes}
-            </Button>
-            <Button variant="ghost" className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" /> {post.comments}
             </Button>
             <Button variant="ghost" className="flex items-center gap-2">
               <Share2 className="h-5 w-5" /> Paylaş

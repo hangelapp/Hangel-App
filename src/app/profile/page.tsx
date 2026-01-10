@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { HandCoins, Hourglass, Star, UserPlus, Award, ShieldCheck, Leaf, Dog, Baby, Settings } from 'lucide-react';
+import { HandCoins, Hourglass, Star, UserPlus, Award, ShieldCheck, Leaf, Dog, Baby, Edit } from 'lucide-react';
 
 const impactStats = [
   { icon: HandCoins, value: '1,250 ₺', label: 'Bağış Tutarı' },
@@ -48,7 +48,7 @@ export default function ProfilePage() {
                 <p className="text-muted-foreground">@ayseyilmaz</p>
             </div>
             <Button variant="outline" size="icon">
-                <Settings className="h-4 w-4" />
+                <Edit className="h-4 w-4" />
             </Button>
         </div>
       </div>

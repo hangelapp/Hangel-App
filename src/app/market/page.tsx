@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, Star, Heart } from 'lucide-react';
+import { Filter, Search, Heart, Percent, ArrowDownUp, List, LayoutGrid } from 'lucide-react';
 import { marketBrands } from '@/lib/data';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,6 +21,20 @@ export default function MarketPage() {
             placeholder="Marka, ürün veya kategori ara"
             className="pl-10 bg-white rounded-full"
           />
+        </div>
+        <div className="flex gap-2">
+            <Button variant="outline" className="flex-1">
+                <Filter className="mr-2 h-4 w-4" /> Filtrele
+            </Button>
+            <Button variant="outline" className="flex-1">
+                <ArrowDownUp className="mr-2 h-4 w-4" /> Sırala
+            </Button>
+            <Button variant="outline" size="icon">
+                <LayoutGrid className="h-4 w-4" />
+            </Button>
+             <Button variant="outline" size="icon">
+                <List className="h-4 w-4" />
+            </Button>
         </div>
       </div>
 
@@ -65,7 +79,10 @@ export default function MarketPage() {
                     <p className="text-sm font-bold truncate">{brand.name}</p>
                     <p className="text-xs text-muted-foreground">{brand.category}</p>
                   </div>
-                  <p className="text-sm font-bold text-primary mt-1">%{brand.donationRate} Bağış</p>
+                  <div className="flex items-center text-sm font-bold text-primary mt-1">
+                    <Percent className="h-4 w-4 mr-1"/>
+                    <span>{brand.donationRate} Bağış</span>
+                  </div>
                 </CardContent>
               </Card>
             ))}
