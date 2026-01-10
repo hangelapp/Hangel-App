@@ -1,3 +1,58 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "user-avatar-1",
+      "description": "User avatar 1",
+      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgwMDU1OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "user-avatar-2",
+      "description": "User avatar 2",
+      "imageUrl": "https://images.unsplash.com/photo-1598625873873-52f9aefd7d9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3b21hbiUyMHNtaWxpbmd8ZW58MHx8fHwxNzY4MDAyNTIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman smiling"
+    },
+    {
+      "id": "brand-logo-1",
+      "description": "Brand logo for 'Doğa Dostu Giyim'",
+      "imageUrl": "https://images.unsplash.com/photo-1762568761134-380f7ca296f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGVhZiUyMGxvZ298ZW58MHx8fHwxNzY4MDg4MDk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leaf logo"
+    },
+    {
+      "id": "brand-logo-2",
+      "description": "Brand logo for 'Lezzet Köyü'",
+      "imageUrl": "https://images.unsplash.com/photo-1744744041777-2c4604f761db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3aGVhdCUyMGxvZ298ZW58MHx8fHwxNzY4MDg4MDk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wheat logo"
+    },
+    {
+      "id": "event-cover-1",
+      "description": "Event cover for 'Sahil Temizliği'",
+      "imageUrl": "https://images.unsplash.com/photo-1595902392414-16c64fe8d048?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxiZWFjaCUyMGNsZWFudXB8ZW58MHx8fHwxNzY4MDg1MzUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "beach cleanup"
+    },
+    {
+      "id": "event-cover-2",
+      "description": "Event cover for 'Kodlama Atölyesi'",
+      "imageUrl": "https://images.unsplash.com/photo-1523800503107-5bc3ba2a6f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsYXB0b3AlMjBjb2RlfGVufDB8fHx8MTc2ODA4NzIwMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop code"
+    },
+    {
+      "id": "timeline-post-1",
+      "description": "Timeline post image of volunteers planting trees",
+      "imageUrl": "https://images.unsplash.com/photo-1589923188900-85dae523342b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwbGFudGluZyUyMHRyZWVzfGVufDB8fHx8MTc2ODA1MDk2MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "planting trees"
+    },
+    {
+      "id": "timeline-post-2",
+      "description": "Timeline post image of a food donation drive",
+      "imageUrl": "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmb29kJTIwZG9uYXRpb258ZW58MHx8fHwxNzY4MDg1MzUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food donation"
+    },
+    {
+      "id": "user-profile-banner",
+      "description": "User profile banner image",
+      "imageUrl": "https://images.unsplash.com/photo-1693902939226-449195d2698b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhYnN0cmFjdCUyMG5hdHVyZXxlbnwwfHx8fDE3NjgwMzgwMDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract nature"
+    }
+  ]
 }
