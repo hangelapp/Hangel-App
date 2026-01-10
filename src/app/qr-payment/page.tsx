@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, ListHistory, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal } from 'lucide-react';
 import { HangelLogo } from '@/components/icons';
 
 const transactions = [
@@ -40,7 +40,7 @@ export default function QrPaymentPage() {
             <span className="text-xs">Transfer</span>
         </Button>
         <Button variant="ghost" className="flex flex-col h-auto gap-1">
-            <ListHistory />
+            <History />
             <span className="text-xs">Tüm İşlemler</span>
         </Button>
         <Button variant="ghost" className="flex flex-col h-auto gap-1">
