@@ -1,11 +1,34 @@
+'use client';
+
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timelinePosts } from '@/lib/data';
 import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function TimelinePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Should be replaced with real auth check
+  const router = useRouter();
+
+  useEffect(() => {
+    // This is a mock authentication check.
+    // In a real app, you would check a token, context, or session.
+    const userIsLoggedIn = true; // Change to false to test redirection
+    if (!userIsLoggedIn) {
+      router.push('/login');
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [router]);
+  
+  if (!isAuthenticated) {
+      // You can show a loading spinner here while checking auth
+      return null;
+  }
+
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       {timelinePosts.map((post) => (
