@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/market", icon: <Store />, label: "Market" },
-  { href: "/volunteer", icon: <HeartHandshake />, label: "Gönüllülük" },
-  { href: "/payment", icon: <QrCode />, label: "QR Ödeme" },
+  { href: "/volunteering", icon: <HeartHandshake />, label: "Gönüllülük" },
+  { href: "/qr-payment", icon: <QrCode />, label: "QR Ödeme" },
   { href: "/timeline", icon: <LayoutDashboard />, label: "Zaman Tüneli" },
 ];
 
