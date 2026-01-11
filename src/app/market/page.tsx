@@ -1,9 +1,9 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, Heart, Percent, ArrowDownUp, List, LayoutGrid } from 'lucide-react';
+import { Filter, Search, Heart, Percent, ArrowDownUp, List, LayoutGrid, Users } from 'lucide-react';
 import { marketBrands, marketCampaigns } from '@/lib/data';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +14,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
 
 export default function MarketPage() {
   return (
@@ -23,7 +25,7 @@ export default function MarketPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             placeholder="Marka, ürün veya kategori ara"
-            className="pl-10 bg-white rounded-full"
+            className="pl-10 bg-card rounded-full"
           />
         </div>
       </div>
@@ -43,7 +45,7 @@ export default function MarketPage() {
                   src={campaign.imageUrl}
                   alt={campaign.title}
                   fill
-                  objectFit="cover"
+                  className="object-cover"
                   data-ai-hint={campaign.imageHint}
                 />
                 <div className="absolute inset-0 bg-black/30" />
@@ -87,29 +89,28 @@ export default function MarketPage() {
         <TabsContent value="products" className="p-4 bg-background">
           <div className="space-y-4">
             {marketBrands.map((brand) => (
-              <Card
-                key={brand.id}
-                className="flex items-center text-left rounded-lg overflow-hidden group p-3"
-              >
-                <div className="relative h-16 w-16 rounded-md overflow-hidden mr-4">
-                  <Image
-                    src={brand.logoUrl}
-                    alt={brand.name}
-                    fill
-                    objectFit="cover"
-                    data-ai-hint={brand.logoHint}
-                  />
-                </div>
-
-                <div className="flex-grow">
-                    <p className="text-base font-bold truncate">{brand.name}</p>
-                    <p className="text-sm text-muted-foreground">{brand.category}</p>
-                </div>
-                 
-                <div className="flex items-center justify-center text-sm font-bold text-primary bg-primary/10 rounded-full py-1 px-3 ml-4">
-                    <Percent className="h-4 w-4 mr-1"/>
-                    <span>{`%${brand.donationRate}`} Bağış</span>
-                </div>
+              <Card key={brand.id}>
+                <CardHeader>
+                    <div className='flex items-center gap-4'>
+                        <Avatar className="h-12 w-12">
+                            <AvatarImage src={brand.logoUrl} alt={brand.name} data-ai-hint={brand.logoHint} />
+                            <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <CardTitle className="text-lg">{brand.name}</CardTitle>
+                            <p className="text-sm text-muted-foreground">{brand.category}</p>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-2 text-center text-sm">
+                    <div className="flex items-center justify-center gap-1"><Users className="h-4 w-4 text-muted-foreground"/> <strong>{(brand.followers || 0) / 1000}k</strong> <span className='hidden sm:inline'>Takipçi</span></div>
+                    <div className="flex items-center justify-center gap-1"><Percent className="h-4 w-4 text-muted-foreground"/> <strong>{brand.donationRate}%</strong> <span className='hidden sm:inline'>Bağış</span></div>
+                </CardContent>
+                <CardFooter>
+                     <Button asChild className="w-full">
+                        <Link href={`/market/${brand.id}`}>Profili İncele</Link>
+                    </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>
