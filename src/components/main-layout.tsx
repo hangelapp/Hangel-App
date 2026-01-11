@@ -29,12 +29,12 @@ import { HangelLogo } from './icons';
 import { Button } from './ui/button';
 
 const sideMenuItems = [
-    { href: '#', icon: BarChart, label: 'hangel Impact Story' },
-    { href: '#', icon: Gift, label: 'Bağışlarım' },
-    { href: '#', icon: BookUser, label: 'Başvurularım' },
+    { href: '/timeline', icon: BarChart, label: 'hangel Impact Story' },
+    { href: '/profile', icon: Gift, label: 'Bağışlarım' },
+    { href: '/profile', icon: BookUser, label: 'Başvurularım' },
     { href: '/profile', icon: Star, label: 'Rozetlerim' },
-    { href: '#', icon: Building, label: 'Sivil Toplum Kuruluşları' },
-    { href: '#', icon: Store, label: 'Markalar' },
+    { href: '/market', icon: Building, label: 'Sivil Toplum Kuruluşları' },
+    { href: '/market', icon: Store, label: 'Markalar' },
     { href: '#', icon: School, label: 'Öğrenci Kulüpleri' },
     { href: '#', icon: LayoutGrid, label: 'Yönetim Paneli' },
     { href: '#', icon: Users, label: 'Arkadaşlarını Davet Et' },
@@ -113,7 +113,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 ))}
                 <li>
                   <Link
-                    href="#"
+                    href="/login"
                     className="flex items-center justify-between px-4 py-3 text-base text-destructive hover:bg-destructive/10"
                     onClick={() => setDrawerOpen(false)}
                   >
