@@ -13,36 +13,36 @@ const transactions = [
 const cards = [
   {
     type: 'Standart',
-    bgColor: 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900',
-    borderColor: 'border-zinc-700',
-    textColor: 'text-zinc-200',
+    bgColor: 'bg-gradient-to-br from-green-800 via-green-700 to-green-800',
+    patternUrl: 'https://www.transparenttextures.com/patterns/simple-dashed.png',
+    textColor: 'text-white',
     highlightColor: 'text-white',
     owner: 'AYŞE YILMAZ',
     number: '**** **** **** 1234',
     expiry: '12/28',
-    icon: HangelLogo,
+    icon: () => <HangelLogo className="w-12 h-12 text-white" />,
   },
   {
     type: 'Öğrenci',
-    bgColor: 'bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900',
-    borderColor: 'border-blue-800',
-    textColor: 'text-slate-300',
-    highlightColor: 'text-white',
+    bgColor: 'bg-gradient-to-br from-amber-100 via-amber-50 to-amber-100',
+    patternUrl: 'https://www.transparenttextures.com/patterns/notebook-dark.png',
+    textColor: 'text-stone-800',
+    highlightColor: 'text-stone-900',
     owner: 'AYŞE YILMAZ',
     number: '**** **** **** 5678',
     expiry: '08/27',
-    icon: () => <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center"><Building className="w-6 h-6 text-blue-400"/></div>
+    icon: () => <div className="w-12 h-12 rounded-full bg-green-800/10 flex items-center justify-center"><Building className="w-7 h-7 text-green-800"/></div>
   },
   {
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-neutral-900 via-neutral-900 to-black',
-    borderColor: 'border-neutral-700',
-    textColor: 'text-neutral-300',
-    highlightColor: 'text-white',
+    bgColor: 'bg-gradient-to-br from-stone-900 via-black to-stone-900',
+    patternUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre-v2.png',
+    textColor: 'text-amber-50',
+    highlightColor: 'text-yellow-200',
     owner: 'AYŞE YILMAZ - TİCARİ',
     number: '**** **** **** 9012',
     expiry: '01/29',
-    icon: () => <div className="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center"><Building className="w-6 h-6 text-gray-400"/></div>
+    icon: () => <HangelLogo className="w-12 h-12 text-yellow-200" />,
   },
 ];
 
@@ -56,12 +56,13 @@ export default function QrPaymentPage() {
             <CarouselContent>
                 {cards.map((card, index) => (
                     <CarouselItem key={index}>
-                        <div className={`relative h-56 rounded-2xl ${card.bgColor} ${card.textColor} p-6 flex flex-col justify-between shadow-2xl border ${card.borderColor} overflow-hidden`}>
-                             <div className="absolute -top-16 -right-16 w-48 h-48 border-4 border-white/5 rounded-full" />
-                             <div className="absolute -bottom-24 -left-12 w-48 h-48 border-2 border-white/5 rounded-full" />
+                        <div className={`relative h-56 rounded-2xl ${card.textColor} p-6 flex flex-col justify-between shadow-2xl overflow-hidden`}>
+                            <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
+                            <div className={`absolute inset-0 ${card.bgColor} opacity-90`}></div>
+                            
                             <div className="relative z-10">
                                 <div className='flex justify-between items-start'>
-                                    <card.icon className={`w-10 h-10 ${card.highlightColor}`} />
+                                    <card.icon />
                                     <p className={`font-semibold text-lg ${card.highlightColor}`}>{card.type}</p>
                                 </div>
                             </div>
@@ -116,9 +117,9 @@ export default function QrPaymentPage() {
                     <p className="text-xs text-muted-foreground">{tx.time}</p>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold ${tx.amount.startsWith('+') ? 'text-green-500' : ''}`}>{tx.amount}</p>
+                    <p className={`font-bold ${tx.amount.startsWith('+') ? 'text-green-600' : ''}`}>{tx.amount}</p>
                     {tx.donation !== '0.00 ₺' && (
-                        <p className="text-xs text-ring">Bağış: {tx.donation}</p>
+                        <p className="text-xs text-primary font-semibold">Bağış: {tx.donation}</p>
                     )}
                   </div>
                 </div>

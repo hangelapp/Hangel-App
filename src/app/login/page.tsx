@@ -33,9 +33,9 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center mb-8">
-          <HangelLogo className="h-16 w-16 mx-auto text-foreground" />
+          <HangelLogo className="h-20 w-20 mx-auto text-primary" />
           <h1 className="text-4xl font-bold text-foreground tracking-tight font-headline mt-4">
-            hangel
+            hangel'a Hoş Geldiniz
           </h1>
           <p className="mt-2 text-muted-foreground">
             {step === 1 ? 'Devam etmek için telefon numaranızı girin' : `+90 ${phoneNumber} numarasına gönderilen kodu girin.`}
@@ -52,7 +52,7 @@ export default function LoginPage() {
                 type="tel"
                 autoComplete="tel"
                 required
-                className="text-base"
+                className="text-base py-6"
                 placeholder="5XX XXX XX XX"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -62,12 +62,12 @@ export default function LoginPage() {
             <div className="flex items-start">
               <Checkbox id="terms" required />
               <Label htmlFor="terms" className="ml-3 text-xs font-normal text-muted-foreground">
-                 <Link href="#" className="font-medium text-ring hover:underline">Kullanıcı Sözleşmesi</Link> ve <Link href="#" className="font-medium text-ring hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum, anladım.
+                 <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link> ve <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum, anladım.
               </Label>
             </div>
 
             <div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" size="lg">
                 Doğrulama Kodu Gönder
               </Button>
             </div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 name="otp"
                 type="text"
                 required
-                className="text-center text-2xl tracking-[1rem]"
+                className="text-center text-2xl tracking-[1rem] py-6"
                 placeholder="------"
                 maxLength={6}
                 value={otp}
@@ -92,16 +92,16 @@ export default function LoginPage() {
             </div>
             
             <div className="flex items-center justify-between text-sm">
-                <Button variant="link" onClick={() => setStep(1)} className="p-0">
+                <Button variant="link" onClick={() => setStep(1)} className="p-0 text-primary">
                     Numarayı Değiştir
                 </Button>
-                 <Button variant="link" className="p-0">
+                 <Button variant="link" className="p-0 text-primary">
                     Kodu Tekrar Gönder
                 </Button>
             </div>
 
             <div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" size="lg">
                 Giriş Yap
               </Button>
             </div>
