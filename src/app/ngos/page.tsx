@@ -28,7 +28,7 @@ export default function NgosPage() {
           </Button>
         </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-4">
         {ngos.map((ngo) => (
           <Card key={ngo.id}>
             <CardHeader>

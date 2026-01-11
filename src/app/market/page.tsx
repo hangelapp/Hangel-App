@@ -87,7 +87,7 @@ export default function MarketPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="products" className="p-4 bg-background">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             {marketBrands.map((brand) => (
               <Card key={brand.id}>
                 <CardHeader>
@@ -104,7 +104,7 @@ export default function MarketPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-2 text-center text-sm">
                     <div className="flex items-center justify-center gap-1"><Users className="h-4 w-4 text-muted-foreground"/> <strong>{(brand.followers || 0) / 1000}k</strong> <span className='hidden sm:inline'>Takipçi</span></div>
-                    <div className="flex items-center justify-center gap-1"><Percent className="h-4 w-4 text-muted-foreground"/> <strong>{brand.donationRate}%</strong> <span className='hidden sm:inline'>Bağış</span></div>
+                    <div className="flex items-center justify-center gap-1"><Percent className="h-4 w-4 text-muted-foreground"/> <strong>{brand.donationRate}% Bağış</strong></div>
                 </CardContent>
                 <CardFooter>
                      <Button asChild className="w-full">
