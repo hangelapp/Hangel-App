@@ -26,7 +26,7 @@ export default function LoginPage() {
     e.preventDefault();
     // TODO: Implement OTP verification logic
     console.log('Verifying OTP', otp);
-    router.push('/timeline');
+    router.push('/market');
   };
 
   return (
@@ -112,3 +112,10 @@ export default function LoginPage() {
               </Button>
             </div>
           </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+    

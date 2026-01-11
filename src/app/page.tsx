@@ -1,7 +1,8 @@
-import {redirect} from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 export default function RootPage() {
-  // TODO: Check for authentication and redirect to /timeline if logged in.
-  // For now, we'll always start with onboarding.
+  // Uygulama ilk açıldığında kullanıcıyı market sayfasına yönlendir.
   redirect('/onboarding');
 }
+
+    

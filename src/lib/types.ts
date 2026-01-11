@@ -1,0 +1,277 @@
+import { LucideIcon } from "lucide-react";
+
+export type NavItem = {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+};
+
+export type Post = {
+  id: string;
+  authorId: string;
+  authorType: 'ngo' | 'brand' | 'club';
+  content: string;
+  imageUrl?: string;
+  imageHint?: string;
+  timestamp: string;
+  likes: number;
+  sponsored?: boolean;
+};
+
+export type Brand = {
+  id: string;
+  name: string;
+  category: string;
+  type: 'brand' | 'cooperative' | 'social' | 'economic';
+  logoUrl: string;
+  coverPhotoUrl: string;
+  donationRate: number;
+  stats: {
+    followers: number;
+    donors: number;
+    totalDonation: number;
+    volunteerHours: number;
+  };
+  about: string;
+  joinDate: string;
+  donationByCategory: { category: string; rate: number }[];
+  sustainabilityReports: { title: string; url: string }[];
+  contact: {
+    email: string;
+    website: string;
+    social: {
+      twitter?: string;
+      instagram?: string;
+      facebook?: string;
+      linkedin?: string;
+    };
+  };
+  posts: Post[];
+  link?: string;
+};
+
+export type NGO = {
+  id: string;
+  name: string;
+  category: string;
+  type: 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli';
+  avatarUrl: string;
+  coverPhotoUrl: string;
+  stats: {
+    followers: number;
+    donors: number;
+    volunteers: number;
+    volunteerHours: number;
+    projects: number;
+    peopleReached: number;
+  };
+  transparencyScore: number;
+  about: string;
+  joinDate: string;
+  supportedSDGs: string[];
+  beneficiaryGroups: string[];
+  memberOf: string[];
+  contact: {
+    email: string;
+    phone: string;
+    website: string;
+    social: {
+      twitter: string;
+      instagram: string;
+      facebook: string;
+      linkedin: string;
+    };
+  };
+  economicEnterpriseUrl?: string;
+  posts: Post[];
+  opportunities: VolunteerOpportunity[];
+};
+
+export type Event = {
+  id: string;
+  name: string;
+  organizer: string;
+  type: string;
+  date: string;
+  location: string;
+  capacity: {
+    current: number;
+    max: number;
+  };
+  tags: string[];
+  imageUrl: string;
+  imageHint?: string;
+};
+
+export type VolunteerOpportunity = {
+    id: string;
+    title: string;
+    organization: string;
+    ngoId: string;
+    location: {
+      city: string;
+      district: string;
+      type: 'Online' | 'Saha' | 'Hibrit';
+    };
+    commitment: 'Tek Gün' | 'Dönemsel' | 'Sürekli';
+    volunteerCount: {
+      needed: number;
+      applications: number;
+    };
+    dates: {
+      applicationStart: string;
+      applicationEnd: string;
+      eventStart: string;
+      eventEnd: string;
+    };
+    hours: {
+      start: string;
+      end: string;
+      total: number;
+    };
+    skills: string[];
+    socialArea: string;
+    requirements: string[];
+    amenities: {
+      transport: boolean;
+      food: boolean;
+      accommodation: boolean;
+    };
+    providesCertificate: boolean;
+    earnedBadges: string[];
+    hasPreTraining: boolean;
+    description: string;
+    points: number;
+};
+
+export type User = {
+  id: string;
+  name: string;
+  username: string;
+  avatarUrl: string;
+  coverPhotoUrl: string;
+  impactScore: number;
+  personalInfo: {
+    email: string;
+    phone: string;
+    birthDate: string;
+    gender: string;
+    bloodType: string;
+    address: {
+      country: string;
+      city: string;
+      district: string;
+      neighborhood: string;
+      fullAddress: string;
+    };
+  };
+  volunteerInfo: {
+    skills: string[];
+    interests: string[];
+    education: { level: string; school: string; }[];
+    profession: string;
+    languages: string[];
+    programs: string[];
+    licenses: string[];
+    documents: string[];
+    travelObstacle: { domestic: boolean; international: boolean; };
+  };
+  stats: {
+    totalDonation: number;
+    donationCount: number;
+    highestSingleDonation: number;
+    supportedNgosCount: number;
+    mostSupportedNgo: string;
+    avgDonation: number;
+    volunteerHours: number;
+    completedProjects: number;
+    volunteerRank: string;
+    mostActiveVolunteerArea: string;
+    avgVolunteerDuration: string;
+  };
+};
+
+export type Badge = {
+  id: string;
+  name: string;
+  iconName: LucideIcon;
+  level: 'Demir' | 'Bakır' | 'Bronz' | 'Çelik' | 'Gümüş' | 'Altın' | 'Platin';
+  socialArea: string;
+  pointsRequired: number;
+};
+
+export type Certificate = {
+  id: string;
+  title: string;
+  organization: string;
+  date: string;
+  linkedinUrl: string;
+};
+
+export type Campaign = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
+};
+
+export type StudentClub = {
+    id: string;
+    name: string;
+    university: string;
+    type: 'university' | 'high-school';
+    avatarUrl: string;
+    coverPhotoUrl: string;
+    members: number;
+    points: number;
+    description: string;
+    vision: string;
+    joinDate: string;
+    contact: {
+      email: string;
+      phone: string;
+      website: string;
+    };
+};
+
+export type SchoolRepresentative = {
+    id: string;
+    name: string;
+    school: string;
+    type: 'university' | 'high-school';
+    role: string;
+    avatarUrl: string;
+    linkedinUrl: string;
+    faculty?: string;
+}
+
+export type Application = {
+    id: string;
+    title: string;
+    type: 'Gönüllülük' | 'Marka' | 'Kulüpler' | 'STK';
+    org: string;
+    date: string;
+    location: string;
+    status: 'Onaylandı' | 'Beklemede' | 'Reddedildi';
+}
+
+export type DonationTransaction = {
+    id: string;
+    type: 'income' | 'expense';
+    brand: string;
+    purchaseAmount: string;
+    donationAmount: string;
+    ngo: string;
+    date: string;
+    time: string;
+};
+
+export type Notification = {
+  id: string;
+  type: 'donation' | 'application' | 'badge' | 'announcement';
+  title: string;
+  description: string;
+  timestamp: string;
+  isRead: boolean;
+};

@@ -124,7 +124,7 @@
     "phoneStepDescription": "Giriş yapmak veya kayıt olmak için telefon numaranızı girin",
     "codeStepDescription": "{phoneNumber} numarasına gönderilen 6 haneli kodu girin.",
     "phoneLabel": "Telefon Numarası",
-    "phonePlaceholder": "5XX XXX XX XX",
+    "phonePlaceholder": "+90 555 123 45 67",
     "userAgreement": "Kullanıcı Sözleşmesini",
     "clarificationText": "Aydınlatma Metnini",
     "agreementConfirmation": "okudum ve onaylıyorum.",
@@ -774,3 +774,4 @@
     "points": "{current} / {required}"
   }
 }
+    
