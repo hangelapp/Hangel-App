@@ -104,7 +104,7 @@ export default function AppHeader() {
   
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 mx-auto max-w-md border-b bg-card/95 backdrop-blur-sm">
+      <header className="fixed top-0 left-0 right-0 z-40 mx-auto max-w-md border-b bg-card/80 backdrop-blur-sm">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)}>
@@ -112,7 +112,6 @@ export default function AppHeader() {
             </Button>
             <Link href="/timeline" passHref>
                 <div className="flex items-center gap-2">
-                    <HangelLogo className="h-8 w-8 text-primary" />
                     <span className="text-xl font-bold text-primary md:hidden">hangel</span>
                 </div>
             </Link>

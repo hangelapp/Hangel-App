@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { HangelLogo } from '@/components/icons';
 
 export default function LoginPage() {
   const [step, setStep] = useState(1);
@@ -31,12 +30,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
-      <div className="w-full max-w-sm space-y-6">
+      <div className="w-full max-w-sm space-y-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary tracking-wider font-headline">
+          <h1 className="text-4xl font-bold text-primary tracking-tight font-headline">
             hangel
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-muted-foreground">
             {step === 1 ? 'Devam etmek için telefon numaranızı girin' : `+90 ${phoneNumber} numarasına gönderilen kodu girin.`}
           </p>
         </div>
@@ -51,7 +50,7 @@ export default function LoginPage() {
                 type="tel"
                 autoComplete="tel"
                 required
-                className="text-base bg-background"
+                className="text-base"
                 placeholder="5XX XXX XX XX"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -82,7 +81,7 @@ export default function LoginPage() {
                 name="otp"
                 type="text"
                 required
-                className="text-center text-2xl tracking-[1rem] bg-background"
+                className="text-center text-2xl tracking-[1rem]"
                 placeholder="------"
                 maxLength={6}
                 value={otp}

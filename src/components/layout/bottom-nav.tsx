@@ -7,16 +7,16 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/market", icon: Store, label: "Market" },
-  { href: "/timeline", icon: LayoutDashboard, label: "Zaman Tüneli" },
-  { href: "/payment", icon: QrCode, label: "QR Ödeme" },
   { href: "/volunteer", icon: HeartHandshake, label: "Gönüllülük" },
+  { href: "/payment", icon: QrCode, label: "QR Ödeme" },
+  { href: "/timeline", icon: LayoutDashboard, label: "Zaman Tüneli" },
 ];
 
 export default function AppBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-20 max-w-md grid-cols-4 border-t bg-card/95 backdrop-blur-sm md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-20 max-w-md grid-cols-4 border-t bg-card/80 backdrop-blur-sm">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/timeline' && pathname.startsWith(item.href));
         return (
@@ -36,5 +36,3 @@ export default function AppBottomNav() {
     </nav>
   );
 }
-
-    
