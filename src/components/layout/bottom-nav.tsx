@@ -6,10 +6,10 @@ import { Store, HeartHandshake, QrCode, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/market", icon: Store, label: "Market" },
-  { href: "/volunteer", icon: HeartHandshake, label: "Gönüllülük" },
-  { href: "/payment", icon: QrCode, label: "QR Ödeme" },
-  { href: "/timeline", icon: LayoutDashboard, label: "Zaman Tüneli" },
+  { href: "/market", icon: <Store />, label: "Market" },
+  { href: "/volunteer", icon: <HeartHandshake />, label: "Gönüllülük" },
+  { href: "/payment", icon: <QrCode />, label: "QR Ödeme" },
+  { href: "/timeline", icon: <LayoutDashboard />, label: "Zaman Tüneli" },
 ];
 
 export default function AppBottomNav() {
@@ -28,7 +28,7 @@ export default function AppBottomNav() {
               isActive && "text-primary"
             )}
           >
-            <item.icon className="h-6 w-6" />
+            <span className="h-6 w-6">{item.icon}</span>
             <span className="text-xs font-medium">{item.label}</span>
           </Link>
         );
