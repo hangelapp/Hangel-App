@@ -13,8 +13,8 @@ const transactions = [
 const cards = [
   {
     type: 'Standart',
-    bgColor: 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600',
-    patternUrl: 'https://www.transparenttextures.com/patterns/simple-dashed.png',
+    bgColor: 'bg-gradient-to-br from-gray-900 via-gray-800 to-black',
+    patternUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre-v2.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
     owner: 'AYŞE YILMAZ',
@@ -24,7 +24,7 @@ const cards = [
   },
   {
     type: 'Öğrenci',
-    bgColor: 'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-600',
+    bgColor: 'bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600',
     patternUrl: 'https://www.transparenttextures.com/patterns/notebook-dark.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
@@ -35,10 +35,10 @@ const cards = [
   },
   {
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-gray-800 via-gray-900 to-black',
-    patternUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre-v2.png',
-    textColor: 'text-gray-200',
-    highlightColor: 'text-gray-400',
+    bgColor: 'bg-gradient-to-br from-amber-500 via-orange-600 to-amber-700',
+    patternUrl: 'https://www.transparenttextures.com/patterns/congruent-pentagon.png',
+    textColor: 'text-white',
+    highlightColor: 'text-white/80',
     owner: 'AYŞE YILMAZ - TİCARİ',
     number: '**** **** **** 9012',
     expiry: '01/29',
