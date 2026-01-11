@@ -112,8 +112,3 @@ export default function LoginPage() {
               </Button>
             </div>
           </form>
-        )}
-      </div>
-    </div>
-  );
-}

@@ -114,5 +114,5 @@ export const volunteeringOpportunities: Volunteering[] = [
 
 export const marketCampaigns: Campaign[] = [
   { id: '1', title: 'Okul Alışverişinde %15 Bağış!', description: 'Lezzet Köyü ile çocukları sevindir.', imageUrl: getImage('campaign-banner-1')?.imageUrl || '', imageHint: getImage('campaign-banner-1')?.imageHint || '' },
-  { id: '2', title: 'Her Seyehat Bir Umut Olsun', description: 'Gezgin Rotalar ile doğayı koru.', imageUrl: getImage('campaign-banner-2')?.imageUrl || '', imageHint: getImage('campaign-banner-2')?.imageHint || '' },
+  { id: '2', title: 'Her Seyahat Bir Umut Olsun', description: 'Gezgin Rotalar ile doğayı koru.', imageUrl: getImage('campaign-banner-2')?.imageUrl || '', imageHint: getImage('campaign-banner-2')?.imageHint || '' },
 ];

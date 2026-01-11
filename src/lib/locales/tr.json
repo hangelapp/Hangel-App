@@ -125,13 +125,13 @@
     "codeStepDescription": "{phoneNumber} numarasına gönderilen 6 haneli kodu girin.",
     "phoneLabel": "Telefon Numarası",
     "phonePlaceholder": "5XX XXX XX XX",
-    "userAgreement": "Kullanıcı Sözleşmesi",
-    "clarificationText": "KVKK Aydınlatma Metni",
-    "agreementConfirmation": "'ni ve ",
-    "kvkkConfirmation": "'ni okudum, anladım.",
+    "userAgreement": "Kullanıcı Sözleşmesini",
+    "clarificationText": "Aydınlatma Metnini",
+    "agreementConfirmation": "okudum ve onaylıyorum.",
+    "kvkkConfirmation": "KVKK ve GDPR politikasını okudum ve onaylıyorum.",
     "sendCodeButton": "Doğrulama Kodu Gönder",
     "codeLabel": "Doğrulama Kodu",
-    "codePlaceholder": "------",
+    "codePlaceholder": "1234",
     "loginButton": "Giriş Yap",
     "changeNumber": "Numaranı değiştir"
   },
@@ -142,7 +142,7 @@
     "adAlt": "Advertisement"
   },
   "market": {
-    "searchPlaceholder": "Marka, ürün veya kategori ara",
+    "searchPlaceholder": "Marka veya ürün ara...",
     "highestDonation": "En Yüksek Bağış Oranı",
     "mostFollowed": "En Çok Takip Edilen",
     "newlyAdded": "Yeni Eklenenler",
@@ -151,10 +151,10 @@
     "startShopping": "Alışverişe Başla",
     "follower": "Takipçi",
     "donation": "Bağış",
-    "tabBrand": "Markalar",
+    "tabBrand": "Marka",
     "tabEconomic": "İktisadi İşletme",
-    "tabCooperative": "Kooperatifler",
-    "tabSocial": "Sosyal Şirketler"
+    "tabCooperative": "Kooperatif",
+    "tabSocial": "Sosyal Şirket"
   },
   "marketDetail": {
     "shareTitle": "hangel'deki {name} mağazasını incele!",
@@ -184,9 +184,9 @@
     "noPosts": "Bu marka henüz bir gönderi paylaşmadı."
   },
   "volunteer": {
-    "title": "Gönüllülük",
+    "title": "Gönüllülük Fırsatları",
     "description": "Topluma katkıda bulun, yeni beceriler kazan ve etki yarat.",
-    "searchPlaceholder": "İlan, yetkinlik veya STK ara...",
+    "searchPlaceholder": "İlan adı, STK veya şehir ara...",
     "filterOnline": "Online",
     "filterField": "Saha",
     "filterOneDay": "Tek Günlük",
@@ -221,8 +221,8 @@
     "viewNgoProfile": "Kuruluş Profilini Görüntüle"
   },
   "aiRecommender": {
-    "title": "Yapay Zeka Önerileri",
-    "description": "Yetenek ve ilgi alanlarınıza en uygun ilanları sizin için bulalım.",
+    "title": "Yapay Zeka ile Fırsatları Keşfet",
+    "description": "Yeteneklerini ve ilgi alanlarını gir, sana en uygun gönüllülük fırsatlarını bulalım.",
     "toggle": "Toggle",
     "skillsLabel": "Yeteneklerin (virgülle ayırın)",
     "skillsPlaceholder": "Örn: Web Geliştirme, Proje Yönetimi, Grafik Tasarım",
@@ -261,7 +261,7 @@
     "phonePlaceholder": "+90 555 123 45 67",
     "sendButton": "Gönder",
     "contactsSoon": "Rehber özelliği yakında eklenecek!",
-    "transactionHistory": "Son İşlemler",
+    "transactionHistory": "İşlem Geçmişi",
     "searchTransactions": "İşlemlerde ara...",
     "filterIncome": "Gelir",
     "filterExpense": "Gider",
@@ -270,7 +270,7 @@
   },
   "hCard": {
     "cardHolder": "Kart Sahibi",
-    "expDate": "SON KUL.",
+    "expDate": "Son K. T.",
     "back": {
       "onlineShopping": "İnternet Alışverişi",
       "cardFrozen": "Kart Donduruldu",
@@ -419,11 +419,11 @@
   },
   "profile": {
     "shareTitle": "hangel'deki {name} profili incele!",
-    "impactPointsLabel": "hangel Etki Puanı",
-    "tabAbout": "Bilgilerim",
+    "impactPointsLabel": "hangel Sosyal Etki Puanı:",
+    "tabAbout": "Hakkında",
     "tabVolunteer": "Gönüllülük",
     "tabStatistics": "İstatistikler",
-    "tabBadges": "Rozetlerim",
+    "tabBadges": "Rozetler",
     "tabCertificates": "Sertifikalar",
     "personalInfoTitle": "Kişisel Bilgiler",
     "emailLabel": "E-posta",

@@ -42,7 +42,7 @@ export default function MarketPage() {
                 <Image
                   src={campaign.imageUrl}
                   alt={campaign.title}
-                  layout="fill"
+                  fill
                   objectFit="cover"
                   data-ai-hint={campaign.imageHint}
                 />
@@ -95,7 +95,7 @@ export default function MarketPage() {
                   <Image
                     src={brand.logoUrl}
                     alt={brand.name}
-                    layout="fill"
+                    fill
                     objectFit="cover"
                     data-ai-hint={brand.logoHint}
                   />

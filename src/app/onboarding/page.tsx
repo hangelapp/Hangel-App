@@ -63,9 +63,4 @@ export default function OnboardingPage() {
 
       <footer className="flex justify-center">
         <Button onClick={handleNext} className="w-full max-w-sm">
-          {step === onboardingSteps.length - 1 ? 'Hadi Başlayalım!' : 'İleri'}
-        </Button>
-      </footer>
-    </div>
-  );
-}
+          {step === onboardingSteps.length - 1 ? 'H

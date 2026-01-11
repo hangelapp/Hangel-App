@@ -61,7 +61,7 @@ export default function TimelinePage() {
             <p className="mb-4">{post.content}</p>
             {post.imageUrl && (
               <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                <Image src={post.imageUrl} alt="Post image" layout="fill" objectFit="cover" data-ai-hint={post.imageHint}/>
+                <Image src={post.imageUrl} alt="Post image" fill objectFit="cover" data-ai-hint={post.imageHint}/>
               </div>
             )}
           </CardContent>

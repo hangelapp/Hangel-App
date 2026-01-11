@@ -10,13 +10,11 @@ import {
   Info,
   LogOut,
   ChevronRight,
-  Heart,
   Store,
   BookUser,
   LayoutGrid,
   Building,
   School,
-  Briefcase,
   HelpCircle,
   BarChart,
 } from 'lucide-react';
@@ -30,20 +28,20 @@ import { Button } from './ui/button';
 
 const sideMenuItems = [
     { href: '/timeline', icon: BarChart, label: 'hangel Impact Story' },
-    { href: '/profile', icon: Gift, label: 'Bağışlarım' },
-    { href: '/profile', icon: BookUser, label: 'Başvurularım' },
-    { href: '/profile', icon: Star, label: 'Rozetlerim' },
-    { href: '/market', icon: Building, label: 'Sivil Toplum Kuruluşları' },
+    { href: '/my-donations', icon: Gift, label: 'Bağışlarım' },
+    { href: '/my-applications', icon: BookUser, label: 'Başvurularım' },
+    { href: '/my-badges', icon: Star, label: 'Rozetlerim' },
+    { href: '/ngos', icon: Building, label: 'Sivil Toplum Kuruluşları' },
     { href: '/market', icon: Store, label: 'Markalar' },
-    { href: '#', icon: School, label: 'Öğrenci Kulüpleri' },
-    { href: '#', icon: LayoutGrid, label: 'Yönetim Paneli' },
-    { href: '#', icon: Users, label: 'Arkadaşlarını Davet Et' },
+    { href: '/admin/clubs', icon: School, label: 'Öğrenci Kulüpleri' },
+    { href: '/admin', icon: LayoutGrid, label: 'Yönetim Paneli' },
+    { href: '/invite', icon: Users, label: 'Arkadaşlarını Davet Et' },
   ];
   
   const secondaryMenuItems = [
-    { href: '#', icon: Settings, label: 'Ayarlar' },
-    { href: '#', icon: Info, label: 'Hakkımızda' },
-    { href: '#', icon: HelpCircle, label: 'Destek' },
+    { href: '/settings', icon: Settings, label: 'Ayarlar' },
+    { href: '/about', icon: Info, label: 'Hakkımızda' },
+    { href: '/support', icon: HelpCircle, label: 'Destek' },
   ];
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {

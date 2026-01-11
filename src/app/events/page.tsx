@@ -32,7 +32,7 @@ export default function EventsPage() {
         {events.map((event) => (
           <Card key={event.id} className="overflow-hidden">
             <div className="relative h-40 w-full">
-              <Image src={event.imageUrl} alt={event.name} layout="fill" objectFit="cover" data-ai-hint={event.imageHint}/>
+              <Image src={event.imageUrl} alt={event.name} fill objectFit="cover" data-ai-hint={event.imageHint}/>
             </div>
             <CardContent className="p-4">
               <h2 className="text-lg font-bold font-headline">{event.name}</h2>
@@ -52,10 +52,4 @@ export default function EventsPage() {
                 {event.capacity.current} / {event.capacity.max}
               </p>
               <Button>Detayları Gör</Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
+            </

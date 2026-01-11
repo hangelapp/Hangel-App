@@ -29,7 +29,7 @@ export default function ProfilePage() {
           <Image
             src={profileBanner.imageUrl}
             alt="Profile Banner"
-            layout="fill"
+            fill
             objectFit="cover"
             data-ai-hint={profileBanner.imageHint}
           />
@@ -38,7 +38,7 @@ export default function ProfilePage() {
       </div>
       <div className="p-4 -mt-16">
         <div className="relative h-24 w-24 rounded-full border-4 border-background">
-            {userAvatar && <Image src={userAvatar.imageUrl} alt="User Avatar" layout="fill" objectFit="cover" className="rounded-full" data-ai-hint={userAvatar.imageHint}/>}
+            {userAvatar && <Image src={userAvatar.imageUrl} alt="User Avatar" fill objectFit="cover" className="rounded-full" data-ai-hint={userAvatar.imageHint}/>}
         </div>
       </div>
       <div className="p-4 -mt-8">

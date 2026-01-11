@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, ArrowDownUp, Search, MapPin, Calendar, Users, Award, Bot, ChevronDown } from 'lucide-react';
+import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot } from 'lucide-react';
 import { volunteeringOpportunities } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
