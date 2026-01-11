@@ -1,18 +1,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CircleDollarSign, ShoppingBag } from 'lucide-react';
-import { donations } from '@/lib/data';
+import { donationTransactions } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, isToday, isYesterday, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 type GroupedDonations = {
-  [key: string]: typeof donations;
+  [key: string]: typeof donationTransactions;
 };
 
 export default function MyDonationsPage() {
-  const totalDonations = donations.reduce((acc, curr) => acc + parseFloat(curr.donation.replace(' ₺', '')), 0);
+  const totalDonations = donationTransactions.reduce((acc, curr) => acc + parseFloat(curr.donation.replace(' ₺', '')), 0);
 
-  const groupedDonations = donations.reduce((acc: GroupedDonations, donation) => {
+  const groupedDonations = donationTransactions.reduce((acc: GroupedDonations, donation) => {
     const date = parse(donation.date, 'dd MMMM yyyy', new Date(), { locale: tr });
     let key = '';
     if (isToday(date)) {
