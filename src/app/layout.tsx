@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import AppLayout from '@/components/layout/app-layout';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'hangel',
@@ -16,10 +16,10 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <head />
-      <body className="font-body antialiased">
-        <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-background shadow-2xl">
-          <AppLayout>{children}</AppLayout>
-        </div>
+      <body className="font-body antialiased bg-muted/40">
+        <SidebarProvider>
+          {children}
+        </SidebarProvider>
         <Toaster />
       </body>
     </html>
