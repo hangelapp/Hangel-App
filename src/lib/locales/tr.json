@@ -126,7 +126,7 @@
     "phoneLabel": "Telefon Numarası",
     "phonePlaceholder": "5XX XXX XX XX",
     "userAgreement": "Kullanıcı Sözleşmesi",
-    "clarificationText": "Aydınlatma Metni",
+    "clarificationText": "KVKK Aydınlatma Metni",
     "agreementConfirmation": "'ni ve ",
     "kvkkConfirmation": "'ni okudum, anladım.",
     "sendCodeButton": "Doğrulama Kodu Gönder",
@@ -774,4 +774,3 @@
     "points": "{current} / {required}"
   }
 }
-]
