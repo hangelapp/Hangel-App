@@ -1,45 +1,47 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, HeartHandshake } from 'lucide-react';
 import Link from 'next/link';
 
-const SettingsSection = ({ title, description, children }: { title: string, description?: string, children: React.ReactNode }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>{title}</CardTitle>
-      {description && <CardDescription>{description}</CardDescription>}
-    </CardHeader>
-    <CardContent className="space-y-4">
-      {children}
+const SettingsSection = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <Card className={cn("overflow-hidden", className)}>
+    <CardContent className="p-0">
+      <div className="flex flex-col">
+        {children}
+      </div>
     </CardContent>
   </Card>
 );
 
-const SettingsLink = ({ href, icon, label }: { href: string, icon: React.ElementType, label: string }) => {
+const SettingsLink = ({ href, icon, label, iconColor }: { href: string, icon: React.ElementType, label: string, iconColor: string }) => {
   const Icon = icon;
   return (
-    <Link href={href}>
-       <div className="flex items-center justify-between rounded-lg border p-4 hover:bg-accent transition-colors">
-          <div className="flex items-center gap-4">
-            <Icon className="h-5 w-5 text-muted-foreground" />
-            <span className="font-medium">{label}</span>
-          </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-       </div>
+    <Link href={href} className="flex items-center p-4 hover:bg-accent transition-colors w-full">
+      <div className={cn("p-1.5 rounded-md mr-4", iconColor)}>
+          <Icon className="h-5 w-5 text-white" />
+      </div>
+      <span className="flex-1 font-medium">{label}</span>
+      <ChevronRight className="h-5 w-5 text-muted-foreground" />
     </Link>
   )
 }
 
-const SettingsSwitch = ({ label, description, defaultChecked = false }: { label: string, description: string, defaultChecked?: boolean }) => (
-    <div className="flex items-center justify-between rounded-lg border p-4">
-        <div className='space-y-0.5'>
+const SettingsSwitch = ({ label, description, icon: Icon, iconColor, defaultChecked = false }: { label: string, description?: string, icon: React.ElementType, iconColor: string, defaultChecked?: boolean }) => (
+    <div className="flex items-center p-4">
+        <div className={cn("p-1.5 rounded-md mr-4", iconColor)}>
+            <Icon className="h-5 w-5 text-white" />
+        </div>
+        <div className='flex-1 space-y-0.5'>
             <Label>{label}</Label>
-            <p className='text-xs text-muted-foreground'>{description}</p>
+            {description && <p className='text-xs text-muted-foreground'>{description}</p>}
         </div>
         <Switch defaultChecked={defaultChecked} />
     </div>
@@ -48,79 +50,99 @@ const SettingsSwitch = ({ label, description, defaultChecked = false }: { label:
 
 export default function SettingsPage() {
   return (
-    <div className="p-4 space-y-6 animate-in fade-in-0">
-      <h1 className="text-2xl font-bold font-headline">Ayarlar</h1>
+    <div className="p-4 space-y-8 animate-in fade-in-0">
+      <h1 className="text-3xl font-bold font-headline">Ayarlar</h1>
 
-      <SettingsSection title="Hesap">
-        <SettingsLink href="#" icon={User} label="Kişisel Bilgileri Düzenle" />
-        <SettingsLink href="#" icon={User} label="Gönüllülük Bilgilerini Düzenle" />
-      </SettingsSection>
-      
-      <SettingsSection title="Bildirimler" description="Hangi durumlarda bildirim almak istediğinizi seçin.">
-         <h3 className="text-sm font-medium text-muted-foreground pt-2">Anlık Bildirimler (Mobil/Web)</h3>
-         <SettingsSwitch label="Yeni Bağış Yapıldığında" description="Bir alışverişiniz bağışa dönüştüğünde." defaultChecked />
-         <SettingsSwitch label="Başvuru Durumu Değiştiğinde" description="Gönüllülük başvurularınız güncellendiğinde." defaultChecked />
-         <SettingsSwitch label="Yeni Rozet Kazanıldığında" description="Başarılarınız için sizi tebrik edelim." />
-         
-         <h3 className="text-sm font-medium text-muted-foreground pt-4">E-posta Bildirimleri</h3>
-         <SettingsSwitch label="Haftalık Bülten" description="Haftanın öne çıkanları ve fırsatlar." />
-         <SettingsSwitch label="Aylık Etki Raporu" description="Yarattığınız sosyal etkiyi özetleyen rapor." defaultChecked />
-      </SettingsSection>
+      <div className='space-y-4'>
+        <SettingsSection>
+          <SettingsLink href="#" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
+          <Separator />
+          <SettingsLink href="#" icon={HeartHandshake} label="Gönüllülük Bilgilerini Düzenle" iconColor="bg-orange-500" />
+        </SettingsSection>
 
-      <SettingsSection title="Güvenlik">
-        <SettingsLink href="#" icon={Shield} label="İki Adımlı Doğrulama" />
-        <SettingsLink href="#" icon={Shield} label="Şifre Değiştir" />
-        <SettingsLink href="#" icon={Shield} label="Oturumları Yönet" />
-      </SettingsSection>
+        <SettingsSection>
+           <SettingsSwitch label="Yeni Bağış Yapıldığında" icon={Bell} iconColor="bg-red-500" defaultChecked />
+           <Separator />
+           <SettingsSwitch label="Başvuru Durumu Değiştiğinde" icon={Bell} iconColor="bg-red-500" defaultChecked />
+           <Separator />
+           <SettingsSwitch label="Yeni Rozet Kazanıldığında" icon={Bell} iconColor="bg-red-500" />
+        </SettingsSection>
+        
+         <SettingsSection>
+           <SettingsSwitch label="Haftalık Bülten" icon={Mail} iconColor="bg-sky-500" />
+           <Separator />
+           <SettingsSwitch label="Aylık Etki Raporu" icon={Mail} iconColor="bg-sky-500" defaultChecked />
+        </SettingsSection>
 
-      <SettingsSection title="Uygulama" description="Uygulamanın görünümünü ve dilini kişiselleştirin.">
-         <div className="space-y-2 rounded-lg border p-4">
-            <Label htmlFor="theme">Tema</Label>
-            <Select defaultValue='system'>
-              <SelectTrigger id="theme">
-                <SelectValue placeholder="Tema seçin" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">Açık</SelectItem>
-                <SelectItem value="dark">Koyu</SelectItem>
-                <SelectItem value="system">Sistem</SelectItem>
-              </SelectContent>
-            </Select>
+        <SettingsSection>
+          <SettingsLink href="#" icon={Shield} label="İki Adımlı Doğrulama" iconColor="bg-green-500" />
+          <Separator />
+          <SettingsLink href="#" icon={Shield} label="Şifre Değiştir" iconColor="bg-green-500" />
+           <Separator />
+          <SettingsLink href="#" icon={Shield} label="Oturumları Yönet" iconColor="bg-green-500" />
+        </SettingsSection>
+
+        <SettingsSection>
+            <div className="flex items-center p-4">
+                <div className="p-1.5 rounded-md mr-4 bg-gray-500">
+                    <Palette className="h-5 w-5 text-white" />
+                </div>
+                <span className="flex-1 font-medium">Tema</span>
+                 <Select defaultValue='system'>
+                  <SelectTrigger className='w-auto border-none bg-accent focus:ring-0'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Açık</SelectItem>
+                    <SelectItem value="dark">Koyu</SelectItem>
+                    <SelectItem value="system">Sistem</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
+             <Separator />
+            <div className="flex items-center p-4">
+                 <div className="p-1.5 rounded-md mr-4 bg-gray-500">
+                    <Globe className="h-5 w-5 text-white" />
+                </div>
+                <span className="flex-1 font-medium">Dil</span>
+                <Select defaultValue='tr'>
+                  <SelectTrigger className='w-auto border-none bg-accent focus:ring-0'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tr">Türkçe</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
+        </SettingsSection>
+
+        <SettingsSection>
+          <SettingsLink href="/support" icon={HelpCircle} label="Yardım Merkezi" iconColor="bg-cyan-500" />
+          <Separator />
+          <SettingsLink href="/about" icon={Info} label="Hakkımızda" iconColor="bg-cyan-500" />
+           <Separator />
+          <SettingsLink href="#" icon={FileText} label="Gizlilik Politikası" iconColor="bg-gray-400" />
+           <Separator />
+          <SettingsLink href="#" icon={FileText} label="Kullanıcı Sözleşmesi" iconColor="bg-gray-400" />
+        </SettingsSection>
+
+        <SettingsSection>
+          <div className="p-4">
+            <Button variant="destructive" className="w-full">
+                Hesabımı Sil
+            </Button>
           </div>
-          <div className="space-y-2 rounded-lg border p-4">
-            <Label htmlFor="language">Dil</Label>
-             <Select defaultValue='tr'>
-              <SelectTrigger id="language">
-                <SelectValue placeholder="Dil seçin" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tr">Türkçe</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-      </SettingsSection>
+        </SettingsSection>
 
-       <SettingsSection title="Destek & Yasal">
-        <SettingsLink href="/support" icon={HelpCircle} label="Yardım Merkezi" />
-        <SettingsLink href="/about" icon={Info} label="Hakkımızda" />
-        <SettingsLink href="#" icon={FileText} label="Gizlilik Politikası" />
-        <SettingsLink href="#" icon={FileText} label="Kullanıcı Sözleşmesi" />
-      </SettingsSection>
-
-      <SettingsSection title="Hesabı Sil">
-        <p className="text-sm text-muted-foreground">Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.</p>
-        <Button variant="destructive" className="w-full">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Hesabımı Sil
-        </Button>
-      </SettingsSection>
-
-      <div className="pt-4">
-        <Button variant="outline" className="w-full">
-            <LogOut className="mr-2 h-4 w-4" />
-            Çıkış Yap
-        </Button>
+        <SettingsSection>
+            <Link href="/login">
+                <div className="flex items-center p-4 text-primary font-medium justify-center">
+                    <LogOut className="mr-2 h-5 w-5" />
+                    Çıkış Yap
+                </div>
+            </Link>
+        </SettingsSection>
       </div>
 
     </div>
