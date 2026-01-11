@@ -47,7 +47,8 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
             <ArrowLeft className="h-5 w-5" />
         </Button>
          <div className="absolute top-4 right-4 flex gap-2">
-            {/* ShareButtons can be added here */}
+            <Button size="icon" variant="secondary" className="rounded-full h-8 w-8 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"><QrCode className="h-4 w-4" /></Button>
+            <Button size="icon" variant="secondary" className="rounded-full h-8 w-8 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"><Share2 className="h-4 w-4" /></Button>
         </div>
       </div>
       <div className="p-4 bg-background">
