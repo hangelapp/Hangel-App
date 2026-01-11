@@ -38,8 +38,8 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
            <Link href="/timeline" passHref asChild>
             <SheetClose asChild>
                 <div className="flex items-center gap-2 text-primary">
-                    <HangelLogo className="h-8 w-8" />
-                    <span className="text-2xl font-bold">hangel</span>
+                    <HangelLogo className="h-8 w-8 text-ring" />
+                    <span className="text-2xl font-bold text-foreground">hangel</span>
                 </div>
             </SheetClose>
            </Link>
@@ -53,7 +53,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
                         <SheetClose asChild>
                             <div className="flex items-center justify-between px-4 py-3 text-base text-foreground/80 hover:bg-accent/50">
                                 <div className="flex items-center gap-4">
-                                <item.icon className="h-5 w-5 text-primary" />
+                                <item.icon className="h-5 w-5 text-ring" />
                                 <span>{item.label}</span>
                                 </div>
                                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -104,7 +104,7 @@ export default function AppHeader() {
   
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 mx-auto max-w-md border-b bg-card/80 backdrop-blur-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 mx-auto max-w-md border-b bg-background/80 backdrop-blur-sm">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)}>
@@ -112,7 +112,7 @@ export default function AppHeader() {
             </Button>
             <Link href="/timeline" passHref>
                 <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-primary">hangel</span>
+                    <span className="text-xl font-bold text-foreground">hangel</span>
                 </div>
             </Link>
           </div>

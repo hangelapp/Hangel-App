@@ -4,65 +4,65 @@
 
 @layer base {
   :root {
-    --background: 240 10% 98%;
-    --foreground: 240 10% 3.9%;
+    --background: 220 12% 8%; /* Very dark cool grey, almost black */
+    --foreground: 220 10% 95%; /* Light grey for text */
 
-    --card: 240 10% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card: 220 12% 12%; /* Slightly lighter dark grey for cards */
+    --card-foreground: 220 10% 95%;
 
-    --popover: 240 10% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 220 12% 10%;
+    --popover-foreground: 220 10% 95%;
 
-    --primary: 16 98% 54%; /* #f34723 */
-    --primary-foreground: 0 0% 100%;
+    --primary: 220 10% 80%; /* Silver/Light Grey for primary actions */
+    --primary-foreground: 220 12% 10%; /* Dark text on silver buttons */
+    
+    --secondary: 220 12% 20%; /* Darker grey for secondary elements */
+    --secondary-foreground: 220 10% 90%;
 
-    --secondary: 220 71% 17%; /* #042654 */
-    --secondary-foreground: 0 0% 98%;
+    --muted: 220 12% 18%;
+    --muted-foreground: 220 10% 60%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 220 12% 18%;
+    --accent-foreground: 220 10% 95%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 86% 97%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 16 98% 54%;
+    --border: 220 12% 25%; /* Metallic border */
+    --input: 220 12% 18%;
+    --ring: 217 91% 60%; /* MBUX-style bright blue for focus rings */
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 220 71% 10%; /* Darker variant of #042654 */
-    --foreground: 0 0% 98%;
+    --background: 220 12% 8%;
+    --foreground: 220 10% 95%;
 
-    --card: 220 71% 14%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 12% 12%;
+    --card-foreground: 220 10% 95%;
 
-    --popover: 220 71% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 12% 10%;
+    --popover-foreground: 220 10% 95%;
 
-    --primary: 16 98% 54%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 220 10% 80%;
+    --primary-foreground: 220 12% 10%;
 
-    --secondary: 16 98% 44%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 220 12% 20%;
+    --secondary-foreground: 220 10% 90%;
 
-    --muted: 220 71% 14%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 220 12% 18%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 220 71% 14%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 220 12% 18%;
+    --accent-foreground: 220 10% 95%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 86% 97%;
 
-    --border: 220 71% 20%;
-    --input: 220 71% 14%;
-    --ring: 16 98% 54%;
+    --border: 220 12% 25%;
+    --input: 220 12% 18%;
+    --ring: 217 91% 60%;
   }
 }
 
