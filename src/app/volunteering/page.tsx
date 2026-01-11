@@ -48,7 +48,7 @@ export default function VolunteeringPage() {
               <p className="text-sm text-muted-foreground">{opp.organization}</p>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-                <div className="flex items-center text-muted-foreground"><MapPin className="mr-2 h-4 w-4" />{opp.location}</div>
+                <div className="flex items-center text-muted-foreground"><MapPin className="mr-2 h-4 w-4" />{`${opp.location.city}${opp.location.district !== 'Online' ? `, ${opp.location.district}` : ''} (${opp.location.type})`}</div>
                 <div className="flex items-center text-muted-foreground"><Calendar className="mr-2 h-4 w-4" />{opp.commitment}</div>
               <div className="flex flex-wrap gap-2 pt-2">
                 {opp.skills.map((skill) => (
@@ -61,7 +61,7 @@ export default function VolunteeringPage() {
             <CardFooter className="flex justify-between items-center">
                  <div className="flex items-center gap-2">
                     <Award className="h-5 w-5 text-primary" />
-                    <span className="text-sm font-semibold">150 Puan</span>
+                    <span className="text-sm font-semibold">{opp.points} Puan</span>
                  </div>
               <Button>Başvur</Button>
             </CardFooter>
