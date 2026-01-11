@@ -10,7 +10,7 @@ type GroupedDonations = {
 };
 
 export default function MyDonationsPage() {
-  const totalDonations = donationTransactions.reduce((acc, curr) => acc + parseFloat(curr.donation.replace(' ₺', '')), 0);
+  const totalDonations = donationTransactions.reduce((acc, curr) => acc + parseFloat(curr.donationAmount.replace(' ₺', '')), 0);
 
   const groupedDonations = donationTransactions.reduce((acc: GroupedDonations, donation) => {
     const date = parse(donation.date, 'dd MMMM yyyy', new Date(), { locale: tr });
@@ -62,12 +62,12 @@ export default function MyDonationsPage() {
                                         <ShoppingBag className="h-5 w-5 text-muted-foreground" />
                                     </div>
                                     <div className="flex-1 text-left">
-                                        <p className="font-semibold">{donation.store}</p>
+                                        <p className="font-semibold">{donation.brand}</p>
                                         <p className="text-xs text-muted-foreground">{donation.ngo}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold">{donation.purchase}</p>
-                                        <p className="text-xs text-primary font-semibold">Bağış: {donation.donation}</p>
+                                        <p className="font-bold">{donation.purchaseAmount}</p>
+                                        <p className="text-xs text-primary font-semibold">Bağış: {donation.donationAmount}</p>
                                     </div>
                                 </div>
                             </AccordionTrigger>
@@ -75,11 +75,11 @@ export default function MyDonationsPage() {
                                 <div className="space-y-2 text-sm mt-2 pt-4 border-t">
                                     <div className='flex justify-between'>
                                         <span className='text-muted-foreground'>Alışveriş Tutarı</span>
-                                        <span>{donation.purchase}</span>
+                                        <span>{donation.purchaseAmount}</span>
                                     </div>
                                     <div className='flex justify-between font-semibold'>
                                         <span className='text-primary'>Bağış Tutarı</span>
-                                        <span className='text-primary'>{donation.donation}</span>
+                                        <span className='text-primary'>{donation.donationAmount}</span>
                                     </div>
                                     <div className='flex justify-between text-xs'>
                                         <span className='text-muted-foreground'>Desteklenen STK</span>
