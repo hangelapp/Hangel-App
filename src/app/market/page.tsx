@@ -85,13 +85,13 @@ export default function MarketPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="products" className="p-4 bg-background">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             {marketBrands.map((brand) => (
               <Card
                 key={brand.id}
-                className="flex flex-col text-left rounded-lg overflow-hidden group"
+                className="flex items-center text-left rounded-lg overflow-hidden group p-3"
               >
-                <div className="relative aspect-square w-full">
+                <div className="relative h-16 w-16 rounded-md overflow-hidden mr-4">
                   <Image
                     src={brand.logoUrl}
                     alt={brand.name}
@@ -99,25 +99,17 @@ export default function MarketPage() {
                     objectFit="cover"
                     data-ai-hint={brand.logoHint}
                   />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full h-8 w-8"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
                 </div>
 
-                <CardContent className="p-3 flex-grow flex flex-col justify-between">
-                  <div>
-                    <p className="text-sm font-bold truncate">{brand.name}</p>
-                    <p className="text-xs text-muted-foreground">{brand.category}</p>
-                  </div>
-                  <div className="flex items-center justify-center text-sm font-bold text-primary bg-primary/10 rounded-full py-1 mt-2">
+                <div className="flex-grow">
+                    <p className="text-base font-bold truncate">{brand.name}</p>
+                    <p className="text-sm text-muted-foreground">{brand.category}</p>
+                </div>
+                 
+                <div className="flex items-center justify-center text-sm font-bold text-primary bg-primary/10 rounded-full py-1 px-3 ml-4">
                     <Percent className="h-4 w-4 mr-1"/>
-                    <span>%{brand.donationRate} Bağış</span>
-                  </div>
-                </CardContent>
+                    <span>{`%${brand.donationRate}`} Bağış</span>
+                </div>
               </Card>
             ))}
           </div>
