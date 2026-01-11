@@ -25,6 +25,18 @@
       "imageHint": "wheat logo"
     },
     {
+      "id": "brand-logo-3",
+      "description": "Brand logo for 'Gezgin Rotalar'",
+      "imageUrl": "https://images.unsplash.com/photo-1647006870601-27a4b0f21f41?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjb21wYXNzJTIwbG9nb3xlbnwwfHx8fDE3Njc5ODIyMjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "compass logo"
+    },
+    {
+      "id": "brand-logo-4",
+      "description": "Brand logo for 'Tekno Market'",
+      "imageUrl": "https://images.unsplash.com/photo-1678982175192-3ca60f2d7f82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaXJjdWl0JTIwbG9nb3xlbnwwfHx8fDE3NjgwNzI3Mzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "circuit logo"
+    },
+    {
       "id": "event-cover-1",
       "description": "Event cover for 'Sahil Temizliği'",
       "imageUrl": "https://images.unsplash.com/photo-1595902392414-16c64fe8d048?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxiZWFjaCUyMGNsZWFudXB8ZW58MHx8fHwxNzY4MDg1MzUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
@@ -53,6 +65,18 @@
       "description": "User profile banner image",
       "imageUrl": "https://images.unsplash.com/photo-1693902939226-449195d2698b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhYnN0cmFjdCUyMG5hdHVyZXxlbnwwfHx8fDE3NjgwMzgwMDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "abstract nature"
+    },
+    {
+      "id": "campaign-banner-1",
+      "description": "Campaign banner for school shopping donations",
+      "imageUrl": "https://images.unsplash.com/photo-1596468205430-8d0706225e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzdHVkZW50JTIwc2Nob29sJTIwc3VwcGxpZXN8ZW58MHx8fHwxNzY4MTYyMTk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student school supplies"
+    },
+    {
+      "id": "campaign-banner-2",
+      "description": "Campaign banner for travel donations",
+      "imageUrl": "https://images.unsplash.com/photo-1503220317375-aa068c833b36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0cmF2ZWx8ZW58MHx8fHwxNzY4MTYyNDU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "travel"
     }
   ]
 }

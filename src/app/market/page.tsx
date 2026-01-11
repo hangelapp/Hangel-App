@@ -1,15 +1,19 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Filter, Search, Heart, Percent, ArrowDownUp, List, LayoutGrid } from 'lucide-react';
-import { marketBrands } from '@/lib/data';
+import { marketBrands, marketCampaigns } from '@/lib/data';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 export default function MarketPage() {
   return (
@@ -22,7 +26,38 @@ export default function MarketPage() {
             className="pl-10 bg-white rounded-full"
           />
         </div>
-        <div className="flex gap-2">
+      </div>
+
+      <Carousel
+        opts={{
+          align: 'start',
+          loop: true,
+        }}
+        className="w-full px-4"
+      >
+        <CarouselContent>
+          {marketCampaigns.map((campaign) => (
+            <CarouselItem key={campaign.id} className="basis-5/6">
+              <div className="relative h-32 rounded-lg overflow-hidden">
+                <Image
+                  src={campaign.imageUrl}
+                  alt={campaign.title}
+                  layout="fill"
+                  objectFit="cover"
+                  data-ai-hint={campaign.imageHint}
+                />
+                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
+                    <h3 className="font-bold text-lg">{campaign.title}</h3>
+                    <p className="text-sm">{campaign.description}</p>
+                </div>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+      
+      <div className="p-4 flex gap-2">
             <Button variant="outline" className="flex-1">
                 <Filter className="mr-2 h-4 w-4" /> Filtrele
             </Button>
@@ -35,19 +70,18 @@ export default function MarketPage() {
              <Button variant="outline" size="icon">
                 <List className="h-4 w-4" />
             </Button>
-        </div>
       </div>
 
       <Tabs defaultValue="products" className="w-full">
         <TabsList className="w-full justify-start rounded-none bg-transparent p-0 px-4 gap-4 overflow-x-auto">
           <TabsTrigger value="products" className="rounded-full">
-            Ürünler
-          </TabsTrigger>
-          <TabsTrigger value="brands" className="rounded-full">
             Markalar
           </TabsTrigger>
           <TabsTrigger value="cooperatives" className="rounded-full">
             Kooperatifler
+          </TabsTrigger>
+           <TabsTrigger value="social" className="rounded-full">
+            Sosyal Şirketler
           </TabsTrigger>
         </TabsList>
         <TabsContent value="products" className="p-4 bg-background">
@@ -55,7 +89,7 @@ export default function MarketPage() {
             {marketBrands.map((brand) => (
               <Card
                 key={brand.id}
-                className="flex flex-col text-left rounded-lg overflow-hidden"
+                className="flex flex-col text-left rounded-lg overflow-hidden group"
               >
                 <div className="relative aspect-square w-full">
                   <Image
@@ -74,24 +108,24 @@ export default function MarketPage() {
                   </Button>
                 </div>
 
-                <CardContent className="p-2 flex-grow flex flex-col justify-between">
+                <CardContent className="p-3 flex-grow flex flex-col justify-between">
                   <div>
                     <p className="text-sm font-bold truncate">{brand.name}</p>
                     <p className="text-xs text-muted-foreground">{brand.category}</p>
                   </div>
-                  <div className="flex items-center text-sm font-bold text-primary mt-1">
+                  <div className="flex items-center justify-center text-sm font-bold text-primary bg-primary/10 rounded-full py-1 mt-2">
                     <Percent className="h-4 w-4 mr-1"/>
-                    <span>{brand.donationRate} Bağış</span>
+                    <span>%{brand.donationRate} Bağış</span>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </TabsContent>
-        <TabsContent value="brands" className="p-4 text-center text-muted-foreground">
+        <TabsContent value="cooperatives" className="p-4 text-center text-muted-foreground">
           Yakında...
         </TabsContent>
-        <TabsContent value="cooperatives" className="p-4 text-center text-muted-foreground">
+        <TabsContent value="social" className="p-4 text-center text-muted-foreground">
           Yakında...
         </TabsContent>
       </Tabs>

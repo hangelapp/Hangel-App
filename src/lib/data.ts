@@ -60,6 +60,15 @@ export interface Badge {
     category: 'Sosyal Alanlar' | 'Gönüllülük';
 }
 
+export interface Campaign {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
+}
+
+
 export const timelinePosts: Post[] = [
   {
     id: '1',
@@ -88,8 +97,8 @@ export const timelinePosts: Post[] = [
 export const marketBrands: Brand[] = [
     { id: '1', name: 'Doğa Dostu Giyim', category: 'Tekstil', donationRate: 15, logoUrl: getImage('brand-logo-1')?.imageUrl || '', logoHint: getImage('brand-logo-1')?.imageHint },
     { id: '2', name: 'Lezzet Köyü', category: 'Gıda', donationRate: 10, logoUrl: getImage('brand-logo-2')?.imageUrl || '', logoHint: getImage('brand-logo-2')?.imageHint },
-    { id: '3', name: 'Gezgin Rotalar', category: 'Seyahat', donationRate: 8, logoUrl: 'https://picsum.photos/seed/brand3/200/200', logoHint: 'compass logo' },
-    { id: '4', name: 'Tekno Market', category: 'Teknoloji', donationRate: 5, logoUrl: 'https://picsum.photos/seed/brand4/200/200', logoHint: 'circuit logo' },
+    { id: '3', name: 'Gezgin Rotalar', category: 'Seyahat', donationRate: 8, logoUrl: getImage('brand-logo-3')?.imageUrl || '', logoHint: getImage('brand-logo-3')?.imageHint },
+    { id: '4', name: 'Tekno Market', category: 'Teknoloji', donationRate: 5, logoUrl: getImage('brand-logo-4')?.imageUrl || '', logoHint: getImage('brand-logo-4')?.imageHint },
 ];
 
 export const events: Event[] = [
@@ -101,4 +110,9 @@ export const volunteeringOpportunities: Volunteering[] = [
     { id: '1', title: 'Fransızca Tercüman Gönüllüsü', organization: 'Sınır Tanımayan Doktorlar', location: 'Online', skills: ['Fransızca', 'Tercümanlık'], commitment: 'Haftada 5 saat' },
     { id: '2', title: 'Afet Bölgesi Yardım Dağıtımı', organization: 'Ahbap Derneği', location: 'Hatay, Antakya', skills: ['Fiziksel Güç', 'Organizasyon'], commitment: '1 hafta' },
     { id: '3', title: 'Çocuklara Etüt Desteği', organization: 'TEGV', location: 'İstanbul, Kadıköy', skills: ['Eğitmenlik', 'Sabır'], commitment: 'Haftada 2 gün' },
+];
+
+export const marketCampaigns: Campaign[] = [
+  { id: '1', title: 'Okul Alışverişinde %15 Bağış!', description: 'Lezzet Köyü ile çocukları sevindir.', imageUrl: getImage('campaign-banner-1')?.imageUrl || '', imageHint: getImage('campaign-banner-1')?.imageHint || '' },
+  { id: '2', title: 'Her Seyehat Bir Umut Olsun', description: 'Gezgin Rotalar ile doğayı koru.', imageUrl: getImage('campaign-banner-2')?.imageUrl || '', imageHint: getImage('campaign-banner-2')?.imageHint || '' },
 ];

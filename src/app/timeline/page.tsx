@@ -8,6 +8,7 @@ import { timelinePosts } from '@/lib/data';
 import { Heart, Share2, MoreHorizontal, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 
 export default function TimelinePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Should be replaced with real auth check
@@ -46,10 +47,10 @@ export default function TimelinePage() {
             </div>
              <div className="flex items-center gap-2">
               {post.sponsored && (
-                <div className="flex items-center gap-1 text-xs text-amber-500">
-                  <Star className="h-4 w-4" />
+                <Badge variant="outline" className="flex items-center gap-1 border-amber-500 text-amber-500">
+                  <Star className="h-3 w-3" />
                   <span>Sponsorlu</span>
-                </div>
+                </Badge>
               )}
               <Button variant="ghost" size="icon">
                 <MoreHorizontal className="h-5 w-5" />
