@@ -28,7 +28,7 @@ export default function NgosPage() {
           </Button>
         </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
         {ngos.map((ngo) => (
           <Card key={ngo.id}>
             <CardHeader>
@@ -38,7 +38,7 @@ export default function NgosPage() {
                         <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <CardTitle className="text-lg">{ngo.name}</CardTitle>
+                        <CardTitle className="text-base">{ngo.name}</CardTitle>
                         <p className="text-sm text-muted-foreground">{ngo.category}</p>
                     </div>
                 </div>

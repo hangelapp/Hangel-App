@@ -87,7 +87,7 @@ export default function MarketPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="products" className="p-4 bg-background">
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             {marketBrands.map((brand) => (
               <Card key={brand.id}>
                 <CardHeader>
@@ -97,7 +97,7 @@ export default function MarketPage() {
                             <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <CardTitle className="text-lg">{brand.name}</CardTitle>
+                            <CardTitle className="text-base">{brand.name}</CardTitle>
                             <p className="text-sm text-muted-foreground">{brand.category}</p>
                         </div>
                     </div>
