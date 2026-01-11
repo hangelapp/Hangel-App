@@ -30,12 +30,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary/30">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center mb-8">
-            <HangelLogo className="mx-auto h-12 w-auto text-primary" />
-          <h1 className="text-2xl font-medium text-foreground mt-4">
-            Oturum Aç
+          <h1 className="text-4xl font-bold text-primary tracking-wider font-headline">
+            hangel
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {step === 1 ? 'Devam etmek için telefon numaranızı girin' : `+90 ${phoneNumber} numarasına gönderilen kodu girin.`}
@@ -52,7 +51,7 @@ export default function LoginPage() {
                 type="tel"
                 autoComplete="tel"
                 required
-                className="text-base"
+                className="text-base bg-background"
                 placeholder="5XX XXX XX XX"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -83,7 +82,7 @@ export default function LoginPage() {
                 name="otp"
                 type="text"
                 required
-                className="text-center text-2xl tracking-[1rem]"
+                className="text-center text-2xl tracking-[1rem] bg-background"
                 placeholder="------"
                 maxLength={6}
                 value={otp}
@@ -107,10 +106,6 @@ export default function LoginPage() {
             </div>
           </form>
         )}
-
-         <p className="text-center text-xs text-muted-foreground">
-             Giriş yaparak, hangel'in hizmet şartlarını kabul etmiş olursunuz.
-          </p>
       </div>
     </div>
   );
