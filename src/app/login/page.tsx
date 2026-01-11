@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
-import { HangelLogo } from '@/components/icons';
 import { useRouter } from 'next/navigation';
+import { HangelLogo } from '@/components/icons';
 
 export default function LoginPage() {
   const [step, setStep] = useState(1);
@@ -30,44 +30,40 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <HangelLogo className="mx-auto h-12 w-auto text-primary" />
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
-            Hangel'e Hoş Geldin
-          </h2>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary/30">
+      <div className="w-full max-w-sm space-y-6">
+        <div className="text-center mb-8">
+            <HangelLogo className="mx-auto h-12 w-auto text-primary" />
+          <h1 className="text-2xl font-medium text-foreground mt-4">
+            Oturum Aç
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {step === 1 ? 'Devam etmek için telefon numaranı gir.' : `+90 ${phoneNumber} numarasına gönderilen kodu gir.`}
+            {step === 1 ? 'Devam etmek için telefon numaranızı girin' : `+90 ${phoneNumber} numarasına gönderilen kodu girin.`}
           </p>
         </div>
 
         {step === 1 && (
           <form className="space-y-6" onSubmit={handleSendCode}>
-            <div>
-              <Label htmlFor="phone" className="sr-only">
-                Telefon Numarası
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telefon Numarası</Label>
               <Input
                 id="phone"
                 name="phone"
                 type="tel"
                 autoComplete="tel"
                 required
-                className="text-lg"
+                className="text-base"
                 placeholder="5XX XXX XX XX"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
               />
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <Checkbox id="terms" required />
-                <Label htmlFor="terms" className="ml-3 text-sm font-normal text-muted-foreground">
-                  <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link>'ni ve <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum, anladım.
-                </Label>
-              </div>
+            <div className="flex items-start">
+              <Checkbox id="terms" required />
+              <Label htmlFor="terms" className="ml-3 text-xs font-normal text-muted-foreground">
+                 <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link> ve <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum, anladım.
+              </Label>
             </div>
 
             <div>
@@ -81,9 +77,7 @@ export default function LoginPage() {
         {step === 2 && (
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <Label htmlFor="otp" className="sr-only">
-                Doğrulama Kodu
-              </Label>
+              <Label htmlFor="otp">Doğrulama Kodu</Label>
               <Input
                 id="otp"
                 name="otp"
@@ -113,9 +107,11 @@ export default function LoginPage() {
             </div>
           </form>
         )}
+
+         <p className="text-center text-xs text-muted-foreground">
+             Giriş yaparak, hangel'in hizmet şartlarını kabul etmiş olursunuz.
+          </p>
       </div>
     </div>
   );
 }
-
-    
