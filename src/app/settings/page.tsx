@@ -1,14 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, HeartHandshake } from 'lucide-react';
+import { Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, HeartHandshake, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 const SettingsSection = ({ children, className }: { children: React.ReactNode, className?: string }) => (
@@ -24,8 +22,8 @@ const SettingsSection = ({ children, className }: { children: React.ReactNode, c
 const SettingsLink = ({ href, icon, label, iconColor }: { href: string, icon: React.ElementType, label: string, iconColor: string }) => {
   const Icon = icon;
   return (
-    <Link href={href} className="flex items-center p-4 hover:bg-accent transition-colors w-full">
-      <div className={cn("p-1.5 rounded-md mr-4", iconColor)}>
+    <Link href={href} className="flex items-center p-4 hover:bg-accent transition-colors w-full text-base">
+      <div className={cn("p-1.5 rounded-lg mr-4", iconColor)}>
           <Icon className="h-5 w-5 text-white" />
       </div>
       <span className="flex-1 font-medium">{label}</span>
@@ -35,12 +33,12 @@ const SettingsLink = ({ href, icon, label, iconColor }: { href: string, icon: Re
 }
 
 const SettingsSwitch = ({ label, description, icon: Icon, iconColor, defaultChecked = false }: { label: string, description?: string, icon: React.ElementType, iconColor: string, defaultChecked?: boolean }) => (
-    <div className="flex items-center p-4">
-        <div className={cn("p-1.5 rounded-md mr-4", iconColor)}>
+    <div className="flex items-center p-4 text-base">
+        <div className={cn("p-1.5 rounded-lg mr-4", iconColor)}>
             <Icon className="h-5 w-5 text-white" />
         </div>
         <div className='flex-1 space-y-0.5'>
-            <Label>{label}</Label>
+            <label className="font-medium">{label}</label>
             {description && <p className='text-xs text-muted-foreground'>{description}</p>}
         </div>
         <Switch defaultChecked={defaultChecked} />
@@ -53,7 +51,7 @@ export default function SettingsPage() {
     <div className="p-4 space-y-8 animate-in fade-in-0">
       <h1 className="text-3xl font-bold font-headline">Ayarlar</h1>
 
-      <div className='space-y-4'>
+      <div className='space-y-6'>
         <SettingsSection>
           <SettingsLink href="#" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
           <Separator />
@@ -61,6 +59,7 @@ export default function SettingsPage() {
         </SettingsSection>
 
         <SettingsSection>
+           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pt-4">Bildirimler</h2>
            <SettingsSwitch label="Yeni Bağış Yapıldığında" icon={Bell} iconColor="bg-red-500" defaultChecked />
            <Separator />
            <SettingsSwitch label="Başvuru Durumu Değiştiğinde" icon={Bell} iconColor="bg-red-500" defaultChecked />
@@ -69,22 +68,19 @@ export default function SettingsPage() {
         </SettingsSection>
         
          <SettingsSection>
+           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pt-4">E-posta Tercihleri</h2>
            <SettingsSwitch label="Haftalık Bülten" icon={Mail} iconColor="bg-sky-500" />
            <Separator />
            <SettingsSwitch label="Aylık Etki Raporu" icon={Mail} iconColor="bg-sky-500" defaultChecked />
         </SettingsSection>
 
         <SettingsSection>
-          <SettingsLink href="#" icon={Shield} label="İki Adımlı Doğrulama" iconColor="bg-green-500" />
-          <Separator />
-          <SettingsLink href="#" icon={Shield} label="Şifre Değiştir" iconColor="bg-green-500" />
-           <Separator />
-          <SettingsLink href="#" icon={Shield} label="Oturumları Yönet" iconColor="bg-green-500" />
+          <SettingsLink href="#" icon={Shield} label="Güvenlik ve Şifre" iconColor="bg-green-500" />
         </SettingsSection>
 
         <SettingsSection>
-            <div className="flex items-center p-4">
-                <div className="p-1.5 rounded-md mr-4 bg-gray-500">
+            <div className="flex items-center p-4 text-base">
+                <div className="p-1.5 rounded-lg mr-4 bg-gray-500">
                     <Palette className="h-5 w-5 text-white" />
                 </div>
                 <span className="flex-1 font-medium">Tema</span>
@@ -100,8 +96,8 @@ export default function SettingsPage() {
                 </Select>
             </div>
              <Separator />
-            <div className="flex items-center p-4">
-                 <div className="p-1.5 rounded-md mr-4 bg-gray-500">
+            <div className="flex items-center p-4 text-base">
+                 <div className="p-1.5 rounded-lg mr-4 bg-gray-500">
                     <Globe className="h-5 w-5 text-white" />
                 </div>
                 <span className="flex-1 font-medium">Dil</span>
@@ -128,16 +124,8 @@ export default function SettingsPage() {
         </SettingsSection>
 
         <SettingsSection>
-          <div className="p-4">
-            <Button variant="destructive" className="w-full">
-                Hesabımı Sil
-            </Button>
-          </div>
-        </SettingsSection>
-
-        <SettingsSection>
-            <Link href="/login">
-                <div className="flex items-center p-4 text-primary font-medium justify-center">
+          <Link href="/login">
+                <div className="flex items-center p-4 text-primary font-medium justify-center text-base">
                     <LogOut className="mr-2 h-5 w-5" />
                     Çıkış Yap
                 </div>
