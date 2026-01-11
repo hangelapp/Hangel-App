@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, Building } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, Building, GraduationCap } from 'lucide-react';
 import { HangelLogo } from '@/components/icons';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
@@ -13,10 +13,10 @@ const transactions = [
 const cards = [
   {
     type: 'Standart',
-    bgColor: 'bg-gradient-to-br from-green-800 via-green-700 to-green-800',
+    bgColor: 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600',
     patternUrl: 'https://www.transparenttextures.com/patterns/simple-dashed.png',
     textColor: 'text-white',
-    highlightColor: 'text-white',
+    highlightColor: 'text-white/80',
     owner: 'AYŞE YILMAZ',
     number: '**** **** **** 1234',
     expiry: '12/28',
@@ -24,25 +24,25 @@ const cards = [
   },
   {
     type: 'Öğrenci',
-    bgColor: 'bg-gradient-to-br from-amber-100 via-amber-50 to-amber-100',
+    bgColor: 'bg-gradient-to-br from-purple-500 via-purple-600 to-violet-600',
     patternUrl: 'https://www.transparenttextures.com/patterns/notebook-dark.png',
-    textColor: 'text-stone-800',
-    highlightColor: 'text-stone-900',
+    textColor: 'text-white',
+    highlightColor: 'text-white/80',
     owner: 'AYŞE YILMAZ',
     number: '**** **** **** 5678',
     expiry: '08/27',
-    icon: () => <div className="w-12 h-12 rounded-full bg-green-800/10 flex items-center justify-center"><Building className="w-7 h-7 text-green-800"/></div>
+    icon: () => <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><GraduationCap className="w-7 h-7 text-white"/></div>
   },
   {
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-stone-900 via-black to-stone-900',
+    bgColor: 'bg-gradient-to-br from-gray-800 via-gray-900 to-black',
     patternUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre-v2.png',
-    textColor: 'text-amber-50',
-    highlightColor: 'text-yellow-200',
+    textColor: 'text-gray-200',
+    highlightColor: 'text-gray-400',
     owner: 'AYŞE YILMAZ - TİCARİ',
     number: '**** **** **** 9012',
     expiry: '01/29',
-    icon: () => <HangelLogo className="w-12 h-12 text-yellow-200" />,
+    icon: () => <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><Building className="w-7 h-7 text-white"/></div>,
   },
 ];
 
@@ -58,7 +58,7 @@ export default function QrPaymentPage() {
                     <CarouselItem key={index}>
                         <div className={`relative h-56 rounded-2xl ${card.textColor} p-6 flex flex-col justify-between shadow-2xl overflow-hidden`}>
                             <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
-                            <div className={`absolute inset-0 ${card.bgColor} opacity-90`}></div>
+                            <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
                             
                             <div className="relative z-10">
                                 <div className='flex justify-between items-start'>
@@ -71,11 +71,11 @@ export default function QrPaymentPage() {
                                 <div className='flex justify-between items-end mt-2'>
                                     <div>
                                         <p className="text-xs opacity-70">Kart Sahibi</p>
-                                        <p className={`font-semibold ${card.highlightColor}`}>{card.owner}</p>
+                                        <p className={`font-semibold ${card.textColor}`}>{card.owner}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs opacity-70 text-right">Son Kul.</p>
-                                        <p className={`font-semibold ${card.highlightColor}`}>{card.expiry}</p>
+                                        <p className={`font-semibold ${card.textColor}`}>{card.expiry}</p>
                                     </div>
                                 </div>
                             </div>

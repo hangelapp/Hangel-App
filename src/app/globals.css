@@ -4,65 +4,65 @@
 
 @layer base {
   :root {
-    --background: 35 33% 96%; /* Warm off-white, like a latte foam */
-    --foreground: 25 20% 15%; /* Dark, rich coffee brown for text */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
 
-    --card: 0 0% 100%; /* Clean white for cards */
-    --card-foreground: 25 20% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 25 20% 15%;
+    --popover-foreground: 0 0% 9%;
 
-    --primary: 160 60% 30%; /* Starbucks Green */
-    --primary-foreground: 0 0% 100%; /* White text on green buttons */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 98%;
     
-    --secondary: 40 20% 90%; /* Light beige for secondary elements */
-    --secondary-foreground: 25 20% 25%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
 
-    --muted: 40 20% 90%;
-    --muted-foreground: 25 20% 45%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 160 50% 95%; /* Very light, minty green for accents */
-    --accent-foreground: 160 60% 30%;
+    --accent: 0 0% 94%;
+    --accent-foreground: 0 0% 9%;
 
-    --destructive: 0 84% 60%; /* Standard destructive red */
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 40 15% 88%; /* Soft, warm grey border */
-    --input: 40 15% 92%;
-    --ring: 160 60% 30%; /* Starbucks Green for focus rings */
+    --border: 0 0% 89%;
+    --input: 0 0% 92%;
+    --ring: 217 91% 60%;
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 25 20% 12%; /* Dark roast coffee bean */
-    --foreground: 40 10% 85%; /* Creamy text */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 25 20% 18%; /* Slightly lighter brown for cards */
-    --card-foreground: 40 10% 85%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 25 20% 12%;
-    --popover-foreground: 40 10% 85%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 160 60% 40%; /* Slightly brighter green for dark mode */
-    --primary-foreground: 0 0% 100%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 25 20% 25%; /* Darker brown for secondary elements */
-    --secondary-foreground: 40 10% 90%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 25 20% 22%;
-    --muted-foreground: 40 10% 60%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 63%;
 
-    --accent: 160 40% 25%; /* Muted green accent for dark mode */
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 63% 31%;
-    --destructive-foreground: 0 86% 97%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 25 20% 28%;
-    --input: 25 20% 22%;
-    --ring: 160 60% 40%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 217 91% 60%;
   }
 }
 

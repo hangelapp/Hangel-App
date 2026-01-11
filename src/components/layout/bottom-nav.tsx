@@ -16,7 +16,7 @@ export default function AppBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-20 max-w-md grid-cols-4 border-t bg-background/95 backdrop-blur-sm">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-20 max-w-md grid-cols-4 border-t border-black/10 bg-background/80 backdrop-blur-xl dark:border-white/10">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/timeline' && pathname.startsWith(item.href));
         const Icon = item.icon;
@@ -25,7 +25,7 @@ export default function AppBottomNav() {
             href={item.href}
             key={item.label}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 p-2 text-center text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+              "flex flex-col items-center justify-center gap-1 p-2 text-center text-muted-foreground transition-colors hover:text-primary",
               isActive && "text-primary"
             )}
           >
