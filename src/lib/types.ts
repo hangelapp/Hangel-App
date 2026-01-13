@@ -183,7 +183,11 @@ export type User = {
         programs: string[];
         licenses: string[];
         documents: string[];
-        travelObstacle: { domestic: boolean; international: boolean; };
+        travelInfo: { 
+            domesticObstacle: boolean; 
+            internationalObstacle: boolean;
+            visas: string[];
+        };
     },
     stats: {
         totalDonation: number;

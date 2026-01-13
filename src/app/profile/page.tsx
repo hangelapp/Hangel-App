@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { user, badges, certificates, pastVolunteering } from '@/lib/data';
 import { 
     Star, X, Briefcase, Sparkles, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop, Globe, 
-    Home, Phone, Mail, Cake, Users, Flag, Droplet, Edit, Share2, Download, Eye, HandCoins, Hourglass
+    Home, Phone, Mail, Cake, Users, Flag, Droplet, Edit, Share2, Download, Eye, HandCoins, Hourglass, Plane
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -23,7 +23,7 @@ const InfoRow = ({ icon: Icon, label, value }: { icon: React.ElementType, label:
     </div>
 );
 
-const VolunteerInfoCard = ({ title, items, icon: Icon }: { title: string, items: string[], icon: React.ElementType }) => (
+const VolunteerInfoCard = ({ title, items, icon: Icon }: { title: string, items: string[] | undefined, icon: React.ElementType }) => (
     <Card>
         <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -202,13 +202,16 @@ export default function ProfilePage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
-                                <Globe className="h-5 w-5 text-primary" />
+                                <Plane className="h-5 w-5 text-primary" />
                                 Seyahat
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="text-sm space-y-1">
-                            <p>Yurtiçi seyahat engeli: {user.volunteerInfo.travelObstacle.domestic ? 'Var' : 'Yok'}</p>
-                            <p>Yurtdışı seyahat engeli: {user.volunteerInfo.travelObstacle.international ? 'Var' : 'Yok'}</p>
+                        <CardContent className="text-sm space-y-3">
+                            <div>
+                                <p>Yurtiçi seyahat engeli: <span className='font-medium'>{user.volunteerInfo.travelInfo.domesticObstacle ? 'Var' : 'Yok'}</span></p>
+                                <p>Yurtdışı seyahat engeli: <span className='font-medium'>{user.volunteerInfo.travelInfo.internationalObstacle ? 'Var' : 'Yok'}</span></p>
+                            </div>
+                            <VolunteerInfoCard title="Vizeler" items={user.volunteerInfo.travelInfo.visas} icon={Globe} />
                         </CardContent>
                     </Card>
                 </CardContent>
@@ -222,9 +225,8 @@ export default function ProfilePage() {
                         {certificates.map(cert => (
                             <div key={cert.id} className='relative p-4 rounded-lg border'>
                                <div className='pr-24'>
-                                 <p className='font-semibold'>{cert.title}</p>
-                                 <p className='text-sm text-muted-foreground'>{cert.organization}</p>
-                                 <p className='text-xs text-muted-foreground mt-1'>Tarih: {cert.date}</p>
+                                 <p className='text-sm text-muted-foreground'>{cert.organization} - {cert.date}</p>
+                                 <p className='font-semibold mt-1'>{cert.title}</p>
                                </div>
                                <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
                                    <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-4 w-4"/></Button>

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Award, Star, Users, Heart, Download, Eye, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,15 +18,15 @@ const stats = [
 ];
 
 const levelColors: Record<BadgeType['level'], { bg: string; text: string }> = {
-    'Demir': { bg: 'bg-gray-400/20', text: 'text-gray-500' },
-    'Bakır': { bg: 'bg-orange-500/20', text: 'text-orange-600' },
-    'Bronz': { bg: 'bg-amber-700/20', text: 'text-amber-800' },
-    'Çelik': { bg: 'bg-slate-500/20', text: 'text-slate-600' },
-    'Gümüş': { bg: 'bg-zinc-400/20', text: 'text-zinc-500' },
-    'Altın': { bg: 'bg-yellow-400/20', text: 'text-yellow-500' },
-    'Platin': { bg: 'bg-cyan-200/20', text: 'text-cyan-400' },
-    'Elmas': { bg: 'bg-sky-300/20', text: 'text-sky-400' },
-  };
+  'Demir': { bg: 'bg-gray-500/20', text: 'text-gray-600' },
+  'Bakır': { bg: 'bg-orange-600/20', text: 'text-orange-700' },
+  'Bronz': { bg: 'bg-amber-700/20', text: 'text-amber-800' },
+  'Çelik': { bg: 'bg-slate-600/20', text: 'text-slate-700' },
+  'Gümüş': { bg: 'bg-gray-400/20', text: 'text-gray-500' },
+  'Altın': { bg: 'bg-yellow-500/20', text: 'text-yellow-600' },
+  'Platin': { bg: 'bg-cyan-300/20', text: 'text-cyan-400' },
+  'Elmas': { bg: 'bg-sky-400/20', text: 'text-sky-500' },
+};
 
 const VectorBadge = ({ badge }: { badge: BadgeType }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
@@ -107,9 +107,8 @@ export default function MyBadgesPage() {
                             {certificates.map(cert => (
                                 <div key={cert.id} className='relative p-4 rounded-lg border'>
                                    <div className='pr-24'>
-                                     <p className='font-semibold'>{cert.title}</p>
-                                     <p className='text-sm text-muted-foreground'>{cert.organization}</p>
-                                     <p className='text-xs text-muted-foreground mt-1'>Tarih: {cert.date}</p>
+                                     <p className='text-sm text-muted-foreground'>{cert.organization} - {cert.date}</p>
+                                     <p className='font-semibold mt-1'>{cert.title}</p>
                                    </div>
                                    <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
                                        <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-4 w-4"/></Button>

@@ -30,8 +30,8 @@ export const user: User = {
         },
     },
     volunteerInfo: {
-        skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi'],
-        dailySkills: ['İletişim', 'Takım Çalışması', 'Organizasyon'],
+        skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım'],
+        dailySkills: ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim'],
         interests: ['Hayvan Hakları', 'Çevre', 'Eğitim'],
         education: [
             { level: 'Lisans', school: 'Marmara Üniversitesi - İletişim Fakültesi' },
@@ -40,9 +40,13 @@ export const user: User = {
         profession: 'Grafik Tasarımcı',
         languages: ['Türkçe (Ana Dil)', 'İngilizce (İleri)'],
         programs: ['Adobe Photoshop', 'Adobe Illustrator', 'Figma'],
-        licenses: ['B Sınıfı Ehliyet'],
-        documents: ['İlk Yardım Sertifikası'],
-        travelObstacle: { domestic: false, international: false }
+        licenses: ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet'],
+        documents: ['İlk Yardım Sertifikası', 'Hijyen Belgesi', 'İş Güvenliği Sertifikası'],
+        travelInfo: { 
+            domesticObstacle: false, 
+            internationalObstacle: false,
+            visas: ['Schengen', 'ABD (B1/B2)']
+        }
     },
     stats: {
         totalDonation: 1250,
