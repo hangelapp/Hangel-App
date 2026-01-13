@@ -66,8 +66,8 @@ export default function VolunteeringDetailPage({ params }: { params: { id: strin
 
         <div className="p-4 bg-background space-y-4 -mt-12 relative z-10">
             <div>
-                 <h1 className="text-2xl font-bold font-headline text-white drop-shadow-lg">{opportunity.title}</h1>
-                 <Link href={`/ngos/${opportunity.ngoId}`} className="text-white/90 text-base font-medium hover:underline drop-shadow-md">{opportunity.organization}</Link>
+                 <h1 className="text-2xl font-bold font-headline text-foreground">{opportunity.title}</h1>
+                 <Link href={`/ngos/${opportunity.ngoId}`} className="text-foreground/90 text-base font-medium hover:underline">{opportunity.organization}</Link>
             </div>
             
             <Card>
