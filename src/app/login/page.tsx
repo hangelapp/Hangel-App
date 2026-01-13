@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { HangelLogo } from '@/components/icons';
 
 export default function LoginPage() {
   const [step, setStep] = useState(1);
@@ -33,10 +32,12 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8.5rem)] p-4 bg-background">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center mb-8">
-          <HangelLogo className="h-20 w-20 mx-auto text-primary" />
-          <h1 className="text-4xl font-bold text-foreground tracking-tight font-headline mt-4">
-            hangel'a Hoş Geldiniz
+          <h1 className="text-6xl font-bold text-destructive tracking-tight">
+            hangel
           </h1>
+          <p className="text-3xl font-bold text-foreground tracking-tight font-headline mt-4">
+            Merhaba
+          </p>
           <p className="mt-2 text-muted-foreground">
             {step === 1 ? 'Devam etmek için telefon numaranızı girin' : `+90 ${phoneNumber} numarasına gönderilen kodu girin.`}
           </p>
@@ -62,7 +63,7 @@ export default function LoginPage() {
             <div className="flex items-start">
               <Checkbox id="terms" required />
               <Label htmlFor="terms" className="ml-3 text-xs font-normal text-muted-foreground">
-                 <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link> ve <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum, anladım.
+                 <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link> ve <Link href="#" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı okudum, anladım.
               </Label>
             </div>
 
