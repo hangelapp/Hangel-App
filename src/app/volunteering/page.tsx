@@ -1,12 +1,14 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot } from 'lucide-react';
-import { volunteeringOpportunities } from '@/lib/data';
+import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle } from 'lucide-react';
+import { volunteeringOpportunities, user } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 export default function VolunteeringPage() {
+    const userSkills = user.volunteerInfo.skills;
+
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <div className="space-y-4 sticky top-16 bg-background/80 backdrop-blur-xl z-10 py-4">
@@ -57,11 +59,15 @@ export default function VolunteeringPage() {
                 <div className="flex items-center text-muted-foreground gap-2"><MapPin className="h-4 w-4" />{`${opp.location.city}${opp.location.district !== 'Online' ? `, ${opp.location.district}` : ''} (${opp.location.type})`}</div>
                 <div className="flex items-center text-muted-foreground gap-2"><Calendar className="h-4 w-4" />{opp.commitment}</div>
               <div className="flex flex-wrap gap-2 pt-2">
-                {opp.skills.map((skill) => (
-                  <Badge key={skill} variant="secondary">
-                    {skill}
-                  </Badge>
-                ))}
+                {opp.skills.map((skill) => {
+                  const isMatched = userSkills.includes(skill);
+                  return (
+                    <Badge key={skill} variant={isMatched ? "default" : "secondary"} className={isMatched ? 'bg-green-100 text-green-800' : ''}>
+                      {isMatched && <CheckCircle className="h-3 w-3 mr-1" />}
+                      {skill}
+                    </Badge>
+                  )
+                })}
               </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
@@ -78,5 +84,3 @@ export default function VolunteeringPage() {
     </div>
   );
 }
-
-    

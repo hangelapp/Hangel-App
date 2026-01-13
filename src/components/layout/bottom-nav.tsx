@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, HeartHandshake, Wallet, LayoutGrid } from "lucide-react";
+import { Store, HeartHandshake, QrCode, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/market", icon: Store, label: "Market" },
   { href: "/timeline", icon: LayoutGrid, label: "Akış" },
-  { href: "/qr-payment", icon: Wallet, label: "QR" },
+  { href: "/qr-payment", icon: QrCode, label: "QR" },
   { href: "/volunteering", icon: HeartHandshake, label: "Gönüllülük" },
 ];
 
@@ -37,5 +37,3 @@ export default function AppBottomNav() {
     </nav>
   );
 }
-
-    

@@ -2,13 +2,14 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle } from 'lucide-react';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 const cardData = [
   {
@@ -65,21 +66,88 @@ const allTransactions = {
     ],
 };
 
+const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFlipped: boolean, onFlip: () => void }) => {
+  return (
+    <div className="relative w-full h-full [transform-style:preserve-3d] transition-transform duration-500" style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
+      {/* Card Front */}
+      <div className={cn("absolute w-full h-full [backface-visibility:hidden] rounded-2xl p-6 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor)}>
+        <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
+        <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
+        <div className="relative z-10">
+          <div className='flex justify-between items-start'>
+            <p className={`font-semibold text-lg ${card.highlightColor}`}>{card.type}</p>
+            <div className='text-right'>
+              <p className="text-xs opacity-70">Bakiye</p>
+              <p className="font-semibold text-2xl">{card.balance}</p>
+            </div>
+          </div>
+        </div>
+        <div className="relative z-10">
+          <p className="font-mono tracking-widest text-lg">{card.number}</p>
+          <div className='flex justify-between items-end mt-2'>
+            <div>
+              <p className="text-xs opacity-70">Kart Sahibi</p>
+              <p className={`font-semibold text-sm ${card.textColor}`}>{card.owner}</p>
+            </div>
+            <div className='flex items-center gap-2'>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={onFlip}>
+                  <RefreshCw className="h-4 w-4" />
+              </Button>
+              <div>
+                <p className="text-xs opacity-70 text-right">Son Kul.</p>
+                <p className={`font-semibold text-sm ${card.textColor}`}>{card.expiry}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Card Back */}
+      <div className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-6 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor)}>
+         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
+        <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
+        <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center">
+            <p className="text-sm opacity-80 mb-4">Ödeme yapmak için QR kodu okutun.</p>
+            <div className="bg-white p-2 rounded-lg">
+                 <QrCode className="h-20 w-20 text-black" />
+            </div>
+        </div>
+         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-7 w-7 text-white/70 hover:text-white" onClick={onFlip}>
+             <RefreshCw className="h-4 w-4" />
+         </Button>
+      </div>
+    </div>
+  )
+};
+
 export default function QrPaymentPage() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const [flippedStates, setFlippedStates] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!api) return;
 
-    setCurrent(api.selectedScrollSnap());
-    api.on("select", () => {
+    const onSelect = () => {
       setCurrent(api.selectedScrollSnap());
-    });
+    };
+
+    api.on("select", onSelect);
+    onSelect(); // Set initial state
+    
+    return () => {
+      api.off("select", onSelect);
+    };
   }, [api]);
 
   const handleCardClick = (index: number) => {
-    api?.scrollTo(index);
+    if (index !== current) {
+      api?.scrollTo(index);
+    }
+  };
+
+  const toggleFlip = (cardId: string) => {
+    setFlippedStates(prev => ({ ...prev, [cardId]: !prev[cardId] }));
   };
 
   const selectedCardId = cardData[current]?.id as keyof typeof allTransactions;
@@ -94,33 +162,9 @@ export default function QrPaymentPage() {
         <Carousel setApi={setApi} opts={{ align: 'start' }} className="w-full">
             <CarouselContent className="-ml-2">
                 {cardData.map((card, index) => (
-                    <CarouselItem key={card.id} className="pl-2 basis-[90%] cursor-pointer" onClick={() => handleCardClick(index)}>
-                        <div className={`relative h-56 rounded-2xl ${card.textColor} p-6 flex flex-col justify-between shadow-lg overflow-hidden transition-transform duration-300 ${current === index ? 'scale-100' : 'scale-95'}`}>
-                            <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
-                            <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
-                            
-                            <div className="relative z-10">
-                                <div className='flex justify-between items-start'>
-                                    <p className={`font-semibold text-lg ${card.highlightColor}`}>{card.type}</p>
-                                    <div className='text-right'>
-                                      <p className="text-xs opacity-70">Bakiye</p>
-                                      <p className="font-semibold text-2xl">{card.balance}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="relative z-10">
-                                <p className="font-mono tracking-widest text-lg">{card.number}</p>
-                                <div className='flex justify-between items-end mt-2'>
-                                    <div>
-                                        <p className="text-xs opacity-70">Kart Sahibi</p>
-                                        <p className={`font-semibold text-sm ${card.textColor}`}>{card.owner}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs opacity-70 text-right">Son Kul.</p>
-                                        <p className={`font-semibold text-sm ${card.textColor}`}>{card.expiry}</p>
-                                    </div>
-                                </div>
-                            </div>
+                    <CarouselItem key={card.id} className="pl-2 basis-[90%]" onClick={() => handleCardClick(index)}>
+                        <div className={`relative h-56 rounded-2xl overflow-hidden transition-transform duration-300 [perspective:1000px] ${current === index ? 'scale-100' : 'scale-95 opacity-70'}`}>
+                           <CardFace card={card} isFlipped={!!flippedStates[card.id]} onFlip={() => toggleFlip(card.id)} />
                         </div>
                     </CarouselItem>
                 ))}
@@ -193,7 +237,7 @@ export default function QrPaymentPage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold mb-2">{`${selectedCardOwner.split(' ')[0]} H. A. - ${cardData[current].type} Kart İşlemleri`}</h2>
+        <h2 className="text-lg font-semibold mb-2">{`${selectedCardOwner.split(' ')[0]} H. A. - ${cardData[current]?.type} Kart İşlemleri`}</h2>
         <Card>
           <CardContent className="p-0">
             {transactions.length > 0 ? (
@@ -224,5 +268,3 @@ export default function QrPaymentPage() {
     </div>
   );
 }
-
-    
