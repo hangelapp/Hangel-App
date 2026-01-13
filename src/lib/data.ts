@@ -3,7 +3,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, HandHeart, ChevronDown } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -143,6 +143,7 @@ export const events: Event[] = Array.from({ length: 21 }, (_, i) => ({
   tags: i % 2 === 0 ? ['Çevre', 'Sertifika Var', 'Offline'] : ['Çocuk', 'Online'],
   imageUrl: i % 2 === 0 ? getImage('event-cover-1')?.imageUrl || '' : getImage('event-cover-2')?.imageUrl || '',
   imageHint: i % 2 === 0 ? getImage('event-cover-1')?.imageHint : getImage('event-cover-2')?.imageHint,
+  description: i % 2 === 0 ? 'İzmir\'in incisi Alsancak sahilinde bir araya gelerek kıyılarımızı temizliyoruz. Bu farkındalık hareketine katılarak hem doğaya katkıda bulunabilir hem de yeni insanlarla tanışabilirsiniz. Eldiven ve çöp torbaları tarafımızca sağlanacaktır.' : 'Geleceğin yazılımcılarını yetiştirmek için düzenlediğimiz bu atölyede, gençlere kodlamanın temellerini öğretiyoruz. Temel algoritma mantığı ve Python diline giriş yapacağız. Katılım için herhangi bir ön bilgi gerekmemektedir.',
 }));
 
 export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21 }, (_, i) => ({
@@ -171,7 +172,7 @@ export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21
     providesCertificate: i % 2 === 0,
     earnedBadges: [['language-master'], ['disaster-hero'], ['education-supporter']][i%3],
     hasPreTraining: i % 3 === 1,
-    description: 'Bu görevde, belirlenen alanda ilgili yetkinliklerinizi kullanarak topluma fayda sağlayacaksınız.',
+    description: 'Bu görevde, belirlenen alanda ilgili yetkinliklerinizi kullanarak topluma fayda sağlayacaksınız. Proje kapsamında yapılacaklar, görev tanımı ve beklenen katkılar hakkında detaylı bilgi, başvurusu onaylanan gönüllülerle paylaşılacaktır.',
     points: 150 + i * 10,
     ngoTransparencyScore: 85 + i % 10,
     taskType: ['Tek Gün', 'Dönemsel', 'Sürekli'][i%3] as 'Tek Gün' | 'Dönemsel' | 'Sürekli'
@@ -309,7 +310,7 @@ export const badgeData: Omit<Badge, 'id' | 'level' | 'pointsRequired' | 'current
   { name: 'Yaşlı Dostu', socialArea: 'Yaşlı', iconName: Users },
   { name: 'Gençlik Lideri', socialArea: 'Gençlik', iconName: Star },
   { name: 'Sağlık Elçisi', socialArea: 'Sağlık', iconName: HeartPulse },
-  { name: 'Yoksulluk Savaşçısı', socialArea: 'Yoksulluk', iconName: HandHeart },
+  { name: 'Yoksulluk Savaşçısı', socialArea: 'Yoksulluk', iconName: HeartHandshake },
   { name: 'Mülteci Destekçisi', socialArea: 'Mülteci', iconName: Handshake },
   { name: 'Gıda Kurtarıcısı', socialArea: 'Gıda', iconName: Grape },
   { name: 'Sanat Destekçisi', socialArea: 'Sanat', iconName: Palette },
@@ -458,10 +459,10 @@ export const helpTopics: HelpTopic[] = [
     slug: 'hesap-yonetimi',
     description: "Hesap ayarlarınızı, profil bilgilerinizi ve bildirim tercihlerinizi nasıl yöneteceğinizi öğrenin.",
     subtopics: [
-        { title: 'E-posta adresimi nasıl değiştiririm?', link: '#' },
-        { title: 'Şifremi nasıl sıfırlarım?', link: '#' },
-        { title: 'Profil fotoğrafımı nasıl güncellerim?', link: '#' },
-        { title: 'Hesabımı nasıl silebilirim?', link: '#' },
+        { title: 'E-posta adresimi nasıl değiştiririm?', link: '#', content: "Ayarlar > Profilim sekmesinden e-posta adresinizi kolayca güncelleyebilirsiniz." },
+        { title: 'Şifremi nasıl sıfırlarım?', link: '#', content: "Giriş ekranındaki 'Şifremi Unuttum' bağlantısını kullanarak şifre sıfırlama talimatlarını e-postanıza alabilirsiniz." },
+        { title: 'Profil fotoğrafımı nasıl güncellerim?', link: '#', content: "Profil sayfanızdaki düzenle butonu ile profil fotoğrafınızı ve diğer kişisel bilgilerinizi güncelleyebilirsiniz." },
+        { title: 'Hesabımı nasıl silebilirim?', link: '#', content: "Ayarlar > Güvenlik sekmesindeki 'Hesabı Sil' seçeneği ile hesabınızı kalıcı olarak silebilirsiniz. Bu işlemin geri alınamayacağını unutmayın." },
     ]
   },
   {
@@ -470,10 +471,10 @@ export const helpTopics: HelpTopic[] = [
     slug: 'gonulluluk',
     description: "Gönüllülük süreçleri, başvurular, puanlar ve sertifikalar hakkında merak ettikleriniz.",
     subtopics: [
-        { title: 'Gönüllülük ilanlarına nasıl başvurulur?', link: '#' },
-        { title: 'Başvurumun durumunu nereden takip edebilirim?', link: '#' },
-        { title: 'Kazandığım sosyal etki puanları ne işe yarar?', link: '#' },
-        { title: 'Gönüllülük sertifikamı nasıl alabilirim?', link: '#' },
+        { title: 'Gönüllülük ilanlarına nasıl başvurulur?', link: '#', content: "Gönüllülük sayfasından ilgilendiğiniz ilanın detaylarına giderek 'Başvur' butonuna tıklamanız yeterlidir." },
+        { title: 'Başvurumun durumunu nereden takip edebilirim?', link: '#', content: "Yan menüdeki 'Başvurularım' sayfasından tüm başvurularınızın güncel durumunu takip edebilirsiniz." },
+        { title: 'Kazandığım sosyal etki puanları ne işe yarar?', link: '#', content: "Sosyal etki puanları, platformdaki aktifliğinizi ve topluma katkınızı gösterir. Bu puanlarla rozetler kazanabilir ve sıralamalarda yükselebilirsiniz." },
+        { title: 'Gönüllülük sertifikamı nasıl alabilirim?', link: '#', content: "Tamamladığınız gönüllülük faaliyetleri için kazandığınız sertifikaları 'Rozetlerim' sayfasındaki 'Sertifikalar' sekmesinde bulabilirsiniz." },
     ]
   },
   {
@@ -482,10 +483,10 @@ export const helpTopics: HelpTopic[] = [
     slug: 'bagis-ve-cuzdan',
     description: "Alışverişle bağış, cüzdan işlemleri ve ödeme yöntemleri ile ilgili tüm sorularınızın cevapları.",
     subtopics: [
-        { title: 'hangel cüzdanıma nasıl para yüklerim?', link: '#' },
-        { title: 'Alışveriş yaparken bağış süreci nasıl işliyor?', link: '#' },
-        { title: 'Bağışlarımın hangi STK\'lara gittiğini nasıl görürüm?', link: '#' },
-        { title: 'Ödeme yaparken bir sorun yaşadım, ne yapmalıyım?', link: '#' },
+        { title: 'hangel cüzdanıma nasıl para yüklerim?', link: '#', content: "QR Ödeme sayfasındaki 'Bakiye Yükle' seçeneği ile kredi/banka kartınızdan güvenli bir şekilde bakiye yükleyebilirsiniz." },
+        { title: 'Alışveriş yaparken bağış süreci nasıl işliyor?', link: '#', content: "Anlaşmalı markalardan cüzdanınızla yaptığınız ödemelerde, belirtilen orandaki bağış tutarı otomatik olarak düşülerek seçtiğiniz STK'ya aktarılır." },
+        { title: 'Bağışlarımın hangi STK\'lara gittiğini nasıl görürüm?', link: '#', content: "'Bağışlarım' sayfasından tüm işlem detaylarını ve bağışlarınızın hangi STK'lara ulaştığını şeffaf bir şekilde görebilirsiniz." },
+        { title: 'Ödeme yaparken bir sorun yaşadım, ne yapmalıyım?', link: '#', content: "Ödeme sorunları için lütfen 'Destek Merkezi' üzerinden bizimle iletişime geçin. Ekibimiz en kısa sürede size yardımcı olacaktır." },
     ]
   },
   {
@@ -494,10 +495,9 @@ export const helpTopics: HelpTopic[] = [
     slug: 'uygulama-ve-ayarlar',
     description: "Uygulama teması, dil seçenekleri ve diğer kişiselleştirme ayarları hakkında bilgi alın.",
     subtopics: [
-        { title: 'Bildirim ayarlarımı nasıl yönetebilirim?', link: '#' },
-        { title: 'Uygulama dilini nasıl değiştiririm?', link: '#' },
-        { title: 'Karanlık mod nasıl açılır?', link: '#' },
-        { title: 'Veri kullanımımı nasıl kontrol edebilirim?', link: '#' },
+        { title: 'Bildirim ayarlarımı nasıl yönetebilirim?', link: '#', content: "Ayarlar sayfasındaki 'Bildirimler' sekmesinden hangi durumlarda anlık veya e-posta bildirimi almak istediğinizi detaylı olarak seçebilirsiniz." },
+        { title: 'Uygulama dilini nasıl değiştiririm?', link: '#', content: "Ayarlar sayfasındaki 'Uygulama' sekmesinden dil tercihlerinizi (Türkçe/İngilizce) yönetebilirsiniz." },
+        { title: 'Karanlık mod nasıl açılır?', link: '#', content: "Ayarlar sayfasındaki 'Uygulama' sekmesinden Açık, Koyu veya Sistem varsayılanı tema seçeneklerinden birini tercih edebilirsiniz." },
     ]
   },
   {
@@ -506,10 +506,9 @@ export const helpTopics: HelpTopic[] = [
     slug: 'guvenlik-ve-gizlilik',
     description: "Hesap güvenliğiniz, kişisel verilerinizin korunması ve gizlilik politikalarımız hakkında detaylar.",
     subtopics: [
-        { title: 'Şifremi unuttum, ne yapmalıyım?', link: '#' },
-        { title: 'Hesabımın başkasının eline geçtiğini düşünüyorum.', link: '#' },
-        { title: 'Kişisel verilerim güvende mi?', link: '#' },
-        { title: 'hangel\'in gizlilik politikası nedir?', link: '#' },
+        { title: 'Şifremi unuttum, ne yapmalıyım?', link: '#', content: "Giriş ekranındaki 'Şifremi Unuttum' bağlantısını kullanarak şifre sıfırlama talimatlarını e-postanıza alabilirsiniz." },
+        { title: 'Hesabımın başkasının eline geçtiğini düşünüyorum.', link: '#', content: "Derhal şifrenizi değiştirmenizi ve Ayarlar > Güvenlik > Oturum Geçmişi'nden tanımadığınız cihazları sonlandırmanızı öneririz. Sorun devam ederse destek ekibimizle iletişime geçin." },
+        { title: 'Kişisel verilerim güvende mi?', link: '#', content: "Evet, kişisel verileriniz KVKK ve GDPR standartlarına uygun olarak şifrelenmiş sunucularda güvenli bir şekilde saklanmaktadır. Detaylı bilgi için Gizlilik Politikamızı inceleyebilirsiniz." },
     ]
   },
   {
@@ -518,9 +517,8 @@ export const helpTopics: HelpTopic[] = [
     slug: 'topluluk-kurallari',
     description: "Platformumuzda pozitif ve saygılı bir ortam sağlamak için uymanız gereken kurallar.",
     subtopics: [
-        { title: 'Hangi tür içerikler yasaktır?', link: '#' },
-        { title: 'Bir kullanıcıyı nasıl şikayet edebilirim?', link: '#' },
-        { title: 'Yorum ve paylaşımlarda nelere dikkat etmeliyim?', link: '#' },
+        { title: 'Hangi tür içerikler yasaktır?', link: '#', content: "Nefret söylemi, taciz, şiddet içeren, yasa dışı ve yanıltıcı içeriklerin paylaşılması kesinlikle yasaktır. Topluluk kurallarımızın tamamına yasal belgelerimizden ulaşabilirsiniz." },
+        { title: 'Bir kullanıcıyı nasıl şikayet edebilirim?', link: '#', content: "Rahatsız edici bir içerik veya kullanıcı profili ile karşılaştığınızda, ilgili gönderinin veya profilin yanındaki '...' menüsünden 'Şikayet Et' seçeneğini kullanabilirsiniz." },
     ]
   }
 ];

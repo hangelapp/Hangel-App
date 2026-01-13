@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,6 +8,7 @@ import { volunteeringOpportunities, user } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 
 const RequirementRow = ({ label, value, isMet }: { label: string, value: string, isMet: boolean }) => (
@@ -36,7 +39,7 @@ export default function VolunteeringPage() {
             <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
             <p className="text-muted-foreground text-sm">Topluma katkıda bulun ve etki yarat.</p>
         </div>
-        <div className="p-0 flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
             <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -83,25 +86,29 @@ export default function VolunteeringPage() {
                 <CardContent className="space-y-3 text-sm">
                     <div className="flex items-center text-muted-foreground gap-2"><MapPin className="h-4 w-4" />{`${opp.location.city}${opp.location.type !== 'Online' ? `, ${opp.location.district}` : ''} (${opp.location.type})`}</div>
                     <div className="flex items-center text-muted-foreground gap-2"><Calendar className="h-4 w-4" />{opp.commitment}</div>
-                   <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="reqs" className="border-none">
-                        <AccordionTrigger className="text-xs py-1 text-muted-foreground hover:no-underline">Gereksinimler</AccordionTrigger>
-                        <AccordionContent className="space-y-2 pt-2">
-                             <RequirementRow label="Konum" value={opp.location.type} isMet={travelMet}/>
-                             <RequirementRow label="Yetkinlikler" value={opp.skills.join(', ') || 'Belirtilmemiş'} isMet={requiredSkillsMet} />
-                             <RequirementRow label="Belgeler" value={opp.requirements.join(', ') || 'Belirtilmemiş'} isMet={requiredDocsMet} />
-                             <RequirementRow label="Sertifika" value={opp.providesCertificate ? 'Veriliyor' : 'Verilmiyor'} isMet={true} />
-                        </AccordionContent>
-                    </AccordionItem>
-                   </Accordion>
-
+                    <div className="flex flex-wrap gap-2 pt-2">
+                        {opp.skills.map(skill => (
+                            <Badge
+                                key={skill}
+                                variant="outline"
+                                className={cn(
+                                    userAbilities.includes(skill) && "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/40 dark:text-green-300"
+                                )}
+                            >
+                                {userAbilities.includes(skill) && <CheckCircle className="h-3 w-3 mr-1" />}
+                                {skill}
+                            </Badge>
+                        ))}
+                    </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
                      <div className="flex items-center gap-2">
                         <Award className="h-5 w-5 text-primary" />
                         <span className="text-sm font-semibold">{opp.points} Puan</span>
                      </div>
-                  <Button>Başvur</Button>
+                  <Button asChild variant="secondary">
+                    <Link href={`/volunteering/${opp.id}`}>Detayları Gör</Link>
+                  </Button>
                 </CardFooter>
               </Card>
             )

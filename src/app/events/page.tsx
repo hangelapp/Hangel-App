@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -5,6 +7,7 @@ import { Filter, ListFilter, Map, Search, Calendar, MapPin } from 'lucide-react'
 import { events } from '@/lib/data';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 export default function EventsPage() {
   return (
@@ -55,7 +58,9 @@ export default function EventsPage() {
               <p className="text-sm font-semibold text-muted-foreground">
                 Kapasite: {event.capacity.current} / {event.capacity.max}
               </p>
-              <Button>Detayları Gör</Button>
+              <Button asChild variant="secondary">
+                <Link href={`/events/${event.id}`}>Detayları Gör</Link>
+              </Button>
             </CardFooter>
           </Card>
         ))}

@@ -25,27 +25,29 @@ const BrandCard = ({ brand }: { brand: Brand }) => {
 
   return (
     <Card key={brand.id} className="flex flex-col">
-        <CardHeader className="flex-row items-center gap-4">
-             <Link href={profileLink} className="flex items-center gap-4 group">
-                <Avatar className="h-12 w-12">
-                    <AvatarImage src={brand.logoUrl} alt={brand.name} />
-                    <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <CardTitle className="text-base font-semibold group-hover:underline">{brand.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{brand.category}</p>
-                </div>
-             </Link>
+        <CardHeader className="p-4">
+            <div className="flex justify-between items-center">
+                <Link href={profileLink} className="group">
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11">
+                            <AvatarImage src={brand.logoUrl} alt={brand.name} />
+                            <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                             <CardTitle className="text-base font-semibold group-hover:underline">{brand.name}</CardTitle>
+                             <p className="text-sm text-muted-foreground">{brand.category}</p>
+                        </div>
+                    </div>
+                 </Link>
+                 <div className="text-sm font-bold text-primary">%{brand.donationRate} Bağış</div>
+            </div>
         </CardHeader>
         <CardContent className="flex-grow">
-            <div className="text-sm font-medium">
-                <span><strong>%{brand.donationRate}</strong> Bağış</span>
-            </div>
         </CardContent>
         <CardFooter>
             <Button asChild variant="secondary" className="w-full">
-                <Link href={isEconomicEnterprise ? profileLink : `/market/${brand.id}`}>
-                    {isEconomicEnterprise ? 'STK Profilini Gör' : 'Alışverişe Başla'}
+                <Link href={profileLink}>
+                    Detayları Gör
                 </Link>
             </Button>
         </CardFooter>
@@ -94,12 +96,6 @@ export default function MarketPage() {
                   data-ai-hint={campaign.imageHint}
                 />
                 <div className="absolute inset-0 bg-black/40" />
-                 {campaign.sponsored && (
-                  <Badge variant="outline" className="absolute top-2 right-2 flex items-center gap-1 bg-background/80 text-foreground border-amber-500 text-amber-500">
-                    <Star className="h-3 w-3" />
-                    <span className="text-xs">Sponsorlu</span>
-                  </Badge>
-                )}
                 <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
                     <h3 className="font-bold text-lg">{campaign.title}</h3>
                     <p className="text-sm">{campaign.description}</p>

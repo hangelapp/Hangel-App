@@ -107,6 +107,7 @@ export type Event = {
   tags: string[];
   imageUrl: string;
   imageHint?: string;
+  description: string;
 };
 
 export type Volunteering = {
@@ -325,7 +326,7 @@ export type HelpTopic = {
   title: string;
   slug: string;
   description: string;
-  subtopics: { title: string; link: string }[];
+  subtopics: { title: string; link: string; content: string; }[];
 };
 
     
