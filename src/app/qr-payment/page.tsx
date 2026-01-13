@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import Image from 'next/image';
 
 const cardData = [
   {
@@ -66,6 +67,18 @@ const allTransactions = {
         { brand: 'Tedarikçi Ödemesi', amount: '-5000.00 ₺', donation: '0.00 ₺', time: 'Geçen Hafta' },
     ],
 };
+
+const RealisticQrCodeIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg viewBox="0 0 100 100" {...props}>
+      <path d="M0 0 H 30 V 30 H 0 Z M 10 10 V 20 H 20 V 10 Z" />
+      <path d="M70 0 H 100 V 30 H 70 Z M 80 10 V 20 H 90 V 10 Z" />
+      <path d="M0 70 H 30 V 100 H 0 Z M 10 80 V 90 H 20 V 80 Z" />
+      <path d="M90 60 H 100 V 70 H 90ZM70 70 H 80 V 80 H 70ZM80 80 H 90 V 90 H 80ZM90 90 H 100 V 100 H 90ZM70 90 H 80 V 100 H 70ZM60 90 H 70 V 100 H 60ZM60 70 H 70 V 80 H 60Z" />
+      <path d="M40 0 H 50 V 10 H 40 Z M 40 20 H 50 V 30 H 40 Z M 40 40 H 50 V 50 H 40 Z M 40 60 H 50 V 70 H 40 Z M 40 80 H 50 V 90 H 40 Z M 0 40 H 10 V 50 H 0 Z M 20 40 H 30 V 50 H 20 Z M 40 40 H 50 V 50 H 40 Z M 60 40 H 70 V 50 H 60 Z M 80 40 H 90 V 50 H 80 Z M 10 50 H 20 V 60 H 10 Z M 30 50 H 40 V 60 H 30 Z M 50 50 H 60 V 60 H 50 Z M 70 50 H 80 V 60 H 70 Z M 90 50 H 100 V 60 H 90 Z" />
+      <path d="M 35 35 H 65 V 65 H 35 Z M 45 45 H 55 V 55 H 45 Z"/>
+    </svg>
+);
+
 
 const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFlipped: boolean, onFlip: () => void }) => {
   return (
@@ -136,7 +149,11 @@ export default function QrPaymentPage() {
   const [flippedStates, setFlippedStates] = useState<Record<string, boolean>>({});
 
   const handleCardClick = (index: number) => {
-    setActiveIndex(index);
+    if (index === activeIndex) {
+      setActiveIndex((prevIndex) => (prevIndex + 1) % cardData.length);
+    } else {
+      setActiveIndex(index);
+    }
   };
 
   const toggleFlip = (cardId: string) => {
@@ -190,20 +207,23 @@ export default function QrPaymentPage() {
             </TabsList>
             <TabsContent value="my_qr" className="mt-4 text-center">
               <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için hangel kodunuzu kullanın.</p>
-              <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">h 123456</p>
+              <div className="bg-white p-4 rounded-lg shadow-md inline-block my-4">
+                 <RealisticQrCodeIcon className="w-32 h-32" />
+              </div>
+              <p className="mt-2 font-mono text-2xl tracking-widest text-foreground font-semibold">h 123456</p>
             </TabsContent>
             <TabsContent value="scan_qr" className="mt-4 text-center">
               <div className="w-1/2 aspect-square bg-muted rounded-xl flex flex-col items-center justify-center mx-auto">
                   <p className="text-muted-foreground text-sm">Kamera yakında burada olacak.</p>
               </div>
-              <Button className="w-full mt-4"><ScanLine /> Kamerayı Aç</Button>
+              <Button className="w-full mt-4 bg-primary"><ScanLine /> Kamerayı Aç</Button>
             </TabsContent>
             <TabsContent value="pay_code" className="mt-4 space-y-4">
                   <div className="space-y-2">
                       <Label htmlFor="pay-code">6 Haneli Ödeme Kodu</Label>
                       <Input id="pay-code" type="text" placeholder="XXXXXX" className="text-center tracking-[0.5em] text-lg" />
                   </div>
-                  <Button className="w-full">Ödeme Yap</Button>
+                  <Button className="w-full bg-primary">Ödeme Yap</Button>
             </TabsContent>
             <TabsContent value="pay_phone" className="mt-4 space-y-4">
                   <div className="space-y-2">
@@ -219,7 +239,7 @@ export default function QrPaymentPage() {
                       <Label htmlFor="amount-transfer">Tutar</Label>
                       <Input id="amount-transfer" type="number" placeholder="0.00 ₺" />
                   </div>
-                  <Button className="w-full">Gönder</Button>
+                  <Button className="w-full bg-primary">Gönder</Button>
             </TabsContent>
           </Tabs>
         </CardContent>
