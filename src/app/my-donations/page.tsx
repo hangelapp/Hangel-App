@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CircleDollarSign, ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2 } from 'lucide-react';
+import { ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2 } from 'lucide-react';
 import { donationTransactions } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, parse } from 'date-fns';
@@ -54,8 +54,7 @@ export default function MyDonationsPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CircleDollarSign className="text-primary" />
+          <CardTitle>
             Toplam Bağış
           </CardTitle>
           <CardDescription>Ek bir ödeme yapmadan, alışverişlerinle iyiliğe dönüşen bağış.</CardDescription>
