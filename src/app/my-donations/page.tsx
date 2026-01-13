@@ -60,12 +60,12 @@ export default function MyDonationsPage() {
                         <ShoppingBag className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1 text-left">
-                        <p className="font-semibold">{donation.brand}</p>
+                        <p>{donation.brand}</p>
                         <p className="text-xs text-muted-foreground">{donation.ngo || format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</p>
                       </div>
                       <div className="text-right">
-                        <p className={`font-bold ${donation.type === 'income' ? 'text-green-600' : ''}`}>{donation.purchaseAmount} ₺</p>
-                        {donation.type === 'expense' && <p className="text-xs text-primary font-semibold">Bağış: {donation.donationAmount} ₺</p>}
+                        <p className={`${donation.type === 'income' ? 'text-green-600' : ''}`}>{donation.purchaseAmount} ₺</p>
+                        {donation.type === 'expense' && <p className="text-xs text-primary">Bağış: {donation.donationAmount} ₺</p>}
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -75,7 +75,7 @@ export default function MyDonationsPage() {
                         <span className='text-muted-foreground'>Alışveriş Tutarı</span>
                         <span>{donation.purchaseAmount} ₺</span>
                       </div>
-                      <div className='flex justify-between font-semibold'>
+                      <div className='flex justify-between'>
                         <span className='text-primary'>Bağış Tutarı</span>
                         <span className='text-primary'>{donation.donationAmount} ₺</span>
                       </div>
