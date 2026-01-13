@@ -24,26 +24,26 @@ const BrandCard = ({ brand }: { brand: Brand }) => {
   const profileLink = isEconomicEnterprise ? `/ngos/${brand.ngoId}` : `/market/${brand.id}`;
 
   return (
-    <Card key={brand.id}>
-        <CardHeader>
-             <Link href={profileLink} className="flex flex-row items-center gap-4 group">
+    <Card key={brand.id} className="flex flex-col">
+        <CardHeader className="flex-row items-center gap-4">
+             <Link href={profileLink} className="flex items-center gap-4 group">
                 <Avatar className="h-12 w-12">
                     <AvatarImage src={brand.logoUrl} alt={brand.name} />
                     <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-base group-hover:underline">{brand.name}</CardTitle>
+                    <CardTitle className="text-base font-semibold group-hover:underline">{brand.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">{brand.category}</p>
                 </div>
              </Link>
         </CardHeader>
-        <CardContent>
-            <div className="flex items-center gap-1.5 text-sm font-medium">
+        <CardContent className="flex-grow">
+            <div className="text-sm font-medium">
                 <span><strong>%{brand.donationRate}</strong> Bağış</span>
             </div>
         </CardContent>
         <CardFooter>
-            <Button asChild className="w-full">
+            <Button asChild variant="secondary" className="w-full">
                 <Link href={isEconomicEnterprise ? profileLink : `/market/${brand.id}`}>
                     {isEconomicEnterprise ? 'STK Profilini Gör' : 'Alışverişe Başla'}
                 </Link>
@@ -60,7 +60,7 @@ const EntityList = ({ type }: { type: Brand['type'] }) => {
         return <div className="text-center text-muted-foreground p-8">Bu kategoride henüz bir işletme bulunmuyor.</div>
     }
     return (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {entities.map(brand => <BrandCard key={brand.id} brand={brand} />)}
         </div>
     )
@@ -144,14 +144,14 @@ export default function MarketPage() {
         <TabsContent value="products" className="p-4 bg-background">
           <EntityList type="brand" />
         </TabsContent>
-        <TabsContent value="cooperatives" className="p-4 bg-background">
-          <EntityList type="cooperative" />
+         <TabsContent value="economic" className="p-4 bg-background">
+           <EntityList type="economic" />
         </TabsContent>
-        <TabsContent value="social" className="p-4 bg-background">
+         <TabsContent value="social" className="p-4 bg-background">
            <EntityList type="social" />
         </TabsContent>
-        <TabsContent value="economic" className="p-4 bg-background">
-           <EntityList type="economic" />
+        <TabsContent value="cooperatives" className="p-4 bg-background">
+          <EntityList type="cooperative" />
         </TabsContent>
       </Tabs>
     </div>
