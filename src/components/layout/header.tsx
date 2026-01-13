@@ -20,7 +20,6 @@ const sideMenuItems = [
     { href: '/market', label: 'Markalar' },
     { href: '/admin/clubs', label: 'Öğrenci Kulüpleri' },
     { href: '/admin', label: 'Yönetim Paneli' },
-    { href: '/invite', label: 'Arkadaşlarını Davet Et' },
 ];
 
 const secondaryMenuItems = [
