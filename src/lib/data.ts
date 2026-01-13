@@ -1,7 +1,8 @@
+
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, HeartPulse, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, HeartPulse, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -430,3 +431,5 @@ export const ngos = [
     opportunities: []
   },
 ];
+
+    
