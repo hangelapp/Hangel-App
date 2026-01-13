@@ -8,7 +8,8 @@ import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { differenceInDays, format, parseISO } from 'date-fns';
+import { differenceInDays, format, parse } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 const RequirementRow = ({ label, value, isMet }: { label: string, value: string | string[] | undefined, isMet: boolean }) => {
     if (!value || (Array.isArray(value) && value.length === 0)) {
@@ -79,7 +80,7 @@ export default function VolunteeringDetailPage() {
 
   const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
 
-  const daysRemaining = differenceInDays(parseISO(opportunity.dates.applicationEnd), new Date());
+  const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün - ` : (daysRemaining === 0 ? 'Son Gün - ' : '');
 
   return (
@@ -119,15 +120,15 @@ export default function VolunteeringDetailPage() {
                         <CardContent className="text-sm space-y-3">
                             <div className='flex justify-between'>
                                 <span className='text-muted-foreground'>Son Başvuru:</span>
-                                <span className='font-medium'>{format(parseISO(opportunity.dates.applicationEnd), 'dd MMMM yyyy')}</span>
+                                <span className='font-medium'>{format(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span>
                             </div>
                              <div className='flex justify-between'>
                                 <span className='text-muted-foreground'>Gönüllülük Başlangıcı:</span>
-                                <span className='font-medium'>{format(parseISO(opportunity.dates.eventStart), 'dd MMMM yyyy')}</span>
+                                <span className='font-medium'>{format(parse(opportunity.dates.eventStart, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span>
                             </div>
                              <div className='flex justify-between'>
                                 <span className='text-muted-foreground'>Gönüllülük Bitişi:</span>
-                                <span className='font-medium'>{format(parseISO(opportunity.dates.eventEnd), 'dd MMMM yyyy')}</span>
+                                <span className='font-medium'>{format(parse(opportunity.dates.eventEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span>
                             </div>
                         </CardContent>
                     </Card>
