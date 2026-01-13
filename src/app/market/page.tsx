@@ -1,21 +1,54 @@
 'use client';
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, Heart, Percent, ArrowDownUp, List, LayoutGrid, Users } from 'lucide-react';
-import { marketBrands, marketCampaigns } from '@/lib/data';
+import { Filter, Search, Percent, ArrowDownUp, List, LayoutGrid, Users, Building, Handshake, ShoppingBag } from 'lucide-react';
+import { marketCampaigns, allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { Brand } from '@/lib/types';
+
+const BrandCard = ({ brand }: { brand: Brand }) => (
+    <Card key={brand.id} className="overflow-hidden">
+        <CardContent className="p-4 flex flex-col items-center text-center gap-3">
+            <Avatar className="h-16 w-16">
+                <AvatarImage src={brand.logoUrl} alt={brand.name} />
+                <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className='flex-grow'>
+                <p className="font-semibold">{brand.name}</p>
+                <p className="text-sm text-muted-foreground">{brand.category}</p>
+            </div>
+            <div className="flex items-center justify-center gap-1 text-sm w-full">
+                <Percent className="h-4 w-4 text-muted-foreground"/> <strong>{brand.donationRate}% Bağış</strong>
+            </div>
+            <Button asChild className="w-full">
+                <Link href={`/market/${brand.id}`}>Alışverişe Başla</Link>
+            </Button>
+        </CardContent>
+    </Card>
+);
+
+const EntityList = ({ type }: { type: Brand['type'] }) => {
+    const entities = allEntityLists.filter(e => e.type === type);
+    if (entities.length === 0) {
+        return <div className="text-center text-muted-foreground p-8">Bu kategoride henüz bir işletme bulunmuyor.</div>
+    }
+    return (
+        <div className="grid grid-cols-2 gap-4">
+            {entities.map(brand => <BrandCard key={brand.id} brand={brand} />)}
+        </div>
+    )
+};
+
 
 export default function MarketPage() {
   return (
@@ -75,51 +108,31 @@ export default function MarketPage() {
       </div>
 
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="w-full justify-start rounded-none bg-transparent p-0 px-4 gap-4 overflow-x-auto">
-          <TabsTrigger value="products" className="rounded-full">
-            Markalar
+        <TabsList className="w-full justify-start rounded-none bg-transparent p-0 px-4 gap-4 overflow-x-auto border-b">
+          <TabsTrigger value="products" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
+            <ShoppingBag className="mr-2"/> Markalar
           </TabsTrigger>
-          <TabsTrigger value="cooperatives" className="rounded-full">
-            Kooperatifler
+          <TabsTrigger value="cooperatives" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
+            <Users className="mr-2"/> Kooperatifler
           </TabsTrigger>
-           <TabsTrigger value="social" className="rounded-full">
-            Sosyal Şirketler
+           <TabsTrigger value="social" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
+            <Handshake className="mr-2"/> Sosyal Şirketler
+          </TabsTrigger>
+           <TabsTrigger value="economic" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
+            <Building className="mr-2"/> İktisadi İşletmeler
           </TabsTrigger>
         </TabsList>
         <TabsContent value="products" className="p-4 bg-background">
-          <div className="space-y-4">
-            {marketBrands.map((brand) => (
-              <Card key={brand.id}>
-                <CardHeader>
-                    <div className='flex items-center gap-4'>
-                        <Avatar className="h-12 w-12">
-                            <AvatarImage src={brand.logoUrl} alt={brand.name} data-ai-hint={brand.logoHint} />
-                            <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <CardTitle className="text-base">{brand.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground">{brand.category}</p>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-2 text-center text-sm">
-                    <div className="flex items-center justify-center gap-1"><Users className="h-4 w-4 text-muted-foreground"/> <strong>{(brand.followers || 0) / 1000}k</strong> <span className='hidden sm:inline'>Takipçi</span></div>
-                    <div className="flex items-center justify-center gap-1"><Percent className="h-4 w-4 text-muted-foreground"/> <strong>{brand.donationRate}% Bağış</strong></div>
-                </CardContent>
-                <CardFooter>
-                     <Button asChild className="w-full">
-                        <Link href={`/market/${brand.id}`}>Profili İncele</Link>
-                    </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+          <EntityList type="brand" />
         </TabsContent>
-        <TabsContent value="cooperatives" className="p-4 text-center text-muted-foreground">
-          Yakında...
+        <TabsContent value="cooperatives" className="p-4 bg-background">
+          <EntityList type="cooperative" />
         </TabsContent>
-        <TabsContent value="social" className="p-4 text-center text-muted-foreground">
-          Yakında...
+        <TabsContent value="social" className="p-4 bg-background">
+           <EntityList type="social" />
+        </TabsContent>
+        <TabsContent value="economic" className="p-4 bg-background">
+           <EntityList type="economic" />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,7 +1,7 @@
 
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
-import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem } from './types';
+import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO } from './types';
 import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, HeartPulse, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid } from 'lucide-react';
 
 
@@ -374,7 +374,7 @@ export const economicEnterprises: Brand[] = [
 
 export const allEntityLists = [...marketBrands, ...cooperatives, ...socialEnterprises, ...economicEnterprises];
 
-export const ngos = [
+export const ngos: NGO[] = [
   { 
     id: '1', 
     name: 'TEMA Vakfı', 
@@ -432,5 +432,3 @@ export const ngos = [
     opportunities: []
   },
 ];
-
-    

@@ -8,13 +8,16 @@ export type NavItem = {
 
 export type Post = {
   id: string;
-  authorId: string;
-  authorType: 'ngo' | 'brand' | 'club';
+  author: {
+    name: string;
+    avatarUrl: string;
+  };
   content: string;
   imageUrl?: string;
   imageHint?: string;
   timestamp: string;
   likes: number;
+  comments: number;
   sponsored?: boolean;
 };
 
@@ -24,19 +27,20 @@ export type Brand = {
   category: string;
   type: 'brand' | 'cooperative' | 'social' | 'economic';
   logoUrl: string;
-  coverPhotoUrl: string;
+  logoHint?: string;
+  coverPhotoUrl?: string;
   donationRate: number;
-  stats: {
+  stats?: {
     followers: number;
     donors: number;
     totalDonation: number;
     volunteerHours: number;
   };
-  about: string;
-  joinDate: string;
-  donationByCategory: { category: string; rate: number }[];
-  sustainabilityReports: { title: string; url: string }[];
-  contact: {
+  about?: string;
+  joinDate?: string;
+  donationByCategory?: { category: string; rate: number }[];
+  sustainabilityReports?: { title: string; url: string }[];
+  contact?: {
     email: string;
     website: string;
     social: {
@@ -46,8 +50,9 @@ export type Brand = {
       linkedin?: string;
     };
   };
-  posts: Post[];
+  posts?: Post[];
   link?: string;
+  followers?: number;
 };
 
 export type NGO = {
@@ -84,7 +89,7 @@ export type NGO = {
   };
   economicEnterpriseUrl?: string;
   posts: Post[];
-  opportunities: VolunteerOpportunity[];
+  opportunities: Volunteering[];
 };
 
 export type Event = {
@@ -103,7 +108,7 @@ export type Event = {
   imageHint?: string;
 };
 
-export type VolunteerOpportunity = {
+export type Volunteering = {
     id: string;
     title: string;
     organization: string;
@@ -113,23 +118,23 @@ export type VolunteerOpportunity = {
       district: string;
       type: 'Online' | 'Saha' | 'Hibrit';
     };
-    commitment: 'Tek Gün' | 'Dönemsel' | 'Sürekli';
+    skills: string[];
+    commitment: string;
     volunteerCount: {
       needed: number;
       applications: number;
     };
     dates: {
-      applicationStart: string;
-      applicationEnd: string;
-      eventStart: string;
-      eventEnd: string;
+        applicationStart: string;
+        applicationEnd: string;
+        eventStart: string;
+        eventEnd: string;
     };
     hours: {
       start: string;
       end: string;
       total: number;
     };
-    skills: string[];
     socialArea: string;
     requirements: string[];
     amenities: {
@@ -142,53 +147,59 @@ export type VolunteerOpportunity = {
     hasPreTraining: boolean;
     description: string;
     points: number;
+    ngoTransparencyScore: number;
+    taskType: 'Tek Gün' | 'Dönemsel' | 'Sürekli';
 };
 
 export type User = {
-  id: string;
-  name: string;
-  username: string;
-  avatarUrl: string;
-  coverPhotoUrl: string;
-  impactScore: number;
-  personalInfo: {
-    email: string;
-    phone: string;
-    birthDate: string;
-    gender: string;
-    bloodType: string;
-    address: {
-      country: string;
-      city: string;
-      district: string;
-      neighborhood: string;
-      fullAddress: string;
-    };
-  };
-  volunteerInfo: {
-    skills: string[];
-    interests: string[];
-    education: { level: string; school: string; }[];
-    profession: string;
-    languages: string[];
-    programs: string[];
-    licenses: string[];
-    documents: string[];
-    travelObstacle: { domestic: boolean; international: boolean; };
-  };
-  stats: {
-    totalDonation: number;
-    donationCount: number;
-    highestSingleDonation: number;
-    supportedNgosCount: number;
-    mostSupportedNgo: string;
-    avgDonation: number;
-    volunteerHours: number;
-    completedProjects: number;
-    volunteerRank: string;
-    mostActiveVolunteerArea: string;
-    avgVolunteerDuration: string;
-  };
+    id: string;
+    name: string;
+    username: string;
+    avatarUrl: string;
+    coverPhotoUrl: string;
+    impactScore: number;
+    personalInfo: {
+        email: string;
+        phone: string;
+        birthDate: string;
+        gender: string;
+        bloodType: string;
+        address: {
+            country: string;
+            city: string;
+            district: string;
+            neighborhood: string;
+            fullAddress: string;
+        };
+    },
+    volunteerInfo: {
+        skills: string[];
+        interests: string[];
+        education: { level: string; school: string; }[];
+        profession: string;
+        languages: string[];
+        programs: string[];
+        licenses: string[];
+        documents: string[];
+        travelObstacle: { domestic: boolean; international: boolean; };
+    },
+    stats: {
+        totalDonation: number;
+        donationCount: number;
+        highestSingleDonation: number;
+        supportedNgosCount: number;
+        mostSupportedNgo: string;
+        avgDonation: number;
+        volunteerHours: number;
+        completedProjects: number;
+        volunteerRank: string;
+        mostActiveVolunteerArea: string;
+        avgVolunteerDuration: string;
+        totalImpactValue: number;
+    },
+    progress: {
+        [key: string]: number;
+    }
 };
 
 export type Badge = {
@@ -234,6 +245,9 @@ export type StudentClub = {
       phone: string;
       website: string;
     };
+    projects?: number;
+    volunteerHours?: number;
+    activeMemberRate?: number;
 };
 
 export type SchoolRepresentative = {
