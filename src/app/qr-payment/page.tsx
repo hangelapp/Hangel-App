@@ -97,7 +97,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
             <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
@@ -112,7 +112,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
                  <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={80} height={80} />
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+         <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
              <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
