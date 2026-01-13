@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CircleDollarSign, ShoppingBag, Search, Filter, ArrowDownUp } from 'lucide-react';
 import { donationTransactions } from '@/lib/data';
@@ -6,6 +7,7 @@ import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 export default function MyDonationsPage() {
   const totalDonations = donationTransactions
