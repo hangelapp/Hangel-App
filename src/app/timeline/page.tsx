@@ -86,7 +86,7 @@ export default function TimelinePage() {
                 <TabsTrigger value="country">Ülkemde</TabsTrigger>
                 <TabsTrigger value="city">Şehrimde</TabsTrigger>
                 <TabsTrigger value="school">Okulumda</TabsTrigger>
-                <TabsTrigger value="interests">İlgi Alanlarım</TabsTrigger>
+                <TabsTrigger value="interests">Hassasiyetlerim</TabsTrigger>
             </TabsList>
         </div>
         <TabsContent value="foryou" className="p-4 space-y-4">
