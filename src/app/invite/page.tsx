@@ -53,8 +53,8 @@ export default function InvitePage() {
   return (
     <div className="p-4 sm:p-6 space-y-10 animate-in fade-in-0">
       <div className="text-center">
-        <h1 className="text-3xl font-bold font-headline">Arkadaşlarını Davet Et</h1>
-        <p className="mt-2 text-muted-foreground">İyilik zincirini büyütmek için arkadaşlarını hangel'a davet et.</p>
+        <h1 className="text-2xl font-bold font-headline">Arkadaşlarını Davet Et</h1>
+        <p className="mt-2 text-sm text-muted-foreground">İyilik zincirini büyütmek için arkadaşlarını hangel'a davet et.</p>
       </div>
 
       <div className="space-y-8">
@@ -63,7 +63,7 @@ export default function InvitePage() {
             <Input 
                 value={inviteLink} 
                 readOnly 
-                className="h-12 pr-12 text-base text-muted-foreground bg-muted/50 border-0"
+                className="h-12 pr-12 text-sm text-muted-foreground bg-muted/50 border-0"
             />
             <Button 
                 type="button" 
@@ -105,15 +105,15 @@ export default function InvitePage() {
         <div className="space-y-4">
             <SectionHeader>Kişilerin ile Paylaş</SectionHeader>
             <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start h-12 text-base">
+                <Button variant="outline" className="w-full justify-start h-12 text-sm">
                     <Contact className="mr-3 h-5 w-5" />
                     Rehberindeki arkadaşlarını davet et
                 </Button>
-                <Button variant="outline" className="w-full justify-start h-12 text-base">
+                <Button variant="outline" className="w-full justify-start h-12 text-sm">
                     <AtSign className="mr-3 h-5 w-5" />
                     Gmail'deki kişileri davet et
                 </Button>
-                 <Button variant="outline" className="w-full justify-start h-12 text-base">
+                 <Button variant="outline" className="w-full justify-start h-12 text-sm">
                     <AtSign className="mr-3 h-5 w-5" />
                     Outlook/Hotmail kişilerini davet et
                 </Button>
@@ -123,7 +123,7 @@ export default function InvitePage() {
 
       <Separator />
 
-      <div className='text-center text-sm text-muted-foreground space-y-2'>
+      <div className='text-center text-xs text-muted-foreground space-y-2'>
         <p className='flex items-center justify-center gap-2 font-semibold text-foreground'>
           <Star className='h-4 w-4 text-amber-500 fill-amber-500'/> Davet Programı
         </p>
