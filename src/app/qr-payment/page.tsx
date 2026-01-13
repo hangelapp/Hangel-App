@@ -80,11 +80,14 @@ const RealisticQrCodeIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFlipped: boolean, onFlip: () => void }) => {
+const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof cardData[0], isFlipped: boolean, onFlip: () => void, onFrontClick: () => void }) => {
   return (
     <div className="relative w-full h-full [transform-style:preserve-3d] transition-transform duration-500" style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
       {/* Card Front */}
-      <div className={cn("absolute w-full h-full [backface-visibility:hidden] rounded-2xl p-6 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor)}>
+      <div 
+        onClick={onFrontClick}
+        className={cn("absolute w-full h-full [backface-visibility:hidden] rounded-2xl p-6 flex flex-col justify-between shadow-lg overflow-hidden cursor-pointer", card.textColor)}
+      >
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
         <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
         <div className="relative z-10">
@@ -109,14 +112,13 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={(e) => { e.stopPropagation(); onFlip(); }}>
             <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
 
       {/* Card Back */}
       <div 
-        onClick={(e) => e.stopPropagation()}
         className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-4 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor, card.bgColor)}>
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
         <div className="relative z-10 space-y-3">
@@ -179,7 +181,6 @@ export default function QrPaymentPage() {
                 return (
                     <div 
                         key={card.id}
-                        onClick={() => handleCardClick(index)}
                         className="absolute w-full h-56 transition-all duration-500 ease-in-out [perspective:1000px]"
                         style={{
                             zIndex: isActive ? zIndex + 10 : zIndex,
@@ -189,7 +190,12 @@ export default function QrPaymentPage() {
                             pointerEvents: isBehind || isActive ? 'auto' : 'none'
                         }}
                     >
-                        <CardFace card={card} isFlipped={!!flippedStates[card.id]} onFlip={() => toggleFlip(card.id)} />
+                        <CardFace 
+                            card={card} 
+                            isFlipped={!!flippedStates[card.id]} 
+                            onFlip={() => toggleFlip(card.id)}
+                            onFrontClick={() => handleCardClick(index)}
+                        />
                     </div>
                 )
             })}
