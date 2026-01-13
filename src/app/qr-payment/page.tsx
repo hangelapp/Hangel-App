@@ -190,7 +190,10 @@ export default function QrPaymentPage() {
                 return (
                     <div 
                         key={card.id}
-                        className="absolute w-full h-56 transition-all duration-500 ease-in-out [perspective:1000px]"
+                        className={cn(
+                            "absolute w-full h-56 [perspective:1000px]",
+                            isActive && "transition-all duration-500 ease-in-out"
+                        )}
                         style={{
                             zIndex: zIndex,
                             transform: `translateY(${index * 30}px) scale(${1 - (index * 0.05)})`,
