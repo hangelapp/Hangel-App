@@ -1,5 +1,5 @@
 'use client';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { volunteeringOpportunities, user, ngos } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,9 +30,11 @@ const RequirementRow = ({ label, value, isMet }: { label: string, value: string 
 };
 
 
-export default function VolunteeringDetailPage({ params }: { params: { id: string } }) {
+export default function VolunteeringDetailPage() {
   const router = useRouter();
-  const opportunity = volunteeringOpportunities.find(e => e.id === params.id);
+  const params = useParams();
+  const id = params.id as string;
+  const opportunity = volunteeringOpportunities.find(e => e.id === id);
   
   if (!opportunity) {
     notFound();
