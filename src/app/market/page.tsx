@@ -39,7 +39,7 @@ const BrandCard = ({ brand }: { brand: Brand }) => {
         </CardHeader>
         <CardContent>
             <div className="flex items-center gap-1.5 text-sm font-medium">
-                <Percent className="h-4 w-4 text-primary"/> <span><strong>{brand.donationRate}%</strong> Bağış Oranı</span>
+                <span><strong>{brand.donationRate}</strong> Bağış Oranı</span>
             </div>
         </CardContent>
         <CardFooter>
