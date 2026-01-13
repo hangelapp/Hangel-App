@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign, QrCode } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,7 +24,8 @@ const cardData = [
     owner: 'İsmail Hilmi ADIGÜZEL',
     number: '**** **** **** 1234',
     expiry: '12/28',
-    balance: '1.250,75 ₺'
+    balance: '1.250,75 ₺',
+    borderColorClass: 'border-gray-700'
   },
   {
     id: 'ogrenci',
@@ -36,7 +37,8 @@ const cardData = [
     owner: 'İsmail Hilmi ADIGÜZEL',
     number: '**** **** **** 5678',
     expiry: '08/27',
-    balance: '345,50 ₺'
+    balance: '345,50 ₺',
+    borderColorClass: 'border-blue-400'
   },
   {
     id: 'ticari',
@@ -48,7 +50,8 @@ const cardData = [
     owner: 'İsmail Hilmi ADIGÜZEL - TİCARİ',
     number: '**** **** **** 9012',
     expiry: '01/29',
-    balance: '12.870,00 ₺'
+    balance: '12.870,00 ₺',
+    borderColorClass: 'border-amber-400'
   },
 ];
 
@@ -154,10 +157,9 @@ export default function QrPaymentPage() {
   const [flippedStates, setFlippedStates] = useState<Record<string, boolean>>({});
 
   const handleCardClick = (index: number) => {
+    // Only allow cycling through cards when clicking the active (top) card
     if (index === activeIndex) {
       setActiveIndex((prevIndex) => (prevIndex + 1) % cardData.length);
-    } else {
-      setActiveIndex(index);
     }
   };
 
@@ -165,7 +167,8 @@ export default function QrPaymentPage() {
     setFlippedStates(prev => ({ ...prev, [cardId]: !prev[cardId] }));
   };
 
-  const selectedCardId = cardData[activeIndex]?.id as keyof typeof allTransactions;
+  const selectedCard = cardData[activeIndex];
+  const selectedCardId = selectedCard?.id as keyof typeof allTransactions;
   const transactions = allTransactions[selectedCardId] || [];
 
 
@@ -188,7 +191,7 @@ export default function QrPaymentPage() {
                             transform: `translateY(${isActive ? 0 : (index < activeIndex ? -150 : (index - activeIndex) * 30)}px) scale(${isActive ? 1 : 1 - ((index - activeIndex) * 0.05)})`,
                             filter: `blur(${isActive ? 0 : '2px'})`,
                             opacity: isActive ? 1 : (isBehind ? 1 : 0),
-                            pointerEvents: isBehind || isActive ? 'auto' : 'none'
+                            pointerEvents: isActive ? 'auto' : 'none'
                         }}
                     >
                         <CardFace 
@@ -202,7 +205,7 @@ export default function QrPaymentPage() {
             })}
         </div>
 
-      <Card>
+      <Card className={cn("transition-colors duration-500", selectedCard.borderColorClass)}>
         <CardHeader>
           <CardTitle>Ödeme Seçenekleri</CardTitle>
         </CardHeader>
@@ -254,7 +257,7 @@ export default function QrPaymentPage() {
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className={cn("transition-colors duration-500", selectedCard.borderColorClass)}>
           <CardHeader>
             <CardTitle>Hızlı İşlemler</CardTitle>
           </CardHeader>
@@ -326,7 +329,7 @@ export default function QrPaymentPage() {
       </Card>
 
 
-      <Card>
+      <Card className={cn("transition-colors duration-500", selectedCard.borderColorClass)}>
         <CardHeader className="flex flex-row items-center justify-between">
            <CardTitle>Son İşlemler</CardTitle>
            <div className="flex items-center gap-1">
