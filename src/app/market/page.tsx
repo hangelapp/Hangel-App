@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, Percent, ArrowDownUp, List, LayoutGrid, Building, Handshake, ShoppingBag, Users } from 'lucide-react';
+import { Filter, Search, Percent, ArrowDownUp } from 'lucide-react';
 import { marketCampaigns, allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

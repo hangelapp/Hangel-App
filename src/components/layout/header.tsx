@@ -111,7 +111,7 @@ export default function AppHeader() {
             </Button>
             <Link href="/timeline" passHref>
                 <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-foreground">hangel</span>
+                    <span className="text-xl font-bold text-primary">hangel</span>
                 </div>
             </Link>
           </div>
