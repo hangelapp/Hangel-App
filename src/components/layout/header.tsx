@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, ShieldAlert, Gift, Star, BookUser, Building, Store, School, LayoutGrid, Users, Settings, Info, HelpCircle, LogOut, ChevronRight, BarChart3,
+  Menu, Bell, ShieldAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -12,22 +12,26 @@ import { EmergencyDialog } from '@/components/shared/emergency-dialog';
 import { Separator } from '../ui/separator';
 
 const sideMenuItems = [
-    { href: '/timeline', icon: BarChart3, label: 'hangel Impact Story' },
-    { href: '/my-donations', icon: Gift, label: 'Bağışlarım' },
-    { href: '/my-applications', icon: BookUser, label: 'Başvurularım' },
-    { href: '/my-badges', icon: Star, label: 'Rozetlerim' },
-    { href: '/ngos', icon: Building, label: 'Sivil Toplum Kuruluşları' },
-    { href: '/market', icon: Store, label: 'Markalar' },
-    { href: '/admin/clubs', icon: School, label: 'Öğrenci Kulüpleri' },
-    { href: '/admin', icon: LayoutGrid, label: 'Yönetim Paneli' },
-    { href: '/invite', icon: Users, label: 'Arkadaşlarını Davet Et' },
+    { href: '/timeline', label: 'hangel Impact Story' },
+    { href: '/my-donations', label: 'Bağışlarım' },
+    { href: '/my-applications', label: 'Başvurularım' },
+    { href: '/my-badges', label: 'Rozetlerim' },
+    { href: '/ngos', label: 'Sivil Toplum Kuruluşları' },
+    { href: '/market', label: 'Markalar' },
+    { href: '/admin/clubs', label: 'Öğrenci Kulüpleri' },
+    { href: '/admin', label: 'Yönetim Paneli' },
+    { href: '/invite', label: 'Arkadaşlarını Davet Et' },
 ];
 
 const secondaryMenuItems = [
-    { href: '/settings', icon: Settings, label: 'Ayarlar' },
-    { href: '/about', icon: Info, label: 'Hakkımızda' },
-    { href: '/support', icon: HelpCircle, label: 'Destek' },
+    { href: '/settings', label: 'Ayarlar' },
+    { href: '/about', label: 'Hakkımızda' },
+    { href: '/support', label: 'Destek' },
 ];
+
+const logoutItem = {
+    href: '/login', label: 'Çıkış Yap'
+}
 
 function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) {
   return (
@@ -51,11 +55,8 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
                 <li key={item.label}>
                     <Link href={item.href} passHref>
                         <SheetClose asChild>
-                            <div className="flex items-center justify-between px-4 py-3 text-base text-foreground/80 hover:bg-accent">
-                                <div className="flex items-center gap-4">
-                                <item.icon className="h-5 w-5 text-primary" />
+                            <div className="flex items-center justify-between px-6 py-3 text-base text-foreground/80 hover:bg-accent">
                                 <span>{item.label}</span>
-                                </div>
                             </div>
                         </SheetClose>
                     </Link>
@@ -68,24 +69,18 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
                 <li key={item.label}>
                   <Link href={item.href} passHref>
                     <SheetClose asChild>
-                        <div className="flex items-center justify-between px-4 py-3 text-base text-foreground/80 hover:bg-accent">
-                            <div className="flex items-center gap-4">
-                            <item.icon className="h-5 w-5 text-muted-foreground" />
+                        <div className="flex items-center justify-between px-6 py-3 text-base text-foreground/80 hover:bg-accent">
                             <span>{item.label}</span>
-                            </div>
                         </div>
                     </SheetClose>
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/login" passHref>
+                <Link href={logoutItem.href} passHref>
                     <SheetClose asChild>
-                        <div className="flex items-center justify-between px-4 py-3 text-base text-destructive hover:bg-destructive/10">
-                            <div className="flex items-center gap-4">
-                            <LogOut className="h-5 w-5" />
-                            <span>Çıkış Yap</span>
-                            </div>
+                        <div className="flex items-center justify-between px-6 py-3 text-base text-destructive hover:bg-destructive/10">
+                           <span>{logoutItem.label}</span>
                         </div>
                     </SheetClose>
                 </Link>
