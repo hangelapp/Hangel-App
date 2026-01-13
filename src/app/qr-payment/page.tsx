@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle, ScanLine, Keyboard, Phone, Contact } from 'lucide-react';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
@@ -97,7 +97,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+        <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
             <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
@@ -112,7 +112,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
                  <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={80} height={80} />
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
              <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
@@ -173,147 +173,159 @@ export default function QrPaymentPage() {
           </Carousel>
         </div>
 
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Ödeme Seçenekleri</h2>
-        <Tabs defaultValue="my_qr" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="my_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><QrCode /><span className="text-xs">QR Kodum</span></TabsTrigger>
-            <TabsTrigger value="scan_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><ScanLine /><span className="text-xs">QR Tara</span></TabsTrigger>
-            <TabsTrigger value="pay_code" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Keyboard /><span className="text-xs">Kod ile</span></TabsTrigger>
-            <TabsTrigger value="pay_phone" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Phone /><span className="text-xs">Numarayla</span></TabsTrigger>
-          </TabsList>
-          <TabsContent value="my_qr" className="mt-4 text-center">
-            <div className="bg-white p-4 inline-block rounded-xl shadow-md">
-                <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={160} height={160} />
-            </div>
-             <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">123-456</p>
-            <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
-          </TabsContent>
-          <TabsContent value="scan_qr" className="mt-4 text-center">
-             <div className="aspect-square bg-muted rounded-xl flex flex-col items-center justify-center">
-                <p className="text-muted-foreground">Kamera yakında burada olacak.</p>
-             </div>
-             <Button className="w-full mt-4"><ScanLine className="mr-2 h-4 w-4" /> Kamerayı Aç</Button>
-          </TabsContent>
-          <TabsContent value="pay_code" className="mt-4 space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="pay-code">6 Haneli Ödeme Kodu</Label>
-                    <Input id="pay-code" type="text" placeholder="XXXXXX" className="text-center tracking-[0.5em] text-lg" />
-                </div>
-                <Button className="w-full">Ödeme Yap</Button>
-          </TabsContent>
-          <TabsContent value="pay_phone" className="mt-4 space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon Numarası</Label>
-                    <div className="relative flex items-center">
-                      <Input id="phone" type="tel" placeholder="5XX XXX XX XX" className="pr-10" />
-                      <Button variant="ghost" size="icon" className="absolute right-1 h-8 w-8 text-muted-foreground">
-                        <Contact className="h-5 w-5" />
+      <Card>
+        <CardHeader>
+          <CardTitle>Ödeme Seçenekleri</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          <Tabs defaultValue="my_qr" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="my_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><QrCode /><span className="text-xs">QR Kodum</span></TabsTrigger>
+              <TabsTrigger value="scan_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><ScanLine /><span className="text-xs">QR Tara</span></TabsTrigger>
+              <TabsTrigger value="pay_code" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Keyboard /><span className="text-xs">Kod ile</span></TabsTrigger>
+              <TabsTrigger value="pay_phone" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Phone /><span className="text-xs">Numarayla</span></TabsTrigger>
+            </TabsList>
+            <TabsContent value="my_qr" className="mt-4 text-center">
+              <div className="bg-white p-4 inline-block rounded-xl shadow-md">
+                  <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={160} height={160} />
+              </div>
+              <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">123-456</p>
+              <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
+            </TabsContent>
+            <TabsContent value="scan_qr" className="mt-4 text-center">
+              <div className="aspect-square bg-muted rounded-xl flex flex-col items-center justify-center">
+                  <p className="text-muted-foreground">Kamera yakında burada olacak.</p>
+              </div>
+              <Button className="w-full mt-4"><ScanLine className="mr-2 h-4 w-4" /> Kamerayı Aç</Button>
+            </TabsContent>
+            <TabsContent value="pay_code" className="mt-4 space-y-4">
+                  <div className="space-y-2">
+                      <Label htmlFor="pay-code">6 Haneli Ödeme Kodu</Label>
+                      <Input id="pay-code" type="text" placeholder="XXXXXX" className="text-center tracking-[0.5em] text-lg" />
+                  </div>
+                  <Button className="w-full">Ödeme Yap</Button>
+            </TabsContent>
+            <TabsContent value="pay_phone" className="mt-4 space-y-4">
+                  <div className="space-y-2">
+                      <Label htmlFor="phone">Telefon Numarası</Label>
+                      <div className="relative flex items-center">
+                        <Input id="phone" type="tel" placeholder="5XX XXX XX XX" className="pr-10" />
+                        <Button variant="ghost" size="icon" className="absolute right-1 h-8 w-8 text-muted-foreground">
+                          <Contact className="h-5 w-5" />
+                        </Button>
+                      </div>
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="amount-transfer">Tutar</Label>
+                      <Input id="amount-transfer" type="number" placeholder="0.00 ₺" />
+                  </div>
+                  <Button className="w-full">Gönder</Button>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      
+      <Card>
+          <CardHeader>
+            <CardTitle>Hızlı İşlemler</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <Dialog>
+                  <DialogTrigger asChild>
+                      <Button variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><PlusCircle /></div>
+                          <span className="text-xs">Bakiye Yükle</span>
                       </Button>
-                    </div>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="amount-transfer">Tutar</Label>
-                    <Input id="amount-transfer" type="number" placeholder="0.00 ₺" />
-                </div>
-                <Button className="w-full">Gönder</Button>
-          </TabsContent>
-        </Tabs>
-        </div>
+                  </DialogTrigger>
+                  <DialogContent>
+                      <DialogHeader>
+                          <DialogTitle>Bakiye Yükle</DialogTitle>
+                          <DialogDescription>Yüklemek istediğiniz tutarı girin.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                              <Label htmlFor="amount">Tutar</Label>
+                              <Input id="amount" type="number" placeholder="0.00 ₺" />
+                          </div>
+                          <Button className="w-full">Yükle</Button>
+                      </div>
+                  </DialogContent>
+              </Dialog>
+              
+              <Dialog>
+                  <DialogTrigger asChild>
+                      <Button variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><ArrowRightLeft /></div>
+                          <span className="text-xs">Transfer</span>
+                      </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                      <DialogHeader>
+                          <DialogTitle>Para Transferi</DialogTitle>
+                          <DialogDescription>Telefon numarası ile kolayca para gönderin.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                              <Label htmlFor="phone-transfer">Telefon Numarası</Label>
+                              <Input id="phone-transfer" type="tel" placeholder="5XX XXX XX XX" />
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="amount-transfer-dialog">Tutar</Label>
+                              <Input id="amount-transfer-dialog" type="number" placeholder="0.00 ₺" />
+                          </div>
+                          <Button className="w-full">Gönder</Button>
+                      </div>
+                  </DialogContent>
+              </Dialog>
 
-      <div className="grid grid-cols-4 gap-2 text-center">
-        <Dialog>
-            <DialogTrigger asChild>
-                 <Button variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
-                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><PlusCircle /></div>
-                    <span className="text-xs">Bakiye Yükle</span>
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Bakiye Yükle</DialogTitle>
-                    <DialogDescription>Yüklemek istediğiniz tutarı girin.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="amount">Tutar</Label>
-                        <Input id="amount" type="number" placeholder="0.00 ₺" />
-                    </div>
-                     <Button className="w-full">Yükle</Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-        
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
-                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><ArrowRightLeft /></div>
-                    <span className="text-xs">Transfer</span>
-                </Button>
-            </DialogTrigger>
-             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Para Transferi</DialogTitle>
-                    <DialogDescription>Telefon numarası ile kolayca para gönderin.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                     <div className="space-y-2">
-                        <Label htmlFor="phone-transfer">Telefon Numarası</Label>
-                        <Input id="phone-transfer" type="tel" placeholder="5XX XXX XX XX" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="amount-transfer-dialog">Tutar</Label>
-                        <Input id="amount-transfer-dialog" type="number" placeholder="0.00 ₺" />
-                    </div>
-                     <Button className="w-full">Gönder</Button>
-                </div>
-            </DialogContent>
-        </Dialog>
+              <Button asChild variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
+                  <Link href="/my-donations">
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><History /></div>
+                      <span className="text-xs">Tüm İşlemler</span>
+                  </Link>
+              </Button>
 
-        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
-            <Link href="/my-donations">
-                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><History /></div>
-                <span className="text-xs">Tüm İşlemler</span>
-            </Link>
-        </Button>
-
-        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
-             <Link href="/settings">
-                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><MoreHorizontal /></div>
-                <span className="text-xs">Ayarlar</span>
-            </Link>
-        </Button>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-2">{`${selectedCardOwner.split(' ')[0]} H. A. - ${cardData[current]?.type} Kart İşlemleri`}</h2>
-        <Card>
-          <CardContent className="p-0">
-            {transactions.length > 0 ? (
-                <div className="divide-y">
-                {transactions.map((tx, index) => (
-                    <div key={index} className="flex items-center justify-between p-4">
-                    <div>
-                        <p className="font-semibold text-sm">{tx.brand}</p>
-                        <p className="text-xs text-muted-foreground">{tx.time}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className={`font-bold text-sm ${tx.amount.startsWith('+') ? 'text-green-600' : ''}`}>{tx.amount}</p>
-                        {tx.donation !== '0.00 ₺' && (
-                            <p className="text-xs text-primary font-semibold">Bağış: {tx.donation}</p>
-                        )}
-                    </div>
-                    </div>
-                ))}
-                </div>
-            ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                    Bu kart için henüz işlem yok.
-                </div>
-            )}
+              <Button asChild variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
+                  <Link href="/settings">
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><MoreHorizontal /></div>
+                      <span className="text-xs">Ayarlar</span>
+                  </Link>
+              </Button>
+            </div>
           </CardContent>
-        </Card>
-      </div>
+      </Card>
+
+
+      <Card>
+        <CardHeader>
+           <CardTitle>Son İşlemler</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {transactions.length > 0 ? (
+              <div className="divide-y">
+              {transactions.map((tx, index) => (
+                  <div key={index} className="flex items-center justify-between p-4">
+                  <div>
+                      <p className="font-semibold text-sm">{tx.brand}</p>
+                      <p className="text-xs text-muted-foreground">{tx.time}</p>
+                  </div>
+                  <div className="text-right">
+                      <p className={`font-bold text-sm ${tx.amount.startsWith('+') ? 'text-green-600' : ''}`}>{tx.amount}</p>
+                      {tx.donation !== '0.00 ₺' && (
+                          <p className="text-xs text-primary font-semibold">Bağış: {tx.donation}</p>
+                      )}
+                  </div>
+                  </div>
+              ))}
+              </div>
+          ) : (
+              <div className="p-8 text-center text-muted-foreground">
+                  Bu kart için henüz işlem yok.
+              </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
