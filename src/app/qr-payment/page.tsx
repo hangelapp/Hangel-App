@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle, ScanLine, Keyboard, Phone } from 'lucide-react';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const cardData = [
   {
@@ -95,8 +96,8 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
-            <RefreshCw className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-12 w-12 text-white/70 hover:text-white" onClick={onFlip}>
+            <RefreshCw className="h-6 w-6" />
         </Button>
       </div>
 
@@ -110,8 +111,8 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
                  <QrCode className="h-20 w-20 text-black" />
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
-             <RefreshCw className="h-5 w-5" />
+         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-12 w-12 text-white/70 hover:text-white" onClick={onFlip}>
+             <RefreshCw className="h-6 w-6" />
          </Button>
       </div>
     </div>
@@ -157,18 +158,59 @@ export default function QrPaymentPage() {
     <div className="p-4 space-y-6 animate-in fade-in-0">
         <h1 className="text-2xl font-bold font-headline">Cüzdanım</h1>
 
-        <Carousel setApi={setApi} opts={{ align: 'start' }} className="w-full">
-            <CarouselContent className="-ml-2">
-                {cardData.map((card, index) => (
-                    <CarouselItem key={card.id} className="pl-2 basis-[90%]" onClick={() => handleCardClick(index)}>
-                        <div className={`relative h-56 rounded-2xl overflow-hidden transition-transform duration-300 [perspective:1000px] ${current === index ? 'scale-100' : 'scale-95 opacity-70'}`}>
-                           <CardFace card={card} isFlipped={!!flippedStates[card.id]} onFlip={() => toggleFlip(card.id)} />
-                        </div>
-                    </CarouselItem>
-                ))}
-            </CarouselContent>
-        </Carousel>
+        <div className="h-56">
+          <Carousel setApi={setApi} opts={{ align: 'start' }} className="w-full -ml-4">
+              <CarouselContent>
+                  {cardData.map((card, index) => (
+                      <CarouselItem key={card.id} className="basis-[90%]" onClick={() => handleCardClick(index)}>
+                          <div className={`relative h-56 rounded-2xl overflow-hidden transition-all duration-300 ease-in-out [perspective:1000px] ${current === index ? 'z-10 scale-100' : 'z-0 scale-95 opacity-80'}`}>
+                            <CardFace card={card} isFlipped={!!flippedStates[card.id]} onFlip={() => toggleFlip(card.id)} />
+                          </div>
+                      </CarouselItem>
+                  ))}
+              </CarouselContent>
+          </Carousel>
+        </div>
 
+
+        <Tabs defaultValue="my_qr" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="my_qr" className="flex-col h-auto py-2 gap-1"><QrCode /><span className="text-xs">QR Kodum</span></TabsTrigger>
+            <TabsTrigger value="scan_qr" className="flex-col h-auto py-2 gap-1"><ScanLine /><span className="text-xs">QR Tara</span></TabsTrigger>
+            <TabsTrigger value="pay_code" className="flex-col h-auto py-2 gap-1"><Keyboard /><span className="text-xs">Kod ile</span></TabsTrigger>
+            <TabsTrigger value="pay_phone" className="flex-col h-auto py-2 gap-1"><Phone /><span className="text-xs">Numarayla</span></TabsTrigger>
+          </TabsList>
+          <TabsContent value="my_qr" className="mt-4 text-center">
+            <div className="bg-white p-4 inline-block rounded-xl shadow-md">
+                <QrCode className="h-40 w-40 text-black" />
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
+          </TabsContent>
+          <TabsContent value="scan_qr" className="mt-4 text-center">
+             <div className="aspect-square bg-muted rounded-xl flex flex-col items-center justify-center">
+                <p className="text-muted-foreground">Kamera yakında burada olacak.</p>
+             </div>
+             <Button className="w-full mt-4"><ScanLine className="mr-2 h-4 w-4" /> Kamerayı Aç</Button>
+          </TabsContent>
+          <TabsContent value="pay_code" className="mt-4 space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="pay-code">6 Haneli Ödeme Kodu</Label>
+                    <Input id="pay-code" type="text" placeholder="XXXXXX" className="text-center tracking-[0.5em] text-lg" />
+                </div>
+                <Button className="w-full">Ödeme Yap</Button>
+          </TabsContent>
+          <TabsContent value="pay_phone" className="mt-4 space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="phone">Telefon Numarası</Label>
+                    <Input id="phone" type="tel" placeholder="5XX XXX XX XX" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="amount-transfer">Tutar</Label>
+                    <Input id="amount-transfer" type="number" placeholder="0.00 ₺" />
+                </div>
+                <Button className="w-full">Gönder</Button>
+          </TabsContent>
+        </Tabs>
 
       <div className="grid grid-cols-4 gap-2 text-center">
         <Dialog>
@@ -207,12 +249,12 @@ export default function QrPaymentPage() {
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                      <div className="space-y-2">
-                        <Label htmlFor="phone">Telefon Numarası</Label>
-                        <Input id="phone" type="tel" placeholder="5XX XXX XX XX" />
+                        <Label htmlFor="phone-transfer">Telefon Numarası</Label>
+                        <Input id="phone-transfer" type="tel" placeholder="5XX XXX XX XX" />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="amount-transfer">Tutar</Label>
-                        <Input id="amount-transfer" type="number" placeholder="0.00 ₺" />
+                        <Label htmlFor="amount-transfer-dialog">Tutar</Label>
+                        <Input id="amount-transfer-dialog" type="number" placeholder="0.00 ₺" />
                     </div>
                      <Button className="w-full">Gönder</Button>
                 </div>
