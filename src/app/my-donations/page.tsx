@@ -52,45 +52,68 @@ export default function MyDonationsPage() {
         <Card>
           <CardContent className="p-0">
             <Accordion type="single" collapsible className="w-full">
-              {sortedDonations.map(donation => (
-                <AccordionItem key={donation.id} value={`item-${donation.id}`} className="border-b last:border-b-0">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="p-2 bg-muted rounded-full">
-                        <ShoppingBag className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p>{donation.brand}</p>
-                        <p className="text-xs text-muted-foreground">{donation.ngo || format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`${donation.type === 'income' ? 'text-green-600' : ''}`}>{donation.purchaseAmount} ₺</p>
-                        {donation.type === 'expense' && <p className="text-xs text-primary">Bağış: {donation.donationAmount} ₺</p>}
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4 bg-muted/50">
-                    <div className="space-y-2 text-sm mt-2 pt-4 border-t">
-                      <div className='flex justify-between'>
-                        <span className='text-muted-foreground'>Alışveriş Tutarı</span>
-                        <span>{donation.purchaseAmount} ₺</span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span className='text-primary'>Bağış Tutarı</span>
-                        <span className='text-primary'>{donation.donationAmount} ₺</span>
-                      </div>
-                      <div className='flex justify-between text-xs'>
-                        <span className='text-muted-foreground'>Desteklenen STK</span>
-                        <span>{donation.ngo}</span>
-                      </div>
-                      <div className='flex justify-between text-xs'>
-                        <span className='text-muted-foreground'>İşlem Tarihi</span>
-                        <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy - HH:mm', { locale: tr })}</span>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {sortedDonations.map(donation => {
+                const donationAmount = parseFloat(donation.donationAmount);
+                const tax = donationAmount * 0.01; // Example tax
+                const hangelShare = donationAmount * 0.04; // Example hangel share
+                const ngoShare = donationAmount - tax - hangelShare;
+
+                return (
+                    <AccordionItem key={donation.id} value={`item-${donation.id}`} className="border-b last:border-b-0">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-4 flex-1">
+                        <div className="p-2 bg-muted rounded-full">
+                            <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 text-left">
+                            <p>{donation.brand}</p>
+                            <p className="text-xs text-muted-foreground">
+                                {donation.ngo && donation.ngo.length > 0 ? donation.ngo.join(', ') : format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}
+                            </p>
+                        </div>
+                        <div className="text-right">
+                            <p className={`${donation.type === 'income' ? 'text-green-600' : ''}`}>{donation.purchaseAmount} ₺</p>
+                            {donation.type === 'expense' && <p className="text-xs text-primary">Bağış: {donation.donationAmount} ₺</p>}
+                        </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4 bg-muted/50">
+                        <div className="space-y-2 text-sm mt-2 pt-4 border-t">
+                        <div className='flex justify-between'>
+                            <span className='text-muted-foreground'>Alışveriş Tutarı</span>
+                            <span>{donation.purchaseAmount} ₺</span>
+                        </div>
+                        <div className='flex justify-between'>
+                            <span className='text-muted-foreground'>Toplam Bağış</span>
+                            <span className='text-primary'>{donation.donationAmount} ₺</span>
+                        </div>
+                        <Separator />
+                        <div className='flex justify-between text-xs'>
+                            <span className='text-muted-foreground'>Desteklenen STK Payı</span>
+                            <span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                        </div>
+                         <div className='flex justify-between text-xs'>
+                            <span className='text-muted-foreground'>Vergi (%1)</span>
+                            <span>{tax.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                        </div>
+                         <div className='flex justify-between text-xs'>
+                            <span className='text-muted-foreground'>hangel Katkı Payı (%4)</span>
+                            <span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                        </div>
+                        <Separator />
+                        <div className='flex justify-between text-xs mt-2'>
+                            <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
+                            <span className="text-right">{donation.ngo.join(', ')}</span>
+                        </div>
+                        <div className='flex justify-between text-xs'>
+                            <span className='text-muted-foreground'>İşlem Tarihi</span>
+                            <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy - HH:mm', { locale: tr })}</span>
+                        </div>
+                        </div>
+                    </AccordionContent>
+                    </AccordionItem>
+                )
+              })}
             </Accordion>
           </CardContent>
         </Card>

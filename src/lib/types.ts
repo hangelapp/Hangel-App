@@ -263,7 +263,7 @@ export type DonationTransaction = {
     brand: string;
     purchaseAmount: string;
     donationAmount: string;
-    ngo: string;
+    ngo: string[];
     date: string;
     time: string;
 };

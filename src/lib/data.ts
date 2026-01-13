@@ -192,13 +192,14 @@ export const applications: Application[] = Array.from({ length: 21 }, (_, i) => 
 
 export const donationTransactions: DonationTransaction[] = Array.from({ length: 21 }, (_, i) => {
     const isIncome = i % 4 === 0;
+    const ngos = [['TEMA Vakfı'], ['Ahbap Derneği'], ['LÖSEV'], ['TEMA Vakfı', 'LÖSEV']];
     return {
         id: `${i + 1}`,
         type: isIncome ? 'income' : 'expense',
         brand: isIncome ? 'Bakiye Yükleme' : ['Doğa Dostu Giyim', 'Lezzet Köyü', 'Tekno Market'][i % 3],
         purchaseAmount: isIncome ? `+${(i+1)*20}.00` : `-${(i+1)*15}.50`,
         donationAmount: isIncome ? '0.00' : `${((i+1)*1.5).toFixed(2)}`,
-        ngo: isIncome ? '' : ['TEMA Vakfı', 'Ahbap Derneği', 'LÖSEV'][i % 3],
+        ngo: isIncome ? [] : ngos[i % ngos.length],
         date: `2024-07-${(i % 30) + 1}`,
         time: `${i % 24}:${(i*3 % 60).toString().padStart(2, '0')}`,
     };
