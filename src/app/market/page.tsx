@@ -3,8 +3,8 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, Percent, ArrowDownUp, Star } from 'lucide-react';
-import { marketCampaigns, allEntityLists } from '@/lib/data';
+import { Filter, Search, ArrowDownUp, Star } from 'lucide-react';
+import { allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -39,7 +39,7 @@ const BrandCard = ({ brand }: { brand: Brand }) => {
         </CardHeader>
         <CardContent>
             <div className="flex items-center gap-1.5 text-sm font-medium">
-                <span><strong>{brand.donationRate}</strong> Bağış Oranı</span>
+                <span><strong>%{brand.donationRate}</strong> Bağış</span>
             </div>
         </CardContent>
         <CardFooter>
