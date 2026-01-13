@@ -112,13 +112,14 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof card
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={(e) => { e.stopPropagation(); onFlip(); }}>
+        <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={(e) => { e.stopPropagation(); onFlip(); }}>
             <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
 
       {/* Card Back */}
       <div 
+        onClick={(e) => e.stopPropagation()}
         className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-4 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor, card.bgColor)}>
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
         <div className="relative z-10 space-y-3">
@@ -140,7 +141,7 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof card
            <Button variant="secondary" size="sm">Bakiye Yükle</Button>
            <Button variant="secondary" size="sm">Sticker</Button>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+         <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
              <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
