@@ -178,7 +178,7 @@ export type User = {
         dailySkills: string[];
         interests: string[];
         education: { level: string; school: string; }[];
-        profession: string;
+        profession: string | null;
         languages: string[];
         programs: string[];
         licenses: string[];

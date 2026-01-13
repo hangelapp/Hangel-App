@@ -429,7 +429,7 @@ export const ngos: NGO[] = [
     coverPhotoUrl: 'https://picsum.photos/seed/losev-cover/800/200',
     stats: { followers: 35000, donors: 28000, volunteers: 15000, volunteerHours: 45000, projects: 75, peopleReached: 100000 },
     transparencyScore: 88,
-    about: "Lösemili Çocuklar Sağlık ve Eğitim Vakfı, 1998 yılında kurulmuş olup, lösemi ve kan hastası çocukların, sağlık ve eğitim başta olmak üzere her türlü ihtiyaçlarının sağlanmasına yardımcı olmaktadır. Tedavilerinin yanı sıra sosyal ve psikolojik desteklerle hayata sıkı sıkı sarılmalarını sağlamak için çalışmaktadır.\n\nLÖSEV, Türkiye genelinde LÖSANTE Hastanesi, Lösemili Çocuklar Köyü ve okulları gibi kalıcı eserler yaratarak, kanserle mücadelede öncü bir rol üstlenmiştir. Amacımız, tüm lösemili çocukların eşit ve ücretsiz sağlık hizmeti almasını sağlamaktır.",
+    about: "Lösemili Çocuklar Sağlık ve Eğitim Vakfı, 1998 yılında kurulmuş olup, lösemi ve kan hastası çocukların, sağlık ve eğitim başta olmak üzere her türlü ihtiyaçlarının sağlanmasına yardımcı olmaktadır. Tedavilerinin yanı sıra sosyal ve psikolojik desteklerle hayata sıkı sıkı sarılmalarını sağlamak için çalışmaktadır.\n\LÖSEV, Türkiye genelinde LÖSANTE Hastanesi, Lösemili Çocuklar Köyü ve okulları gibi kalıcı eserler yaratarak, kanserle mücadelede öncü bir rol üstlenmiştir. Amacımız, tüm lösemili çocukların eşit ve ücretsiz sağlık hizmeti almasını sağlamaktır.",
     joinDate: '2022-05-20',
     supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'Yoksulluğa Son'],
     beneficiaryGroups: ['Lösemili Çocuklar', 'Kanser Hastaları', 'Aileleri'],
