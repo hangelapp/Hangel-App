@@ -2,9 +2,15 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, Building, GraduationCap } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, Building, GraduationCap, Phone } from 'lucide-react';
 import { HangelLogo } from '@/components/icons';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import React from 'react';
+
 
 const transactions = [
     { brand: 'Doğa Dostu Giyim', amount: '-150.00 ₺', donation: '22.50 ₺', time: '14:32' },
@@ -22,7 +28,7 @@ const cards = [
     owner: 'İsmail Hilmi ADIGÜZEL',
     number: '**** **** **** 1234',
     expiry: '12/28',
-    icon: () => <HangelLogo className="w-12 h-12 text-white" />,
+    balance: '1.250,75 ₺'
   },
   {
     type: 'Öğrenci',
@@ -33,7 +39,7 @@ const cards = [
     owner: 'İsmail Hilmi ADIGÜZEL',
     number: '**** **** **** 5678',
     expiry: '08/27',
-    icon: () => <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><GraduationCap className="w-7 h-7 text-white"/></div>
+    balance: '345,50 ₺'
   },
   {
     type: 'Ticari',
@@ -44,7 +50,7 @@ const cards = [
     owner: 'İsmail Hilmi ADIGÜZEL - TİCARİ',
     number: '**** **** **** 9012',
     expiry: '01/29',
-    icon: () => <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><Building className="w-7 h-7 text-white"/></div>,
+    balance: '12.870,00 ₺'
   },
 ];
 
@@ -64,8 +70,11 @@ export default function QrPaymentPage() {
                             
                             <div className="relative z-10">
                                 <div className='flex justify-between items-start'>
-                                    <card.icon />
                                     <p className={`font-semibold text-lg ${card.highlightColor}`}>{card.type}</p>
+                                    <div className='text-right'>
+                                      <p className="text-xs opacity-70">Bakiye</p>
+                                      <p className="font-semibold text-lg">{card.balance}</p>
+                                    </div>
                                 </div>
                             </div>
                             <div className="relative z-10">
@@ -89,21 +98,66 @@ export default function QrPaymentPage() {
 
 
       <div className="grid grid-cols-4 gap-2 text-center">
-        <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
-            <PlusCircle />
-            <span className="text-xs">Bakiye Yükle</span>
+        <Dialog>
+            <DialogTrigger asChild>
+                 <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
+                    <PlusCircle />
+                    <span className="text-xs">Bakiye Yükle</span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Bakiye Yükle</DialogTitle>
+                    <DialogDescription>Yüklemek istediğiniz tutarı girin.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="amount">Tutar</Label>
+                        <Input id="amount" type="number" placeholder="0.00 ₺" />
+                    </div>
+                     <Button className="w-full">Yükle</Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+        
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
+                    <ArrowRightLeft />
+                    <span className="text-xs">Transfer</span>
+                </Button>
+            </DialogTrigger>
+             <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Para Transferi</DialogTitle>
+                    <DialogDescription>Telefon numarası ile kolayca para gönderin.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="phone">Telefon Numarası</Label>
+                        <Input id="phone" type="tel" placeholder="5XX XXX XX XX" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="amount-transfer">Tutar</Label>
+                        <Input id="amount-transfer" type="number" placeholder="0.00 ₺" />
+                    </div>
+                     <Button className="w-full">Gönder</Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+
+        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
+            <Link href="/my-donations">
+                <History />
+                <span className="text-xs">Tüm İşlemler</span>
+            </Link>
         </Button>
-        <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
-            <ArrowRightLeft />
-            <span className="text-xs">Transfer</span>
-        </Button>
-        <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
-            <History />
-            <span className="text-xs">Tüm İşlemler</span>
-        </Button>
-        <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
-            <MoreHorizontal />
-            <span className="text-xs">Ayarlar</span>
+
+        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
+             <Link href="/settings">
+                <MoreHorizontal />
+                <span className="text-xs">Ayarlar</span>
+            </Link>
         </Button>
       </div>
 
