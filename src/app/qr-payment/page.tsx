@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign, QrCode } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign, QrCode, Lock, BadgePercent, MessageSquareWarning } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -115,7 +115,7 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof init
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={(e) => { e.stopPropagation(); onFlip(); }}>
+        <Button variant="ghost" size="icon" className="absolute bottom-1 right-1 h-8 w-8 text-white/70 hover:text-white" onClick={(e) => { e.stopPropagation(); onFlip(); }}>
             <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
@@ -125,26 +125,98 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof init
         onClick={(e) => e.stopPropagation()}
         className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-4 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor, card.bgColor)}>
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
-        <div className="relative z-10 space-y-3">
-          <CardTitle className="text-lg">Kart Ayarları</CardTitle>
-           <div className="flex items-center justify-between text-sm">
-                <label htmlFor="online-shopping" className="flex items-center gap-2 font-medium">
+        <div className="relative z-10 space-y-2">
+          <CardTitle className="text-lg mb-2">Kart Ayarları</CardTitle>
+           <div className="flex items-center justify-between text-sm py-1">
+                <label htmlFor="online-shopping" className="flex items-center gap-3 font-medium">
                   <ToggleRight className="h-5 w-5"/> İnternet Alışverişi
                 </label>
                 <Switch id="online-shopping" defaultChecked/>
             </div>
-             <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
+                  <CircleDollarSign className="h-5 w-5"/> İşlem Limiti Belirle
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>İşlem Limiti Belirle</DialogTitle>
+                  <DialogDescription>Tek seferlik harcama limiti belirleyin.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <Label htmlFor="limit-amount">Limit Tutarı</Label>
+                    <Input id="limit-amount" type="number" placeholder="0.00 ₺" />
+                    <Button className="w-full">Kaydet</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                 <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
+                  <Lock className="h-5 w-5"/> Kart Şifresi Belirle
+                </Button>
+              </DialogTrigger>
+               <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Kart Şifresi Belirle</DialogTitle>
+                  <DialogDescription>4 haneli yeni kart şifrenizi oluşturun.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <Label htmlFor="pin">Yeni Şifre</Label>
+                    <Input id="pin" type="password" placeholder="****" maxLength={4}/>
+                    <Label htmlFor="pin-confirm">Yeni Şifre (Tekrar)</Label>
+                    <Input id="pin-confirm" type="password" placeholder="****" maxLength={4}/>
+                    <Button className="w-full">Şifreyi Güncelle</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
+                  <MessageSquareWarning className="h-5 w-5"/> İşlem İtirazı
+                </Button>
+              </DialogTrigger>
+               <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>İşlem İtirazı</DialogTitle>
+                  <DialogDescription>Şüpheli bulduğunuz bir işlem için itiraz oluşturun.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <Label htmlFor="dispute-transaction">İtiraz Edilecek İşlem</Label>
+                    <p className="text-sm text-muted-foreground">"Doğa Dostu Giyim - 150.00 ₺"</p>
+                    <Label htmlFor="dispute-reason">İtiraz Nedeni</Label>
+                    <Input id="dispute-reason" placeholder="Örn: Bu işlemi ben yapmadım." />
+                    <Button className="w-full" variant="destructive">İtirazı Gönder</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+             <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
               <Snowflake className="h-5 w-5"/> Kartı Dondur
             </Button>
-            <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-2">
-              <CircleDollarSign className="h-5 w-5"/> Limit Belirle
-            </Button>
         </div>
-        <div className="relative z-10 flex justify-end gap-2">
-           <Button variant="secondary" size="sm">Bakiye Yükle</Button>
-           <Button variant="secondary" size="sm">Sticker</Button>
+        <div className="relative z-10 flex justify-end gap-2 mt-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="secondary" size="sm">Bakiye Yükle</Button>
+              </DialogTrigger>
+              <DialogContent>
+                  <DialogHeader>
+                      <DialogTitle>Bakiye Yükle</DialogTitle>
+                      <DialogDescription>Yüklemek istediğiniz tutarı girin.</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="amount">Tutar</Label>
+                          <Input id="amount" type="number" placeholder="0.00 ₺" />
+                      </div>
+                      <Button className="w-full">Yükle</Button>
+                  </div>
+              </DialogContent>
+            </Dialog>
+           {card.type === 'Ticari' && <Button variant="secondary" size="sm">Sticker</Button>}
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+         <Button variant="ghost" size="icon" className="absolute bottom-1 right-1 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
              <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
@@ -217,7 +289,7 @@ export default function QrPaymentPage() {
             })}
         </div>
 
-      <Card className={cn("transition-colors duration-500", selectedCard.borderColorClass)}>
+      <Card className={cn("transition-colors duration-500 border-2", selectedCard.borderColorClass)}>
         <CardHeader>
           <CardTitle>Ödeme Seçenekleri</CardTitle>
         </CardHeader>
@@ -270,7 +342,7 @@ export default function QrPaymentPage() {
         </CardContent>
       </Card>
       
-      <Card className={cn("transition-colors duration-500", selectedCard.borderColorClass)}>
+      <Card className={cn("transition-colors duration-500 border-2", selectedCard.borderColorClass)}>
           <CardHeader>
             <CardTitle>Hızlı İşlemler</CardTitle>
           </CardHeader>
@@ -290,8 +362,8 @@ export default function QrPaymentPage() {
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                           <div className="space-y-2">
-                              <Label htmlFor="amount">Tutar</Label>
-                              <Input id="amount" type="number" placeholder="0.00 ₺" />
+                              <Label htmlFor="amount-dialog">Tutar</Label>
+                              <Input id="amount-dialog" type="number" placeholder="0.00 ₺" />
                           </div>
                           <Button className="w-full">Yükle</Button>
                       </div>
@@ -342,7 +414,7 @@ export default function QrPaymentPage() {
       </Card>
 
 
-      <Card className={cn("transition-colors duration-500", selectedCard.borderColorClass)}>
+      <Card className={cn("transition-colors duration-500 border-2", selectedCard.borderColorClass)}>
         <CardHeader className="flex flex-row items-center justify-between">
            <CardTitle>Son İşlemler</CardTitle>
            <div className="flex items-center gap-1">
