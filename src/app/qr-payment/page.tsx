@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle, ScanLine, Keyboard, Phone, Contact } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp } from 'lucide-react';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -298,8 +298,16 @@ export default function QrPaymentPage() {
 
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
            <CardTitle>Son İşlemler</CardTitle>
+           <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Filter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <ArrowDownUp className="h-4 w-4" />
+                </Button>
+           </div>
         </CardHeader>
         <CardContent className="p-0">
           {transactions.length > 0 ? (
