@@ -62,7 +62,7 @@ export default function MyApplicationsPage() {
       <p className="text-muted-foreground">Gönüllülük ve diğer başvurularınızın durumunu buradan takip edin.</p>
       
         <Tabs defaultValue="Gönüllülük" className="w-full">
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="Gönüllülük">Gönüllülük</TabsTrigger>
                 <TabsTrigger value="Kulüpler">Kulüpler</TabsTrigger>
                 <TabsTrigger value="STK">STK</TabsTrigger>
