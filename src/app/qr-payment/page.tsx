@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign, QrCode } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -238,7 +238,8 @@ export default function QrPaymentPage() {
             </TabsContent>
             <TabsContent value="scan_qr" className="mt-4 text-center">
               <div className="w-1/2 aspect-square bg-muted rounded-xl flex flex-col items-center justify-center mx-auto">
-                  <p className="text-muted-foreground text-sm">Kamera yakında burada olacak.</p>
+                  <QrCode className="h-16 w-16 text-muted-foreground" />
+                  <p className="text-muted-foreground text-sm mt-2">Kamera yakında burada olacak.</p>
               </div>
               <Button className="w-full mt-4 bg-primary"><ScanLine /> Kamerayı Aç</Button>
             </TabsContent>

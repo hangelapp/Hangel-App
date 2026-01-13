@@ -47,7 +47,7 @@ const BrandCard = ({ brand }: { brand: Brand }) => {
         <CardFooter>
             <Button asChild variant="secondary" className="w-full">
                 <Link href={profileLink}>
-                    Detayları Gör
+                    Alışverişe Başla
                 </Link>
             </Button>
         </CardFooter>
