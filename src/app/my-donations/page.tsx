@@ -1,9 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CircleDollarSign, ShoppingBag } from 'lucide-react';
+import { CircleDollarSign, ShoppingBag, Search, Filter, ArrowDownUp } from 'lucide-react';
 import { donationTransactions } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function MyDonationsPage() {
   const totalDonations = donationTransactions
@@ -32,7 +34,21 @@ export default function MyDonationsPage() {
       </Card>
       
       <div>
-        <h2 className="text-lg font-semibold mb-2">İşlem Geçmişi</h2>
+        <div className="flex justify-between items-center mb-2 gap-2">
+            <h2 className="text-xl font-bold">İşlem Geçmişi</h2>
+            <div className="flex items-center gap-2">
+                <div className="relative w-32 sm:w-auto">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Ara..." className="pl-8 text-sm h-9" />
+                </div>
+                <Button variant="ghost" size="icon">
+                    <Filter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                    <ArrowDownUp className="h-4 w-4" />
+                </Button>
+            </div>
+        </div>
         <Card>
           <CardContent className="p-0">
             <Accordion type="single" collapsible className="w-full">
