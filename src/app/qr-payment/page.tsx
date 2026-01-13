@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, Building, GraduationCap } from 'lucide-react';
@@ -17,7 +19,7 @@ const cards = [
     patternUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre-v2.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
-    owner: 'AYŞE YILMAZ',
+    owner: 'İsmail Hilmi ADIGÜZEL',
     number: '**** **** **** 1234',
     expiry: '12/28',
     icon: () => <HangelLogo className="w-12 h-12 text-white" />,
@@ -28,7 +30,7 @@ const cards = [
     patternUrl: 'https://www.transparenttextures.com/patterns/notebook-dark.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
-    owner: 'AYŞE YILMAZ',
+    owner: 'İsmail Hilmi ADIGÜZEL',
     number: '**** **** **** 5678',
     expiry: '08/27',
     icon: () => <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><GraduationCap className="w-7 h-7 text-white"/></div>
@@ -39,7 +41,7 @@ const cards = [
     patternUrl: 'https://www.transparenttextures.com/patterns/congruent-pentagon.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
-    owner: 'AYŞE YILMAZ - TİCARİ',
+    owner: 'İsmail Hilmi ADIGÜZEL - TİCARİ',
     number: '**** **** **** 9012',
     expiry: '01/29',
     icon: () => <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center"><Building className="w-7 h-7 text-white"/></div>,
@@ -53,9 +55,9 @@ export default function QrPaymentPage() {
         <h1 className="text-2xl font-bold font-headline">Cüzdanım</h1>
 
         <Carousel opts={{ align: 'start' }} className="w-full">
-            <CarouselContent>
+            <CarouselContent className="-ml-2">
                 {cards.map((card, index) => (
-                    <CarouselItem key={index}>
+                    <CarouselItem key={index} className="pl-2 md:basis-1/2 lg:basis-1/3">
                         <div className={`relative h-56 rounded-2xl ${card.textColor} p-6 flex flex-col justify-between shadow-2xl overflow-hidden`}>
                             <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
                             <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>

@@ -309,3 +309,11 @@ export type ManagedItem = {
     href: string;
     status: 'approved' | 'pending';
 };
+
+export type AdBanner = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  link: string;
+};

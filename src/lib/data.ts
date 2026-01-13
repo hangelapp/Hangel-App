@@ -1,7 +1,7 @@
 
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
-import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO } from './types';
+import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner } from './types';
 import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, HeartPulse, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid } from 'lucide-react';
 
 
@@ -40,8 +40,8 @@ export const user: User = {
         profession: 'Yazılım Geliştirici',
         languages: ['Türkçe (Ana Dil)', 'İngilizce (İleri)', 'Almanca (Orta)'],
         programs: ['VS Code', 'Figma', 'Docker'],
-        licenses: ['B Sınıfı Ehliyet'],
-        documents: ['İlk Yardım Sertifikası', 'Scrum Master Sertifikası'],
+        licenses: ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet', 'İş Güvenliği Uzmanlığı'],
+        documents: ['İlk Yardım Sertifikası', 'Scrum Master Sertifikası', 'Hijyen Belgesi'],
         travelInfo: { 
             domesticObstacle: false, 
             internationalObstacle: false,
@@ -342,7 +342,7 @@ badgeData.forEach(baseBadge => {
 });
 
 
-export const adBanners = [
+export const adBanners: AdBanner[] = [
     {
       id: '1',
       title: 'Yaz Kampanyası',
