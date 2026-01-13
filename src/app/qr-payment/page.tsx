@@ -96,8 +96,8 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-12 w-12 text-white/70 hover:text-white" onClick={onFlip}>
-            <RefreshCw className="h-6 w-6" />
+        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+            <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
 
@@ -111,8 +111,8 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
                  <QrCode className="h-20 w-20 text-black" />
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-12 w-12 text-white/70 hover:text-white" onClick={onFlip}>
-             <RefreshCw className="h-6 w-6" />
+         <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+             <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
     </div>
@@ -159,10 +159,10 @@ export default function QrPaymentPage() {
         <h1 className="text-2xl font-bold font-headline">Cüzdanım</h1>
 
         <div className="h-56">
-          <Carousel setApi={setApi} opts={{ align: 'start' }} className="w-full -ml-4">
-              <CarouselContent>
+          <Carousel setApi={setApi} opts={{ align: 'start' }} className="w-full">
+              <CarouselContent className="-ml-2">
                   {cardData.map((card, index) => (
-                      <CarouselItem key={card.id} className="basis-[90%]" onClick={() => handleCardClick(index)}>
+                      <CarouselItem key={card.id} className="pl-2 basis-[90%]" onClick={() => handleCardClick(index)}>
                           <div className={`relative h-56 rounded-2xl overflow-hidden transition-all duration-300 ease-in-out [perspective:1000px] ${current === index ? 'z-10 scale-100' : 'z-0 scale-95 opacity-80'}`}>
                             <CardFace card={card} isFlipped={!!flippedStates[card.id]} onFlip={() => toggleFlip(card.id)} />
                           </div>
