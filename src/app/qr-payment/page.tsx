@@ -180,21 +180,21 @@ export default function QrPaymentPage() {
         <CardContent className="p-4">
           <Tabs defaultValue="my_qr" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="my_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><QrCode /><span className="text-xs">QR Kodum</span></TabsTrigger>
-              <TabsTrigger value="scan_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><ScanLine /><span className="text-xs">QR Tara</span></TabsTrigger>
-              <TabsTrigger value="pay_code" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Keyboard /><span className="text-xs">Kod ile</span></TabsTrigger>
-              <TabsTrigger value="pay_phone" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Phone /><span className="text-xs">Numarayla</span></TabsTrigger>
+              <TabsTrigger value="my_qr">QR Kodum</TabsTrigger>
+              <TabsTrigger value="scan_qr">QR Tara</TabsTrigger>
+              <TabsTrigger value="pay_code">Kod ile</TabsTrigger>
+              <TabsTrigger value="pay_phone">Numarayla</TabsTrigger>
             </TabsList>
             <TabsContent value="my_qr" className="mt-4 text-center">
               <div className="bg-white p-4 inline-block rounded-xl shadow-md">
                   <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={160} height={160} />
               </div>
-              <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">123-456</p>
+              <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">h 123456</p>
               <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
             </TabsContent>
             <TabsContent value="scan_qr" className="mt-4 text-center">
-              <div className="aspect-square bg-muted rounded-xl flex flex-col items-center justify-center">
-                  <p className="text-muted-foreground">Kamera yakında burada olacak.</p>
+              <div className="w-1/2 aspect-square bg-muted rounded-xl flex flex-col items-center justify-center mx-auto">
+                  <p className="text-muted-foreground text-sm">Kamera yakında burada olacak.</p>
               </div>
               <Button className="w-full mt-4"><ScanLine className="mr-2 h-4 w-4" /> Kamerayı Aç</Button>
             </TabsContent>
