@@ -30,7 +30,7 @@ const IconButton = ({ children, href, 'aria-label': ariaLabel }: { children: Rea
             target="_blank"
             rel="noopener noreferrer"
             aria-label={ariaLabel}
-            className="h-14 w-14 rounded-xl bg-muted/70 text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-foreground"
+            className="h-12 w-12 rounded-xl text-muted-foreground transition-colors hover:text-foreground"
             variant="ghost"
             asChild={!!href}
         >
@@ -86,10 +86,10 @@ export default function InvitePage() {
             <IconButton href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Seni de hangel'a bekliyorum!")}`} aria-label="Telegram ile paylaş">
                 <Send className="h-6 w-6" />
             </IconButton>
-            <IconButton href={`sms:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="SMS ile paylaş">
+            <IconButton href={`mailto:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="SMS ile paylaş">
                 <Mail className="h-6 w-6" />
             </IconButton>
-            <IconButton aria-label="Instagram'da paylaş">
+            <IconButton href="#" aria-label="Instagram'da paylaş">
                 <Instagram className="h-6 w-6" />
             </IconButton>
             <IconButton href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="X'te paylaş">
