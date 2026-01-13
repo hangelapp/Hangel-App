@@ -97,7 +97,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+        <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
             <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
@@ -112,7 +112,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
                  <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={80} height={80} />
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+         <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
              <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
@@ -173,7 +173,8 @@ export default function QrPaymentPage() {
           </Carousel>
         </div>
 
-
+      <div>
+        <h2 className="text-lg font-semibold mb-2">Ödeme Seçenekleri</h2>
         <Tabs defaultValue="my_qr" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="my_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><QrCode /><span className="text-xs">QR Kodum</span></TabsTrigger>
@@ -218,6 +219,7 @@ export default function QrPaymentPage() {
                 <Button className="w-full">Gönder</Button>
           </TabsContent>
         </Tabs>
+        </div>
 
       <div className="grid grid-cols-4 gap-2 text-center">
         <Dialog>
