@@ -65,7 +65,7 @@ export default function StudentClubsPage() {
         </div>
 
       <Tabs defaultValue="all-clubs" className="w-full">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all-clubs">Tümü</TabsTrigger>
           <TabsTrigger value="my-school">Okulumda</TabsTrigger>
           <TabsTrigger value="my-city">Şehrimde</TabsTrigger>
@@ -74,7 +74,7 @@ export default function StudentClubsPage() {
         </TabsList>
         <TabsContent value="all-clubs" className="mt-4">
              <Tabs defaultValue="university" className="w-full">
-                <TabsList>
+                <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="university">Üniversite</TabsTrigger>
                     <TabsTrigger value="highschool">Lise</TabsTrigger>
                 </TabsList>
@@ -138,7 +138,7 @@ export default function StudentClubsPage() {
         <TabsContent value="my-city" className="text-center text-muted-foreground pt-8">Şehrinizde kayıtlı kulüp bulunamadı.</TabsContent>
         <TabsContent value="representatives" className="mt-4">
             <Tabs defaultValue="university-reps" className="w-full">
-                <TabsList>
+                <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="university-reps">Üniversite</TabsTrigger>
                     <TabsTrigger value="highschool-reps">Lise</TabsTrigger>
                     <TabsTrigger value="city-reps">Şehrimde</TabsTrigger>

@@ -107,17 +107,17 @@ export default function MarketPage() {
       </div>
 
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="rounded-none bg-transparent p-0 px-4 gap-4 overflow-x-auto border-b">
-          <TabsTrigger value="products" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="products">
             Marka
           </TabsTrigger>
-          <TabsTrigger value="cooperatives" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+          <TabsTrigger value="cooperatives">
             Kooperatif
           </TabsTrigger>
-           <TabsTrigger value="social" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+           <TabsTrigger value="social">
             Sosyal Şirket
           </TabsTrigger>
-           <TabsTrigger value="economic" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+           <TabsTrigger value="economic">
             İktisadi İşletme
           </TabsTrigger>
         </TabsList>

@@ -21,7 +21,7 @@ const VolunteerPage = () => {
       </div>
 
       <Tabs defaultValue="applications" className="w-full">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="applications">Başvurular</TabsTrigger>
           <TabsTrigger value="opportunities">İlan Yönetimi</TabsTrigger>
         </TabsList>

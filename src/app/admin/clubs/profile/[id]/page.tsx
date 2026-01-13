@@ -87,7 +87,7 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
       </div>
 
       <Tabs defaultValue="about" className="w-full">
-        <TabsList className="w-full justify-start rounded-none bg-transparent p-0 px-4 gap-4 border-b">
+        <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="about">Hakkında</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>

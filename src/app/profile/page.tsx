@@ -72,9 +72,9 @@ export default function ProfilePage() {
       </div>
 
       <Tabs defaultValue="badges" className="w-full mt-4">
-        <TabsList className="w-full justify-start rounded-none bg-transparent p-0 px-4 gap-4">
-            <TabsTrigger value="badges" className="rounded-full">Rozetlerim</TabsTrigger>
-            <TabsTrigger value="info" className="rounded-full">Bilgilerim</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="badges">Rozetlerim</TabsTrigger>
+            <TabsTrigger value="info">Bilgilerim</TabsTrigger>
         </TabsList>
         <TabsContent value="badges" className="p-4">
             <div className="grid grid-cols-2 gap-4">
