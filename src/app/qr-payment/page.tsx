@@ -63,7 +63,7 @@ export default function QrPaymentPage() {
         <Carousel opts={{ align: 'start' }} className="w-full">
             <CarouselContent className="-ml-2">
                 {cards.map((card, index) => (
-                    <CarouselItem key={index} className="pl-2 md:basis-1/2 lg:basis-1/3">
+                    <CarouselItem key={index} className="pl-2 basis-full">
                         <div className={`relative h-56 rounded-2xl ${card.textColor} p-6 flex flex-col justify-between shadow-2xl overflow-hidden`}>
                             <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
                             <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>

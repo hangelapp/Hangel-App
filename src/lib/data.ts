@@ -178,9 +178,9 @@ export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21
 
 
 export const marketCampaigns: Campaign[] = [
-  { id: '1', title: 'Okul Alışverişinde %15 Bağış!', description: 'Lezzet Köyü ile çocukları sevindir.', imageUrl: 'https://picsum.photos/seed/okul-kampanya/1200/400', imageHint: 'student school supplies' },
-  { id: '2', title: 'Her Seyahat Bir Umut Olsun', description: 'Gezgin Rotalar ile doğayı koru.', imageUrl: getImage('campaign-banner-2')?.imageUrl || '', imageHint: getImage('campaign-banner-2')?.imageHint || '' },
-  { id: '3', title: 'Teknoloji Alışverişiyle Eğitime Destek', description: 'Tekno Market\'ten yapacağın harcamalarla TEGV\'e destek ol.', imageUrl: 'https://picsum.photos/seed/tech-kampanya/1200/400', imageHint: 'laptop code' },
+  { id: '1', title: 'Okul Alışverişinde %15 Bağış!', description: 'Lezzet Köyü ile çocukları sevindir.', imageUrl: 'https://picsum.photos/seed/okul-kampanya/1200/400', imageHint: 'student school supplies', sponsored: true },
+  { id: '2', title: 'Her Seyahat Bir Umut Olsun', description: 'Gezgin Rotalar ile doğayı koru.', imageUrl: getImage('campaign-banner-2')?.imageUrl || '', imageHint: getImage('campaign-banner-2')?.imageHint || '', sponsored: true },
+  { id: '3', title: 'Teknoloji Alışverişiyle Eğitime Destek', description: 'Tekno Market\'ten yapacağın harcamalarla TEGV\'e destek ol.', imageUrl: 'https://picsum.photos/seed/tech-kampanya/1200/400', imageHint: 'laptop code', sponsored: false },
 ];
 
 

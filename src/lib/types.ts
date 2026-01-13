@@ -237,6 +237,7 @@ export type Campaign = {
   description: string;
   imageUrl: string;
   imageHint: string;
+  sponsored?: boolean;
 };
 
 export type StudentClub = {

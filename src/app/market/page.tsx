@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, Percent, ArrowDownUp } from 'lucide-react';
+import { Filter, Search, Percent, ArrowDownUp, Star } from 'lucide-react';
 import { marketCampaigns, allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Brand } from '@/lib/types';
 import { useState, useRef } from 'react';
+import { Badge } from '@/components/ui/badge';
 
 const BrandCard = ({ brand }: { brand: Brand }) => (
     <Card key={brand.id} className="overflow-hidden">
@@ -80,6 +81,12 @@ export default function MarketPage() {
                   data-ai-hint={campaign.imageHint}
                 />
                 <div className="absolute inset-0 bg-black/30" />
+                 {campaign.sponsored && (
+                  <Badge variant="outline" className="absolute top-2 right-2 flex items-center gap-1 bg-background/80 text-foreground border-amber-500 text-amber-500">
+                    <Star className="h-3 w-3" />
+                    <span>Sponsorlu</span>
+                  </Badge>
+                )}
                 <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
                     <h3 className="font-bold text-lg">{campaign.title}</h3>
                     <p className="text-sm">{campaign.description}</p>
