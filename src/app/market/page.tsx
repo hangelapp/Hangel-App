@@ -103,17 +103,17 @@ export default function MarketPage() {
 
       <Tabs defaultValue="products" className="w-full">
         <TabsList className="w-full justify-start rounded-none bg-transparent p-0 px-4 gap-4 overflow-x-auto border-b">
-          <TabsTrigger value="products" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
-            Markalar
+          <TabsTrigger value="products" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+            Marka
           </TabsTrigger>
-          <TabsTrigger value="cooperatives" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
-            Kooperatifler
+          <TabsTrigger value="cooperatives" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+            Kooperatif
           </TabsTrigger>
-           <TabsTrigger value="social" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
-            Sosyal Şirketler
+           <TabsTrigger value="social" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+            Sosyal Şirket
           </TabsTrigger>
-           <TabsTrigger value="economic" className="rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none">
-            İktisadi İşletmeler
+           <TabsTrigger value="economic" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
+            İktisadi İşletme
           </TabsTrigger>
         </TabsList>
         <TabsContent value="products" className="p-4 bg-background">
