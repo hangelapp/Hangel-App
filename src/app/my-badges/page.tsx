@@ -17,22 +17,34 @@ const stats = [
     { icon: Heart, value: `${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`, label: 'Bağış' },
 ];
 
+const levelColors: Record<BadgeType['level'], { bg: string; text: string }> = {
+    'Demir': { bg: 'bg-slate-400/20', text: 'text-slate-500' },
+    'Bakır': { bg: 'bg-orange-400/20', text: 'text-orange-500' },
+    'Bronz': { bg: 'bg-yellow-600/20', text: 'text-yellow-700' },
+    'Çelik': { bg: 'bg-gray-500/20', text: 'text-gray-600' },
+    'Gümüş': { bg: 'bg-gray-400/20', text: 'text-gray-500' },
+    'Altın': { bg: 'bg-yellow-400/20', text: 'text-yellow-500' },
+    'Platin': { bg: 'bg-cyan-400/20', text: 'text-cyan-500' },
+    'Elmas': { bg: 'bg-sky-400/20', text: 'text-sky-500' },
+  };
+
 const VectorBadge = ({ badge }: { badge: BadgeType }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
     const Icon = badge.iconName;
+    const colors = levelColors[badge.level];
 
     return (
         <div className="flex flex-col items-center justify-center text-center p-2">
             <div
                 className={cn(
                     'relative w-20 h-20 flex items-center justify-center rounded-full transition-colors',
-                    isEarned ? 'bg-primary/10' : 'bg-muted'
+                    isEarned ? colors.bg : 'bg-muted'
                 )}
             >
                 <Icon
                     className={cn(
                         'w-10 h-10 transition-colors',
-                        isEarned ? 'text-primary' : 'text-muted-foreground'
+                        isEarned ? colors.text : 'text-muted-foreground'
                     )}
                 />
             </div>
