@@ -14,10 +14,21 @@ export default function VolunteeringPage() {
             <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
             <p className="text-muted-foreground text-sm">Topluma katkıda bulun ve etki yarat.</p>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="İlan, yetkinlik veya STK ara..." className="pl-10 h-11" />
-        </div>
+        <div className="p-0 flex gap-2 items-center">
+            <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder="İlan, yetkinlik veya STK ara..."
+                    className="pl-10 h-11"
+                />
+            </div>
+            <Button variant="outline" size="icon" className="h-11 w-11">
+                <Filter className="h-5 w-5" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-11 w-11">
+                <ArrowDownUp className="h-5 w-5" />
+            </Button>
+      </div>
          <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="item-1">
             <AccordionTrigger>
@@ -33,17 +44,9 @@ export default function VolunteeringPage() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-        <div className="flex gap-2">
-          <Button variant="outline" className="flex-1">
-            <Filter className="mr-2 h-4 w-4" /> Filtrele
-          </Button>
-          <Button variant="outline" className="flex-1">
-            <ArrowDownUp className="mr-2 h-4 w-4" /> Sırala
-          </Button>
-        </div>
       </div>
 
-      <div className="space-y-4 pt-48">
+      <div className="space-y-4 pt-44">
         {volunteeringOpportunities.map((opp) => (
           <Card key={opp.id}>
             <CardHeader>
