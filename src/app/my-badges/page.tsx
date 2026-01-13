@@ -18,14 +18,14 @@ const stats = [
 ];
 
 const levelColors: Record<BadgeType['level'], { bg: string; text: string }> = {
-    'Demir': { bg: 'bg-gray-500/20', text: 'text-gray-600' },
-    'Bakır': { bg: 'bg-orange-600/20', text: 'text-orange-700' },
-    'Bronz': { bg: 'bg-amber-700/20', text: 'text-amber-800' },
-    'Çelik': { bg: 'bg-slate-600/20', text: 'text-slate-700' },
-    'Gümüş': { bg: 'bg-gray-400/20', text: 'text-gray-500' },
-    'Altın': { bg: 'bg-yellow-500/20', text: 'text-yellow-600' },
-    'Platin': { bg: 'bg-cyan-300/20', text: 'text-cyan-400' },
-    'Elmas': { bg: 'bg-sky-400/20', text: 'text-sky-500' },
+    'Demir': { bg: 'bg-gray-400/20', text: 'text-gray-500' },
+    'Bakır': { bg: 'bg-orange-500/20', text: 'text-orange-600' },
+    'Bronz': { bg: 'bg-yellow-600/20', text: 'text-yellow-700' },
+    'Çelik': { bg: 'bg-slate-500/20', text: 'text-slate-600' },
+    'Gümüş': { bg: 'bg-gray-300/20', text: 'text-gray-400' },
+    'Altın': { bg: 'bg-yellow-400/20', text: 'text-yellow-500' },
+    'Platin': { bg: 'bg-cyan-200/20', text: 'text-cyan-400' },
+    'Elmas': { bg: 'bg-sky-300/20', text: 'text-sky-400' },
   };
 
 const VectorBadge = ({ badge }: { badge: BadgeType }) => {
