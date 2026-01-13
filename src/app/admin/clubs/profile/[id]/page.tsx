@@ -3,11 +3,12 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, BrainCircuit, Calendar, ChevronRight, Contact, Edit, Globe, Handshake, Mail, MapPin, Mic, Milestone, Phone, QrCode, School, Share2, Users, Vision, Users2 } from 'lucide-react';
+import { ArrowLeft, BrainCircuit, Calendar, ChevronRight, Contact, Edit, Globe, Handshake, Mail, MapPin, Mic, Milestone, Phone, QrCode, School, Share2, Users, Vision, Users2, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
 import { studentClubs, schoolRepresentatives } from '@/lib/data';
 import { notFound, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { ShareButtons } from '@/components/shared/share-buttons';
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
     <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent">
@@ -38,6 +39,8 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
       role: ['Başkan Yardımcısı', 'Genel Sekreter', 'Sayman', 'Proje Koordinatörü'][schoolRepresentatives.indexOf(rep) - 1]
   }));
 
+  const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
+
   return (
     <div className="animate-in fade-in-0">
       <div className="relative h-40 w-full bg-muted">
@@ -47,8 +50,7 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
             <ArrowLeft className="h-5 w-5" />
         </Button>
          <div className="absolute top-4 right-4 flex gap-2">
-            <Button size="icon" variant="secondary" className="rounded-full h-8 w-8 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"><QrCode className="h-4 w-4" /></Button>
-            <Button size="icon" variant="secondary" className="rounded-full h-8 w-8 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"><Share2 className="h-4 w-4" /></Button>
+           <ShareButtons url={profileUrl} title={`Hangel'deki ${club.name} kulüp profilini incele!`} />
         </div>
       </div>
       <div className="p-4 bg-background">
@@ -63,7 +65,6 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
                      <p className="text-muted-foreground">{club.university}</p>
                 </div>
                 <div className='flex gap-2'>
-                    <Button variant="outline">Mesaj Gönder</Button>
                     <Button>Kulübe Katıl</Button>
                 </div>
             </div>
@@ -96,8 +97,13 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
         <TabsContent value="about" className="p-4 space-y-4">
             <Card>
                 <CardHeader><CardTitle>Hakkında</CardTitle></CardHeader>
-                <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p>{club.description}</p>
+                <CardContent className="text-sm text-muted-foreground space-y-4">
+                    <p>
+                        {club.description} Kulübümüz, üniversite öğrencileri arasında girişimcilik ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
+                    </p>
+                    <p>
+                        Topluluğumuz, farklı disiplinlerden gelen öğrencileri bir araya getirerek multidisipliner bir çalışma ortamı sunar. Sosyal sorumluluk bilinciyle hareket ederek, girişimcilik projelerinin topluma fayda sağlamasını önemsiyoruz. Hangel platformu aracılığıyla sosyal etkimizi daha da artırmayı hedefliyoruz.
+                    </p>
                     <p className="text-xs pt-2 border-t">hangel'a Katılım Tarihi: {club.joinDate}</p>
                 </CardContent>
             </Card>
@@ -113,6 +119,13 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
                     <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4" /><span>{club.contact.email}</span></div>
                     <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4" /><span>{club.contact.phone}</span></div>
                     <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4" /><span>{club.contact.website}</span></div>
+                    <Separator />
+                    <div className="flex gap-4 pt-2">
+                        <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                        <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                        <a href="#" target="_blank" rel="noopener noreferrer"><Facebook className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                        <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
