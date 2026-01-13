@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8.5rem)] p-4 bg-background">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center mb-8">
           <HangelLogo className="h-20 w-20 mx-auto text-primary" />
