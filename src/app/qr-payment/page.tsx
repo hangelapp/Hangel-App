@@ -108,8 +108,8 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
         <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
         <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center">
             <p className="text-sm opacity-80 mb-4">Ödeme yapmak için QR kodu okutun.</p>
-            <div className="bg-white p-2 rounded-lg">
-                 <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={80} height={80} />
+            <div className="bg-white/10 p-2 rounded-lg">
+                 <QrCode className="h-20 w-20 text-white" />
             </div>
         </div>
          <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
@@ -186,8 +186,8 @@ export default function QrPaymentPage() {
               <TabsTrigger value="pay_phone">Numarayla</TabsTrigger>
             </TabsList>
             <TabsContent value="my_qr" className="mt-4 text-center">
-              <div className="bg-white p-2 rounded-lg inline-block shadow-md">
-                 <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={128} height={128} />
+               <div className="bg-muted p-4 rounded-lg inline-block shadow-inner">
+                 <QrCode className="h-32 w-32 text-foreground" />
               </div>
               <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">h 123456</p>
               <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu veya hangel kodunuzu kullanın.</p>
@@ -196,7 +196,7 @@ export default function QrPaymentPage() {
               <div className="w-1/2 aspect-square bg-muted rounded-xl flex flex-col items-center justify-center mx-auto">
                   <p className="text-muted-foreground text-sm">Kamera yakında burada olacak.</p>
               </div>
-              <Button className="w-full mt-4"><ScanLine className="mr-2 h-4 w-4" /> Kamerayı Aç</Button>
+              <Button className="w-full mt-4"><ScanLine /> Kamerayı Aç</Button>
             </TabsContent>
             <TabsContent value="pay_code" className="mt-4 space-y-4">
                   <div className="space-y-2">
