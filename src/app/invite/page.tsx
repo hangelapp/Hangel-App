@@ -31,7 +31,7 @@ const IconButton = ({ children, href, 'aria-label': ariaLabel }: { children: Rea
             rel="noopener noreferrer"
             aria-label={ariaLabel}
             className="h-14 w-14 rounded-xl bg-muted/70 text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-foreground"
-            variant={href ? "ghost" : "default"}
+            variant="ghost"
             asChild={!!href}
         >
            {href ? <div className='flex items-center justify-center h-full w-full'>{children}</div> : children}
@@ -79,7 +79,7 @@ export default function InvitePage() {
         {/* Doğrudan Davet */}
         <div className="space-y-4">
           <SectionHeader>Davet Et</SectionHeader>
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center flex-wrap gap-4">
             <IconButton href={`https://wa.me/?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="WhatsApp ile paylaş">
                 <MessageSquare className="h-6 w-6" />
             </IconButton>
@@ -89,23 +89,16 @@ export default function InvitePage() {
             <IconButton href={`sms:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="SMS ile paylaş">
                 <Mail className="h-6 w-6" />
             </IconButton>
+            <IconButton aria-label="Instagram'da paylaş">
+                <Instagram className="h-6 w-6" />
+            </IconButton>
+            <IconButton href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="X'te paylaş">
+                <Twitter className="h-6 w-6" />
+            </IconButton>
+            <IconButton href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Hangel Daveti")}`} aria-label="LinkedIn'de paylaş">
+                <Linkedin className="h-6 w-6" />
+            </IconButton>
           </div>
-        </div>
-
-        {/* Sosyal Medya */}
-        <div className="space-y-4">
-          <SectionHeader>Sosyal Medya'da Paylaş</SectionHeader>
-           <div className="flex justify-center gap-4">
-                <IconButton aria-label="Instagram'da paylaş">
-                    <Instagram className="h-6 w-6" />
-                </IconButton>
-                <IconButton href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="X'te paylaş">
-                    <Twitter className="h-6 w-6" />
-                </IconButton>
-                <IconButton href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Hangel Daveti")}`} aria-label="LinkedIn'de paylaş">
-                    <Linkedin className="h-6 w-6" />
-                </IconButton>
-            </div>
         </div>
         
         {/* Kişiler ile Paylaş */}
