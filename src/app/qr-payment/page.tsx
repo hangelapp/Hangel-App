@@ -127,73 +127,75 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof init
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
         <div className="relative z-10 space-y-2">
           <CardTitle className="text-lg mb-2">Kart Ayarları</CardTitle>
-           <div className="flex items-center justify-between text-sm py-1">
+           <div className="flex items-center justify-between text-sm py-1 col-span-2">
                 <label htmlFor="online-shopping" className="flex items-center gap-3 font-medium">
                   <ToggleRight className="h-5 w-5"/> İnternet Alışverişi
                 </label>
                 <Switch id="online-shopping" defaultChecked/>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
-                  <CircleDollarSign className="h-5 w-5"/> İşlem Limiti Belirle
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>İşlem Limiti Belirle</DialogTitle>
-                  <DialogDescription>Tek seferlik harcama limiti belirleyin.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <Label htmlFor="limit-amount">Limit Tutarı</Label>
-                    <Input id="limit-amount" type="number" placeholder="0.00 ₺" />
-                    <Button className="w-full">Kaydet</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            <Dialog>
-              <DialogTrigger asChild>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
+                      <CircleDollarSign className="h-5 w-5"/> İşlem Limiti
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>İşlem Limiti Belirle</DialogTitle>
+                      <DialogDescription>Tek seferlik harcama limiti belirleyin.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <Label htmlFor="limit-amount">Limit Tutarı</Label>
+                        <Input id="limit-amount" type="number" placeholder="0.00 ₺" />
+                        <Button className="w-full">Kaydet</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Dialog>
+                  <DialogTrigger asChild>
+                     <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
+                      <Lock className="h-5 w-5"/> Kart Şifresi
+                    </Button>
+                  </DialogTrigger>
+                   <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Kart Şifresi Belirle</DialogTitle>
+                      <DialogDescription>4 haneli yeni kart şifrenizi oluşturun.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <Label htmlFor="pin">Yeni Şifre</Label>
+                        <Input id="pin" type="password" placeholder="****" maxLength={4}/>
+                        <Label htmlFor="pin-confirm">Yeni Şifre (Tekrar)</Label>
+                        <Input id="pin-confirm" type="password" placeholder="****" maxLength={4}/>
+                        <Button className="w-full">Şifreyi Güncelle</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
+                      <MessageSquareWarning className="h-5 w-5"/> İşlem İtirazı
+                    </Button>
+                  </DialogTrigger>
+                   <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>İşlem İtirazı</DialogTitle>
+                      <DialogDescription>Şüpheli bulduğunuz bir işlem için itiraz oluşturun.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <Label htmlFor="dispute-transaction">İtiraz Edilecek İşlem</Label>
+                        <p className="text-sm text-muted-foreground">"Doğa Dostu Giyim - 150.00 ₺"</p>
+                        <Label htmlFor="dispute-reason">İtiraz Nedeni</Label>
+                        <Input id="dispute-reason" placeholder="Örn: Bu işlemi ben yapmadım." />
+                        <Button className="w-full" variant="destructive">İtirazı Gönder</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                  <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
-                  <Lock className="h-5 w-5"/> Kart Şifresi Belirle
+                  <Snowflake className="h-5 w-5"/> Kartı Dondur
                 </Button>
-              </DialogTrigger>
-               <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Kart Şifresi Belirle</DialogTitle>
-                  <DialogDescription>4 haneli yeni kart şifrenizi oluşturun.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <Label htmlFor="pin">Yeni Şifre</Label>
-                    <Input id="pin" type="password" placeholder="****" maxLength={4}/>
-                    <Label htmlFor="pin-confirm">Yeni Şifre (Tekrar)</Label>
-                    <Input id="pin-confirm" type="password" placeholder="****" maxLength={4}/>
-                    <Button className="w-full">Şifreyi Güncelle</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
-                  <MessageSquareWarning className="h-5 w-5"/> İşlem İtirazı
-                </Button>
-              </DialogTrigger>
-               <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>İşlem İtirazı</DialogTitle>
-                  <DialogDescription>Şüpheli bulduğunuz bir işlem için itiraz oluşturun.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <Label htmlFor="dispute-transaction">İtiraz Edilecek İşlem</Label>
-                    <p className="text-sm text-muted-foreground">"Doğa Dostu Giyim - 150.00 ₺"</p>
-                    <Label htmlFor="dispute-reason">İtiraz Nedeni</Label>
-                    <Input id="dispute-reason" placeholder="Örn: Bu işlemi ben yapmadım." />
-                    <Button className="w-full" variant="destructive">İtirazı Gönder</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-             <Button variant="ghost" className="w-full justify-start p-0 h-auto text-sm font-medium flex items-center gap-3 py-1">
-              <Snowflake className="h-5 w-5"/> Kartı Dondur
-            </Button>
+            </div>
         </div>
         <div className="relative z-10 flex justify-end gap-2 mt-2">
             <Dialog>
