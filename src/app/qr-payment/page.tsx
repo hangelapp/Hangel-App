@@ -186,9 +186,6 @@ export default function QrPaymentPage() {
               <TabsTrigger value="pay_phone">Numarayla</TabsTrigger>
             </TabsList>
             <TabsContent value="my_qr" className="mt-4 text-center">
-              <div className="bg-white p-4 inline-block rounded-xl shadow-md">
-                  <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={160} height={160} />
-              </div>
               <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">h 123456</p>
               <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
             </TabsContent>
