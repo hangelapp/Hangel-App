@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CircleDollarSign, ShoppingBag, Search, Filter, ArrowDownUp } from 'lucide-react';
+import { CircleDollarSign, ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download } from 'lucide-react';
 import { donationTransactions } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, parse } from 'date-fns';
@@ -56,8 +56,8 @@ export default function MyDonationsPage() {
             <Accordion type="single" collapsible className="w-full">
               {sortedDonations.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
-                const tax = donationAmount * 0.01; // Example tax
-                const hangelShare = donationAmount * 0.04; // Example hangel share
+                const tax = donationAmount * 0.20;
+                const hangelShare = donationAmount * 0.10;
                 const ngoShare = donationAmount - tax - hangelShare;
 
                 return (
@@ -95,11 +95,11 @@ export default function MyDonationsPage() {
                             <span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                          <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>Vergi (%1)</span>
+                            <span className='text-muted-foreground'>Vergi (%20)</span>
                             <span>{tax.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                          <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>hangel Katkı Payı (%4)</span>
+                            <span className='text-muted-foreground'>hangel Katkı Payı (%10)</span>
                             <span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                         <Separator />
@@ -107,9 +107,15 @@ export default function MyDonationsPage() {
                             <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
                             <span className="text-right">{donation.ngo.join(', ')}</span>
                         </div>
-                        <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>İşlem Tarihi</span>
-                            <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy - HH:mm', { locale: tr })}</span>
+                        <div className='flex justify-between items-center text-xs'>
+                            <div>
+                                <span className='text-muted-foreground'>İşlem Tarihi: </span>
+                                <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy - HH:mm', { locale: tr })}</span>
+                            </div>
+                            <div className="flex">
+                                <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
+                                <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
+                            </div>
                         </div>
                         </div>
                     </AccordionContent>
