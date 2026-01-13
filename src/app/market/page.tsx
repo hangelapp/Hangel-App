@@ -12,10 +12,11 @@ import {
   CarouselContent,
   CarouselItem,
 } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Brand } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const BrandCard = ({ brand }: { brand: Brand }) => (
     <Card key={brand.id} className="overflow-hidden">
@@ -53,20 +54,24 @@ const EntityList = ({ type }: { type: Brand['type'] }) => {
 
 export default function MarketPage() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const plugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
+  )
 
   return (
     <div className="animate-in fade-in-0 bg-background">
       <Carousel
+        plugins={[plugin.current]}
         opts={{
           align: 'start',
           loop: true,
         }}
         className="w-full"
       >
-        <CarouselContent className='pl-4 pr-4 -ml-4'>
+        <CarouselContent>
           {marketCampaigns.map((campaign) => (
-            <CarouselItem key={campaign.id} className="basis-5/6 pl-4">
-              <div className="relative h-32 rounded-lg overflow-hidden">
+            <CarouselItem key={campaign.id} className="basis-full">
+              <div className="relative h-32 rounded-lg overflow-hidden m-4 mb-0">
                 <Image
                   src={campaign.imageUrl}
                   alt={campaign.title}
