@@ -167,8 +167,9 @@ export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21
 
 
 export const marketCampaigns: Campaign[] = [
-  { id: '1', title: 'Okul Alışverişinde %15 Bağış!', description: 'Lezzet Köyü ile çocukları sevindir.', imageUrl: getImage('campaign-banner-1')?.imageUrl || '', imageHint: getImage('campaign-banner-1')?.imageHint || '' },
+  { id: '1', title: 'Okul Alışverişinde %15 Bağış!', description: 'Lezzet Köyü ile çocukları sevindir.', imageUrl: 'https://picsum.photos/seed/okul-kampanya/1200/400', imageHint: 'student school supplies' },
   { id: '2', title: 'Her Seyahat Bir Umut Olsun', description: 'Gezgin Rotalar ile doğayı koru.', imageUrl: getImage('campaign-banner-2')?.imageUrl || '', imageHint: getImage('campaign-banner-2')?.imageHint || '' },
+  { id: '3', title: 'Teknoloji Alışverişiyle Eğitime Destek', description: 'Tekno Market\'ten yapacağın harcamalarla TEGV\'e destek ol.', imageUrl: 'https://picsum.photos/seed/tech-kampanya/1200/400', imageHint: 'laptop code' },
 ];
 
 
@@ -276,10 +277,10 @@ export const pastVolunteering = Array.from({ length: 21 }, (_, i) => ({
 }));
 
 
-export const certificates: Certificate[] = Array.from({ length: 21 }, (_, i) => ({
+export const certificates: Certificate[] = Array.from({ length: 3 }, (_, i) => ({
     id: `${i + 1}`,
     title: `Gönüllülük Katılım Sertifikası #${i + 1}`,
-    organization: `Kuruluş ${i % 4 + 1}`,
+    organization: [`TEMA Vakfı`, 'Ahbap Derneği', 'TEGV'][i],
     date: `2023-11-${(i % 28) + 1}`,
     linkedinUrl: `https://linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=Gönüllülük+Katılım+Sertifikası&organizationId=12345&issueYear=2023&issueMonth=11&certId=${i+1}&certUrl=https://hangel.org/cert/${i+1}`
 }));
@@ -288,7 +289,7 @@ export const certificates: Certificate[] = Array.from({ length: 21 }, (_, i) => 
 export const badgeLevels: Badge['level'][] = ['Demir', 'Bakır', 'Bronz', 'Çelik', 'Gümüş', 'Altın', 'Platin', 'Elmas'];
 
 export const badgeData: Omit<Badge, 'id' | 'level' | 'pointsRequired' | 'currentPoints'>[] = [
-  { name: 'Hayvan Dostu', socialArea: 'Hayvan', iconName: PawPrint },
+  { name: 'Hayvan Dostu', socialArea: 'Hayvan Hakları', iconName: PawPrint },
   { name: 'Çocuk Gelişimi', socialArea: 'Çocuk', iconName: Baby },
   { name: 'Doğa Koruyucu', socialArea: 'Çevre', iconName: Leaf },
   { name: 'Kadın Destekçisi', socialArea: 'Kadın', iconName: Users },
@@ -310,18 +311,23 @@ export const badgeData: Omit<Badge, 'id' | 'level' | 'pointsRequired' | 'current
 ];
 
 
-export const badges: Badge[] = badgeData.map((badge, index) => {
-    const levelIndex = Math.floor(Math.random() * badgeLevels.length);
-    const pointsRequired = (levelIndex + 1) * 100;
-    const currentPoints = Math.floor(Math.random() * (pointsRequired + 50));
+export let badges: Badge[] = [];
+let badgeIdCounter = 1;
 
-    return {
-        id: (index + 1).toString(),
-        ...badge,
-        level: badgeLevels[levelIndex],
-        pointsRequired: pointsRequired,
-        currentPoints: Math.min(currentPoints, pointsRequired), // Ensure current points don't exceed required for earned badges
-    }
+badgeData.forEach(baseBadge => {
+    const userProgress = user.progress[baseBadge.socialArea] || 0;
+    
+    badgeLevels.forEach((level, levelIndex) => {
+        const pointsRequired = (levelIndex + 1) * 100;
+        
+        badges.push({
+            id: (badgeIdCounter++).toString(),
+            ...baseBadge,
+            level: level,
+            pointsRequired: pointsRequired,
+            currentPoints: userProgress,
+        });
+    });
 });
 
 
@@ -432,3 +438,5 @@ export const ngos: NGO[] = [
     opportunities: []
   },
 ];
+
+  

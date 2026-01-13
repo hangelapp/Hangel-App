@@ -1,11 +1,13 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Star, Users, Heart, Download, Eye, PawPrint, Grape, HeartPulse } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { Award, Star, Users, Heart, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { badges, certificates, user } from '@/lib/data';
+import { Badge as BadgeType } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { groupBy } from 'lodash';
 
 const stats = [
     { icon: Star, value: user.impactScore.toLocaleString(), label: 'Etki Puanı' },
@@ -14,8 +16,42 @@ const stats = [
     { icon: Heart, value: `${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`, label: 'Bağış' },
 ];
 
+const VectorBadge = ({ badge }: { badge: BadgeType }) => {
+    const isEarned = badge.currentPoints >= badge.pointsRequired;
+    const Icon = badge.iconName;
+
+    return (
+        <div className="flex flex-col items-center justify-center text-center p-2">
+            <div
+                className={cn(
+                    'relative w-20 h-20 flex items-center justify-center rounded-full transition-colors',
+                    isEarned ? 'bg-primary/10' : 'bg-muted'
+                )}
+            >
+                <Icon
+                    className={cn(
+                        'w-10 h-10 transition-colors',
+                        isEarned ? 'text-primary' : 'text-muted-foreground'
+                    )}
+                />
+            </div>
+            <p className="mt-2 text-xs font-semibold">{badge.level}</p>
+            {isEarned ? (
+                <p className="text-xs font-semibold text-green-600 mt-1">Kazanıldı!</p>
+            ) : (
+                <p className="text-xs text-muted-foreground mt-1">
+                    {badge.currentPoints}/{badge.pointsRequired} Puan
+                </p>
+            )}
+        </div>
+    );
+};
 
 export default function MyBadgesPage() {
+    const groupedBadges = React.useMemo(() => {
+        return groupBy(badges, 'socialArea');
+    }, []);
+
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
         <h1 className="text-2xl font-bold font-headline">Rozetler ve Sertifikalar</h1>
@@ -37,27 +73,19 @@ export default function MyBadgesPage() {
                 <TabsTrigger value="badges">Rozetler</TabsTrigger>
                 <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
             </TabsList>
-            <TabsContent value="badges" className="mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                    {badges.map(badge => (
-                        <Card key={badge.name} className="p-4 flex flex-col items-center justify-center text-center">
-                            <div className={`relative p-3 rounded-full mb-2 ${badge.currentPoints < badge.pointsRequired ? 'bg-muted' : 'bg-primary/10'}`}>
-                                <badge.iconName className={`h-8 w-8 ${badge.currentPoints < badge.pointsRequired ? 'text-muted-foreground' : 'text-primary'}`}/>
-                            </div>
-                            <p className="font-semibold text-sm">{badge.name}</p>
-                            <p className="text-xs text-muted-foreground">{badge.level} Seviye</p>
-                            
-                            {badge.currentPoints < badge.pointsRequired ? (
-                                <>
-                                    <Progress value={(badge.currentPoints / badge.pointsRequired) * 100} className="mt-2 h-2" />
-                                    <p className="text-xs text-muted-foreground mt-1">{badge.currentPoints}/{badge.pointsRequired} Puan</p>
-                                </>
-                            ) : (
-                                <p className="text-xs font-semibold text-green-600 mt-1">Kazanıldı!</p>
-                            )}
+            <TabsContent value="badges" className="mt-4 space-y-6">
+                 {Object.entries(groupedBadges).map(([socialArea, areaBadges]) => (
+                    <div key={socialArea}>
+                        <h2 className="text-lg font-semibold mb-2">{areaBadges[0].name}</h2>
+                        <Card>
+                            <CardContent className="p-2 grid grid-cols-4 gap-1">
+                                {areaBadges.map(badge => (
+                                    <VectorBadge key={badge.id} badge={badge} />
+                                ))}
+                            </CardContent>
                         </Card>
-                    ))}
-                </div>
+                    </div>
+                 ))}
             </TabsContent>
             <TabsContent value="certificates" className="mt-4">
                 {certificates.length > 0 ? (
@@ -88,3 +116,5 @@ export default function MyBadgesPage() {
     </div>
   );
 }
+
+  
