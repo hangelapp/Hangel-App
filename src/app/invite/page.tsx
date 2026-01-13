@@ -2,9 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, Mail, MessageSquare, Send, BookUser, MailPlus } from 'lucide-react';
+import { Copy, Mail, MessageSquare, Send, BookUser, MailPlus, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import React from 'react';
 
 const GmailIcon = () => (
   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
@@ -43,37 +45,45 @@ export default function InvitePage() {
           <div className="p-2 border rounded-md bg-muted text-sm break-all">
             {inviteLink}
           </div>
-          <Button onClick={copyLink} className="w-full">
-            <Copy className="mr-2 h-4 w-4" />
-            Linki Kopyala
-          </Button>
           
-          <Separator className='my-4' />
-          
-           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Sosyal Medya ile Paylaş</p>
-            <div className='grid grid-cols-3 gap-2'>
-                <a href={`https://wa.me/?text=${encodeURIComponent(inviteTitle + ' ' + inviteLink)}`} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" className="w-full">
-                    <MessageSquare className="mr-2 h-4 w-4 text-green-500" />
-                    WhatsApp
-                  </Button>
-                </a>
-                 <a href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteTitle)}`} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" className="w-full">
-                    <Send className="mr-2 h-4 w-4 text-sky-500" />
-                    Telegram
-                  </Button>
-                </a>
-                <a href={`mailto:?subject=${encodeURIComponent(inviteTitle)}&body=${encodeURIComponent(inviteLink)}`}>
-                  <Button variant="outline" className="w-full">
-                    <Mail className="mr-2 h-4 w-4" />
-                    E-posta
-                  </Button>
-                </a>
-            </div>
-          </div>
-          
+          <Dialog>
+            <DialogTrigger asChild>
+                <Button className="w-full">
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Arkadaşlarınla Paylaş
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Paylaş</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col gap-2 py-4">
+                    <Button variant="outline" onClick={copyLink} className="justify-start">
+                        <Copy className="mr-2 h-4 w-4" />
+                        Linki Kopyala
+                    </Button>
+                    <a href={`https://wa.me/?text=${encodeURIComponent(inviteTitle + ' ' + inviteLink)}`} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="w-full justify-start">
+                            <MessageSquare className="mr-2 h-4 w-4 text-green-500" />
+                            WhatsApp ile Paylaş
+                        </Button>
+                    </a>
+                    <a href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteTitle)}`} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="w-full justify-start">
+                            <Send className="mr-2 h-4 w-4 text-sky-500" />
+                            Telegram ile Paylaş
+                        </Button>
+                    </a>
+                    <a href={`mailto:?subject=${encodeURIComponent(inviteTitle)}&body=${encodeURIComponent(inviteLink)}`}>
+                        <Button variant="outline" className="w-full justify-start">
+                            <Mail className="mr-2 h-4 w-4" />
+                            E-posta ile Paylaş
+                        </Button>
+                    </a>
+                </div>
+            </DialogContent>
+          </Dialog>
+
           <Separator className='my-4' />
 
           <div className="space-y-2">
