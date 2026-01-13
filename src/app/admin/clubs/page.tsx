@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,27 +11,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
     <Card key={club.id}>
-        <CardHeader>
-            <Link href={`/admin/clubs/profile/${club.id}`} className="flex items-center gap-4">
-                <Avatar className="h-12 w-12">
-                    <AvatarImage src={club.avatarUrl} alt={club.name} />
-                    <AvatarFallback>{club.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <CardTitle className="text-base hover:underline">{club.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{club.university}</p>
-                </div>
-            </Link>
+        <CardHeader className="flex-row items-center gap-4">
+            <Avatar className="h-12 w-12">
+                <AvatarImage src={club.avatarUrl} alt={club.name} />
+                <AvatarFallback>{club.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+                <CardTitle className="text-base hover:underline">
+                    <Link href={`/admin/clubs/profile/${club.id}`}>{club.name}</Link>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">{club.university}</p>
+            </div>
         </CardHeader>
         <CardContent className="flex justify-between items-center text-sm">
           <div className="flex gap-4">
-            <div className="flex items-center gap-1 text-muted-foreground"><Users className="h-4 w-4" /> <strong>{club.members}</strong> Üye</div>
-            <div className="flex items-center gap-1 text-muted-foreground"><BrainCircuit className="h-4 w-4" /> <strong>{club.points}</strong> Puan</div>
+            <div className="flex items-center gap-1.5 text-muted-foreground"><Users className="h-4 w-4" /> <strong>{club.members}</strong> Üye</div>
+            <div className="flex items-center gap-1.5 text-muted-foreground"><BrainCircuit className="h-4 w-4" /> <strong>{club.points}</strong> Puan</div>
           </div>
-          <Button asChild variant="outline">
-            <Link href={`/admin/clubs/profile/${club.id}`}>Profili Gör</Link>
-          </Button>
         </CardContent>
+         <CardFooter>
+            <Button asChild variant="secondary" className="w-full">
+                <Link href={`/admin/clubs/profile/${club.id}`}>Profili Gör</Link>
+            </Button>
+        </CardFooter>
     </Card>
 );
 
@@ -47,9 +49,9 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
                 <span>{event.date}</span>
             </div>
         </CardContent>
-        <CardContent className="flex justify-end">
-            <Button variant="outline">Detayları Gör</Button>
-        </CardContent>
+        <CardFooter>
+            <Button variant="secondary" className="w-full">Detayları Gör</Button>
+        </CardFooter>
     </Card>
 );
 
@@ -156,14 +158,14 @@ export default function StudentClubsPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     placeholder="Kulüp veya etkinlik ara..."
-                    className="pl-10 bg-card"
+                    className="pl-10 h-11"
                 />
             </div>
-            <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="h-11 w-11">
+                <Filter className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon">
-                <ArrowDownUp className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="h-11 w-11">
+                <ArrowDownUp className="h-5 w-5" />
             </Button>
       </div>
 

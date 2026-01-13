@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Filter, Search, Percent, ArrowDownUp, Star } from 'lucide-react';
@@ -20,23 +20,27 @@ import { useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 const BrandCard = ({ brand }: { brand: Brand }) => (
-    <Card key={brand.id} className="overflow-hidden">
-        <CardContent className="p-4 flex flex-row items-center gap-4">
-            <Avatar className="h-16 w-16">
+    <Card key={brand.id}>
+        <CardHeader className="flex-row items-center gap-4">
+            <Avatar className="h-12 w-12">
                 <AvatarImage src={brand.logoUrl} alt={brand.name} />
                 <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <div className='flex-grow'>
-                <p className="font-semibold">{brand.name}</p>
+            <div>
+                <CardTitle className="text-base">{brand.name}</CardTitle>
                 <p className="text-sm text-muted-foreground">{brand.category}</p>
-                 <div className="flex items-center gap-1 text-sm mt-1">
-                    <Percent className="h-4 w-4 text-muted-foreground"/> <strong>{brand.donationRate}% Bağış</strong>
-                </div>
             </div>
-            <Button asChild>
+        </CardHeader>
+        <CardContent>
+            <div className="flex items-center gap-1.5 text-sm font-medium">
+                <Percent className="h-4 w-4 text-primary"/> <span><strong>{brand.donationRate}%</strong> Bağış Oranı</span>
+            </div>
+        </CardContent>
+        <CardFooter>
+            <Button asChild className="w-full">
                 <Link href={`/market/${brand.id}`}>Alışverişe Başla</Link>
             </Button>
-        </CardContent>
+        </CardFooter>
     </Card>
 );
 
@@ -46,7 +50,7 @@ const EntityList = ({ type }: { type: Brand['type'] }) => {
         return <div className="text-center text-muted-foreground p-8">Bu kategoride henüz bir işletme bulunmuyor.</div>
     }
     return (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
             {entities.map(brand => <BrandCard key={brand.id} brand={brand} />)}
         </div>
     )
@@ -54,13 +58,12 @@ const EntityList = ({ type }: { type: Brand['type'] }) => {
 
 
 export default function MarketPage() {
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const plugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
   )
 
   return (
-    <div className="animate-in fade-in-0 bg-background">
+    <div className="animate-in fade-in-0">
       <Carousel
         plugins={[plugin.current]}
         opts={{
@@ -72,7 +75,7 @@ export default function MarketPage() {
         <CarouselContent>
           {marketCampaigns.map((campaign) => (
             <CarouselItem key={campaign.id} className="basis-full">
-              <div className="relative h-32 rounded-lg overflow-hidden m-4 mb-0">
+              <div className="relative h-36 rounded-lg overflow-hidden m-4 mb-2">
                 <Image
                   src={campaign.imageUrl}
                   alt={campaign.title}
@@ -80,11 +83,11 @@ export default function MarketPage() {
                   className="object-cover"
                   data-ai-hint={campaign.imageHint}
                 />
-                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 bg-black/40" />
                  {campaign.sponsored && (
                   <Badge variant="outline" className="absolute top-2 right-2 flex items-center gap-1 bg-background/80 text-foreground border-amber-500 text-amber-500">
                     <Star className="h-3 w-3" />
-                    <span>Sponsorlu</span>
+                    <span className="text-xs">Sponsorlu</span>
                   </Badge>
                 )}
                 <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
@@ -102,19 +105,19 @@ export default function MarketPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     placeholder="Marka, ürün veya kategori ara"
-                    className="pl-10 bg-card"
+                    className="pl-10 h-11 bg-card"
                 />
             </div>
-            <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="h-11 w-11">
+                <Filter className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon">
-                <ArrowDownUp className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="h-11 w-11">
+                <ArrowDownUp className="h-5 w-5" />
             </Button>
       </div>
 
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 px-2">
           <TabsTrigger value="products">
             Marka
           </TabsTrigger>

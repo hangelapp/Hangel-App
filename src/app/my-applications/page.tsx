@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,22 +23,22 @@ const ApplicationList = ({ type }: { type: (typeof applications)[0]['type'] | 'T
       : applications.filter(app => app.type === type);
 
     if (filteredApps.length === 0) {
-        return <div className="text-center text-muted-foreground p-8">Bu kategoride başvuru bulunmuyor.</div>
+        return <div className="text-center text-muted-foreground p-16">Bu kategoride başvuru bulunmuyor.</div>
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {filteredApps.map(app => (
-              <Card key={app.id}>
-                <CardHeader>
+              <Card key={app.id} className="hover:bg-accent transition-colors">
+                <CardHeader className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">{app.title}</CardTitle>
+                      <CardTitle className="text-base">{app.title}</CardTitle>
                       <CardDescription>{app.org}</CardDescription>
                     </div>
-                    <div className='text-right flex-shrink-0 ml-4'>
-                       <Badge variant="outline" className={cn("text-xs", statusVariantMap[app.status])}>{app.status}</Badge>
-                       <p className='text-xs text-muted-foreground mt-1'>{app.date}</p>
+                    <div className='text-right flex-shrink-0 ml-4 space-y-1'>
+                       <Badge variant="outline" className={cn("text-xs font-medium", statusVariantMap[app.status])}>{app.status}</Badge>
+                       <p className='text-xs text-muted-foreground'>{app.date}</p>
                     </div>
                   </div>
                 </CardHeader>
@@ -51,15 +52,17 @@ export default function MyApplicationsPage() {
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Başvurularım</h1>
-        <Button asChild>
+        <div>
+            <h1 className="text-2xl font-bold font-headline">Başvurularım</h1>
+            <p className="text-muted-foreground text-sm">Başvurularınızın durumunu buradan takip edin.</p>
+        </div>
+        <Button asChild size="sm">
            <Link href="#">
              <PlusCircle className="mr-2 h-4 w-4" />
             Yeni Başvuru
            </Link>
         </Button>
       </div>
-      <p className="text-muted-foreground">Gönüllülük ve diğer başvurularınızın durumunu buradan takip edin.</p>
       
         <Tabs defaultValue="Gönüllülük" className="w-full">
             <TabsList className="grid w-full grid-cols-4">

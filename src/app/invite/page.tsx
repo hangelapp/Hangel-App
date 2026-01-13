@@ -22,19 +22,19 @@ const SectionHeader = ({ children }: { children: React.ReactNode }) => (
     <h2 className="text-sm font-semibold text-muted-foreground tracking-wide uppercase">{children}</h2>
 );
 
-const IconButton = ({ children, href, 'aria-label': ariaLabel }: { children: React.ReactNode; href?: string; 'aria-label': string }) => {
-    const Component = href ? 'a' : Button;
+const IconButton = ({ children, href, 'aria-label': ariaLabel, onClick }: { children: React.ReactNode; href?: string; 'aria-label': string, onClick?: () => void; }) => {
+    const Component = href ? 'a' : 'button';
+    const props = href 
+        ? { href, target: "_blank", rel: "noopener noreferrer" }
+        : { onClick };
+
     return (
         <Component
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
+            {...props}
             aria-label={ariaLabel}
-            className="h-10 w-10 rounded-xl text-muted-foreground transition-colors hover:text-foreground"
-            variant="ghost"
-            asChild={!!href}
+            className="h-10 w-10 flex items-center justify-center rounded-xl text-muted-foreground transition-colors hover:text-foreground"
         >
-           {href ? <div className='flex items-center justify-center h-full w-full'>{children}</div> : children}
+           {children}
         </Component>
     );
 };
@@ -58,7 +58,6 @@ export default function InvitePage() {
       </div>
 
       <div className="space-y-6">
-        {/* Davet Linki */}
         <div className="relative flex w-full items-center">
             <Input 
                 value={inviteLink} 
@@ -76,7 +75,6 @@ export default function InvitePage() {
             </Button>
         </div>
 
-        {/* Doğrudan Davet */}
         <div className="space-y-4">
           <SectionHeader>Davet Et</SectionHeader>
           <div className="flex justify-center flex-wrap gap-4">
@@ -86,7 +84,7 @@ export default function InvitePage() {
             <IconButton href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Seni de hangel'a bekliyorum!")}`} aria-label="Telegram ile paylaş">
                 <Send className="h-5 w-5" />
             </IconButton>
-            <IconButton href={`mailto:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="SMS ile paylaş">
+            <IconButton href={`mailto:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="E-posta ile paylaş">
                 <Mail className="h-5 w-5" />
             </IconButton>
             <IconButton href="#" aria-label="Instagram'da paylaş">
@@ -101,7 +99,6 @@ export default function InvitePage() {
           </div>
         </div>
         
-        {/* Kişiler ile Paylaş */}
         <div className="space-y-4">
             <SectionHeader>Kişilerin ile Paylaş</SectionHeader>
             <div className="space-y-2">

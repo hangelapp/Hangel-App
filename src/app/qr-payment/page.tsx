@@ -62,8 +62,8 @@ export default function QrPaymentPage() {
         <Carousel opts={{ align: 'start' }} className="w-full">
             <CarouselContent className="-ml-2">
                 {cards.map((card, index) => (
-                    <CarouselItem key={index} className="pl-2 basis-full">
-                        <div className={`relative h-56 rounded-2xl ${card.textColor} p-6 flex flex-col justify-between shadow-2xl overflow-hidden`}>
+                    <CarouselItem key={index} className="pl-2 basis-[90%]">
+                        <div className={`relative h-56 rounded-2xl ${card.textColor} p-6 flex flex-col justify-between shadow-lg overflow-hidden`}>
                             <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
                             <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
                             
@@ -72,20 +72,20 @@ export default function QrPaymentPage() {
                                     <p className={`font-semibold text-lg ${card.highlightColor}`}>{card.type}</p>
                                     <div className='text-right'>
                                       <p className="text-xs opacity-70">Bakiye</p>
-                                      <p className="font-semibold text-lg">{card.balance}</p>
+                                      <p className="font-semibold text-2xl">{card.balance}</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="relative z-10">
-                                <p className="font-mono tracking-widest text-xl">{card.number}</p>
+                                <p className="font-mono tracking-widest text-lg">{card.number}</p>
                                 <div className='flex justify-between items-end mt-2'>
                                     <div>
                                         <p className="text-xs opacity-70">Kart Sahibi</p>
-                                        <p className={`font-semibold ${card.textColor}`}>{card.owner}</p>
+                                        <p className={`font-semibold text-sm ${card.textColor}`}>{card.owner}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs opacity-70 text-right">Son Kul.</p>
-                                        <p className={`font-semibold ${card.textColor}`}>{card.expiry}</p>
+                                        <p className={`font-semibold text-sm ${card.textColor}`}>{card.expiry}</p>
                                     </div>
                                 </div>
                             </div>
@@ -99,8 +99,8 @@ export default function QrPaymentPage() {
       <div className="grid grid-cols-4 gap-2 text-center">
         <Dialog>
             <DialogTrigger asChild>
-                 <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
-                    <PlusCircle />
+                 <Button variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
+                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><PlusCircle /></div>
                     <span className="text-xs">Bakiye Yükle</span>
                 </Button>
             </DialogTrigger>
@@ -121,8 +121,8 @@ export default function QrPaymentPage() {
         
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
-                    <ArrowRightLeft />
+                <Button variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
+                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><ArrowRightLeft /></div>
                     <span className="text-xs">Transfer</span>
                 </Button>
             </DialogTrigger>
@@ -145,16 +145,16 @@ export default function QrPaymentPage() {
             </DialogContent>
         </Dialog>
 
-        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
             <Link href="/my-donations">
-                <History />
+                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><History /></div>
                 <span className="text-xs">Tüm İşlemler</span>
             </Link>
         </Button>
 
-        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1 text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" className="flex flex-col h-auto gap-1.5 text-muted-foreground hover:text-foreground">
              <Link href="/settings">
-                <MoreHorizontal />
+                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center"><MoreHorizontal /></div>
                 <span className="text-xs">Ayarlar</span>
             </Link>
         </Button>
@@ -164,15 +164,15 @@ export default function QrPaymentPage() {
         <h2 className="text-lg font-semibold mb-2">Son İşlemler</h2>
         <Card>
           <CardContent className="p-0">
-            <div className="space-y-0">
+            <div className="divide-y">
               {transactions.map((tx, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border-b last:border-none">
+                <div key={index} className="flex items-center justify-between p-4">
                   <div>
-                    <p className="font-semibold">{tx.brand}</p>
+                    <p className="font-semibold text-sm">{tx.brand}</p>
                     <p className="text-xs text-muted-foreground">{tx.time}</p>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold ${tx.amount.startsWith('+') ? 'text-green-600' : ''}`}>{tx.amount}</p>
+                    <p className={`font-bold text-sm ${tx.amount.startsWith('+') ? 'text-green-600' : ''}`}>{tx.amount}</p>
                     {tx.donation !== '0.00 ₺' && (
                         <p className="text-xs text-primary font-semibold">Bağış: {tx.donation}</p>
                     )}

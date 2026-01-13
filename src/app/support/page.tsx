@@ -5,7 +5,6 @@ import {
   Search,
   ChevronRight,
   Mail,
-  ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
 import { helpTopics } from '@/lib/data';
@@ -34,22 +33,19 @@ export default function SupportPage() {
       <div>
         <h2 className="text-xl font-bold mb-4">Yardım Konuları</h2>
         <Card>
-            <CardContent className='p-0'>
+            <CardContent className='p-0 divide-y'>
                 <Accordion type="single" collapsible className="w-full">
                 {helpTopics.map((topic) => {
                     const Icon = topic.icon;
                     return (
                         <AccordionItem value={topic.slug} key={topic.slug}>
-                            <AccordionTrigger className="p-4 hover:no-underline">
+                            <AccordionTrigger className="p-4 text-base hover:no-underline">
                                 <div className="flex items-center gap-4">
                                     <Icon className="h-6 w-6 text-primary" />
-                                    <div className="text-left">
-                                        <p className="font-semibold">{topic.title}</p>
-                                        <p className="text-sm text-muted-foreground">{topic.description}</p>
-                                    </div>
+                                    <p className="font-semibold">{topic.title}</p>
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent className="p-4 pt-0">
+                            <AccordionContent className="px-4 pb-4">
                                 <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground border-t pt-4 space-y-4">
                                     <p>{topic.content}</p>
                                     <div className="mt-6 border-t pt-4 text-center">
@@ -72,24 +68,22 @@ export default function SupportPage() {
       <div>
         <h2 className="text-xl font-bold mb-4">Sıkça Sorulan Sorular</h2>
         <Card>
-            <CardContent className='p-0'>
-                <div className='divide-y'>
-                    {popularArticles.map((article) => (
-                         <Link href={article.link} key={article.title} passHref>
-                            <div className='flex justify-between items-center p-4 hover:bg-accent transition-colors'>
-                                <p className='font-medium'>{article.title}</p>
-                                <ChevronRight className='h-5 w-5 text-muted-foreground'/>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+            <CardContent className='p-0 divide-y'>
+                {popularArticles.map((article) => (
+                     <Link href={article.link} key={article.title} passHref>
+                        <div className='flex justify-between items-center p-4 hover:bg-accent transition-colors'>
+                            <p className='font-medium text-sm'>{article.title}</p>
+                            <ChevronRight className='h-5 w-5 text-muted-foreground'/>
+                        </div>
+                    </Link>
+                ))}
             </CardContent>
         </Card>
       </div>
 
-      <div className="text-center space-y-3 pt-4">
+      <div className="text-center space-y-3 pt-4 border-t">
         <h3 className="text-lg font-semibold">Aradığınızı bulamadınız mı?</h3>
-        <p className="text-muted-foreground">Destek ekibimiz size yardımcı olmak için burada.</p>
+        <p className="text-muted-foreground text-sm">Destek ekibimiz size yardımcı olmak için burada.</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
           <Button size="lg">Destek Talebi Oluştur</Button>
            <Button size="lg" variant="outline">

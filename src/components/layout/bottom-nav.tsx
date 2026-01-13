@@ -2,21 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, HeartHandshake, QrCode, LayoutDashboard } from "lucide-react";
+import { Store, HeartHandshake, Wallet, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { href: "/timeline", icon: LayoutGrid, label: "Akış" },
   { href: "/market", icon: Store, label: "Market" },
+  { href: "/qr-payment", icon: Wallet, label: "Cüzdan" },
   { href: "/volunteering", icon: HeartHandshake, label: "Gönüllülük" },
-  { href: "/qr-payment", icon: QrCode, label: "Cüzdan" },
-  { href: "/timeline", icon: LayoutDashboard, label: "Akış" },
 ];
 
 export default function AppBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-20 max-w-md grid-cols-4 border-t border-black/10 bg-background/80 backdrop-blur-xl dark:border-white/10">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-20 max-w-md grid-cols-4 border-t bg-background/80 backdrop-blur-xl">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/timeline' && pathname.startsWith(item.href));
         const Icon = item.icon;
