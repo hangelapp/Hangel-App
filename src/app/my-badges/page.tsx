@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Star, Users, Heart, Download, Eye } from 'lucide-react';
+import { Award, Star, Users, Heart, Download, Eye, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { badges, certificates, user } from '@/lib/data';
@@ -105,15 +105,16 @@ export default function MyBadgesPage() {
                     <Card>
                         <CardContent className="p-4 space-y-4">
                             {certificates.map(cert => (
-                                <div key={cert.id} className='p-3 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center'>
-                                   <div className='flex-1 mb-3 sm:mb-0'>
+                                <div key={cert.id} className='relative p-4 rounded-lg border'>
+                                   <div className='pr-24'>
                                      <p className='font-semibold'>{cert.title}</p>
                                      <p className='text-sm text-muted-foreground'>{cert.organization}</p>
                                      <p className='text-xs text-muted-foreground mt-1'>Tarih: {cert.date}</p>
                                    </div>
-                                   <div className='flex gap-2 self-end sm:self-center'>
-                                       <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
-                                       <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
+                                   <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
+                                       <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" className="h-7 w-7"><Download className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" className="h-7 w-7"><Share2 className="h-4 w-4"/></Button>
                                    </div>
                                 </div>
                             ))}
