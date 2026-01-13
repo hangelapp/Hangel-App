@@ -12,16 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
     <Card key={club.id}>
         <CardHeader>
-            <div className='flex items-center gap-4'>
+            <Link href={`/admin/clubs/profile/${club.id}`} className="flex items-center gap-4">
                 <Avatar className="h-12 w-12">
                     <AvatarImage src={club.avatarUrl} alt={club.name} />
                     <AvatarFallback>{club.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-base">{club.name}</CardTitle>
+                    <CardTitle className="text-base hover:underline">{club.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">{club.university}</p>
                 </div>
-            </div>
+            </Link>
         </CardHeader>
         <CardContent className="flex justify-between items-center text-sm">
           <div className="flex gap-4">
@@ -35,11 +35,11 @@ const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
     </Card>
 );
 
-const EventCard = ({ event }: { event: { id: string, name: string, club: string, date: string } }) => (
+const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
     <Card key={event.id}>
         <CardHeader>
             <CardTitle className="text-base">{event.name}</CardTitle>
-            <p className="text-sm text-muted-foreground">{event.club}</p>
+            <Link href={`/admin/clubs/profile/${event.clubId}`} className="text-sm text-muted-foreground hover:underline">{event.club}</Link>
         </CardHeader>
         <CardContent className="space-y-2">
             <div className="flex items-center text-sm text-muted-foreground">
@@ -67,10 +67,44 @@ export default function StudentClubsPage() {
   }, []);
 
   const sampleEvents = [
-    { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', date: '25 Ekim 2024' },
-    { id: '2', name: 'Sonbahar Konseri', club: 'Boğaziçi Üniversitesi Müzik Kulübü', date: '15 Kasım 2024' },
-    { id: '3', name: 'Fotoğraf Sergisi: "İstanbul\'un Renkleri"', club: 'Galatasaray Lisesi Sanat Kulübü', date: '1-7 Aralık 2024' }
+    { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
+    { id: '2', name: 'Sonbahar Konseri', club: 'Boğaziçi Üniversitesi Müzik Kulübü', clubId: '2', date: '15 Kasım 2024' },
+    { id: '3', name: 'Fotoğraf Sergisi: "İstanbul\'un Renkleri"', club: 'Galatasaray Lisesi Sanat Kulübü', clubId: '3', date: '1-7 Aralık 2024' }
   ];
+
+  const ClubList = () => (
+    <div className='space-y-4'>
+        {clubs.map((club) => (
+            <ClubCard key={club.id} club={club} />
+        ))}
+    </div>
+  )
+
+  const EventList = () => (
+     <div className='space-y-4'>
+        {sampleEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+        ))}
+         <div className="text-center text-muted-foreground pt-8">
+            <p>Yakında daha fazla etkinlik burada olacak.</p>
+        </div>
+    </div>
+  )
+
+  const SubTabs = ({ content }: { content: React.ReactNode }) => (
+    <Tabs defaultValue="all" className='w-full mt-4'>
+        <TabsList className='grid w-full grid-cols-4'>
+            <TabsTrigger value="all">Tümü</TabsTrigger>
+            <TabsTrigger value="country">Ülkemde</TabsTrigger>
+            <TabsTrigger value="school">Okulumda</TabsTrigger>
+            <TabsTrigger value="city">Şehrimde</TabsTrigger>
+        </TabsList>
+        <TabsContent value="all" className="mt-4">{content}</TabsContent>
+        <TabsContent value="country" className="mt-4 text-center text-muted-foreground py-8">Ülke genelindeki içerik yakında burada.</TabsContent>
+        <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
+        <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
+    </Tabs>
+  );
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -97,18 +131,11 @@ export default function StudentClubsPage() {
           <TabsTrigger value="clubs">Kulüpler</TabsTrigger>
           <TabsTrigger value="events">Etkinlikler</TabsTrigger>
         </TabsList>
-        <TabsContent value="clubs" className="mt-4 space-y-4">
-            {clubs.map((club) => (
-                <ClubCard key={club.id} club={club} />
-            ))}
+        <TabsContent value="clubs" className="mt-0">
+            <SubTabs content={<ClubList />} />
         </TabsContent>
-        <TabsContent value="events" className="mt-4 space-y-4">
-            {sampleEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-            ))}
-             <div className="text-center text-muted-foreground pt-8">
-                <p>Yakında daha fazla etkinlik burada olacak.</p>
-            </div>
+        <TabsContent value="events" className="mt-0">
+            <SubTabs content={<EventList />} />
         </TabsContent>
       </Tabs>
     </div>
