@@ -30,7 +30,7 @@ const IconButton = ({ children, href, 'aria-label': ariaLabel }: { children: Rea
             target="_blank"
             rel="noopener noreferrer"
             aria-label={ariaLabel}
-            className="h-12 w-12 rounded-xl text-muted-foreground transition-colors hover:text-foreground"
+            className="h-10 w-10 rounded-xl text-muted-foreground transition-colors hover:text-foreground"
             variant="ghost"
             asChild={!!href}
         >
@@ -81,22 +81,22 @@ export default function InvitePage() {
           <SectionHeader>Davet Et</SectionHeader>
           <div className="flex justify-center flex-wrap gap-4">
             <IconButton href={`https://wa.me/?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="WhatsApp ile paylaş">
-                <MessageSquare className="h-6 w-6" />
+                <MessageSquare className="h-5 w-5" />
             </IconButton>
             <IconButton href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Seni de hangel'a bekliyorum!")}`} aria-label="Telegram ile paylaş">
-                <Send className="h-6 w-6" />
+                <Send className="h-5 w-5" />
             </IconButton>
             <IconButton href={`mailto:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="SMS ile paylaş">
-                <Mail className="h-6 w-6" />
+                <Mail className="h-5 w-5" />
             </IconButton>
             <IconButton href="#" aria-label="Instagram'da paylaş">
-                <Instagram className="h-6 w-6" />
+                <Instagram className="h-5 w-5" />
             </IconButton>
             <IconButton href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}`} aria-label="X'te paylaş">
-                <Twitter className="h-6 w-6" />
+                <Twitter className="h-5 w-5" />
             </IconButton>
             <IconButton href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Hangel Daveti")}`} aria-label="LinkedIn'de paylaş">
-                <Linkedin className="h-6 w-6" />
+                <Linkedin className="h-5 w-5" />
             </IconButton>
           </div>
         </div>
