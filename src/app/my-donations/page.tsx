@@ -64,32 +64,35 @@ export default function MyDonationsPage() {
         </CardContent>
       </Card>
       
-      <div>
-        <h2 className="text-xl mb-2 font-bold">İşlem Geçmişi</h2>
-        <div className="flex justify-between items-center mb-2 gap-2">
-            <div className="relative w-full">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Ara..." className="pl-8 text-sm h-9 w-full" />
+      <Card>
+          <CardHeader>
+            <div className="flex flex-col gap-4">
+                <CardTitle>İşlem Geçmişi</CardTitle>
+                <div className="flex justify-between items-center gap-2">
+                    <div className="relative w-full">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Ara..." className="pl-8 text-sm h-9 w-full" />
+                    </div>
+                    <div className='flex'>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Filter className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => setFilterType('all')}>Tümü</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFilterType('income')}>Gelir</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFilterType('expense')}>Gider</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="ghost" size="icon" onClick={toggleSortDirection}>
+                            <ArrowDownUp className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
             </div>
-            <div className='flex'>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Filter className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setFilterType('all')}>Tümü</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilterType('income')}>Gelir</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilterType('expense')}>Gider</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button variant="ghost" size="icon" onClick={toggleSortDirection}>
-                    <ArrowDownUp className="h-4 w-4" />
-                </Button>
-            </div>
-        </div>
-        <Card>
+          </CardHeader>
           <CardContent className="p-0">
             <Accordion type="single" collapsible className="w-full">
               {sortedAndFilteredDonations.map(donation => {
@@ -164,7 +167,6 @@ export default function MyDonationsPage() {
             </Accordion>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
