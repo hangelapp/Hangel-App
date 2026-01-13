@@ -32,15 +32,17 @@ export default function NgosPage() {
       <div className="space-y-4">
         {ngos.map((ngo) => (
           <Card key={ngo.id}>
-            <CardHeader className="flex-row items-center gap-4">
-                <Avatar className="h-12 w-12">
-                    <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                    <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <CardTitle className="text-base">{ngo.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{ngo.category}</p>
-                </div>
+            <CardHeader>
+                <Link href={`/ngos/${ngo.id}`} className="flex flex-row items-center gap-4 group">
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
+                        <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle className="text-base group-hover:underline">{ngo.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{ngo.category}</p>
+                    </div>
+                </Link>
             </CardHeader>
             <CardContent className="grid grid-cols-3 gap-2 text-center text-sm">
                 <div className="flex items-center justify-center gap-1.5 p-2 bg-muted/50 rounded-md"><Heart className="h-4 w-4 text-muted-foreground"/> <div><p className="font-bold">{ngo.stats.followers / 1000}k</p><p className="text-xs text-muted-foreground">Takipçi</p></div></div>

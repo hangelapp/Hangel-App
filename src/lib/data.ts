@@ -2,8 +2,8 @@
 
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
-import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake } from 'lucide-react';
+import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic } from './types';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, HandHeart } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -384,10 +384,10 @@ export const socialEnterprises: Brand[] = [
 ];
 
 export const economicEnterprises: Brand[] = [
-    { id: 'eco-1', name: 'TEMA Vakfı İktisadi İşletmesi', category: 'Perakende', donationRate: 100, logoUrl: 'https://picsum.photos/seed/tema-eco/200', link: '#', followers: 18000, type: 'economic' },
-    { id: 'eco-2', name: 'TEGV İktisadi İşletmesi', category: 'Eğitim Materyalleri', donationRate: 100, logoUrl: 'https://picsum.photos/seed/tegv-eco/200', link: '#', followers: 12000, type: 'economic' },
-    { id: 'eco-3', name: 'LÖSEV İktisadi İşletmesi (LSV Dükkan)', category: 'Perakende', donationRate: 100, logoUrl: 'https://picsum.photos/seed/losev-eco/200', link: '#', followers: 25000, type: 'economic' },
-    { id: 'eco-4', name: 'KEDV İktisadi İşletmesi', category: 'El Sanatları', donationRate: 100, logoUrl: 'https://picsum.photos/seed/kedv-eco/200', link: '#', followers: 9000, type: 'economic' },
+    { id: 'eco-1', name: 'TEMA Vakfı İktisadi İşletmesi', category: 'Perakende', ngoId: '1', donationRate: 100, logoUrl: 'https://picsum.photos/seed/tema-eco/200', link: '#', followers: 18000, type: 'economic' },
+    { id: 'eco-2', name: 'TEGV İktisadi İşletmesi', category: 'Eğitim Materyalleri', ngoId: '4', donationRate: 100, logoUrl: 'https://picsum.photos/seed/tegv-eco/200', link: '#', followers: 12000, type: 'economic' },
+    { id: 'eco-3', name: 'LÖSEV İktisadi İşletmesi (LSV Dükkan)', category: 'Perakende', ngoId: '3', donationRate: 100, logoUrl: 'https://picsum.photos/seed/losev-eco/200', link: '#', followers: 25000, type: 'economic' },
+    { id: 'eco-4', name: 'KEDV İktisadi İşletmesi', category: 'El Sanatları', ngoId: '5', donationRate: 100, logoUrl: 'https://picsum.photos/seed/kedv-eco/200', link: '#', followers: 9000, type: 'economic' },
 ];
 
 export const allEntityLists = [...marketBrands, ...cooperatives, ...socialEnterprises, ...economicEnterprises];
@@ -451,47 +451,70 @@ export const ngos: NGO[] = [
   },
 ];
 
-export const helpTopics = [
+export const helpTopics: HelpTopic[] = [
   {
     icon: UserCircle,
     title: 'Hesap Yönetimi',
-    description: 'Profil bilgileri, giriş ve hesap ayarları.',
     slug: 'hesap-yonetimi',
-    content: 'Hesap yönetimi sayfasındasınız. Burada profil bilgilerinizi nasıl güncelleyeceğiniz, şifrenizi nasıl değiştireceğiniz ve hesap ayarlarınızı nasıl kişiselleştireceğiniz hakkında bilgi bulabilirsiniz.'
+    subtopics: [
+        'E-posta adresimi nasıl değiştiririm?',
+        'Profil fotoğrafımı nasıl güncellerim?',
+        'Kullanıcı adımı değiştirebilir miyim?',
+        'Hesabımı nasıl silebilirim?',
+    ]
   },
   {
     icon: HeartHandshake,
     title: 'Gönüllülük',
-    description: 'Başvurular, ilanlar ve gönüllülük süreci.',
     slug: 'gonulluluk',
-    content: 'Gönüllülük sayfasındasınız. Gönüllülük ilanlarına nasıl başvurulur, başvurularınızın durumunu nasıl takip edersiniz ve gönüllülük sürecinin nasıl işlediği hakkında bilgiler burada yer almaktadır.'
+    subtopics: [
+        'Gönüllülük ilanlarına nasıl başvurulur?',
+        'Başvurumun durumunu nereden takip edebilirim?',
+        'Kazandığım sosyal etki puanları ne işe yarar?',
+        'Gönüllülük sertifikamı nasıl alabilirim?',
+    ]
   },
   {
     icon: Wallet,
-    title: 'Bağış ve Ödemeler',
-    description: 'Cüzdan, bağış geçmişi ve ödeme sorunları.',
-    slug: 'bagis-ve-odemeler',
-    content: 'Bağış ve ödemeler sayfasındasınız. Hangel cüzdanınıza nasıl para yükleyeceğiniz, bağış geçmişinizi nasıl görüntüleyeceğiniz ve ödeme yaparken karşılaştığınız sorunların çözümleri burada açıklanmaktadır.'
+    title: 'Bağış ve Cüzdan',
+    slug: 'bagis-ve-cuzdan',
+    subtopics: [
+        'hangel cüzdanıma nasıl para yüklerim?',
+        'Alışveriş yaparken bağış süreci nasıl işliyor?',
+        'Bağışlarımın hangi STK\'lara gittiğini nasıl görürüm?',
+        'Ödeme yaparken bir sorun yaşadım, ne yapmalıyım?',
+    ]
   },
   {
     icon: Settings2,
-    title: 'Profil ve Ayarlar',
-    description: 'Bildirimler, gizlilik ve uygulama ayarları.',
-    slug: 'profil-ve-ayarlar',
-    content: 'Profil ve ayarlar sayfasındasınız. Uygulama bildirimlerini nasıl yöneteceğiniz, gizlilik ayarlarınızı nasıl yapacağınız ve tema gibi uygulama tercihlerini nasıl değiştireceğiniz hakkında bilgi bulabilirsiniz.'
+    title: 'Uygulama ve Ayarlar',
+    slug: 'uygulama-ve-ayarlar',
+    subtopics: [
+        'Bildirim ayarlarımı nasıl yönetebilirim?',
+        'Uygulama dilini nasıl değiştiririm?',
+        'Karanlık mod nasıl açılır?',
+        'Veri kullanımımı nasıl kontrol edebilirim?',
+    ]
   },
   {
     icon: Shield,
-    title: 'Güvenlik',
-    description: 'Hesap güvenliği ve şifre işlemleri.',
-    slug: 'guvenlik',
-    content: 'Güvenlik sayfasındasınız. Hesabınızın güvenliğini nasıl artırabileceğiniz, iki adımlı doğrulamayı nasıl etkinleştireceğiniz ve şüpheli aktiviteleri nasıl bildireceğiniz hakkında önemli bilgiler burada yer almaktadır.'
+    title: 'Güvenlik ve Gizlilik',
+    slug: 'guvenlik-ve-gizlilik',
+    subtopics: [
+        'Şifremi unuttum, ne yapmalıyım?',
+        'Hesabımın başkasının eline geçtiğini düşünüyorum.',
+        'Kişisel verilerim güvende mi?',
+        'hangel\'in gizlilik politikası nedir?',
+    ]
   },
   {
     icon: BookText,
     title: 'Topluluk Kuralları',
-    description: 'Platform kullanım politikaları ve kurallar.',
     slug: 'topluluk-kurallari',
-    content: 'Topluluk kuralları sayfasındasınız. Hangel platformunu kullanırken uymanız gereken kurallar, politikalar ve ilkeler burada listelenmiştir. Saygılı ve yapıcı bir topluluk oluşturmak için bu kurallara uymanız önemlidir.'
+    subtopics: [
+        'Hangi tür içerikler yasaktır?',
+        'Bir kullanıcıyı nasıl şikayet edebilirim?',
+        'Yorum ve paylaşımlarda nelere dikkat etmeliyim?',
+    ]
   }
 ];

@@ -26,6 +26,7 @@ export type Brand = {
   name: string;
   category: string;
   type: 'brand' | 'cooperative' | 'social' | 'economic';
+  ngoId?: string;
   logoUrl: string;
   logoHint?: string;
   coverPhotoUrl?: string;
@@ -317,4 +318,11 @@ export type AdBanner = {
   description: string;
   imageUrl: string;
   link: string;
+};
+
+export type HelpTopic = {
+  icon: LucideIcon;
+  title: string;
+  slug: string;
+  subtopics: string[];
 };

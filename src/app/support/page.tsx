@@ -47,9 +47,13 @@ export default function SupportPage() {
                             </AccordionTrigger>
                             <AccordionContent className="px-4 pb-4">
                                 <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground border-t pt-4 space-y-4">
-                                    <p>{topic.content}</p>
+                                    <div className='flex flex-col gap-3'>
+                                      {topic.subtopics.map(sub => (
+                                          <Link href="#" key={sub} className="font-medium text-foreground hover:underline">{sub}</Link>
+                                      ))}
+                                    </div>
                                     <div className="mt-6 border-t pt-4 text-center">
-                                        <p className="text-sm font-medium mb-2">Bu makale yardımcı oldu mu?</p>
+                                        <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
                                         <div className="flex justify-center gap-2">
                                             <Button variant="outline" size="sm">Evet</Button>
                                             <Button variant="outline" size="sm">Hayır</Button>

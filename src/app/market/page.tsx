@@ -19,17 +19,23 @@ import { Brand } from '@/lib/types';
 import { useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 
-const BrandCard = ({ brand }: { brand: Brand }) => (
+const BrandCard = ({ brand }: { brand: Brand }) => {
+  const isEconomicEnterprise = brand.type === 'economic';
+  const profileLink = isEconomicEnterprise ? `/ngos/${brand.ngoId}` : `/market/${brand.id}`;
+
+  return (
     <Card key={brand.id}>
-        <CardHeader className="flex-row items-center gap-4">
-            <Avatar className="h-12 w-12">
-                <AvatarImage src={brand.logoUrl} alt={brand.name} />
-                <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-                <CardTitle className="text-base">{brand.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{brand.category}</p>
-            </div>
+        <CardHeader>
+             <Link href={profileLink} className="flex flex-row items-center gap-4 group">
+                <Avatar className="h-12 w-12">
+                    <AvatarImage src={brand.logoUrl} alt={brand.name} />
+                    <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <CardTitle className="text-base group-hover:underline">{brand.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{brand.category}</p>
+                </div>
+             </Link>
         </CardHeader>
         <CardContent>
             <div className="flex items-center gap-1.5 text-sm font-medium">
@@ -38,11 +44,15 @@ const BrandCard = ({ brand }: { brand: Brand }) => (
         </CardContent>
         <CardFooter>
             <Button asChild className="w-full">
-                <Link href={`/market/${brand.id}`}>Alışverişe Başla</Link>
+                <Link href={isEconomicEnterprise ? profileLink : `/market/${brand.id}`}>
+                    {isEconomicEnterprise ? 'STK Profilini Gör' : 'Alışverişe Başla'}
+                </Link>
             </Button>
         </CardFooter>
     </Card>
-);
+  );
+};
+
 
 const EntityList = ({ type }: { type: Brand['type'] }) => {
     const entities = allEntityLists.filter(e => e.type === type);
@@ -121,14 +131,14 @@ export default function MarketPage() {
           <TabsTrigger value="products">
             Marka
           </TabsTrigger>
-          <TabsTrigger value="cooperatives">
-            Kooperatif
+           <TabsTrigger value="economic">
+            İktisadi İşletme
           </TabsTrigger>
            <TabsTrigger value="social">
             Sosyal Şirket
           </TabsTrigger>
-           <TabsTrigger value="economic">
-            İktisadi İşletme
+          <TabsTrigger value="cooperatives">
+            Kooperatif
           </TabsTrigger>
         </TabsList>
         <TabsContent value="products" className="p-4 bg-background">
