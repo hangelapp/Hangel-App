@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import Image from 'next/image';
 
-const cardData = [
+const initialCardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
@@ -83,7 +83,7 @@ const RealisticQrCodeIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof cardData[0], isFlipped: boolean, onFlip: () => void, onFrontClick: () => void }) => {
+const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof initialCardData[0], isFlipped: boolean, onFlip: () => void, onFrontClick: () => void }) => {
   return (
     <div className="relative w-full h-full [transform-style:preserve-3d] transition-transform duration-500" style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
       {/* Card Front */}
@@ -153,13 +153,19 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof card
 };
 
 export default function QrPaymentPage() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [cardData, setCardData] = useState(initialCardData);
   const [flippedStates, setFlippedStates] = useState<Record<string, boolean>>({});
 
   const handleCardClick = (index: number) => {
-    // Only allow cycling through cards when clicking the active (top) card
-    if (index === activeIndex) {
-      setActiveIndex((prevIndex) => (prevIndex + 1) % cardData.length);
+    if (index === 0) { // Only cycle if the top card is clicked
+        setCardData(prevData => {
+            const newData = [...prevData];
+            const firstElement = newData.shift();
+            if (firstElement) {
+                newData.push(firstElement);
+            }
+            return newData;
+        });
     }
   };
 
@@ -167,7 +173,7 @@ export default function QrPaymentPage() {
     setFlippedStates(prev => ({ ...prev, [cardId]: !prev[cardId] }));
   };
 
-  const selectedCard = cardData[activeIndex];
+  const selectedCard = cardData[0];
   const selectedCardId = selectedCard?.id as keyof typeof allTransactions;
   const transactions = allTransactions[selectedCardId] || [];
 
@@ -178,8 +184,7 @@ export default function QrPaymentPage() {
 
         <div className="relative h-[280px] w-full">
             {cardData.map((card, index) => {
-                const isActive = index === activeIndex;
-                const isBehind = index > activeIndex;
+                const isActive = index === 0;
                 const zIndex = cardData.length - index;
                 
                 return (
@@ -187,10 +192,10 @@ export default function QrPaymentPage() {
                         key={card.id}
                         className="absolute w-full h-56 transition-all duration-500 ease-in-out [perspective:1000px]"
                         style={{
-                            zIndex: isActive ? zIndex + 10 : zIndex,
-                            transform: `translateY(${isActive ? 0 : (index < activeIndex ? -150 : (index - activeIndex) * 30)}px) scale(${isActive ? 1 : 1 - ((index - activeIndex) * 0.05)})`,
+                            zIndex: zIndex,
+                            transform: `translateY(${index * 30}px) scale(${1 - (index * 0.05)})`,
                             filter: `blur(${isActive ? 0 : '2px'})`,
-                            opacity: isActive ? 1 : (isBehind ? 1 : 0),
+                            opacity: 1,
                             pointerEvents: isActive ? 'auto' : 'none'
                         }}
                     >
