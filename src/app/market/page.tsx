@@ -102,7 +102,7 @@ export default function MarketPage() {
       </div>
 
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="w-full justify-start rounded-none bg-transparent p-0 px-4 gap-4 overflow-x-auto border-b">
+        <TabsList className="rounded-none bg-transparent p-0 px-4 gap-4 overflow-x-auto border-b">
           <TabsTrigger value="products" className="flex-shrink-0 rounded-none bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground">
             Marka
           </TabsTrigger>
