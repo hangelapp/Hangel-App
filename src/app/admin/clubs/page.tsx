@@ -38,8 +38,8 @@ const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
 const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
     <Card key={event.id}>
         <CardHeader>
+             <Link href={`/admin/clubs/profile/${event.clubId}`} className="text-sm text-muted-foreground hover:underline">{event.club}</Link>
             <CardTitle className="text-base">{event.name}</CardTitle>
-            <Link href={`/admin/clubs/profile/${event.clubId}`} className="text-sm text-muted-foreground hover:underline">{event.club}</Link>
         </CardHeader>
         <CardContent className="space-y-2">
             <div className="flex items-center text-sm text-muted-foreground">
@@ -56,6 +56,7 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
 
 export default function StudentClubsPage() {
   const [clubs, setClubs] = useState(studentClubs);
+  const [activeSubTab, setActiveSubTab] = useState('all');
 
   useEffect(() => {
     // This is to avoid hydration mismatch error
@@ -72,13 +73,16 @@ export default function StudentClubsPage() {
     { id: '3', name: 'Fotoğraf Sergisi: "İstanbul\'un Renkleri"', club: 'Galatasaray Lisesi Sanat Kulübü', clubId: '3', date: '1-7 Aralık 2024' }
   ];
 
-  const ClubList = () => (
-    <div className='space-y-4'>
-        {clubs.map((club) => (
-            <ClubCard key={club.id} club={club} />
-        ))}
-    </div>
-  )
+  const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
+    const filteredClubs = type ? clubs.filter(c => c.type === type) : clubs;
+    return (
+        <div className='space-y-4'>
+            {filteredClubs.length > 0 ? filteredClubs.map((club) => (
+                <ClubCard key={club.id} club={club} />
+            )) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>}
+        </div>
+    )
+  }
 
   const EventList = () => (
      <div className='space-y-4'>
@@ -90,21 +94,59 @@ export default function StudentClubsPage() {
         </div>
     </div>
   )
+  
+  const SchoolTypeTabs = ({ contentType }: { contentType: 'club' | 'event' }) => {
+    const clubContent = (
+      <>
+        <TabsContent value="university" className="mt-4"><ClubList type="university" /></TabsContent>
+        <TabsContent value="high-school" className="mt-4"><ClubList type="high-school" /></TabsContent>
+      </>
+    );
 
-  const SubTabs = ({ content }: { content: React.ReactNode }) => (
-    <Tabs defaultValue="all" className='w-full mt-4'>
-        <TabsList className='grid w-full grid-cols-4'>
-            <TabsTrigger value="all">Tümü</TabsTrigger>
-            <TabsTrigger value="country">Ülkemde</TabsTrigger>
-            <TabsTrigger value="school">Okulumda</TabsTrigger>
-            <TabsTrigger value="city">Şehrimde</TabsTrigger>
-        </TabsList>
-        <TabsContent value="all" className="mt-4">{content}</TabsContent>
-        <TabsContent value="country" className="mt-4 text-center text-muted-foreground py-8">Ülke genelindeki içerik yakında burada.</TabsContent>
-        <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
-        <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
-    </Tabs>
-  );
+    const eventContent = (
+       <>
+        <TabsContent value="university" className="mt-4"><EventList /></TabsContent>
+        <TabsContent value="high-school" className="mt-4 text-center text-muted-foreground py-8">Lise etkinlikleri yakında burada.</TabsContent>
+      </>
+    );
+
+    return (
+        <Tabs defaultValue="university" className='w-full mt-2'>
+            <TabsList className='grid w-full grid-cols-2'>
+                <TabsTrigger value="university">Üniversite</TabsTrigger>
+                <TabsTrigger value="high-school">Lise</TabsTrigger>
+            </TabsList>
+            {contentType === 'club' ? clubContent : eventContent}
+        </Tabs>
+    );
+  };
+
+  const SubTabs = ({ contentType }: { contentType: 'club' | 'event' }) => {
+    const clubListAll = <ClubList />;
+    const eventListAll = <EventList />;
+    const schoolTypeTabs = <SchoolTypeTabs contentType={contentType} />;
+
+    return (
+        <Tabs defaultValue="all" className='w-full mt-4' onValueChange={setActiveSubTab}>
+            <TabsList className='grid w-full grid-cols-4'>
+                <TabsTrigger value="all">Tümü</TabsTrigger>
+                <TabsTrigger value="country">Ülkemde</TabsTrigger>
+                <TabsTrigger value="school">Okulumda</TabsTrigger>
+                <TabsTrigger value="city">Şehrimde</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="mt-4">
+                {contentType === 'club' ? clubListAll : eventListAll}
+                {['all'].includes(activeSubTab) && <div className="mt-4">{schoolTypeTabs}</div>}
+            </TabsContent>
+            <TabsContent value="country" className="mt-4">
+                 {['country'].includes(activeSubTab) && schoolTypeTabs}
+            </TabsContent>
+            <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
+            <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
+        </Tabs>
+    )
+  };
+
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -132,10 +174,10 @@ export default function StudentClubsPage() {
           <TabsTrigger value="events">Etkinlikler</TabsTrigger>
         </TabsList>
         <TabsContent value="clubs" className="mt-0">
-            <SubTabs content={<ClubList />} />
+            <SubTabs contentType="club" />
         </TabsContent>
         <TabsContent value="events" className="mt-0">
-            <SubTabs content={<EventList />} />
+            <SubTabs contentType="event" />
         </TabsContent>
       </Tabs>
     </div>
