@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, Star, Users, Heart, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -116,5 +117,3 @@ export default function MyBadgesPage() {
     </div>
   );
 }
-
-  
