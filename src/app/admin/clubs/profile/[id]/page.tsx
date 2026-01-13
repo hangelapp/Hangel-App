@@ -65,7 +65,7 @@ export default function ClubProfilePage({ params }: { params: { id: string } }) 
                      <p className="text-muted-foreground">{club.university}</p>
                 </div>
                 <div className='flex gap-2'>
-                    <Button>Kulübe Katıl</Button>
+                    <Button variant="outline">Kulübe Katıl</Button>
                 </div>
             </div>
         </div>
