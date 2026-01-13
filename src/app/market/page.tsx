@@ -19,12 +19,18 @@ import { Brand } from '@/lib/types';
 import { useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 
-const BrandCard = ({ brand }: { brand: Brand }) => {
+const BrandCard = ({ brand, isSponsored }: { brand: Brand; isSponsored?: boolean }) => {
   const isEconomicEnterprise = brand.type === 'economic';
   const profileLink = isEconomicEnterprise ? `/ngos/${brand.ngoId}` : `/market/${brand.id}`;
 
   return (
-    <Card key={brand.id} className="flex flex-col">
+    <Card key={brand.id} className="flex flex-col relative">
+        {isSponsored && (
+            <Badge variant="outline" className="absolute top-2 right-2 flex items-center gap-1 border-amber-500 text-amber-500 text-xs bg-background/80 backdrop-blur-sm z-10">
+                <Star className="h-3 w-3" />
+                <span>Sponsorlu</span>
+            </Badge>
+        )}
         <CardHeader className="p-4">
             <div className="flex justify-between items-center">
                 <Link href={profileLink} className="group">
@@ -63,7 +69,7 @@ const EntityList = ({ type }: { type: Brand['type'] }) => {
     }
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {entities.map(brand => <BrandCard key={brand.id} brand={brand} />)}
+            {entities.map((brand, index) => <BrandCard key={brand.id} brand={brand} isSponsored={type === 'brand' && index === 0} />)}
         </div>
     )
 };
