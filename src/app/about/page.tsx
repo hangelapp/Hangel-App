@@ -106,7 +106,7 @@ export default function AboutPage() {
                     <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
                     <div>
                         <p>Ege Bölge İrtibat Ofisi</p>
-                        <p className='text-sm text-muted-foreground'>İzmir, Karşıyaka, Bahçeli Evler Mh., Sancar Maruflu STK Yerleşkesi, Kat:1 No:21</p>
+                        <p className='text-sm text-muted-foreground'>Sancar Maruflu STK Yerleşkesi, Bahçeli Evler Mh., Kat:1 No:21, Karşıyaka, İzmir</p>
                     </div>
                 </div>
             </div>

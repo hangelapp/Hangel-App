@@ -1,13 +1,15 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
   Search,
   ChevronRight,
-  Mail
+  Mail,
+  ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
 import { helpTopics } from '@/lib/data';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const popularArticles = [
     { title: 'hangel Etki Puanı nasıl hesaplanır?', link: '#' },
@@ -33,29 +35,42 @@ export default function SupportPage() {
         <h2 className="text-xl font-bold mb-4">Yardım Konuları</h2>
         <Card>
             <CardContent className='p-0'>
-                <div className='divide-y'>
+                <Accordion type="single" collapsible className="w-full">
                 {helpTopics.map((topic) => {
                     const Icon = topic.icon;
                     return (
-                    <Link href={`/support/${topic.slug}`} key={topic.title} passHref>
-                        <div className="flex items-center gap-4 p-4 hover:bg-accent transition-colors">
-                            <Icon className="h-6 w-6 text-primary" />
-                            <div className="flex-1">
-                                <p className="font-semibold">{topic.title}</p>
-                                <p className="text-sm text-muted-foreground">{topic.description}</p>
-                            </div>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                    </Link>
+                        <AccordionItem value={topic.slug} key={topic.slug}>
+                            <AccordionTrigger className="p-4 hover:no-underline">
+                                <div className="flex items-center gap-4">
+                                    <Icon className="h-6 w-6 text-primary" />
+                                    <div className="text-left">
+                                        <p className="font-semibold">{topic.title}</p>
+                                        <p className="text-sm text-muted-foreground">{topic.description}</p>
+                                    </div>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="p-4 pt-0">
+                                <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground border-t pt-4 space-y-4">
+                                    <p>{topic.content}</p>
+                                    <div className="mt-6 border-t pt-4 text-center">
+                                        <p className="text-sm font-medium mb-2">Bu makale yardımcı oldu mu?</p>
+                                        <div className="flex justify-center gap-2">
+                                            <Button variant="outline" size="sm">Evet</Button>
+                                            <Button variant="outline" size="sm">Hayır</Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
                     );
                 })}
-                </div>
+                </Accordion>
             </CardContent>
         </Card>
       </div>
       
       <div>
-        <h2 className="text-xl font-bold mb-4">Popüler Makaleler</h2>
+        <h2 className="text-xl font-bold mb-4">Sıkça Sorulan Sorular</h2>
         <Card>
             <CardContent className='p-0'>
                 <div className='divide-y'>
