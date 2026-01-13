@@ -19,6 +19,7 @@ export const user: User = {
         phone: '+90 555 123 4567',
         birthDate: '1995-03-15',
         gender: 'Kadın',
+        nationality: 'Türkiye Cumhuriyeti',
         bloodType: 'A Rh+',
         address: {
             country: 'Türkiye',
@@ -29,7 +30,8 @@ export const user: User = {
         },
     },
     volunteerInfo: {
-        skills: ['Grafik Tasarım', 'Proje Yönetimi', 'Sosyal Medya'],
+        skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi'],
+        dailySkills: ['İletişim', 'Takım Çalışması', 'Organizasyon'],
         interests: ['Hayvan Hakları', 'Çevre', 'Eğitim'],
         education: [
             { level: 'Lisans', school: 'Marmara Üniversitesi - İletişim Fakültesi' },
@@ -291,7 +293,7 @@ export const badgeLevels: Badge['level'][] = ['Demir', 'Bakır', 'Bronz', 'Çeli
 export const badgeData: Omit<Badge, 'id' | 'level' | 'pointsRequired' | 'currentPoints'>[] = [
   { name: 'Hayvan Dostu', socialArea: 'Hayvan Hakları', iconName: PawPrint },
   { name: 'Çocuk Gelişimi', socialArea: 'Çocuk', iconName: Baby },
-  { name: 'Doğa Koruyucu', socialArea: 'Çevre', iconName: Leaf },
+  { name: 'Doğa Koruyucusu', socialArea: 'Çevre', iconName: Leaf },
   { name: 'Kadın Destekçisi', socialArea: 'Kadın', iconName: Users },
   { name: 'Engel Tanımaz', socialArea: 'Engelli', iconName: ShieldCheck },
   { name: 'Yaşlı Dostu', socialArea: 'Yaşlı', iconName: Users },

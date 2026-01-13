@@ -163,6 +163,7 @@ export type User = {
         phone: string;
         birthDate: string;
         gender: string;
+        nationality: string;
         bloodType: string;
         address: {
             country: string;
@@ -174,6 +175,7 @@ export type User = {
     },
     volunteerInfo: {
         skills: string[];
+        dailySkills: string[];
         interests: string[];
         education: { level: string; school: string; }[];
         profession: string;
