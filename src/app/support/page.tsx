@@ -3,55 +3,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
   Search,
-  UserCircle,
-  HeartHandshake,
-  Wallet,
-  Settings2,
-  Shield,
-  BookText,
   ChevronRight,
   Mail
 } from 'lucide-react';
 import Link from 'next/link';
-
-const helpTopics = [
-  {
-    icon: UserCircle,
-    title: 'Hesap Yönetimi',
-    description: 'Profil bilgileri, giriş ve hesap ayarları.',
-    link: '#'
-  },
-  {
-    icon: HeartHandshake,
-    title: 'Gönüllülük',
-    description: 'Başvurular, ilanlar ve gönüllülük süreci.',
-    link: '#'
-  },
-  {
-    icon: Wallet,
-    title: 'Bağış ve Ödemeler',
-    description: 'Cüzdan, bağış geçmişi ve ödeme sorunları.',
-    link: '#'
-  },
-  {
-    icon: Settings2,
-    title: 'Profil ve Ayarlar',
-    description: 'Bildirimler, gizlilik ve uygulama ayarları.',
-    link: '#'
-  },
-  {
-    icon: Shield,
-    title: 'Güvenlik',
-    description: 'Hesap güvenliği ve şifre işlemleri.',
-    link: '#'
-  },
-  {
-    icon: BookText,
-    title: 'Topluluk Kuralları',
-    description: 'Platform kullanım politikaları ve kurallar.',
-    link: '#'
-  }
-];
+import { helpTopics } from '@/lib/data';
 
 const popularArticles = [
     { title: 'hangel Etki Puanı nasıl hesaplanır?', link: '#' },
@@ -75,23 +31,27 @@ export default function SupportPage() {
 
       <div>
         <h2 className="text-xl font-bold mb-4">Yardım Konuları</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {helpTopics.map((topic) => {
-            const Icon = topic.icon;
-            return (
-              <Link href={topic.link} key={topic.title} passHref>
-                <Card className="hover:bg-accent hover:border-primary/50 transition-colors h-full">
-                  <CardHeader className="flex flex-row items-center gap-4">
-                    <Icon className="h-8 w-8 text-primary" />
-                    <div>
-                      <CardTitle className="text-lg">{topic.title}</CardTitle>
-                    </div>
-                  </CardHeader>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+        <Card>
+            <CardContent className='p-0'>
+                <div className='divide-y'>
+                {helpTopics.map((topic) => {
+                    const Icon = topic.icon;
+                    return (
+                    <Link href={`/support/${topic.slug}`} key={topic.title} passHref>
+                        <div className="flex items-center gap-4 p-4 hover:bg-accent transition-colors">
+                            <Icon className="h-6 w-6 text-primary" />
+                            <div className="flex-1">
+                                <p className="font-semibold">{topic.title}</p>
+                                <p className="text-sm text-muted-foreground">{topic.description}</p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                    </Link>
+                    );
+                })}
+                </div>
+            </CardContent>
+        </Card>
       </div>
       
       <div>
