@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -123,6 +124,20 @@ export default function ProfilePage() {
         </TabsList>
         
         <TabsContent value="statistics" className="p-4 space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Genel İstatistikler</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-3 gap-4 text-center">
+                    {impactStats.map((stat, i) => (
+                        <div key={i}>
+                            <stat.icon className="h-7 w-7 text-primary mx-auto mb-2" />
+                            <p className="text-xl font-bold">{stat.value}</p>
+                            <p className="text-xs text-muted-foreground">{stat.label}</p>
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle>Gönüllülük İstatistikleri</CardTitle>
