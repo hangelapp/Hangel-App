@@ -43,15 +43,15 @@ export default function OnboardingPage() {
   const currentStep = onboardingSteps[step];
 
   return (
-    <div className="flex flex-col h-screen bg-background p-6">
-      <header className="flex items-center justify-between">
+    <div className="absolute inset-0 flex flex-col bg-background p-6">
+      <header className="flex items-center justify-between pt-safe-top">
         <Progress value={((step + 1) / onboardingSteps.length) * 100} className="w-2/3" />
         <Button variant="ghost" onClick={handleSkip}>
           Atla
         </Button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center text-center -mt-16">
+      <main className="flex-1 flex flex-col items-center justify-center text-center">
         <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mb-8">
             <currentStep.icon className="w-16 h-16 text-primary" />
         </div>
@@ -61,7 +61,7 @@ export default function OnboardingPage() {
         </p>
       </main>
 
-      <footer className="flex justify-center">
+      <footer className="flex justify-center pb-safe-bottom">
         <Button onClick={handleNext} className="w-full max-w-sm">
           {step === onboardingSteps.length - 1 ? 'Hadi Başlayalım!' : 'İleri'}
         </Button>
