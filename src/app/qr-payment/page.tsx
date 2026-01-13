@@ -11,6 +11,7 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Image from 'next/image';
 
 const cardData = [
   {
@@ -108,7 +109,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
         <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center">
             <p className="text-sm opacity-80 mb-4">Ödeme yapmak için QR kodu okutun.</p>
             <div className="bg-white p-2 rounded-lg">
-                 <QrCode className="h-20 w-20 text-black" />
+                 <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={80} height={80} />
             </div>
         </div>
          <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
@@ -175,14 +176,14 @@ export default function QrPaymentPage() {
 
         <Tabs defaultValue="my_qr" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="my_qr" className="flex-col h-auto py-2 gap-1"><QrCode /><span className="text-xs">QR Kodum</span></TabsTrigger>
-            <TabsTrigger value="scan_qr" className="flex-col h-auto py-2 gap-1"><ScanLine /><span className="text-xs">QR Tara</span></TabsTrigger>
-            <TabsTrigger value="pay_code" className="flex-col h-auto py-2 gap-1"><Keyboard /><span className="text-xs">Kod ile</span></TabsTrigger>
-            <TabsTrigger value="pay_phone" className="flex-col h-auto py-2 gap-1"><Phone /><span className="text-xs">Numarayla</span></TabsTrigger>
+            <TabsTrigger value="my_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><QrCode /><span className="text-xs">QR Kodum</span></TabsTrigger>
+            <TabsTrigger value="scan_qr" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><ScanLine /><span className="text-xs">QR Tara</span></TabsTrigger>
+            <TabsTrigger value="pay_code" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Keyboard /><span className="text-xs">Kod ile</span></TabsTrigger>
+            <TabsTrigger value="pay_phone" className="flex-col h-auto py-2 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"><Phone /><span className="text-xs">Numarayla</span></TabsTrigger>
           </TabsList>
           <TabsContent value="my_qr" className="mt-4 text-center">
             <div className="bg-white p-4 inline-block rounded-xl shadow-md">
-                <QrCode className="h-40 w-40 text-black" />
+                <Image src="https://i.imgur.com/gJMAiVl.png" alt="QR Code" width={160} height={160} />
             </div>
              <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">123-456</p>
             <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
@@ -314,3 +315,4 @@ export default function QrPaymentPage() {
     </div>
   );
 }
+    
