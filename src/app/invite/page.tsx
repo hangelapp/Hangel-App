@@ -2,12 +2,14 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
+import { Copy, Mail, MessageSquare, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 export default function InvitePage() {
     const { toast } = useToast();
     const inviteLink = 'https://hangel.com/invite?ref=ayseyilmaz';
+    const inviteTitle = "İyiliğe katıl, fark yarat!";
 
     const copyLink = () => {
         navigator.clipboard.writeText(inviteLink);
@@ -32,6 +34,27 @@ export default function InvitePage() {
             <Copy className="mr-2 h-4 w-4" />
             Linki Kopyala
           </Button>
+          <Separator className='my-4' />
+           <div className="space-y-2">
+            <a href={`https://wa.me/?text=${encodeURIComponent(inviteTitle + ' ' + inviteLink)}`} target="_blank" rel="noopener noreferrer" className='w-full'>
+              <Button variant="outline" className="w-full justify-start">
+                <MessageSquare className="mr-2 h-4 w-4 text-green-500" />
+                WhatsApp ile Paylaş
+              </Button>
+            </a>
+             <a href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteTitle)}`} target="_blank" rel="noopener noreferrer" className='w-full'>
+              <Button variant="outline" className="w-full justify-start">
+                <Send className="mr-2 h-4 w-4 text-sky-500" />
+                Telegram ile Paylaş
+              </Button>
+            </a>
+            <a href={`mailto:?subject=${encodeURIComponent(inviteTitle)}&body=${encodeURIComponent(inviteLink)}`}>
+              <Button variant="outline" className="w-full justify-start">
+                <Mail className="mr-2 h-4 w-4" />
+                E-posta ile Paylaş
+              </Button>
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>
