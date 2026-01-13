@@ -7,7 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 export default function VolunteeringPage() {
-    const userSkills = user.volunteerInfo.skills;
+    const userAbilities = [
+      ...user.volunteerInfo.skills,
+      ...user.volunteerInfo.dailySkills,
+      ...user.volunteerInfo.languages,
+      ...user.volunteerInfo.programs
+    ];
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -24,10 +29,10 @@ export default function VolunteeringPage() {
                     className="pl-10 h-11"
                 />
             </div>
-            <Button variant="outline" size="icon" className="h-11 w-11">
+             <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
                 <Filter className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11">
+            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
                 <ArrowDownUp className="h-5 w-5" />
             </Button>
       </div>
@@ -48,7 +53,7 @@ export default function VolunteeringPage() {
         </Accordion>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 pt-4">
         {volunteeringOpportunities.map((opp) => (
           <Card key={opp.id}>
             <CardHeader>
@@ -60,9 +65,9 @@ export default function VolunteeringPage() {
                 <div className="flex items-center text-muted-foreground gap-2"><Calendar className="h-4 w-4" />{opp.commitment}</div>
               <div className="flex flex-wrap gap-2 pt-2">
                 {opp.skills.map((skill) => {
-                  const isMatched = userSkills.includes(skill);
+                  const isMatched = userAbilities.includes(skill);
                   return (
-                    <Badge key={skill} variant={isMatched ? "default" : "secondary"} className={isMatched ? 'bg-green-100 text-green-800' : ''}>
+                    <Badge key={skill} variant={isMatched ? "default" : "secondary"} className={isMatched ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-500/30' : ''}>
                       {isMatched && <CheckCircle className="h-3 w-3 mr-1" />}
                       {skill}
                     </Badge>
