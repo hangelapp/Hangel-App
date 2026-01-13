@@ -198,7 +198,12 @@ export type User = {
         avgDonation: number;
         volunteerHours: number;
         completedProjects: number;
-        volunteerRank: string;
+        volunteerRank: {
+            country: string;
+            city: string;
+            school: string;
+            interest: string;
+        };
         mostActiveVolunteerArea: string;
         avgVolunteerDuration: string;
         totalImpactValue: number;

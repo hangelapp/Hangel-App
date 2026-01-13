@@ -9,18 +9,18 @@ const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages
 
 export const user: User = {
     id: '1',
-    name: 'Ayşe Yılmaz',
-    username: '@ayseyilmaz',
+    name: 'İsmail Hilmi ADIGÜZEL',
+    username: '@ismailhilmiadiguzel',
     avatarUrl: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgwMDU1OTV8MA&ixlib=rb-4.1.0&q=80&w=1080',
     coverPhotoUrl: 'https://images.unsplash.com/photo-1693902939226-449195d2698b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhYnN0cmFjdCUyMG5hdHVyZXxlbnwwfHx8fDE3NjgwMzgwMDN8MA&ixlib=rb-4.1.0&q=80&w=1080',
     impactScore: 15750,
     personalInfo: {
-        email: 'a.yilmaz@email.com',
+        email: 'i.adiguzel@email.com',
         phone: '+90 555 123 4567',
-        birthDate: '1995-03-15',
-        gender: 'Kadın',
+        birthDate: '1992-08-25',
+        gender: 'Erkek',
         nationality: 'Türkiye Cumhuriyeti',
-        bloodType: 'A Rh+',
+        bloodType: '0 Rh+',
         address: {
             country: 'Türkiye',
             city: 'İstanbul',
@@ -34,14 +34,14 @@ export const user: User = {
         dailySkills: ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim'],
         interests: ['Hayvan Hakları', 'Çevre', 'Eğitim'],
         education: [
-            { level: 'Lisans', school: 'Marmara Üniversitesi - İletişim Fakültesi' },
-            { level: 'Lise', school: 'Kadıköy Anadolu Lisesi' }
+            { level: 'Lisans', school: 'Boğaziçi Üniversitesi - Yönetim Bilişim Sistemleri' },
+            { level: 'Lise', school: 'Kabataş Erkek Lisesi' }
         ],
-        profession: 'Grafik Tasarımcı',
-        languages: ['Türkçe (Ana Dil)', 'İngilizce (İleri)'],
-        programs: ['Adobe Photoshop', 'Adobe Illustrator', 'Figma'],
-        licenses: ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet'],
-        documents: ['İlk Yardım Sertifikası', 'Hijyen Belgesi', 'İş Güvenliği Sertifikası'],
+        profession: 'Yazılım Geliştirici',
+        languages: ['Türkçe (Ana Dil)', 'İngilizce (İleri)', 'Almanca (Orta)'],
+        programs: ['VS Code', 'Figma', 'Docker'],
+        licenses: ['B Sınıfı Ehliyet'],
+        documents: ['İlk Yardım Sertifikası', 'Scrum Master Sertifikası'],
         travelInfo: { 
             domesticObstacle: false, 
             internationalObstacle: false,
@@ -57,7 +57,12 @@ export const user: User = {
         avgDonation: 29.76,
         volunteerHours: 48,
         completedProjects: 5,
-        volunteerRank: 'İlk %15',
+        volunteerRank: {
+            country: 'İlk %5',
+            city: 'İlk %2',
+            school: 'İlk %1',
+            interest: 'Hayvan Hakları alanında İlk %10',
+        },
         mostActiveVolunteerArea: 'Hayvan Hakları',
         avgVolunteerDuration: '3 Hafta',
         totalImpactValue: 25000,

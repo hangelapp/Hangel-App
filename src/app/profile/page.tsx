@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { user, badges, certificates, pastVolunteering } from '@/lib/data';
@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 const InfoRow = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | undefined | null }) => (
-    <div className="flex items-start gap-4 py-2">
+    <div className="flex items-start gap-4 py-3">
         <Icon className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
         <div className="flex-1">
             <p className="text-sm text-muted-foreground">{label}</p>
@@ -44,7 +44,7 @@ const VolunteerInfoCard = ({ title, items, icon: Icon }: { title: string, items:
 );
 
 const StatDetailRow = ({ label, value }: { label: string, value: string | number }) => (
-    <div className="flex justify-between items-center py-2 text-sm">
+    <div className="flex justify-between items-center py-3 text-sm">
         <p className="text-muted-foreground">{label}</p>
         <p className="font-semibold">{value}</p>
     </div>
@@ -80,19 +80,17 @@ export default function ProfilePage() {
                 {user.avatarUrl && <Image src={user.avatarUrl} alt="User Avatar" fill className="object-cover rounded-full" data-ai-hint="person portrait"/>}
             </div>
             <div className="w-full flex justify-between items-end pb-1">
-                <div>
-                    <h1 className="text-2xl font-bold font-headline">{user.name}</h1>
-                    <p className="text-muted-foreground">{user.username}</p>
-                </div>
-                <Button variant="outline" size="icon">
-                    <Edit className="h-4 w-4" />
-                </Button>
+                {/* Spacer div to push username down */}
             </div>
+        </div>
+        <div className='mt-4'>
+             <h1 className="text-2xl font-bold font-headline">{user.name}</h1>
+             <p className="text-muted-foreground">{user.username}</p>
         </div>
       </div>
       
       {showImpactCard && (
-          <div className="px-4 mt-4">
+          <div className="px-4 mt-2">
             <Card className="bg-primary/5 border-primary/20 relative">
                 <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={() => setShowImpactCard(false)}>
                     <X className="h-4 w-4" />
@@ -127,31 +125,29 @@ export default function ProfilePage() {
         <TabsContent value="statistics" className="p-4 space-y-4">
             <Card>
                 <CardHeader>
-                    <CardTitle>Gönüllülük Detayları</CardTitle>
+                    <CardTitle>Gönüllülük İstatistikleri</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <StatDetailRow label="Gönüllülük Sıralaması" value={user.stats.volunteerRank} />
-                    <Separator/>
+                <CardContent className='divide-y'>
+                    <StatDetailRow label="Toplam Gönüllülük Saati" value={`${user.stats.volunteerHours} Saat`} />
                     <StatDetailRow label="Tamamlanan Proje Sayısı" value={user.stats.completedProjects} />
-                    <Separator/>
+                    <StatDetailRow label="Ülke Sıralaması" value={user.stats.volunteerRank.country} />
+                    <StatDetailRow label="Şehir Sıralaması" value={user.stats.volunteerRank.city} />
+                    <StatDetailRow label="Okul Sıralaması" value={user.stats.volunteerRank.school} />
+                    <StatDetailRow label="İlgi Alanı Sıralaması" value={user.stats.volunteerRank.interest} />
                     <StatDetailRow label="En Aktif Gönüllülük Alanı" value={user.stats.mostActiveVolunteerArea} />
-                    <Separator/>
                     <StatDetailRow label="Ortalama Gönüllülük Süresi" value={user.stats.avgVolunteerDuration} />
                 </CardContent>
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle>Bağış Detayları</CardTitle>
+                    <CardTitle>Bağış İstatistikleri</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className='divide-y'>
+                    <StatDetailRow label="Toplam Bağış Tutarı" value={`${user.stats.totalDonation.toLocaleString()} ₺`} />
                     <StatDetailRow label="Toplam İşlem Adedi" value={user.stats.donationCount} />
-                    <Separator/>
                     <StatDetailRow label="Desteklenen Farklı STK" value={user.stats.supportedNgosCount} />
-                    <Separator/>
                     <StatDetailRow label="En Çok Desteklenen STK" value={user.stats.mostSupportedNgo} />
-                    <Separator/>
                     <StatDetailRow label="Tek Seferde En Yüksek Bağış" value={`${user.stats.highestSingleDonation} ₺`} />
-                     <Separator/>
                     <StatDetailRow label="Ortalama Bağış Tutarı" value={`${user.stats.avgDonation.toFixed(2)} ₺`} />
                 </CardContent>
             </Card>
@@ -209,9 +205,18 @@ export default function ProfilePage() {
                         <CardContent className="text-sm space-y-3">
                             <div>
                                 <p>Yurtiçi seyahat engeli: <span className='font-medium'>{user.volunteerInfo.travelInfo.domesticObstacle ? 'Var' : 'Yok'}</span></p>
-                                <p>Yurtdışı seyahat engeli: <span className='font-medium'>{user.volunteerInfo.travelInfo.internationalObstacle ? 'Var' : 'Yok'}</span></p>
+                                <p className='mt-1'>Yurtdışı seyahat engeli: <span className='font-medium'>{user.volunteerInfo.travelInfo.internationalObstacle ? 'Var' : 'Yok'}</span></p>
                             </div>
-                            <VolunteerInfoCard title="Vizeler" items={user.volunteerInfo.travelInfo.visas} icon={Globe} />
+                            {user.volunteerInfo.travelInfo.visas && user.volunteerInfo.travelInfo.visas.length > 0 && (
+                                <div>
+                                    <p className="font-medium mt-3 mb-2 text-primary">Vizeler</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {user.volunteerInfo.travelInfo.visas.map(visa => (
+                                            <div key={visa} className="text-sm border rounded-full px-3 py-1 bg-secondary/50">{visa}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </CardContent>
@@ -224,11 +229,9 @@ export default function ProfilePage() {
                     <CardContent className="p-4 space-y-4">
                         {certificates.map(cert => (
                             <div key={cert.id} className='relative p-4 rounded-lg border'>
-                               <div className='pr-24'>
-                                 <p className='text-sm text-muted-foreground'>{cert.organization} - {cert.date}</p>
-                                 <p className='font-semibold mt-1'>{cert.title}</p>
-                               </div>
-                               <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
+                                <p className='text-sm text-muted-foreground'>{cert.organization} - {cert.date}</p>
+                                <p className='font-semibold mt-1'>{cert.title}</p>
+                               <div className='absolute top-2 right-2 flex gap-1'>
                                    <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-4 w-4"/></Button>
                                    <Button size="icon" variant="ghost" className="h-7 w-7"><Download className="h-4 w-4"/></Button>
                                    <Button size="icon" variant="ghost" className="h-7 w-7"><Share2 className="h-4 w-4"/></Button>
