@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Twitter, Instagram, Linkedin, Users, HandCoins, Hourglass } from 'lucide-react';
+import { Mail, Phone, MapPin, Twitter, Instagram, Linkedin, Users, HandCoins, Hourglass, MessageSquare } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -106,7 +106,7 @@ export default function AboutPage() {
                     <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
                     <div>
                         <p>Ege Bölge İrtibat Ofisi</p>
-                        <p className='text-sm text-muted-foreground'>Alsancak Mah. Atatürk Cad. No: 382, Konak, İzmir</p>
+                        <p className='text-sm text-muted-foreground'>İzmir, Karşıyaka, Bahçeli Evler Mh., Sancar Maruflu STK Yerleşkesi, Kat:1 No:21</p>
                     </div>
                 </div>
             </div>
@@ -116,6 +116,7 @@ export default function AboutPage() {
                     <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
+                    <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
                 </div>
             </div>
         </CardContent>
