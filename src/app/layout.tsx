@@ -3,9 +3,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import AppHeader from '@/components/layout/header';
 import AppBottomNav from '@/components/layout/bottom-nav';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'hangel',
@@ -19,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className="" style={{}} suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className="antialiased">
         <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col bg-background shadow-2xl">
           <AppHeader />
           <main className="flex-1 pt-16 pb-20">{children}</main>
