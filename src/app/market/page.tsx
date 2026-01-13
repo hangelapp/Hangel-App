@@ -24,7 +24,7 @@ const BrandCard = ({ brand, isSponsored }: { brand: Brand; isSponsored?: boolean
   const profileLink = isEconomicEnterprise ? `/ngos/${brand.ngoId}` : `/market/${brand.id}`;
 
   return (
-    <Card key={brand.id} className="flex flex-col relative">
+    <Card key={brand.id} className="flex flex-col justify-between relative">
         {isSponsored && (
             <Badge variant="outline" className="absolute top-2 right-2 flex items-center gap-1 border-amber-500 text-amber-500 text-xs bg-background/80 backdrop-blur-sm z-10">
                 <Star className="h-3 w-3" />
@@ -48,8 +48,6 @@ const BrandCard = ({ brand, isSponsored }: { brand: Brand; isSponsored?: boolean
                  <div className="text-sm font-bold text-primary">%{brand.donationRate} Bağış</div>
             </div>
         </CardHeader>
-        <CardContent className="flex-grow">
-        </CardContent>
         <CardFooter>
             <Button asChild variant="secondary" className="w-full">
                 <Link href={profileLink}>
