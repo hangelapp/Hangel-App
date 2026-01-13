@@ -34,7 +34,7 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
     }, []);
 
     if (!isMounted) {
-        return <>{children}</>;
+        return null;
     }
 
   return (
