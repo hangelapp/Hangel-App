@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle, ScanLine, Keyboard, Phone } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, QrCode, RefreshCw, CheckCircle, ScanLine, Keyboard, Phone, Contact } from 'lucide-react';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -96,7 +96,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+        <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
             <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
@@ -111,7 +111,7 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
                  <QrCode className="h-20 w-20 text-black" />
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
              <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
@@ -184,7 +184,8 @@ export default function QrPaymentPage() {
             <div className="bg-white p-4 inline-block rounded-xl shadow-md">
                 <QrCode className="h-40 w-40 text-black" />
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
+             <p className="mt-4 font-mono text-2xl tracking-widest text-foreground font-semibold">123-456</p>
+            <p className="mt-2 text-xs text-muted-foreground">Ödeme almak veya göndermek için QR kodunuzu gösterin.</p>
           </TabsContent>
           <TabsContent value="scan_qr" className="mt-4 text-center">
              <div className="aspect-square bg-muted rounded-xl flex flex-col items-center justify-center">
@@ -202,7 +203,12 @@ export default function QrPaymentPage() {
           <TabsContent value="pay_phone" className="mt-4 space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="phone">Telefon Numarası</Label>
-                    <Input id="phone" type="tel" placeholder="5XX XXX XX XX" />
+                    <div className="relative flex items-center">
+                      <Input id="phone" type="tel" placeholder="5XX XXX XX XX" className="pr-10" />
+                      <Button variant="ghost" size="icon" className="absolute right-1 h-8 w-8 text-muted-foreground">
+                        <Contact className="h-5 w-5" />
+                      </Button>
+                    </div>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="amount-transfer">Tutar</Label>
