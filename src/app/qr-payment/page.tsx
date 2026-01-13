@@ -89,17 +89,15 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
               <p className="text-xs opacity-70">Kart Sahibi</p>
               <p className={`font-semibold text-sm ${card.textColor}`}>{card.owner}</p>
             </div>
-            <div className='flex items-center gap-2'>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={onFlip}>
-                  <RefreshCw className="h-4 w-4" />
-              </Button>
-              <div>
-                <p className="text-xs opacity-70 text-right">Son Kul.</p>
+            <div className='text-right'>
+                <p className="text-xs opacity-70">Son Kul.</p>
                 <p className={`font-semibold text-sm ${card.textColor}`}>{card.expiry}</p>
-              </div>
             </div>
           </div>
         </div>
+        <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+            <RefreshCw className="h-5 w-5" />
+        </Button>
       </div>
 
       {/* Card Back */}
@@ -112,8 +110,8 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
                  <QrCode className="h-20 w-20 text-black" />
             </div>
         </div>
-         <Button variant="ghost" size="icon" className="absolute bottom-4 left-4 h-7 w-7 text-white/70 hover:text-white" onClick={onFlip}>
-             <RefreshCw className="h-4 w-4" />
+         <Button variant="ghost" size="icon" className="absolute bottom-4 right-4 h-8 w-8 text-white/70 hover:text-white" onClick={onFlip}>
+             <RefreshCw className="h-5 w-5" />
          </Button>
       </div>
     </div>
