@@ -27,7 +27,8 @@ const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: str
 
 export default function ClubProfilePage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const club = studentClubs.find(c => c.id === params.id);
+  const { id } = params;
+  const club = studentClubs.find(c => c.id === id);
 
   if (!club) {
     notFound();
