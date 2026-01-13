@@ -135,8 +135,7 @@ export default function StudentClubsPage() {
                 <TabsTrigger value="city">Şehrimde</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
-                {contentType === 'club' ? clubListAll : eventListAll}
-                {['all'].includes(activeSubTab) && <div className="mt-4">{schoolTypeTabs}</div>}
+                {['all'].includes(activeSubTab) ? schoolTypeTabs : (contentType === 'club' ? clubListAll : eventListAll)}
             </TabsContent>
             <TabsContent value="country" className="mt-4">
                  {['country'].includes(activeSubTab) && schoolTypeTabs}
