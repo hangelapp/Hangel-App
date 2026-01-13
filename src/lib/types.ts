@@ -324,5 +324,8 @@ export type HelpTopic = {
   icon: LucideIcon;
   title: string;
   slug: string;
-  subtopics: string[];
+  description: string;
+  subtopics: { title: string; link: string }[];
 };
+
+    

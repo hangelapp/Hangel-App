@@ -49,9 +49,10 @@ export default function SupportPage() {
                                 <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground border-t pt-4 space-y-4">
                                     <div className='flex flex-col gap-3'>
                                       {topic.subtopics.map(sub => (
-                                          <Link href="#" key={sub} className="font-medium text-foreground hover:underline">{sub}</Link>
+                                          <Link href="#" key={sub.title} className="font-medium text-foreground hover:underline">{sub.title}</Link>
                                       ))}
                                     </div>
+                                    <p className='text-sm mt-4'>{topic.description}</p>
                                     <div className="mt-6 border-t pt-4 text-center">
                                         <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
                                         <div className="flex justify-center gap-2">
@@ -72,15 +73,28 @@ export default function SupportPage() {
       <div>
         <h2 className="text-xl font-bold mb-4">Sıkça Sorulan Sorular</h2>
         <Card>
-            <CardContent className='p-0 divide-y'>
-                {popularArticles.map((article) => (
-                     <Link href={article.link} key={article.title} passHref>
-                        <div className='flex justify-between items-center p-4 hover:bg-accent transition-colors'>
-                            <p className='font-medium text-sm'>{article.title}</p>
-                            <ChevronRight className='h-5 w-5 text-muted-foreground'/>
-                        </div>
-                    </Link>
-                ))}
+            <CardContent className='p-0'>
+                <Accordion type="single" collapsible className="w-full">
+                  {popularArticles.map((article, index) => (
+                      <AccordionItem value={`faq-${index}`} key={article.title}>
+                          <AccordionTrigger className="p-4 text-sm font-medium hover:no-underline">
+                               {article.title}
+                          </AccordionTrigger>
+                          <AccordionContent className="px-4 pb-4">
+                              <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground pt-2 space-y-4">
+                                  <p>Bu sorunun cevabı yakında burada olacak. Anlayışınız için teşekkür ederiz.</p>
+                                  <div className="mt-6 border-t pt-4 text-center">
+                                      <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
+                                      <div className="flex justify-center gap-2">
+                                          <Button variant="outline" size="sm">Evet</Button>
+                                          <Button variant="outline" size="sm">Hayır</Button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </AccordionContent>
+                      </AccordionItem>
+                  ))}
+                </Accordion>
             </CardContent>
         </Card>
       </div>
@@ -99,3 +113,5 @@ export default function SupportPage() {
     </div>
   );
 }
+
+    

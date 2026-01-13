@@ -9,7 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 export default function VolunteeringPage() {
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
-      <div className="space-y-4 sticky top-16 bg-background/80 backdrop-blur-xl z-10 py-4 -my-4">
+      <div className="space-y-4 sticky top-16 bg-background/80 backdrop-blur-xl z-10 py-4">
         <div className="space-y-1">
             <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
             <p className="text-muted-foreground text-sm">Topluma katkıda bulun ve etki yarat.</p>
@@ -46,7 +46,7 @@ export default function VolunteeringPage() {
         </Accordion>
       </div>
 
-      <div className="space-y-4 pt-44">
+      <div className="space-y-4">
         {volunteeringOpportunities.map((opp) => (
           <Card key={opp.id}>
             <CardHeader>
@@ -78,3 +78,5 @@ export default function VolunteeringPage() {
     </div>
   );
 }
+
+    

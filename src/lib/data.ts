@@ -3,7 +3,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, HandHeart } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, HandHeart, ChevronDown } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -456,65 +456,73 @@ export const helpTopics: HelpTopic[] = [
     icon: UserCircle,
     title: 'Hesap Yönetimi',
     slug: 'hesap-yonetimi',
+    description: "Hesap ayarlarınızı, profil bilgilerinizi ve bildirim tercihlerinizi nasıl yöneteceğinizi öğrenin.",
     subtopics: [
-        'E-posta adresimi nasıl değiştiririm?',
-        'Profil fotoğrafımı nasıl güncellerim?',
-        'Kullanıcı adımı değiştirebilir miyim?',
-        'Hesabımı nasıl silebilirim?',
+        { title: 'E-posta adresimi nasıl değiştiririm?', link: '#' },
+        { title: 'Şifremi nasıl sıfırlarım?', link: '#' },
+        { title: 'Profil fotoğrafımı nasıl güncellerim?', link: '#' },
+        { title: 'Hesabımı nasıl silebilirim?', link: '#' },
     ]
   },
   {
     icon: HeartHandshake,
     title: 'Gönüllülük',
     slug: 'gonulluluk',
+    description: "Gönüllülük süreçleri, başvurular, puanlar ve sertifikalar hakkında merak ettikleriniz.",
     subtopics: [
-        'Gönüllülük ilanlarına nasıl başvurulur?',
-        'Başvurumun durumunu nereden takip edebilirim?',
-        'Kazandığım sosyal etki puanları ne işe yarar?',
-        'Gönüllülük sertifikamı nasıl alabilirim?',
+        { title: 'Gönüllülük ilanlarına nasıl başvurulur?', link: '#' },
+        { title: 'Başvurumun durumunu nereden takip edebilirim?', link: '#' },
+        { title: 'Kazandığım sosyal etki puanları ne işe yarar?', link: '#' },
+        { title: 'Gönüllülük sertifikamı nasıl alabilirim?', link: '#' },
     ]
   },
   {
     icon: Wallet,
     title: 'Bağış ve Cüzdan',
     slug: 'bagis-ve-cuzdan',
+    description: "Alışverişle bağış, cüzdan işlemleri ve ödeme yöntemleri ile ilgili tüm sorularınızın cevapları.",
     subtopics: [
-        'hangel cüzdanıma nasıl para yüklerim?',
-        'Alışveriş yaparken bağış süreci nasıl işliyor?',
-        'Bağışlarımın hangi STK\'lara gittiğini nasıl görürüm?',
-        'Ödeme yaparken bir sorun yaşadım, ne yapmalıyım?',
+        { title: 'hangel cüzdanıma nasıl para yüklerim?', link: '#' },
+        { title: 'Alışveriş yaparken bağış süreci nasıl işliyor?', link: '#' },
+        { title: 'Bağışlarımın hangi STK\'lara gittiğini nasıl görürüm?', link: '#' },
+        { title: 'Ödeme yaparken bir sorun yaşadım, ne yapmalıyım?', link: '#' },
     ]
   },
   {
     icon: Settings2,
     title: 'Uygulama ve Ayarlar',
     slug: 'uygulama-ve-ayarlar',
+    description: "Uygulama teması, dil seçenekleri ve diğer kişiselleştirme ayarları hakkında bilgi alın.",
     subtopics: [
-        'Bildirim ayarlarımı nasıl yönetebilirim?',
-        'Uygulama dilini nasıl değiştiririm?',
-        'Karanlık mod nasıl açılır?',
-        'Veri kullanımımı nasıl kontrol edebilirim?',
+        { title: 'Bildirim ayarlarımı nasıl yönetebilirim?', link: '#' },
+        { title: 'Uygulama dilini nasıl değiştiririm?', link: '#' },
+        { title: 'Karanlık mod nasıl açılır?', link: '#' },
+        { title: 'Veri kullanımımı nasıl kontrol edebilirim?', link: '#' },
     ]
   },
   {
     icon: Shield,
     title: 'Güvenlik ve Gizlilik',
     slug: 'guvenlik-ve-gizlilik',
+    description: "Hesap güvenliğiniz, kişisel verilerinizin korunması ve gizlilik politikalarımız hakkında detaylar.",
     subtopics: [
-        'Şifremi unuttum, ne yapmalıyım?',
-        'Hesabımın başkasının eline geçtiğini düşünüyorum.',
-        'Kişisel verilerim güvende mi?',
-        'hangel\'in gizlilik politikası nedir?',
+        { title: 'Şifremi unuttum, ne yapmalıyım?', link: '#' },
+        { title: 'Hesabımın başkasının eline geçtiğini düşünüyorum.', link: '#' },
+        { title: 'Kişisel verilerim güvende mi?', link: '#' },
+        { title: 'hangel\'in gizlilik politikası nedir?', link: '#' },
     ]
   },
   {
     icon: BookText,
     title: 'Topluluk Kuralları',
     slug: 'topluluk-kurallari',
+    description: "Platformumuzda pozitif ve saygılı bir ortam sağlamak için uymanız gereken kurallar.",
     subtopics: [
-        'Hangi tür içerikler yasaktır?',
-        'Bir kullanıcıyı nasıl şikayet edebilirim?',
-        'Yorum ve paylaşımlarda nelere dikkat etmeliyim?',
+        { title: 'Hangi tür içerikler yasaktır?', link: '#' },
+        { title: 'Bir kullanıcıyı nasıl şikayet edebilirim?', link: '#' },
+        { title: 'Yorum ve paylaşımlarda nelere dikkat etmeliyim?', link: '#' },
     ]
   }
 ];
+
+    

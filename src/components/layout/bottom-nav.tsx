@@ -6,9 +6,9 @@ import { Store, HeartHandshake, Wallet, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/timeline", icon: LayoutGrid, label: "Akış" },
   { href: "/market", icon: Store, label: "Market" },
-  { href: "/qr-payment", icon: Wallet, label: "Cüzdan" },
+  { href: "/timeline", icon: LayoutGrid, label: "Akış" },
+  { href: "/qr-payment", icon: Wallet, label: "QR" },
   { href: "/volunteering", icon: HeartHandshake, label: "Gönüllülük" },
 ];
 
@@ -37,3 +37,5 @@ export default function AppBottomNav() {
     </nav>
   );
 }
+
+    
