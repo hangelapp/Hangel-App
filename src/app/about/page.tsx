@@ -83,7 +83,7 @@ export default function AboutPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>+90 555 123 45 67</span>
+                    <span>+90 554 700 7007</span>
                 </div>
                  <div className="flex items-start gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
@@ -116,7 +116,7 @@ export default function AboutPage() {
                     <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
-                    <a href="https://wa.me/905551234567" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
+                    <a href="https://wa.me/905547007007" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground" /></a>
                 </div>
             </div>
         </CardContent>

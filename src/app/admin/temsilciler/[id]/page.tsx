@@ -76,7 +76,7 @@ const RepresentativeProfilePage = ({ params }: { params: { id: string } }) => {
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <p><strong>E-posta:</strong> {representative.name.toLowerCase().replace(' ', '.')}@hangel.com</p>
-          <p><strong>Telefon:</strong> +90 555 123 45 67 (Gizli)</p>
+          <p><strong>Telefon:</strong> +90 554 700 7007 (Gizli)</p>
         </CardContent>
       </Card>
     </div>

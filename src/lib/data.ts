@@ -3,7 +3,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, HeartHandshake, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, HeartPulse, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2 } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -17,7 +17,7 @@ export const user: User = {
     impactScore: 15750,
     personalInfo: {
         email: 'i.adiguzel@email.com',
-        phone: '+90 555 123 4567',
+        phone: '+90 554 700 7007',
         birthDate: '1992-08-25',
         gender: 'Erkek',
         nationality: 'Türkiye Cumhuriyeti',
@@ -174,7 +174,7 @@ export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21
     description: 'Bu görevde, belirlenen alanda ilgili yetkinliklerinizi kullanarak topluma fayda sağlayacaksınız.',
     points: 150 + i * 10,
     ngoTransparencyScore: 85 + i % 10,
-    taskType: ['Dönemsel', 'Tek Gün', 'Sürekli'][i%3] as 'Tek Gün' | 'Dönemsel' | 'Sürekli'
+    taskType: ['Tek Gün', 'Dönemsel', 'Sürekli'][i%3] as 'Tek Gün' | 'Dönemsel' | 'Sürekli'
 }));
 
 
