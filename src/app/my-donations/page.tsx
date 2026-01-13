@@ -34,13 +34,13 @@ export default function MyDonationsPage() {
       </Card>
       
       <div>
+        <h2 className="text-xl mb-2">İşlem Geçmişi</h2>
         <div className="flex justify-between items-center mb-2 gap-2">
-            <h2 className="text-xl font-bold">İşlem Geçmişi</h2>
-            <div className="flex items-center gap-2">
-                <div className="relative w-32 sm:w-auto">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Ara..." className="pl-8 text-sm h-9" />
-                </div>
+            <div className="relative w-full">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Ara..." className="pl-8 text-sm h-9 w-full" />
+            </div>
+            <div className='flex'>
                 <Button variant="ghost" size="icon">
                     <Filter className="h-4 w-4" />
                 </Button>
