@@ -98,13 +98,13 @@ export default function AppHeader() {
   
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 mx-auto max-w-md border-b border-black/10 bg-background/80 backdrop-blur-xl dark:border-white/10">
+      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b border-black/10 bg-background/80 backdrop-blur-xl dark:border-white/10 lg:left-64">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)}>
+            <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
               <Menu className="h-6 w-6" />
             </Button>
-            <Link href="/timeline" passHref>
+            <Link href="/timeline" passHref className="lg:hidden">
                 <div className="flex items-center gap-2">
                     <span className="text-xl font-bold text-[#f34723]">hangel</span>
                 </div>
