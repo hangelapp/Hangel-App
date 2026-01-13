@@ -20,7 +20,7 @@ const transactions = [
 
 const cards = [
   {
-    type: 'Standart',
+    type: 'Bireysel',
     bgColor: 'bg-gradient-to-br from-gray-900 via-gray-800 to-black',
     patternUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre-v2.png',
     textColor: 'text-white',
