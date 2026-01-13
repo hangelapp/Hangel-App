@@ -64,93 +64,76 @@ export default function VolunteeringDetailPage({ params }: { params: { id: strin
             </div>
         </div>
 
-        <div className="p-4 bg-background">
-            <div className="flex gap-4 items-end -mt-16">
-                <Avatar className="h-24 w-24 border-4 border-background shrink-0">
-                    {ngo?.avatarUrl && <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />}
-                    <AvatarFallback>{opportunity.organization.slice(0,2)}</AvatarFallback>
-                </Avatar>
+        <div className="p-4 bg-background space-y-4 -mt-12 relative z-10">
+            <div>
+                 <h1 className="text-2xl font-bold font-headline text-white drop-shadow-lg">{opportunity.title}</h1>
+                 <Link href={`/ngos/${opportunity.ngoId}`} className="text-white/90 text-base font-medium hover:underline drop-shadow-md">{opportunity.organization}</Link>
             </div>
-            <div className='mt-4'>
-                 <h1 className="text-2xl font-bold font-headline">{opportunity.title}</h1>
-                 <Link href={`/ngos/${opportunity.ngoId}`} className="text-muted-foreground text-base font-medium hover:underline">{opportunity.organization}</Link>
+            
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Açıklama</CardTitle></CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                    <p>{opportunity.description}</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader><CardTitle className="text-lg">İlan Detayları</CardTitle></CardHeader>
+                <CardContent className="text-sm space-y-4">
+                    <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
+                    <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({opportunity.taskType})</span></div>
+                    <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.points} Sosyal Etki Puanı</span></div>
+                    <div className='flex items-center gap-3'><Users className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.volunteerCount.needed} Gönüllü Aranıyor</span></div>
+                     <div className='flex items-center gap-3'><CheckCircle className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {opportunity.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">Uygunluk Durumun</CardTitle>
+                </CardHeader>
+                <CardContent className="divide-y">
+                    <RequirementRow 
+                        label="Gerekli Yetkinlikler" 
+                        value={opportunity.skills.length > 0 ? opportunity.skills : 'Belirtilmemiş'} 
+                        isMet={requiredSkillsMet} 
+                    />
+                    <RequirementRow 
+                        label="Gerekli Belgeler" 
+                        value={opportunity.requirements.length > 0 ? opportunity.requirements : 'Belirtilmemiş'} 
+                        isMet={requiredDocsMet} 
+                    />
+                    <RequirementRow 
+                        label="Seyahat Durumu" 
+                        value={opportunity.location.type === "Saha" ? "Saha görevi (Yurtiçi seyahat engeli olmamalı)" : "Online görev (Seyahat engeli önemsiz)"} 
+                        isMet={travelMet} 
+                    />
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                       <Building className="h-5 w-5 text-primary" />
+                        Kuruluş Hakkında
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {ngo && (
+                        <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground line-clamp-3">{ngo.about}</p>
+                            <Button asChild variant="secondary" className="w-full">
+                                <Link href={`/ngos/${ngo.id}`}>Kuruluş Profilini İncele</Link>
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            <div className="pt-4">
+                <Button size="lg" className="w-full" disabled={!requiredSkillsMet || !requiredDocsMet || !travelMet}>
+                  Hemen Başvur
+                </Button>
             </div>
-        </div>
-
-        <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 px-2">
-                <TabsTrigger value="details">Detaylar</TabsTrigger>
-                <TabsTrigger value="eligibility">Uygunluk</TabsTrigger>
-                <TabsTrigger value="organization">Kuruluş</TabsTrigger>
-            </TabsList>
-            <TabsContent value="details" className="p-4 space-y-4">
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">Açıklama</CardTitle></CardHeader>
-                    <CardContent className="text-sm text-muted-foreground">
-                        <p>{opportunity.description}</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader><CardTitle className="text-lg">İlan Detayları</CardTitle></CardHeader>
-                    <CardContent className="text-sm space-y-4">
-                        <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
-                        <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({opportunity.taskType})</span></div>
-                        <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.points} Sosyal Etki Puanı</span></div>
-                        <div className='flex items-center gap-3'><Users className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.volunteerCount.needed} Gönüllü Aranıyor</span></div>
-                         <div className='flex items-center gap-3'><CheckCircle className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {opportunity.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            <TabsContent value="eligibility" className="p-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Uygunluk Durumun</CardTitle>
-                    </CardHeader>
-                    <CardContent className="divide-y">
-                        <RequirementRow 
-                            label="Gerekli Yetkinlikler" 
-                            value={opportunity.skills.length > 0 ? opportunity.skills : 'Belirtilmemiş'} 
-                            isMet={requiredSkillsMet} 
-                        />
-                        <RequirementRow 
-                            label="Gerekli Belgeler" 
-                            value={opportunity.requirements.length > 0 ? opportunity.requirements : 'Belirtilmemiş'} 
-                            isMet={requiredDocsMet} 
-                        />
-                        <RequirementRow 
-                            label="Seyahat Durumu" 
-                            value={opportunity.location.type === "Saha" ? "Saha görevi (Yurtiçi seyahat engeli olmamalı)" : "Online görev (Seyahat engeli önemsiz)"} 
-                            isMet={travelMet} 
-                        />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            <TabsContent value="organization" className="p-4">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                           <Building className="h-5 w-5 text-primary" />
-                            Kuruluş Hakkında
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {ngo && (
-                            <div className="space-y-4">
-                                <p className="text-sm text-muted-foreground line-clamp-3">{ngo.about}</p>
-                                <Button asChild variant="secondary" className="w-full">
-                                    <Link href={`/ngos/${ngo.id}`}>Kuruluş Profilini İncele</Link>
-                                </Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </TabsContent>
-        </Tabs>
-
-        <div className="p-4">
-            <Button size="lg" className="w-full" disabled={!requiredSkillsMet || !requiredDocsMet || !travelMet}>
-              Hemen Başvur
-            </Button>
         </div>
     </div>
   );
