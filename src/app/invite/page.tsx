@@ -51,13 +51,13 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-10 animate-in fade-in-0">
+    <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
       <div className="text-center">
         <h1 className="text-2xl font-bold font-headline">Arkadaşlarını Davet Et</h1>
         <p className="mt-2 text-sm text-muted-foreground">İyilik zincirini büyütmek için arkadaşlarını hangel'a davet et.</p>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Davet Linki */}
         <div className="relative flex w-full items-center">
             <Input 
@@ -121,7 +121,7 @@ export default function InvitePage() {
         </div>
       </div>
 
-      <Separator />
+      <Separator className="my-4" />
 
       <div className='text-center text-xs text-muted-foreground space-y-2'>
         <p className='flex items-center justify-center gap-2 font-semibold text-foreground'>
