@@ -1,7 +1,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Store, Trash2, TrendingUp, Users, Utensils, Vision, Wallet } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, HandHeart, Heart, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, Vision, Wallet, PawPrint, Grape, HeartPulse, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -220,7 +220,7 @@ export const notifications: Notification[] = Array.from({ length: 21 }, (_, i) =
             break;
         case 'badge':
             title = 'Yeni Rozet Kazandın!';
-            description = '"Doğa Koruyucu" rozetini kazandınız. Tebrikler!';
+            description = '"Doğa Koruyucusu" rozetini kazandınız. Tebrikler!';
             break;
         case 'announcement':
             title = 'Yeni Gönüllülük Fırsatı';
@@ -283,26 +283,45 @@ export const certificates: Certificate[] = Array.from({ length: 21 }, (_, i) => 
 }));
 
 
-export const badges: Badge[] = [
-    // Çevre
-    { id: '1', name: 'Doğa Kaşifi', socialArea: 'Çevre', level: 'Demir', pointsRequired: 50, iconName: Leaf },
-    { id: '2', name: 'Fidan Koruyucusu', socialArea: 'Çevre', level: 'Bronz', pointsRequired: 150, iconName: Leaf },
-    { id: '3', name: 'Orman Gözcüsü', socialArea: 'Çevre', level: 'Gümüş', pointsRequired: 300, iconName: Leaf },
-    { id: '4', name: 'Ekosistem Savaşçısı', socialArea: 'Çevre', level: 'Altın', pointsRequired: 500, iconName: Leaf },
-    // Hayvan
-    { id: '5', name: 'Pati Dostu', socialArea: 'Hayvan Hakları', level: 'Demir', pointsRequired: 50, iconName: Dog },
-    { id: '6', name: 'Mama Lideri', socialArea: 'Hayvan Hakları', level: 'Bronz', pointsRequired: 150, iconName: Dog },
-    { id: '7', name: 'Barınak Gönüllüsü', socialArea: 'Hayvan Hakları', level: 'Gümüş', pointsRequired: 300, iconName: Dog },
-    // Çocuk
-    { id: '8', name: 'Oyun Arkadaşı', socialArea: 'Çocuk', level: 'Demir', pointsRequired: 50, iconName: Baby },
-    { id: '9', name: 'Eğitim Destekçisi', socialArea: 'Çocuk', level: 'Bronz', pointsRequired: 150, iconName: Baby },
-    // Toplum
-    { id: '10', name: 'Toplum Lideri', socialArea: 'İnsan Hakları', level: 'Platin', pointsRequired: 1000, iconName: ShieldCheck },
-     // Afet
-    { id: '11', name: 'Afet Gönüllüsü', socialArea: 'Afet', level: 'Demir', pointsRequired: 50, iconName: HandHeart },
-    // Sağlık
-    { id: '12', name: 'Sağlık Elçisi', socialArea: 'Sağlık', level: 'Bronz', pointsRequired: 150, iconName: Heart },
+export const badgeLevels: Badge['level'][] = ['Demir', 'Bakır', 'Bronz', 'Çelik', 'Gümüş', 'Altın', 'Platin', 'Elmas'];
+
+export const badgeData: Omit<Badge, 'id' | 'level' | 'pointsRequired' | 'currentPoints'>[] = [
+  { name: 'Hayvan Dostu', socialArea: 'Hayvan', iconName: PawPrint },
+  { name: 'Çocuk Gelişimi', socialArea: 'Çocuk', iconName: Baby },
+  { name: 'Doğa Koruyucu', socialArea: 'Çevre', iconName: Leaf },
+  { name: 'Kadın Destekçisi', socialArea: 'Kadın', iconName: Users },
+  { name: 'Engel Tanımaz', socialArea: 'Engelli', iconName: ShieldCheck },
+  { name: 'Yaşlı Dostu', socialArea: 'Yaşlı', iconName: Users },
+  { name: 'Gençlik Lideri', socialArea: 'Gençlik', iconName: Star },
+  { name: 'Sağlık Elçisi', socialArea: 'Sağlık', iconName: HeartPulse },
+  { name: 'Yoksulluk Savaşçısı', socialArea: 'Yoksulluk', iconName: HandHeart },
+  { name: 'Mülteci Destekçisi', socialArea: 'Mülteci', iconName: Handshake },
+  { name: 'Gıda Kurtarıcısı', socialArea: 'Gıda', iconName: Grape },
+  { name: 'Sanat Destekçisi', socialArea: 'Sanat', iconName: Palette },
+  { name: 'Spor Gönüllüsü', socialArea: 'Spor', iconName: Dumbbell },
+  { name: 'Afet Kahramanı', socialArea: 'Afet', iconName: Siren },
+  { name: 'Mesleki Katkı', socialArea: 'Mesleki', iconName: Briefcase },
+  { name: 'İş Dünyası Lideri', socialArea: 'İş Dünyası', iconName: Landmark },
+  { name: 'Sivil Toplum Lideri', socialArea: 'Sivil Toplum', iconName: Handshake },
+  { name: 'Memleket Gönüllüsü', socialArea: 'Memleket', iconName: Landmark },
+  { name: 'Teknoloji Gurusu', socialArea: 'Teknoloji', iconName: Cpu },
 ];
+
+
+export const badges: Badge[] = badgeData.map((badge, index) => {
+    const levelIndex = Math.floor(Math.random() * badgeLevels.length);
+    const pointsRequired = (levelIndex + 1) * 100;
+    const currentPoints = Math.floor(Math.random() * (pointsRequired + 50));
+
+    return {
+        id: (index + 1).toString(),
+        ...badge,
+        level: badgeLevels[levelIndex],
+        pointsRequired: pointsRequired,
+        currentPoints: Math.min(currentPoints, pointsRequired), // Ensure current points don't exceed required for earned badges
+    }
+});
+
 
 export const adBanners = [
     {

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -56,7 +56,6 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
                                 <item.icon className="h-5 w-5 text-primary" />
                                 <span>{item.label}</span>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
                             </div>
                         </SheetClose>
                     </Link>

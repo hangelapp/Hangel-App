@@ -195,9 +195,10 @@ export type Badge = {
   id: string;
   name: string;
   iconName: LucideIcon;
-  level: 'Demir' | 'Bakır' | 'Bronz' | 'Çelik' | 'Gümüş' | 'Altın' | 'Platin';
+  level: 'Demir' | 'Bakır' | 'Bronz' | 'Çelik' | 'Gümüş' | 'Altın' | 'Platin' | 'Elmas';
   socialArea: string;
   pointsRequired: number;
+  currentPoints: number;
 };
 
 export type Certificate = {
@@ -274,4 +275,12 @@ export type Notification = {
   description: string;
   timestamp: string;
   isRead: boolean;
+};
+
+export type ManagedItem = {
+    name: string;
+    type: 'STK' | 'Marka' | 'Öğrenci Kulübü';
+    icon: LucideIcon;
+    href: string;
+    status: 'approved' | 'pending';
 };

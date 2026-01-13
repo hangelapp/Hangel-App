@@ -1,27 +1,19 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Star, Users, Heart, Leaf, Dog, Baby, ShieldCheck, Download, Eye } from 'lucide-react';
+import { Award, Star, Users, Heart, Download, Eye, PawPrint, Grape, HeartPulse } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { badges, certificates, user } from '@/lib/data';
 
 const stats = [
-    { icon: Star, value: '15,750', label: 'Etki Puanı' },
-    { icon: Award, value: '4', label: 'Rozet' },
-    { icon: Users, value: '48 Saat', label: 'Gönüllülük' },
-    { icon: Heart, value: '1,250 ₺', label: 'Bağış' },
+    { icon: Star, value: user.impactScore.toLocaleString(), label: 'Etki Puanı' },
+    { icon: Award, value: badges.filter(b => b.currentPoints >= b.pointsRequired).length, label: 'Rozet' },
+    { icon: Users, value: `${user.stats.volunteerHours} Saat`, label: 'Gönüllülük' },
+    { icon: Heart, value: `${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`, label: 'Bağış' },
 ];
 
-const badges = [
-  { icon: Leaf, name: 'Doğa Koruyucu', level: 'Altın', progress: 100 },
-  { icon: Dog, name: 'Hayvan Dostu', level: 'Gümüş', progress: 100 },
-  { icon: Baby, name: 'Çocuk Gelişimi', level: 'Bronz', progress: 100 },
-  { icon: ShieldCheck, name: 'Toplum Lideri', level: 'Platin', progress: 100 },
-  { icon: Heart, name: 'Bağış Kahramanı', level: 'Çelik', progress: 75 },
-  { icon: Star, name: 'Etki Lideri', level: 'Demir', progress: 40 },
-]
-
-const certificates = [
-    {id: 1, title: 'Afet Bölgesi Yardım Dağıtımı Katılım Sertifikası', org: 'Ahbap Derneği'}
-]
 
 export default function MyBadgesPage() {
   return (
@@ -39,42 +31,60 @@ export default function MyBadgesPage() {
                 ))}
             </CardContent>
         </Card>
-
-        <div>
-            <h2 className="text-lg font-semibold mb-2">Tüm Rozetler</h2>
-            <div className="grid grid-cols-2 gap-4">
-                {badges.map(badge => (
-                    <Card key={badge.name} className="p-4 flex flex-col items-center justify-center text-center">
-                        <div className={`p-3 rounded-full mb-2 ${badge.progress < 100 ? 'bg-muted' : 'bg-primary/10'}`}>
-                            <badge.icon className={`h-8 w-8 ${badge.progress < 100 ? 'text-muted-foreground' : 'text-primary'}`}/>
-                        </div>
-                        <p className="font-semibold text-sm">{badge.name}</p>
-                        <p className="text-xs text-muted-foreground">{badge.level} Seviye</p>
-                        {badge.progress < 100 && <Progress value={badge.progress} className="mt-2 h-2" />}
-                    </Card>
-                ))}
-            </div>
-        </div>
-
-        <div>
-            <h2 className="text-lg font-semibold mb-2">Sertifikalarım</h2>
-            <Card>
-                <CardContent className="p-4 space-y-4">
-                    {certificates.map(cert => (
-                        <div key={cert.id} className='p-3 rounded-lg border flex justify-between items-center'>
-                           <div>
-                             <p className='font-semibold'>{cert.title}</p>
-                             <p className='text-sm text-muted-foreground'>{cert.org}</p>
-                           </div>
-                           <div className='flex gap-2'>
-                               <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
-                               <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
-                           </div>
-                        </div>
+        
+        <Tabs defaultValue="badges" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="badges">Rozetler</TabsTrigger>
+                <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
+            </TabsList>
+            <TabsContent value="badges" className="mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                    {badges.map(badge => (
+                        <Card key={badge.name} className="p-4 flex flex-col items-center justify-center text-center">
+                            <div className={`relative p-3 rounded-full mb-2 ${badge.currentPoints < badge.pointsRequired ? 'bg-muted' : 'bg-primary/10'}`}>
+                                <badge.iconName className={`h-8 w-8 ${badge.currentPoints < badge.pointsRequired ? 'text-muted-foreground' : 'text-primary'}`}/>
+                            </div>
+                            <p className="font-semibold text-sm">{badge.name}</p>
+                            <p className="text-xs text-muted-foreground">{badge.level} Seviye</p>
+                            
+                            {badge.currentPoints < badge.pointsRequired ? (
+                                <>
+                                    <Progress value={(badge.currentPoints / badge.pointsRequired) * 100} className="mt-2 h-2" />
+                                    <p className="text-xs text-muted-foreground mt-1">{badge.currentPoints}/{badge.pointsRequired} Puan</p>
+                                </>
+                            ) : (
+                                <p className="text-xs font-semibold text-green-600 mt-1">Kazanıldı!</p>
+                            )}
+                        </Card>
                     ))}
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+            </TabsContent>
+            <TabsContent value="certificates" className="mt-4">
+                {certificates.length > 0 ? (
+                    <Card>
+                        <CardContent className="p-4 space-y-4">
+                            {certificates.map(cert => (
+                                <div key={cert.id} className='p-3 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center'>
+                                   <div className='flex-1 mb-3 sm:mb-0'>
+                                     <p className='font-semibold'>{cert.title}</p>
+                                     <p className='text-sm text-muted-foreground'>{cert.organization}</p>
+                                     <p className='text-xs text-muted-foreground mt-1'>Tarih: {cert.date}</p>
+                                   </div>
+                                   <div className='flex gap-2 self-end sm:self-center'>
+                                       <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
+                                   </div>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="text-center text-muted-foreground py-12">
+                        <p>Henüz kazanılmış bir sertifikanız bulunmuyor.</p>
+                    </div>
+                )}
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }
