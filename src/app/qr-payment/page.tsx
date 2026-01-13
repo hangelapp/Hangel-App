@@ -115,7 +115,9 @@ const CardFace = ({ card, isFlipped, onFlip }: { card: typeof cardData[0], isFli
       </div>
 
       {/* Card Back */}
-      <div className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-4 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor, card.bgColor)}>
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-4 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor, card.bgColor)}>
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
         <div className="relative z-10 space-y-3">
           <CardTitle className="text-lg">Kart Ayarları</CardTitle>
@@ -178,7 +180,7 @@ export default function QrPaymentPage() {
                     <div 
                         key={card.id}
                         onClick={() => handleCardClick(index)}
-                        className="absolute w-full h-56 transition-all duration-300 ease-in-out [perspective:1000px]"
+                        className="absolute w-full h-56 transition-all duration-500 ease-in-out [perspective:1000px]"
                         style={{
                             zIndex: isActive ? zIndex + 10 : zIndex,
                             transform: `translateY(${isActive ? 0 : (index < activeIndex ? -150 : (index - activeIndex) * 30)}px) scale(${isActive ? 1 : 1 - ((index - activeIndex) * 0.05)})`,
