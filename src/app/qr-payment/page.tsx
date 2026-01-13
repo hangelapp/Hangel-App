@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign, QrCode } from 'lucide-react';
+import { PlusCircle, ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Keyboard, Phone, Contact, Filter, ArrowDownUp, ToggleRight, Snowflake, CircleDollarSign } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -157,16 +157,22 @@ export default function QrPaymentPage() {
   const [flippedStates, setFlippedStates] = useState<Record<string, boolean>>({});
 
   const handleCardClick = (index: number) => {
-    if (index === 0) { // Only cycle if the top card is clicked
-        setCardData(prevData => {
-            const newData = [...prevData];
-            const firstElement = newData.shift();
-            if (firstElement) {
-                newData.push(firstElement);
-            }
-            return newData;
-        });
+    // Only cycle if the top card is clicked
+    if (index !== 0) return;
+
+    // Do not cycle if the card is flipped
+    if (flippedStates[cardData[0].id]) {
+        return;
     }
+
+    setCardData(prevData => {
+        const newData = [...prevData];
+        const firstElement = newData.shift();
+        if (firstElement) {
+            newData.push(firstElement);
+        }
+        return newData;
+    });
   };
 
   const toggleFlip = (cardId: string) => {
@@ -197,9 +203,7 @@ export default function QrPaymentPage() {
                         style={{
                             zIndex: zIndex,
                             transform: `translateY(${index * 30}px) scale(${1 - (index * 0.05)})`,
-                            filter: `blur(${isActive ? 0 : '2px'})`,
-                            opacity: 1,
-                            pointerEvents: isActive ? 'auto' : 'none'
+                            filter: `blur(${isActive ? 0 : '2px'})`
                         }}
                     >
                         <CardFace 
