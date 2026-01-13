@@ -34,11 +34,18 @@ export default function NgoAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const mainNavItems = menuItems.slice(0, 9);
+  const settingsNavItem = menuItems.slice(9, 10);
+
   return (
     <div className="flex min-h-screen">
-      <SideNav items={menuItems} />
+      <SideNav 
+        mainItems={mainNavItems}
+        userItems={[]}
+        secondaryItems={settingsNavItem}
+      />
       <main className="flex-1 lg:pl-64">
-        <div className="p-4">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
       </main>
     </div>
   );
