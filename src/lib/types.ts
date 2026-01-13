@@ -120,7 +120,6 @@ export type Volunteering = {
       district: string;
       type: 'Online' | 'Saha' | 'Hibrit';
     };
-    skills: string[];
     commitment: string;
     volunteerCount: {
       needed: number;
@@ -138,7 +137,22 @@ export type Volunteering = {
       total: number;
     };
     socialArea: string;
-    requirements: string[];
+    
+    // Detailed Requirements
+    skills?: string[];
+    dailySkills?: string[];
+    interests?: string[];
+    education?: string;
+    profession?: string;
+    languages?: string[];
+    programs?: string[];
+    requirements?: string[]; // For documents and licenses
+    travel?: {
+        domestic?: boolean;
+        international?: boolean;
+        visas?: string[];
+    };
+    
     amenities: {
       transport: boolean;
       food: boolean;
@@ -328,5 +342,3 @@ export type HelpTopic = {
   description: string;
   subtopics: { title: string; link: string; content: string; }[];
 };
-
-    
