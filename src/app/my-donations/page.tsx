@@ -1,6 +1,8 @@
+'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CircleDollarSign, ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download } from 'lucide-react';
+import { CircleDollarSign, ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2 } from 'lucide-react';
 import { donationTransactions } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, parse } from 'date-fns';
@@ -8,15 +10,43 @@ import { tr } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
+
+type SortDirection = 'desc' | 'asc';
+type FilterType = 'all' | 'income' | 'expense';
 
 export default function MyDonationsPage() {
+  const { toast } = useToast();
+  const [transactions, setTransactions] = useState(donationTransactions);
+  const [sortDir, setSortDir] = useState<SortDirection>('desc');
+  const [filterType, setFilterType] = useState<FilterType>('all');
+
+  const handleActionClick = (action: string) => {
+    toast({
+      title: 'İşlevsellik Yakında!',
+      description: `Dekont ${action} özelliği yakında aktif olacaktır.`,
+    });
+  };
+
   const totalDonations = donationTransactions
     .filter(tx => tx.type === 'expense')
     .reduce((acc, curr) => acc + parseFloat(curr.donationAmount), 0);
 
-  const sortedDonations = [...donationTransactions].sort((a, b) => 
-    parse(b.date, 'yyyy-MM-dd', new Date()).getTime() - parse(a.date, 'yyyy-MM-dd', new Date()).getTime()
-  );
+  const toggleSortDirection = () => {
+    setSortDir(current => (current === 'desc' ? 'asc' : 'desc'));
+  };
+
+  const sortedAndFilteredDonations = transactions
+    .filter(tx => {
+        if (filterType === 'all') return true;
+        return tx.type === filterType;
+    })
+    .sort((a, b) => {
+      const dateA = parse(a.date, 'yyyy-MM-dd', new Date()).getTime();
+      const dateB = parse(b.date, 'yyyy-MM-dd', new Date()).getTime();
+      return sortDir === 'desc' ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -28,7 +58,7 @@ export default function MyDonationsPage() {
             <CircleDollarSign className="text-primary" />
             Toplam Bağış
           </CardTitle>
-          <CardDescription>Alışverişlerinizle yarattığınız toplam etki.</CardDescription>
+          <CardDescription>Ek bir ödeme yapmadan, alışverişlerinle iyiliğe dönüşen bağış.</CardDescription>
         </CardHeader>
         <CardContent>
             <p className="text-3xl font-bold">{totalDonations.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
@@ -36,17 +66,26 @@ export default function MyDonationsPage() {
       </Card>
       
       <div>
-        <h2 className="text-xl mb-2">İşlem Geçmişi</h2>
+        <h2 className="text-xl mb-2 font-bold">İşlem Geçmişi</h2>
         <div className="flex justify-between items-center mb-2 gap-2">
             <div className="relative w-full">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Ara..." className="pl-8 text-sm h-9 w-full" />
             </div>
             <div className='flex'>
-                <Button variant="ghost" size="icon">
-                    <Filter className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setFilterType('all')}>Tümü</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setFilterType('income')}>Gelir</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setFilterType('expense')}>Gider</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="ghost" size="icon" onClick={toggleSortDirection}>
                     <ArrowDownUp className="h-4 w-4" />
                 </Button>
             </div>
@@ -54,7 +93,7 @@ export default function MyDonationsPage() {
         <Card>
           <CardContent className="p-0">
             <Accordion type="single" collapsible className="w-full">
-              {sortedDonations.map(donation => {
+              {sortedAndFilteredDonations.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
                 const tax = donationAmount * 0.20;
                 const hangelShare = donationAmount * 0.10;
@@ -113,8 +152,9 @@ export default function MyDonationsPage() {
                                 <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy - HH:mm', { locale: tr })}</span>
                             </div>
                             <div className="flex">
-                                <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
-                                <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
+                                <Button size="icon" variant="ghost" onClick={() => handleActionClick('görüntüleme')}><Eye className="h-4 w-4"/></Button>
+                                <Button size="icon" variant="ghost" onClick={() => handleActionClick('indirme')}><Download className="h-4 w-4"/></Button>
+                                <Button size="icon" variant="ghost" onClick={() => handleActionClick('paylaşma')}><Share2 className="h-4 w-4"/></Button>
                             </div>
                         </div>
                         </div>
