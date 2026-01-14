@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Search, ArrowDownUp } from 'lucide-react';
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from '@/lib/utils';
 
 const donationHistory = [
   { id: 'TXN123', brand: 'Doğa Dostu Giyim', purchaseAmount: 150, ngoShare: 12.75, date: '2024-07-20', status: 'Tamamlandı' },
@@ -25,6 +26,11 @@ const monthlyEarnings = [
     { month: 'Nisan 2024', amount: 10.20, description: 'Kesinleşen Hak Ediş' },
 ];
 
+const statusVariantMap = {
+    'Tamamlandı': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
+    'Beklemede': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
+} as const;
+
 const TransactionTable = ({ transactions }: { transactions: typeof donationHistory }) => (
     <Table>
         <TableHeader>
@@ -42,7 +48,9 @@ const TransactionTable = ({ transactions }: { transactions: typeof donationHisto
                     <TableCell className="text-right text-primary font-bold">{tx.ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</TableCell>
                     <TableCell>{tx.date}</TableCell>
                     <TableCell>
-                        <Badge variant={tx.status === 'Tamamlandı' ? 'default' : 'secondary'}>{tx.status}</Badge>
+                        <Badge variant="outline" className={cn(statusVariantMap[tx.status as keyof typeof statusVariantMap])}>
+                            {tx.status}
+                        </Badge>
                     </TableCell>
                 </TableRow>
             ))}
