@@ -58,14 +58,16 @@ export function SideNav({ mainItems, userItems, secondaryItems }: { mainItems: S
                     ))}
                 </ul>
             </li>
-             <li>
-                <div className="text-xs font-semibold leading-6 text-muted-foreground">Profil</div>
-                <ul role="list" className="-mx-2 mt-2 space-y-1">
-                     {userItems.map((item) => (
-                       <NavLink key={item.label} item={item} pathname={pathname} />
-                    ))}
-                </ul>
-            </li>
+            {userItems && userItems.length > 0 && (
+                <li>
+                    <div className="text-xs font-semibold leading-6 text-muted-foreground">Profil</div>
+                    <ul role="list" className="-mx-2 mt-2 space-y-1">
+                        {userItems.map((item) => (
+                        <NavLink key={item.label} item={item} pathname={pathname} />
+                        ))}
+                    </ul>
+                </li>
+            )}
              <li className="mt-auto">
                  <div className="text-xs font-semibold leading-6 text-muted-foreground">Diğer</div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">

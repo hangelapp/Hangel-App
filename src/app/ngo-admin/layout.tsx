@@ -2,32 +2,19 @@
 
 import React from 'react';
 import { SideNav } from '@/components/layout/SideNav';
-import {
-  LayoutDashboard,
-  HeartHandshake,
-  Users,
-  FileText,
-  Building,
-  Settings,
-  ShieldCheck,
-  BarChart3,
-  DollarSign,
-  QrCode,
-  Newspaper,
-  MessageSquare
-} from 'lucide-react';
+import type { SideNavItem } from '@/lib/types';
 
-const menuItems = [
-  { label: 'Genel Bakış', href: '/ngo-admin/dashboard', icon: LayoutDashboard },
-  { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: HeartHandshake },
-  { label: 'Bağış Takibi', href: '/ngo-admin/donations', icon: DollarSign },
-  { label: 'Demografi', href: '/ngo-admin/demographics', icon: BarChart3 },
-  { label: 'Gönderiler', href: '/ngo-admin/posts', icon: Newspaper },
-  { label: 'STK Profil QR Kodu', href: '/ngo-admin/qr', icon: QrCode },
-  { label: 'Raporlar', href: '/ngo-admin/reports', icon: FileText },
-  { label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: ShieldCheck },
-  { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: Building },
-  { label: 'Ayarlar', href: '/ngo-admin/settings', icon: Settings },
+const menuItems: SideNavItem[] = [
+  { label: 'Genel Bakış', href: '/ngo-admin/dashboard', icon: 'layout-dashboard' },
+  { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: 'heart-handshake' },
+  { label: 'Bağış Takibi', href: '/ngo-admin/donations', icon: 'dollar-sign' },
+  { label: 'Demografi', href: '/ngo-admin/demographics', icon: 'bar-chart-3' },
+  { label: 'Gönderiler', href: '/ngo-admin/posts', icon: 'newspaper' },
+  { label: 'STK Profil QR Kodu', href: '/ngo-admin/qr', icon: 'qr-code' },
+  { label: 'Raporlar', href: '/ngo-admin/reports', icon: 'file-text' },
+  { label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: 'shield-check' },
+  { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: 'building' },
+  { label: 'Ayarlar', href: '/ngo-admin/settings', icon: 'settings' },
 ];
 
 export default function NgoAdminLayout({
