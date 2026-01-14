@@ -2,11 +2,10 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle } from "lucide-react";
 import React from 'react';
-import VolunteerApplications from './_components/volunteer-applications';
-import OpportunityManagement from "./_components/opportunity-management";
+import VolunteerApplications from '../dashboard/_components/volunteer-applications';
+import OpportunityManagement from "../dashboard/_components/opportunity-management";
 
 const VolunteerPage = () => {
 

@@ -13,7 +13,8 @@ import {
   BarChart3,
   DollarSign,
   QrCode,
-  Newspaper
+  Newspaper,
+  MessageSquare
 } from 'lucide-react';
 
 const menuItems = [
@@ -34,8 +35,9 @@ export default function NgoAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const mainNavItems = menuItems.slice(0, 9);
-  const settingsNavItem = menuItems.slice(9, 10);
+    const mainNavItems = menuItems.slice(0, 9);
+    const settingsNavItem = menuItems.slice(9, 10);
+
 
   return (
     <div className="flex min-h-screen">
