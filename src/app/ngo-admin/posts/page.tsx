@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { ImagePlus, Send } from 'lucide-react';
+import { ImagePlus, Send, Heart, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { timelinePosts } from '@/lib/data';
 
@@ -59,9 +59,16 @@ export default function PostsPage() {
                 </div>
               )}
             </CardContent>
-             <CardFooter className="gap-2">
-                <Button variant="outline" size="sm">Düzenle</Button>
-                <Button variant="destructive" size="sm">Sil</Button>
+             <CardFooter className="gap-2 border-t pt-2">
+                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                    <Heart className="mr-2 h-4 w-4" />
+                    {post.likes} Beğeni
+                </Button>
+                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Paylaş
+                </Button>
+                <Button variant="destructive" size="sm" className="ml-auto">Sil</Button>
             </CardFooter>
           </Card>
         ))}
