@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowDownUp } from 'lucide-react';
 import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const donationHistory = [
   { id: 'TXN123', brand: 'Doğa Dostu Giyim', purchaseAmount: 150, ngoShare: 12.75, date: '2024-07-20', status: 'Tamamlandı' },
@@ -24,7 +25,36 @@ const monthlyEarnings = [
     { month: 'Nisan 2024', amount: 10.20, description: 'Kesinleşen Hak Ediş' },
 ];
 
+const TransactionTable = ({ transactions }: { transactions: typeof donationHistory }) => (
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHead className="text-right">Alışveriş Tutarı</TableHead>
+                <TableHead className="text-right">STK Payı</TableHead>
+                <TableHead>Tarih</TableHead>
+                <TableHead>Durum</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {transactions.map((tx) => (
+                <TableRow key={tx.id}>
+                    <TableCell className="text-right">{tx.purchaseAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</TableCell>
+                    <TableCell className="text-right text-primary font-bold">{tx.ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</TableCell>
+                    <TableCell>{tx.date}</TableCell>
+                    <TableCell>
+                        <Badge variant={tx.status === 'Tamamlandı' ? 'default' : 'secondary'}>{tx.status}</Badge>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
+    </Table>
+);
+
+
 export default function DonationsPage() {
+    const pastTransactions = donationHistory.filter(tx => tx.status === 'Tamamlandı');
+    const futureTransactions = donationHistory.filter(tx => tx.status === 'Beklemede');
+
   return (
     <div className="space-y-6">
       <div>
@@ -62,30 +92,18 @@ export default function DonationsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Marka</TableHead>
-                <TableHead className="text-right">Alışveriş Tutarı</TableHead>
-                <TableHead className="text-right">STK Payı</TableHead>
-                <TableHead>Tarih</TableHead>
-                <TableHead>Durum</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {donationHistory.map((tx) => (
-                <TableRow key={tx.id}>
-                  <TableCell className="font-medium">{tx.brand}</TableCell>
-                  <TableCell className="text-right">{tx.purchaseAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</TableCell>
-                  <TableCell className="text-right text-primary font-bold">{tx.ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</TableCell>
-                  <TableCell>{tx.date}</TableCell>
-                  <TableCell>
-                    <Badge variant={tx.status === 'Tamamlandı' ? 'default' : 'secondary'}>{tx.status}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            <Tabs defaultValue="past" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="past">Geçmiş Hak Edişler</TabsTrigger>
+                    <TabsTrigger value="future">Gelecek Hak Edişler</TabsTrigger>
+                </TabsList>
+                <TabsContent value="past" className="mt-4">
+                   <TransactionTable transactions={pastTransactions} />
+                </TabsContent>
+                <TabsContent value="future" className="mt-4">
+                    <TransactionTable transactions={futureTransactions} />
+                </TabsContent>
+            </Tabs>
         </CardContent>
       </Card>
     </div>
