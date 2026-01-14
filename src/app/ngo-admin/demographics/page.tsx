@@ -24,6 +24,31 @@ const cityData = [
     { name: 'Diğer', value: 150 },
 ];
 
+const volunteerProfessionData = [
+    { name: 'Öğrenci', value: 350 },
+    { name: 'Yazılım', value: 120 },
+    { name: 'Pazarlama', value: 90 },
+    { name: 'Tasarım', value: 75 },
+    { name: 'Sağlık', value: 60 },
+    { name: 'Diğer', value: 155 },
+];
+
+const volunteerEducationData = [
+    { name: 'Lise', value: 150 },
+    { name: 'Ön Lisans', value: 80 },
+    { name: 'Lisans', value: 450 },
+    { name: 'Y. Lisans', value: 120 },
+    { name: 'Doktora', value: 50 },
+];
+
+const donorAgeData = [
+    { name: '18-24', value: 240 },
+    { name: '25-34', value: 480 },
+    { name: '35-44', value: 320 },
+    { name: '45-54', value: 280 },
+    { name: '55+', value: 150 },
+];
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19AF'];
 
 export default function DemographicsPage() {
@@ -37,7 +62,7 @@ export default function DemographicsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Yaş Dağılımı</CardTitle>
+            <CardTitle>Gönüllü & Bağışçı Yaş Dağılımı</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -73,23 +98,76 @@ export default function DemographicsPage() {
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Gönüllü Meslek Dağılımı</CardTitle>
+          </CardHeader>
+           <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={volunteerProfessionData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={80} />
+                    <Tooltip />
+                    <Bar dataKey="value" name="Gönüllü Sayısı" fill="#00C49F" />
+                </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Gönüllü Eğitim Durumu</CardTitle>
+          </CardHeader>
+          <CardContent>
+             <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie data={volunteerEducationData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {volunteerEducationData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Bağışçıların Şehirlere Göre Dağılımı</CardTitle>
           </CardHeader>
           <CardContent>
              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={cityData} layout="vertical">
+                <BarChart data={cityData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={80} />
+                    <XAxis dataKey="name" />
+                    <YAxis />
                     <Tooltip />
-                    <Legend />
                     <Bar dataKey="value" name="Bağışçı Sayısı" fill="#82ca9d" />
                 </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
+        
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Bağışçı Yaş Dağılımı</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={donorAgeData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" name="Bağışçı Sayısı" fill="#FF8042" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+
       </div>
     </div>
   );
