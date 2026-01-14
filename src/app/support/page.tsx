@@ -1,3 +1,5 @@
+
+'use client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,6 +8,7 @@ import {
   ChevronRight,
   Mail,
 } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { helpTopics } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -36,7 +39,8 @@ export default function SupportPage() {
             <CardContent className='p-0 divide-y'>
                 <Accordion type="single" collapsible className="w-full">
                 {helpTopics.map((topic) => {
-                    const Icon = topic.icon;
+                    // @ts-ignore
+                    const Icon = Icons[topic.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
                     return (
                         <AccordionItem value={topic.slug} key={topic.slug}>
                             <AccordionTrigger className="p-4 text-base hover:no-underline">

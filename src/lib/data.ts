@@ -3,7 +3,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -263,11 +263,11 @@ export const notifications: Notification[] = Array.from({ length: 21 }, (_, i) =
 
 
 export const managedItems: ManagedItem[] = [
-  { name: 'Ahbap Derneği', type: 'STK', icon: Building, href: '/ngo-admin/dashboard', status: 'approved' },
-  { name: 'Doğa Dostu Giyim', type: 'Marka', icon: Store, href: '/market/1', status: 'approved' },
-  { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: School, href: '/admin/clubs/profile/1', status: 'approved' },
-  { name: 'Yeni Marka Başvurusu', type: 'Marka', icon: Store, href: '/admin/applications/brand/1', status: 'pending' },
-  { name: 'Yeni STK Başvurusu', type: 'STK', icon: Building, href: '/admin/applications/ngo/1', status: 'pending' },
+  { name: 'Ahbap Derneği', type: 'STK', icon: 'building', href: '/ngo-admin/dashboard', status: 'approved' },
+  { name: 'Doğa Dostu Giyim', type: 'Marka', icon: 'store', href: '/market/1', status: 'approved' },
+  { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'school', href: '/admin/clubs/profile/1', status: 'approved' },
+  { name: 'Yeni Marka Başvurusu', type: 'Marka', icon: 'store', href: '/admin/applications/brand/1', status: 'pending' },
+  { name: 'Yeni STK Başvurusu', type: 'STK', icon: 'building', href: '/admin/applications/ngo/1', status: 'pending' },
 ];
 
 export const studentClubs: StudentClub[] = [
@@ -308,27 +308,50 @@ export const certificates: Certificate[] = Array.from({ length: 3 }, (_, i) => (
 
 export const badgeLevels: Badge['level'][] = ['Demir', 'Bakır', 'Bronz', 'Çelik', 'Gümüş', 'Altın', 'Platin', 'Elmas'];
 
-export const badgeData: Omit<Badge, 'id' | 'level' | 'pointsRequired' | 'currentPoints'>[] = [
-  { name: 'Hayvan Dostu', socialArea: 'Hayvan Hakları', iconName: PawPrint },
-  { name: 'Çocuk Gelişimi', socialArea: 'Çocuk', iconName: Baby },
-  { name: 'Doğa Koruyucusu', socialArea: 'Çevre', iconName: Leaf },
-  { name: 'Kadın Destekçisi', socialArea: 'Kadın', iconName: Users },
-  { name: 'Engel Tanımaz', socialArea: 'Engelli', iconName: ShieldCheck },
-  { name: 'Yaşlı Dostu', socialArea: 'Yaşlı', iconName: Users },
-  { name: 'Gençlik Lideri', socialArea: 'Gençlik', iconName: Star },
-  { name: 'Sağlık Elçisi', socialArea: 'Sağlık', iconName: HeartPulse },
-  { name: 'Yoksulluk Savaşçısı', socialArea: 'Yoksulluk', iconName: HeartHandshake },
-  { name: 'Mülteci Destekçisi', socialArea: 'Mülteci', iconName: Handshake },
-  { name: 'Gıda Kurtarıcısı', socialArea: 'Gıda', iconName: Grape },
-  { name: 'Sanat Destekçisi', socialArea: 'Sanat', iconName: Palette },
-  { name: 'Spor Gönüllüsü', socialArea: 'Spor', iconName: Dumbbell },
-  { name: 'Afet Kahramanı', socialArea: 'Afet', iconName: Siren },
-  { name: 'Mesleki Katkı', socialArea: 'Mesleki', iconName: Briefcase },
-  { name: 'İş Dünyası Lideri', socialArea: 'İş Dünyası', iconName: Landmark },
-  { name: 'Sivil Toplum Lideri', socialArea: 'Sivil Toplum', iconName: Handshake },
-  { name: 'Memleket Gönüllüsü', socialArea: 'Memleket', iconName: Landmark },
-  { name: 'Teknoloji Gurusu', socialArea: 'Teknoloji', iconName: Cpu },
+export const badgeData: Omit<Badge, 'id' | 'level' | 'pointsRequired' | 'currentPoints' | 'iconName'>[] = [
+  { name: 'Hayvan Dostu', socialArea: 'Hayvan Hakları' },
+  { name: 'Çocuk Gelişimi', socialArea: 'Çocuk' },
+  { name: 'Doğa Koruyucusu', socialArea: 'Çevre' },
+  { name: 'Kadın Destekçisi', socialArea: 'Kadın' },
+  { name: 'Engel Tanımaz', socialArea: 'Engelli' },
+  { name: 'Yaşlı Dostu', socialArea: 'Yaşlı' },
+  { name: 'Gençlik Lideri', socialArea: 'Gençlik' },
+  { name: 'Sağlık Elçisi', socialArea: 'Sağlık' },
+  { name: 'Yoksulluk Savaşçısı', socialArea: 'Yoksulluk' },
+  { name: 'Mülteci Destekçisi', socialArea: 'Mülteci' },
+  { name: 'Gıda Kurtarıcısı', socialArea: 'Gıda' },
+  { name: 'Sanat Destekçisi', socialArea: 'Sanat' },
+  { name: 'Spor Gönüllüsü', socialArea: 'Spor' },
+  { name: 'Afet Kahramanı', socialArea: 'Afet' },
+  { name: 'Mesleki Katkı', socialArea: 'Mesleki' },
+  { name: 'İş Dünyası Lideri', socialArea: 'İş Dünyası' },
+  { name: 'Sivil Toplum Lideri', socialArea: 'Sivil Toplum' },
+  { name: 'Memleket Gönüllüsü', socialArea: 'Memleket' },
+  { name: 'Teknoloji Gurusu', socialArea: 'Teknoloji' },
 ];
+
+
+const iconMap: { [key: string]: LucideIcon } = {
+    'Hayvan Hakları': PawPrint,
+    'Çocuk': Baby,
+    'Çevre': Leaf,
+    'Kadın': Users,
+    'Engelli': ShieldCheck,
+    'Yaşlı': Users,
+    'Gençlik': Star,
+    'Sağlık': HeartPulse,
+    'Yoksulluk': HeartHandshake,
+    'Mülteci': Handshake,
+    'Gıda': Grape,
+    'Sanat': Palette,
+    'Spor': Dumbbell,
+    'Afet': Siren,
+    'Mesleki': Briefcase,
+    'İş Dünyası': Landmark,
+    'Sivil Toplum': Handshake,
+    'Memleket': Landmark,
+    'Teknoloji': Cpu,
+};
 
 
 export let badges: Badge[] = [];
@@ -344,6 +367,7 @@ badgeData.forEach(baseBadge => {
             id: (badgeIdCounter++).toString(),
             ...baseBadge,
             level: level,
+            iconName: iconMap[baseBadge.socialArea] || Star,
             pointsRequired: pointsRequired,
             currentPoints: userProgress,
         });
@@ -461,7 +485,7 @@ export const ngos: NGO[] = [
 
 export const helpTopics: HelpTopic[] = [
   {
-    icon: UserCircle,
+    icon: 'user-circle',
     title: 'Hesap Yönetimi',
     slug: 'hesap-yonetimi',
     description: "Hesap ayarlarınızı, profil bilgilerinizi ve bildirim tercihlerinizi nasıl yöneteceğinizi öğrenin.",
@@ -473,7 +497,7 @@ export const helpTopics: HelpTopic[] = [
     ]
   },
   {
-    icon: HeartHandshake,
+    icon: 'heart-handshake',
     title: 'Gönüllülük',
     slug: 'gonulluluk',
     description: "Gönüllülük süreçleri, başvurular, puanlar ve sertifikalar hakkında merak ettikleriniz.",
@@ -485,7 +509,7 @@ export const helpTopics: HelpTopic[] = [
     ]
   },
   {
-    icon: Wallet,
+    icon: 'wallet',
     title: 'Bağış ve Cüzdan',
     slug: 'bagis-ve-cuzdan',
     description: "Alışverişle bağış, cüzdan işlemleri ve ödeme yöntemleri ile ilgili tüm sorularınızın cevapları.",
@@ -497,7 +521,7 @@ export const helpTopics: HelpTopic[] = [
     ]
   },
   {
-    icon: Settings2,
+    icon: 'settings-2',
     title: 'Uygulama ve Ayarlar',
     slug: 'uygulama-ve-ayarlar',
     description: "Uygulama teması, dil seçenekleri ve diğer kişiselleştirme ayarları hakkında bilgi alın.",
@@ -508,7 +532,7 @@ export const helpTopics: HelpTopic[] = [
     ]
   },
   {
-    icon: Shield,
+    icon: 'shield',
     title: 'Güvenlik ve Gizlilik',
     slug: 'guvenlik-ve-gizlilik',
     description: "Hesap güvenliğiniz, kişisel verilerinizin korunması ve gizlilik politikalarımız hakkında detaylar.",
@@ -519,7 +543,7 @@ export const helpTopics: HelpTopic[] = [
     ]
   },
   {
-    icon: BookText,
+    icon: 'book-text',
     title: 'Topluluk Kuralları',
     slug: 'topluluk-kurallari',
     description: "Platformumuzda pozitif ve saygılı bir ortam sağlamak için uymanız gereken kurallar.",

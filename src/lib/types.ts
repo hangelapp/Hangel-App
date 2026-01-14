@@ -1,4 +1,5 @@
 
+
 import { LucideIcon } from "lucide-react";
 
 export type NavItem = {
@@ -329,7 +330,7 @@ export type Notification = {
 export type ManagedItem = {
     name: string;
     type: 'STK' | 'Marka' | 'Öğrenci Kulübü';
-    icon: LucideIcon;
+    icon: string;
     href: string;
     status: 'approved' | 'pending';
 };
@@ -343,7 +344,7 @@ export type AdBanner = {
 };
 
 export type HelpTopic = {
-  icon: LucideIcon;
+  icon: string;
   title: string;
   slug: string;
   description: string;
