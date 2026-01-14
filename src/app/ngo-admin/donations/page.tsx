@@ -12,23 +12,39 @@ const donationHistory = [
   { id: 'TXN124', brand: 'Lezzet Köyü', purchaseAmount: 80, ngoShare: 6.80, date: '2024-07-20', status: 'Tamamlandı' },
   { id: 'TXN125', brand: 'Tekno Market', purchaseAmount: 1200, ngoShare: 42.50, date: '2024-07-19', status: 'Tamamlandı' },
   { id: 'TXN126', brand: 'Gezgin Rotalar', purchaseAmount: 450, ngoShare: 30.60, date: '2024-07-18', status: 'Beklemede' },
+  { id: 'TXN127', brand: 'Doğa Dostu Giyim', purchaseAmount: 250, ngoShare: 21.25, date: '2024-06-15', status: 'Tamamlandı' },
+  { id: 'TXN128', brand: 'Tekno Market', purchaseAmount: 800, ngoShare: 28.33, date: '2024-05-22', status: 'Tamamlandı' },
+  { id: 'TXN129', brand: 'Lezzet Köyü', purchaseAmount: 120, ngoShare: 10.20, date: '2024-04-10', status: 'Tamamlandı' },
+];
+
+const monthlyEarnings = [
+    { month: 'Temmuz 2024', amount: 92.65, description: 'Tahmini Hak Ediş' },
+    { month: 'Haziran 2024', amount: 21.25, description: 'Kesinleşen Hak Ediş' },
+    { month: 'Mayıs 2024', amount: 28.33, description: 'Kesinleşen Hak Ediş' },
+    { month: 'Nisan 2024', amount: 10.20, description: 'Kesinleşen Hak Ediş' },
 ];
 
 export default function DonationsPage() {
-  const totalEarnings = donationHistory.reduce((sum, tx) => sum + tx.ngoShare, 0);
-
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Bağış Takibi</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Temmuz 2024 Tahmini Hak Ediş</CardTitle>
-          <CardDescription>Markalardan yapılan alışverişler aracılığıyla kuruluşunuza aktarılan bağışların geçmişi.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">{totalEarnings.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
-        </CardContent>
-      </Card>
+      <div>
+        <h1 className="text-2xl font-bold">Bağış Takibi</h1>
+        <p className="text-muted-foreground">Kuruluşunuza aktarılan bağışların geçmişini ve aylık hak edişlerinizi takip edin.</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {monthlyEarnings.map(earning => (
+             <Card key={earning.month}>
+                <CardHeader>
+                  <CardTitle className="text-base">{earning.month}</CardTitle>
+                  <CardDescription className="text-xs">{earning.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{earning.amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                </CardContent>
+              </Card>
+        ))}
+      </div>
       
       <Card>
         <CardHeader>
