@@ -1,48 +1,33 @@
-'use client';
+
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import AppHeader from '@/components/layout/header';
 import AppBottomNav from '@/components/layout/bottom-nav';
 import { SideNav } from '@/components/layout/SideNav';
-import {
-  LayoutGrid,
-  HeartHandshake,
-  Store,
-  DollarSign,
-  FileText,
-  Award,
-  Building,
-  Users,
-  User,
-  Settings,
-  Info,
-  HelpCircle,
-  LogOut,
-  Mail,
-  Send,
-} from 'lucide-react';
+import type { SideNavItem } from '@/lib/types';
 
-const mainMenuItems = [
-  { href: '/timeline', label: 'Zaman Tüneli', icon: LayoutGrid },
-  { href: '/market', label: 'Market', icon: Store },
-  { href: '/volunteering', label: 'Gönüllülük', icon: HeartHandshake },
-  { href: '/my-donations', label: 'Bağışlarım', icon: DollarSign },
-  { href: '/my-applications', label: 'Başvurularım', icon: FileText },
-  { href: '/my-badges', label: 'Rozetlerim', icon: Award },
-  { href: '/ngos', label: 'STK\'lar', icon: Building },
-  { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: Users },
+
+const mainMenuItems: SideNavItem[] = [
+  { href: '/timeline', label: 'Zaman Tüneli', icon: 'layout-grid' },
+  { href: '/market', label: 'Market', icon: 'store' },
+  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
+  { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
+  { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
+  { href: '/my-badges', label: 'Rozetlerim', icon: 'award' },
+  { href: '/ngos', label: 'STK\'lar', icon: 'building' },
+  { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
 ];
 
-const userMenuItems = [
-  { href: '/profile', label: 'Profilim', icon: User },
-  { href: '/admin', label: 'Yönetim Paneli', icon: LayoutGrid },
-  { href: '/invite', label: 'Arkadaş Davet Et', icon: Send },
+const userMenuItems: SideNavItem[] = [
+  { href: '/profile', label: 'Profilim', icon: 'user' },
+  { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
+  { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
 ];
 
-const secondaryMenuItems = [
-  { href: '/settings', label: 'Ayarlar', icon: Settings },
-  { href: '/about', label: 'Hakkımızda', icon: Info },
-  { href: '/support', label: 'Destek', icon: HelpCircle },
+const secondaryMenuItems: SideNavItem[] = [
+  { href: '/settings', label: 'Ayarlar', icon: 'settings' },
+  { href: '/about', label: 'Hakkımızda', icon: 'info' },
+  { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
 
 

@@ -1,28 +1,22 @@
+
 'use client';
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LucideIcon, LogOut } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { HangelLogo } from '../icons';
 import { UserAvatar } from '../shared/user-avatar';
 import { user } from '@/lib/data';
 import { Separator } from '../ui/separator';
-
-interface SideNavItem {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-}
-
-interface SideNavProps {
-  mainItems: SideNavItem[];
-  userItems: SideNavItem[];
-  secondaryItems: SideNavItem[];
-}
+import type { SideNavItem } from '@/lib/types';
 
 const NavLink = ({ item, pathname }: { item: SideNavItem; pathname: string }) => {
     const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/timeline' && item.href !== '/');
+    
+    // @ts-ignore
+    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+
     return (
         <li>
             <Link
@@ -32,7 +26,7 @@ const NavLink = ({ item, pathname }: { item: SideNavItem; pathname: string }) =>
                     isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
                 )}
             >
-                <item.icon
+                <Icon
                     className={cn(
                         'h-6 w-6 shrink-0',
                         isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
@@ -45,7 +39,7 @@ const NavLink = ({ item, pathname }: { item: SideNavItem; pathname: string }) =>
     )
 }
 
-export function SideNav({ mainItems, userItems, secondaryItems }: SideNavProps) {
+export function SideNav({ mainItems, userItems, secondaryItems }: { mainItems: SideNavItem[], userItems: SideNavItem[], secondaryItems: SideNavItem[] }) {
   const pathname = usePathname();
 
   return (
@@ -83,7 +77,7 @@ export function SideNav({ mainItems, userItems, secondaryItems }: SideNavProps) 
                             href="/login"
                             className='group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-destructive hover:bg-destructive/10'
                         >
-                            <LogOut className='h-6 w-6 shrink-0' aria-hidden="true" />
+                            <Icons.LogOut className='h-6 w-6 shrink-0' aria-hidden="true" />
                             Çıkış Yap
                         </Link>
                     </li>

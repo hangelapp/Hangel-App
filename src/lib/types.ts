@@ -1,9 +1,16 @@
+
 import { LucideIcon } from "lucide-react";
 
 export type NavItem = {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+};
+
+export type SideNavItem = {
+    href: string;
+    icon: string;
+    label: string;
 };
 
 export type Post = {
