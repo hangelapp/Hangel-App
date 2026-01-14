@@ -1,5 +1,4 @@
 'use client';
-import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import AppHeader from '@/components/layout/header';
@@ -22,13 +21,6 @@ import {
   Mail,
   Send,
 } from 'lucide-react';
-
-/*
-export const metadata: Metadata = {
-  title: 'hangel',
-  description: 'Bağış ve gönüllülük odaklı Sosyal Etki Platformu',
-};
-*/
 
 const mainMenuItems = [
   { href: '/timeline', label: 'Zaman Tüneli', icon: LayoutGrid },
