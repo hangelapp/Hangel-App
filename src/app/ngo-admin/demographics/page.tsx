@@ -1,53 +1,53 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, AreaChart, Area, LineChart, Line } from 'recharts';
 
-const ageData = [
-  { name: '18-24', Gönüllü: 400, Bağışçı: 240 },
-  { name: '25-34', Gönüllü: 300, Bağışçı: 139 },
-  { name: '35-44', Gönüllü: 200, Bağışçı: 980 },
-  { name: '45+', Gönüllü: 278, Bağışçı: 390 },
+const ageGroupData = [
+  { age: '18-24', Gönüllü: 400, Bağışçı: 240 },
+  { age: '25-34', Gönüllü: 300, Bağışçı: 480 },
+  { age: '35-44', Gönüllü: 200, Bağışçı: 320 },
+  { age: '45-54', Gönüllü: 278, Bağışçı: 280 },
+  { age: '55+', Gönüllü: 189, Bağışçı: 150 },
 ];
 
-const genderData = [
-  { name: 'Kadın', value: 400 },
-  { name: 'Erkek', value: 300 },
-  { name: 'Diğer', value: 50 },
+const volunteerInterestData = [
+  { subject: 'Çevre', value: 120 },
+  { subject: 'Eğitim', value: 110 },
+  { subject: 'Hayvan Hakları', value: 95 },
+  { subject: 'Afet', value: 80 },
+  { subject: 'Sağlık', value: 70 },
+  { subject: 'Çocuk', value: 85 },
+];
+
+const donorGenderData = [
+  { name: 'Kadın', value: 550 },
+  { name: 'Erkek', value: 420 },
+  { name: 'Belirtilmemiş', value: 80 },
 ];
 
 const cityData = [
-    { name: 'İstanbul', value: 540 },
-    { name: 'Ankara', value: 220 },
-    { name: 'İzmir', value: 180 },
-    { name: 'Bursa', value: 110 },
-    { name: 'Antalya', value: 90 },
-    { name: 'Diğer', value: 150 },
+    { name: 'İstanbul', Gönüllü: 450, Bağışçı: 540 },
+    { name: 'Ankara', Gönüllü: 280, Bağışçı: 220 },
+    { name: 'İzmir', Gönüllü: 220, Bağışçı: 180 },
+    { name: 'Bursa', Gönüllü: 150, Bağışçı: 110 },
+    { name: 'Antalya', Gönüllü: 120, Bağışçı: 90 },
 ];
 
-const volunteerProfessionData = [
-    { name: 'Öğrenci', value: 350 },
-    { name: 'Yazılım', value: 120 },
-    { name: 'Pazarlama', value: 90 },
-    { name: 'Tasarım', value: 75 },
-    { name: 'Sağlık', value: 60 },
-    { name: 'Diğer', value: 155 },
+const newSupporterData = [
+    { month: 'Ocak', Gönüllü: 24, Bağışçı: 35 },
+    { month: 'Şubat', month_tr: 'Şub', Gönüllü: 18, Bağışçı: 28 },
+    { month: 'Mart', Gönüllü: 32, Bağışçı: 45 },
+    { month: 'Nisan', Gönüllü: 25, Bağışçı: 40 },
+    { month: 'Mayıs', Gönüllü: 41, Bağışçı: 55 },
+    { month: 'Haziran', Gönüllü: 38, Bağışçı: 62 },
+]
+
+const donationMethodData = [
+    { name: 'Market Alışverişi', value: 650 },
+    { name: 'Direkt Bağış', value: 250 },
+    { name: 'QR Kod ile Bağış', value: 100 },
 ];
 
-const volunteerEducationData = [
-    { name: 'Lise', value: 150 },
-    { name: 'Ön Lisans', value: 80 },
-    { name: 'Lisans', value: 450 },
-    { name: 'Y. Lisans', value: 120 },
-    { name: 'Doktora', value: 50 },
-];
-
-const donorAgeData = [
-    { name: '18-24', value: 240 },
-    { name: '25-34', value: 480 },
-    { name: '35-44', value: 320 },
-    { name: '45-54', value: 280 },
-    { name: '55+', value: 150 },
-];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19AF'];
 
@@ -55,79 +55,64 @@ export default function DemographicsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Demografi</h1>
-        <p className="text-muted-foreground">Gönüllü ve bağışçılarınızın demografik yapısını inceleyerek topluluğunuzu daha iyi tanıyın.</p>
+        <h1 className="text-2xl font-bold">Demografi Analizi</h1>
+        <p className="text-muted-foreground">Gönüllü ve bağışçı topluluğunuzu daha yakından tanıyarak stratejilerinizi geliştirin.</p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Gönüllü & Bağışçı Yaş Dağılımı</CardTitle>
+            <CardDescription>Destekçilerinizin yaş gruplarına göre karşılaştırmalı dağılımı.</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={ageData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Gönüllü" fill="#8884d8" />
-                <Bar dataKey="Bağışçı" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Gönüllü Cinsiyet Dağılımı</CardTitle>
-          </CardHeader>
-          <CardContent>
-             <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={genderData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
-                  {genderData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Gönüllü Meslek Dağılımı</CardTitle>
-          </CardHeader>
-           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={volunteerProfessionData} layout="vertical">
+                <AreaChart data={ageGroupData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={80} />
+                    <XAxis dataKey="age" />
+                    <YAxis />
                     <Tooltip />
-                    <Bar dataKey="value" name="Gönüllü Sayısı" fill="#00C49F" />
-                </BarChart>
+                    <Legend />
+                    <Area type="monotone" dataKey="Gönüllü" stackId="1" stroke="#8884d8" fill="#8884d8" />
+                    <Area type="monotone" dataKey="Bağışçı" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+                </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Gönüllü Eğitim Durumu</CardTitle>
+            <CardTitle>Gönüllü İlgi Alanları</CardTitle>
+            <CardDescription>Gönüllülerinizin en çok ilgi gösterdiği sosyal alanlar.</CardDescription>
           </CardHeader>
           <CardContent>
              <ResponsiveContainer width="100%" height={300}>
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={volunteerInterestData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="subject" />
+                <PolarRadiusAxis />
+                <Radar name="Gönüllü Sayısı" dataKey="value" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                <Tooltip />
+              </RadarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Bağışçı Cinsiyet Dağılımı</CardTitle>
+            <CardDescription>Bağışçılarınızın cinsiyetlere göre dağılımı.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={volunteerEducationData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                  {volunteerEducationData.map((entry, index) => (
+                <Pie data={donorGenderData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {donorGenderData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -135,7 +120,8 @@ export default function DemographicsPage() {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Bağışçıların Şehirlere Göre Dağılımı</CardTitle>
+            <CardTitle>Destekçilerin Şehirlere Göre Dağılımı</CardTitle>
+            <CardDescription>Gönüllü ve bağışçılarınızın yoğunlaştığı ilk 5 şehir.</CardDescription>
           </CardHeader>
           <CardContent>
              <ResponsiveContainer width="100%" height={300}>
@@ -144,30 +130,52 @@ export default function DemographicsPage() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="value" name="Bağışçı Sayısı" fill="#82ca9d" />
+                    <Legend />
+                    <Bar dataKey="Gönüllü" fill="#8884d8" />
+                    <Bar dataKey="Bağışçı" fill="#82ca9d" />
                 </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        
-        <Card className="lg:col-span-2">
+
+        <Card>
             <CardHeader>
-                <CardTitle>Bağışçı Yaş Dağılımı</CardTitle>
+                <CardTitle>Aylık Yeni Destekçi Kazanımı</CardTitle>
+                <CardDescription>Son 6 ayda platforma katılan yeni gönüllü ve bağışçılar.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={donorAgeData}>
+                    <LineChart data={newSupporterData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
+                        <XAxis dataKey="month" />
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="value" name="Bağışçı Sayısı" fill="#FF8042" />
-                    </BarChart>
+                        <Line type="monotone" dataKey="Gönüllü" stroke="#8884d8" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="Bağışçı" stroke="#82ca9d" />
+                    </LineChart>
                 </ResponsiveContainer>
             </CardContent>
         </Card>
 
+         <Card>
+          <CardHeader>
+            <CardTitle>Bağış Yöntemi Dağılımı</CardTitle>
+            <CardDescription>Bağışların hangi kanallardan geldiğinin dağılımı.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie data={donationMethodData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5} label>
+                  {donationMethodData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
