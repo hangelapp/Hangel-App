@@ -3,6 +3,9 @@
 import React from 'react';
 import { SideNav } from '@/components/layout/SideNav';
 import type { SideNavItem } from '@/lib/types';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { usePathname, useRouter } from 'next/navigation';
 
 const menuItems: SideNavItem[] = [
   { label: 'Genel Bakış', href: '/ngo-admin/dashboard', icon: 'layout-dashboard' },
@@ -25,6 +28,9 @@ export default function NgoAdminLayout({
 }) {
     const mainNavItems = menuItems.slice(0, 9);
     const secondaryNavItems = menuItems.slice(9);
+    const router = useRouter();
+    const pathname = usePathname();
+    const isRootNgoAdmin = pathname === '/ngo-admin/dashboard';
 
 
   return (
@@ -35,7 +41,14 @@ export default function NgoAdminLayout({
         secondaryItems={secondaryNavItems}
       />
       <main className="flex-1 lg:pl-64">
-        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">
+             {!isRootNgoAdmin && (
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4 -ml-2">
+                    <ArrowLeft className="h-6 w-6" />
+                </Button>
+            )}
+            {children}
+        </div>
       </main>
     </div>
   );

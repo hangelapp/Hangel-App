@@ -5,6 +5,8 @@ import { SideNav } from '@/components/layout/SideNav';
 import type { SideNavItem } from '@/lib/types';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { useRouter, usePathname } from 'next/navigation';
 
 const adminMenuItems: SideNavItem[] = [
   { label: 'Genel Bakış', href: '/admin', icon: 'layout-grid' },
@@ -21,6 +23,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const isRootAdmin = pathname === '/admin';
 
   return (
     <div className="flex min-h-screen">
@@ -30,7 +35,14 @@ export default function AdminLayout({
         secondaryItems={backToSiteItem}
       />
       <main className="flex-1 lg:pl-64">
-        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">
+            {!isRootAdmin && (
+                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4 -ml-2">
+                    <ArrowLeft className="h-6 w-6" />
+                </Button>
+            )}
+            {children}
+        </div>
       </main>
     </div>
   );
