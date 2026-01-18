@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Handshake, HeartHandshake, HandCoins, Star, Rocket } from 'lucide-react';
+import { Handshake, HeartHandshake, HandCoins, Star, Rocket, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
@@ -25,7 +25,7 @@ const onboardingSteps = [
   },
   {
     icon: HandCoins,
-    title: 'Alışverişle Fark Yaratın',
+    title: 'Alışverişle Fark Oluşturun',
     description: 'Günlük alışverişlerinizi, seçtiğiniz sivil toplum kuruluşları için anlamlı bir desteğe dönüştürün. Ekstra bir ücret ödemeden.',
   },
   {
@@ -45,7 +45,7 @@ export default function OnboardingPage() {
   const [current, setCurrent] = useState(0)
   const router = useRouter();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!api) return
     setCurrent(api.selectedScrollSnap())
     api.on("select", () => {
@@ -68,14 +68,13 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex flex-col h-screen p-6 bg-background text-center">
-      <header className="flex items-center justify-end">
-        <Button variant="ghost" onClick={handleSkip}>
-          Atla
-        </Button>
-      </header>
-
-      <main className="flex-1 flex flex-col items-center justify-center">
-        <Carousel setApi={setApi} className="w-full">
+      <Carousel setApi={setApi} className="w-full h-full flex flex-col">
+          <header className="flex items-center justify-end p-2">
+            <Button variant="ghost" onClick={handleSkip}>
+              Atla
+            </Button>
+          </header>
+          <main className='flex-1 flex flex-col items-center justify-center'>
             <CarouselContent>
             {onboardingSteps.map((step, index) => {
                 const Icon = step.icon;
@@ -94,25 +93,24 @@ export default function OnboardingPage() {
                 )
             })}
             </CarouselContent>
-        </Carousel>
-      </main>
-
-      <footer className="py-6 space-y-4">
-        <div className="flex justify-center gap-2">
-            {onboardingSteps.map((_, i) => (
-            <div
-                key={i}
-                className={cn(
-                'h-2 w-2 rounded-full transition-all',
-                i === current ? 'w-6 bg-primary' : 'bg-primary/20'
-                )}
-            />
-            ))}
-        </div>
-        <Button onClick={handleNext} className="w-full max-w-sm mx-auto" size="lg">
-           {current < onboardingSteps.length - 1 ? 'İleri' : 'Hadi Başlayalım!'}
-        </Button>
-      </footer>
+          </main>
+          <footer className='py-6 space-y-4'>
+            <div className="flex justify-center gap-2">
+                {onboardingSteps.map((_, i) => (
+                <div
+                    key={i}
+                    className={cn(
+                    'h-2 w-2 rounded-full transition-all',
+                    i === current ? 'w-6 bg-primary' : 'bg-primary/20'
+                    )}
+                />
+                ))}
+            </div>
+          </footer>
+      </Carousel>
+      <Button onClick={handleNext} size="icon" className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full h-12 w-12 z-10">
+           <ChevronRight className="h-6 w-6" />
+      </Button>
     </div>
   );
 }

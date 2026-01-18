@@ -1,5 +1,5 @@
 'use client';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { events } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, MapPin, Users, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
+export default function EventDetailPage() {
   const router = useRouter();
-  const event = events.find(e => e.id === params.id);
+  const params = useParams();
+  const id = params.id as string;
+  const event = events.find(e => e.id === id);
 
   if (!event) {
     notFound();

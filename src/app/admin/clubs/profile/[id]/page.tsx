@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, BrainCircuit, Calendar, ChevronRight, Contact, Edit, Globe, Handshake, Mail, MapPin, Mic, Milestone, Phone, QrCode, School, Share2, Users, Vision, Users2, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
 import { studentClubs, schoolRepresentatives } from '@/lib/data';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ShareButtons } from '@/components/shared/share-buttons';
@@ -25,9 +25,10 @@ const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: str
 );
 
 
-export default function ClubProfilePage({ params }: { params: { id: string } }) {
+export default function ClubProfilePage() {
   const router = useRouter();
-  const { id } = params;
+  const params = useParams();
+  const id = params.id as string;
   const club = studentClubs.find(c => c.id === id);
 
   if (!club) {

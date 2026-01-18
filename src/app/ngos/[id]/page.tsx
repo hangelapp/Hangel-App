@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award } from 'lucide-react';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -62,9 +62,10 @@ const OpportunityCard = ({ opp }: { opp: (typeof volunteeringOpportunities)[0] }
     </Card>
 );
 
-export default function NgoProfilePage({ params }: { params: { id: string } }) {
+export default function NgoProfilePage() {
   const router = useRouter();
-  const { id } = params;
+  const params = useParams();
+  const id = params.id as string;
   const ngo = ngos.find(n => n.id === id);
 
   if (!ngo) {

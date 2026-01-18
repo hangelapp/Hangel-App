@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Building, ExternalLink, Heart, Info, Percent, Rss, Star } from 'lucide-react';
 import { allEntityLists } from '@/lib/data';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -19,9 +19,10 @@ const StatRow = ({ label, value }: { label: string, value: string | number }) =>
 );
 
 
-export default function BrandProfilePage({ params }: { params: { id: string } }) {
+export default function BrandProfilePage() {
   const router = useRouter();
-  const { id } = params;
+  const params = useParams();
+  const id = params.id as string;
   const brand = allEntityLists.find(b => b.id === id);
 
   if (!brand) {

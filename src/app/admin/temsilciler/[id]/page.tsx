@@ -1,7 +1,7 @@
 'use client';
 
 import { schoolRepresentatives } from '@/lib/data';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Linkedin, Mail } from 'lucide-react';
 import React from 'react';
 
-const RepresentativeProfilePage = ({ params }: { params: { id: string } }) => {
+const RepresentativeProfilePage = () => {
   const router = useRouter();
-  const representative = schoolRepresentatives.find((rep) => rep.id === params.id);
+  const params = useParams();
+  const id = params.id as string;
+  const representative = schoolRepresentatives.find((rep) => rep.id === id);
 
   if (!representative) {
     notFound();
