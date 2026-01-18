@@ -3,7 +3,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -137,7 +137,7 @@ export const marketBrands: Brand[] = [
     { id: '8', name: 'MarkaStok', category: 'Giyim', donationRate: 15, logoUrl: 'https://picsum.photos/seed/markastok/200', link: '#', followers: 80000, type: 'brand' },
     { id: '9', name: 'Fashfed Mobile', category: 'Giyim', donationRate: 10, logoUrl: 'https://picsum.photos/seed/fashfed-mobile/200', link: '#', followers: 100000, type: 'brand' },
     { id: '10', name: 'Playsports', category: 'Spor Giyim', donationRate: 8, logoUrl: 'https://picsum.photos/seed/playsports/200', link: '#', followers: 40000, type: 'brand' },
-    { id: '11', name: 'Columbia', category: 'Outdoor', donationRate: 7, logoUrl: 'https://picsum.photos/seed/columbia/200', link: '#', followers: 1000000, type: 'brand' },
+    { id: '11', name: 'Columbİa', category: 'Outdoor', donationRate: 7, logoUrl: 'https://picsum.photos/seed/columbia/200', link: '#', followers: 1000000, type: 'brand' },
     { id: '12', name: 'Converse', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://picsum.photos/seed/converse/200', link: '#', followers: 5000000, type: 'brand' },
     { id: '13', name: 'Hotiç', category: 'Ayakkabı', donationRate: 9, logoUrl: 'https://picsum.photos/seed/hotic/200', link: '#', followers: 800000, type: 'brand' },
     { id: '14', name: 'SuperStep', category: 'Ayakkabı', donationRate: 10, logoUrl: 'https://picsum.photos/seed/superstep/200', link: '#', followers: 1500000, type: 'brand' },
@@ -719,4 +719,56 @@ export const helpTopics: HelpTopic[] = [
   }
 ];
 
+export const ngoHelpTopics: HelpTopic[] = [
+  {
+    icon: 'building',
+    title: 'Profil ve Şeffaflık Yönetimi',
+    slug: 'profil-yonetimi',
+    description: "Kuruluş profilinizi nasıl yöneteceğinizi, bilgilerinizi nasıl güncelleyeceğinizi ve şeffaflık puanınızı nasıl artıracağınızı öğrenin.",
+    subtopics: [
+        { title: 'Şeffaflık puanımı nasıl artırabilirim?', link: '#', content: "Şeffaflık Endeksi sayfasındaki tüm kriterleri (yasal belgeler, iletişim bilgileri, raporlar vb.) tamamlayarak puanınızı en üst seviyeye çıkarabilirsiniz." },
+        { title: 'Kuruluş bilgilerimi (adres, iletişim vb.) nasıl güncellerim?', link: '#', content: "Yönetim panelindeki 'Profili Yönet' sayfasından tüm temel bilgilerinizi ve sosyal medya hesaplarınızı kolayca güncelleyebilirsiniz." },
+        { title: 'Gönderi (post) nasıl oluştururum?', link: '#', content: "'Gönderiler' sayfasından metin ve görsel içeren yeni duyurular veya güncellemeler oluşturarak toplulukla etkileşim kurabilirsiniz." },
+    ]
+  },
+  {
+    icon: 'dollar-sign',
+    title: 'Bağış ve Finansal Süreçler',
+    slug: 'bagis-finans',
+    description: "Bağış takibi, hak ediş raporları ve finansal süreçler hakkında merak ettikleriniz.",
+    subtopics: [
+        { title: 'Hak ediş raporlarıma nereden ulaşabilirim?', link: '#', content: "Yönetim panelindeki 'Raporlar' sayfasından tüm geçmiş ve güncel finansal raporlarınızı indirebilirsiniz." },
+        { title: 'Bağışlar hesabımıza ne zaman ve nasıl aktarılır?', link: '#', content: "Kesinleşen hak edişler, takip eden ayın 15'ine kadar kayıtlı IBAN numaranıza otomatik olarak aktarılır." },
+        { title: 'İşlem geçmişini nasıl detaylı inceleyebilirim?', link: '#', content: "'Bağış Takibi' sayfasından tüm bağış işlemlerini, marka ve tutar detaylarıyla birlikte görebilirsiniz." },
+    ]
+  },
+  {
+    icon: 'heart-handshake',
+    title: 'Gönüllülük Yönetimi',
+    slug: 'gonulluluk-yonetimi',
+    description: "Gönüllülük ilanları oluşturma, başvuruları yönetme ve gönüllülerle iletişim kurma süreçleri.",
+    subtopics: [
+        { title: 'Yeni bir gönüllülük ilanı nasıl oluşturulur?', link: '#', content: "'Gönüllülük' sayfasındaki 'Yeni İlan Oluştur' butonu ile yeni bir ilan yayınlayabilirsiniz." },
+        { title: 'Gönüllü başvurularını nasıl onaylar veya reddederim?', link: '#', content: "'Gönüllülük' sayfasındaki 'Başvurular' sekmesinden gelen başvuruları inceleyebilir, detaylarını görüntüleyebilir ve onay/ret işlemi yapabilirsiniz." },
+        { title: 'Gönüllülerin demografik verilerine nasıl erişirim?', link: '#', content: "'Demografi' sayfasından gönüllü ve bağışçılarınızın yaş, şehir, ilgi alanı gibi anonimleştirilmiş istatistiklerine ulaşabilirsiniz." },
+    ]
+  },
+  {
+    icon: 'school',
+    title: 'Öğrenci Kulüpleri',
+    slug: 'ogrenci-kulupleri',
+    description: "Öğrenci kulüpleri için özel yönetim araçları ve ipuçları.",
+    subtopics: [
+        { title: 'Kulüp profilimizi nasıl güncelleyebiliriz?', link: '#', content: "Yönetim Paneli > Öğrenci Kulüpleri sayfasından kulüp profilinize giderek bilgilerinizi düzenleyebilirsiniz. Bu özellik yakında aktif olacaktır." },
+        { title: 'Kulüp etkinliği nasıl oluşturulur?', link: '#', content: "Kulüp etkinliklerinizi 'Kulüp Etkinlikleri' sayfasından oluşturabilir ve tüm Hangel kullanıcılarına duyurabilirsiniz. Bu özellik yakında aktif olacaktır." },
+    ]
+  }
+];
+
+export const ngoFaqArticles = [
+    { title: 'Şeffaflık puanı neden önemlidir ve nasıl hesaplanır?', link: '#' },
+    { title: 'Bir bağışın STK payı nasıl belirleniyor?', link: '#' },
+    { title: 'Gönüllülük ilanım neden onaylanmadı?', link: '#' },
+    { title: 'Yönetim paneline yeni kullanıcı nasıl eklenir?', link: '#' }
+];
     
