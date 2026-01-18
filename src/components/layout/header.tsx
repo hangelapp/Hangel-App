@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, ShieldAlert, ArrowLeft,
+  Menu, Bell, ShieldAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -10,7 +10,6 @@ import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { EmergencyDialog } from '@/components/shared/emergency-dialog';
 import { Separator } from '../ui/separator';
-import { usePathname, useRouter } from 'next/navigation';
 
 const sideMenuItems = [
     { href: '/timeline', label: 'hangel Impact Story' },
@@ -96,33 +95,15 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
 
 export default function AppHeader() {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const mainNavPaths = ['/timeline', '/market', '/qr-payment', '/volunteering'];
-  const pagesWithCustomBack = ['/events/', '/volunteering/', '/admin/clubs/profile/'];
-  
-  const isMainPage = mainNavPaths.includes(pathname);
-  const hasCustomBack = pagesWithCustomBack.some(p => pathname.startsWith(p) && pathname.length > p.length);
-  
-  const showBackArrow = !isMainPage && !hasCustomBack;
-  const showMenuButton = isMainPage;
   
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b border-black/10 bg-background/80 backdrop-blur-xl dark:border-white/10 lg:left-64">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            {showBackArrow && (
-                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                    <ArrowLeft className="h-6 w-6" />
-                </Button>
-            )}
-             {showMenuButton && (
-                 <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
-                    <Menu className="h-6 w-6" />
-                </Button>
-            )}
+            <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
+                <Menu className="h-6 w-6" />
+            </Button>
             
             <Link href="/timeline" passHref className="lg:hidden">
                 <div className="flex items-center gap-2">

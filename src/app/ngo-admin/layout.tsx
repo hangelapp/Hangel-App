@@ -40,7 +40,7 @@ export default function NgoAdminLayout({
         userItems={[]}
         secondaryItems={secondaryNavItems}
       />
-      <main className="flex-1 lg:pl-64">
+      <main className="flex-1 lg:pl-64 pt-16 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8">
              {!isRootNgoAdmin && (
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4 -ml-2">
