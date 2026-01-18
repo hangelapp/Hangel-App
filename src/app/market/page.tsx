@@ -12,22 +12,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdCarousel = () => {
     return (
-        <div className="flex space-x-4 overflow-x-auto py-2">
+        <div className="flex w-full space-x-4 overflow-x-auto py-2">
             {adBanners.map((ad) => (
                 <Link href={ad.link} passHref key={ad.id}>
-                    <div className="w-64 lg:w-80 flex-shrink-0">
-                        <div className="relative h-24 rounded-lg overflow-hidden">
-                            <Image
-                            src={ad.imageUrl}
-                            alt={ad.title}
-                            fill
-                            className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/40" />
-                            <div className="absolute inset-0 flex flex-col justify-end p-3">
-                                <h3 className="font-bold text-md text-white">{ad.title}</h3>
-                                <p className="text-xs text-white/90">{ad.description}</p>
-                            </div>
+                    <div className="relative w-72 flex-shrink-0 h-16 rounded-lg overflow-hidden">
+                        <Image
+                        src={ad.imageUrl}
+                        alt={ad.title}
+                        fill
+                        className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50" />
+                        <div className="absolute inset-0 flex items-center p-4">
+                            <h3 className="font-semibold text-white truncate">{ad.title}</h3>
                         </div>
                     </div>
                 </Link>
@@ -67,92 +64,87 @@ export default function MarketPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header for search and tabs (non-scrollable part) */}
-      <div className="p-2 space-y-2 border-b shrink-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="hangel'da Ara"
-            className="pl-10 h-10 rounded-full bg-muted border-none"
-          />
-          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-              <Camera className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
-        <AdCarousel />
-        
-        <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all">Tümü</TabsTrigger>
-            <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-            <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
-            <TabsTrigger value="brand">Marka</TabsTrigger>
-            <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      {/* Main content area */}
-      <div className="flex flex-1 overflow-y-hidden">
-        {/* Left Fixed Sidebar */}
-        <aside className="w-1/4 border-r overflow-y-auto">
-          <nav className="flex flex-col">
-            {marketCategories.map((cat) => (
-              <button
-                key={cat.mainCategory}
-                onClick={() => setActiveCategory(cat.mainCategory)}
-                className={cn(
-                  "text-left text-xs sm:text-sm p-2 sm:p-3 whitespace-nowrap truncate",
-                  activeCategory === cat.mainCategory
-                    ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
-                    : "text-muted-foreground hover:bg-accent",
-                  cat.mainCategory === 'Öne çıkanlar' && "font-bold"
-                )}
-              >
-                {cat.mainCategory}
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        {/* Right Scrollable Column */}
-        <main className="w-3/4 flex-1 overflow-y-auto p-2">
-          <div>
-            <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
-              {activeCategory}
-            </h2>
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-              {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
-                <Link href={brand.link || '#'} key={brand.id}>
-                  <div className="flex flex-col items-center text-center space-y-1 p-1">
-                    <div className="relative w-full aspect-square">
-                      <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                        <Image
-                          src={brand.logoUrl}
-                          alt={brand.name}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      {brand.donationRate > 0 && (
-                        <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
-                          {brand.donationRate}%
-                        </div>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
-                  </div>
-                </Link>
-              )) : (
-                <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
-              )}
+        <div className="p-2 space-y-2 border-b shrink-0">
+            <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+                placeholder="hangel'da Ara"
+                className="pl-10 h-10 rounded-full bg-muted border-none"
+            />
+            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <Camera className="h-5 w-5" />
+                </Button>
             </div>
-          </div>
-        </main>
-      </div>
+            </div>
+
+            <AdCarousel />
+            
+            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
+                <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="all">Tümü</TabsTrigger>
+                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
+                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                    <TabsTrigger value="brand">Marka</TabsTrigger>
+                    <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
+                </TabsList>
+            </Tabs>
+        </div>
+        <div className="flex flex-1 overflow-y-hidden">
+            <aside className="w-1/4 border-r overflow-y-auto">
+            <nav className="flex flex-col">
+                {marketCategories.map((cat) => (
+                <button
+                    key={cat.mainCategory}
+                    onClick={() => setActiveCategory(cat.mainCategory)}
+                    className={cn(
+                    "text-left text-xs sm:text-sm p-2 sm:p-3 whitespace-nowrap truncate",
+                    activeCategory === cat.mainCategory
+                        ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
+                        : "text-muted-foreground hover:bg-accent",
+                    cat.mainCategory === 'Öne çıkanlar' && "font-bold"
+                    )}
+                >
+                    {cat.mainCategory}
+                </button>
+                ))}
+            </nav>
+            </aside>
+
+            <main className="w-3/4 flex-1 overflow-y-auto p-2">
+            <div>
+                <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
+                {activeCategory}
+                </h2>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
+                    <Link href={brand.link || '#'} key={brand.id}>
+                    <div className="flex flex-col items-center text-center space-y-1 p-1">
+                        <div className="relative w-full aspect-square">
+                        <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                            <Image
+                            src={brand.logoUrl}
+                            alt={brand.name}
+                            fill
+                            className="object-contain"
+                            />
+                        </div>
+                        {brand.donationRate > 0 && (
+                            <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
+                            {brand.donationRate}%
+                            </div>
+                        )}
+                        </div>
+                        <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
+                    </div>
+                    </Link>
+                )) : (
+                    <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
+                )}
+                </div>
+            </div>
+            </main>
+        </div>
     </div>
   );
 }
