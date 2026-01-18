@@ -52,6 +52,45 @@ const AdCarousel = () => {
     );
 };
 
+const VisualAdCarousel = () => {
+    const plugin = useRef(
+        Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
+    )
+
+    return (
+         <Carousel
+            plugins={[plugin.current]}
+            opts={{
+            align: 'start',
+            loop: true,
+            }}
+            className="w-full rounded-lg overflow-hidden"
+        >
+            <CarouselContent>
+            {adBanners.map((ad) => (
+                <CarouselItem key={ad.id}>
+                    <Link href={ad.link} passHref>
+                        <div className="relative h-32">
+                            <Image
+                            src={ad.imageUrl}
+                            alt={ad.title}
+                            fill
+                            className="object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40" />
+                            <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
+                                <h3 className="font-bold text-lg">{ad.title}</h3>
+                                <p className="text-sm">{ad.description}</p>
+                            </div>
+                        </div>
+                    </Link>
+                </CarouselItem>
+            ))}
+            </CarouselContent>
+        </Carousel>
+    )
+}
+
 const fallbackColors = [
     { bg: 'bg-red-500', text: 'text-white' },
     { bg: 'bg-blue-500', text: 'text-white' },
@@ -94,30 +133,28 @@ export default function MarketPage() {
   
   return (
     <div className="flex flex-col h-full">
-        <div className="py-2 space-y-1 border-b shrink-0">
-            <div className='px-2 space-y-1'>
-                <div className="flex items-center gap-2">
-                    <div className="relative flex-grow">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input
-                            placeholder="hangel'da Ara"
-                            className="pl-10 pr-12 h-9"
-                        />
-                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Camera className="h-5 w-5" />
-                            </Button>
-                        </div>
+        <div className="p-2 space-y-2 border-b shrink-0">
+            <div className="flex items-center gap-2">
+                <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="hangel'da Ara"
+                        className="pl-10 pr-12 h-9"
+                    />
+                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Camera className="h-5 w-5" />
+                        </Button>
                     </div>
-                    <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-                        <Filter className="h-5 w-5" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-                        <ArrowDownUp className="h-5 w-5" />
-                    </Button>
                 </div>
-                <AdCarousel />
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                    <Filter className="h-5 w-5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                    <ArrowDownUp className="h-5 w-5" />
+                </Button>
             </div>
+            <AdCarousel />
             
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
                 <TabsList className="grid w-full grid-cols-5 text-xs">
@@ -178,9 +215,14 @@ export default function MarketPage() {
                                 <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
                             </div>
                         </Link>
-                        {index === 14 && (
+                        {index === 8 && (
                            <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
                                <AdCarousel />
+                           </div>
+                        )}
+                        {index === 14 && (
+                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
+                               <VisualAdCarousel />
                            </div>
                         )}
                     </Fragment>
