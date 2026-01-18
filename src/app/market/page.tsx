@@ -84,18 +84,18 @@ export default function MarketPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder="hangel'da Ara"
-                        className="pl-10 h-10 rounded-full bg-muted border-none"
+                        className="pl-10 pr-12 h-11"
                     />
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                        <Button variant="ghost" size="icon" className="h-9 w-9">
                         <Camera className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
-                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
                     <Filter className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
                     <ArrowDownUp className="h-5 w-5" />
                 </Button>
             </div>
