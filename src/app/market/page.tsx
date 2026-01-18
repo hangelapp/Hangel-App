@@ -40,7 +40,7 @@ export default function MarketPage() {
   }, [activeCategory, activeEntityType]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-48px-48px)] lg:h-[calc(100vh-48px)]">
+    <div className="flex flex-col h-full">
       {/* Header for search and tabs (non-scrollable part) */}
       <div className="p-2 space-y-2 border-b shrink-0">
         <div className="relative">
@@ -58,9 +58,9 @@ export default function MarketPage() {
         <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="all">Tümü</TabsTrigger>
-            <TabsTrigger value="brand">Marka</TabsTrigger>
-            <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
             <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
+            <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+            <TabsTrigger value="brand">Marka</TabsTrigger>
             <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
           </TabsList>
         </Tabs>
