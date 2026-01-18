@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Search, Camera, ChevronRight } from 'lucide-react';
 import { marketCategories, marketBrands } from '@/lib/data';
 import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -101,17 +100,19 @@ export default function MarketPage() {
                 {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
                 <Link href={brand.link || '#'} key={brand.id}>
                     <div className="flex flex-col items-center text-center space-y-1 p-1">
-                      <div className="relative w-full aspect-square rounded-full overflow-hidden border bg-white">
-                          <Image
-                          src={brand.logoUrl}
-                          alt={brand.name}
-                          fill
-                          className="object-contain p-2"
-                          />
+                      <div className="relative w-full aspect-square">
+                        <div className="w-full h-full rounded-full overflow-hidden border bg-white">
+                            <Image
+                            src={brand.logoUrl}
+                            alt={brand.name}
+                            fill
+                            className="object-contain p-2"
+                            />
+                        </div>
                           {brand.donationRate > 0 && (
-                            <Badge variant="destructive" className="absolute -top-1 -right-1 border-none text-[10px] px-1.5 py-0.5 h-auto">
-                                %{brand.donationRate}
-                            </Badge>
+                            <div className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground ring-1 ring-background">
+                                {brand.donationRate}%
+                            </div>
                           )}
                       </div>
                       <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
