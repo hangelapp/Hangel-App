@@ -93,7 +93,7 @@ export default function MarketPage() {
   }, [activeCategory, activeEntityType]);
   
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full">
         <div className="py-2 space-y-1 border-b shrink-0">
             <div className='px-2 space-y-1'>
                 <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export default function MarketPage() {
             </Tabs>
         </div>
         <div className="flex flex-1 overflow-hidden">
-            <aside className="w-1/4 border-r overflow-y-auto">
+            <aside className="w-1/4 border-r overflow-y-auto bg-background">
             <nav className="flex flex-col">
                 {marketCategories.map((cat) => (
                 <button
