@@ -49,7 +49,7 @@ const donationMethodData = [
 ];
 
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19AF'];
+const COLORS = ['#f34723', '#042654', '#1f1f1f'];
 
 export default function DemographicsPage() {
   return (
@@ -73,8 +73,8 @@ export default function DemographicsPage() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Area type="monotone" dataKey="Gönüllü" stackId="1" stroke="#8884d8" fill="#8884d8" />
-                    <Area type="monotone" dataKey="Bağışçı" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+                    <Area type="monotone" dataKey="Gönüllü" stackId="1" stroke="#f34723" fill="#f34723" />
+                    <Area type="monotone" dataKey="Bağışçı" stackId="1" stroke="#042654" fill="#042654" />
                 </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -91,7 +91,7 @@ export default function DemographicsPage() {
                 <PolarGrid />
                 <PolarAngleAxis dataKey="subject" />
                 <PolarRadiusAxis />
-                <Radar name="Gönüllü Sayısı" dataKey="value" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                <Radar name="Gönüllü Sayısı" dataKey="value" stroke="#f34723" fill="#f34723" fillOpacity={0.6} />
                 <Tooltip />
               </RadarChart>
             </ResponsiveContainer>
@@ -131,8 +131,8 @@ export default function DemographicsPage() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="Gönüllü" fill="#8884d8" />
-                    <Bar dataKey="Bağışçı" fill="#82ca9d" />
+                    <Bar dataKey="Gönüllü" fill="#f34723" />
+                    <Bar dataKey="Bağışçı" fill="#042654" />
                 </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -151,8 +151,8 @@ export default function DemographicsPage() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="Gönüllü" stroke="#8884d8" activeDot={{ r: 8 }} />
-                        <Line type="monotone" dataKey="Bağışçı" stroke="#82ca9d" />
+                        <Line type="monotone" dataKey="Gönüllü" stroke="#f34723" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="Bağışçı" stroke="#042654" />
                     </LineChart>
                 </ResponsiveContainer>
             </CardContent>
