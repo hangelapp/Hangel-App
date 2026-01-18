@@ -101,7 +101,7 @@ export default function MarketPage() {
                 <Link href={brand.link || '#'} key={brand.id}>
                     <div className="flex flex-col items-center text-center space-y-1 p-1">
                       <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-full overflow-hidden border bg-white">
+                        <div className="w-full h-full rounded-full overflow-hidden bg-white">
                             <Image
                             src={brand.logoUrl}
                             alt={brand.name}
@@ -110,7 +110,7 @@ export default function MarketPage() {
                             />
                         </div>
                           {brand.donationRate > 0 && (
-                            <div className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground ring-1 ring-background">
+                            <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-sm font-bold text-destructive-foreground ring-2 ring-background">
                                 {brand.donationRate}%
                             </div>
                           )}
