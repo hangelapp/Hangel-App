@@ -543,22 +543,22 @@ badgeData.forEach(baseBadge => {
 export const adBanners: AdBanner[] = [
     {
       id: '1',
-      title: 'Yaz Kampanyası',
-      description: 'Seçili ürünlerde %50\'ye varan indirimleri kaçırma!',
+      title: 'Alışverişin İyiliğe Dönüşsün',
+      description: 'Anlaşmalı markalardan bağış yap.',
       imageUrl: 'https://picsum.photos/seed/ad1/1200/400',
       link: '/market/1'
     },
     {
       id: '2',
-      title: 'Okula Dönüş Fırsatları',
-      description: 'Kırtasiye ve teknoloji ürünlerinde büyük indirimler.',
+      title: 'Eğitime Destek Ol',
+      description: 'Alışverişlerinle bir çocuğun eğitimine katkı sağla.',
       imageUrl: 'https://picsum.photos/seed/ad2/1200/400',
       link: '#'
     },
     {
       id: '3',
-      title: 'Yeni Sezonu Keşfet',
-      description: 'Sonbahar koleksiyonumuzla tarzını yenile.',
+      title: 'Doğayı Koru',
+      description: 'Sürdürülebilir ürünleri seç, TEMA\'ya destek ol.',
       imageUrl: 'https://picsum.photos/seed/ad3/1200/400',
       link: '#'
     }
@@ -811,3 +811,4 @@ export const categoryMapping: { [key: string]: string[] } = {
     'Sigorta': [],
     'Fatura': [],
 };
+
