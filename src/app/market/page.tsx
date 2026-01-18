@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, Fragment } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Camera, Filter, ArrowDownUp } from 'lucide-react';
@@ -81,24 +81,24 @@ export default function MarketPage() {
   
   return (
     <div className="flex flex-col h-full">
-        <div className="p-2 space-y-2 border-b shrink-0">
+        <div className="p-4 space-y-4 border-b shrink-0">
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder="hangel'da Ara"
-                        className="pl-10 pr-12 h-11"
+                        className="pl-10 pr-12 h-9"
                     />
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
                         <Camera className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
-                <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                     <Filter className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                     <ArrowDownUp className="h-5 w-5" />
                 </Button>
             </div>
@@ -115,7 +115,7 @@ export default function MarketPage() {
                 </TabsList>
             </Tabs>
         </div>
-        <div className="flex flex-1 overflow-y-hidden">
+        <div className="flex flex-1 overflow-hidden">
             <aside className="w-1/4 border-r overflow-y-auto">
             <nav className="flex flex-col">
                 {marketCategories.map((cat) => (
@@ -123,7 +123,7 @@ export default function MarketPage() {
                     key={cat.mainCategory}
                     onClick={() => setActiveCategory(cat.mainCategory)}
                     className={cn(
-                    "text-left text-xs sm:text-sm p-2 sm:p-3 whitespace-nowrap truncate",
+                    "text-left text-xs sm:text-sm p-1 sm:p-1.5 whitespace-nowrap truncate",
                     activeCategory === cat.mainCategory
                         ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
                         : "text-muted-foreground hover:bg-accent",
@@ -142,27 +142,34 @@ export default function MarketPage() {
                 {activeCategory}
                 </h2>
                 <div className="grid grid-cols-3 gap-2">
-                {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
-                    <Link href={brand.link || '#'} key={brand.id}>
-                    <div className="flex flex-col items-center text-center space-y-1 p-1">
-                        <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                            <Image
-                            src={brand.logoUrl}
-                            alt={brand.name}
-                            fill
-                            className="object-contain"
-                            />
-                        </div>
-                        {brand.donationRate > 0 && (
-                            <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
-                            {brand.donationRate}%
+                {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => (
+                    <Fragment key={brand.id}>
+                        <Link href={brand.link || '#'}>
+                            <div className="flex flex-col items-center text-center space-y-1 p-1">
+                                <div className="relative w-full aspect-square">
+                                <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                                    <Image
+                                    src={brand.logoUrl}
+                                    alt={brand.name}
+                                    fill
+                                    className="object-contain"
+                                    />
+                                </div>
+                                {brand.donationRate > 0 && (
+                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
+                                    {brand.donationRate}%
+                                    </div>
+                                )}
+                                </div>
+                                <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
                             </div>
+                        </Link>
+                        {index === 8 && (
+                           <div className="col-span-3 my-2">
+                               <AdCarousel />
+                           </div>
                         )}
-                        </div>
-                        <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
-                    </div>
-                    </Link>
+                    </Fragment>
                 )) : (
                     <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
                 )}
