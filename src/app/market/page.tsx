@@ -40,9 +40,9 @@ export default function MarketPage() {
   }, [activeCategory, activeEntityType]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-96px)] lg:h-[calc(100vh-48px)]"> 
+    <div className="flex flex-col h-full"> 
       {/* Search Header */}
-      <div className="p-2 space-y-2">
+      <div className="p-2 space-y-2 shrink-0">
         <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
@@ -58,7 +58,7 @@ export default function MarketPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 mt-2 overflow-hidden">
+      <div className="flex flex-1 mt-2 overflow-y-hidden">
         {/* Left Sidebar */}
         <aside className="w-1/4 border-r">
             <nav className="flex flex-col">
@@ -81,47 +81,49 @@ export default function MarketPage() {
         </aside>
 
         {/* Right Content */}
-        <main className="w-3/4 p-2 flex flex-col">
-             <Tabs defaultValue="all" className="w-full flex flex-col" onValueChange={(value) => setActiveEntityType(value as any)}>
-                <TabsList className="grid w-full grid-cols-5 mb-4 shrink-0">
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
-                    <TabsTrigger value="brand">Marka</TabsTrigger>
-                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
-                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
-                </TabsList>
-                <div className="overflow-y-auto grow">
-                    <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
-                        {activeCategory}
-                    </h2>
-                    <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                        {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
-                        <Link href={brand.link || '#'} key={brand.id}>
-                            <div className="flex flex-col items-center text-center space-y-1 p-1">
-                              <div className="relative w-full aspect-square">
-                                <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                                    <Image
-                                    src={brand.logoUrl}
-                                    alt={brand.name}
-                                    fill
-                                    className="object-contain"
-                                    />
-                                </div>
-                                  {brand.donationRate > 0 && (
-                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
-                                        {brand.donationRate}%
+        <main className="w-3/4 flex flex-col overflow-y-auto">
+             <div className='p-2'>
+                <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
+                    <TabsList className="grid w-full grid-cols-5 mb-4 shrink-0">
+                        <TabsTrigger value="all">Tümü</TabsTrigger>
+                        <TabsTrigger value="brand">Marka</TabsTrigger>
+                        <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                        <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
+                        <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
+                    </TabsList>
+                    <div>
+                        <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
+                            {activeCategory}
+                        </h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                            {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
+                            <Link href={brand.link || '#'} key={brand.id}>
+                                <div className="flex flex-col items-center text-center space-y-1 p-1">
+                                  <div className="relative w-full aspect-square">
+                                    <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                                        <Image
+                                        src={brand.logoUrl}
+                                        alt={brand.name}
+                                        fill
+                                        className="object-contain"
+                                        />
                                     </div>
-                                  )}
-                              </div>
-                              <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
-                            </div>
-                        </Link>
-                        )) : (
-                            <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
-                        )}
+                                      {brand.donationRate > 0 && (
+                                        <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
+                                            {brand.donationRate}%
+                                        </div>
+                                      )}
+                                  </div>
+                                  <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
+                                </div>
+                            </Link>
+                            )) : (
+                                <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </Tabs>
+                </Tabs>
+             </div>
         </main>
       </div>
     </div>
