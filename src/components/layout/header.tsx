@@ -124,13 +124,11 @@ export default function AppHeader() {
                 </Button>
             )}
             
-            {!showBackArrow && (
-                <Link href="/timeline" passHref className="lg:hidden">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold text-[#f34723]">hangel</span>
-                    </div>
-                </Link>
-            )}
+            <Link href="/timeline" passHref className="lg:hidden">
+                <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold text-[#f34723]">hangel</span>
+                </div>
+            </Link>
           </div>
           <div className="flex items-center gap-1">
             <Link href="/notifications" passHref>
