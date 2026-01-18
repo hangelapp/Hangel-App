@@ -1,19 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Camera, ChevronRight } from 'lucide-react';
-import { marketCategories } from '@/lib/data';
+import { marketCategories, marketBrands } from '@/lib/data';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
+const categoryMapping: Record<string, string[]> = {
+    'Ev & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
+    'Kadın Giyim': ['Kadın Giyim', 'Giyim', 'Tesettür Giyim', 'Lüks Giyim', 'Çok Kategorili', 'İç Giyim'],
+    'Kadın Ayakkabı': ['Ayakkabı'],
+    'Kadın İç Giyim & Ev Giyim': ['İç Giyim'],
+    'Erkek Giyim': ['Erkek Giyim', 'Giyim', 'Çok Kategorili', 'İç Giyim'],
+    'Erkek Ayakkabıları': ['Ayakkabı'],
+    'Erkek İç Çamaşır & Pijama': ['İç Giyim'],
+    'Spor & Outdoor': ['Spor Giyim', 'Outdoor', 'Ayakkabı'],
+    'Takı & Aksesuar': ['Mücevher', 'Saat', 'Aksesuar'],
+    'Bebek & Çocuk': ['Bebek Giyim', 'Bebek Ürünleri', 'Çocuk Giyim', 'Oyuncak'],
+    'Yeme & İçme & Gurme': ['Kahve & Giyim', 'Kahve', 'Restoran', 'Evcil Hayvan', 'Gurme', 'Sağlıklı Gıda'],
+    'Tatil & Seyahat': ['Seyahat', 'Araç Kiralama', 'Bilet', 'Konaklama', 'Aksesuar'],
+    'Pazaryeri & Market': ['Market', 'Hızlı Market', 'Pazaryeri', 'Giyim Pazaryeri'],
+    'Elektronik': ['Elektronik', 'Aksesuar', 'Teknoloji', 'Müzik Aletleri'],
+    'Hobi & Hediye & Diğer': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye', 'Teknoloji', 'Evcil Hayvan', 'Seyahat'],
+    'Kozmetik & Kişisel Bakım': ['Kozmetik', 'Sağlık', 'Kişisel Bakım'],
+    'Kadın Büyük Beden Giyim': ['Giyim'],
+    'Erkek Büyük Beden Giyim': ['Giyim'],
+};
+
+
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState(marketCategories[0].mainCategory);
 
-  const selectedCategoryData = marketCategories.find(cat => cat.mainCategory === activeCategory);
+  const brandsToShow = useMemo(() => {
+    if (activeCategory === 'Öne çıkanlar') {
+        return [...marketBrands].sort((a, b) => (b.followers || 0) - (a.followers || 0)).slice(0, 18);
+    }
+    const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
+    if (!brandCategories) {
+        return [];
+    }
+    return marketBrands.filter(brand => brandCategories.includes(brand.category));
+  }, [activeCategory]);
 
   return (
     <div className="flex flex-col h-full"> 
@@ -67,27 +98,27 @@ export default function MarketPage() {
                 {activeCategory}
             </h2>
             <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                {selectedCategoryData?.subCategories.length > 0 ? selectedCategoryData?.subCategories.map((subCat) => (
-                <Link href="#" key={subCat.name}>
+                {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
+                <Link href={brand.link || '#'} key={brand.id}>
                     <div className="flex flex-col items-center text-center space-y-1 p-1">
-                      <div className="relative w-full aspect-square rounded-full overflow-hidden">
+                      <div className="relative w-full aspect-square rounded-full overflow-hidden border bg-white">
                           <Image
-                          src={subCat.imageUrl}
-                          alt={subCat.name}
+                          src={brand.logoUrl}
+                          alt={brand.name}
                           fill
-                          className="object-cover"
+                          className="object-contain p-2"
                           />
-                          {subCat.isHot && (
-                          <Badge className="absolute top-1 right-1 bg-red-500 text-white border-none text-[10px] px-1.5 py-0.5 h-auto">
-                              HOT
-                          </Badge>
+                          {brand.donationRate > 0 && (
+                            <Badge variant="destructive" className="absolute -top-1 -right-1 border-none text-[10px] px-1.5 py-0.5 h-auto">
+                                %{brand.donationRate}
+                            </Badge>
                           )}
                       </div>
-                      <p className="mt-1 text-xs font-medium text-center leading-tight">{subCat.name}</p>
+                      <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
                     </div>
                 </Link>
                 )) : (
-                    <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride ürün bulunmuyor.</p>
+                    <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride marka bulunmuyor.</p>
                 )}
             </div>
         </main>
