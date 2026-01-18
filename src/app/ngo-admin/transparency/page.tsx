@@ -5,6 +5,7 @@ import { CheckCircle, AlertCircle, Upload, LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 const criteria = [
   { id: 1, name: 'Faaliyet Belgesi', points: 10, isCompleted: true, type: 'document' },
@@ -27,6 +28,7 @@ export default function TransparencyPage() {
   const totalPoints = criteria.reduce((sum, item) => sum + item.points, 0);
   const currentPoints = criteria.filter(item => item.isCompleted).reduce((sum, item) => sum + item.points, 0);
   const progressValue = (currentPoints / totalPoints) * 100;
+  const hasMetThreshold = currentPoints > 35;
 
   const renderInput = (item: typeof criteria[0]) => {
     if (item.isCompleted) return null;
@@ -72,18 +74,23 @@ export default function TransparencyPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Şeffaflık Puanı: {currentPoints} / {totalPoints}</CardTitle>
-          <Progress value={progressValue} className="mt-2" />
+          <CardTitle className={cn("text-2xl font-bold", hasMetThreshold ? "text-green-600" : "text-destructive")}>
+            Şeffaflık Puanı: {currentPoints} / {totalPoints}
+          </CardTitle>
+          <Progress 
+            value={progressValue} 
+            className={cn("mt-2", hasMetThreshold && "[&>div]:bg-green-600")} 
+          />
         </CardHeader>
         <CardContent>
-            <Alert variant="destructive" className="mb-6">
+            <Alert variant={hasMetThreshold ? "default" : "destructive"} className={cn(hasMetThreshold && 'border-green-600/50 bg-green-500/5 text-green-700 [&>svg]:text-green-600')}>
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Önemli Uyarı</AlertTitle>
+                <AlertTitle>{hasMetThreshold ? 'Tebrikler!' : 'Önemli Uyarı'}</AlertTitle>
                 <AlertDescription>
-                    Şeffaflık puanı 35'in altında olan kuruluşlar platformda listelenmez.
+                     {hasMetThreshold ? 'Şeffaflık eşiğini aştınız. Profiliniz platformda güvenle listeleniyor.' : 'Şeffaflık puanı 35\'in altında olan kuruluşlar platformda listelenmez.'}
                 </AlertDescription>
             </Alert>
-          <div className="space-y-4">
+          <div className="space-y-4 mt-6">
             {criteria.map((item) => (
               <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-3 mb-4 sm:mb-0">

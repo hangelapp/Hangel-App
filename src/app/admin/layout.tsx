@@ -34,13 +34,15 @@ export default function AdminLayout({
         secondaryItems={backToSiteItem}
       />
       <main className="flex-1 lg:pl-64 pt-16 lg:pt-0">
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="px-4 sm:px-6 lg:px-8 pb-8">
             {!isRootAdmin && (
-                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4 -ml-2">
+                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="mt-4 mb-4 -ml-2">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
             )}
-            {children}
+            <div className={isRootAdmin ? 'pt-8' : ''}>
+              {children}
+            </div>
         </div>
       </main>
     </div>

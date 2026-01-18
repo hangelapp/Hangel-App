@@ -1,9 +1,11 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Eye, Share2 } from 'lucide-react';
 import React from 'react';
 import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs';
+import { format, parseISO } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 type ReportType = 'Finansal' | 'Gönüllülük' | 'Sosyal Etki';
 
@@ -11,7 +13,7 @@ interface Report {
   id: number;
   title: string;
   type: ReportType;
-  date: string;
+  date: string; // YYYY-MM-DD
 }
 
 const allReports: Report[] = [
@@ -39,21 +41,44 @@ const ReportList = ({ type }: { type: ReportType }) => {
         .filter(report => report.type === type)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
+    const groupedReports = reports.reduce((acc, report) => {
+        const yearMonth = format(parseISO(report.date), 'MMMM yyyy', { locale: tr });
+        if (!acc[yearMonth]) {
+            acc[yearMonth] = [];
+        }
+        acc[yearMonth].push(report);
+        return acc;
+    }, {} as Record<string, Report[]>);
+
     if (reports.length === 0) {
         return <div className="text-center text-muted-foreground p-8">Bu kategoride rapor bulunmuyor.</div>
     }
 
     return (
-        <Card>
-            <CardContent className="p-4 space-y-2">
-                {reports.map(report => (
-                    <Button key={report.id} variant="outline" className="w-full justify-between">
-                       <span>{report.title} <span className="text-muted-foreground text-xs ml-2">({new Date(report.date).toLocaleDateString('tr-TR')})</span></span>
-                       <Download className="h-4 w-4" />
-                    </Button>
-                ))}
-            </CardContent>
-        </Card>
+        <div className="space-y-6">
+            {Object.entries(groupedReports).map(([monthYear, reportsInMonth]) => (
+                <div key={monthYear}>
+                    <h3 className="text-lg font-semibold mb-3 capitalize">{monthYear}</h3>
+                    <Card>
+                        <CardContent className="p-2 space-y-1">
+                            {reportsInMonth.map(report => (
+                                <div key={report.id} className="flex items-center justify-between p-2 rounded-md hover:bg-accent">
+                                   <div className='flex-1'>
+                                     <p className="font-medium text-sm">{report.title}</p>
+                                     <p className="text-xs text-muted-foreground">{new Date(report.date).toLocaleDateString('tr-TR')}</p>
+                                   </div>
+                                   <div className="flex gap-1">
+                                       <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost"><Share2 className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
+                                   </div>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            ))}
+        </div>
     )
 }
 
@@ -74,13 +99,13 @@ export default function ReportsPage() {
           <TabsTrigger value="Gönüllülük">Gönüllülük</TabsTrigger>
           <TabsTrigger value="Sosyal Etki">Sosyal Etki</TabsTrigger>
         </TabsList>
-        <TabsContent value="Finansal" className="mt-4">
+        <TabsContent value="Finansal" className="mt-6">
           <ReportList type="Finansal" />
         </TabsContent>
-        <TabsContent value="Gönüllülük" className="mt-4">
+        <TabsContent value="Gönüllülük" className="mt-6">
           <ReportList type="Gönüllülük" />
         </TabsContent>
-        <TabsContent value="Sosyal Etki" className="mt-4">
+        <TabsContent value="Sosyal Etki" className="mt-6">
           <ReportList type="Sosyal Etki" />
         </TabsContent>
       </Tabs>
