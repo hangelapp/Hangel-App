@@ -93,37 +93,38 @@ export default function MarketPage() {
   
   return (
     <div className="flex flex-col h-full overflow-hidden">
-        <div className="p-2 space-y-2 border-b shrink-0">
-            <div className="flex items-center gap-2">
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                        placeholder="hangel'da Ara"
-                        className="pl-10 pr-12 h-9"
-                    />
-                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Camera className="h-5 w-5" />
-                        </Button>
+        <div className="py-2 space-y-1 border-b shrink-0">
+            <div className='px-2 space-y-1'>
+                <div className="flex items-center gap-2">
+                    <div className="relative flex-grow">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            placeholder="hangel'da Ara"
+                            className="pl-10 pr-12 h-9"
+                        />
+                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Camera className="h-5 w-5" />
+                            </Button>
+                        </div>
                     </div>
+                    <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                        <Filter className="h-5 w-5" />
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                        <ArrowDownUp className="h-5 w-5" />
+                    </Button>
                 </div>
-                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-                    <Filter className="h-5 w-5" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-                    <ArrowDownUp className="h-5 w-5" />
-                </Button>
+                <AdCarousel />
             </div>
-
-            <AdCarousel />
             
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
-                <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="all" className="text-xs">Tümü</TabsTrigger>
-                    <TabsTrigger value="cooperative" className="text-xs">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="economic" className="text-xs">İktisadi İşl.</TabsTrigger>
-                    <TabsTrigger value="brand" className="text-xs">Marka</TabsTrigger>
-                    <TabsTrigger value="social" className="text-xs">Sosyal İşl.</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5 text-xs">
+                    <TabsTrigger value="all">Tümü</TabsTrigger>
+                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
+                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                    <TabsTrigger value="brand">Marka</TabsTrigger>
+                    <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
@@ -153,7 +154,7 @@ export default function MarketPage() {
                 <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
                 {activeCategory}
                 </h2>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
                     const color = fallbackColors[index % fallbackColors.length];
                     return (
@@ -177,7 +178,7 @@ export default function MarketPage() {
                             </div>
                         </Link>
                         {index === 8 && (
-                           <div className="col-span-3 my-2">
+                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
                                <AdCarousel />
                            </div>
                         )}

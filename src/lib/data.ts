@@ -158,7 +158,7 @@ export const marketBrands: Brand[] = [
         ]
     },
     { id: '2', name: 'Decathlon', category: 'Spor Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', link: '#', followers: 1200000, type: 'brand' },
-    { id: '3', name: 'Sportstyle', category: 'Spor Giyim', donationRate: 10, logoUrl: '', link: '#', followers: 50000, type: 'brand' },
+    { id: '3', name: 'Sportstyle', category: 'Spor Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/sportstyle.com.tr', link: '#', followers: 50000, type: 'brand' },
     { id: '4', name: 'Sneakscloud', category: 'Ayakkabı', donationRate: 12, logoUrl: 'https://logo.clearbit.com/sneakscloud.com', link: '#', followers: 200000, type: 'brand' },
     { id: '5', name: 'Sportive', category: 'Spor Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/sportive.com.tr', link: '#', followers: 300000, type: 'brand' },
     { id: '6', name: 'FashFed', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', link: '#', followers: 150000, type: 'brand' },
@@ -805,7 +805,7 @@ export const marketCategories: MarketCategory[] = [
   { mainCategory: 'Tümü', subCategories: [] },
   { mainCategory: 'Öne çıkanlar', subCategories: [] },
   { mainCategory: 'Giyim & Moda', subCategories: [] },
-  { mainCategory: 'Ayakkabı & Çanta', subCategories: [] },
+  { mainCategory: 'Ayakkabı', subCategories: [] },
   { mainCategory: 'Spor & Outdoor', subCategories: [] },
   { mainCategory: 'Kişisel Bakım', subCategories: [] },
   { mainCategory: 'Elektronik', subCategories: [] },
@@ -819,13 +819,14 @@ export const marketCategories: MarketCategory[] = [
   { mainCategory: 'Tatil & Otel', subCategories: [] },
   { mainCategory: 'Bilet & Seyahat', subCategories: [] },
   { mainCategory: 'Hobi & Kitap', subCategories: [] },
-  { mainCategory: 'Mücevher & Saat', subCategories: [] },
+  { mainCategory: 'Mücevher', subCategories: [] },
+  { mainCategory: 'Saat', subCategories: [] },
   { mainCategory: 'Evcil Hayvan', subCategories: [] },
 ];
 
 export const categoryMapping: { [key: string]: string[] } = {
     'Giyim & Moda': ['Giyim', 'Lüks Giyim', 'İç Giyim', 'Tesettür Giyim', 'Kadın Giyim', 'Erkek Giyim', 'Giyim Pazaryeri', 'Ev & Giyim', 'Kahve & Giyim'],
-    'Ayakkabı & Çanta': ['Ayakkabı', 'Aksesuar'],
+    'Ayakkabı': ['Ayakkabı', 'Aksesuar'],
     'Spor & Outdoor': ['Spor Giyim', 'Outdoor'],
     'Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
     'Elektronik': ['Elektronik', 'Aksesuar', 'Müzik Aletleri', 'Teknoloji', 'Küçük Ev Aletleri', 'Beyaz Eşya'],
@@ -837,11 +838,13 @@ export const categoryMapping: { [key: string]: string[] } = {
     'Tatil & Otel': ['Seyahat', 'Konaklama'],
     'Bilet & Seyahat': ['Araç Kiralama', 'Bilet', 'Seyahat'],
     'Hobi & Kitap': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye'],
-    'Mücevher & Saat': ['Mücevher', 'Saat'],
+    'Mücevher': ['Mücevher'],
+    'Saat': ['Saat'],
     'Evcil Hayvan': ['Evcil Hayvan'],
     'Sigorta': [],
     'Fatura': [],
 };
+
 
 
 
