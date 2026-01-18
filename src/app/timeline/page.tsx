@@ -78,7 +78,7 @@ export default function TimelinePage() {
   return (
     <div className="animate-in fade-in-0">
       <Tabs defaultValue="foryou" className="w-full">
-        <div className='px-4 pt-4 sticky top-16 bg-background/80 backdrop-blur-xl z-10'>
+        <div className='px-4 pt-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10'>
             <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="foryou">Sana Özel</TabsTrigger>
                 <TabsTrigger value="country">Ülkemde</TabsTrigger>

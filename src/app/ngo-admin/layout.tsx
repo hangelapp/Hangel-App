@@ -42,10 +42,10 @@ export default function NgoAdminLayout({
         userItems={[]}
         secondaryItems={secondaryMenuItems}
       />
-      <main className="flex-1 lg:pl-64 pt-16 lg:pt-0">
+      <main className="flex-1 lg:pl-64 pt-12 lg:pt-0">
         <div className="px-4 sm:px-6 lg:px-8 pb-8">
              {!isRootNgoAdmin && (
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-16 lg:top-4 mt-4 mb-4 -ml-2 lg:relative lg:mt-0">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-12 lg:top-4 mt-4 mb-4 -ml-2 lg:relative lg:mt-0">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
             )}
