@@ -66,7 +66,7 @@ export default function MarketPage() {
             <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
                 {activeCategory}
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
                 {selectedCategoryData?.subCategories.length > 0 ? selectedCategoryData?.subCategories.map((subCat) => (
                 <Link href="#" key={subCat.name}>
                     <div className="flex flex-col items-center text-center space-y-1 p-1">
