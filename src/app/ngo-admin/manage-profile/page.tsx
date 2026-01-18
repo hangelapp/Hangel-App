@@ -8,6 +8,35 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 import React from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const allBeneficiaries = ['Çocuklar', 'Kadınlar', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler'];
+const allSdgs = [
+    'Yoksulluğa Son', 'Açlığa Son', 'Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim', 'Toplumsal Cinsiyet Eşitliği', 
+    'Temiz Su ve Sanitasyon', 'Erişilebilir ve Temiz Enerji', 'İnsana Yakışır İş ve Ekonomik Büyüme',
+    'Sanayi, Yenilikçilik ve Altyapı', 'Eşitsizliklerin Azaltılması', 'Sürdürülebilir Şehirler ve Topluluklar',
+    'Sorumlu Üretim ve Tüketim', 'İklim Eylemi', 'Sudaki Yaşam', 'Karasal Yaşam'
+];
+const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım'];
+
+const CheckboxGroup = ({ title, options, defaultValues }: { title: string, options: string[], defaultValues: string[] }) => {
+    return (
+        <div className="space-y-2">
+            <Label>{title}</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 rounded-lg border p-4">
+                {options.map(option => (
+                    <div key={option} className="flex items-center gap-2">
+                        <Checkbox 
+                            id={`${title}-${option}`}
+                            defaultChecked={defaultValues.includes(option)}
+                        />
+                        <Label htmlFor={`${title}-${option}`} className="text-sm font-normal">{option}</Label>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
 
 export default function ManageProfilePage() {
   const [aboutText, setAboutText] = React.useState("Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.");
@@ -73,19 +102,10 @@ export default function ManageProfilePage() {
                 <CardTitle>Kuruluş Detayları</CardTitle>
                 <CardDescription>Kuruluşunuzun odaklandığı alanları ve üyeliklerini belirtin.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-beneficiaries">Faydalanıcılar</Label>
-                    <Textarea id="ngo-beneficiaries" placeholder="Örn: Çocuklar, Kadınlar, Afetzedeler..." defaultValue="Afetzedeler, İhtiyaç Sahibi Aileler, Öğrenciler, Hastalar"/>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-sdgs">Desteklenen BM Sürdürülebilir Kalkınma Amaçları</Label>
-                    <Textarea id="ngo-sdgs" placeholder="Örn: Yoksulluğa Son, Nitelikli Eğitim..." defaultValue="Yoksulluğa Son, Sağlıklı ve Kaliteli Yaşam, Nitelikli Eğitim" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-memberships">Üye Olunan Platformlar</Label>
-                    <Textarea id="ngo-memberships" placeholder="Örn: Afet Platformu, Açık Açık..." defaultValue="Afet Platformu" />
-                </div>
+            <CardContent className="space-y-6">
+                <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} defaultValues={["Afetzedeler", "İhtiyaç Sahibi Aileler", "Öğrenciler", "Hastalar"]} />
+                <CheckboxGroup title="Desteklenen BM Sürdürülebilir Kalkınma Amaçları" options={allSdgs} defaultValues={["Yoksulluğa Son", "Sağlıklı ve Kaliteli Yaşam", "Nitelikli Eğitim"]} />
+                <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} defaultValues={["Afet Platformu"]} />
             </CardContent>
         </Card>
 

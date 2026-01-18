@@ -1,6 +1,5 @@
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { volunteeringOpportunities } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,32 +14,24 @@ const OpportunityManagement = () => {
         <CardTitle>Gönüllülük İlanları</CardTitle>
         <CardDescription>Yeni ilanlar oluşturun ve mevcut ilanlarınızı yönetin.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>İlan Başlığı</TableHead>
-              <TableHead>Durum</TableHead>
-              <TableHead className="text-right">Başvurular</TableHead>
-              <TableHead className="text-right">Eylemler</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {ngoOpportunities.map((opp) => (
-              <TableRow key={opp.id}>
-                <TableCell className="font-medium">{opp.title}</TableCell>
-                <TableCell>
-                  <Badge>Aktif</Badge>
-                </TableCell>
-                <TableCell className="text-right">{opp.volunteerCount.applications}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm">Görüntüle</Button>
-                  <Button variant="ghost" size="sm" className="text-destructive">Pasife Al</Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <CardContent className="space-y-4">
+        {ngoOpportunities.map((opp) => (
+          <Card key={opp.id}>
+            <CardHeader className='pb-4'>
+              <CardTitle className="text-base">{opp.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-between items-center text-sm">
+                <div>
+                    <p><strong>Durum:</strong> <Badge>Aktif</Badge></p>
+                    <p><strong>Başvurular:</strong> {opp.volunteerCount.applications}</p>
+                </div>
+            </CardContent>
+            <CardFooter className="flex gap-2">
+                <Button variant="secondary" size="sm" className='flex-1'>Görüntüle</Button>
+                <Button variant="destructive" size="sm" className='flex-1'>Pasife Al</Button>
+            </CardFooter>
+          </Card>
+        ))}
       </CardContent>
     </Card>
   );

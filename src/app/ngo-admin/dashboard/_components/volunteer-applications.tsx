@@ -1,13 +1,12 @@
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import React from 'react';
 
 const applications = [
-  { id: 1, applicant: 'Ayşe Yılmaz', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-21' },
-  { id: 2, applicant: 'Mehmet Kaya', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-20' },
+  { id: 1, applicant: 'Ayşe Yılmaz', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-21', avatar: 'https://i.pravatar.cc/150?u=ayse' },
+  { id: 2, applicant: 'Mehmet Kaya', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-20', avatar: 'https://i.pravatar.cc/150?u=mehmet' },
 ];
 
 const VolunteerApplications = () => {
@@ -17,39 +16,29 @@ const VolunteerApplications = () => {
         <CardTitle>Gönüllü Başvuruları</CardTitle>
         <CardDescription>Gönüllülük ilanlarınıza gelen başvuruları buradan yönetebilirsiniz.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Başvuran</TableHead>
-              <TableHead>İlan</TableHead>
-              <TableHead>Tarih</TableHead>
-              <TableHead className="text-right">Eylemler</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {applications.map((app) => (
-              <TableRow key={app.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={`https://i.pravatar.cc/150?u=${app.applicant}`} />
-                      <AvatarFallback>{app.applicant.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{app.applicant}</span>
-                  </div>
-                </TableCell>
-                <TableCell>{app.opportunity}</TableCell>
-                <TableCell>{app.date}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm">Detay</Button>
-                  <Button variant="ghost" size="sm" className="text-green-600">Onayla</Button>
-                  <Button variant="ghost" size="sm" className="text-destructive">Reddet</Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <CardContent className="space-y-4">
+        {applications.map((app) => (
+          <Card key={app.id}>
+            <CardHeader className="flex-row items-center gap-4 pb-4">
+               <Avatar>
+                  <AvatarImage src={app.avatar} />
+                  <AvatarFallback>{app.applicant.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-semibold">{app.applicant}</p>
+                    <p className="text-sm text-muted-foreground">{app.date}</p>
+                </div>
+            </CardHeader>
+            <CardContent className='pb-4'>
+                <p className="text-sm font-medium">{app.opportunity}</p>
+            </CardContent>
+            <CardFooter className="flex gap-2">
+              <Button variant="outline" size="sm" className='flex-1'>Detay</Button>
+              <Button variant="secondary" size="sm" className="flex-1 text-green-600 border-green-600 hover:bg-green-100">Onayla</Button>
+              <Button variant="destructive" size="sm" className='flex-1'>Reddet</Button>
+            </CardFooter>
+          </Card>
+        ))}
       </CardContent>
     </Card>
   );

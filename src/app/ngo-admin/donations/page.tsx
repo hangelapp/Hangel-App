@@ -1,6 +1,5 @@
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Search, ArrowDownUp } from 'lucide-react';
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const donationHistory = [
   { id: 'TXN123', brand: 'Doğa Dostu Giyim', purchaseAmount: 150, ngoShare: 12.75, date: '2024-07-20', status: 'Tamamlandı' },
@@ -31,31 +31,38 @@ const statusVariantMap = {
     'Beklemede': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
 } as const;
 
-const TransactionTable = ({ transactions }: { transactions: typeof donationHistory }) => (
-    <Table>
-        <TableHeader>
-            <TableRow>
-                <TableHead className="text-right">Alışveriş Tutarı</TableHead>
-                <TableHead className="text-right">STK Payı</TableHead>
-                <TableHead>Tarih</TableHead>
-                <TableHead>Durum</TableHead>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            {transactions.map((tx) => (
-                <TableRow key={tx.id}>
-                    <TableCell className="text-right">{tx.purchaseAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</TableCell>
-                    <TableCell className="text-right text-primary font-bold">{tx.ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</TableCell>
-                    <TableCell>{tx.date}</TableCell>
-                    <TableCell>
-                        <Badge variant="outline" className={cn(statusVariantMap[tx.status as keyof typeof statusVariantMap])}>
-                            {tx.status}
-                        </Badge>
-                    </TableCell>
-                </TableRow>
-            ))}
-        </TableBody>
-    </Table>
+const TransactionCard = ({ transaction }: { transaction: typeof donationHistory[0] }) => (
+    <Card>
+        <CardHeader className='pb-4'>
+            <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle className="text-base">{transaction.brand}</CardTitle>
+                    <CardDescription>{transaction.date}</CardDescription>
+                </div>
+                <Badge variant="outline" className={cn(statusVariantMap[transaction.status as keyof typeof statusVariantMap])}>
+                    {transaction.status}
+                </Badge>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+             <div className='flex justify-between items-center text-sm'>
+                <span className='text-muted-foreground'>Alışveriş Tutarı</span>
+                <span className='font-medium'>{transaction.purchaseAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+             </div>
+             <div className='flex justify-between items-center text-sm'>
+                <span className='text-muted-foreground'>STK Payı</span>
+                <span className='font-bold text-primary'>{transaction.ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+             </div>
+        </CardContent>
+    </Card>
+);
+
+const TransactionList = ({ transactions }: { transactions: typeof donationHistory }) => (
+    <div className="space-y-4">
+        {transactions.map((tx) => (
+            <TransactionCard key={tx.id} transaction={tx} />
+        ))}
+    </div>
 );
 
 
@@ -86,15 +93,15 @@ export default function DonationsPage() {
       
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <CardTitle>İşlem Geçmişi</CardTitle>
-            <div className="flex gap-2">
-              <div className="relative">
+            <div className="flex gap-2 w-full md:w-auto">
+              <div className="relative flex-grow">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="İşlemlerde ara..." className="pl-8" />
               </div>
-              <Button variant="outline">
-                Sırala <ArrowDownUp className="ml-2 h-4 w-4" />
+              <Button variant="outline" size="icon">
+                <ArrowDownUp className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -106,10 +113,10 @@ export default function DonationsPage() {
                     <TabsTrigger value="future">Gelecek Hak Edişler</TabsTrigger>
                 </TabsList>
                 <TabsContent value="past" className="mt-4">
-                   <TransactionTable transactions={pastTransactions} />
+                   <TransactionList transactions={pastTransactions} />
                 </TabsContent>
                 <TabsContent value="future" className="mt-4">
-                    <TransactionTable transactions={futureTransactions} />
+                    <TransactionList transactions={futureTransactions} />
                 </TabsContent>
             </Tabs>
         </CardContent>

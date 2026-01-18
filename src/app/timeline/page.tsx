@@ -122,16 +122,15 @@ export default function TimelinePage() {
                         </div>
                     )}
                     </CardContent>
-                    <CardFooter className="flex justify-around border-t p-1">
-                    <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground">
-                        <Heart className="h-5 w-5" /> {post.likes}
-                    </Button>
-                     <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground">
-                        <MessageCircle className="h-5 w-5" /> {post.comments}
-                    </Button>
-                    <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground">
-                        <Share2 className="h-5 w-5" /> Paylaş
-                    </Button>
+                    <CardFooter className="flex justify-start gap-0 border-t p-1">
+                        <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground">
+                            <Heart className="h-5 w-5" /> 
+                            <span>Beğen</span>
+                        </Button>
+                        <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground">
+                            <Share2 className="h-5 w-5" /> 
+                            <span>Paylaş</span>
+                        </Button>
                     </CardFooter>
                 </Card>
                 {(index + 1) % 4 === 0 && <AdCarousel />}
