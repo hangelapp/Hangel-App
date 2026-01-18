@@ -52,14 +52,14 @@ const AdCarousel = () => {
 };
 
 const fallbackColors = [
-    { bg: 'bg-red-100', text: 'text-red-800' },
-    { bg: 'bg-blue-100', text: 'text-blue-800' },
-    { bg: 'bg-green-100', text: 'text-green-800' },
-    { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-    { bg: 'bg-purple-100', text: 'text-purple-800' },
-    { bg: 'bg-pink-100', text: 'text-pink-800' },
-    { bg: 'bg-indigo-100', text: 'text-indigo-800' },
-    { bg: 'bg-teal-100', text: 'text-teal-800' },
+    { bg: 'bg-red-500', text: 'text-white' },
+    { bg: 'bg-blue-500', text: 'text-white' },
+    { bg: 'bg-green-500', text: 'text-white' },
+    { bg: 'bg-amber-500', text: 'text-white' },
+    { bg: 'bg-purple-500', text: 'text-white' },
+    { bg: 'bg-pink-500', text: 'text-white' },
+    { bg: 'bg-indigo-500', text: 'text-white' },
+    { bg: 'bg-teal-500', text: 'text-white' },
 ];
 
 export default function MarketPage() {
