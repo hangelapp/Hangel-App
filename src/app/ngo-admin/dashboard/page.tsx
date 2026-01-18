@@ -2,17 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, TrendingUp, Users, FileText, HelpCircle, PlusCircle } from 'lucide-react';
+import { Download, TrendingUp, Users } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell } from 'recharts';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import VolunteerApplications from "./_components/volunteer-applications";
-import OpportunityManagement from "./_components/opportunity-management";
-import DonationsPage from '../donations/page';
-import PostsPage from '../posts/page';
-import ManageProfilePage from '../manage-profile/page';
-import QrPage from '../qr/page';
-import SupportForm from './_components/support-form';
 
 const monthlyStatsData = [
   { month: 'Ocak', donation: 4000, volunteers: 24 },
@@ -32,7 +24,7 @@ const donationSourceData = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-const DashboardTabContent = () => (
+const DashboardContent = () => (
     <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -123,38 +115,13 @@ const DashboardTabContent = () => (
     </div>
 );
 
-const VolunteerTabContent = () => (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gönüllülük</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Yeni İlan Oluştur
-        </Button>
-      </div>
-
-      <Tabs defaultValue="applications" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="applications">Başvurular</TabsTrigger>
-          <TabsTrigger value="opportunities">İlan Yönetimi</TabsTrigger>
-        </TabsList>
-        <TabsContent value="applications" className="mt-4">
-            <VolunteerApplications />
-        </TabsContent>
-        <TabsContent value="opportunities" className="mt-4">
-            <OpportunityManagement />
-        </TabsContent>
-      </Tabs>
-    </div>
-);
-
 
 export default function NgoDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold">Yönetim Paneli</h1>
+          <h1 className="text-2xl font-bold">Genel Bakış</h1>
           <p className="text-muted-foreground">Hoş geldin, Ahbap Derneği!</p>
         </div>
         <Button>
@@ -163,38 +130,7 @@ export default function NgoDashboardPage() {
         </Button>
       </div>
 
-       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-7">
-          <TabsTrigger value="dashboard">Genel Bakış</TabsTrigger>
-          <TabsTrigger value="volunteer">Gönüllülük</TabsTrigger>
-          <TabsTrigger value="donations">Bağışlar</TabsTrigger>
-          <TabsTrigger value="posts">Gönderiler</TabsTrigger>
-          <TabsTrigger value="profile">Profil</TabsTrigger>
-          <TabsTrigger value="qr">QR Kod</TabsTrigger>
-          <TabsTrigger value="support">Destek</TabsTrigger>
-        </TabsList>
-        <TabsContent value="dashboard" className="mt-6">
-          <DashboardTabContent />
-        </TabsContent>
-        <TabsContent value="volunteer" className="mt-6">
-            <VolunteerTabContent />
-        </TabsContent>
-        <TabsContent value="donations" className="mt-6">
-            <DonationsPage />
-        </TabsContent>
-        <TabsContent value="posts" className="mt-6">
-            <PostsPage />
-        </TabsContent>
-         <TabsContent value="profile" className="mt-6">
-            <ManageProfilePage />
-        </TabsContent>
-         <TabsContent value="qr" className="mt-6">
-            <QrPage />
-        </TabsContent>
-         <TabsContent value="support" className="mt-6">
-            <SupportForm />
-        </TabsContent>
-      </Tabs>
+       <DashboardContent />
     </div>
   );
 }

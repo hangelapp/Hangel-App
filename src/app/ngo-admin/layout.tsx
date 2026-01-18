@@ -14,6 +14,7 @@ const menuItems: SideNavItem[] = [
   { label: 'Raporlar', href: '/ngo-admin/reports', icon: 'file-text' },
   { label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: 'shield-check' },
   { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: 'building' },
+  { label: 'Destek', href: '/ngo-admin/support', icon: 'help-circle' },
   { label: 'Ayarlar', href: '/ngo-admin/settings', icon: 'settings' },
 ];
 
@@ -23,7 +24,7 @@ export default function NgoAdminLayout({
   children: React.ReactNode;
 }) {
     const mainNavItems = menuItems.slice(0, 9);
-    const settingsNavItem = menuItems.slice(9, 10);
+    const secondaryNavItems = menuItems.slice(9);
 
 
   return (
@@ -31,7 +32,7 @@ export default function NgoAdminLayout({
       <SideNav 
         mainItems={mainNavItems}
         userItems={[]}
-        secondaryItems={settingsNavItem}
+        secondaryItems={secondaryNavItems}
       />
       <main className="flex-1 lg:pl-64">
         <div className="p-4 sm:p-6 lg:p-8">{children}</div>
