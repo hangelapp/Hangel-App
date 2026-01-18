@@ -144,7 +144,7 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 gap-2">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => (
                     <Fragment key={brand.id}>
-                        <Link href={brand.link || '#'}>
+                        <Link href={`/market/${brand.id}`}>
                             <div className="flex flex-col items-center text-center space-y-1 p-1">
                                 <div className="relative w-full aspect-square">
                                 <div className="w-full h-full rounded-full overflow-hidden bg-white">
