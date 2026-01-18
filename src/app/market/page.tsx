@@ -107,11 +107,11 @@ export default function MarketPage() {
             
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
                 <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
-                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
-                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="brand">Marka</TabsTrigger>
-                    <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
+                    <TabsTrigger value="all" className="text-xs">Tümü</TabsTrigger>
+                    <TabsTrigger value="economic" className="text-xs">İktisadi İşl.</TabsTrigger>
+                    <TabsTrigger value="cooperative" className="text-xs">Kooperatif</TabsTrigger>
+                    <TabsTrigger value="brand" className="text-xs">Marka</TabsTrigger>
+                    <TabsTrigger value="social" className="text-xs">Sosyal İşl.</TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
