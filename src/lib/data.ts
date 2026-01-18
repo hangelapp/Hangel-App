@@ -794,11 +794,11 @@ export const marketCategories: MarketCategory[] = [
 ];
 
 export const categoryMapping: { [key: string]: string[] } = {
-    'Giyim & Moda': ['Giyim', 'Lüks Giyim', 'İç Giyim', 'Tesettür Giyim', 'Kadın Giyim', 'Erkek Giyim', 'Giyim Pazaryeri', 'Ev & Giyim'],
+    'Giyim & Moda': ['Giyim', 'Lüks Giyim', 'İç Giyim', 'Tesettür Giyim', 'Kadın Giyim', 'Erkek Giyim', 'Giyim Pazaryeri', 'Ev & Giyim', 'Kahve & Giyim'],
     'Ayakkabı & Çanta': ['Ayakkabı', 'Aksesuar'],
     'Spor & Outdoor': ['Spor Giyim', 'Outdoor'],
     'Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
-    'Elektronik': ['Elektronik', 'Aksesuar', 'Müzik Aletleri', 'Teknoloji'],
+    'Elektronik': ['Elektronik', 'Aksesuar', 'Müzik Aletleri', 'Teknoloji', 'Küçük Ev Aletleri', 'Beyaz Eşya'],
     'Ev & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
     'Bebek & Çocuk': ['Bebek Giyim', 'Bebek Ürünleri', 'Çocuk Giyim', 'Oyuncak'],
     'Süpermarket': ['Market', 'Hızlı Market', 'Pazaryeri'],
