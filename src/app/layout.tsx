@@ -15,8 +15,6 @@ const mainMenuItems: SideNavItem[] = [
   { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
   { href: '/my-badges', label: 'Rozetlerim', icon: 'award' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
-  { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
-  { href: '/admin/events', label: 'Kulüp Etkinlikleri', icon: 'calendar' },
 ];
 
 const userMenuItems: SideNavItem[] = [
