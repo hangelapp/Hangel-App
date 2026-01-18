@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Camera } from 'lucide-react';
+import { Search, Camera, Filter, ArrowDownUp } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -79,17 +79,25 @@ export default function MarketPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
         <div className="p-2 space-y-2 border-b shrink-0">
-            <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-                placeholder="hangel'da Ara"
-                className="pl-10 h-10 rounded-full bg-muted border-none"
-            />
-            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <Camera className="h-5 w-5" />
+            <div className="flex items-center gap-2">
+                <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="hangel'da Ara"
+                        className="pl-10 h-10 rounded-full bg-muted border-none"
+                    />
+                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                        <Camera className="h-5 w-5" />
+                        </Button>
+                    </div>
+                </div>
+                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                    <Filter className="h-5 w-5" />
                 </Button>
-            </div>
+                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                    <ArrowDownUp className="h-5 w-5" />
+                </Button>
             </div>
 
             <AdCarousel />
