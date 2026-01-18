@@ -166,7 +166,7 @@ export const marketBrands: Brand[] = [
     { id: '8', name: 'MarkaStok', category: 'Giyim', donationRate: 15, logoUrl: 'https://logo.clearbit.com/markastok.com', link: '#', followers: 80000, type: 'brand' },
     { id: '9', name: 'Fashfed Mobile', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', link: '#', followers: 100000, type: 'brand' },
     { id: '10', name: 'Playsports', category: 'Spor Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/playsports.com.tr', link: '#', followers: 40000, type: 'brand' },
-    { id: '11', name: 'Columbİa', category: 'Outdoor', donationRate: 7, logoUrl: 'https://logo.clearbit.com/columbia.com', link: '#', followers: 1000000, type: 'brand' },
+    { id: '11', name: 'Columbia', category: 'Outdoor', donationRate: 7, logoUrl: 'https://logo.clearbit.com/columbia.com', link: '#', followers: 1000000, type: 'brand' },
     { id: '12', name: 'Converse', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/converse.com.tr', link: '#', followers: 5000000, type: 'brand' },
     { id: '13', name: 'Hotiç', category: 'Ayakkabı', donationRate: 9, logoUrl: 'https://logo.clearbit.com/hotic.com.tr', link: '#', followers: 800000, type: 'brand' },
     { id: '14', name: 'SuperStep', category: 'Ayakkabı', donationRate: 10, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', link: '#', followers: 1500000, type: 'brand' },
@@ -844,6 +844,7 @@ export const categoryMapping: { [key: string]: string[] } = {
     'Sigorta': [],
     'Fatura': [],
 };
+
 
 
 
