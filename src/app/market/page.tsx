@@ -1,51 +1,43 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Camera, ChevronRight } from 'lucide-react';
-import { marketCategories, marketBrands } from '@/lib/data';
+import { Search, Camera } from 'lucide-react';
+import { marketCategories, allEntityLists, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-
-const categoryMapping: Record<string, string[]> = {
-    'Giyim & Moda': ['Giyim', 'Kadın Giyim', 'Erkek Giyim', 'Lüks Giyim', 'Tesettür Giyim', 'Çok Kategorili', 'Giyim Pazaryeri', 'İç Giyim'],
-    'Ayakkabı & Çanta': ['Ayakkabı', 'Aksesuar'], 
-    'Spor & Outdoor': ['Spor Giyim', 'Outdoor'],
-    'Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
-    'Elektronik': ['Elektronik', 'Teknoloji', 'Müzik Aletleri'],
-    'Ev & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
-    'Bebek & Çocuk': ['Bebek Giyim', 'Bebek Ürünleri', 'Çocuk Giyim', 'Oyuncak'],
-    'Süpermarket': ['Market', 'Hızlı Market', 'Pazaryeri'],
-    'Yeme & İçme': ['Kahve & Giyim', 'Kahve', 'Restoran', 'Gurme', 'Sağlıklı Gıda'],
-    'Tatil & Otel': ['Konaklama'],
-    'Bilet & Seyahat': ['Seyahat', 'Araç Kiralama', 'Bilet'],
-    'Hobi & Kitap': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye'],
-    'Mücevher & Saat': ['Mücevher', 'Saat'],
-    'Evcil Hayvan': ['Evcil Hayvan'],
-    'Sigorta': [],
-    'Fatura': [],
-};
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function MarketPage() {
-  const [activeCategory, setActiveCategory] = useState(marketCategories[1].mainCategory);
+  const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
+  const [activeEntityType, setActiveEntityType] = useState('all');
 
   const brandsToShow = useMemo(() => {
+    let filteredList = allEntityLists;
+
+    // 1. Filter by Entity Type
+    if (activeEntityType !== 'all') {
+      filteredList = filteredList.filter(item => item.type === activeEntityType);
+    }
+
+    // 2. Filter by Category
     if (activeCategory === 'Tümü') {
-        return marketBrands;
+      return filteredList;
     }
     if (activeCategory === 'Öne çıkanlar') {
-        return [...marketBrands].sort((a, b) => (b.followers || 0) - (a.followers || 0)).slice(0, 18);
+      return [...filteredList].sort((a, b) => (b.followers || 0) - (a.followers || 0)).slice(0, 18);
     }
+    
     const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
-    if (!brandCategories) {
-        return [];
+    if (!brandCategories || brandCategories.length === 0) {
+      return [];
     }
-    return marketBrands.filter(brand => brandCategories.includes(brand.category));
-  }, [activeCategory]);
+
+    return filteredList.filter(brand => brandCategories.includes(brand.category));
+
+  }, [activeCategory, activeEntityType]);
 
   return (
     <div className="flex flex-col h-full"> 
@@ -62,12 +54,6 @@ export default function MarketPage() {
                     <Camera className="h-5 w-5" />
                 </Button>
             </div>
-        </div>
-        <div className="flex items-center justify-between bg-orange-100 text-orange-800 p-2 rounded-lg text-xs cursor-pointer">
-            <p className="font-medium">
-              <span className="font-bold">✓ Ücretsiz kargo</span> | <span>200 TL alt limitine ulaştınız</span>
-            </p>
-            <ChevronRight className="h-4 w-4" />
         </div>
       </div>
 
@@ -95,36 +81,47 @@ export default function MarketPage() {
         </aside>
 
         {/* Right Content */}
-        <main className="w-3/4 p-2 overflow-y-auto">
-            <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
-                {activeCategory}
-            </h2>
-            <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
-                <Link href={brand.link || '#'} key={brand.id}>
-                    <div className="flex flex-col items-center text-center space-y-1 p-1">
-                      <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                            <Image
-                            src={brand.logoUrl}
-                            alt={brand.name}
-                            fill
-                            className="object-contain"
-                            />
-                        </div>
-                          {brand.donationRate > 0 && (
-                            <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground ring-1 ring-background md:h-8 md:w-8 md:text-[10px] md:ring-2">
-                                {brand.donationRate}%
+        <main className="w-3/4 p-2 flex flex-col">
+             <Tabs defaultValue="all" className="w-full flex flex-col" onValueChange={(value) => setActiveEntityType(value as any)}>
+                <TabsList className="grid w-full grid-cols-5 mb-4 shrink-0">
+                    <TabsTrigger value="all">Tümü</TabsTrigger>
+                    <TabsTrigger value="brand">Marka</TabsTrigger>
+                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
+                    <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
+                </TabsList>
+                <div className="overflow-y-auto grow">
+                    <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
+                        {activeCategory}
+                    </h2>
+                    <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                        {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
+                        <Link href={brand.link || '#'} key={brand.id}>
+                            <div className="flex flex-col items-center text-center space-y-1 p-1">
+                              <div className="relative w-full aspect-square">
+                                <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                                    <Image
+                                    src={brand.logoUrl}
+                                    alt={brand.name}
+                                    fill
+                                    className="object-contain"
+                                    />
+                                </div>
+                                  {brand.donationRate > 0 && (
+                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground ring-1 ring-background h-6 w-6 md:h-8 md:w-8 md:text-[10px] md:ring-2">
+                                        {brand.donationRate}%
+                                    </div>
+                                  )}
+                              </div>
+                              <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
                             </div>
-                          )}
-                      </div>
-                      <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
+                        </Link>
+                        )) : (
+                            <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
+                        )}
                     </div>
-                </Link>
-                )) : (
-                    <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride marka bulunmuyor.</p>
-                )}
-            </div>
+                </div>
+            </Tabs>
         </main>
       </div>
     </div>

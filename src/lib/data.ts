@@ -792,3 +792,22 @@ export const marketCategories: MarketCategory[] = [
   { mainCategory: 'Mücevher & Saat', subCategories: [] },
   { mainCategory: 'Evcil Hayvan', subCategories: [] },
 ];
+
+export const categoryMapping: { [key: string]: string[] } = {
+    'Giyim & Moda': ['Giyim', 'Lüks Giyim', 'İç Giyim', 'Tesettür Giyim', 'Kadın Giyim', 'Erkek Giyim', 'Giyim Pazaryeri', 'Ev & Giyim'],
+    'Ayakkabı & Çanta': ['Ayakkabı', 'Aksesuar'],
+    'Spor & Outdoor': ['Spor Giyim', 'Outdoor'],
+    'Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
+    'Elektronik': ['Elektronik', 'Aksesuar', 'Müzik Aletleri', 'Teknoloji'],
+    'Ev & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
+    'Bebek & Çocuk': ['Bebek Giyim', 'Bebek Ürünleri', 'Çocuk Giyim', 'Oyuncak'],
+    'Süpermarket': ['Market', 'Hızlı Market', 'Pazaryeri'],
+    'Yeme & İçme': ['Kahve & Giyim', 'Kahve', 'Restoran', 'Gurme', 'Sağlıklı Gıda'],
+    'Tatil & Otel': ['Seyahat', 'Konaklama'],
+    'Bilet & Seyahat': ['Araç Kiralama', 'Bilet', 'Seyahat'],
+    'Hobi & Kitap': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye'],
+    'Mücevher & Saat': ['Mücevher', 'Saat'],
+    'Evcil Hayvan': ['Evcil Hayvan'],
+    'Sigorta': [],
+    'Fatura': [],
+};
