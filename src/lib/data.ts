@@ -227,7 +227,7 @@ export const marketBrands: Brand[] = [
     { id: '63', name: 'Colins', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/colins.com.tr', link: '#', followers: 2200000, type: 'brand' },
     { id: '64', name: 'NetWork', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/network.com.tr', link: '#', followers: 1100000, type: 'brand' },
     { id: '65', name: 'Kip', category: 'Erkek Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/kip.com.tr', link: '#', followers: 300000, type: 'brand' },
-    { id: '66', name: 'Livi.com', category: 'Giyim', donationRate: 10, logoUrl: '', link: '#', followers: 200000, type: 'brand' },
+    { id: '66', name: 'Livi.com', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/livi.com.tr', link: '#', followers: 200000, type: 'brand' },
     { id: '67', name: 'DS Damat', category: 'Erkek Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/dsdamat.com', link: '#', followers: 900000, type: 'brand' },
     { id: '68', name: 'Hemington', category: 'Erkek Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/hemington.com.tr', link: '#', followers: 200000, type: 'brand' },
     { id: '69', name: 'Altınyıldız', category: 'Erkek Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/altinyildizclassics.com', link: '#', followers: 1300000, type: 'brand' },
@@ -298,7 +298,7 @@ export const marketBrands: Brand[] = [
     { id: '124', name: 'Tchibo', category: 'Kahve & Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/tchibo.com.tr', link: '#', followers: 1000000, type: 'brand' },
     { id: '125', name: 'Bialetti Kahve', category: 'Kahve', donationRate: 10, logoUrl: 'https://logo.clearbit.com/bialetti.com', link: '#', followers: 150000, type: 'brand' },
     { id: '126', name: 'Little Caesars', category: 'Restoran', donationRate: 4, logoUrl: 'https://logo.clearbit.com/littlecaesars.com.tr', link: '#', followers: 800000, type: 'brand' },
-    { id: '127', name: 'Mamaplus', category: 'Evcil Hayvan', donationRate: 12, logoUrl: '', link: '#', followers: 200000, type: 'brand' },
+    { id: '127', name: 'Mamaplus', category: 'Evcil Hayvan', donationRate: 12, logoUrl: 'https://logo.clearbit.com/mamaplus.com', link: '#', followers: 200000, type: 'brand' },
     { id: '128', name: 'Oleamea', category: 'Gurme', donationRate: 15, logoUrl: 'https://logo.clearbit.com/oleamea.com.tr', link: '#', followers: 50000, type: 'brand' },
     { id: '129', name: 'Fellas', category: 'Sağlıklı Gıda', donationRate: 13, logoUrl: 'https://logo.clearbit.com/fellasfoods.com.tr', link: '#', followers: 300000, type: 'brand' },
 
@@ -313,16 +313,16 @@ export const marketBrands: Brand[] = [
     // Hobi & Hediye & Diğer
     { id: '136', name: 'Idefix', category: 'Kitap', donationRate: 5, logoUrl: 'https://logo.clearbit.com/idefix.com', link: '#', followers: 700000, type: 'brand' },
     { id: '137', name: 'D&R', category: 'Kitap & Hobi', donationRate: 4, logoUrl: 'https://logo.clearbit.com/dr.com.tr', link: '#', followers: 2000000, type: 'brand' },
-    { id: '138', name: 'Vidyodan', category: 'Eğitim', donationRate: 20, logoUrl: '', link: '#', followers: 30000, type: 'brand' },
+    { id: '138', name: 'Vidyodan', category: 'Eğitim', donationRate: 20, logoUrl: 'https://logo.clearbit.com/vidyodan.com', link: '#', followers: 30000, type: 'brand' },
     { id: '139', name: 'Sosyopix', category: 'Hediye', donationRate: 12, logoUrl: 'https://logo.clearbit.com/sosyopix.com', link: '#', followers: 800000, type: 'brand' },
     { id: '140', name: 'Tazecicek', category: 'Hediye', donationRate: 10, logoUrl: 'https://logo.clearbit.com/tazecicek.com', link: '#', followers: 600000, type: 'brand' },
     { id: '141', name: 'Bloom and Fresh', category: 'Hediye', donationRate: 15, logoUrl: 'https://logo.clearbit.com/bloomandfresh.com', link: '#', followers: 200000, type: 'brand' },
     { id: '142', name: 'Pocket eSIM', category: 'Teknoloji', donationRate: 10, logoUrl: '', link: '#', followers: 50000, type: 'brand' },
-    { id: '143', name: 'Airalo e-SIM', category: 'Teknoloji', donationRate: 8, logoUrl: '', link: '#', followers: 400000, type: 'brand' },
+    { id: '143', name: 'Airalo e-SIM', category: 'Teknoloji', donationRate: 8, logoUrl: 'https://logo.clearbit.com/airalo.com', link: '#', followers: 400000, type: 'brand' },
     { id: '144', name: 'Tonguç Akademi', category: 'Eğitim', donationRate: 9, logoUrl: 'https://logo.clearbit.com/tongucakademi.com', link: '#', followers: 1500000, type: 'brand' },
     { id: '145', name: 'Petzzshop', category: 'Evcil Hayvan', donationRate: 10, logoUrl: 'https://logo.clearbit.com/petzzshop.com', link: '#', followers: 300000, type: 'brand' },
-    { id: '146', name: 'havhav.com.tr', category: 'Evcil Hayvan', donationRate: 12, logoUrl: '', link: '#', followers: 100000, type: 'brand' },
-    { id: '147', name: 'Teknevia', category: 'Seyahat', donationRate: 6, logoUrl: '', link: '#', followers: 40000, type: 'brand' },
+    { id: '146', name: 'havhav.com.tr', category: 'Evcil Hayvan', donationRate: 12, logoUrl: 'https://logo.clearbit.com/havhav.com.tr', link: '#', followers: 100000, type: 'brand' },
+    { id: '147', name: 'Teknevia', category: 'Seyahat', donationRate: 6, logoUrl: 'https://logo.clearbit.com/teknevia.com', link: '#', followers: 40000, type: 'brand' },
 ];
 
 
@@ -595,10 +595,10 @@ export const adBanners: AdBanner[] = [
 
 export const cooperatives: Brand[] = [
     { id: 'coop-1', name: 'Albatros Bilişim Kooperatifi', category: 'Yazılım', donationRate: 0, logoUrl: '', link: '#', followers: 120, type: 'cooperative' },
-    { id: 'coop-2', name: 'Genç İşi Kooperatif', category: 'Danışmanlık', donationRate: 0, logoUrl: '', link: '#', followers: 500, type: 'cooperative' },
-    { id: 'coop-3', name: 'Yerküre Yerel Çalışmalar Kooperatifi', category: 'Çevre', donationRate: 0, logoUrl: '', link: '#', followers: 340, type: 'cooperative' },
-    { id: 'coop-4', name: 'Tiyatro Kooperatifi', category: 'Sanat', donationRate: 0, logoUrl: '', link: '#', followers: 1100, type: 'cooperative' },
-    { id: 'coop-5', name: 'İhtiyaç Haritası', category: 'Sosyal Yardım', donationRate: 0, logoUrl: '', link: '#', followers: 23000, type: 'cooperative' },
+    { id: 'coop-2', name: 'Genç İşi Kooperatif', category: 'Danışmanlık', donationRate: 0, logoUrl: 'https://logo.clearbit.com/gencisi.org', link: '#', followers: 500, type: 'cooperative' },
+    { id: 'coop-3', name: 'Yerküre Yerel Çalışmalar Kooperatifi', category: 'Çevre', donationRate: 0, logoUrl: 'https://logo.clearbit.com/yerkure.org.tr', link: '#', followers: 340, type: 'cooperative' },
+    { id: 'coop-4', name: 'Tiyatro Kooperatifi', category: 'Sanat', donationRate: 0, logoUrl: 'https://logo.clearbit.com/tiyatrokooperatifi.org', link: '#', followers: 1100, type: 'cooperative' },
+    { id: 'coop-5', name: 'İhtiyaç Haritası', category: 'Sosyal Yardım', donationRate: 0, logoUrl: 'https://logo.clearbit.com/ihtiyacharitasidernegi.org', link: '#', followers: 23000, type: 'cooperative' },
     { id: 'coop-6', name: 'Kadıncık Ana Kooperatifi', category: 'Gıda', donationRate: 0, logoUrl: '', link: '#', followers: 450, type: 'cooperative' },
     { id: 'coop-7', name: 'Zeytindalı Kadın Kooperatifi', category: 'Gıda', donationRate: 0, logoUrl: '', link: '#', followers: 600, type: 'cooperative' },
 ];
@@ -610,10 +610,10 @@ export const socialEnterprises: Brand[] = [
 ];
 
 export const economicEnterprises: Brand[] = [
-    { id: 'eco-1', name: 'TEMA Vakfı İktisadi İşletmesi', category: 'Perakende', ngoId: '1', donationRate: 100, logoUrl: '', link: '#', followers: 18000, type: 'economic' },
-    { id: 'eco-2', name: 'TEGV İktisadi İşletmesi', category: 'Eğitim Materyalleri', ngoId: '4', donationRate: 100, logoUrl: '', link: '#', followers: 12000, type: 'economic' },
-    { id: 'eco-3', name: 'LÖSEV İktisadi İşletmesi (LSV Dükkan)', category: 'Perakende', ngoId: '3', donationRate: 100, logoUrl: '', link: '#', followers: 25000, type: 'economic' },
-    { id: 'eco-4', name: 'KEDV İktisadi İşletmesi', category: 'El Sanatları', ngoId: '5', donationRate: 100, logoUrl: '', link: '#', followers: 9000, type: 'economic' },
+    { id: 'eco-1', name: 'TEMA Vakfı İktisadi İşletmesi', category: 'Perakende', ngoId: '1', donationRate: 100, logoUrl: 'https://logo.clearbit.com/tema.org.tr', link: '#', followers: 18000, type: 'economic' },
+    { id: 'eco-2', name: 'TEGV İktisadi İşletmesi', category: 'Eğitim Materyalleri', ngoId: '4', donationRate: 100, logoUrl: 'https://logo.clearbit.com/tegv.org', link: '#', followers: 12000, type: 'economic' },
+    { id: 'eco-3', name: 'LÖSEV İktisadi İşletmesi (LSV Dükkan)', category: 'Perakende', ngoId: '3', donationRate: 100, logoUrl: 'https://logo.clearbit.com/losev.org.tr', link: '#', followers: 25000, type: 'economic' },
+    { id: 'eco-4', name: 'KEDV İktisadi İşletmesi', category: 'El Sanatları', ngoId: '5', donationRate: 100, logoUrl: 'https://logo.clearbit.com/kedv.org.tr', link: '#', followers: 9000, type: 'economic' },
 ];
 
 export const allEntityLists = [...marketBrands, ...cooperatives, ...socialEnterprises, ...economicEnterprises];
@@ -624,7 +624,7 @@ export const ngos: NGO[] = [
     name: 'TEMA Vakfı', 
     category: 'Çevre', 
     type: 'Vakıf' as const,
-    avatarUrl: 'https://picsum.photos/seed/tema/200',
+    avatarUrl: 'https://logo.clearbit.com/tema.org.tr',
     coverPhotoUrl: 'https://picsum.photos/seed/tema-cover/800/200',
     stats: { followers: 12500, donors: 8500, volunteers: 8500, volunteerHours: 15000, projects: 45, peopleReached: 500000 },
     transparencyScore: 95,
@@ -643,7 +643,7 @@ export const ngos: NGO[] = [
     name: 'Ahbap Derneği', 
     category: 'İnsani Yardım', 
     type: 'Dernek' as const,
-    avatarUrl: 'https://picsum.photos/seed/ahbap/200',
+    avatarUrl: 'https://logo.clearbit.com/ahbap.org',
     coverPhotoUrl: 'https://picsum.photos/seed/ahbap-cover/800/200',
     stats: { followers: 50000, donors: 35000, volunteers: 25000, volunteerHours: 80000, projects: 120, peopleReached: 2000000 },
     transparencyScore: 92,
@@ -661,7 +661,7 @@ export const ngos: NGO[] = [
     name: 'LÖSEV', 
     category: 'Sağlık', 
     type: 'Vakıf' as const,
-    avatarUrl: 'https://picsum.photos/seed/losev/200',
+    avatarUrl: 'https://logo.clearbit.com/losev.org.tr',
     coverPhotoUrl: 'https://picsum.photos/seed/losev-cover/800/200',
     stats: { followers: 35000, donors: 28000, volunteers: 15000, volunteerHours: 45000, projects: 75, peopleReached: 100000 },
     transparencyScore: 88,
@@ -842,6 +842,7 @@ export const categoryMapping: { [key: string]: string[] } = {
     'Sigorta': [],
     'Fatura': [],
 };
+
 
 
 
