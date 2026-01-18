@@ -110,7 +110,7 @@ export default function MarketPage() {
                             />
                         </div>
                           {brand.donationRate > 0 && (
-                            <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background">
+                            <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground ring-1 ring-background md:h-8 md:w-8 md:text-[10px] md:ring-2">
                                 {brand.donationRate}%
                             </div>
                           )}
