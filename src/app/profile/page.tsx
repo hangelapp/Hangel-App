@@ -117,7 +117,7 @@ export default function ProfilePage() {
       <Tabs defaultValue="statistics" className="w-full mt-4">
         <TabsList className="grid w-full grid-cols-5 px-2">
             <TabsTrigger value="statistics">İstatistikler</TabsTrigger>
-            <TabsTrigger value="info">Bilgilerim</TabsTrigger>
+            <TabsTrigger value="info">Bilgiler</TabsTrigger>
             <TabsTrigger value="volunteer">Gönüllülük</TabsTrigger>
             <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
             <TabsTrigger value="badges">Rozetlerim</TabsTrigger>

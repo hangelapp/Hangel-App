@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -92,7 +93,7 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof init
         className={cn("absolute w-full h-full [backface-visibility:hidden] rounded-2xl p-6 flex flex-col justify-between shadow-lg overflow-hidden cursor-pointer", card.textColor)}
       >
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
-        <div className={`absolute inset-0 ${card.bgColor} opacity-95`}></div>
+        <div className={`absolute inset-0 ${card.bgColor}`}></div>
         <div className="relative z-10">
           <div className='flex justify-between items-start'>
             <p className={`font-semibold text-lg ${card.highlightColor}`}>{card.type}</p>

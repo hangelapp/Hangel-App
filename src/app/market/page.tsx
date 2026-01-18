@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -13,17 +14,19 @@ const categoryMapping: Record<string, string[]> = {
     'Giyim & Moda': ['Giyim', 'Kadın Giyim', 'Erkek Giyim', 'Lüks Giyim', 'Tesettür Giyim', 'Çok Kategorili', 'Giyim Pazaryeri', 'İç Giyim'],
     'Ayakkabı & Çanta': ['Ayakkabı', 'Aksesuar'], 
     'Spor & Outdoor': ['Spor Giyim', 'Outdoor'],
-    'Kozmetik & Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
+    'Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
     'Elektronik': ['Elektronik', 'Teknoloji', 'Müzik Aletleri'],
-    'Ev, Yaşam & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
+    'Ev & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
     'Bebek & Çocuk': ['Bebek Giyim', 'Bebek Ürünleri', 'Çocuk Giyim', 'Oyuncak'],
     'Süpermarket': ['Market', 'Hızlı Market', 'Pazaryeri'],
     'Yeme & İçme': ['Kahve & Giyim', 'Kahve', 'Restoran', 'Gurme', 'Sağlıklı Gıda'],
-    'Tatil, Bilet & Seyahat': ['Seyahat', 'Araç Kiralama', 'Bilet', 'Konaklama'],
-    'Hobi, Kitap & Hediye': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye'],
+    'Tatil & Otel': ['Konaklama'],
+    'Bilet & Seyahat': ['Seyahat', 'Araç Kiralama', 'Bilet'],
+    'Hobi & Kitap': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye'],
     'Mücevher & Saat': ['Mücevher', 'Saat'],
     'Evcil Hayvan': ['Evcil Hayvan'],
-    'Sigorta': []
+    'Sigorta': [],
+    'Fatura': [],
 };
 
 
@@ -69,9 +72,9 @@ export default function MarketPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 mt-2">
+      <div className="flex flex-1 mt-2 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-1/4 border-r">
+        <aside className="w-1/4 border-r overflow-y-auto">
             <nav className="flex flex-col">
               {marketCategories.map((cat) => (
                 <button
@@ -92,7 +95,7 @@ export default function MarketPage() {
         </aside>
 
         {/* Right Content */}
-        <main className="w-3/4 p-2">
+        <main className="w-3/4 p-2 overflow-y-auto">
             <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
                 {activeCategory}
             </h2>
@@ -106,7 +109,7 @@ export default function MarketPage() {
                             src={brand.logoUrl}
                             alt={brand.name}
                             fill
-                            className="object-contain p-2"
+                            className="object-contain"
                             />
                         </div>
                           {brand.donationRate > 0 && (
