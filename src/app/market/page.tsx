@@ -36,7 +36,10 @@ const AdCarousel = () => {
                     <Link href={ad.link} passHref>
                         <div className="relative w-full h-8 rounded-lg overflow-hidden bg-primary/10">
                             <div className="absolute inset-0 flex items-center justify-center p-1">
-                                <p className="font-semibold text-primary text-xs text-center truncate">{ad.title}</p>
+                                <p className="text-primary text-xs text-center truncate">
+                                    <span className="font-semibold">{ad.title}</span>
+                                    <span className="opacity-80 ml-2">{ad.description}</span>
+                                </p>
                             </div>
                         </div>
                     </Link>
@@ -105,9 +108,9 @@ export default function MarketPage() {
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
                 <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="brand">Marka</TabsTrigger>
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
                     <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                    <TabsTrigger value="all">Tümü</TabsTrigger>
+                    <TabsTrigger value="brand">Marka</TabsTrigger>
                     <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
                 </TabsList>
             </Tabs>
