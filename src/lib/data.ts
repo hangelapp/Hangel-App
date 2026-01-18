@@ -284,19 +284,52 @@ export const ngos: NGO[] = [
     },
 ];
 
-const newBrands: Brand[] = [
-    { id: '101', name: 'Ayakkabı Dünyası', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/ayakkabidunyasi.com.tr', followers: 150000, type: 'brand' },
-    { id: '102', name: 'Decathlon', category: 'Spor Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', followers: 1200000, type: 'brand' },
-    { id: '103', name: 'Sportstyle', category: 'Spor Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/sportstyle.com.tr', followers: 50000, type: 'brand' },
-    { id: '104', name: 'Sneakscloud', category: 'Ayakkabı', donationRate: 12, logoUrl: 'https://logo.clearbit.com/sneakscloud.com', followers: 200000, type: 'brand' },
-    { id: '105', name: 'Sportive', category: 'Spor Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/sportive.com.tr', followers: 300000, type: 'brand' },
-    { id: '106', name: 'FashFed', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', followers: 150000, type: 'brand' },
-    { id: '107', name: 'Skechers', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/skechers.com.tr', followers: 2500000, type: 'brand' },
-    { id: '108', name: 'MarkaStok', category: 'Giyim', donationRate: 15, logoUrl: 'https://logo.clearbit.com/markastok.com', followers: 80000, type: 'brand' },
-    { id: '109', name: 'Fashfed Mobile', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', followers: 100000, type: 'brand' },
-    { id: '110', name: 'Playsports', category: 'Spor Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/playsports.com.tr', followers: 40000, type: 'brand' },
-    { id: '111', name: 'Columbia', category: 'Outdoor', donationRate: 7, logoUrl: 'https://logo.clearbit.com/columbia.com', followers: 1000000, type: 'brand' },
-    { id: '112', name: 'Converse', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/converse.com', followers: 3000000, type: 'brand' },
+export const allEntityLists: Brand[] = [
+    // Existing Brands with details
+    { 
+        id: '1', 
+        name: 'Ayakkabı Dünyası', 
+        category: 'Ayakkabı', 
+        donationRate: 8, 
+        logoUrl: 'https://logo.clearbit.com/ayakkabidunyasi.com.tr', 
+        link: '#', 
+        followers: 150000, 
+        type: 'brand',
+        about: "Ayakkabı Dünyası olarak, en trend ve kaliteli ayakkabıları sizlerle buluştururken, topluma karşı sorumluluklarımızı da unutmuyoruz. Yaptığımız her satışla, adımlarımızı daha iyi bir geleceğe atmayı hedefliyoruz.\n\nSürdürülebilirlik ve sosyal fayda ilkelerini benimseyerek, Hangel platformu aracılığıyla seçtiğiniz sivil toplum kuruluşlarına destek olmanızı sağlıyoruz. Birlikte daha güçlüyüz!",
+        joinDate: "2023-03-15",
+        stats: { supporters: 15234, totalDonation: 45780, monthlyFollowerGrowth: 12, profileViews: 12400, profileShares: 1800, },
+        donationByCategory: [
+            { category: "Kadın Ayakkabı", rate: 8 }, { category: "Erkek Ayakkabı", rate: 8 }, { category: "Çocuk Ayakkabı", rate: 10 },
+            { category: "Çanta & Aksesuar", rate: 12 }, { category: "Terlik & Sandalet", rate: 7 },
+        ],
+        sustainabilityReports: [ { title: "2023 Sürdürülebilirlik Raporu", url: "#" }, { title: "2024 İlk Çeyrek Etki Raporu", url: "#" },]
+    },
+    { id: '2', name: 'Decathlon', category: 'Spor Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', link: '#', followers: 1200000, type: 'brand' },
+    { id: '3', name: 'Sportstyle', category: 'Spor Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/sportstyle.com.tr', link: '#', followers: 50000, type: 'brand' },
+    { id: '4', name: 'Sneakscloud', category: 'Ayakkabı', donationRate: 12, logoUrl: 'https://logo.clearbit.com/sneakscloud.com', link: '#', followers: 200000, type: 'brand' },
+    { id: '5', name: 'Sportive', category: 'Spor Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/sportive.com.tr', link: '#', followers: 300000, type: 'brand' },
+    { id: '6', name: 'FashFed', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', link: '#', followers: 150000, type: 'brand' },
+    { id: '7', name: 'Skechers', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/skechers.com.tr', link: '#', followers: 2500000, type: 'brand' },
+    { id: '8', name: 'MarkaStok', category: 'Giyim', donationRate: 15, logoUrl: 'https://logo.clearbit.com/markastok.com', link: '#', followers: 80000, type: 'brand' },
+    { id: '9', name: 'Fashfed Mobile', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', link: '#', followers: 100000, type: 'brand' },
+    { id: '10', name: 'Playsports', category: 'Spor Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/playsports.com.tr', link: '#', followers: 40000, type: 'brand' },
+    { id: '11', name: 'Columbia', category: 'Outdoor', donationRate: 7, logoUrl: 'https://logo.clearbit.com/columbia.com', link: '#', followers: 1000000, type: 'brand' },
+    { id: '12', name: 'Converse', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/converse.com', link: '#', followers: 3000000, type: 'brand' },
+    { id: '13', name: 'Beymen', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/beymen.com', link: '#', followers: 5000000, type: 'brand' },
+    { id: '14', name: 'Network', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/network.com.tr', link: '#', followers: 800000, type: 'brand' },
+    { id: '15', name: 'İpekyol', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/ipekyol.com.tr', link: '#', followers: 1500000, type: 'brand' },
+    { id: '16', name: 'MediaMarkt', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/mediamarkt.com.tr', link: '#', followers: 4000000, type: 'brand' },
+    { id: '17', name: 'Vatan Bilgisayar', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/vatanbilgisayar.com', link: '#', followers: 3000000, type: 'brand' },
+    { id: '18', name: 'Paşabahçe', category: 'Ev & Yaşam', donationRate: 8, logoUrl: 'https://logo.clearbit.com/pasabahcemagazalari.com', link: '#', followers: 2000000, type: 'brand' },
+    { id: '19', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 10, logoUrl: 'https://logo.clearbit.com/karaca.com', link: '#', followers: 6000000, type: 'brand' },
+    { id: '20', name: 'Tire Süt Kooperatifi', category: 'Süpermarket', donationRate: 10, logoUrl: 'https://logo.clearbit.com/tiresut.com.tr', type: 'cooperative', followers: 5000 },
+    { id: '21', name: 'İğne Oya Kooperatifi', category: 'Giyim', donationRate: 15, logoUrl: '', type: 'cooperative', followers: 2000 },
+    { id: '22', name: 'Good4Trust', category: 'Pazaryeri', donationRate: 0, logoUrl: 'https://logo.clearbit.com/good4trust.org', type: 'social', followers: 10000 },
+    { id: '23', name: 'Fazla Gıda', category: 'Teknoloji', donationRate: 0, logoUrl: 'https://logo.clearbit.com/fazlagida.com', type: 'social', followers: 8000 },
+    { id: '24', name: 'LÖSEV - LSV Dükkan', category: 'Pazaryeri', donationRate: 100, logoUrl: 'https://logo.clearbit.com/lsvdukkan.com', type: 'economic', followers: 25000 },
+    { id: '25', name: 'Tohum Otizm Vakfı İktisadi İşletmesi', category: 'Eğitim', donationRate: 100, logoUrl: 'https://logo.clearbit.com/tohumotizm.org.tr', type: 'economic', followers: 15000 },
+    
+    // New Brands from the user list
     { id: '113', name: 'Hotiç', category: 'Ayakkabı', donationRate: 7, logoUrl: 'https://logo.clearbit.com/hotic.com.tr', followers: 500000, type: 'brand' },
     { id: '114', name: 'SuperStep', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', followers: 1000000, type: 'brand' },
     { id: '115', name: 'Houseofsuperstep', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', followers: 100000, type: 'brand' },
@@ -370,7 +403,7 @@ const newBrands: Brand[] = [
     { id: '183', name: 'E-bebek', category: 'Bebek & Çocuk', donationRate: 4, logoUrl: 'https://logo.clearbit.com/e-bebek.com', followers: 1000000, type: 'brand' },
     { id: '184', name: 'Jacadi', category: 'Bebek & Çocuk', donationRate: 6, logoUrl: 'https://logo.clearbit.com/jacadi.com.tr', followers: 50000, type: 'brand' },
     { id: '185', name: 'Toyzz Shop', category: 'Bebek & Çocuk', donationRate: 5, logoUrl: 'https://logo.clearbit.com/toyzzshop.com', followers: 700000, type: 'brand' },
-    { id: '186', name: 'Doğtaş Home', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/dogtas.com', followers: 800000, type: 'brand' },
+    { id: '186', name: 'Doğtaş', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/dogtas.com', followers: 800000, type: 'brand' },
     { id: '187', name: 'Kelebek Mobilya', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/kelebek.com.tr', followers: 600000, type: 'brand' },
     { id: '188', name: 'Koçtaş', category: 'Ev & Yaşam', donationRate: 3, logoUrl: 'https://logo.clearbit.com/koctas.com.tr', followers: 1500000, type: 'brand' },
     { id: '189', name: 'Bella Maison', category: 'Ev & Yaşam', donationRate: 8, logoUrl: 'https://logo.clearbit.com/bellamaison.com', followers: 400000, type: 'brand' },
@@ -427,66 +460,6 @@ const newBrands: Brand[] = [
     { id: '240', name: 'havhav.com.tr', category: 'Evcil Hayvan', donationRate: 10, logoUrl: 'https://logo.clearbit.com/havhav.com.tr', followers: 40000, type: 'brand' },
     { id: '241', name: 'Teknevia', category: 'Tatil & Seyahat', donationRate: 7, logoUrl: 'https://logo.clearbit.com/teknevia.com', followers: 15000, type: 'brand' },
 ];
-
-const existingBrands: Brand[] = [
-    { 
-        id: '1', 
-        name: 'Ayakkabı Dünyası', 
-        category: 'Ayakkabı', 
-        donationRate: 8, 
-        logoUrl: 'https://logo.clearbit.com/ayakkabidunyasi.com.tr', 
-        link: '#', 
-        followers: 150000, 
-        type: 'brand',
-        about: "Ayakkabı Dünyası olarak, en trend ve kaliteli ayakkabıları sizlerle buluştururken, topluma karşı sorumluluklarımızı da unutmuyoruz. Yaptığımız her satışla, adımlarımızı daha iyi bir geleceğe atmayı hedefliyoruz.\n\nSürdürülebilirlik ve sosyal fayda ilkelerini benimseyerek, Hangel platformu aracılığıyla seçtiğiniz sivil toplum kuruluşlarına destek olmanızı sağlıyoruz. Birlikte daha güçlüyüz!",
-        joinDate: "2023-03-15",
-        stats: {
-            supporters: 15234,
-            totalDonation: 45780,
-            monthlyFollowerGrowth: 12,
-            profileViews: 12400,
-            profileShares: 1800,
-        },
-        donationByCategory: [
-            { category: "Kadın Ayakkabı", rate: 8 },
-            { category: "Erkek Ayakkabı", rate: 8 },
-            { category: "Çocuk Ayakkabı", rate: 10 },
-            { category: "Çanta & Aksesuar", rate: 12 },
-            { category: "Terlik & Sandalet", rate: 7 },
-        ],
-        sustainabilityReports: [
-            { title: "2023 Sürdürülebilirlik Raporu", url: "#" },
-            { title: "2024 İlk Çeyrek Etki Raporu", url: "#" },
-        ]
-    },
-    { id: '2', name: 'Decathlon', category: 'Spor Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', link: '#', followers: 1200000, type: 'brand' },
-    { id: '3', name: 'Sportstyle', category: 'Spor Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/sportstyle.com.tr', link: '#', followers: 50000, type: 'brand' },
-    { id: '4', name: 'Sneakscloud', category: 'Ayakkabı', donationRate: 12, logoUrl: 'https://logo.clearbit.com/sneakscloud.com', link: '#', followers: 200000, type: 'brand' },
-    { id: '5', name: 'Sportive', category: 'Spor Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/sportive.com.tr', link: '#', followers: 300000, type: 'brand' },
-    { id: '6', name: 'FashFed', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', link: '#', followers: 150000, type: 'brand' },
-    { id: '7', name: 'Skechers', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/skechers.com.tr', link: '#', followers: 2500000, type: 'brand' },
-    { id: '8', name: 'MarkaStok', category: 'Giyim', donationRate: 15, logoUrl: 'https://logo.clearbit.com/markastok.com', link: '#', followers: 80000, type: 'brand' },
-    { id: '9', name: 'Fashfed Mobile', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fashfed.com', link: '#', followers: 100000, type: 'brand' },
-    { id: '10', name: 'Playsports', category: 'Spor Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/playsports.com.tr', link: '#', followers: 40000, type: 'brand' },
-    { id: '11', name: 'Columbia', category: 'Outdoor', donationRate: 7, logoUrl: 'https://logo.clearbit.com/columbia.com', link: '#', followers: 1000000, type: 'brand' },
-    { id: '12', name: 'Converse', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/converse.com', link: '#', followers: 3000000, type: 'brand' },
-    { id: '13', name: 'Beymen', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/beymen.com', link: '#', followers: 5000000, type: 'brand' },
-    { id: '14', name: 'Network', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/network.com.tr', link: '#', followers: 800000, type: 'brand' },
-    { id: '15', name: 'İpekyol', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/ipekyol.com.tr', link: '#', followers: 1500000, type: 'brand' },
-    { id: '16', name: 'MediaMarkt', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/mediamarkt.com.tr', link: '#', followers: 4000000, type: 'brand' },
-    { id: '17', name: 'Vatan Bilgisayar', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/vatanbilgisayar.com', link: '#', followers: 3000000, type: 'brand' },
-    { id: '18', name: 'Paşabahçe', category: 'Ev & Yaşam', donationRate: 8, logoUrl: 'https://logo.clearbit.com/pasabahcemagazalari.com', link: '#', followers: 2000000, type: 'brand' },
-    { id: '19', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 10, logoUrl: 'https://logo.clearbit.com/karaca.com', link: '#', followers: 6000000, type: 'brand' },
-    { id: '20', name: 'Tire Süt Kooperatifi', category: 'Süpermarket', donationRate: 10, logoUrl: 'https://logo.clearbit.com/tiresut.com.tr', type: 'cooperative', followers: 5000 },
-    { id: '21', name: 'İğne Oya Kooperatifi', category: 'Giyim', donationRate: 15, logoUrl: '', type: 'cooperative', followers: 2000 },
-    { id: '22', name: 'Good4Trust', category: 'Pazaryeri', donationRate: 0, logoUrl: 'https://logo.clearbit.com/good4trust.org', type: 'social', followers: 10000 },
-    { id: '23', name: 'Fazla Gıda', category: 'Teknoloji', donationRate: 0, logoUrl: 'https://logo.clearbit.com/fazlagida.com', type: 'social', followers: 8000 },
-    { id: '24', name: 'LÖSEV - LSV Dükkan', category: 'Pazaryeri', donationRate: 100, logoUrl: 'https://logo.clearbit.com/lsvdukkan.com', type: 'economic', followers: 25000 },
-    { id: '25', name: 'Tohum Otizm Vakfı İktisadi İşletmesi', category: 'Eğitim', donationRate: 100, logoUrl: 'https://logo.clearbit.com/tohumotizm.org.tr', type: 'economic', followers: 15000 },
-];
-
-export const allEntityLists: Brand[] = [...existingBrands, ...newBrands];
-
 
 export const events: Event[] = [
     {

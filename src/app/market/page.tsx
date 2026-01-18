@@ -166,7 +166,7 @@ export default function MarketPage() {
                 </TabsList>
             </Tabs>
         </div>
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden min-h-0">
             <aside className="w-1/4 border-r overflow-y-auto bg-background">
             <nav className="flex flex-col">
                 {marketCategories.map((cat) => (
@@ -207,7 +207,7 @@ export default function MarketPage() {
                                     </AvatarFallback>
                                 </Avatar>
                                 {brand.donationRate > 0 && (
-                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
+                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-9 md:w-9 md:text-xs">
                                     {brand.donationRate}%
                                     </div>
                                 )}
