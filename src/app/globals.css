@@ -4,65 +4,65 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 9%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 0 0% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 0 0% 3.9%;
 
-    --primary: 347 77% 50%;
+    --primary: 217 91% 60%; /* Apple Blue */
     --primary-foreground: 0 0% 98%;
     
-    --secondary: 0 0% 96%;
+    --secondary: 0 0% 95%; /* System Gray 6 */
     --secondary-foreground: 0 0% 9%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 96.1%; /* System Gray 5 */
+    --muted-foreground: 0 0% 45.1%; /* System Gray */
 
-    --accent: 0 0% 94%;
+    --accent: 0 0% 94.1%; /* System Gray 4 */
     --accent-foreground: 0 0% 9%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84.2% 60.2%; /* Apple Red */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 89%;
-    --input: 0 0% 92%;
-    --ring: 347 77% 50%;
+    --border: 0 0% 89.8%; /* Separator */
+    --input: 0 0% 89.8%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 3.9%;
+    --card: 0 0% 7%; /* Dark Gray */
     --card-foreground: 0 0% 98%;
 
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 347 77% 50%;
+    --primary: 217 91% 65%; /* Brighter Apple Blue */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 15%;
+    --secondary: 0 0% 10%; /* System Gray 6 Dark */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 63%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%; /* System Gray Dark */
 
-    --accent: 0 0% 15%;
+    --accent: 0 0% 20%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 72.2% 50.6%; /* Brighter Apple Red */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 347 77% 50%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 217 91% 65%;
   }
 }
 
@@ -71,7 +71,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-secondary text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
