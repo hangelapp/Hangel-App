@@ -16,7 +16,7 @@ export default function AppBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-16 max-w-md grid-cols-4 border-t bg-background/80 backdrop-blur-xl lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-12 max-w-md grid-cols-4 border-t bg-background/80 backdrop-blur-xl lg:hidden">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/timeline' && pathname.startsWith(item.href));
         const Icon = item.icon;
@@ -29,7 +29,7 @@ export default function AppBottomNav() {
               isActive && "text-primary"
             )}
           >
-            <Icon className="h-6 w-6" />
+            <Icon className="h-5 w-5" />
             <span className="text-xs font-medium">{item.label}</span>
           </Link>
         );
