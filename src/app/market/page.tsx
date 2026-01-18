@@ -34,9 +34,9 @@ const AdCarousel = () => {
             {adBanners.map((ad) => (
                 <CarouselItem key={ad.id}>
                     <Link href={ad.link} passHref>
-                        <div className="relative w-full h-12 rounded-lg overflow-hidden bg-primary/10">
-                            <div className="absolute inset-0 flex items-center justify-center p-2">
-                                <p className="font-semibold text-primary text-sm text-center truncate">{ad.title} - <span className='font-normal text-primary/80'>{ad.description}</span></p>
+                        <div className="relative w-full h-8 rounded-lg overflow-hidden bg-primary/10">
+                            <div className="absolute inset-0 flex items-center justify-center p-1">
+                                <p className="font-semibold text-primary text-xs text-center truncate">{ad.title}</p>
                             </div>
                         </div>
                     </Link>
@@ -77,7 +77,7 @@ export default function MarketPage() {
   }, [activeCategory, activeEntityType]);
   
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)]">
+    <div className="flex flex-col h-full">
         <div className="p-2 space-y-2 border-b shrink-0">
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
