@@ -60,7 +60,7 @@ export default function MarketPage() {
       {/* Main Content */}
       <div className="flex flex-1 mt-2 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-1/4 border-r overflow-y-auto">
+        <aside className="w-1/4 border-r">
             <nav className="flex flex-col">
               {marketCategories.map((cat) => (
                 <button
@@ -108,7 +108,7 @@ export default function MarketPage() {
                                     />
                                 </div>
                                   {brand.donationRate > 0 && (
-                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground ring-1 ring-background h-6 w-6 md:h-8 md:w-8 md:text-[10px] md:ring-2">
+                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-8 w-8 md:h-8 md:w-8 md:text-[10px]">
                                         {brand.donationRate}%
                                     </div>
                                   )}
