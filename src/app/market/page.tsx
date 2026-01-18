@@ -102,7 +102,7 @@ const fallbackColors = [
 ];
 
 export default function MarketPage() {
-  const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
+  const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
 
   const brandsToShow = useMemo(() => {
@@ -132,7 +132,7 @@ export default function MarketPage() {
   
   return (
     <div className="flex flex-col h-full">
-        <div className="p-2 space-y-1 border-b shrink-0">
+        <div className="p-2 space-y-2 border-b shrink-0">
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -156,7 +156,7 @@ export default function MarketPage() {
             <AdCarousel />
             
             <Tabs defaultValue="all" className="w-full flex justify-center" onValueChange={(value) => setActiveEntityType(value as any)}>
-                <TabsList className="text-xs">
+                <TabsList className="grid-cols-none">
                     <TabsTrigger value="all">Tümü</TabsTrigger>
                     <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
                     <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
@@ -214,12 +214,12 @@ export default function MarketPage() {
                                 <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
                             </div>
                         </Link>
-                        {index === 8 && (
+                        {index === 5 && (
                            <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
                                <AdCarousel />
                            </div>
                         )}
-                        {index === 14 && (
+                        {index === 11 && (
                            <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
                                <VisualAdCarousel />
                            </div>
