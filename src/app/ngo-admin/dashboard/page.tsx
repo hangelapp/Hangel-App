@@ -1,136 +1,83 @@
 'use client';
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download, TrendingUp, Users } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { PieChart, Pie, Cell } from 'recharts';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChevronRight } from 'lucide-react';
+import * as Icons from 'lucide-react';
+import Link from 'next/link';
 
-const monthlyStatsData = [
-  { month: 'Ocak', donation: 4000, volunteers: 24 },
-  { month: 'Şubat', donation: 3000, volunteers: 13 },
-  { month: 'Mart', donation: 5000, volunteers: 32 },
-  { month: 'Nisan', donation: 4500, volunteers: 28 },
-  { month: 'Mayıs', donation: 6000, volunteers: 45 },
-  { month: 'Haziran', donation: 5800, volunteers: 41 },
+const menuItems = [
+  { label: 'Genel Bakış', href: '/ngo-admin/dashboard', icon: 'layout-dashboard' },
+  { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: 'heart-handshake' },
+  { label: 'Bağış Takibi', href: '/ngo-admin/donations', icon: 'dollar-sign' },
+  { label: 'Demografi', href: '/ngo-admin/demographics', icon: 'bar-chart-3' },
+  { label: 'Gönderiler', href: '/ngo-admin/posts', icon: 'newspaper' },
+  { label: 'STK Profil QR Kodu', href: '/ngo-admin/qr', icon: 'qr-code' },
+  { label: 'Raporlar', href: '/ngo-admin/reports', icon: 'file-text' },
+  { label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: 'shield-check' },
+  { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: 'building' },
 ];
 
-const donationSourceData = [
-  { name: 'Trendyol', value: 400 },
-  { name: 'Hepsiburada', value: 300 },
-  { name: 'Getir', value: 300 },
-  { name: 'Diğer', value: 200 },
+const secondaryMenuItems = [
+  { label: 'Destek', href: '/ngo-admin/support', icon: 'help-circle' },
+  { label: 'Ayarlar', href: '/ngo-admin/settings', icon: 'settings' },
 ];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const DashboardContent = () => (
-    <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Toplam Bağış</CardTitle>
-            <CardDescription>Bu ayki toplam bağış tutarı</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">12,450 ₺</p>
-            <p className="text-sm text-green-600 flex items-center">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              +20.1% geçen aydan
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Toplam Gönüllü</CardTitle>
-            <CardDescription>Platform üzerinden katılanlar</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">1,250</p>
-            <p className="text-sm text-muted-foreground">Bu ay +42 yeni gönüllü</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Yeni Başvurular</CardTitle>
-            <CardDescription>Onay bekleyen gönüllü başvuruları</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">18</p>
-            <Button variant="link" className="p-0">Başvuruları İncele</Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Aylık Bağış ve Gönüllü İstatistiği</CardTitle>
-            <CardDescription>Son 6 ayın verileri</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyStatsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-                <Tooltip />
-                <Legend />
-                <Bar yAxisId="left" dataKey="donation" fill="#8884d8" name="Bağış (₺)" />
-                <Bar yAxisId="right" dataKey="volunteers" fill="#82ca9d" name="Gönüllü" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Bağış Kaynağı Dağılımı</CardTitle>
-             <CardDescription>Bu ay en çok bağış gelen markalar</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={donationSourceData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {donationSourceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-);
-
 
 export default function NgoDashboardPage() {
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-bold">Genel Bakış</h1>
-          <p className="text-muted-foreground">Hoş geldin, Ahbap Derneği!</p>
-        </div>
-        <Button>
-          <Download className="mr-2 h-4 w-4" />
-          Rapor İndir
-        </Button>
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold font-headline">STK Yönetim Paneli</h1>
+        <p className="text-muted-foreground text-sm">Kuruluşunuzla ilgili tüm araçlara ve bilgilere buradan erişin.</p>
+      </div>
+      
+      <div className="space-y-3">
+        {menuItems.map(item => {
+            // @ts-ignore
+            const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+            return (
+            <Link href={item.href} key={item.label} passHref>
+                <Card className="hover:bg-accent transition-colors">
+                    <CardHeader className="flex flex-row items-center justify-between p-4">
+                        <div className='flex items-center gap-4'>
+                            <div className="p-3 bg-muted rounded-lg">
+                                <Icon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-base">{item.label}</CardTitle>
+                            </div>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </CardHeader>
+                </Card>
+            </Link>
+        )})}
       </div>
 
-       <DashboardContent />
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-6 mb-2">Diğer</h2>
+        <div className="space-y-3">
+          {secondaryMenuItems.map(item => {
+              // @ts-ignore
+              const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+              return (
+              <Link href={item.href} key={item.label} passHref>
+                  <Card className="hover:bg-accent transition-colors">
+                      <CardHeader className="flex flex-row items-center justify-between p-4">
+                          <div className='flex items-center gap-4'>
+                              <div className="p-3 bg-muted rounded-lg">
+                                  <Icon className="h-6 w-6 text-primary" />
+                              </div>
+                              <div>
+                                  <CardTitle className="text-base">{item.label}</CardTitle>
+                              </div>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </CardHeader>
+                  </Card>
+              </Link>
+          )})}
+        </div>
+      </div>
     </div>
   );
 }
