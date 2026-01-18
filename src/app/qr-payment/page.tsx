@@ -20,6 +20,7 @@ const initialCardData = [
     id: 'bireysel',
     type: 'Bireysel',
     bgColor: 'bg-gradient-to-br from-gray-900 via-gray-800 to-black',
+    solidBgColor: 'bg-black',
     patternUrl: 'https://www.transparenttextures.com/patterns/carbon-fibre-v2.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
@@ -33,6 +34,7 @@ const initialCardData = [
     id: 'ogrenci',
     type: 'Öğrenci',
     bgColor: 'bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600',
+    solidBgColor: 'bg-blue-600',
     patternUrl: 'https://www.transparenttextures.com/patterns/notebook-dark.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
@@ -46,6 +48,7 @@ const initialCardData = [
     id: 'ticari',
     type: 'Ticari',
     bgColor: 'bg-gradient-to-br from-amber-500 via-orange-600 to-amber-700',
+    solidBgColor: 'bg-amber-700',
     patternUrl: 'https://www.transparenttextures.com/patterns/congruent-pentagon.png',
     textColor: 'text-white',
     highlightColor: 'text-white/80',
@@ -91,7 +94,7 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof init
       {/* Card Front */}
       <div 
         onClick={onFrontClick}
-        className={cn("absolute w-full h-full [backface-visibility:hidden] rounded-2xl p-6 flex flex-col justify-between shadow-lg overflow-hidden cursor-pointer", card.textColor, card.bgColor)}
+        className={cn("absolute w-full h-full [backface-visibility:hidden] rounded-2xl p-6 flex flex-col justify-between shadow-lg overflow-hidden cursor-pointer", card.textColor, card.bgColor, card.solidBgColor)}
       >
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
         <div className="relative z-10">
@@ -124,7 +127,7 @@ const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof init
       {/* Card Back */}
       <div 
         onClick={(e) => e.stopPropagation()}
-        className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-4 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor, card.bgColor)}>
+        className={cn("absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-4 flex flex-col justify-between shadow-lg overflow-hidden", card.textColor, card.bgColor, card.solidBgColor)}>
         <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${card.patternUrl})`, opacity: 0.1}}></div>
         <div className="relative z-10 space-y-2">
           <CardTitle className="text-lg mb-2">Kart Ayarları</CardTitle>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Handshake, HeartHandshake, HandCoins, Star, Rocket } from 'lucide-react';
+import { Handshake, HeartHandshake, HandCoins, Star, Rocket, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const onboardingSteps = [
@@ -14,7 +14,7 @@ const onboardingSteps = [
   },
   {
     icon: HeartHandshake,
-    title: 'Gönüllü Olun, Etki Yaratın',
+    title: 'Gönüllü Olun, Etki Oluşturun',
     description: 'Yeteneklerinize ve ilgi alanlarınıza uygun gönüllülük fırsatlarını keşfedin, topluma değer katın ve ilham verin.',
   },
   {
@@ -30,7 +30,7 @@ const onboardingSteps = [
   {
     icon: Rocket,
     title: 'Değişimi Başlatmaya Hazır Mısınız?',
-    description: 'Hangel ile iyilik dolu bir yolculuğa çıkmak ve pozitif bir etki yaratmak için şimdi başlayın.',
+    description: 'Hangel ile iyilik dolu bir yolculuğa çıkmak ve pozitif bir etki oluşturmak için şimdi başlayın.',
   },
 ];
 
@@ -53,7 +53,7 @@ export default function OnboardingPage() {
   const currentStep = onboardingSteps[step];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-background text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-background text-center relative">
       <header className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
         <Progress value={((step + 1) / onboardingSteps.length) * 100} className="w-2/3" />
         <Button variant="ghost" onClick={handleSkip}>
@@ -71,10 +71,22 @@ export default function OnboardingPage() {
         </p>
       </main>
 
-      <footer className="absolute bottom-0 left-0 right-0 p-6 flex justify-center">
-        <Button onClick={handleNext} className="w-full max-w-sm" size="lg">
-          {step === onboardingSteps.length - 1 ? 'Hadi Başlayalım!' : 'İleri'}
+      {step < onboardingSteps.length - 1 ? (
+         <Button
+          onClick={handleNext}
+          variant="ghost"
+          size="icon"
+          className="absolute top-1/2 right-6 -translate-y-1/2 h-14 w-14 rounded-full bg-primary/10 hover:bg-primary/20 text-primary"
+        >
+          <ArrowRight className="h-7 w-7" />
         </Button>
-      </footer>
+      ) : (
+        <footer className="absolute bottom-0 left-0 right-0 p-6 flex justify-center">
+            <Button onClick={handleNext} className="w-full max-w-sm" size="lg">
+            {'Hadi Başlayalım!'}
+            </Button>
+        </footer>
+      )}
     </div>
   );
+}
