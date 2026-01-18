@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment } from 'react';
@@ -133,7 +132,7 @@ export default function MarketPage() {
   
   return (
     <div className="flex flex-col h-full">
-        <div className="p-2 space-y-2 border-b shrink-0">
+        <div className="p-2 space-y-1 border-b shrink-0">
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -156,8 +155,8 @@ export default function MarketPage() {
             </div>
             <AdCarousel />
             
-            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
-                <TabsList className="grid w-full grid-cols-5 text-xs">
+            <Tabs defaultValue="all" className="w-full flex justify-center" onValueChange={(value) => setActiveEntityType(value as any)}>
+                <TabsList className="text-xs">
                     <TabsTrigger value="all">Tümü</TabsTrigger>
                     <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
                     <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
@@ -207,8 +206,8 @@ export default function MarketPage() {
                                     </AvatarFallback>
                                 </Avatar>
                                 {brand.donationRate > 0 && (
-                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-12 md:w-12 md:text-base">
-                                    {brand.donationRate}%
+                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-9 md:w-9 md:text-sm">
+                                    %{brand.donationRate}
                                     </div>
                                 )}
                                 </div>
