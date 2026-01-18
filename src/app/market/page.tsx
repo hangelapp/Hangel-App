@@ -80,7 +80,7 @@ export default function MarketPage() {
   }, [activeCategory, activeEntityType]);
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
         <div className="p-4 space-y-4 border-b shrink-0">
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
@@ -107,9 +107,9 @@ export default function MarketPage() {
             
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
                 <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
                     <TabsTrigger value="all">Tümü</TabsTrigger>
+                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
                     <TabsTrigger value="brand">Marka</TabsTrigger>
                     <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
                 </TabsList>
