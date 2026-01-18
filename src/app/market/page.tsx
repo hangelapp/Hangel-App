@@ -178,7 +178,7 @@ export default function MarketPage() {
                                 <p className="mt-1 text-xs font-medium text-center leading-tight">{brand.name}</p>
                             </div>
                         </Link>
-                        {index === 8 && (
+                        {index === 14 && (
                            <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
                                <AdCarousel />
                            </div>

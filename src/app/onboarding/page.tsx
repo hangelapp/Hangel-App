@@ -3,24 +3,34 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { HandCoins, HeartHandshake, Star } from 'lucide-react';
+import { Handshake, HeartHandshake, HandCoins, Star, Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const onboardingSteps = [
   {
-    icon: HandCoins,
-    title: 'Alışverişle Bağış Yap',
-    description: 'Anlaşmalı markalardan yaptığın her alışverişin bir kısmı, seçtiğin STK\'lara otomatik olarak bağışlansın.',
+    icon: Handshake,
+    title: 'İyiliğe Hoş Geldiniz',
+    description: 'Toplumsal fayda ve pozitif değişim için bireyleri, STK\'ları ve markaları birleştiren bir dünyaya adım atın.',
   },
   {
     icon: HeartHandshake,
-    title: 'Gönüllülük Fırsatlarını Keşfet',
-    description: 'Yeteneklerine ve ilgi alanlarına uygun gönüllülük ilanlarına kolayca başvur, topluma fayda sağla.',
+    title: 'Gönüllü Olun, Etki Yaratın',
+    description: 'Yeteneklerinize ve ilgi alanlarınıza uygun gönüllülük fırsatlarını keşfedin, topluma değer katın ve ilham verin.',
+  },
+  {
+    icon: HandCoins,
+    title: 'Alışverişle Fark Yaratın',
+    description: 'Günlük alışverişlerinizi, seçtiğiniz sivil toplum kuruluşları için anlamlı bir desteğe dönüştürün. Ekstra bir ücret ödemeden.',
   },
   {
     icon: Star,
-    title: 'Etki Puanı Kazan',
-    description: 'Yaptığın her iyi hareketle etki puanı ve rozetler kazan, sosyal fayda yolculuğunu oyunlaştır.',
+    title: 'Etkinizi Görün ve Büyütün',
+    description: 'Yaptığınız her katkıyla "Sosyal Etki Puanı" kazanın. Başarılarınızı rozetler ve sertifikalarla sergileyerek ilham kaynağı olun.',
+  },
+  {
+    icon: Rocket,
+    title: 'Değişimi Başlatmaya Hazır Mısınız?',
+    description: 'Hangel ile iyilik dolu bir yolculuğa çıkmak ve pozitif bir etki yaratmak için şimdi başlayın.',
   },
 ];
 
@@ -43,15 +53,15 @@ export default function OnboardingPage() {
   const currentStep = onboardingSteps[step];
 
   return (
-    <div className="flex flex-col p-6 bg-background min-h-[calc(100vh-8.5rem)] justify-between">
-      <header className="flex items-center justify-between">
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-background text-center">
+      <header className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
         <Progress value={((step + 1) / onboardingSteps.length) * 100} className="w-2/3" />
         <Button variant="ghost" onClick={handleSkip}>
           Atla
         </Button>
       </header>
 
-      <main className="flex flex-col items-center justify-center text-center">
+      <main className="flex flex-col items-center justify-center">
         <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mb-8">
             <currentStep.icon className="w-16 h-16 text-primary" />
         </div>
@@ -61,8 +71,8 @@ export default function OnboardingPage() {
         </p>
       </main>
 
-      <footer className="flex justify-center">
-        <Button onClick={handleNext} className="w-full max-w-sm">
+      <footer className="absolute bottom-0 left-0 right-0 p-6 flex justify-center">
+        <Button onClick={handleNext} className="w-full max-w-sm" size="lg">
           {step === onboardingSteps.length - 1 ? 'Hadi Başlayalım!' : 'İleri'}
         </Button>
       </footer>

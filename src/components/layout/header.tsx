@@ -11,6 +11,7 @@ import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { EmergencyDialog } from '@/components/shared/emergency-dialog';
 import { Separator } from '../ui/separator';
+import { usePathname } from 'next/navigation';
 
 const sideMenuItems = [
     { href: '/timeline', label: 'hangel Impact Story' },
@@ -96,6 +97,12 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
 
 export default function AppHeader() {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
+  const isAuthPage = pathname === '/login' || pathname === '/onboarding' || pathname === '/';
+
+  if (isAuthPage) {
+    return null;
+  }
   
   return (
     <>

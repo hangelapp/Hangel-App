@@ -41,6 +41,11 @@ const NavLink = ({ item, pathname }: { item: SideNavItem; pathname: string }) =>
 
 export function SideNav({ mainItems, userItems, secondaryItems }: { mainItems: SideNavItem[], userItems: SideNavItem[], secondaryItems: SideNavItem[] }) {
   const pathname = usePathname();
+  const isAuthPage = pathname === '/login' || pathname === '/onboarding' || pathname === '/';
+
+  if (isAuthPage) {
+    return null;
+  }
 
   return (
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">

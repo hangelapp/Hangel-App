@@ -15,6 +15,11 @@ const navItems = [
 
 export default function AppBottomNav() {
   const pathname = usePathname();
+  const isAuthPage = pathname === '/login' || pathname === '/onboarding' || pathname === '/';
+
+  if (isAuthPage) {
+    return null;
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto grid h-12 max-w-md grid-cols-5 border-t bg-background/80 backdrop-blur-xl lg:hidden">
