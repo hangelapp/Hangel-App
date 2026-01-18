@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -15,7 +16,7 @@ const sideMenuItems = [
     { href: '/timeline', label: 'hangel Impact Story' },
     { href: '/my-donations', label: 'Bağışlarım' },
     { href: '/my-applications', label: 'Başvurularım' },
-    { href: '/my-badges', label: 'Rozetlerim' },
+    { href: '/my-badges', label: 'Rozetler' },
     { href: '/ngos', label: 'Sivil Toplum Kuruluşları' },
     { href: '/market', label: 'Markalar' },
     { href: '/admin/clubs', label: 'Öğrenci Kulüpleri' },

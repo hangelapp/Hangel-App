@@ -13,7 +13,7 @@ const mainMenuItems: SideNavItem[] = [
   { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
   { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
   { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
-  { href: '/my-badges', label: 'Rozetlerim', icon: 'award' },
+  { href: '/my-badges', label: 'Rozetler', icon: 'award' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
 ];
 

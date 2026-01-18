@@ -120,7 +120,7 @@ export default function ProfilePage() {
             <TabsTrigger value="info">Bilgiler</TabsTrigger>
             <TabsTrigger value="volunteer">Gönüllülük</TabsTrigger>
             <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
-            <TabsTrigger value="badges">Rozetlerim</TabsTrigger>
+            <TabsTrigger value="badges">Rozetler</TabsTrigger>
         </TabsList>
         
         <TabsContent value="statistics" className="p-4 space-y-4">
