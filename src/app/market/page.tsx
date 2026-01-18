@@ -15,6 +15,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -147,14 +148,10 @@ export default function MarketPage() {
                         <Link href={`/market/${brand.id}`}>
                             <div className="flex flex-col items-center text-center space-y-1 p-1">
                                 <div className="relative w-full aspect-square">
-                                <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                                    <Image
-                                    src={brand.logoUrl}
-                                    alt={brand.name}
-                                    fill
-                                    className="object-contain"
-                                    />
-                                </div>
+                                <Avatar className="w-full h-full bg-white">
+                                    <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-2" />
+                                    <AvatarFallback className="text-xl font-bold bg-muted">{brand.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
                                 {brand.donationRate > 0 && (
                                     <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
                                     {brand.donationRate}%
