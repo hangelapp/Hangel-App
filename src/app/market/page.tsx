@@ -153,7 +153,6 @@ export default function MarketPage() {
                     <ArrowDownUp className="h-5 w-5" />
                 </Button>
             </div>
-            <AdCarousel />
             
             <Tabs defaultValue="all" className="w-full flex justify-center" onValueChange={(value) => setActiveEntityType(value as any)}>
                 <TabsList className="grid-cols-none">
@@ -219,7 +218,7 @@ export default function MarketPage() {
                                <AdCarousel />
                            </div>
                         )}
-                        {index === 11 && (
+                        {index >= 14 && (index - 14) % 30 === 0 && (
                            <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
                                <VisualAdCarousel />
                            </div>
