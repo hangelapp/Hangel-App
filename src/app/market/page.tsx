@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Camera } from 'lucide-react';
@@ -9,32 +9,14 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
-import Autoplay from "embla-carousel-autoplay"
 
 const AdCarousel = () => {
-    const plugin = useRef(
-        Autoplay({ delay: 4000, stopOnInteraction: true, stopOnMouseEnter: true })
-    )
-
     return (
-         <Carousel
-            plugins={[plugin.current]}
-            opts={{
-            align: 'start',
-            loop: true,
-            }}
-            className="w-full rounded-lg overflow-hidden"
-        >
-            <CarouselContent>
+        <div className="flex space-x-4 overflow-x-auto py-2">
             {adBanners.map((ad) => (
-                <CarouselItem key={ad.id}>
-                    <Link href={ad.link} passHref>
-                        <div className="relative h-24">
+                <Link href={ad.link} passHref key={ad.id}>
+                    <div className="w-64 lg:w-80 flex-shrink-0">
+                        <div className="relative h-24 rounded-lg overflow-hidden">
                             <Image
                             src={ad.imageUrl}
                             alt={ad.title}
@@ -47,13 +29,12 @@ const AdCarousel = () => {
                                 <p className="text-xs text-white/90">{ad.description}</p>
                             </div>
                         </div>
-                    </Link>
-                </CarouselItem>
+                    </div>
+                </Link>
             ))}
-            </CarouselContent>
-        </Carousel>
-    )
-}
+        </div>
+    );
+};
 
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
