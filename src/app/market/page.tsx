@@ -10,31 +10,30 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 const categoryMapping: Record<string, string[]> = {
-    'Ev & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
-    'Kadın Giyim': ['Kadın Giyim', 'Giyim', 'Tesettür Giyim', 'Lüks Giyim', 'Çok Kategorili', 'İç Giyim'],
-    'Kadın Ayakkabı': ['Ayakkabı'],
-    'Kadın İç Giyim & Ev Giyim': ['İç Giyim'],
-    'Erkek Giyim': ['Erkek Giyim', 'Giyim', 'Çok Kategorili', 'İç Giyim'],
-    'Erkek Ayakkabıları': ['Ayakkabı'],
-    'Erkek İç Çamaşır & Pijama': ['İç Giyim'],
-    'Spor & Outdoor': ['Spor Giyim', 'Outdoor', 'Ayakkabı'],
-    'Takı & Aksesuar': ['Mücevher', 'Saat', 'Aksesuar'],
+    'Giyim & Moda': ['Giyim', 'Kadın Giyim', 'Erkek Giyim', 'Lüks Giyim', 'Tesettür Giyim', 'Çok Kategorili', 'Giyim Pazaryeri', 'İç Giyim'],
+    'Ayakkabı & Çanta': ['Ayakkabı', 'Aksesuar'], 
+    'Spor & Outdoor': ['Spor Giyim', 'Outdoor'],
+    'Kozmetik & Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
+    'Elektronik': ['Elektronik', 'Teknoloji', 'Müzik Aletleri'],
+    'Ev, Yaşam & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
     'Bebek & Çocuk': ['Bebek Giyim', 'Bebek Ürünleri', 'Çocuk Giyim', 'Oyuncak'],
-    'Yeme & İçme & Gurme': ['Kahve & Giyim', 'Kahve', 'Restoran', 'Evcil Hayvan', 'Gurme', 'Sağlıklı Gıda'],
-    'Tatil & Seyahat': ['Seyahat', 'Araç Kiralama', 'Bilet', 'Konaklama', 'Aksesuar'],
-    'Pazaryeri & Market': ['Market', 'Hızlı Market', 'Pazaryeri', 'Giyim Pazaryeri'],
-    'Elektronik': ['Elektronik', 'Aksesuar', 'Teknoloji', 'Müzik Aletleri'],
-    'Hobi & Hediye & Diğer': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye', 'Teknoloji', 'Evcil Hayvan', 'Seyahat'],
-    'Kozmetik & Kişisel Bakım': ['Kozmetik', 'Sağlık', 'Kişisel Bakım'],
-    'Kadın Büyük Beden Giyim': ['Giyim'],
-    'Erkek Büyük Beden Giyim': ['Giyim'],
+    'Süpermarket': ['Market', 'Hızlı Market', 'Pazaryeri'],
+    'Yeme & İçme': ['Kahve & Giyim', 'Kahve', 'Restoran', 'Gurme', 'Sağlıklı Gıda'],
+    'Tatil, Bilet & Seyahat': ['Seyahat', 'Araç Kiralama', 'Bilet', 'Konaklama'],
+    'Hobi, Kitap & Hediye': ['Kitap', 'Kitap & Hobi', 'Eğitim', 'Hediye'],
+    'Mücevher & Saat': ['Mücevher', 'Saat'],
+    'Evcil Hayvan': ['Evcil Hayvan'],
+    'Sigorta': []
 };
 
 
 export default function MarketPage() {
-  const [activeCategory, setActiveCategory] = useState(marketCategories[0].mainCategory);
+  const [activeCategory, setActiveCategory] = useState(marketCategories[1].mainCategory);
 
   const brandsToShow = useMemo(() => {
+    if (activeCategory === 'Tümü') {
+        return marketBrands;
+    }
     if (activeCategory === 'Öne çıkanlar') {
         return [...marketBrands].sort((a, b) => (b.followers || 0) - (a.followers || 0)).slice(0, 18);
     }
@@ -81,8 +80,9 @@ export default function MarketPage() {
                   className={cn(
                     "text-left text-xs sm:text-sm p-2 sm:p-3 whitespace-nowrap truncate",
                     activeCategory === cat.mainCategory
-                      ? "bg-primary/10 text-primary font-bold border-l-4 border-primary"
-                      : "text-muted-foreground hover:bg-accent"
+                      ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
+                      : "text-muted-foreground hover:bg-accent",
+                    cat.mainCategory === 'Öne çıkanlar' && "font-bold"
                   )}
                 >
                   {cat.mainCategory}
@@ -110,7 +110,7 @@ export default function MarketPage() {
                             />
                         </div>
                           {brand.donationRate > 0 && (
-                            <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-sm font-bold text-destructive-foreground ring-2 ring-background">
+                            <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background">
                                 {brand.donationRate}%
                             </div>
                           )}
