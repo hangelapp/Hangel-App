@@ -93,7 +93,7 @@ export default function MarketPage() {
   
   return (
     <div className="flex flex-col h-full overflow-hidden">
-        <div className="p-4 space-y-4 border-b shrink-0">
+        <div className="p-2 space-y-2 border-b shrink-0">
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
