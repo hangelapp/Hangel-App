@@ -1,35 +1,49 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Camera } from 'lucide-react';
-import { marketCategories, allEntityLists, categoryMapping, adBanners } from '@/lib/data';
+import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const AdCarousel = () => {
+    const plugin = useRef(
+        Autoplay({ delay: 4000, stopOnInteraction: true })
+    );
+
     return (
-        <div className="flex w-full space-x-4 overflow-x-auto py-2">
+        <Carousel
+            plugins={[plugin.current]}
+            opts={{
+            align: 'start',
+            loop: true,
+            }}
+            className="w-full"
+        >
+            <CarouselContent>
             {adBanners.map((ad) => (
-                <Link href={ad.link} passHref key={ad.id}>
-                    <div className="relative w-72 flex-shrink-0 h-16 rounded-lg overflow-hidden">
-                        <Image
-                        src={ad.imageUrl}
-                        alt={ad.title}
-                        fill
-                        className="object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/50" />
-                        <div className="absolute inset-0 flex items-center p-4">
-                            <h3 className="font-semibold text-white truncate">{ad.title}</h3>
+                <CarouselItem key={ad.id}>
+                    <Link href={ad.link} passHref>
+                        <div className="relative w-full h-12 rounded-lg overflow-hidden bg-primary/10">
+                            <div className="absolute inset-0 flex items-center justify-center p-2">
+                                <p className="font-semibold text-primary text-sm text-center truncate">{ad.title} - <span className='font-normal text-primary/80'>{ad.description}</span></p>
+                            </div>
                         </div>
-                    </div>
-                </Link>
+                    </Link>
+                </CarouselItem>
             ))}
-        </div>
+            </CarouselContent>
+        </Carousel>
     );
 };
 
@@ -61,9 +75,9 @@ export default function MarketPage() {
     return filteredList.filter(brand => brandCategories.includes(brand.category));
 
   }, [activeCategory, activeEntityType]);
-
+  
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-[calc(100vh-6rem)]">
         <div className="p-2 space-y-2 border-b shrink-0">
             <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -82,10 +96,10 @@ export default function MarketPage() {
             
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
                 <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
                     <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
                     <TabsTrigger value="brand">Marka</TabsTrigger>
+                    <TabsTrigger value="all">Tümü</TabsTrigger>
+                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
                     <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
                 </TabsList>
             </Tabs>
@@ -116,7 +130,7 @@ export default function MarketPage() {
                 <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
                 {activeCategory}
                 </h2>
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand) => (
                     <Link href={brand.link || '#'} key={brand.id}>
                     <div className="flex flex-col items-center text-center space-y-1 p-1">
