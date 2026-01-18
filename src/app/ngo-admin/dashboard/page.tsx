@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChevronRight, DollarSign, Users, Heart } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
+import { user } from '@/lib/data';
 
 const menuItems = [
   { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: 'heart-handshake', color: 'bg-red-500' },
@@ -46,11 +47,12 @@ const MenuList = ({ items }: { items: typeof menuItems | typeof secondaryMenuIte
 );
 
 export default function NgoDashboardPage() {
+    const userName = user.name.split(' ')[0] + ' ' + user.name.split(' ')[1].toLowerCase();
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold font-headline">Yönetim Paneli</h1>
-        <p className="text-muted-foreground">Hoş geldin, Ahbap Derneği! İşte genel bir bakış.</p>
+        <h1 className="text-2xl font-bold font-headline">Ahbap Derneği Yönetim Paneli</h1>
+        <p className="text-muted-foreground">Hoş geldin, {userName}</p>
       </div>
 
        <div className="grid gap-4 md:grid-cols-3">
