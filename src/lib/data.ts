@@ -2,7 +2,7 @@
 
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
-import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic } from './types';
+import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
 import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign } from 'lucide-react';
 
 
@@ -772,3 +772,53 @@ export const ngoFaqArticles = [
     { title: 'Yönetim paneline yeni kullanıcı nasıl eklenir?', link: '#' }
 ];
     
+export const marketCategories: MarketCategory[] = [
+  {
+    mainCategory: 'Öne çıkanlar',
+    subCategories: [
+      { name: 'Ev Dekor Ürünleri', imageUrl: 'https://picsum.photos/seed/dekor/200' },
+      { name: 'Kadın Takı', imageUrl: 'https://picsum.photos/seed/taki/200', isHot: true },
+      { name: 'Kılıflar ve Yenler', imageUrl: 'https://picsum.photos/seed/kilif/200', isHot: true },
+      { name: 'Kadın Elbise', imageUrl: 'https://picsum.photos/seed/elbise/200' },
+      { name: "Kadın T-Shirt'i", imageUrl: 'https://picsum.photos/seed/tshirt/200' },
+      { name: 'Mutfak Gereçleri & Malzemeleri', imageUrl: 'https://picsum.photos/seed/mutfak-gerec/200', isHot: true },
+      { name: 'Kadın Mont & Ceket', imageUrl: 'https://picsum.photos/seed/mont/200' },
+      { name: 'Cep Telefonları', imageUrl: 'https://picsum.photos/seed/telefon/200', isHot: true },
+      { name: 'Sepet & Saklama Kutuları', imageUrl: 'https://picsum.photos/seed/sepet/200' },
+      { name: 'Kadın İkili Takım', imageUrl: 'https://picsum.photos/seed/ikili-takim/200' },
+      { name: 'Mutfak Depolama & Saklama Kutusu', imageUrl: 'https://picsum.photos/seed/mutfak-depo/200' },
+      { name: 'Kadın Kazak', imageUrl: 'https://picsum.photos/seed/kazak/200' },
+      { name: 'Yatak Takımları', imageUrl: 'https://picsum.photos/seed/yatak/200' },
+      { name: 'Erkek Spor Giyim', imageUrl: 'https://picsum.photos/seed/erkek-spor/200' },
+      { name: 'Kulaklıklar & Aksesuarlar', imageUrl: 'https://picsum.photos/seed/kulaklik/200', isHot: true },
+    ]
+  },
+  { mainCategory: 'Ev & Mutfak', subCategories: [
+      { name: 'Ev Dekor Ürünleri', imageUrl: 'https://picsum.photos/seed/dekor/200' },
+      { name: 'Mutfak Gereçleri & Malzemeleri', imageUrl: 'https://picsum.photos/seed/mutfak-gerec/200', isHot: true },
+      { name: 'Mutfak Depolama & Saklama Kutusu', imageUrl: 'https://picsum.photos/seed/mutfak-depo/200' },
+      { name: 'Yatak Takımları', imageUrl: 'https://picsum.photos/seed/yatak/200' },
+      { name: 'Sepet & Saklama Kutuları', imageUrl: 'https://picsum.photos/seed/sepet/200' },
+  ]},
+  { mainCategory: 'Kadın Giyim', subCategories: [
+      { name: 'Kadın Elbise', imageUrl: 'https://picsum.photos/seed/elbise/200' },
+      { name: "Kadın T-Shirt'i", imageUrl: 'https://picsum.photos/seed/tshirt/200' },
+      { name: 'Kadın Mont & Ceket', imageUrl: 'https://picsum.photos/seed/mont/200' },
+      { name: 'Kadın İkili Takım', imageUrl: 'https://picsum.photos/seed/ikili-takim/200' },
+      { name: 'Kadın Kazak', imageUrl: 'https://picsum.photos/seed/kazak/200' },
+  ]},
+  { mainCategory: 'Kadın Büyük Beden Giyim', subCategories: []},
+  { mainCategory: 'Kadın Ayakkabı', subCategories: []},
+  { mainCategory: 'Kadın İç Giyim & Ev Giyim', subCategories: []},
+  { mainCategory: 'Erkek Giyim', subCategories: [
+      { name: 'Erkek Spor Giyim', imageUrl: 'https://picsum.photos/seed/erkek-spor/200' },
+  ]},
+  { mainCategory: 'Erkek Ayakkabıları', subCategories: []},
+  { mainCategory: 'Erkek Büyük Beden Giyim', subCategories: []},
+  { mainCategory: 'Erkek İç Çamaşır & Pijama', subCategories: []},
+  { mainCategory: 'Spor & Outdoor', subCategories: []},
+  { mainCategory: 'Takı & Aksesuar', subCategories: [
+      { name: 'Kadın Takı', imageUrl: 'https://picsum.photos/seed/taki/200', isHot: true },
+      { name: 'Kulaklıklar & Aksesuarlar', imageUrl: 'https://picsum.photos/seed/kulaklik/200', isHot: true },
+  ]},
+];

@@ -350,3 +350,12 @@ export type HelpTopic = {
   description: string;
   subtopics: { title: string; link: string; content: string; }[];
 };
+
+export type MarketCategory = {
+  mainCategory: string;
+  subCategories: {
+    name: string;
+    imageUrl: string;
+    isHot?: boolean;
+  }[];
+};
