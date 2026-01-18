@@ -127,7 +127,36 @@ export const timelinePosts: Post[] = Array.from({ length: 21 }, (_, i) => ({
 
 export const marketBrands: Brand[] = [
     // Ayakkabı & Spor Giyim
-    { id: '1', name: 'Ayakkabı Dünyası', category: 'Ayakkabı', donationRate: 8, logoUrl: '', link: '#', followers: 150000, type: 'brand' },
+    { 
+        id: '1', 
+        name: 'Ayakkabı Dünyası', 
+        category: 'Ayakkabı', 
+        donationRate: 8, 
+        logoUrl: '', 
+        link: '#', 
+        followers: 150000, 
+        type: 'brand',
+        about: "Ayakkabı Dünyası olarak, en trend ve kaliteli ayakkabıları sizlerle buluştururken, topluma karşı sorumluluklarımızı da unutmuyoruz. Yaptığımız her satışla, adımlarımızı daha iyi bir geleceğe atmayı hedefliyoruz.\n\nSürdürülebilirlik ve sosyal fayda ilkelerini benimseyerek, Hangel platformu aracılığıyla seçtiğiniz sivil toplum kuruluşlarına destek olmanızı sağlıyoruz. Birlikte daha güçlüyüz!",
+        joinDate: "2023-03-15",
+        stats: {
+            supporters: 15234,
+            totalDonation: 45780,
+            monthlyFollowerGrowth: 12,
+            profileViews: 12400,
+            profileShares: 1800,
+        },
+        donationByCategory: [
+            { category: "Kadın Ayakkabı", rate: 8 },
+            { category: "Erkek Ayakkabı", rate: 8 },
+            { category: "Çocuk Ayakkabı", rate: 10 },
+            { category: "Çanta & Aksesuar", rate: 12 },
+            { category: "Terlik & Sandalet", rate: 7 },
+        ],
+        sustainabilityReports: [
+            { title: "2023 Sürdürülebilirlik Raporu", url: "#" },
+            { title: "2024 İlk Çeyrek Etki Raporu", url: "#" },
+        ]
+    },
     { id: '2', name: 'Decathlon', category: 'Spor Giyim', donationRate: 5, logoUrl: '', link: '#', followers: 1200000, type: 'brand' },
     { id: '3', name: 'Sportstyle', category: 'Spor Giyim', donationRate: 10, logoUrl: '', link: '#', followers: 50000, type: 'brand' },
     { id: '4', name: 'Sneakscloud', category: 'Ayakkabı', donationRate: 12, logoUrl: '', link: '#', followers: 200000, type: 'brand' },
@@ -780,6 +809,7 @@ export const marketCategories: MarketCategory[] = [
   { mainCategory: 'Spor & Outdoor', subCategories: [] },
   { mainCategory: 'Kişisel Bakım', subCategories: [] },
   { mainCategory: 'Elektronik', subCategories: [] },
+  { mainCategory: 'Otomotiv', subCategories: [] },
   { mainCategory: 'Sigorta', subCategories: [] },
   { mainCategory: 'Fatura', subCategories: [] },
   { mainCategory: 'Ev & Mutfak', subCategories: [] },
@@ -799,6 +829,7 @@ export const categoryMapping: { [key: string]: string[] } = {
     'Spor & Outdoor': ['Spor Giyim', 'Outdoor'],
     'Kişisel Bakım': ['Kozmetik', 'Kişisel Bakım', 'Sağlık'],
     'Elektronik': ['Elektronik', 'Aksesuar', 'Müzik Aletleri', 'Teknoloji', 'Küçük Ev Aletleri', 'Beyaz Eşya'],
+    'Otomotiv': ['Araç Kiralama'],
     'Ev & Mutfak': ['Mobilya', 'Yapı Market', 'Mutfak', 'Ev Tekstili', 'Küçük Ev Aletleri', 'Yatak', 'Beyaz Eşya', 'Ev & Giyim'],
     'Bebek & Çocuk': ['Bebek Giyim', 'Bebek Ürünleri', 'Çocuk Giyim', 'Oyuncak'],
     'Süpermarket': ['Market', 'Hızlı Market', 'Pazaryeri'],
@@ -811,5 +842,6 @@ export const categoryMapping: { [key: string]: string[] } = {
     'Sigorta': [],
     'Fatura': [],
 };
+
 
 

@@ -21,6 +21,25 @@ export default function AppBottomNav() {
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/timeline' && pathname.startsWith(item.href));
         const Icon = item.icon;
+        const isQrButton = item.label === "QR";
+
+        if (isQrButton) {
+          return (
+            <Link href={item.href} key={item.label} className="relative flex flex-col items-center justify-center text-center">
+              <div className={cn(
+                "absolute -top-5 flex h-14 w-14 items-center justify-center rounded-full border-4 border-background bg-primary shadow-lg transition-transform hover:scale-105",
+                isActive && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+              )}>
+                <Icon className="h-7 w-7 text-primary-foreground" />
+              </div>
+              <span className={cn(
+                "absolute bottom-0.5 text-[10px] font-medium",
+                 isActive ? 'text-primary' : 'text-muted-foreground'
+              )}>{item.label}</span>
+            </Link>
+          );
+        }
+
         return (
           <Link
             href={item.href}

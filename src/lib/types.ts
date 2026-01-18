@@ -40,10 +40,11 @@ export type Brand = {
   coverPhotoUrl?: string;
   donationRate: number;
   stats?: {
-    followers: number;
-    donors: number;
+    supporters: number;
     totalDonation: number;
-    volunteerHours: number;
+    monthlyFollowerGrowth: number;
+    profileViews: number;
+    profileShares: number;
   };
   about?: string;
   joinDate?: string;

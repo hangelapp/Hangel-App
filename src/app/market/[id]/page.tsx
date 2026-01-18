@@ -9,6 +9,15 @@ import { notFound, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { ShareButtons } from '@/components/shared/share-buttons';
+
+const StatRow = ({ label, value }: { label: string, value: string | number }) => (
+    <div className="flex justify-between items-center py-3 text-sm">
+        <p className="text-muted-foreground">{label}</p>
+        <p className="font-semibold text-foreground">{value}</p>
+    </div>
+);
+
 
 export default function BrandProfilePage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -20,6 +29,7 @@ export default function BrandProfilePage({ params }: { params: { id: string } })
   }
   
   const coverPhotoUrl = brand.coverPhotoUrl || 'https://picsum.photos/seed/brand-cover/1200/400';
+  const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
     <div className="animate-in fade-in-0">
@@ -29,6 +39,9 @@ export default function BrandProfilePage({ params }: { params: { id: string } })
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full">
             <ArrowLeft className="h-5 w-5" />
         </Button>
+         <div className="absolute top-4 right-4">
+            <ShareButtons url={profileUrl} title={`Hangel'deki ${brand.name} mağazasını incele!`} />
+        </div>
       </div>
       <div className="p-4 bg-background">
         <div className="flex gap-4 items-end -mt-16">
@@ -43,7 +56,10 @@ export default function BrandProfilePage({ params }: { params: { id: string } })
                 </div>
             </div>
         </div>
-         <div className="flex gap-2 mt-4">
+         <div className="text-sm text-center text-muted-foreground mt-4">
+            <span className="font-bold text-foreground">{brand.followers?.toLocaleString() || 0}</span> kişi bu markayı takip ederek destekliyor.
+        </div>
+         <div className="flex gap-2 mt-2">
             <Button className="flex-1">
                 Alışverişe Başla <ExternalLink className="ml-2 h-4 w-4" />
             </Button>
@@ -57,28 +73,44 @@ export default function BrandProfilePage({ params }: { params: { id: string } })
         <TabsList className="grid w-full grid-cols-4 px-2">
             <TabsTrigger value="about">Hakkında</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>
+            <TabsTrigger value="sustainability">Sürdürülebilirlik</TabsTrigger>
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
-            <TabsTrigger value="contact">İletişim</TabsTrigger>
         </TabsList>
         <TabsContent value="about" className="p-4 space-y-4">
             <Card>
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Marka Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4">
-                    <p>
-                        {brand.about || `${brand.name}, sosyal sorumluluk bilinciyle hareket ederek, her alışverişinizde topluma katkı sağlamanızı hedefler. Sürdürülebilir ve etik üretim ilkeleriyle çalışıyoruz.`}
-                    </p>
-                    <div className="flex flex-wrap gap-2 pt-4 border-t">
+                    {brand.about?.split('\n\n').map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p>
+                    ))}
+                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
                         <Badge variant="secondary">{brand.type}</Badge>
                         <Badge variant="secondary">{brand.category}</Badge>
+                        {brand.joinDate && <Badge variant="outline" className='text-xs'>Katılım: {brand.joinDate}</Badge>}
                     </div>
                 </CardContent>
             </Card>
             {brand.donationRate > 0 && (
-                <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Percent className="h-5 w-5 text-primary"/> Bağış Oranı</CardTitle></CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold text-primary">%{brand.donationRate}</p>
-                        <p className="text-sm text-muted-foreground">Bu markadan yapacağınız her alışverişin %{brand.donationRate}'i seçtiğiniz STK'ya bağışlanır.</p>
+                 <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Percent className="h-5 w-5 text-primary"/> Bağış Oranları</CardTitle></CardHeader>
+                    <CardContent className='space-y-3'>
+                        <div>
+                            <p className="text-2xl font-bold text-primary">%{brand.donationRate}</p>
+                            <p className="text-sm text-muted-foreground">Bu markadan yapacağınız her alışverişin ortalama %{brand.donationRate}'i seçtiğiniz STK'ya bağışlanır.</p>
+                        </div>
+                        {brand.donationByCategory && brand.donationByCategory.length > 0 && (
+                            <div className="pt-4 border-t">
+                                <h4 className="font-semibold text-sm mb-2 text-foreground">Kategori Bazlı Oranlar</h4>
+                                <div className="space-y-2">
+                                    {brand.donationByCategory.map(item => (
+                                        <div key={item.category} className="flex justify-between text-xs">
+                                            <span className="text-muted-foreground">{item.category}</span>
+                                            <span className="font-medium text-foreground">% {item.rate}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
@@ -86,28 +118,44 @@ export default function BrandProfilePage({ params }: { params: { id: string } })
         <TabsContent value="stats" className="p-4 space-y-4">
              <Card>
                 <CardHeader><CardTitle className="text-lg">Topluluk İstatistikleri</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-accent/50 rounded-lg">
-                        <p className="font-bold text-lg">{((brand.followers || 0) / 1000).toFixed(1)}k</p>
-                        <p className="text-sm text-muted-foreground">Takipçi</p>
-                    </div>
-                    <div className="p-4 bg-accent/50 rounded-lg">
-                        <p className="font-bold text-lg">{brand.donationRate > 0 ? 'Aktif' : 'Pasif'}</p>
-                        <p className="text-sm text-muted-foreground">Bağış Durumu</p>
-                    </div>
+                 <CardContent className="divide-y">
+                    <StatRow label="Takipçi Sayısı" value={brand.followers?.toLocaleString() || 'N/A'} />
+                    <StatRow label="Destekçi Sayısı" value={brand.stats?.supporters.toLocaleString() || 'N/A'} />
+                    <StatRow label="Toplam Bağış Tutarı" value={`${brand.stats?.totalDonation.toLocaleString() || 'N/A'} ₺`} />
+                    <StatRow label="Aylık Takipçi Artışı" value={`+${brand.stats?.monthlyFollowerGrowth.toLocaleString() || 'N/A'}%`} />
+                    <StatRow label="Profil Görüntülenme (30g)" value={brand.stats?.profileViews.toLocaleString() || 'N/A'} />
+                    <StatRow label="Profil Paylaşımı (30g)" value={brand.stats?.profileShares.toLocaleString() || 'N/A'} />
                 </CardContent>
              </Card>
+        </TabsContent>
+        <TabsContent value="sustainability" className="p-4 space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">Sürdürülebilirlik Raporları</CardTitle>
+                    <CardDescription>Markanın sosyal ve çevresel etki raporları.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {brand.sustainabilityReports && brand.sustainabilityReports.length > 0 ? (
+                        <div className="space-y-3">
+                            {brand.sustainabilityReports.map((report) => (
+                                <a key={report.title} href={report.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent">
+                                    <span className="font-medium text-sm">{report.title}</span>
+                                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                                </a>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                            <p>Henüz bir rapor yayınlanmadı.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </TabsContent>
         <TabsContent value="posts" className="p-4">
             <div className="text-center text-muted-foreground py-16">
                 <Rss className="mx-auto h-12 w-12 text-muted-foreground/50"/>
                 <p className="mt-4">Bu marka henüz bir gönderi paylaşmadı.</p>
-            </div>
-        </TabsContent>
-        <TabsContent value="contact" className="p-4">
-            <div className="text-center text-muted-foreground py-16">
-                 <Building className="mx-auto h-12 w-12 text-muted-foreground/50"/>
-                <p className="mt-4">İletişim bilgileri yakında eklenecektir.</p>
             </div>
         </TabsContent>
       </Tabs>

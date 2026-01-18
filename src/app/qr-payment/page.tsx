@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -86,7 +87,7 @@ const RealisticQrCodeIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const CardFace = ({ card, isFlipped, onFlip, onFrontClick }: { card: typeof initialCardData[0], isFlipped: boolean, onFlip: () => void, onFrontClick: () => void }) => {
   return (
-    <div className="relative w-full h-full [transform-style:preserve-3d] transition-transform duration-500" style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
+    <div className="relative w-full h-full [transform-style:preserve-3d] transition-transform duration-500 transform-gpu" style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
       {/* Card Front */}
       <div 
         onClick={onFrontClick}
