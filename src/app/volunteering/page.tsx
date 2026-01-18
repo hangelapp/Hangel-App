@@ -73,8 +73,8 @@ export default function VolunteeringPage() {
 
       <div className="space-y-4">
         {volunteeringOpportunities.map((opp) => {
-            const requiredSkillsMet = opp.skills.every(skill => userAbilities.includes(skill));
-            const requiredDocsMet = opp.requirements.every(doc => userDocuments.includes(doc));
+            const requiredSkillsMet = (opp.skills ?? []).every(skill => userAbilities.includes(skill));
+            const requiredDocsMet = (opp.requirements ?? []).every(doc => userDocuments.includes(doc));
             const travelMet = opp.location.type === 'Saha' ? !user.volunteerInfo.travelInfo.domesticObstacle : true;
 
             return (
@@ -87,7 +87,7 @@ export default function VolunteeringPage() {
                     <div className="flex items-center text-muted-foreground gap-2"><MapPin className="h-4 w-4" />{`${opp.location.city}${opp.location.type !== 'Online' ? `, ${opp.location.district}` : ''} (${opp.location.type})`}</div>
                     <div className="flex items-center text-muted-foreground gap-2"><Calendar className="h-4 w-4" />{opp.commitment}</div>
                     <div className="flex flex-wrap gap-2 pt-2">
-                        {opp.skills.map(skill => (
+                        {(opp.skills ?? []).map(skill => (
                             <Badge
                                 key={skill}
                                 variant="outline"
