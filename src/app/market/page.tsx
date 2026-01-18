@@ -40,7 +40,7 @@ export default function MarketPage() {
   }, [activeCategory, activeEntityType]);
 
   return (
-    <div className="flex flex-col h-full"> 
+    <div className="flex flex-col h-[calc(100vh-96px)] lg:h-[calc(100vh-48px)]"> 
       {/* Search Header */}
       <div className="p-2 space-y-2">
         <div className="relative">
@@ -108,7 +108,7 @@ export default function MarketPage() {
                                     />
                                 </div>
                                   {brand.donationRate > 0 && (
-                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-8 w-8 md:h-8 md:w-8 md:text-[10px]">
+                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
                                         {brand.donationRate}%
                                     </div>
                                   )}
