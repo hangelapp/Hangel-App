@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { ShareButtons } from '@/components/shared/share-buttons';
 
 const InfoRow = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | undefined | null }) => (
     <div className="flex items-start gap-4 py-3">
@@ -54,6 +55,7 @@ const StatDetailRow = ({ label, value }: { label: string, value: string | number
 
 export default function ProfilePage() {
   const [showImpactCard, setShowImpactCard] = useState(true);
+  const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const impactStats = [
     { icon: Star, value: user.impactScore.toLocaleString(), label: 'Sosyal Etki Puanı' },
@@ -74,6 +76,9 @@ export default function ProfilePage() {
           />
         )}
         <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute top-4 right-4 flex gap-2">
+           <ShareButtons url={profileUrl} title={`Hangel'deki ${user.name} profiline bir göz at!`} />
+        </div>
       </div>
       <div className="p-4 -mt-16">
          <div className="flex items-end gap-4">
