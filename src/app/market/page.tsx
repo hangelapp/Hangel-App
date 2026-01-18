@@ -51,6 +51,17 @@ const AdCarousel = () => {
     );
 };
 
+const fallbackColors = [
+    { bg: 'bg-red-100', text: 'text-red-800' },
+    { bg: 'bg-blue-100', text: 'text-blue-800' },
+    { bg: 'bg-green-100', text: 'text-green-800' },
+    { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+    { bg: 'bg-purple-100', text: 'text-purple-800' },
+    { bg: 'bg-pink-100', text: 'text-pink-800' },
+    { bg: 'bg-indigo-100', text: 'text-indigo-800' },
+    { bg: 'bg-teal-100', text: 'text-teal-800' },
+];
+
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
   const [activeEntityType, setActiveEntityType] = useState('all');
@@ -109,8 +120,8 @@ export default function MarketPage() {
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
                 <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all" className="text-xs">Tümü</TabsTrigger>
-                    <TabsTrigger value="economic" className="text-xs">İktisadi İşl.</TabsTrigger>
                     <TabsTrigger value="cooperative" className="text-xs">Kooperatif</TabsTrigger>
+                    <TabsTrigger value="economic" className="text-xs">İktisadi İşl.</TabsTrigger>
                     <TabsTrigger value="brand" className="text-xs">Marka</TabsTrigger>
                     <TabsTrigger value="social" className="text-xs">Sosyal İşl.</TabsTrigger>
                 </TabsList>
@@ -143,14 +154,18 @@ export default function MarketPage() {
                 {activeCategory}
                 </h2>
                 <div className="grid grid-cols-3 gap-2">
-                {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => (
+                {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
+                    const color = fallbackColors[index % fallbackColors.length];
+                    return (
                     <Fragment key={brand.id}>
                         <Link href={`/market/${brand.id}`}>
                             <div className="flex flex-col items-center text-center space-y-1 p-1">
                                 <div className="relative w-full aspect-square">
                                 <Avatar className="w-full h-full bg-white">
                                     <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-2" />
-                                    <AvatarFallback className="text-xl font-bold bg-muted">{brand.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                    <AvatarFallback className={cn("text-xl font-bold", color.bg, color.text)}>
+                                        {brand.name.slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
                                 </Avatar>
                                 {brand.donationRate > 0 && (
                                     <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-8 md:w-8 md:text-xs">
@@ -167,7 +182,7 @@ export default function MarketPage() {
                            </div>
                         )}
                     </Fragment>
-                )) : (
+                )}) : (
                     <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
                 )}
                 </div>
