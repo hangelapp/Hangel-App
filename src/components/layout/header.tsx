@@ -140,7 +140,7 @@ export default function AppHeader() {
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
              <Link href="/market" passHref className="">
-                <span className="text-xl font-bold text-foreground">hangel</span>
+                <span className="text-xl font-bold text-primary">hangel</span>
             </Link>
           </div>
 
