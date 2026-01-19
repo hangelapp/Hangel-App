@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -78,10 +78,11 @@ export default function ProfilePage() {
             </div>
 
             <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 px-2">
+                <TabsList className="grid w-full grid-cols-5 px-2">
                     <TabsTrigger value="overview">Genel Bakış</TabsTrigger>
                     <TabsTrigger value="about">Hakkında</TabsTrigger>
                     <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
+                    <TabsTrigger value="stats">İstatistikler</TabsTrigger>
                     <TabsTrigger value="badges">Rozetler</TabsTrigger>
                 </TabsList>
                 
@@ -163,6 +164,29 @@ export default function ProfilePage() {
                          </CardContent>
                     </Card>
                 </TabsContent>
+
+                <TabsContent value="stats" className="p-4 space-y-4">
+                    <Card>
+                        <CardHeader><CardTitle className='text-lg flex items-center gap-2'><BarChart3 className='h-5 w-5 text-primary' />Gönüllülük İstatistikleri</CardTitle></CardHeader>
+                        <CardContent className="divide-y">
+                            <InfoRow icon={Hourglass} label="Toplam Gönüllülük Saati" value={`${user.stats.volunteerHours} Saat`} />
+                            <InfoRow icon={Handshake} label="Tamamlanan Proje Sayısı" value={`${user.stats.completedProjects} Proje`} />
+                            <InfoRow icon={Sparkles} label="En Aktif Gönüllülük Alanı" value={user.stats.mostActiveVolunteerArea} />
+                            <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={user.stats.volunteerRank.country} />
+                             <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={user.stats.volunteerRank.city} />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle className='text-lg flex items-center gap-2'><HandCoins className='h-5 w-5 text-primary' />Bağış İstatistikleri</CardTitle></CardHeader>
+                        <CardContent className="divide-y">
+                            <InfoRow icon={DollarSign} label="Toplam Bağış Tutarı" value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
+                            <InfoRow icon={FileText} label="Toplam İşlem Adedi" value={`${user.stats.donationCount} İşlem`} />
+                            <InfoRow icon={Target} label="En Çok Desteklenen STK" value={user.stats.mostSupportedNgo} />
+                            <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
+                            <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
                 
                 <TabsContent value="badges" className="p-4">
                     <Card>
@@ -181,3 +205,4 @@ export default function ProfilePage() {
             </Tabs>
         </div>
     );
+}
