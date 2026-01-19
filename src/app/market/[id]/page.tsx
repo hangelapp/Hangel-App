@@ -58,7 +58,7 @@ export default function BrandProfilePage() {
             </div>
         </div>
          <div className="text-sm text-center text-muted-foreground mt-4">
-            <span className="font-bold text-foreground">{brand.followers?.toLocaleString() || 0}</span> kişi bu markayı takip ederek destekliyor.
+            <span className="font-bold text-foreground">{brand.followers?.toLocaleString('tr-TR') || 0}</span> kişi bu markayı takip ederek destekliyor.
         </div>
          <div className="flex gap-2 mt-2">
             <Button className="flex-1">
@@ -120,12 +120,12 @@ export default function BrandProfilePage() {
              <Card>
                 <CardHeader><CardTitle className="text-lg">Topluluk İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
-                    <StatRow label="Takipçi Sayısı" value={brand.followers?.toLocaleString() || 'N/A'} />
-                    <StatRow label="Destekçi Sayısı" value={brand.stats?.supporters.toLocaleString() || 'N/A'} />
-                    <StatRow label="Toplam Bağış Tutarı" value={`${brand.stats?.totalDonation.toLocaleString() || 'N/A'} ₺`} />
-                    <StatRow label="Aylık Takipçi Artışı" value={`+${brand.stats?.monthlyFollowerGrowth.toLocaleString() || 'N/A'}%`} />
-                    <StatRow label="Profil Görüntülenme (30g)" value={brand.stats?.profileViews.toLocaleString() || 'N/A'} />
-                    <StatRow label="Profil Paylaşımı (30g)" value={brand.stats?.profileShares.toLocaleString() || 'N/A'} />
+                    <StatRow label="Takipçi Sayısı" value={brand.followers?.toLocaleString('tr-TR') || 'N/A'} />
+                    <StatRow label="Destekçi Sayısı" value={brand.stats?.supporters.toLocaleString('tr-TR') || 'N/A'} />
+                    <StatRow label="Toplam Bağış Tutarı" value={`${brand.stats?.totalDonation.toLocaleString('tr-TR') || 'N/A'} ₺`} />
+                    <StatRow label="Aylık Takipçi Artışı" value={`+${brand.stats?.monthlyFollowerGrowth.toLocaleString('tr-TR') || 'N/A'}%`} />
+                    <StatRow label="Profil Görüntülenme (30g)" value={brand.stats?.profileViews.toLocaleString('tr-TR') || 'N/A'} />
+                    <StatRow label="Profil Paylaşımı (30g)" value={brand.stats?.profileShares.toLocaleString('tr-TR') || 'N/A'} />
                 </CardContent>
              </Card>
         </TabsContent>

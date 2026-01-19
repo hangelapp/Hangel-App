@@ -43,8 +43,8 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value
 export default function ProfilePage() {
 
   const impactStats = [
-    { icon: Star, value: user.impactScore.toLocaleString(), label: 'Etki Puanı' },
-    { icon: HandCoins, value: `${user.stats.totalDonation.toLocaleString()} ₺`, label: 'Bağış' },
+    { icon: Star, value: user.impactScore.toLocaleString('tr-TR'), label: 'Etki Puanı' },
+    { icon: HandCoins, value: `${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`, label: 'Bağış' },
     { icon: Hourglass, value: `${user.stats.volunteerHours} Saat`, label: 'Gönüllülük' },
   ];
 
@@ -64,7 +64,7 @@ export default function ProfilePage() {
 
         <Card>
           <CardContent className="p-0 divide-y">
-            <InfoRow href="/my-donations" icon={HandCoins} label="Bağışlarım" value={`${user.stats.totalDonation.toLocaleString()} ₺`} />
+            <InfoRow href="/my-donations" icon={HandCoins} label="Bağışlarım" value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
             <InfoRow href="/my-applications" icon={FileText} label="Başvurularım" value="3 Beklemede" />
             <InfoRow href="/my-badges" icon={BadgeIcon} label="Rozetler ve Sertifikalar" value={`${badges.filter(b => b.currentPoints >= b.pointsRequired).length} Rozet`} />
           </CardContent>

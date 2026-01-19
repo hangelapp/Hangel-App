@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { groupBy } from 'lodash';
 
 const stats = [
-    { icon: Star, value: user.impactScore.toLocaleString(), label: 'Etki Puanı' },
+    { icon: Star, value: user.impactScore.toLocaleString('tr-TR'), label: 'Etki Puanı' },
     { icon: Award, value: badges.filter(b => b.currentPoints >= b.pointsRequired).length, label: 'Rozet' },
     { icon: Users, value: `${user.stats.volunteerHours} Saat`, label: 'Gönüllülük' },
     { icon: Heart, value: `${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`, label: 'Bağış' },

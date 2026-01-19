@@ -100,7 +100,7 @@ export default function NgoProfilePage() {
             </div>
         </div>
          <div className="text-sm text-center text-muted-foreground mt-4">
-            <span className="font-bold text-foreground">{ngo.stats.followers.toLocaleString() || 0}</span> kişi bu kuruluşu takip ederek destekliyor.
+            <span className="font-bold text-foreground">{ngo.stats.followers.toLocaleString('tr-TR') || 0}</span> kişi bu kuruluşu takip ederek destekliyor.
         </div>
          <div className="flex gap-2 mt-2">
             <Button className="flex-1">
@@ -159,12 +159,12 @@ export default function NgoProfilePage() {
              <Card>
                 <CardHeader><CardTitle className="text-lg">Topluluk İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
-                    <StatRow label="Takipçi Sayısı" value={ngo.stats.followers.toLocaleString()} />
-                    <StatRow label="Bağışçı Sayısı" value={ngo.stats.donors.toLocaleString()} />
-                    <StatRow label="Gönüllü Sayısı" value={ngo.stats.volunteers.toLocaleString()} />
-                    <StatRow label="Toplam Gönüllülük Saati" value={`${ngo.stats.volunteerHours.toLocaleString()} saat`} />
+                    <StatRow label="Takipçi Sayısı" value={ngo.stats.followers.toLocaleString('tr-TR')} />
+                    <StatRow label="Bağışçı Sayısı" value={ngo.stats.donors.toLocaleString('tr-TR')} />
+                    <StatRow label="Gönüllü Sayısı" value={ngo.stats.volunteers.toLocaleString('tr-TR')} />
+                    <StatRow label="Toplam Gönüllülük Saati" value={`${ngo.stats.volunteerHours.toLocaleString('tr-TR')} saat`} />
                     <StatRow label="Tamamlanan Proje Sayısı" value={ngo.stats.projects} />
-                    <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString()} />
+                    <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString('tr-TR')} />
                     <StatRow label="Şeffaflık Puanı" value={ngo.transparencyScore} />
                 </CardContent>
              </Card>
