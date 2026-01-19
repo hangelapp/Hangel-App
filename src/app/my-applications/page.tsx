@@ -57,7 +57,7 @@ export default function MyApplicationsPage() {
             <p className="text-muted-foreground text-sm">Başvurularınızın durumunu buradan takip edin.</p>
         </div>
         <Button asChild size="sm">
-           <Link href="#">
+           <Link href="/my-applications/new">
              <PlusCircle className="mr-2 h-4 w-4" />
             Yeni Başvuru
            </Link>

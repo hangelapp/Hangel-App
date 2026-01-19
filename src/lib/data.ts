@@ -2,7 +2,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign, Smartphone } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -210,6 +210,7 @@ export const ngos: NGO[] = [
             volunteerHours: 250000,
             projects: 150,
             peopleReached: 5000000,
+            totalDonation: 1500000,
         },
         transparencyScore: 92,
         about: "Türkiye Çöl Olmasın! TEMA Vakfı, 1992 yılından bu yana erozyon ve çölleşme tehlikesine karşı mücadele etmekte, doğal varlıklarımızı korumak için çalışmaktadır. Ağaçlandırma projeleri, eğitim programları ve savunuculuk faaliyetleri ile daha yeşil bir Türkiye için umut oluyoruz.",
@@ -238,6 +239,7 @@ export const ngos: NGO[] = [
             volunteerHours: 500000,
             projects: 500,
             peopleReached: 10000000,
+            totalDonation: 12500000,
         },
         transparencyScore: 95,
         about: "Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.",
@@ -267,6 +269,7 @@ export const ngos: NGO[] = [
             volunteerHours: 90000,
             projects: 80,
             peopleReached: 1000000,
+            totalDonation: 950000,
         },
         transparencyScore: 88,
         about: "Tohum Otizm Vakfı, otizmli çocukların erken tanısının konulması, özel eğitimi ile topluma kazandırılmasına öncülük edilmesi ve bunun yurt çapında yaygınlaştırılması amacıyla, kâr amacı gütmeyen bir sivil toplum kuruluşu olarak 2003 yılında kurulmuştur.",
@@ -602,6 +605,27 @@ export const helpTopics: HelpTopic[] = [
         subtopics: [
             { title: 'Alışverişle bağış nasıl çalışır?', link: '#', content: '...' },
             { title: 'Bağışlarımın STK\'ya ulaştığını nasıl anlarım?', link: '#', content: '...' },
+        ]
+    },
+    {
+        icon: 'shield-check', title: 'Güvenlik ve Gizlilik', slug: 'security', description: 'Hesap güvenliği, veri gizliliği ve şikayet prosedürleri.',
+        subtopics: [
+            { title: 'İki faktörlü kimlik doğrulama nasıl etkinleştirilir?', link: '#', content: '...' },
+            { title: 'Hesap bilgilerimin silinmesini nasıl talep edebilirim?', link: '#', content: '...' },
+        ]
+    },
+    {
+        icon: 'award', title: 'Rozetler ve Puanlar', slug: 'badges', description: 'Sosyal Etki Puanı kazanma ve rozetlerin anlamları.',
+        subtopics: [
+            { title: 'Sosyal Etki Puanı nasıl hesaplanır?', link: '#', content: '...' },
+            { title: 'Rozet seviyeleri nelerdir?', link: '#', content: '...' },
+        ]
+    },
+    {
+        icon: 'smartphone', title: 'Teknik Sorunlar', slug: 'technical', description: 'Uygulama hataları, yavaşlama ve diğer teknik konular.',
+        subtopics: [
+            { title: 'Uygulama açılmıyor, ne yapmalıyım?', link: '#', content: '...' },
+            { title: 'Bir hata mesajı alıyorum, ne anlama geliyor?', link: '#', content: '...' },
         ]
     },
 ];

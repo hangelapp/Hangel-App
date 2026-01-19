@@ -79,6 +79,7 @@ export type NGO = {
     volunteerHours: number;
     projects: number;
     peopleReached: number;
+    totalDonation: number;
   };
   transparencyScore: number;
   about: string;

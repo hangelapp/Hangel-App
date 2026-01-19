@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Droplets, Megaphone, Siren } from "lucide-react";
 import { Badge } from '../ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 const activeCalls = [
     { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '15 dakika önce' },
@@ -49,12 +50,49 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
             Acil bir durumu bildirin veya mevcut çağrılara yanıt verin. Lütfen sadece gerçekten acil durumlarda kullanın.
           </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="calls" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="calls">Acil Çağrılar</TabsTrigger>
-            <TabsTrigger value="disaster">Afet Bildirimi</TabsTrigger>
-            <TabsTrigger value="blood">Kan İhtiyacı</TabsTrigger>
+        <Tabs defaultValue="report" className="w-full mt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="report">Bildirimde Bulun</TabsTrigger>
+            <TabsTrigger value="calls">Çağrılar & Başvurular</TabsTrigger>
           </TabsList>
+          <TabsContent value="report" className="mt-4 space-y-4">
+             <Card>
+                <CardHeader>
+                    <CardTitle className='text-base flex items-center gap-2 text-destructive'><Siren className='h-5 w-5' /> Afet Bildirimi</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                     <Alert variant="destructive" className='text-xs'>
+                      <Siren className="h-4 w-4" />
+                      <AlertTitle>Uyarı!</AlertTitle>
+                      <AlertDescription>
+                        Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ile paylaşılacaktır.
+                      </AlertDescription>
+                    </Alert>
+                    <Button variant="destructive" className="w-full">
+                      <Megaphone className="mr-2 h-4 w-4" />
+                      Afet Bildiriminde Bulun
+                    </Button>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className='text-base flex items-center gap-2 text-destructive'><Droplets className='h-5 w-5' /> Kan İhtiyacı</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                    <Alert variant="destructive" className='text-xs'>
+                      <Droplets className="h-4 w-4" />
+                      <AlertTitle>Uyarı!</AlertTitle>
+                      <AlertDescription>
+                        Konum ve iletişim bilgileriniz potansiyel bağışçılarla paylaşılacaktır.
+                      </AlertDescription>
+                    </Alert>
+                     <Button variant="destructive" className="w-full">
+                        <Droplets className="mr-2 h-4 w-4" />
+                        Kan İhtiyacı Bildir
+                    </Button>
+                </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="calls" className="mt-4">
               <Tabs defaultValue="active" className="w-full">
                   <TabsList className='grid w-full grid-cols-2'>
@@ -75,6 +113,7 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                               <Button size="sm" className="mt-2 w-full">Yanıt Ver</Button>
                           </div>
                       ))}
+                        {activeCalls.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Şu anda aktif bir acil çağrı bulunmuyor.</p>}
                   </TabsContent>
                    <TabsContent value="history" className="mt-4 space-y-3">
                       {pastApplications.map(app => (
@@ -87,34 +126,9 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                                <Badge variant={app.status === 'Başvuruldu' ? 'default' : 'secondary'}>{app.status}</Badge>
                            </div>
                       ))}
+                        {pastApplications.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Geçmişte bir acil durum başvurunuz bulunmuyor.</p>}
                   </TabsContent>
               </Tabs>
-          </TabsContent>
-          <TabsContent value="disaster" className="mt-4 text-center space-y-4">
-            <Alert variant="destructive">
-              <Siren className="h-4 w-4" />
-              <AlertTitle>Uyarı!</AlertTitle>
-              <AlertDescription>
-                Afet bildirimi yaptığınızda konum, iletişim ve kan grubu bilgileriniz hangel iletişim merkezi ve ilgili kamu kuruluşları ile paylaşılacaktır.
-              </AlertDescription>
-            </Alert>
-            <Button variant="destructive" className="w-full">
-              <Megaphone className="mr-2 h-4 w-4" />
-              Afet Bildiriminde Bulun
-            </Button>
-          </TabsContent>
-          <TabsContent value="blood" className="mt-4 text-center space-y-4">
-            <Alert variant="destructive">
-              <Droplets className="h-4 w-4" />
-              <AlertTitle>Uyarı!</AlertTitle>
-              <AlertDescription>
-                Kan ihtiyacı çağrısı yaptığınızda konum ve iletişim bilgileriniz ilgili kurumlarla ve potansiyel bağışçılarla paylaşılacaktır.
-              </AlertDescription>
-            </Alert>
-             <Button variant="destructive" className="w-full">
-                <Droplets className="mr-2 h-4 w-4" />
-                Kan İhtiyacı Bildir
-            </Button>
           </TabsContent>
         </Tabs>
       </DialogContent>

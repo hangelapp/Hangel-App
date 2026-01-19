@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye } from 'lucide-react';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -209,7 +209,7 @@ export default function NgoProfilePage() {
                     <CardTitle className="text-lg">Özet İstatistikler</CardTitle>
                 </CardHeader>
                  <CardContent className="grid grid-cols-3 gap-4 text-center">
-                    <div><p className="font-bold text-lg">{ngo.stats.followers.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Takipçi</p></div>
+                    <div><p className="font-bold text-lg">{ngo.stats.totalDonation.toLocaleString('tr-TR')} ₺</p><p className="text-sm text-muted-foreground">Toplam Bağış</p></div>
                     <div><p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Bağışçı</p></div>
                     <div><p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Gönüllü</p></div>
                  </CardContent>
@@ -218,13 +218,16 @@ export default function NgoProfilePage() {
                  <CardHeader><CardTitle className="text-lg">Gönüllülük İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
                      <StatRow label="Toplam Gönüllülük Saati" value={`${ngo.stats.volunteerHours.toLocaleString('tr-TR')} saat`} />
+                     <StatRow label="Toplam Gönüllü Sayısı" value={ngo.stats.volunteers.toLocaleString('tr-TR')} />
                      <StatRow label="Tamamlanan Proje Sayısı" value={ngo.stats.projects} />
                  </CardContent>
              </Card>
              <Card>
                  <CardHeader><CardTitle className="text-lg">Bağış İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
-                     <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString('tr-TR')} />
+                    <StatRow label="Toplam Bağış Tutarı" value={`${ngo.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
+                    <StatRow label="Toplam Bağışçı Sayısı" value={ngo.stats.donors.toLocaleString('tr-TR')} />
+                    <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString('tr-TR')} />
                  </CardContent>
              </Card>
         </TabsContent>
@@ -242,13 +245,18 @@ export default function NgoProfilePage() {
                     <div className="pt-4 space-y-3">
                         <h4 className="font-semibold text-sm">Karşılanan Kriterler</h4>
                         {transparencyCriteria.map(item => (
-                            <div key={item.name} className="flex items-center text-sm">
-                                {item.completed ? (
-                                    <CheckCircle className="h-4 w-4 mr-2 text-green-500"/>
-                                ) : (
-                                    <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground"/>
-                                )}
-                                <span className={!item.completed ? 'text-muted-foreground' : ''}>{item.name}</span>
+                            <div key={item.name} className="flex items-center justify-between text-sm p-3 rounded-lg bg-muted/50">
+                                <div className='flex items-center'>
+                                     {item.completed ? (
+                                        <CheckCircle className="h-4 w-4 mr-2 text-green-500"/>
+                                    ) : (
+                                        <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground"/>
+                                    )}
+                                    <span className={!item.completed ? 'text-muted-foreground' : ''}>{item.name}</span>
+                                </div>
+                                <Button size="icon" variant="ghost" className="h-8 w-8">
+                                    <Eye className="h-4 w-4" />
+                                </Button>
                             </div>
                         ))}
                     </div>
