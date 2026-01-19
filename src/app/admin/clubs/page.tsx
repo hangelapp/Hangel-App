@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Users, BrainCircuit } from 'lucide-react';
+import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { studentClubs } from '@/lib/data';
@@ -37,9 +37,33 @@ const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
     </Card>
 );
 
+const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
+    <Card key={event.id}>
+        <CardHeader>
+             <Link href={`/admin/clubs/profile/${event.clubId}`} className="text-sm text-muted-foreground hover:underline">{event.club}</Link>
+            <CardTitle className="text-base">{event.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+            <div className="flex items-center text-sm text-muted-foreground">
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>{event.date}</span>
+            </div>
+        </CardContent>
+        <CardFooter>
+            <Button variant="secondary" className="w-full">Detayları Gör</Button>
+        </CardFooter>
+    </Card>
+);
+
 export default function StudentClubsPage() {
   const [clubs, setClubs] = useState(studentClubs);
   const [activeSubTab, setActiveSubTab] = useState('all');
+
+   const sampleEvents = [
+        { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
+        { id: '2', name: 'Sonbahar Konseri', club: 'Boğaziçi Üniversitesi Müzik Kulübü', clubId: '2', date: '15 Kasım 2024' },
+        { id: '3', name: 'Fotoğraf Sergisi: "İstanbul\'un Renkleri"', club: 'Galatasaray Lisesi Sanat Kulübü', clubId: '3', date: '1-7 Aralık 2024' }
+    ];
 
   useEffect(() => {
     // This is to avoid hydration mismatch error
@@ -113,7 +137,7 @@ export default function StudentClubsPage() {
             <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
-                    placeholder="Kulüp ara..."
+                    placeholder="Kulüp veya etkinlik ara..."
                     className="pl-10 h-11"
                 />
             </div>
@@ -124,7 +148,26 @@ export default function StudentClubsPage() {
                 <ArrowDownUp className="h-5 w-5" />
             </Button>
       </div>
-      <SubTabs />
+
+       <Tabs defaultValue="clubs" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="clubs">Kulüpler</TabsTrigger>
+            <TabsTrigger value="events">Etkinlikler</TabsTrigger>
+        </TabsList>
+        <TabsContent value="clubs" className="mt-4">
+            <SubTabs />
+        </TabsContent>
+        <TabsContent value="events" className="mt-4">
+            <div className='space-y-4'>
+                {sampleEvents.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                ))}
+                 <div className="text-center text-muted-foreground pt-8">
+                    <p>Yakında daha fazla etkinlik burada olacak.</p>
+                </div>
+            </div>
+        </TabsContent>
+    </Tabs>
     </div>
   );
 }
