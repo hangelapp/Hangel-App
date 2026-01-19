@@ -3,13 +3,15 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle } from 'lucide-react';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -74,6 +76,15 @@ export default function NgoProfilePage() {
   
   const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
 
+  const transparencyCriteria = [
+      { name: 'Faaliyet Belgesi', completed: true },
+      { name: 'Tüzük / Vakıf Senedi', completed: true },
+      { name: 'Yıllık Faaliyet Raporu', completed: true },
+      { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
+      { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
+      { name: 'Web Sitesi', completed: true },
+  ];
+
   return (
     <div className="animate-in fade-in-0">
       <div className="relative h-40 w-full bg-muted">
@@ -82,7 +93,14 @@ export default function NgoProfilePage() {
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full">
             <ArrowLeft className="h-5 w-5" />
         </Button>
-         <div className="absolute top-4 right-4">
+         <div className="absolute top-4 right-4 flex items-center gap-2">
+            {ngo.economicEnterpriseUrl && (
+                <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50">
+                    <Link href={ngo.economicEnterpriseUrl}>
+                        <Store className="h-4 w-4" />
+                    </Link>
+                </Button>
+            )}
             <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} />
         </div>
       </div>
@@ -104,19 +122,20 @@ export default function NgoProfilePage() {
         </div>
          <div className="flex gap-2 mt-2">
             <Button className="flex-1">
-                 Bağış Yap
+                 Bağışçı Ol
             </Button>
             <Button variant="outline" className="flex-1">
-                <Heart className="mr-2 h-4 w-4" /> Takip Et
+                <Heart className="mr-2 h-4 w-4" /> Gönüllü Ol
             </Button>
         </div>
       </div>
 
       <Tabs defaultValue="about" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 px-2">
+        <TabsList className="grid w-full grid-cols-5 px-2">
             <TabsTrigger value="about">Hakkında</TabsTrigger>
             <TabsTrigger value="opportunities">Fırsatlar</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>
+            <TabsTrigger value="transparency">Şeffaflık</TabsTrigger>
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
         </TabsList>
         <TabsContent value="about" className="p-4 space-y-4">
@@ -133,17 +152,46 @@ export default function NgoProfilePage() {
                     </div>
                 </CardContent>
             </Card>
-            {ngo.economicEnterpriseUrl && (
-                 <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Building className="h-5 w-5 text-primary"/> İktisadi İşletme</CardTitle></CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">Bu kuruluşun ürünlerini satın alarak doğrudan destek olabilirsiniz.</p>
-                        <Button asChild className="w-full">
-                            <Link href={ngo.economicEnterpriseUrl}>İktisadi İşletmeyi Ziyaret Et</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
+
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Detaylar</CardTitle></CardHeader>
+                <CardContent className="text-sm space-y-4">
+                    <div>
+                        <h4 className="font-semibold mb-2">Faydalanıcı Gruplar</h4>
+                        <div className="flex flex-wrap gap-2">
+                            {ngo.beneficiaryGroups.map(group => <Badge key={group} variant="outline">{group}</Badge>)}
+                        </div>
+                    </div>
+                    <div className="pt-4 border-t">
+                        <h4 className="font-semibold mb-2">Desteklenen SKA'lar</h4>
+                         <div className="flex flex-wrap gap-2">
+                            {ngo.supportedSDGs.map(sdg => <Badge key={sdg} variant="outline">{sdg}</Badge>)}
+                        </div>
+                    </div>
+                     <div className="pt-4 border-t">
+                        <h4 className="font-semibold mb-2">Üye Olunan Platformlar</h4>
+                         <div className="flex flex-wrap gap-2">
+                            {ngo.memberOf.map(platform => <Badge key={platform} variant="outline">{platform}</Badge>)}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader><CardTitle className="text-lg">İletişim</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                    <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.email}</span></div>
+                    <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.phone}</span></div>
+                    <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.website}</span></div>
+                    <Separator className="my-4" />
+                    <div className="flex gap-4">
+                        <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><Twitter className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                        <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                        <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer"><Facebook className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                        <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer"><Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                    </div>
+                </CardContent>
+            </Card>
         </TabsContent>
         <TabsContent value="opportunities" className="p-4 space-y-4">
              {ngo.opportunities && ngo.opportunities.length > 0 ? (
@@ -156,18 +204,56 @@ export default function NgoProfilePage() {
              )}
         </TabsContent>
         <TabsContent value="stats" className="p-4 space-y-4">
-             <Card>
-                <CardHeader><CardTitle className="text-lg">Topluluk İstatistikleri</CardTitle></CardHeader>
-                 <CardContent className="divide-y">
-                    <StatRow label="Takipçi Sayısı" value={ngo.stats.followers.toLocaleString('tr-TR')} />
-                    <StatRow label="Bağışçı Sayısı" value={ngo.stats.donors.toLocaleString('tr-TR')} />
-                    <StatRow label="Gönüllü Sayısı" value={ngo.stats.volunteers.toLocaleString('tr-TR')} />
-                    <StatRow label="Toplam Gönüllülük Saati" value={`${ngo.stats.volunteerHours.toLocaleString('tr-TR')} saat`} />
-                    <StatRow label="Tamamlanan Proje Sayısı" value={ngo.stats.projects} />
-                    <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString('tr-TR')} />
-                    <StatRow label="Şeffaflık Puanı" value={ngo.transparencyScore} />
-                </CardContent>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">Özet İstatistikler</CardTitle>
+                </CardHeader>
+                 <CardContent className="grid grid-cols-3 gap-4 text-center">
+                    <div><p className="font-bold text-lg">{ngo.stats.followers.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Takipçi</p></div>
+                    <div><p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Bağışçı</p></div>
+                    <div><p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Gönüllü</p></div>
+                 </CardContent>
              </Card>
+             <Card>
+                 <CardHeader><CardTitle className="text-lg">Gönüllülük İstatistikleri</CardTitle></CardHeader>
+                 <CardContent className="divide-y">
+                     <StatRow label="Toplam Gönüllülük Saati" value={`${ngo.stats.volunteerHours.toLocaleString('tr-TR')} saat`} />
+                     <StatRow label="Tamamlanan Proje Sayısı" value={ngo.stats.projects} />
+                 </CardContent>
+             </Card>
+             <Card>
+                 <CardHeader><CardTitle className="text-lg">Bağış İstatistikleri</CardTitle></CardHeader>
+                 <CardContent className="divide-y">
+                     <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString('tr-TR')} />
+                 </CardContent>
+             </Card>
+        </TabsContent>
+        <TabsContent value="transparency" className="p-4 space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/> Şeffaflık Endeksi</CardTitle>
+                    <CardDescription>Bu puan, kuruluşun platformumuzdaki şeffaflık kriterlerini ne ölçüde karşıladığını gösterir.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div>
+                        <p className="text-3xl font-bold text-primary">{ngo.transparencyScore} / 100</p>
+                        <Progress value={ngo.transparencyScore} className="mt-2 h-2" />
+                    </div>
+                    <div className="pt-4 space-y-3">
+                        <h4 className="font-semibold text-sm">Karşılanan Kriterler</h4>
+                        {transparencyCriteria.map(item => (
+                            <div key={item.name} className="flex items-center text-sm">
+                                {item.completed ? (
+                                    <CheckCircle className="h-4 w-4 mr-2 text-green-500"/>
+                                ) : (
+                                    <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground"/>
+                                )}
+                                <span className={!item.completed ? 'text-muted-foreground' : ''}>{item.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
         </TabsContent>
         <TabsContent value="posts" className="p-4 space-y-4">
             {ngo.posts && ngo.posts.length > 0 ? (

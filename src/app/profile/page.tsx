@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -133,10 +133,17 @@ export default function ProfilePage() {
                         <CardHeader><CardTitle className='text-lg'>Gönüllülük Bilgileri</CardTitle></CardHeader>
                         <CardContent className="divide-y">
                             <InfoRow icon={Sparkles} label="İlgi Alanları" value={user.volunteerInfo.interests.join(', ')} />
-                             <InfoRow icon={Brain} label="Yetkinlikler" value={user.volunteerInfo.skills.join(', ')} />
-                            <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education[0]?.school} />
+                            <InfoRow icon={Brain} label="Profesyonel Yetkinlikler" value={user.volunteerInfo.skills.join(', ')} />
+                            <InfoRow icon={Users} label="Sosyal Yetkinlikler" value={user.volunteerInfo.dailySkills.join(', ')} />
+                            <InfoRow icon={Cpu} label="Bildiği Programlar" value={user.volunteerInfo.programs.join(', ')} />
+                            <InfoRow icon={Languages} label="Diller" value={user.volunteerInfo.languages.join(', ')} />
+                            <InfoRow icon={FileText} label="Lisanslar" value={user.volunteerInfo.licenses.join(', ')} />
+                            <InfoRow icon={FileText} label="Belgeler" value={user.volunteerInfo.documents.join(', ')} />
+                            <InfoRow icon={Plane} label="Yurtiçi Seyahat" value={user.volunteerInfo.travelInfo.domesticObstacle ? 'Engelli' : 'Engel Yok'} />
+                            <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={user.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
+                            <InfoRow icon={Landmark} label="Vizeler" value={user.volunteerInfo.travelInfo.visas.join(', ')} />
+                            <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education.map(e => e.school).join('; ')} />
                             <InfoRow icon={Briefcase} label="Meslek" value={user.volunteerInfo.profession} />
-                             <InfoRow icon={Globe} label="Diller" value={user.volunteerInfo.languages.join(', ')} />
                         </CardContent>
                     </Card>
                     <Card>
