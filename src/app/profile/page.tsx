@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering } from '@/lib/data';
 import {
@@ -181,4 +181,3 @@ export default function ProfilePage() {
             </Tabs>
         </div>
     );
-}
