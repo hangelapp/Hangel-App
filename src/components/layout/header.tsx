@@ -21,6 +21,8 @@ const mainMenuItems: SideNavItem[] = [
   { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
   { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
   { href: '/my-badges', label: 'Rozetler', icon: 'award' },
+  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
+  { href: '/timeline', label: 'Akış', icon: 'layout-grid' },
 ];
 
 const userMenuItems: SideNavItem[] = [
@@ -139,7 +141,7 @@ export default function AppHeader() {
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
              <Link href="/market" passHref className="">
-                <span className="text-xl font-bold" style={{ color: '#f34723' }}>hangel</span>
+                <span className="text-xl font-bold hangel-logo-text">hangel</span>
             </Link>
           </div>
 
