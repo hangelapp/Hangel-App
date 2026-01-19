@@ -8,7 +8,9 @@ import type { SideNavItem } from '@/lib/types';
 
 
 const mainMenuItems: SideNavItem[] = [
+  { href: '/timeline', label: 'Akış', icon: 'layout-grid' },
   { href: '/market', label: 'Markalar', icon: 'store' },
+  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
   { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },

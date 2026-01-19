@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, QrCode, UserCircle, LayoutGrid } from "lucide-react";
+import { Store, QrCode, UserCircle, HeartHandshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/market", icon: Store, label: "Markalar" },
   { href: "/qr-payment", icon: QrCode, label: "QR Öde" },
   { href: "/profile", icon: UserCircle, label: "Profil" },
-  { href: "/timeline", icon: LayoutGrid, label: "Akış" },
+  { href: "/volunteering", icon: HeartHandshake, label: "Gönüllülük" },
 ];
 
 export default function AppBottomNav() {

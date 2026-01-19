@@ -11,9 +11,12 @@ import { EmergencyDialog } from '@/components/shared/emergency-dialog';
 import { Separator } from '../ui/separator';
 import { usePathname } from 'next/navigation';
 import { user } from '@/lib/data';
+import { SideNavItem } from '@/lib/types';
 
 const mainMenuItems: SideNavItem[] = [
+  { href: '/timeline', label: 'Akış', icon: 'layout-grid' },
   { href: '/market', label: 'Markalar', icon: 'store' },
+  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
   { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
