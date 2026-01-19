@@ -8,7 +8,6 @@ import type { SideNavItem } from '@/lib/types';
 
 
 const mainMenuItems: SideNavItem[] = [
-  { href: '/timeline', label: 'Akış', icon: 'layout-grid' },
   { href: '/market', label: 'Markalar', icon: 'store' },
   { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
@@ -19,7 +18,6 @@ const mainMenuItems: SideNavItem[] = [
 ];
 
 const userMenuItems: SideNavItem[] = [
-  { href: '/profile', label: 'Profilim', icon: 'user' },
   { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
   { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
 ];

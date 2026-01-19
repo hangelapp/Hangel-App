@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, ShieldAlert,
+  Menu, Bell, Siren,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -153,7 +153,7 @@ export default function AppHeader() {
           <div className="flex items-center gap-1">
             <EmergencyDialog>
               <Button variant="ghost" size="icon">
-                <ShieldAlert className="h-5 w-5 text-destructive" />
+                <Siren className="h-5 w-5 text-destructive" />
               </Button>
             </EmergencyDialog>
              <Link href="/notifications" passHref>
