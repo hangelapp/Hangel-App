@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Menu, Bell, ShieldAlert,
@@ -108,8 +108,13 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
 
 export default function AppHeader() {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   if (isAuthPage) {
     return null;
@@ -141,7 +146,7 @@ export default function AppHeader() {
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
              <Link href="/market" passHref className="">
-                <span className="text-xl font-bold hangel-logo-text">hangel</span>
+                <span className="text-xl font-bold" style={{ color: isMounted ? '#f34723' : 'inherit' }}>hangel</span>
             </Link>
           </div>
 

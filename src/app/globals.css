@@ -74,7 +74,4 @@
     @apply bg-secondary text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  .hangel-logo-text {
-    color: #f34723;
-  }
 }
