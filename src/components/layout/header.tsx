@@ -15,16 +15,15 @@ import { usePathname } from 'next/navigation';
 import { user } from '@/lib/data';
 
 const sideMenuItems = [
-    { href: '/timeline', label: 'Zaman Tüneli' },
-    { href: '/market', label: 'Market' },
-    { href: '/volunteering', label: 'Gönüllülük' },
+    { href: '/market', label: 'Markalar' },
+    { href: '/ngos', label: 'STK\'lar' },
+    { href: '/admin/clubs', label: 'Öğrenci Kulüpleri' },
     { href: '/my-donations', label: 'Bağışlarım' },
     { href: '/my-applications', label: 'Başvurularım' },
     { href: '/my-badges', label: 'Rozetler ve Sertifikalar' },
 ];
 
 const secondaryMenuItems = [
-  { href: '/ngos', label: 'STK\'lar' },
   { href: '/admin', label: 'Yönetim Paneli' },
   { href: '/invite', label: 'Arkadaş Davet Et' },
 ];
@@ -136,8 +135,8 @@ export default function AppHeader() {
           </div>
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-             <Link href="/timeline" passHref className="">
-                <HangelLogo className="h-8 w-8 text-primary" />
+             <Link href="/market" passHref className="">
+                <span className="text-xl font-bold text-foreground">hangel</span>
             </Link>
           </div>
 

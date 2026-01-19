@@ -8,13 +8,12 @@ import type { SideNavItem } from '@/lib/types';
 
 
 const mainMenuItems: SideNavItem[] = [
-  { href: '/timeline', label: 'Zaman Tüneli', icon: 'layout-grid' },
-  { href: '/market', label: 'Market', icon: 'store' },
-  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
+  { href: '/market', label: 'Markalar', icon: 'store' },
+  { href: '/ngos', label: 'STK\'lar', icon: 'building' },
+  { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
   { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
   { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
   { href: '/my-badges', label: 'Rozetler', icon: 'award' },
-  { href: '/ngos', label: 'STK\'lar', icon: 'building' },
 ];
 
 const userMenuItems: SideNavItem[] = [
