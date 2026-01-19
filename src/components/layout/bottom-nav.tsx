@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, QrCode, UserCircle, HeartHandshake } from "lucide-react";
+import { Store, QrCode, UserCircle, HeartHandshake, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/market", icon: Store, label: "Markalar" },
-  { href: "/qr-payment", icon: QrCode, label: "QR Öde" },
-  { href: "/profile", icon: UserCircle, label: "Profil" },
   { href: "/volunteering", icon: HeartHandshake, label: "Gönüllülük" },
+  { href: "/qr-payment", icon: QrCode, label: "QR Öde" },
+  { href: "/timeline", icon: LayoutGrid, label: "Akış" },
+  { href: "/profile", icon: UserCircle, label: "Profil" },
 ];
 
 export default function AppBottomNav() {
@@ -39,7 +40,7 @@ export default function AppBottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/70 backdrop-blur-xl lg:hidden">
-      <div className="mx-auto grid h-16 max-w-md grid-cols-4 items-center px-2 pb-2 pt-1">
+      <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-2 pb-2 pt-1">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const Icon = item.icon;
