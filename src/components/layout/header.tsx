@@ -12,11 +12,10 @@ import { Separator } from '../ui/separator';
 import { usePathname } from 'next/navigation';
 import { user } from '@/lib/data';
 import { SideNavItem } from '@/lib/types';
+import { HangelLogo } from '../icons';
 
 const mainMenuItems: SideNavItem[] = [
-  { href: '/timeline', label: 'Akış', icon: 'layout-grid' },
   { href: '/market', label: 'Markalar', icon: 'store' },
-  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
   { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
@@ -140,7 +139,7 @@ export default function AppHeader() {
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
              <Link href="/market" passHref className="">
-                <span className="text-xl font-bold text-primary">hangel</span>
+                <span className="text-xl font-bold" style={{ color: '#f34723' }}>hangel</span>
             </Link>
           </div>
 
