@@ -1,37 +1,38 @@
-
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, ShieldAlert, Settings,
+  Menu, Bell, ShieldAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { EmergencyDialog } from '@/components/shared/emergency-dialog';
 import { Separator } from '../ui/separator';
 import { usePathname } from 'next/navigation';
 import { user } from '@/lib/data';
 
-const sideMenuItems = [
-    { href: '/market', label: 'Markalar' },
-    { href: '/ngos', label: 'STK\'lar' },
-    { href: '/admin/clubs', label: 'Öğrenci Kulüpleri' },
-    { href: '/my-donations', label: 'Bağışlarım' },
-    { href: '/my-applications', label: 'Başvurularım' },
-    { href: '/my-badges', label: 'Rozetler ve Sertifikalar' },
+const mainMenuItems: SideNavItem[] = [
+  { href: '/market', label: 'Markalar', icon: 'store' },
+  { href: '/ngos', label: 'STK\'lar', icon: 'building' },
+  { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
+  { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
+  { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
+  { href: '/my-badges', label: 'Rozetler', icon: 'award' },
 ];
 
-const secondaryMenuItems = [
-  { href: '/admin', label: 'Yönetim Paneli' },
-  { href: '/invite', label: 'Arkadaş Davet Et' },
+const userMenuItems: SideNavItem[] = [
+  { href: '/profile', label: 'Profilim', icon: 'user' },
+  { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
+  { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
 ];
 
-const utilityMenuItems = [
-    { href: '/settings', label: 'Ayarlar' },
-    { href: '/support', label: 'Destek' },
+const secondaryMenuItems: SideNavItem[] = [
+  { href: '/settings', label: 'Ayarlar', icon: 'settings' },
+  { href: '/about', label: 'Hakkımızda', icon: 'info' },
+  { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
+
 
 function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) {
   return (
@@ -49,7 +50,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
         <div className="flex-1 overflow-y-auto">
           <nav className="py-4">
             <ul>
-              {sideMenuItems.map((item) => (
+              {mainMenuItems.map((item) => (
                 <li key={item.label}>
                     <Link href={item.href} passHref>
                         <SheetClose asChild>
@@ -63,7 +64,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
             </ul>
             <Separator className="my-2" />
             <ul>
-              {secondaryMenuItems.map((item) => (
+              {userMenuItems.map((item) => (
                 <li key={item.label}>
                   <Link href={item.href} passHref>
                     <SheetClose asChild>
@@ -77,7 +78,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
             </ul>
             <Separator className="my-2" />
              <ul>
-              {utilityMenuItems.map((item) => (
+              {secondaryMenuItems.map((item) => (
                 <li key={item.label}>
                   <Link href={item.href} passHref>
                     <SheetClose asChild>
@@ -149,11 +150,6 @@ export default function AppHeader() {
              <Link href="/notifications" passHref>
                 <Button variant="ghost" size="icon">
                     <Bell className="h-5 w-5" />
-                </Button>
-            </Link>
-            <Link href="/settings" passHref>
-                <Button variant="ghost" size="icon">
-                    <Settings className="h-5 w-5" />
                 </Button>
             </Link>
           </div>

@@ -62,6 +62,13 @@ export default function ProfilePage() {
                  </div>
                  <p className="text-xs font-semibold mt-2">{badge.level}</p>
                  <p className="text-xs text-muted-foreground">{badge.name}</p>
+                 {isEarned ? (
+                    <p className="text-xs font-semibold text-green-600 mt-1">Kazanıldı!</p>
+                ) : (
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {badge.currentPoints}/{badge.pointsRequired} Puan
+                    </p>
+                )}
             </div>
         )
     }
@@ -77,94 +84,14 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 px-2">
-                    <TabsTrigger value="overview">Genel Bakış</TabsTrigger>
+            <Tabs defaultValue="stats" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 px-2">
+                    <TabsTrigger value="stats">İstatistikler</TabsTrigger>
                     <TabsTrigger value="about">Hakkında</TabsTrigger>
                     <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
-                    <TabsTrigger value="stats">İstatistikler</TabsTrigger>
                     <TabsTrigger value="badges">Rozetler</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="overview" className="p-4">
-                    <Card>
-                        <CardContent className="p-4 grid grid-cols-3 gap-2">
-                            {impactStats.map(stat => <StatCard key={stat.label} {...stat} />)}
-                        </CardContent>
-                    </Card>
-                    <div className='mt-6 space-y-2'>
-                        <Link href="/my-donations" className='block p-4 bg-card rounded-xl text-left hover:bg-accent transition-colors'>
-                            <div className='flex items-center justify-between'>
-                                <div className='flex items-center gap-4'>
-                                    <div className='p-2 bg-primary/10 rounded-lg'><HandCoins className="h-5 w-5 text-primary" /></div>
-                                    <div>
-                                        <p className='font-semibold'>Bağışlarım</p>
-                                        <p className='text-muted-foreground text-sm'>{user.stats.donationCount} İşlem</p>
-                                    </div>
-                                </div>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                        </Link>
-                         <Link href="/my-applications" className='block p-4 bg-card rounded-xl text-left hover:bg-accent transition-colors'>
-                            <div className='flex items-center justify-between'>
-                                <div className='flex items-center gap-4'>
-                                    <div className='p-2 bg-primary/10 rounded-lg'><FileText className="h-5 w-5 text-primary" /></div>
-                                    <div>
-                                        <p className='font-semibold'>Başvurularım</p>
-                                        <p className='text-muted-foreground text-sm'>3 Beklemede</p>
-                                    </div>
-                                </div>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                        </Link>
-                         <Link href="/invite" className='block p-4 bg-card rounded-xl text-left hover:bg-accent transition-colors'>
-                             <div className='flex items-center justify-between'>
-                                <div className='flex items-center gap-4'>
-                                    <div className='p-2 bg-primary/10 rounded-lg'><Heart className="h-5 w-5 text-primary" /></div>
-                                    <div>
-                                        <p className='font-semibold'>Arkadaşlarını Davet Et</p>
-                                        <p className='text-muted-foreground text-sm'>İyiliği paylaş, puan kazan</p>
-                                    </div>
-                                </div>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                        </Link>
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="about" className="p-4 space-y-4">
-                     <Card>
-                        <CardHeader><CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle></CardHeader>
-                        <CardContent className="divide-y">
-                            <InfoRow icon={Mail} label="E-posta" value={user.personalInfo.email} />
-                            <InfoRow icon={Phone} label="Telefon" value={user.personalInfo.phone} />
-                            <InfoRow icon={Cake} label="Doğum Tarihi" value={format(new Date(user.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr })} />
-                            <InfoRow icon={HeartPulse} label="Kan Grubu" value={user.personalInfo.bloodType} />
-                            <InfoRow icon={MapPin} label="Adres" value={`${user.personalInfo.address.district}, ${user.personalInfo.address.city}`} />
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader><CardTitle className='text-lg'>Gönüllülük Bilgileri</CardTitle></CardHeader>
-                        <CardContent className="divide-y">
-                            <InfoRow icon={Sparkles} label="İlgi Alanları" value={user.volunteerInfo.interests.join(', ')} />
-                             <InfoRow icon={Brain} label="Yetkinlikler" value={user.volunteerInfo.skills.join(', ')} />
-                            <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education[0]?.school} />
-                            <InfoRow icon={Briefcase} label="Meslek" value={user.volunteerInfo.profession} />
-                             <InfoRow icon={Globe} label="Diller" value={user.volunteerInfo.languages.join(', ')} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="volunteering" className="p-4 space-y-4">
-                    <Card>
-                         <CardHeader><CardTitle className='text-lg'>Geçmiş Gönüllülükler</CardTitle></CardHeader>
-                         <CardContent className='space-y-4'>
-                             {pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)}
-                             <Button variant="secondary" className='w-full'>Tüm Gönüllülük Geçmişini Gör</Button>
-                         </CardContent>
-                    </Card>
-                </TabsContent>
-
                 <TabsContent value="stats" className="p-4 space-y-4">
                     <Card>
                         <CardHeader><CardTitle className='text-lg flex items-center gap-2'><BarChart3 className='h-5 w-5 text-primary' />Gönüllülük İstatistikleri</CardTitle></CardHeader>
@@ -185,6 +112,39 @@ export default function ProfilePage() {
                             <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
                             <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
                         </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="about" className="p-4 space-y-4">
+                     <Card>
+                        <CardHeader><CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle></CardHeader>
+                        <CardContent className="divide-y">
+                            <InfoRow icon={Mail} label="E-posta" value={user.personalInfo.email} />
+                            <InfoRow icon={Phone} label="Telefon" value={user.personalInfo.phone} />
+                            <InfoRow icon={Cake} label="Doğum Tarihi" value={format(new Date(user.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr })} />
+                            <InfoRow icon={HeartPulse} label="Kan Grubu" value={user.personalInfo.bloodType} />
+                            <InfoRow icon={MapPin} label="Adres" value={`${user.personalInfo.address.district}, ${user.personalInfo.address.city}`} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="volunteering" className="p-4 space-y-4">
+                     <Card>
+                        <CardHeader><CardTitle className='text-lg'>Gönüllülük Bilgileri</CardTitle></CardHeader>
+                        <CardContent className="divide-y">
+                            <InfoRow icon={Sparkles} label="İlgi Alanları" value={user.volunteerInfo.interests.join(', ')} />
+                             <InfoRow icon={Brain} label="Yetkinlikler" value={user.volunteerInfo.skills.join(', ')} />
+                            <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education[0]?.school} />
+                            <InfoRow icon={Briefcase} label="Meslek" value={user.volunteerInfo.profession} />
+                             <InfoRow icon={Globe} label="Diller" value={user.volunteerInfo.languages.join(', ')} />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                         <CardHeader><CardTitle className='text-lg'>Geçmiş Gönüllülükler</CardTitle></CardHeader>
+                         <CardContent className='space-y-4'>
+                             {pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)}
+                             <Button variant="secondary" className='w-full'>Tüm Gönüllülük Geçmişini Gör</Button>
+                         </CardContent>
                     </Card>
                 </TabsContent>
                 
