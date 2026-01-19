@@ -122,7 +122,7 @@ export default function AppHeader() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-background/70 backdrop-blur-xl lg:left-64">
+      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64">
         <div className="flex h-12 items-center justify-between px-2">
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
@@ -147,6 +147,11 @@ export default function AppHeader() {
                 <ShieldAlert className="h-5 w-5 text-destructive" />
               </Button>
             </EmergencyDialog>
+             <Link href="/notifications" passHref>
+                <Button variant="ghost" size="icon">
+                    <Bell className="h-5 w-5" />
+                </Button>
+            </Link>
             <Link href="/settings" passHref>
                 <Button variant="ghost" size="icon">
                     <Settings className="h-5 w-5" />

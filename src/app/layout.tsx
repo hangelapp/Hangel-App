@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="tr" className="" style={{}} suppressHydrationWarning>
       <body className="antialiased">
-        <div className="relative mx-auto flex min-h-screen w-full flex-col bg-secondary">
+        <div className="relative mx-auto flex min-h-screen w-full flex-col bg-background">
           <SideNav 
             mainItems={mainMenuItems} 
             userItems={userMenuItems}
