@@ -7,16 +7,16 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 const contracts = [
-    { title: 'Kullanıcı Sözleşmesi', href: '#', external: false },
-    { title: 'Kuruluş Sözleşmesi', href: '#', external: false },
-    { title: 'Gönüllülük Sözleşmesi', href: '#', external: false },
-    { title: 'Gizlilik Politikası', href: '#', external: false },
-    { title: 'KVKK Aydınlatma Metni', href: '#', external: false },
-    { title: 'AB Kişisel Veri Koruma Kanunu (GDPR)', href: '#', external: false },
-    { title: 'Çerez Politikası', href: '#', external: false },
-    { title: 'Sosyal Etki Politikası', href: '#', external: false },
-    { title: 'Gelir Fazlası Dağıtım Politikası', href: '#', external: false },
-    { title: 'Açık Açık Sosyal Girişim Beyanı', href: 'https://drive.google.com/file/d/1KPWRqn2Ej-7VbmQnnMoMZtTM_y76MEk6/view', external: true },
+    { title: 'Kullanıcı Sözleşmesi', slug: 'kullanici-sozlesmesi' },
+    { title: 'Kuruluş Sözleşmesi', slug: 'kurulus-sozlesmesi' },
+    { title: 'Gönüllülük Sözleşmesi', slug: 'gonulluluk-sozlesmesi' },
+    { title: 'Gizlilik Politikası', slug: 'gizlilik-politikasi' },
+    { title: 'KVKK Aydınlatma Metni', slug: 'kvkk-aydinlatma-metni' },
+    { title: 'AB Kişisel Veri Koruma Kanunu (GDPR)', slug: 'gdpr' },
+    { title: 'Çerez Politikası', slug: 'cerez-politikasi' },
+    { title: 'Sosyal Etki Politikası', slug: 'sosyal-etki-politikasi' },
+    { title: 'Gelir Fazlası Dağıtım Politikası', slug: 'gelir-fazlasi-dagitim-politikasi' },
+    { title: 'Açık Açık Sosyal Girişim Beyanı', slug: 'acik-acik-sosyal-girisim-beyani' },
 ];
 
 
@@ -35,34 +35,14 @@ export default function ContractsPage() {
       <Card>
         <CardContent className="p-0">
           <div className="divide-y">
-            {contracts.map((contract) => {
-                const linkContent = (
+            {contracts.map((contract) => (
+                <Link href={`/settings/contracts/${contract.slug}`} key={contract.title} className="block">
                     <div className="flex items-center justify-between p-4 hover:bg-accent transition-colors">
                     <span className="font-medium">{contract.title}</span>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                     </div>
-                );
-
-                if (contract.external) {
-                    return (
-                    <a
-                        href={contract.href}
-                        key={contract.title}
-                        className="block"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {linkContent}
-                    </a>
-                    );
-                }
-                
-                return (
-                    <Link href={contract.href} key={contract.title} className="block">
-                        {linkContent}
-                    </Link>
-                );
-            })}
+                </Link>
+            ))}
           </div>
         </CardContent>
       </Card>
