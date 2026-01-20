@@ -87,7 +87,7 @@ export default function InvitePage() {
 
     
     const ContactList = ({ contacts }: { contacts: (typeof sampleContacts) }) => (
-        <div className="space-y-3 pt-4 max-h-60 overflow-y-auto">
+        <div className="space-y-3 pt-0 max-h-60 overflow-y-auto">
             {contacts.map((contact, index) => (
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-background">
                     <div className="flex items-center gap-3">
@@ -161,23 +161,11 @@ export default function InvitePage() {
       </Card>
       
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between">
+        <CardHeader>
             <div>
               <CardTitle>Arkadaşlarını Bul</CardTitle>
               <CardDescription>Rehberini veya e-posta kişilerini bağlayarak hangi arkadaşlarının zaten hangel kullandığını gör ve onlara davet gönder.</CardDescription>
             </div>
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
-                        <ArrowDownUp className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı (En Yüksek)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortCriteria('joinDate')}>Katılım Tarihi (En Yeni)</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
         </CardHeader>
         <CardContent>
             <Tabs defaultValue="email" className="w-full">
@@ -189,24 +177,56 @@ export default function InvitePage() {
                         <Contact className="mr-2 h-4 w-4"/> Telefon Rehberi
                     </TabsTrigger>
                 </TabsList>
-                 <TabsContent value="email" className="mt-4 text-center space-y-4 pt-4">
+                 <TabsContent value="email" className="mt-4">
                     {googleSynced ? (
-                        <ContactList contacts={sortedContacts} />
+                        <div className="text-left space-y-4">
+                             <div className="flex justify-end">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
+                                            <ArrowDownUp className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı (En Yüksek)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortCriteria('joinDate')}>Katılım Tarihi (En Yeni)</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <ContactList contacts={sortedContacts} />
+                        </div>
                     ) : (
-                        <>
+                        <div className="text-center space-y-4 pt-4">
                             <p className="text-sm text-muted-foreground">Google hesabını bağlayarak e-posta kişilerini senkronize et.</p>
                             <Button onClick={() => setGoogleSynced(true)}>Google ile Bağlan</Button>
-                        </>
+                        </div>
                     )}
                 </TabsContent>
-                <TabsContent value="phone" className="mt-4 text-center space-y-4 pt-4">
+                <TabsContent value="phone" className="mt-4">
                      {phoneSynced ? (
-                        <ContactList contacts={sortedContacts.slice(0, 3)} />
+                        <div className="text-left space-y-4">
+                             <div className="flex justify-end">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
+                                            <ArrowDownUp className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı (En Yüksek)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortCriteria('joinDate')}>Katılım Tarihi (En Yeni)</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <ContactList contacts={sortedContacts.slice(0, 3)} />
+                        </div>
                     ) : (
-                        <>
+                        <div className="text-center space-y-4 pt-4">
                             <p className="text-sm text-muted-foreground">Telefon rehberine erişim izni vererek arkadaşlarını bul.</p>
                             <Button onClick={() => setPhoneSynced(true)}>Rehberi Senkronize Et</Button>
-                        </>
+                        </div>
                     )}
                 </TabsContent>
             </Tabs>
@@ -233,5 +253,3 @@ export default function InvitePage() {
     </div>
   );
 }
-
-  
