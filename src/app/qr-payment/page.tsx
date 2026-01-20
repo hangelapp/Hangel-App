@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 const cardData = [
   {
@@ -79,8 +81,7 @@ const TroyLogo = ({ className }: { className?: string }) => (
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
-  const [activeCardId, setActiveCardId] = useState(cardData[0].id);
-
+  
   const handleActionClick = (action: string) => {
     toast({
       title: 'İşlevsellik Yakında!',
@@ -99,62 +100,52 @@ export default function QrPaymentPage() {
             </div>
         </div>
         
-        <div className="space-y-0">
-            {/* Tabs */}
-            <div className="flex items-end pl-4">
-                {cardData.map((card, index) => {
-                    const isActive = activeCardId === card.id;
-                    return (
-                        <div
-                            key={card.id}
-                            onClick={() => setActiveCardId(card.id)}
-                            className={cn(
-                                "relative h-14 flex items-center justify-center w-32 rounded-t-xl p-3 text-white font-semibold cursor-pointer transition-transform duration-300",
-                                card.bgColor,
-                                !isActive && 'opacity-80'
-                            )}
-                            style={{
-                                zIndex: isActive ? cardData.length + 1 : cardData.length - index,
-                                marginLeft: index > 0 ? '-2.5rem' : '0', // -40px
-                                transform: isActive ? 'translateY(0)' : 'translateY(1rem)' // 16px
-                            }}
-                        >
-                            {card.type}
-                        </div>
-                    )
-                })}
-            </div>
+        <Tabs defaultValue={cardData[0].id} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0">
+                {cardData.map((card) => (
+                    <TabsTrigger
+                        key={card.id}
+                        value={card.id}
+                        className={cn(
+                            "data-[state=active]:shadow-lg data-[state=inactive]:opacity-70 rounded-none rounded-t-lg border-b-0 p-3 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
+                             card.bgColor
+                        )}
+                    >
+                        {card.type}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
 
-            {/* Active Card Content */}
-            {cardData.filter(card => card.id === activeCardId).map(card => (
-                 <div 
-                    key={card.id} 
-                    className={cn(
-                        "relative z-0 h-56 rounded-b-2xl rounded-tr-2xl p-6 flex flex-col justify-between shadow-lg text-white w-full", 
-                        card.bgColor
-                    )}
-                >
-                     <div className="flex justify-between items-start">
-                            <p className="font-semibold text-lg">{card.type}</p>
-                            <p className="font-semibold text-2xl">{card.balance}</p>
-                    </div>
-                    <div className="relative">
-                        <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
-                        <div className="flex justify-between items-end">
-                            <div>
-                                <p className="text-xs opacity-80">Kart Sahibi</p>
-                                <p className="font-semibold text-sm uppercase">{card.owner}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs opacity-80">SKT</p>
-                                <p className="font-semibold text-sm">{card.expiry}</p>
-                            </div>
+            {cardData.map((card) => (
+                <TabsContent key={card.id} value={card.id} className="mt-0 -translate-y-1">
+                    <div
+                        className={cn(
+                            "relative h-56 rounded-b-2xl p-6 flex flex-col justify-between shadow-lg text-white w-full rounded-tr-2xl",
+                            card.bgColor
+                        )}
+                    >
+                        <div className="flex justify-between items-start">
+                                <p className="font-semibold text-lg">{card.type}</p>
+                                <p className="font-semibold text-2xl">{card.balance}</p>
                         </div>
-                            <TroyLogo className="absolute bottom-0 right-0" />
+                        <div className="relative">
+                            <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
+                            <div className="flex justify-between items-end">
+                                <div>
+                                    <p className="text-xs opacity-80">Kart Sahibi</p>
+                                    <p className="font-semibold text-sm uppercase">{card.owner}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs opacity-80">SKT</p>
+                                    <p className="font-semibold text-sm">{card.expiry}</p>
+                                </div>
+                            </div>
+                                <TroyLogo className="absolute bottom-0 right-0" />
+                        </div>
                     </div>
-                </div>
+                </TabsContent>
             ))}
-        </div>
+        </Tabs>
 
 
         <div className="grid grid-cols-4 gap-4 text-center">
