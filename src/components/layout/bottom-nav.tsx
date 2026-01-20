@@ -6,9 +6,9 @@ import { Store, QrCode, UserCircle, HeartHandshake, LayoutGrid } from "lucide-re
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/market", icon: Store, label: "Markalar" },
   { href: "/volunteering", icon: HeartHandshake, label: "Gönüllülük" },
   { href: "/qr-payment", icon: QrCode, label: "QR Öde" },
+  { href: "/market", icon: Store, label: "Market" },
   { href: "/timeline", icon: LayoutGrid, label: "Akış" },
   { href: "/profile", icon: UserCircle, label: "Profil" },
 ];
