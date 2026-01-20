@@ -79,6 +79,7 @@ const TroyLogo = ({ className }: { className?: string }) => (
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
+  const [activeCardId, setActiveCardId] = useState(cardData[0].id);
 
   const handleActionClick = (action: string) => {
     toast({
@@ -98,18 +99,44 @@ export default function QrPaymentPage() {
             </div>
         </div>
         
-        <div className="flex overflow-x-auto space-x-4 p-2 -mx-4 snap-x snap-mandatory">
-            {cardData.map((card) => (
-                <div 
+        <div className="space-y-0">
+            {/* Tabs */}
+            <div className="flex items-end pl-4">
+                {cardData.map((card, index) => {
+                    const isActive = activeCardId === card.id;
+                    return (
+                        <div
+                            key={card.id}
+                            onClick={() => setActiveCardId(card.id)}
+                            className={cn(
+                                "relative h-14 flex items-center justify-center w-32 rounded-t-xl p-3 text-white font-semibold cursor-pointer transition-transform duration-300",
+                                card.bgColor,
+                                !isActive && 'opacity-80'
+                            )}
+                            style={{
+                                zIndex: isActive ? cardData.length + 1 : cardData.length - index,
+                                marginLeft: index > 0 ? '-2.5rem' : '0', // -40px
+                                transform: isActive ? 'translateY(0)' : 'translateY(1rem)' // 16px
+                            }}
+                        >
+                            {card.type}
+                        </div>
+                    )
+                })}
+            </div>
+
+            {/* Active Card Content */}
+            {cardData.filter(card => card.id === activeCardId).map(card => (
+                 <div 
                     key={card.id} 
                     className={cn(
-                        "snap-center shrink-0 h-56 rounded-2xl p-6 flex flex-col justify-between shadow-lg text-white w-[90%] sm:w-80", 
+                        "relative z-0 h-56 rounded-b-2xl rounded-tr-2xl p-6 flex flex-col justify-between shadow-lg text-white w-full", 
                         card.bgColor
                     )}
                 >
-                    <div className="flex justify-between items-start">
-                         <p className="font-semibold text-lg">{card.type}</p>
-                         <p className="font-semibold text-2xl">{card.balance}</p>
+                     <div className="flex justify-between items-start">
+                            <p className="font-semibold text-lg">{card.type}</p>
+                            <p className="font-semibold text-2xl">{card.balance}</p>
                     </div>
                     <div className="relative">
                         <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
@@ -123,7 +150,7 @@ export default function QrPaymentPage() {
                                 <p className="font-semibold text-sm">{card.expiry}</p>
                             </div>
                         </div>
-                         <TroyLogo className="absolute bottom-0 right-0" />
+                            <TroyLogo className="absolute bottom-0 right-0" />
                     </div>
                 </div>
             ))}
