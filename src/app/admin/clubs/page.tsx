@@ -3,57 +3,58 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar } from 'lucide-react';
+import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { studentClubs } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
-    <Card key={club.id}>
-        <CardHeader className="flex-row items-center gap-4">
-            <Avatar className="h-12 w-12">
-                <AvatarImage src={club.avatarUrl} alt={club.name} />
-                <AvatarFallback>{club.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-                <CardTitle className="text-base hover:underline">
-                    <Link href={`/admin/clubs/profile/${club.id}`}>{club.name}</Link>
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">{club.university}</p>
-            </div>
-        </CardHeader>
-        <CardContent className="flex justify-between items-center text-sm">
-          <div className="flex gap-4">
-            <div className="flex items-center gap-1.5 text-muted-foreground"><Users className="h-4 w-4" /> <strong>{club.members}</strong> Üye</div>
-            <div className="flex items-center gap-1.5 text-muted-foreground"><BrainCircuit className="h-4 w-4" /> <strong>{club.points}</strong> Puan</div>
-          </div>
-        </CardContent>
-         <CardFooter>
-            <Button asChild variant="secondary" className="w-full">
-                <Link href={`/admin/clubs/profile/${club.id}`}>Profili Gör</Link>
-            </Button>
-        </CardFooter>
-    </Card>
+    <Link href={`/admin/clubs/profile/${club.id}`} key={club.id} className="block">
+        <Card className="hover:bg-accent transition-colors">
+            <CardContent className="p-4 flex gap-4 items-center">
+                <Avatar className="h-16 w-16">
+                    <AvatarImage src={club.avatarUrl} alt={club.name} />
+                    <AvatarFallback>{club.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                    <p className="font-semibold text-base">{club.name}</p>
+                    <p className="text-sm text-muted-foreground">{club.university}</p>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            <span>{club.members} Üye</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <BrainCircuit className="h-3 w-3" />
+                            <span>{club.points} Puan</span>
+                        </div>
+                    </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </CardContent>
+        </Card>
+    </Link>
 );
 
 const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
-    <Card key={event.id}>
-        <CardHeader>
-             <Link href={`/admin/clubs/profile/${event.clubId}`} className="text-sm text-muted-foreground hover:underline">{event.club}</Link>
-            <CardTitle className="text-base">{event.name}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-            <div className="flex items-center text-sm text-muted-foreground">
-                <Calendar className="mr-2 h-4 w-4" />
-                <span>{event.date}</span>
-            </div>
-        </CardContent>
-        <CardFooter>
-            <Button variant="secondary" className="w-full">Detayları Gör</Button>
-        </CardFooter>
-    </Card>
+    <Link href={`/events/${event.id}`} key={event.id} className="block">
+        <Card className="hover:bg-accent transition-colors">
+            <CardContent className="p-4 flex gap-4 items-center">
+                <div className="p-3 bg-muted rounded-lg">
+                  <Calendar className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                    <p className="font-semibold text-base">{event.name}</p>
+                    <p className="text-sm text-muted-foreground">{event.club}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{event.date}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </CardContent>
+        </Card>
+    </Link>
 );
+
 
 export default function StudentClubsPage() {
   const [clubs, setClubs] = useState(studentClubs);

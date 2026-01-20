@@ -1,26 +1,27 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { ShareButtons } from '@/components/shared/share-buttons';
 
 const InfoRow = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) => (
-    <div className="flex items-start p-3">
-        <Icon className="h-5 w-5 text-muted-foreground mt-1" />
-        <div className="flex-1 ml-4">
-            <p className="font-medium text-sm">{label}</p>
-            {value && <p className="text-sm text-muted-foreground">{value}</p>}
+    <div className="flex justify-between items-start py-3 text-sm">
+        <div className='flex items-start'>
+             <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
+             <p className="font-medium ml-4">{label}</p>
         </div>
+        <p className="text-muted-foreground text-right">{value}</p>
     </div>
 );
 
@@ -34,6 +35,13 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value
 
 
 export default function ProfilePage() {
+    const [profileUrl, setProfileUrl] = useState('');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setProfileUrl(window.location.href);
+        }
+    }, []);
 
     const impactStats = [
         { icon: Star, value: user.impactScore.toLocaleString('tr-TR'), label: 'Etki Puanı' },
@@ -55,6 +63,7 @@ export default function ProfilePage() {
     
     const BadgeDisplay = ({ badge }: { badge: (typeof badges)[0] }) => {
         const isEarned = badge.currentPoints >= badge.pointsRequired;
+        const pointsNeeded = badge.pointsRequired - badge.currentPoints;
         return (
              <div className="flex flex-col items-center text-center">
                  <div className={`p-3 rounded-full ${isEarned ? 'bg-amber-100' : 'bg-muted'}`}>
@@ -66,7 +75,7 @@ export default function ProfilePage() {
                     <p className="text-xs font-semibold text-green-600 mt-1">Kazanıldı!</p>
                 ) : (
                     <p className="text-xs text-muted-foreground mt-1">
-                        {badge.currentPoints}/{badge.pointsRequired} Puan
+                        {pointsNeeded > 0 ? `${pointsNeeded} Puan Kaldı` : `${badge.currentPoints}/${badge.pointsRequired} Puan`}
                     </p>
                 )}
             </div>
@@ -74,13 +83,15 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="animate-in fade-in-0 bg-secondary min-h-screen">
+        <div className="animate-in fade-in-0 bg-secondary min-h-screen relative">
+            <div className="absolute top-4 right-4 z-10">
+                <ShareButtons url={profileUrl} title={`${user.name} - Hangel Profili`} />
+            </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center pt-8">
                     <UserAvatar className="w-24 h-24 mb-4" />
                     <h1 className="text-3xl font-bold">{user.name}</h1>
                     <p className="text-lg text-muted-foreground">{user.username}</p>
-                    <Button variant="link" className="mt-1">Profili Düzenle</Button>
                 </div>
             </div>
 
@@ -117,20 +128,36 @@ export default function ProfilePage() {
 
                 <TabsContent value="about" className="p-4 space-y-4">
                      <Card>
-                        <CardHeader><CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle></CardHeader>
+                        <CardHeader className="flex flex-row justify-between items-center">
+                            <CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle>
+                             <Button variant="ghost" size="icon">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </CardHeader>
                         <CardContent className="divide-y">
                             <InfoRow icon={Mail} label="E-posta" value={user.personalInfo.email} />
                             <InfoRow icon={Phone} label="Telefon" value={user.personalInfo.phone} />
                             <InfoRow icon={Cake} label="Doğum Tarihi" value={format(new Date(user.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr })} />
+                             <InfoRow icon={Globe} label="Uyruk" value={user.personalInfo.nationality} />
+                            <InfoRow icon={UserIcon} label="Cinsiyet" value={user.personalInfo.gender} />
                             <InfoRow icon={HeartPulse} label="Kan Grubu" value={user.personalInfo.bloodType} />
                             <InfoRow icon={MapPin} label="Adres" value={`${user.personalInfo.address.district}, ${user.personalInfo.address.city}`} />
+                            <InfoRow icon={Globe} label="Web Sitesi" value={user.personalInfo.website} />
+                            <InfoRow icon={Linkedin} label="LinkedIn" value={user.personalInfo.social?.linkedin} />
+                            <InfoRow icon={Github} label="GitHub" value={user.personalInfo.social?.github} />
+                            <InfoRow icon={Behance} label="Behance" value={user.personalInfo.social?.behance} />
                         </CardContent>
                     </Card>
                 </TabsContent>
 
                 <TabsContent value="volunteering" className="p-4 space-y-4">
                      <Card>
-                        <CardHeader><CardTitle className='text-lg'>Gönüllülük Bilgileri</CardTitle></CardHeader>
+                        <CardHeader className="flex flex-row justify-between items-center">
+                            <CardTitle className='text-lg'>Gönüllülük Bilgileri</CardTitle>
+                            <Button variant="ghost" size="icon">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </CardHeader>
                         <CardContent className="divide-y">
                             <InfoRow icon={Sparkles} label="İlgi Alanları" value={user.volunteerInfo.interests.join(', ')} />
                             <InfoRow icon={Brain} label="Profesyonel Yetkinlikler" value={user.volunteerInfo.skills.join(', ')} />
@@ -143,7 +170,12 @@ export default function ProfilePage() {
                             <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={user.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
                             <InfoRow icon={Landmark} label="Vizeler" value={user.volunteerInfo.travelInfo.visas.join(', ')} />
                             <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education.map(e => e.school).join('; ')} />
-                            <InfoRow icon={Briefcase} label="Meslek" value={user.volunteerInfo.profession} />
+                            <InfoRow icon={Briefcase} label="Sektör" value={user.volunteerInfo.sector} />
+                            <InfoRow icon={Briefcase} label="Pozisyon" value={user.volunteerInfo.profession} />
+                             <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={user.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
+                            <InfoRow icon={HeartPulse} label="Kronik Hastalık" value={user.volunteerInfo.emergency.hasChronicIllness ? 'Var' : 'Yok'} />
+                            <InfoRow icon={HeartPulse} label="Düzenli İlaç" value={user.volunteerInfo.emergency.usesRegularMedication ? 'Var' : 'Yok'} />
+                            <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={user.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
                         </CardContent>
                     </Card>
                     <Card>
