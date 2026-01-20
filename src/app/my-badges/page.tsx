@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { badges, certificates, user } from '@/lib/data';
@@ -110,7 +110,19 @@ export default function MyBadgesPage() {
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader><CardTitle>Son Puan İşlemleri</CardTitle></CardHeader>
+                    <CardHeader>
+                        <div className="flex justify-between items-center">
+                            <CardTitle>Son Puan İşlemleri</CardTitle>
+                            <div className="flex items-center">
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Filter className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <ArrowDownUp className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
                     <CardContent className="space-y-3">
                         {recentPointTransactions.map((tx, index) => {
                             const Icon = tx.icon;
@@ -127,6 +139,9 @@ export default function MyBadgesPage() {
                             </div>
                         )})}
                     </CardContent>
+                    <CardFooter>
+                        <Button variant="outline" className="w-full">Daha Eski</Button>
+                    </CardFooter>
                 </Card>
                 <Card>
                     <CardHeader>
