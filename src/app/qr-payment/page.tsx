@@ -19,7 +19,7 @@ const cardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-[#f34723] to-orange-600',
+    bgColor: 'bg-gradient-to-br from-primary to-orange-600',
     number: '5549 6010 0000 1234',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
@@ -121,7 +121,7 @@ export default function QrPaymentPage() {
   };
 
   return (
-    <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen pb-24">
+    <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
         <div className="flex justify-between items-center pt-4">
             <h1 className="text-3xl font-bold font-headline">Cüzdanım</h1>
              <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function QrPaymentPage() {
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg py-1.5 px-1 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
+                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg py-1.5 px-1 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10 shadow-none",
                              card.bgColor
                         )}
                     >
@@ -332,7 +332,7 @@ export default function QrPaymentPage() {
           </Accordion>
         </CardContent>
       </Card>
-      <div className="pb-8" />
+      <div className="pb-24" />
     </div>
   );
 }
