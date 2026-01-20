@@ -4,7 +4,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -153,7 +153,7 @@ export default function EventDetailPage() {
                 <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg text-center border flex flex-col justify-between overflow-hidden">
                     {/* Header with logos */}
                     <div className="p-4 bg-muted/50 flex justify-between items-center border-b">
-                        <HangelLogo className="h-8 w-8 text-primary" />
+                        <span className="text-xl font-bold text-primary">hangel</span>
                         {organizerLogo && (
                             <Avatar className="h-10 w-10 bg-white">
                                 <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
@@ -174,15 +174,25 @@ export default function EventDetailPage() {
                         </div>
 
                         <div className='space-y-1'>
-                            <p className="text-3xl font-bold">{user.name}</p>
+                            <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full inline-block mb-2">
+                               <p className="text-base font-semibold uppercase">Katılımcı</p>
+                            </div>
+                            <p className="text-3xl font-bold pt-2">{user.name}</p>
                             <p className="text-lg text-muted-foreground">{user.username}</p>
-                            <p className="text-base font-semibold uppercase pt-2 text-primary">Katılımcı</p>
                         </div>
                     </div>
                     
                     {/* Footer */}
-                    <div className='bg-muted/50 p-3 text-xs text-muted-foreground border-t'>
+                    <div className='bg-muted/50 p-3 text-xs text-muted-foreground border-t space-y-2'>
                         <p>{event.date} | {event.location}</p>
+                        {organizerEntity && 'transparencyScore' in organizerEntity && (organizerEntity as any).contact.social && (
+                            <div className="flex justify-center gap-4 pt-1">
+                                {(organizerEntity as any).contact.social.twitter && <a href={`https://twitter.com/${(organizerEntity as any).contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><Twitter className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
+                                {(organizerEntity as any).contact.social.instagram && <a href={`https://instagram.com/${(organizerEntity as any).contact.social.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
+                                {(organizerEntity as any).contact.social.facebook && <a href={`https://facebook.com/${(organizerEntity as any).contact.social.facebook}`} target="_blank" rel="noopener noreferrer"><Facebook className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
+                                {(organizerEntity as any).contact.social.linkedin && <a href={`https://linkedin.com/company/${(organizerEntity as any).contact.social.linkedin}`} target="_blank" rel="noopener noreferrer"><Linkedin className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
