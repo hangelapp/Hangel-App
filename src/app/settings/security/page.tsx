@@ -1,0 +1,95 @@
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Laptop, Smartphone } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+const activeSessions = [
+    { device: 'Chrome, macOS', location: 'İstanbul, TR', time: 'Şu an aktif', icon: Laptop },
+    { device: 'iPhone 14 Pro', location: 'İzmir, TR', time: '2 saat önce', icon: Smartphone },
+];
+
+export default function SecuritySettingsPage() {
+    const router = useRouter();
+    return (
+        <div className="p-4 space-y-6 animate-in fade-in-0">
+             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+                <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <div>
+                <h1 className="text-2xl font-bold font-headline">Güvenlik ve Şifre</h1>
+                <p className="text-muted-foreground text-sm">Hesap güvenliğinizi yönetin ve şifrenizi güncelleyin.</p>
+            </div>
+            
+            <form className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Şifre Değiştir</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="current-password">Mevcut Şifre</Label>
+                            <Input id="current-password" type="password" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="new-password">Yeni Şifre</Label>
+                            <Input id="new-password" type="password" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="confirm-password">Yeni Şifre (Tekrar)</Label>
+                            <Input id="confirm-password" type="password" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>İki Adımlı Doğrulama (2FA)</CardTitle>
+                        <CardDescription>Hesabınıza giriş yaparken ek bir güvenlik katmanı ekleyin.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                           <div>
+                             <Label htmlFor="2fa-switch">Telefon Numarası ile Doğrulama</Label>
+                             <p className="text-xs text-muted-foreground">Giriş yaparken telefonunuza bir kod gönderilir.</p>
+                           </div>
+                            <Switch id="2fa-switch" />
+                        </div>
+                    </CardContent>
+                </Card>
+                
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Oturum Geçmişi</CardTitle>
+                        <CardDescription>Hesabınızda açık olan oturumları görüntüleyin ve yönetin.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {activeSessions.map((session, index) => {
+                            const Icon = session.icon;
+                            return (
+                                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="h-6 w-6 text-muted-foreground" />
+                                        <div>
+                                            <p className="font-medium">{session.device}</p>
+                                            <p className="text-sm text-muted-foreground">{session.location} - {session.time}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                         <Button variant="outline" className="w-full">Diğer tüm oturumları kapat</Button>
+                    </CardContent>
+                </Card>
+                
+                 <div className="flex justify-end">
+                    <Button type="submit">Değişiklikleri Kaydet</Button>
+                </div>
+            </form>
+        </div>
+    );
+}

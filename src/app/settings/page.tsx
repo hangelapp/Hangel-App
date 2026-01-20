@@ -63,10 +63,10 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="p-0">
                  <div className="flex flex-col divide-y">
-                    <SettingsLink href="/profile" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
-                    <SettingsLink href="/profile" icon={HeartHandshake} label="Gönüllülük Bilgilerini Düzenle" iconColor="bg-orange-500" />
-                    <SettingsLink href="/qr-payment" icon={Wallet} label="Cüzdan ve Ödeme Yöntemleri" iconColor="bg-teal-500" />
-                    <SettingsLink href="/settings" icon={Shield} label="Güvenlik ve Şifre" iconColor="bg-green-500" />
+                    <SettingsLink href="/settings/profile" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
+                    <SettingsLink href="/settings/volunteer" icon={HeartHandshake} label="Gönüllülük Bilgilerini Düzenle" iconColor="bg-orange-500" />
+                    <SettingsLink href="/settings/wallet" icon={Wallet} label="Cüzdan ve Ödeme Yöntemleri" iconColor="bg-teal-500" />
+                    <SettingsLink href="/settings/security" icon={Shield} label="Güvenlik ve Şifre" iconColor="bg-green-500" />
                  </div>
             </CardContent>
         </Card>
