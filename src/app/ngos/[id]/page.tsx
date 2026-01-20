@@ -104,20 +104,20 @@ export default function NgoProfilePage() {
 
   return (
     <div className="animate-in fade-in-0">
-        <div className="flex items-center justify-between p-4">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" >
+        <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                 <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
-                <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9">
+                <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
                     <Store className="h-4 w-4" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} />
+                <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
             </div>
         </div>
-      <div className="p-4 pt-0 bg-background">
+      <div className="p-4 pt-4 bg-background">
         <div className="flex gap-4 items-center">
-            <Avatar className="h-24 w-24 shrink-0 bg-white">
+            <Avatar className="h-16 w-16 shrink-0 bg-white">
                 <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-2"/>
                 <AvatarFallback>{ngo.name.slice(0,2)}</AvatarFallback>
             </Avatar>

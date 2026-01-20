@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Share2, QrCode, Link as LinkIcon, Mail, Send, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-export function ShareButtons({ url, title }: { url: string; title: string }) {
+export function ShareButtons({ url, title, buttonClassName }: { url: string; title: string, buttonClassName?: string }) {
   const { toast } = useToast();
 
   const copyToClipboard = () => {
@@ -29,7 +30,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
     <div className="flex gap-2">
       <Dialog>
         <DialogTrigger asChild>
-            <Button size="icon" variant="outline" className="rounded-full h-9 w-9">
+            <Button size="icon" variant="outline" className={cn("rounded-full h-9 w-9", buttonClassName)}>
                 <QrCode className="h-4 w-4" />
             </Button>
         </DialogTrigger>
@@ -46,7 +47,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
 
       <Dialog>
         <DialogTrigger asChild>
-          <Button size="icon" variant="outline" className="rounded-full h-9 w-9">
+          <Button size="icon" variant="outline" className={cn("rounded-full h-9 w-9", buttonClassName)}>
             <Share2 className="h-4 w-4" />
           </Button>
         </DialogTrigger>
