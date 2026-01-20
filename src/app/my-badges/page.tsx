@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, Star, Users, Heart, Download, Eye, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,25 +67,49 @@ export default function MyBadgesPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-        <h1 className="text-2xl font-bold font-headline">Rozetler ve Sertifikalar</h1>
-
-        <Card>
-            <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-                {stats.map(stat => (
-                    <div key={stat.label}>
-                        <stat.icon className="h-6 w-6 text-primary mx-auto mb-2" />
-                        <p className="text-lg font-bold">{stat.value}</p>
-                        <p className="text-xs text-muted-foreground">{stat.label}</p>
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
+        <h1 className="text-2xl font-bold font-headline">Puan, Rozet ve Sertifikalar</h1>
         
-        <Tabs defaultValue="badges" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="impact-score" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="impact-score">Sosyal Etki Puanı</TabsTrigger>
                 <TabsTrigger value="badges">Rozetler</TabsTrigger>
                 <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
             </TabsList>
+            <TabsContent value="impact-score" className="mt-6 space-y-6">
+                <Card className="text-center">
+                    <CardHeader>
+                        <CardTitle>Toplam Sosyal Etki Puanın</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Etki Puanı Özeti</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        {stats.map(stat => (
+                            <div key={stat.label}>
+                                <stat.icon className="h-6 w-6 text-primary mx-auto mb-2" />
+                                <p className="text-lg font-bold">{stat.value}</p>
+                                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Nasıl Puan Kazanırım?</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground space-y-2">
+                        <p> - Anlaşmalı markalardan yaptığın her alışverişle.</p>
+                        <p> - Gönüllülük faaliyetlerini tamamlayarak.</p>
+                        <p> - Platforma yeni arkadaşlarını davet ederek.</p>
+                        <p> - Rozetler kazanarak ve seviye atlayarak.</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
             <TabsContent value="badges" className="mt-4 space-y-6">
                  {Object.entries(groupedBadges).map(([socialArea, areaBadges]) => (
                     <div key={socialArea}>
