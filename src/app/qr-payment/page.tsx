@@ -152,7 +152,7 @@ export default function QrPaymentPage() {
                  const isFlipped = flippedCardId === card.id;
                  return (
                 <TabsContent key={card.id} value={card.id} className="mt-0">
-                    <div className="px-4 pb-4">
+                    <div>
                         <div className="relative [perspective:1000px] h-56">
                             <div
                                 className={cn(
