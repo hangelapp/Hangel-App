@@ -132,7 +132,7 @@ export default function QrPaymentPage() {
         </div>
         
         <Tabs defaultValue={cardData[0].id} className="w-full" onValueChange={(value) => setActiveCardId(value ?? cardData[0].id)}>
-            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-0 rounded-none">
+            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-0 rounded-none h-auto">
                 {cardData.map((card) => (
                     <TabsTrigger
                         key={card.id}
