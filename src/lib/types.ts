@@ -78,8 +78,10 @@ export type NGO = {
     volunteers: number;
     volunteerHours: number;
     projects: number;
-    peopleReached: number;
     totalDonation: number;
+    donationCount: number;
+    avgDonation: number;
+    highestSingleDonation: number;
   };
   transparencyScore: number;
   about: string;
@@ -198,6 +200,12 @@ export type User = {
             neighborhood: string;
             fullAddress: string;
         };
+        website?: string | null;
+        social?: {
+            linkedin?: string | null;
+            github?: string | null;
+            behance?: string | null;
+        }
     },
     volunteerInfo: {
         skills: string[];
@@ -205,6 +213,8 @@ export type User = {
         interests: string[];
         education: { level: string; school: string; }[];
         profession: string | null;
+        sector?: string | null;
+        position?: string | null;
         languages: string[];
         programs: string[];
         licenses: string[];
@@ -214,6 +224,12 @@ export type User = {
             internationalObstacle: boolean;
             visas: string[];
         };
+        emergency: {
+            available: boolean;
+            hasChronicIllness: boolean;
+            usesRegularMedication: boolean;
+            hasPhysicalLimitation: boolean;
+        }
     },
     stats: {
         totalDonation: number;

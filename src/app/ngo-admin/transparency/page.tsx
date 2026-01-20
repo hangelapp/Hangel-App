@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, AlertCircle, Upload, LinkIcon } from 'lucide-react';
+import { CheckCircle, AlertCircle, Upload, LinkIcon, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -29,39 +29,6 @@ export default function TransparencyPage() {
   const currentPoints = criteria.filter(item => item.isCompleted).reduce((sum, item) => sum + item.points, 0);
   const progressValue = (currentPoints / totalPoints) * 100;
   const hasMetThreshold = currentPoints > 35;
-
-  const renderInput = (item: typeof criteria[0]) => {
-    if (item.isCompleted) return null;
-
-    switch (item.type) {
-        case 'document':
-            return (
-                <>
-                    <Input id={`upload-${item.id}`} type="file" className="hidden" />
-                    <Button asChild variant="outline" className="flex-1">
-                        <label htmlFor={`upload-${item.id}`} className="cursor-pointer"><Upload className="mr-2 h-4 w-4" /> Belge Yükle</label>
-                    </Button>
-                </>
-            );
-        case 'link':
-            return (
-                 <div className="flex w-full items-center gap-2">
-                    <LinkIcon className="h-5 w-5 text-muted-foreground" />
-                    <Input placeholder="https://..." className="flex-1"/>
-                    <Button size="sm">Ekle</Button>
-                </div>
-            );
-        case 'text':
-             return (
-                 <div className="flex w-full items-center gap-2">
-                    <Input placeholder={`${item.name} giriniz...`} className="flex-1"/>
-                    <Button size="sm">Ekle</Button>
-                </div>
-            );
-        default:
-            return null;
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -92,20 +59,40 @@ export default function TransparencyPage() {
             </Alert>
           <div className="space-y-4 mt-6">
             {criteria.map((item) => (
-              <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3 mb-4 sm:mb-0">
+              <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg gap-4">
+                <div className="flex items-center gap-3 flex-1">
                   {item.isCompleted ? (
-                    <CheckCircle className="h-6 w-6 text-green-500" />
+                    <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
                   ) : (
-                    <AlertCircle className="h-6 w-6 text-yellow-500" />
+                    <AlertCircle className="h-6 w-6 text-yellow-500 flex-shrink-0" />
                   )}
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-muted-foreground">{item.points} Puan</p>
                   </div>
                 </div>
-                <div className="flex w-full sm:w-auto gap-2">
-                   {renderInput(item)}
+                <div className="flex items-center gap-2">
+                  {item.isCompleted ? (
+                    <Button variant="outline" size="sm">
+                      <Eye className="mr-2 h-4 w-4" /> İncele
+                    </Button>
+                  ) : (
+                    <>
+                      {item.type === 'document' && (
+                        <Button asChild variant="secondary" size="sm">
+                          <label htmlFor={`upload-${item.id}`} className="cursor-pointer">
+                            <Upload className="mr-2 h-4 w-4" /> Yükle
+                            <Input id={`upload-${item.id}`} type="file" className="hidden" />
+                          </label>
+                        </Button>
+                      )}
+                      {item.type !== 'document' && (
+                        <Button variant="secondary" size="sm">
+                          <LinkIcon className="mr-2 h-4 w-4" /> Ekle
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             ))}

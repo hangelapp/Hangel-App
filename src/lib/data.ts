@@ -28,6 +28,12 @@ export const user: User = {
             neighborhood: 'Caferağa',
             fullAddress: 'Caferağa Mah. Moda Cad. No: 123 D:4'
         },
+        website: 'https://ismailhilmi.com',
+        social: {
+            linkedin: 'ismailhilmi',
+            github: 'ismailhilmi',
+            behance: 'ismailhilmi'
+        }
     },
     volunteerInfo: {
         skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım'],
@@ -38,6 +44,8 @@ export const user: User = {
             { level: 'Lise', school: 'Kabataş Erkek Lisesi' }
         ],
         profession: 'Yazılım Geliştirici',
+        sector: 'Teknoloji',
+        position: 'Kıdemli Geliştirici',
         languages: ['Türkçe (Ana Dil)', 'İngilizce (İleri)', 'Almanca (Orta)'],
         programs: ['VS Code', 'Figma', 'Docker'],
         licenses: ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet', 'İş Güvenliği Uzmanlığı'],
@@ -46,6 +54,12 @@ export const user: User = {
             domesticObstacle: false, 
             internationalObstacle: false,
             visas: ['Schengen', 'ABD (B1/B2)']
+        },
+        emergency: {
+            available: true,
+            hasChronicIllness: false,
+            usesRegularMedication: false,
+            hasPhysicalLimitation: false,
         }
     },
     stats: {
@@ -209,8 +223,10 @@ export const ngos: NGO[] = [
             volunteers: 80000,
             volunteerHours: 250000,
             projects: 150,
-            peopleReached: 5000000,
             totalDonation: 1500000,
+            donationCount: 65000,
+            avgDonation: 23.07,
+            highestSingleDonation: 500,
         },
         transparencyScore: 92,
         about: "Türkiye Çöl Olmasın! TEMA Vakfı, 1992 yılından bu yana erozyon ve çölleşme tehlikesine karşı mücadele etmekte, doğal varlıklarımızı korumak için çalışmaktadır. Ağaçlandırma projeleri, eğitim programları ve savunuculuk faaliyetleri ile daha yeşil bir Türkiye için umut oluyoruz.",
@@ -238,8 +254,10 @@ export const ngos: NGO[] = [
             volunteers: 150000,
             volunteerHours: 500000,
             projects: 500,
-            peopleReached: 10000000,
             totalDonation: 12500000,
+            donationCount: 300000,
+            avgDonation: 41.67,
+            highestSingleDonation: 1000,
         },
         transparencyScore: 95,
         about: "Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.",
@@ -268,8 +286,10 @@ export const ngos: NGO[] = [
             volunteers: 12000,
             volunteerHours: 90000,
             projects: 80,
-            peopleReached: 1000000,
             totalDonation: 950000,
+            donationCount: 95000,
+            avgDonation: 10.00,
+            highestSingleDonation: 250,
         },
         transparencyScore: 88,
         about: "Tohum Otizm Vakfı, otizmli çocukların erken tanısının konulması, özel eğitimi ile topluma kazandırılmasına öncülük edilmesi ve bunun yurt çapında yaygınlaştırılması amacıyla, kâr amacı gütmeyen bir sivil toplum kuruluşu olarak 2003 yılında kurulmuştur.",

@@ -34,7 +34,9 @@ export default function ClubProfilePage() {
   const [profileUrl, setProfileUrl] = useState('');
 
   useEffect(() => {
-    setProfileUrl(window.location.href);
+    if (typeof window !== 'undefined') {
+      setProfileUrl(window.location.href);
+    }
   }, []);
 
   if (!club) {
@@ -74,7 +76,6 @@ export default function ClubProfilePage() {
         </div>
          <div className="flex gap-2 mt-4">
             <Button className="flex-1">Kulübe Katıl</Button>
-            <Button variant="outline" className="flex-1">Mesaj Gönder</Button>
         </div>
       </div>
 
