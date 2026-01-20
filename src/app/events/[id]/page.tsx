@@ -122,7 +122,7 @@ export default function EventDetailPage() {
                     <CardContent>
                         {organizerEntity ? (
                             <div className="space-y-4">
-                                <p className="text-sm text-muted-foreground line-clamp-4">{organizerEntity.description || (organizerEntity as NGO).about}</p>
+                                <p className="text-sm text-muted-foreground line-clamp-4">{organizerEntity.description || (organizerEntity as any).about}</p>
                                 <Button asChild variant="secondary" className="w-full">
                                     <Link href={organizerLink}>Kuruluş Profilini İncele</Link>
                                 </Button>
