@@ -124,7 +124,7 @@ export default function SettingsPage() {
             <Link href="/settings/contracts/erisilebilirlik-politikasi" className="block hover:bg-accent transition-colors">
               <div className="flex items-center gap-3 p-4 text-sm text-muted-foreground">
                   <Info className="h-5 w-5" />
-                  <p>Erişilebilirlik düzenlemelerimiz hakkında daha fazla bilgi edinin.</p>
+                  <p>Erişilebilirlik politikamız hakkında daha fazla bilgi edinin.</p>
               </div>
             </Link>
         </SettingsSection>
