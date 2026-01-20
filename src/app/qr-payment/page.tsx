@@ -82,22 +82,31 @@ const TroyLogo = ({ className }: { className?: string }) => (
     </svg>
 );
 
-const CardSettings = () => (
-    <div className="w-full h-full flex flex-col justify-center text-left space-y-1 p-3 bg-black/20 rounded-lg backdrop-blur-sm">
-        <h4 className="font-semibold text-base mb-1 text-center text-white/90">Kart Ayarları</h4>
-        <Button variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><SlidersHorizontal className="mr-2 h-4 w-4" /> Limit Değişikliği</Button>
-        <Button variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><KeyRound className="mr-2 h-4 w-4" /> Şifre İşlemleri</Button>
-        <Button variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><Power className="mr-2 h-4 w-4" /> Kartı Dondur / Aktif Et</Button>
-        <Button variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><MessageSquareWarning className="mr-2 h-4 w-4" /> İşlem İtirazı</Button>
-        <Button variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-red-400 hover:bg-red-500/50 hover:text-white text-sm"><MinusCircle className="mr-2 h-4 w-4" /> Kartı İptal Et</Button>
-    </div>
-);
-
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
   const [activeCardId, setActiveCardId] = useState(cardData[0].id);
+
+  const CardSettings = () => {
+    const handleSettingClick = (settingName: string) => {
+        toast({
+            title: "Kart Ayarları",
+            description: `${settingName} işlevi yakında aktif olacaktır.`,
+        });
+    };
+
+    return (
+        <div className="w-full h-full flex flex-col justify-center text-left space-y-1 p-3 bg-black/20 rounded-lg backdrop-blur-sm">
+            <h4 className="font-semibold text-base mb-1 text-center text-white/90">Kart Ayarları</h4>
+            <Button onClick={() => handleSettingClick('Limit Değişikliği')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><SlidersHorizontal className="mr-2 h-4 w-4" /> Limit Değişikliği</Button>
+            <Button onClick={() => handleSettingClick('Şifre İşlemleri')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><KeyRound className="mr-2 h-4 w-4" /> Şifre İşlemleri</Button>
+            <Button onClick={() => handleSettingClick('Kartı Dondur / Aktif Et')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><Power className="mr-2 h-4 w-4" /> Kartı Dondur / Aktif Et</Button>
+            <Button onClick={() => handleSettingClick('İşlem İtirazı')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><MessageSquareWarning className="mr-2 h-4 w-4" /> İşlem İtirazı</Button>
+            <Button onClick={() => handleSettingClick('Kart İptali')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-red-400 hover:bg-red-500/50 hover:text-white text-sm"><MinusCircle className="mr-2 h-4 w-4" /> Kartı İptal Et</Button>
+        </div>
+    );
+  };
 
 
   const handleFlip = (cardId: string) => {
@@ -129,7 +138,7 @@ export default function QrPaymentPage() {
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg border-b-0 py-1.5 px-1 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
+                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg py-1.5 px-1 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
                              card.bgColor
                         )}
                     >
@@ -140,19 +149,20 @@ export default function QrPaymentPage() {
 
             {cardData.map((card) => {
                  const ngo = ngos.find(n => n.id === card.ngoId);
+                 const isFlipped = flippedCardId === card.id;
                  return (
                 <TabsContent key={card.id} value={card.id} className="mt-0">
                      <div className="relative [perspective:1000px] h-56">
                         <div
                             className={cn(
-                                "relative h-full w-full rounded-b-2xl rounded-tr-2xl transition-transform duration-500 [transform-style:preserve-3d]",
-                                flippedCardId === card.id && "[transform:rotateY(180deg)]"
+                                "relative h-full w-full rounded-b-2xl transition-transform duration-500 [transform-style:preserve-3d]",
+                                isFlipped && "[transform:rotateY(180deg)]"
                             )}
                         >
                             {/* FRONT */}
                             <div
                                 className={cn(
-                                    "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-2xl",
+                                    "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-b-2xl",
                                     card.bgColor
                                 )}
                             >
@@ -187,7 +197,7 @@ export default function QrPaymentPage() {
                             {/* BACK */}
                             <div
                                 className={cn(
-                                    "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl",
+                                    "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-b-2xl",
                                     card.bgColor
                                 )}
                             >
@@ -227,7 +237,7 @@ export default function QrPaymentPage() {
             </div>
         </div>
       
-      <Card className={cn('transition-colors border', 
+      <Card className={cn('transition-colors border-2', 
         activeCardId === 'bireysel' && 'border-primary',
         activeCardId === 'ogrenci' && 'border-blue-500',
         activeCardId === 'ticari' && 'border-slate-700'
@@ -322,6 +332,7 @@ export default function QrPaymentPage() {
           </Accordion>
         </CardContent>
       </Card>
+      <div className="pb-8" />
     </div>
   );
 }
