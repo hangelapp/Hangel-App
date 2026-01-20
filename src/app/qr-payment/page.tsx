@@ -12,32 +12,32 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
-const initialCardData = [
+const cardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
     bgColor: 'bg-gradient-to-br from-red-500 to-orange-500',
-    textColor: 'text-white',
+    number: '5549 6010 0000 1234',
     owner: 'İsmail Hilmi ADIGÜZEL',
-    number: '**** 1234',
+    expiry: '12/28',
     balance: '1.250,75 ₺',
   },
   {
     id: 'ogrenci',
     type: 'Öğrenci',
     bgColor: 'bg-gradient-to-br from-blue-600 to-blue-800',
-    textColor: 'text-white',
+    number: '5549 6010 0000 5678',
     owner: 'İsmail Hilmi ADIGÜZEL',
-    number: '**** 5678',
+    expiry: '10/27',
     balance: '345,50 ₺',
   },
   {
     id: 'ticari',
     type: 'Ticari',
     bgColor: 'bg-gradient-to-br from-[#042654] to-black',
-    textColor: 'text-white',
-    owner: 'İsmail H. ADIGÜZEL - TİCARİ',
-    number: '**** 9012',
+    number: '5549 6010 0000 9012',
+    owner: 'Hangel Ticari Hesap',
+    expiry: '08/29',
     balance: '12.870,00 ₺',
   },
 ];
@@ -66,19 +66,19 @@ const donationTransactions = [
     { id: '21', type: 'expense', brand: 'Süpermarket', purchaseAmount: '180.25', donationAmount: '18.03', ngo: ['LÖSEV'], date: '2024-07-03', time: '18:15' },
 ];
 
+const TroyLogo = ({ className }: { className?: string }) => (
+    <svg className={cn("w-12 h-auto", className)} viewBox="0 0 100 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12.92 27.5V7.84H22.12V10.2H15.68V16.36H21.52V18.72H15.68V25.14H22.36V27.5H12.92Z" fill="white"/>
+        <path d="M34.787 27.5L29.387 18.2V27.5H26.627V7.84H29.387L34.787 17.14V7.84H37.547V27.5H34.787Z" fill="white"/>
+        <path d="M42.3333 27.5V7.84H53.6933V10.2H45.0933V16.36H53.0133V18.72H45.0933V27.5H42.3333Z" fill="white"/>
+        <path d="M59.2559 27.5V7.84H62.0159V25.14H68.6959V27.5H59.2559Z" fill="white"/>
+        <path d="M81.7197 17.67C81.7197 23.31 77.5197 27.78 71.7597 27.78C65.9997 27.78 61.7997 23.31 61.7997 17.67C61.7997 12.03 65.9997 7.56 71.7597 7.56C77.5197 7.56 81.7197 12.03 81.7197 17.67ZM64.5597 17.67C64.5597 21.75 67.7397 25.42 71.7597 25.42C75.7797 25.42 78.9597 21.75 78.9597 17.67C78.9597 13.59 75.7797 9.92 71.7597 9.92C67.7397 9.92 64.5597 13.59 64.5597 17.67Z" fill="white"/>
+    </svg>
+);
+
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
-  const [cards, setCards] = useState(initialCardData);
-
-  const handleCardClick = (clickedIndex: number) => {
-    if (clickedIndex === 0) return; // already at front
-
-    const reorderedCards = [...cards];
-    const [clickedCard] = reorderedCards.splice(clickedIndex, 1);
-    reorderedCards.unshift(clickedCard);
-    setCards(reorderedCards);
-  };
 
   const handleActionClick = (action: string) => {
     toast({
@@ -98,31 +98,32 @@ export default function QrPaymentPage() {
             </div>
         </div>
         
-        <div className="relative h-80">
-            {cards.map((card, index) => (
+        <div className="flex overflow-x-auto space-x-4 p-2 -mx-4 snap-x snap-mandatory">
+            {cardData.map((card) => (
                 <div 
                     key={card.id} 
-                    onClick={() => handleCardClick(index)}
                     className={cn(
-                        "h-56 rounded-2xl p-6 flex flex-col justify-between shadow-lg text-white absolute w-full transition-all duration-300 ease-out", 
-                        { 'cursor-pointer': index !== 0 },
+                        "snap-center shrink-0 h-56 rounded-2xl p-6 flex flex-col justify-between shadow-lg text-white w-[90%] sm:w-80", 
                         card.bgColor
                     )}
-                    style={{
-                        zIndex: cards.length - index,
-                        transform: `scale(${1 - index * 0.04}) translateY(${index * 40}px)`,
-                        transformOrigin: 'top center',
-                    }}
                 >
-                    <div>
-                        <div className='flex justify-between items-start'>
-                            <p className={`font-semibold text-lg`}>{card.type}</p>
-                            <p className="font-semibold text-2xl">{card.balance}</p>
-                        </div>
+                    <div className="flex justify-between items-start">
+                         <p className="font-semibold text-lg">{card.type}</p>
+                         <p className="font-semibold text-2xl">{card.balance}</p>
                     </div>
-                    <div>
-                        <p className="font-mono tracking-widest text-lg">{card.number}</p>
-                        <p className={`font-semibold text-sm`}>{card.owner}</p>
+                    <div className="relative">
+                        <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <p className="text-xs opacity-80">Kart Sahibi</p>
+                                <p className="font-semibold text-sm uppercase">{card.owner}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs opacity-80">SKT</p>
+                                <p className="font-semibold text-sm">{card.expiry}</p>
+                            </div>
+                        </div>
+                         <TroyLogo className="absolute bottom-0 right-0" />
                     </div>
                 </div>
             ))}
