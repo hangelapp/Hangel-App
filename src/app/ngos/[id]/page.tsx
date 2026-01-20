@@ -109,17 +109,15 @@ export default function NgoProfilePage() {
         </div>
       </div>
       <div className="p-4 bg-background">
-        <div className="flex gap-4 items-end -mt-16">
+        <div className="-mt-16">
             <Avatar className="h-24 w-24 border-4 border-background shrink-0 bg-white">
                 <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-2"/>
                 <AvatarFallback>{ngo.name.slice(0,2)}</AvatarFallback>
             </Avatar>
-             <div className="flex-1 pb-2 flex justify-between items-end">
-                <div>
-                     <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
-                     <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
-                </div>
-            </div>
+        </div>
+        <div className="mt-4">
+            <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
+            <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
         </div>
         <div className="grid grid-cols-3 divide-x rounded-lg border my-4">
             <div className="p-3 text-center">
