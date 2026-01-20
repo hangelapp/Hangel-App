@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle } from 'lucide-react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle, Link as LinkIcon } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -14,12 +14,13 @@ import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ngos } from '@/lib/data';
 import Image from 'next/image';
+import { Label } from '@/components/ui/label';
 
 const cardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-slate-600 via-slate-500 to-slate-700',
+    bgColor: 'bg-gradient-to-br from-primary via-orange-600 to-primary/80',
     number: '5549 6010 0000 1234',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
@@ -39,7 +40,7 @@ const cardData = [
   {
     id: 'ticari',
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-gray-800 via-gray-900 to-black',
+    bgColor: 'bg-gradient-to-br from-foreground via-blue-900 to-foreground/80',
     number: '5549 6010 0000 9012',
     owner: 'Hangel Ticari Hesap',
     expiry: '08/29',
@@ -87,30 +88,40 @@ export default function QrPaymentPage() {
   const { toast } = useToast();
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
   const [activeCardId, setActiveCardId] = useState(cardData[0].id);
+  const [frozenCards, setFrozenCards] = useState<Record<string, boolean>>({});
 
-  const CardSettings = () => {
+  const handleFlip = (cardId: string) => {
+    setFlippedCardId(prev => (prev === cardId ? null : cardId));
+  };
+  
+  const toggleFreezeCard = (cardId: string) => {
+    const isCurrentlyFrozen = frozenCards[cardId] || false;
+    setFrozenCards(prev => ({...prev, [cardId]: !isCurrentlyFrozen }));
+    toast({
+        title: !isCurrentlyFrozen ? "Kart Donduruldu" : "Kart Aktif Edildi",
+    });
+    handleFlip(cardId);
+  };
+
+  const CardSettings = ({ cardId }: { cardId: string }) => {
     const handleSettingClick = (settingName: string) => {
         toast({
             title: "Kart Ayarları",
             description: `${settingName} işlevi yakında aktif olacaktır.`,
         });
     };
+    const isFrozen = frozenCards[cardId];
 
     return (
         <div className="w-full h-full flex flex-col justify-center text-left space-y-1 p-3 bg-black/20 rounded-lg backdrop-blur-sm">
             <h4 className="font-semibold text-base mb-1 text-center text-white/90">Kart Ayarları</h4>
             <Button onClick={() => handleSettingClick('Limit Değişikliği')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><SlidersHorizontal className="mr-2 h-4 w-4" /> Limit Değişikliği</Button>
             <Button onClick={() => handleSettingClick('Şifre İşlemleri')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><KeyRound className="mr-2 h-4 w-4" /> Şifre İşlemleri</Button>
-            <Button onClick={() => handleSettingClick('Kartı Dondur / Aktif Et')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><Power className="mr-2 h-4 w-4" /> Kartı Dondur / Aktif Et</Button>
+            <Button onClick={() => toggleFreezeCard(cardId)} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><Power className="mr-2 h-4 w-4" /> {isFrozen ? 'Kartı Aktif Et' : 'Kartı Dondur'}</Button>
             <Button onClick={() => handleSettingClick('İşlem İtirazı')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><MessageSquareWarning className="mr-2 h-4 w-4" /> İşlem İtirazı</Button>
             <Button onClick={() => handleSettingClick('Kart İptali')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-red-400 hover:bg-red-500/50 hover:text-white text-sm"><MinusCircle className="mr-2 h-4 w-4" /> Kartı İptal Et</Button>
         </div>
     );
-  };
-
-
-  const handleFlip = (cardId: string) => {
-    setFlippedCardId(prev => (prev === cardId ? null : cardId));
   };
   
   const handleActionClick = (action: string) => {
@@ -185,6 +196,11 @@ export default function QrPaymentPage() {
                                         </div>
                                         <TroyLogo className="absolute bottom-0 right-0" />
                                     </div>
+                                    {frozenCards[card.id] && (
+                                        <div className="absolute inset-0 bg-black/60 rounded-b-2xl flex items-center justify-center">
+                                            <p className="text-white font-bold text-3xl -rotate-12 border-4 border-white p-4 rounded-lg">DONDURULDU</p>
+                                        </div>
+                                    )}
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -202,7 +218,7 @@ export default function QrPaymentPage() {
                                         card.bgColor
                                     )}
                                 >
-                                <CardSettings />
+                                <CardSettings cardId={card.id} />
                                 <Button
                                         variant="ghost"
                                         size="icon"
@@ -218,31 +234,80 @@ export default function QrPaymentPage() {
                 </TabsContent>
             )})}
         </Tabs>
-
-
-        <div className="grid grid-cols-4 gap-4 text-center">
-            <div className='flex flex-col items-center gap-2'>
-                <Button size="icon" className="h-14 w-14 rounded-full"><QrCode className="h-7 w-7" /></Button>
-                <p className="text-xs font-medium">QR Göster</p>
-            </div>
-            <div className='flex flex-col items-center gap-2'>
-                <Button size="icon" className="h-14 w-14 rounded-full"><ScanLine className="h-7 w-7" /></Button>
-                <p className="text-xs font-medium">QR Tara</p>
-            </div>
-             <div className='flex flex-col items-center gap-2'>
-                <Button size="icon" className="h-14 w-14 rounded-full"><Plus className="h-7 w-7" /></Button>
-                <p className="text-xs font-medium">Bakiye Yükle</p>
-            </div>
-             <div className='flex flex-col items-center gap-2'>
-                <Button size="icon" className="h-14 w-14 rounded-full"><ArrowRightLeft className="h-7 w-7" /></Button>
-                <p className="text-xs font-medium">Transfer</p>
-            </div>
-        </div>
       
+      <Card>
+        <CardHeader>
+            <CardTitle>Ödeme Yönetimi</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <Tabs defaultValue="scan-qr">
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="my-qr">QR Kodum</TabsTrigger>
+                    <TabsTrigger value="scan-qr">QR Oku</TabsTrigger>
+                    <TabsTrigger value="by-phone">Numarayla</TabsTrigger>
+                    <TabsTrigger value="by-code">Kodla</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="my-qr" className="mt-4 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="bg-white p-2 rounded-lg">
+                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('https://hangel.org/pay/ismail')}`} alt="QR Code" width={150} height={150} />
+                        </div>
+                        <Button variant="outline" className="w-full" onClick={() => {
+                            navigator.clipboard.writeText('https://hangel.org/pay/ismail');
+                            toast({ title: 'Ödeme linki kopyalandı!' });
+                        }}>
+                            <LinkIcon className="mr-2 h-4 w-4" /> Linki Kopyala
+                        </Button>
+                    </div>
+                </TabsContent>
+                <TabsContent value="scan-qr" className="mt-4">
+                     <div className="flex flex-col items-center justify-center space-y-4 p-4 text-center">
+                        <ScanLine className="h-20 w-20 text-primary" />
+                        <p className="text-muted-foreground">Ödeme yapmak için başka bir Hangel kullanıcısının QR kodunu veya bir işyeri QR kodunu okutun.</p>
+                        <Button size="lg" className="w-full" onClick={() => toast({ title: "Kamera Açılıyor..." })}>
+                            <QrCode className="mr-2 h-5 w-5" /> QR Kodu Tara
+                        </Button>
+                    </div>
+                </TabsContent>
+                <TabsContent value="by-phone" className="mt-4">
+                    <form className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="phone-number">Telefon Numarası</Label>
+                            <Input id="phone-number" type="tel" placeholder="5XX XXX XX XX" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="amount-phone">Tutar</Label>
+                            <Input id="amount-phone" type="number" placeholder="0.00" />
+                        </div>
+                        <Button className="w-full" onClick={(e) => { e.preventDefault(); toast({ title: 'Transfer Gönderiliyor...' }) }}>
+                            <ArrowRightLeft className="mr-2 h-4 w-4" /> Transfer Yap
+                        </Button>
+                    </form>
+                </TabsContent>
+                <TabsContent value="by-code" className="mt-4">
+                    <form className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="payment-code">6 Haneli Ödeme Kodu</Label>
+                            <Input id="payment-code" type="text" maxLength={6} placeholder="------" className="text-center tracking-[0.5em]" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="amount-code">Tutar</Label>
+                            <Input id="amount-code" type="number" placeholder="0.00" />
+                        </div>
+                        <Button className="w-full" onClick={(e) => { e.preventDefault(); toast({ title: 'Ödeme Yapılıyor...' }) }}>
+                            Ödeme Yap
+                        </Button>
+                    </form>
+                </TabsContent>
+            </Tabs>
+        </CardContent>
+    </Card>
+
       <Card className={cn('transition-colors border-2', 
-        activeCardId === 'bireysel' && 'border-slate-600',
-        activeCardId === 'ogrenci' && 'border-cyan-700',
-        activeCardId === 'ticari' && 'border-gray-800'
+        activeCardId === 'bireysel' && 'border-primary/50',
+        activeCardId === 'ogrenci' && 'border-cyan-700/50',
+        activeCardId === 'ticari' && 'border-foreground/50'
       )}>
         <CardHeader>
            <CardTitle>Son İşlemler</CardTitle>
