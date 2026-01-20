@@ -119,7 +119,7 @@ export default function NgoProfilePage() {
             <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
             <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
         </div>
-        <div className="grid grid-cols-3 divide-x rounded-lg border my-4">
+        <div className="grid grid-cols-2 divide-x rounded-lg border my-4">
             <div className="p-3 text-center">
                 <p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p>
                 <p className="text-xs text-muted-foreground">Bağışçı</p>
@@ -127,10 +127,6 @@ export default function NgoProfilePage() {
             <div className="p-3 text-center">
                 <p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
                 <p className="text-xs text-muted-foreground">Gönüllü</p>
-            </div>
-            <div className="p-3 text-center">
-                <p className="font-bold text-lg">{ngo.stats.followers.toLocaleString('tr-TR')}</p>
-                <p className="text-xs text-muted-foreground">Takipçi</p>
             </div>
         </div>
          <div className="flex gap-2">
