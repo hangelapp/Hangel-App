@@ -29,7 +29,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
     <div className="flex gap-2">
       <Dialog>
         <DialogTrigger asChild>
-            <Button size="icon" variant="outline" className="rounded-full h-9 w-9 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50">
+            <Button size="icon" variant="outline" className="rounded-full h-9 w-9">
                 <QrCode className="h-4 w-4" />
             </Button>
         </DialogTrigger>
@@ -46,7 +46,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
 
       <Dialog>
         <DialogTrigger asChild>
-          <Button size="icon" variant="outline" className="rounded-full h-9 w-9 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50">
+          <Button size="icon" variant="outline" className="rounded-full h-9 w-9">
             <Share2 className="h-4 w-4" />
           </Button>
         </DialogTrigger>

@@ -104,20 +104,18 @@ export default function NgoProfilePage() {
 
   return (
     <div className="animate-in fade-in-0">
-      <div className="relative h-40 w-full bg-muted">
-        <Image src={ngo.coverPhotoUrl} alt={`${ngo.name} Cover`} fill className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/0" />
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full">
-            <ArrowLeft className="h-5 w-5" />
-        </Button>
-         <div className="absolute top-4 right-4 flex items-center gap-2">
-            <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50">
-                <Store className="h-4 w-4" />
+        <div className="flex items-center justify-between p-4">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" >
+                <ArrowLeft className="h-5 w-5" />
             </Button>
-            <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} />
+            <div className="flex items-center gap-2">
+                <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9">
+                    <Store className="h-4 w-4" />
+                </Button>
+                <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} />
+            </div>
         </div>
-      </div>
-      <div className="p-4 bg-background">
+      <div className="p-4 pt-0 bg-background">
         <div className="flex gap-4 items-center">
             <Avatar className="h-24 w-24 shrink-0 bg-white">
                 <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-2"/>
