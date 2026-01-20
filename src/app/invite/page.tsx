@@ -19,11 +19,15 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 
 export default function InvitePage() {
   const { toast } = useToast();
   const [inviteLink, setInviteLink] = useState('');
+  const [googleSynced, setGoogleSynced] = useState(false);
+  const [phoneSynced, setPhoneSynced] = useState(false);
 
   useEffect(() => {
     // This check ensures window is defined, preventing SSR errors.
@@ -48,6 +52,36 @@ export default function InvitePage() {
     { name: 'X (Twitter)', icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
     { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Seni de hangel'a bekliyorum!")}` },
   ];
+  
+    const sampleContacts = [
+      { name: 'Ahmet Yılmaz', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact1/40/40' },
+      { name: 'Zeynep Kaya', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact2/40/40' },
+      { name: 'Mustafa Demir', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact3/40/40' },
+      { name: 'Elif Arslan', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact4/40/40' },
+      { name: 'Ayşe Çelik', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact5/40/40' },
+    ];
+    
+    const ContactList = ({ contacts }: { contacts: typeof sampleContacts }) => (
+        <div className="space-y-3 pt-4 max-h-60 overflow-y-auto">
+            {contacts.map((contact, index) => (
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-background">
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                            <AvatarImage src={contact.avatarUrl} />
+                            <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <p className="font-medium text-sm">{contact.name}</p>
+                    </div>
+                    {contact.onPlatform ? (
+                        <Badge variant="secondary" className="font-normal">hangel'da</Badge>
+                    ) : (
+                        <Button size="sm">Davet Et</Button>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+
 
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
@@ -81,7 +115,7 @@ export default function InvitePage() {
                   <Copy className="h-5 w-5" />
                 </Button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2">
                 {shareOptions.map(option => (
                      <Button key={option.name} asChild variant="outline" className="h-12">
                         <a href={option.href} target="_blank" rel="noopener noreferrer">
@@ -108,13 +142,25 @@ export default function InvitePage() {
                         <Contact className="mr-2 h-4 w-4"/> Telefon Rehberi
                     </TabsTrigger>
                 </TabsList>
-                <TabsContent value="email" className="mt-4 text-center space-y-4 pt-4">
-                    <p className="text-sm text-muted-foreground">Google hesabını bağlayarak e-posta kişilerini senkronize et.</p>
-                    <Button>Google ile Bağlan</Button>
+                 <TabsContent value="email" className="mt-4 text-center space-y-4 pt-4">
+                    {googleSynced ? (
+                        <ContactList contacts={sampleContacts} />
+                    ) : (
+                        <>
+                            <p className="text-sm text-muted-foreground">Google hesabını bağlayarak e-posta kişilerini senkronize et.</p>
+                            <Button onClick={() => setGoogleSynced(true)}>Google ile Bağlan</Button>
+                        </>
+                    )}
                 </TabsContent>
                 <TabsContent value="phone" className="mt-4 text-center space-y-4 pt-4">
-                     <p className="text-sm text-muted-foreground">Telefon rehberine erişim izni vererek arkadaşlarını bul.</p>
-                    <Button>Rehberi Senkronize Et</Button>
+                     {phoneSynced ? (
+                        <ContactList contacts={sampleContacts.slice(0, 3)} />
+                    ) : (
+                        <>
+                            <p className="text-sm text-muted-foreground">Telefon rehberine erişim izni vererek arkadaşlarını bul.</p>
+                            <Button onClick={() => setPhoneSynced(true)}>Rehberi Senkronize Et</Button>
+                        </>
+                    )}
                 </TabsContent>
             </Tabs>
         </CardContent>
