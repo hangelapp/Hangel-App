@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Behance
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -145,7 +145,7 @@ export default function ProfilePage() {
                             <InfoRow icon={Globe} label="Web Sitesi" value={user.personalInfo.website} />
                             <InfoRow icon={Linkedin} label="LinkedIn" value={user.personalInfo.social?.linkedin} />
                             <InfoRow icon={Github} label="GitHub" value={user.personalInfo.social?.github} />
-                            <InfoRow icon={Behance} label="Behance" value={user.personalInfo.social?.behance} />
+                            <InfoRow icon={Palette} label="Behance" value={user.personalInfo.social?.behance} />
                         </CardContent>
                     </Card>
                 </TabsContent>
