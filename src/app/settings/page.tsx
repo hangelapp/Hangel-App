@@ -53,9 +53,9 @@ export default function SettingsPage() {
 
       <div className='space-y-6'>
         <SettingsSection>
-          <SettingsLink href="#" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
+          <SettingsLink href="/profile" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
           <Separator />
-          <SettingsLink href="#" icon={HeartHandshake} label="Gönüllülük Bilgilerini Düzenle" iconColor="bg-orange-500" />
+          <SettingsLink href="/profile" icon={HeartHandshake} label="Gönüllülük Bilgilerini Düzenle" iconColor="bg-orange-500" />
         </SettingsSection>
 
         <SettingsSection>
@@ -166,15 +166,6 @@ export default function SettingsPage() {
 
         <SettingsSection>
           <SettingsLink href="/settings/contracts" icon={FileText} label="Sözleşmeler ve Politikalar" iconColor="bg-gray-400" />
-        </SettingsSection>
-
-        <SettingsSection>
-          <Link href="/login">
-                <div className="flex items-center p-4 text-destructive font-medium justify-center text-base">
-                    <LogOut className="mr-2 h-5 w-5" />
-                    Çıkış Yap
-                </div>
-            </Link>
         </SettingsSection>
       </div>
 
