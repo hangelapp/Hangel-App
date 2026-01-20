@@ -7,16 +7,28 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 const contracts = [
+    // Core Agreements
     { title: 'Kullanıcı Sözleşmesi', slug: 'kullanici-sozlesmesi' },
     { title: 'Kuruluş Sözleşmesi', slug: 'kurulus-sozlesmesi' },
     { title: 'Gönüllülük Sözleşmesi', slug: 'gonulluluk-sozlesmesi' },
+    
+    // Privacy & Data
     { title: 'Gizlilik Politikası', slug: 'gizlilik-politikasi' },
     { title: 'KVKK Aydınlatma Metni', slug: 'kvkk-aydinlatma-metni' },
     { title: 'AB Kişisel Veri Koruma Kanunu (GDPR)', slug: 'gdpr' },
     { title: 'Çerez Politikası', slug: 'cerez-politikasi' },
+    { title: 'Bilgi Güvenliği Politikası', slug: 'bilgi-guvenligi-politikasi' },
+
+    // Social Impact & Financials
     { title: 'Sosyal Etki Politikası', slug: 'sosyal-etki-politikasi' },
-    { title: 'Gelir Fazlası Dağıtım Politikası', slug: 'gelir-fazlasi-dagitim-politikasi' },
     { title: 'Açık Açık Sosyal Girişim Beyanı', slug: 'acik-acik-sosyal-girisim-beyani' },
+    { title: 'Bağış ve Yardım Politikası', slug: 'bagis-ve-yardim-politikasi' },
+    { title: 'Kâr Dağıtım Politikası', slug: 'kar-dagitim-politikasi' },
+    { title: 'Ücret Politikamız', slug: 'ucret-politikasi' },
+    
+    // Other
+    { title: 'Etik İlkeler', slug: 'etik-ilkeler' },
+    { title: 'Bilgilendirme Politikası', slug: 'bilgilendirme-politikasi' },
 ];
 
 
