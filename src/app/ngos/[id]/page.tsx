@@ -117,7 +117,7 @@ export default function NgoProfilePage() {
         </div>
       <div className="p-4 pt-4 bg-background">
         <div className="flex gap-4 items-center">
-            <Avatar className="h-16 w-16 shrink-0 bg-white">
+            <Avatar className="h-20 w-20 shrink-0 bg-white">
                 <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-2"/>
                 <AvatarFallback>{ngo.name.slice(0,2)}</AvatarFallback>
             </Avatar>
