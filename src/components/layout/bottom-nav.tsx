@@ -24,14 +24,6 @@ export default function AppBottomNav() {
   // Hide on certain pages to avoid clutter, similar to iOS behavior
   const hiddenOnPages = [
     '/ngo-admin',
-    '/admin',
-    '/settings',
-    '/support',
-    '/about',
-    '/invite',
-    '/my-badges',
-    '/my-applications',
-    '/my-donations',
   ];
 
   if (hiddenOnPages.some(p => pathname.startsWith(p))) {

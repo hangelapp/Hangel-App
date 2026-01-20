@@ -13,9 +13,13 @@ import {
     Instagram,
     Twitter,
     Linkedin,
-    Gift
+    Gift,
+    Smartphone,
+    Contact
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 export default function InvitePage() {
   const { toast } = useToast();
@@ -38,9 +42,11 @@ export default function InvitePage() {
 
   const shareOptions = [
     { name: 'WhatsApp', icon: MessageSquare, href: `https://wa.me/?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
+    { name: 'SMS', icon: Smartphone, href: `sms:?&body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
     { name: 'Telegram', icon: Send, href: `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Seni de hangel'a bekliyorum!")}` },
     { name: 'E-posta', icon: Mail, href: `mailto:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
     { name: 'X (Twitter)', icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
+    { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Seni de hangel'a bekliyorum!")}` },
   ];
 
   return (
@@ -75,7 +81,7 @@ export default function InvitePage() {
                   <Copy className="h-5 w-5" />
                 </Button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {shareOptions.map(option => (
                      <Button key={option.name} asChild variant="outline" className="h-12">
                         <a href={option.href} target="_blank" rel="noopener noreferrer">
@@ -84,6 +90,33 @@ export default function InvitePage() {
                      </Button>
                 ))}
             </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Arkadaşlarını Bul</CardTitle>
+          <CardDescription>Rehberini veya e-posta kişilerini bağlayarak hangi arkadaşlarının zaten hangel kullandığını gör ve onlara davet gönder.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Tabs defaultValue="email" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="email">
+                        <Mail className="mr-2 h-4 w-4"/> E-posta Kişileri
+                    </TabsTrigger>
+                    <TabsTrigger value="phone">
+                        <Contact className="mr-2 h-4 w-4"/> Telefon Rehberi
+                    </TabsTrigger>
+                </TabsList>
+                <TabsContent value="email" className="mt-4 text-center space-y-4 pt-4">
+                    <p className="text-sm text-muted-foreground">Google hesabını bağlayarak e-posta kişilerini senkronize et.</p>
+                    <Button>Google ile Bağlan</Button>
+                </TabsContent>
+                <TabsContent value="phone" className="mt-4 text-center space-y-4 pt-4">
+                     <p className="text-sm text-muted-foreground">Telefon rehberine erişim izni vererek arkadaşlarını bul.</p>
+                    <Button>Rehberi Senkronize Et</Button>
+                </TabsContent>
+            </Tabs>
         </CardContent>
       </Card>
 
