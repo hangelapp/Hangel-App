@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Star, Users, Heart, Download, Eye, Share2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { badges, certificates, user } from '@/lib/data';
@@ -15,6 +15,8 @@ const stats = [
     { icon: Award, value: badges.filter(b => b.currentPoints >= b.pointsRequired).length, label: 'Rozet' },
     { icon: Users, value: `${user.stats.volunteerHours} Saat`, label: 'Gönüllülük' },
     { icon: Heart, value: `${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`, label: 'Bağış' },
+    { icon: Milestone, value: certificates.length, label: 'Sertifika' },
+    { icon: Briefcase, value: user.stats.completedProjects, label: 'Proje' }
 ];
 
 const levelColors: Record<BadgeType['level'], { bg: string; text: string }> = {
@@ -88,7 +90,7 @@ export default function MyBadgesPage() {
                     <CardHeader>
                         <CardTitle>Etki Puanı Özeti</CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
                         {stats.map(stat => (
                             <div key={stat.label}>
                                 <stat.icon className="h-6 w-6 text-primary mx-auto mb-2" />
@@ -96,6 +98,42 @@ export default function MyBadgesPage() {
                                 <p className="text-xs text-muted-foreground">{stat.label}</p>
                             </div>
                         ))}
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Puan Cetveli</CardTitle>
+                        <CardDescription>Hangi eylemden ne kadar puan kazandığını ve toplamlarını gör.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                            <div>
+                                <p className="font-semibold">Alışverişle Bağış</p>
+                                <p className="text-xs text-muted-foreground">Her 1₺ bağış için <strong>1 Puan</strong></p>
+                            </div>
+                            <p className="font-bold text-base text-primary">{(user.stats.totalDonation).toLocaleString('tr-TR')} Puan</p>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                            <div>
+                                <p className="font-semibold">Gönüllülük</p>
+                                <p className="text-xs text-muted-foreground">Her 1 saat için <strong>10 Puan</strong></p>
+                            </div>
+                            <p className="font-bold text-base text-primary">{(user.stats.volunteerHours * 10).toLocaleString('tr-TR')} Puan</p>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                            <div>
+                                <p className="font-semibold">Arkadaş Daveti</p>
+                                <p className="text-xs text-muted-foreground">Her başarılı davet için <strong>100 Puan</strong></p>
+                            </div>
+                            <p className="font-bold text-base text-primary">{(5 * 100).toLocaleString('tr-TR')} Puan</p>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                            <div>
+                                <p className="font-semibold">Rozet Kazanımı</p>
+                                <p className="text-xs text-muted-foreground">Her rozet için <strong>250 Puan</strong></p>
+                            </div>
+                            <p className="font-bold text-base text-primary">{(badges.filter(b => b.currentPoints >= b.pointsRequired).length * 250).toLocaleString('tr-TR')} Puan</p>
+                        </div>
                     </CardContent>
                 </Card>
                 <Card>
