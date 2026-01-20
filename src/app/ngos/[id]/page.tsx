@@ -126,23 +126,25 @@ export default function NgoProfilePage() {
                 <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
             </div>
         </div>
-        <div className="grid grid-cols-2 divide-x rounded-lg border flex-1 mt-4">
-            <div className="p-3 text-center">
-                <p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p>
-                <p className="text-xs text-muted-foreground">Bağışçı</p>
+        <div className="mt-4 space-y-2">
+            <div className="grid grid-cols-2">
+                <div className="p-3 text-center">
+                    <p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p>
+                    <p className="text-xs text-muted-foreground">Bağışçı</p>
+                </div>
+                <div className="p-3 text-center">
+                    <p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
+                    <p className="text-xs text-muted-foreground">Gönüllü</p>
+                </div>
             </div>
-            <div className="p-3 text-center">
-                <p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
-                <p className="text-xs text-muted-foreground">Gönüllü</p>
+            <div className="flex gap-2">
+                <Button className="flex-1">
+                     Bağışçı Ol
+                </Button>
+                <Button variant="outline" className="flex-1">
+                    <Heart className="mr-2 h-4 w-4" /> Gönüllü Ol
+                </Button>
             </div>
-        </div>
-        <div className="flex gap-2 mt-4">
-            <Button className="flex-1">
-                 Bağışçı Ol
-            </Button>
-            <Button variant="outline" className="flex-1">
-                <Heart className="mr-2 h-4 w-4" /> Gönüllü Ol
-            </Button>
         </div>
       </div>
 
