@@ -82,14 +82,14 @@ export default function SettingsPage() {
            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pt-4">Erişilebilirlik</h2>
            <SettingsSwitch 
             label="Yüksek Kontrast Modu"
-            description="Renk kontrastını artırarak okunabilirliği iyileştirir."
+            description="Renkleri daha belirgin hale getirerek okunabilirliği artırır."
             icon={Contrast} 
             iconColor="bg-indigo-500" 
            />
            <Separator />
            <SettingsSwitch 
             label="Animasyonları Azalt"
-            description="Uygulama içi animasyonları ve geçiş efektlerini azaltır."
+            description="Uygulama içi geçiş efektlerini azaltarak daha durağan bir deneyim sunar."
             icon={MinusCircle} 
             iconColor="bg-indigo-500" 
            />
@@ -113,6 +113,13 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
             </div>
+            <Separator />
+           <SettingsSwitch 
+            label="Ekran Okuyucu Optimizasyonu"
+            description="Ekran okuyucular için arayüzü basitleştirir ve ARIA etiketlerini etkinleştirir."
+            icon={PersonStanding} 
+            iconColor="bg-indigo-500" 
+           />
         </SettingsSection>
 
         <SettingsSection>
@@ -151,16 +158,12 @@ export default function SettingsPage() {
         </SettingsSection>
 
         <SettingsSection>
-          <SettingsLink href="/support" icon={HelpCircle} label="Yardım Merkezi" iconColor="bg-cyan-500" />
-          <Separator />
-          <SettingsLink href="/about" icon={Info} label="Hakkımızda" iconColor="bg-cyan-500" />
-           <Separator />
           <SettingsLink href="/settings/contracts" icon={FileText} label="Sözleşmeler ve Politikalar" iconColor="bg-gray-400" />
         </SettingsSection>
 
         <SettingsSection>
           <Link href="/login">
-                <div className="flex items-center p-4 text-primary font-medium justify-center text-base">
+                <div className="flex items-center p-4 text-destructive font-medium justify-center text-base">
                     <LogOut className="mr-2 h-5 w-5" />
                     Çıkış Yap
                 </div>
