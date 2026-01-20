@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2 } from 'lucide-react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
-const cardData = [
+const initialCardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
@@ -69,6 +69,16 @@ const donationTransactions = [
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
+  const [cards, setCards] = useState(initialCardData);
+
+  const handleCardClick = (clickedIndex: number) => {
+    if (clickedIndex === 0) return; // already at front
+
+    const reorderedCards = [...cards];
+    const [clickedCard] = reorderedCards.splice(clickedIndex, 1);
+    reorderedCards.unshift(clickedCard);
+    setCards(reorderedCards);
+  };
 
   const handleActionClick = (action: string) => {
     toast({
@@ -79,11 +89,31 @@ export default function QrPaymentPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
-        <h1 className="text-3xl font-bold font-headline pt-4">Cüzdanım</h1>
+        <div className="flex justify-between items-center pt-4">
+            <h1 className="text-3xl font-bold font-headline">Cüzdanım</h1>
+             <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="rounded-full bg-muted h-8 w-8"><Plus className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8"><Search className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-5 w-5" /></Button>
+            </div>
+        </div>
         
-        <div className="space-y-4">
-            {cardData.map((card, index) => (
-                <div key={index} className={cn("h-56 rounded-2xl p-6 flex flex-col justify-between shadow-lg text-white", card.bgColor)}>
+        <div className="relative h-80">
+            {cards.map((card, index) => (
+                <div 
+                    key={card.id} 
+                    onClick={() => handleCardClick(index)}
+                    className={cn(
+                        "h-56 rounded-2xl p-6 flex flex-col justify-between shadow-lg text-white absolute w-full transition-all duration-300 ease-out", 
+                        { 'cursor-pointer': index !== 0 },
+                        card.bgColor
+                    )}
+                    style={{
+                        zIndex: cards.length - index,
+                        transform: `scale(${1 - index * 0.04}) translateY(${index * 40}px)`,
+                        transformOrigin: 'top center',
+                    }}
+                >
                     <div>
                         <div className='flex justify-between items-start'>
                             <p className={`font-semibold text-lg`}>{card.type}</p>
