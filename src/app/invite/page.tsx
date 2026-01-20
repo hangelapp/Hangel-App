@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -15,12 +15,14 @@ import {
     Linkedin,
     Gift,
     Smartphone,
-    Contact
+    Contact,
+    ArrowDownUp
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 
 export default function InvitePage() {
@@ -28,6 +30,7 @@ export default function InvitePage() {
   const [inviteLink, setInviteLink] = useState('');
   const [googleSynced, setGoogleSynced] = useState(false);
   const [phoneSynced, setPhoneSynced] = useState(false);
+  const [sortCriteria, setSortCriteria] = useState('impactScore');
 
   useEffect(() => {
     // This check ensures window is defined, preventing SSR errors.
@@ -53,15 +56,37 @@ export default function InvitePage() {
     { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Seni de hangel'a bekliyorum!")}` },
   ];
   
-    const sampleContacts = [
-      { name: 'Ahmet Yılmaz', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact1/40/40', impactScore: 1250 },
-      { name: 'Zeynep Kaya', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact2/40/40', impactScore: null },
-      { name: 'Mustafa Demir', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact3/40/40', impactScore: 870 },
-      { name: 'Elif Arslan', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact4/40/40', impactScore: null },
-      { name: 'Ayşe Çelik', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact5/40/40', impactScore: null },
-    ];
+  const sampleContacts = [
+    { name: 'Ahmet Yılmaz', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact1/40/40', impactScore: 1250, joinDate: '2024-07-10' },
+    { name: 'Zeynep Kaya', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact2/40/40', impactScore: null, joinDate: null },
+    { name: 'Mustafa Demir', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact3/40/40', impactScore: 870, joinDate: '2024-06-25' },
+    { name: 'Elif Arslan', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact4/40/40', impactScore: null, joinDate: null },
+    { name: 'Ayşe Çelik', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact5/40/40', impactScore: 1500, joinDate: '2024-05-01' },
+  ];
+
+  const sortedContacts = useMemo(() => {
+    const onPlatform = sampleContacts.filter(c => c.onPlatform);
+    const notOnPlatform = sampleContacts.filter(c => !c.onPlatform);
+    let sortedOnPlatform = [...onPlatform];
+
+    switch (sortCriteria) {
+        case 'impactScore':
+            sortedOnPlatform.sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+            break;
+        case 'alphabetical':
+            sortedOnPlatform.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+        case 'joinDate':
+            sortedOnPlatform.sort((a, b) => new Date(b.joinDate!).getTime() - new Date(a.joinDate!).getTime());
+            break;
+        default:
+            break;
+    }
+    return [...sortedOnPlatform, ...notOnPlatform];
+  }, [sortCriteria]);
+
     
-    const ContactList = ({ contacts }: { contacts: typeof sampleContacts }) => (
+    const ContactList = ({ contacts }: { contacts: (typeof sampleContacts) }) => (
         <div className="space-y-3 pt-4 max-h-60 overflow-y-auto">
             {contacts.map((contact, index) => (
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-background">
@@ -136,9 +161,23 @@ export default function InvitePage() {
       </Card>
       
       <Card>
-        <CardHeader>
-          <CardTitle>Arkadaşlarını Bul</CardTitle>
-          <CardDescription>Rehberini veya e-posta kişilerini bağlayarak hangi arkadaşlarının zaten hangel kullandığını gör ve onlara davet gönder.</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between">
+            <div>
+              <CardTitle>Arkadaşlarını Bul</CardTitle>
+              <CardDescription>Rehberini veya e-posta kişilerini bağlayarak hangi arkadaşlarının zaten hangel kullandığını gör ve onlara davet gönder.</CardDescription>
+            </div>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
+                        <ArrowDownUp className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı (En Yüksek)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortCriteria('joinDate')}>Katılım Tarihi (En Yeni)</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </CardHeader>
         <CardContent>
             <Tabs defaultValue="email" className="w-full">
@@ -152,7 +191,7 @@ export default function InvitePage() {
                 </TabsList>
                  <TabsContent value="email" className="mt-4 text-center space-y-4 pt-4">
                     {googleSynced ? (
-                        <ContactList contacts={sampleContacts} />
+                        <ContactList contacts={sortedContacts} />
                     ) : (
                         <>
                             <p className="text-sm text-muted-foreground">Google hesabını bağlayarak e-posta kişilerini senkronize et.</p>
@@ -162,7 +201,7 @@ export default function InvitePage() {
                 </TabsContent>
                 <TabsContent value="phone" className="mt-4 text-center space-y-4 pt-4">
                      {phoneSynced ? (
-                        <ContactList contacts={sampleContacts.slice(0, 3)} />
+                        <ContactList contacts={sortedContacts.slice(0, 3)} />
                     ) : (
                         <>
                             <p className="text-sm text-muted-foreground">Telefon rehberine erişim izni vererek arkadaşlarını bul.</p>
