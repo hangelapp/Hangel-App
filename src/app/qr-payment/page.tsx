@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, Send } from 'lucide-react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -19,32 +19,29 @@ const cardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-red-500 to-orange-500',
+    bgColor: 'bg-gradient-to-br from-[#f34723] to-orange-600',
     number: '5549 6010 0000 1234',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
     balance: '1.250,75 ₺',
-    ngoId: '1'
   },
   {
     id: 'ogrenci',
     type: 'Öğrenci',
-    bgColor: 'bg-gradient-to-br from-blue-600 to-blue-800',
+    bgColor: 'bg-gradient-to-br from-blue-500 to-blue-700',
     number: '5549 6010 0000 5678',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '10/27',
     balance: '345,50 ₺',
-    ngoId: '2'
   },
   {
     id: 'ticari',
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-[#042654] to-black',
+    bgColor: 'bg-gradient-to-br from-slate-700 to-black',
     number: '5549 6010 0000 9012',
     owner: 'Hangel Ticari Hesap',
     expiry: '08/29',
     balance: '12.870,00 ₺',
-    ngoId: '3'
   },
 ];
 
@@ -80,6 +77,17 @@ const TroyLogo = ({ className }: { className?: string }) => (
         <path d="M59.2559 27.5V7.84H62.0159V25.14H68.6959V27.5H59.2559Z" fill="white"/>
         <path d="M81.7197 17.67C81.7197 23.31 77.5197 27.78 71.7597 27.78C65.9997 27.78 61.7997 23.31 61.7997 17.67C61.7997 12.03 65.9997 7.56 71.7597 7.56C77.5197 7.56 81.7197 12.03 81.7197 17.67ZM64.5597 17.67C64.5597 21.75 67.7397 25.42 71.7597 25.42C75.7797 25.42 78.9597 21.75 78.9597 17.67C78.9597 13.59 75.7797 9.92 71.7597 9.92C67.7397 9.92 64.5597 13.59 64.5597 17.67Z" fill="white"/>
     </svg>
+);
+
+const CardSettings = () => (
+    <div className="w-full text-left space-y-1 p-2 bg-black/20 rounded-lg backdrop-blur-sm">
+        <h4 className="font-bold text-lg mb-1 text-center text-white/90">Kart Ayarları</h4>
+        <Button variant="ghost" className="w-full justify-start text-white/90 hover:bg-white/20 hover:text-white"><SlidersHorizontal className="mr-3 h-4 w-4" /> Limit Değişikliği</Button>
+        <Button variant="ghost" className="w-full justify-start text-white/90 hover:bg-white/20 hover:text-white"><KeyRound className="mr-3 h-4 w-4" /> Şifre İşlemleri</Button>
+        <Button variant="ghost" className="w-full justify-start text-white/90 hover:bg-white/20 hover:text-white"><Power className="mr-3 h-4 w-4" /> Kartı Dondur / Aktif Et</Button>
+        <Button variant="ghost" className="w-full justify-start text-white/90 hover:bg-white/20 hover:text-white"><MessageSquareWarning className="mr-3 h-4 w-4" /> İşlem İtirazı</Button>
+        <Button variant="ghost" className="w-full justify-start text-red-400 hover:bg-red-500/50 hover:text-white"><MinusCircle className="mr-3 h-4 w-4" /> Kartı İptal Et</Button>
+    </div>
 );
 
 
@@ -126,9 +134,8 @@ export default function QrPaymentPage() {
             </TabsList>
 
             {cardData.map((card) => {
-                 const ngo = ngos.find(n => n.id === card.ngoId);
                  return (
-                <TabsContent key={card.id} value={card.id} className="mt-0 -translate-y-1">
+                <TabsContent key={card.id} value={card.id} className="mt-0 -translate-y-px">
                      <div className="relative [perspective:1000px] h-56">
                         <div
                             className={cn(
@@ -167,27 +174,26 @@ export default function QrPaymentPage() {
                                     className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
                                     onClick={() => handleFlip(card.id)}
                                 >
-                                    <Send className="h-6 w-6" />
+                                    <RotateCw className="h-6 w-6" />
                                 </Button>
                             </div>
 
                             {/* BACK */}
                             <div
                                 className={cn(
-                                    "absolute inset-0 p-6 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl cursor-pointer",
+                                    "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl",
                                     card.bgColor
                                 )}
-                                onClick={() => handleFlip(card.id)}
                             >
-                                <p className="text-sm opacity-80 mb-2">Bu kart ile desteklenen kuruluş</p>
-                                {ngo ? (
-                                    <div className="text-center">
-                                        <Image src={ngo.avatarUrl} alt={ngo.name} width={64} height={64} className="rounded-full bg-white/80 p-2 mb-2 mx-auto"/>
-                                        <p className="font-semibold text-lg">{ngo.name}</p>
-                                    </div>
-                                ) : (
-                                    <p>STK Bilgisi Yok</p>
-                                )}
+                               <CardSettings />
+                               <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
+                                    onClick={() => handleFlip(card.id)}
+                                >
+                                    <RotateCw className="h-6 w-6" />
+                                </Button>
                             </div>
                         </div>
                     </div>

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { timelinePosts, adBanners } from '@/lib/data';
+import { timelinePosts, adBanners, ngos, allEntityLists } from '@/lib/data';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Star } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -65,6 +65,16 @@ export default function TimelinePage() {
       return null;
   }
 
+  const getEntityLink = (authorName: string) => {
+    const ngo = ngos.find(n => n.name === authorName);
+    if (ngo) return `/ngos/${ngo.id}`;
+
+    const brand = allEntityLists.find(b => b.name === authorName);
+    if (brand) return `/market/${brand.id}`;
+
+    return '#';
+  }
+
   return (
     <div className="animate-in fade-in-0 bg-secondary">
        <Tabs defaultValue="special" className="w-full">
@@ -82,27 +92,27 @@ export default function TimelinePage() {
                     <React.Fragment key={post.id}>
                         <Card className="overflow-hidden shadow-none rounded-xl">
                             <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4">
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
-                                <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                <p className="font-semibold">{post.author.name}</p>
-                                <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                                <Link href={getEntityLink(post.author.name)} className="flex items-center gap-3">
+                                    <Avatar>
+                                    <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+                                    <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                    <p className="font-semibold">{post.author.name}</p>
+                                    <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                                    </div>
+                                </Link>
+                                <div className="flex items-center gap-1">
+                                    {post.sponsored && (
+                                    <Badge variant="outline" className="text-xs">
+                                        <Star className="h-3 w-3 mr-1" />
+                                        Sponsorlu
+                                    </Badge>
+                                    )}
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreHorizontal className="h-5 w-5" />
+                                    </Button>
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                {post.sponsored && (
-                                <Badge variant="outline" className="text-xs">
-                                    <Star className="h-3 w-3 mr-1" />
-                                    Sponsorlu
-                                </Badge>
-                                )}
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-5 w-5" />
-                                </Button>
-                            </div>
                             </CardHeader>
                             <CardContent className="space-y-4 px-3 sm:px-4 pb-3">
                             <p className="text-base">{post.content}</p>
