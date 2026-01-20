@@ -184,7 +184,7 @@ export default function SettingsPage() {
                 </Button>
                  <AlertDialog>
                   <AlertDialogTrigger asChild>
-                     <Button variant="destructive" className="w-full justify-start bg-red-100 text-destructive hover:bg-red-200 text-base p-6">
+                     <Button variant="ghost" className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive text-base p-6">
                         <Trash2 className="mr-2 h-5 w-5" /> Hesabı Kalıcı Olarak Sil
                     </Button>
                   </AlertDialogTrigger>

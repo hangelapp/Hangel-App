@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,8 +10,18 @@ import { user } from '@/lib/data';
 import { ArrowLeft, Github, Linkedin, Twitter, Globe, Palette, Instagram } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+const nationalities = ['Türkiye Cumhuriyeti', 'Diğer'];
+const bloodGroups = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'];
+const cities = ['İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya'];
+const districts: { [key: string]: string[] } = {
+    'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
+    'Ankara': ['Akyurt', 'Altındağ', 'Ayaş', 'Balâ', 'Beypazarı', 'Çamlıdere', 'Çankaya', 'Çubuk', 'Elmadağ', 'Etimesgut', 'Evren', 'Gölbaşı', 'Güdül', 'Haymana', 'Kahramankazan', 'Kalecik', 'Keçiören', 'Kızılcahamam', 'Mamak', 'Nallıhan', 'Polatlı', 'Pursaklar', 'Sincan', 'Şereflikoçhisar', 'Yenimahalle'],
+    'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Kınık', 'Kiraz', 'Konak', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
+};
+
 export default function ProfileSettingsPage() {
   const router = useRouter();
+  const [selectedCity, setSelectedCity] = useState(user.personalInfo.address.city);
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -62,11 +73,21 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="nationality">Uyruk</Label>
-                        <Input id="nationality" defaultValue={user.personalInfo.nationality} />
+                        <Select defaultValue={user.personalInfo.nationality}>
+                            <SelectTrigger id="nationality"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="bloodType">Kan Grubu</Label>
-                        <Input id="bloodType" defaultValue={user.personalInfo.bloodType} />
+                         <Select defaultValue={user.personalInfo.bloodType}>
+                            <SelectTrigger id="bloodType"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {bloodGroups.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </CardContent>
@@ -80,16 +101,26 @@ export default function ProfileSettingsPage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="city">Şehir</Label>
-                        <Input id="city" defaultValue={user.personalInfo.address.city} />
+                        <Select defaultValue={user.personalInfo.address.city} onValueChange={setSelectedCity}>
+                            <SelectTrigger id="city"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="district">İlçe</Label>
-                        <Input id="district" defaultValue={user.personalInfo.address.district} />
+                        <Select defaultValue={user.personalInfo.address.district} disabled={!selectedCity}>
+                            <SelectTrigger id="district"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {selectedCity && districts[selectedCity] && districts[selectedCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="fullAddress">Açık Adres</Label>
-                    <Input id="fullAddress" defaultValue={user.personalInfo.address.fullAddress} />
+                    <Input id="fullAddress" placeholder="Mahalle, cadde, sokak, no..." defaultValue={user.personalInfo.address.fullAddress} />
                 </div>
             </CardContent>
         </Card>

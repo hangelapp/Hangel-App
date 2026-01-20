@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,11 +9,84 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { user } from '@/lib/data';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
+const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
+const allDailySkills = ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim', 'Tamirat', 'Bahçe İşleri', 'Çocuk Bakımı'];
+const allLanguages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İspanyolca', 'Rusça', 'İşaret Dili'];
+const allPrograms = ['MS Office', 'Google Workspace', 'Figma', 'Adobe Photoshop', 'Adobe Premiere', 'VS Code', 'Docker', 'Google Analytics'];
+const allLicenses = ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet', 'SRC Belgesi', 'İş Güvenliği Uzmanlığı', 'Profesyonel Turist Rehberi Kokartı'];
+const allDocuments = ['İlk Yardım Sertifikası', 'Hijyen Belgesi', 'Scrum Master Sertifikası', 'Pedagojik Formasyon', 'Afet Bilinci Eğitimi Sertifikası'];
+const allVisas = ['Schengen', 'ABD (B1/B2)', 'İngiltere', 'Kanada'];
+const allSectors = ['Teknoloji', 'Sağlık', 'Eğitim', 'Finans', 'Sanat ve Kültür', 'Hukuk', 'Kamu', 'Perakende', 'Turizm', 'Gıda', 'İnşaat'];
+const allPositions = ['Yazılım Geliştirici', 'Doktor', 'Öğretmen', 'Avukat', 'Grafik Tasarımcı', 'Proje Yöneticisi', 'Öğrenci', 'Emekli', 'Serbest Çalışan'];
+const allUniversities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi', 'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Hacettepe Üniversitesi', 'Bilkent Üniversitesi'];
+const allHighSchools = ['Kabataş Erkek Lisesi', 'Galatasaray Lisesi', 'İstanbul Erkek Lisesi', 'Robert Kolej', 'Ankara Fen Lisesi', 'İzmir Fen Lisesi'];
+
+const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: string[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
+    return (
+        <div className="space-y-2">
+            <Label>{title}</Label>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10">
+                        {selected.length > 0 ? (
+                             <div className="flex flex-wrap gap-1">
+                                {selected.map((item) => (
+                                    <Badge key={item} variant="secondary" className="font-normal">{item}</Badge>
+                                ))}
+                            </div>
+                        ) : `${title} seçin...`}
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                    {options.map((option) => (
+                        <DropdownMenuCheckboxItem
+                            key={option}
+                            checked={selected.includes(option)}
+                            onCheckedChange={(checked) => {
+                                if (checked) {
+                                    onSelectedChange([...selected, option]);
+                                } else {
+                                    onSelectedChange(selected.filter((item) => item !== option));
+                                }
+                            }}
+                        >
+                            {option}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+    );
+};
+
 
 export default function VolunteerSettingsPage() {
     const router = useRouter();
+
+    const [interests, setInterests] = useState(user.volunteerInfo.interests);
+    const [skills, setSkills] = useState(user.volunteerInfo.skills);
+    const [dailySkills, setDailySkills] = useState(user.volunteerInfo.dailySkills);
+    const [languages, setLanguages] = useState(user.volunteerInfo.languages);
+    const [programs, setPrograms] = useState(user.volunteerInfo.programs);
+    const [licenses, setLicenses] = useState(user.volunteerInfo.licenses);
+    const [documents, setDocuments] = useState(user.volunteerInfo.documents);
+    const [visas, setVisas] = useState(user.volunteerInfo.travelInfo.visas);
+    
+    const [university, setUniversity] = useState(user.volunteerInfo.education.find(e => e.level === 'Lisans')?.school || '');
+    const [highSchool, setHighSchool] = useState(user.volunteerInfo.education.find(e => e.level === 'Lise')?.school || '');
+
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
@@ -29,21 +103,9 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Yetkinlik ve İlgi Alanları</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="interests">İlgi Alanları</Label>
-                            <Textarea id="interests" placeholder="Hayvan Hakları, Çevre, Eğitim..." defaultValue={user.volunteerInfo.interests.join(', ')} />
-                            <p className="text-xs text-muted-foreground">İlgilendiğiniz sosyal alanları virgülle ayırarak yazın.</p>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="skills">Profesyonel Yetkinlikler</Label>
-                            <Textarea id="skills" placeholder="Proje Yönetimi, Grafik Tasarım..." defaultValue={user.volunteerInfo.skills.join(', ')} />
-                             <p className="text-xs text-muted-foreground">Mesleki uzmanlıklarınızı veya yeteneklerinizi virgülle ayırarak yazın.</p>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="dailySkills">Sosyal Yetkinlikler</Label>
-                            <Textarea id="dailySkills" placeholder="Yemek Yapma, El Becerileri..." defaultValue={user.volunteerInfo.dailySkills.join(', ')} />
-                             <p className="text-xs text-muted-foreground">Günlük hayatta veya sosyal projelerde kullanılabilecek becerilerinizi yazın.</p>
-                        </div>
+                        <MultiSelect title="İlgi Alanları" options={allInterests} selected={interests} onSelectedChange={setInterests} />
+                        <MultiSelect title="Profesyonel Yetkinlikler" options={allSkills} selected={skills} onSelectedChange={setSkills} />
+                        <MultiSelect title="Sosyal Yetkinlikler" options={allDailySkills} selected={dailySkills} onSelectedChange={setDailySkills} />
                     </CardContent>
                 </Card>
 
@@ -52,18 +114,42 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Eğitim ve Kariyer</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="education">Eğitim</Label>
-                            <Textarea id="education" placeholder="Okul Adı - Bölüm..." defaultValue={user.volunteerInfo.education.map(e => `${e.school} - ${e.level}`).join('\n')} />
+                         <div className="space-y-2">
+                            <Label>Üniversite</Label>
+                            <Select value={university} onValueChange={setUniversity}>
+                                <SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                            <Label>Lise</Label>
+                            <Select value={highSchool} onValueChange={setHighSchool}>
+                                <SelectTrigger><SelectValue placeholder="Lise seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {allHighSchools.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="sector">Sektör</Label>
-                                <Input id="sector" placeholder="Teknoloji, Sağlık..." defaultValue={user.volunteerInfo.sector ?? ''} />
+                                <Select defaultValue={user.volunteerInfo.sector ?? ''}>
+                                    <SelectTrigger id="sector"><SelectValue placeholder="Sektör seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="profession">Pozisyon</Label>
-                                <Input id="profession" placeholder="Yazılım Geliştirici, Doktor..." defaultValue={user.volunteerInfo.profession ?? ''} />
+                                <Select defaultValue={user.volunteerInfo.profession ?? ''}>
+                                    <SelectTrigger id="profession"><SelectValue placeholder="Pozisyon seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {allPositions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </CardContent>
@@ -74,14 +160,8 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Dil ve Program Bilgisi</CardTitle>
                     </CardHeader>
                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="languages">Yabancı Diller</Label>
-                            <Textarea id="languages" placeholder="İngilizce (İleri), Almanca (Başlangıç)..." defaultValue={user.volunteerInfo.languages.join(', ')} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="programs">Bildiği Programlar</Label>
-                            <Textarea id="programs" placeholder="Figma, VS Code, Microsoft Excel..." defaultValue={user.volunteerInfo.programs.join(', ')} />
-                        </div>
+                        <MultiSelect title="Yabancı Diller" options={allLanguages} selected={languages} onSelectedChange={setLanguages} />
+                        <MultiSelect title="Bildiği Programlar" options={allPrograms} selected={programs} onSelectedChange={setPrograms} />
                     </CardContent>
                 </Card>
 
@@ -90,14 +170,8 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Belgeler ve Lisanslar</CardTitle>
                     </CardHeader>
                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="licenses">Lisanslar</Label>
-                            <Textarea id="licenses" placeholder="B Sınıfı Ehliyet, İş Güvenliği Uzmanlığı..." defaultValue={user.volunteerInfo.licenses.join(', ')} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="documents">Belgeler</Label>
-                            <Textarea id="documents" placeholder="İlk Yardım Sertifikası, Hijyen Belgesi..." defaultValue={user.volunteerInfo.documents.join(', ')} />
-                        </div>
+                        <MultiSelect title="Lisanslar" options={allLicenses} selected={licenses} onSelectedChange={setLicenses} />
+                        <MultiSelect title="Belgeler" options={allDocuments} selected={documents} onSelectedChange={setDocuments} />
                     </CardContent>
                 </Card>
                 
@@ -119,8 +193,7 @@ export default function VolunteerSettingsPage() {
                            <Switch id="international-travel" defaultChecked={!user.volunteerInfo.travelInfo.internationalObstacle} />
                         </div>
                          <div className="space-y-2">
-                            <Label htmlFor="visas">Sahip Olunan Vizeler</Label>
-                            <Input id="visas" placeholder="Schengen, ABD (B1/B2)..." defaultValue={user.volunteerInfo.travelInfo.visas.join(', ')} />
+                           <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={visas} onSelectedChange={setVisas} />
                         </div>
                         <div className="space-y-2 pt-4 border-t">
                             <div className="flex items-center space-x-2">
