@@ -13,6 +13,7 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -68,6 +69,7 @@ const OpportunityCard = ({ opp }: { opp: (typeof volunteeringOpportunities)[0] }
 export default function NgoProfilePage() {
   const router = useRouter();
   const params = useParams();
+  const { toast } = useToast();
   const id = params.id as string;
   const ngo = ngos.find(n => n.id === id);
   const [profileUrl, setProfileUrl] = useState('');
@@ -79,6 +81,17 @@ export default function NgoProfilePage() {
   if (!ngo) {
     notFound();
   }
+
+  const handleStoreClick = () => {
+    if (ngo.economicEnterpriseUrl) {
+      router.push(ngo.economicEnterpriseUrl);
+    } else {
+      toast({
+        title: "Bilgi",
+        description: "Bu sivil toplum kuruluşunun iktisadi işletmesi bulunmamaktadır.",
+      });
+    }
+  };
   
   const transparencyCriteria = [
       { name: 'Faaliyet Belgesi', completed: true },
@@ -98,13 +111,9 @@ export default function NgoProfilePage() {
             <ArrowLeft className="h-5 w-5" />
         </Button>
          <div className="absolute top-4 right-4 flex items-center gap-2">
-            {ngo.economicEnterpriseUrl && (
-                <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50">
-                    <Link href={ngo.economicEnterpriseUrl}>
-                        <Store className="h-4 w-4" />
-                    </Link>
-                </Button>
-            )}
+            <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50">
+                <Store className="h-4 w-4" />
+            </Button>
             <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} />
         </div>
       </div>
