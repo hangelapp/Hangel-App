@@ -21,6 +21,8 @@ import { useState, useEffect } from 'react';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
+import { HangelLogo } from '@/components/icons';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export default function EventDetailPage() {
   const router = useRouter();
@@ -41,9 +43,10 @@ export default function EventDetailPage() {
 
   const organizerEntity = ngos.find(n => n.name === event.organizer) || studentClubs.find(c => c.name === event.organizer);
   const organizerLink = organizerEntity ? (('university' in organizerEntity) ? `/admin/clubs/profile/${organizerEntity.id}` : `/ngos/${organizerEntity.id}`) : '#';
+  const organizerLogo = organizerEntity?.avatarUrl;
 
   const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrData)}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
   return (
     <div className="animate-in fade-in-0">
@@ -61,7 +64,7 @@ export default function EventDetailPage() {
       <div className="p-4 space-y-4">
         <div className="-mt-12 relative z-10">
           <h1 className="text-3xl font-bold font-headline text-white drop-shadow-md">{event.name}</h1>
-          <p className="text-lg font-medium text-white drop-shadow-md">{event.organizer}</p>
+          <p className="text-lg font-medium text-black drop-shadow-md">{event.organizer}</p>
         </div>
 
         <Tabs defaultValue="details" className="w-full">
@@ -147,25 +150,39 @@ export default function EventDetailPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="my-4 flex flex-col items-center justify-center p-0">
-                <div className="w-full max-w-[320px] aspect-[105/148] bg-background p-6 rounded-lg shadow-md text-center border flex flex-col justify-between">
-                    <div className="space-y-1">
-                        <p className="text-sm font-medium text-muted-foreground">{event.organizer}</p>
-                        <h3 className="text-xl font-bold text-primary leading-tight">{event.name}</h3>
-                    </div>
-                    
-                    <div className="flex flex-col items-center space-y-2 my-4">
-                         <Image src={qrCodeUrl} alt="Katılımcı QR Kodu" width={128} height={128} className="mx-auto rounded-md" />
+                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg text-center border flex flex-col justify-between overflow-hidden">
+                    {/* Header with logos */}
+                    <div className="p-4 bg-muted/50 flex justify-between items-center border-b">
+                        <HangelLogo className="h-8 w-8 text-primary" />
+                        {organizerLogo && (
+                            <Avatar className="h-10 w-10 bg-white">
+                                <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
+                                <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
+                            </Avatar>
+                        )}
                     </div>
 
-                    <div className='space-y-1'>
-                        <p className="text-2xl font-bold">{user.name}</p>
-                        <p className="text-base text-muted-foreground">{user.username}</p>
-                        <p className="text-sm font-medium uppercase pt-2">Katılımcı</p>
+                    {/* Main content */}
+                    <div className="p-4 flex-1 flex flex-col justify-center items-center">
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-muted-foreground">{event.organizer}</p>
+                            <h3 className="text-2xl font-bold text-primary leading-tight">{event.name}</h3>
+                        </div>
+                        
+                        <div className="my-4">
+                            <Image src={qrCodeUrl} alt="Katılımcı QR Kodu" width={140} height={140} className="mx-auto rounded-lg border-4 border-primary/50 p-1" />
+                        </div>
+
+                        <div className='space-y-1'>
+                            <p className="text-3xl font-bold">{user.name}</p>
+                            <p className="text-lg text-muted-foreground">{user.username}</p>
+                            <p className="text-base font-semibold uppercase pt-2 text-primary">Katılımcı</p>
+                        </div>
                     </div>
                     
-                    <div className='text-xs text-muted-foreground border-t pt-2 mt-4 space-y-1'>
-                        <p>{event.date}</p>
-                        <p>{event.location}</p>
+                    {/* Footer */}
+                    <div className='bg-muted/50 p-3 text-xs text-muted-foreground border-t'>
+                        <p>{event.date} | {event.location}</p>
                     </div>
                 </div>
             </div>
