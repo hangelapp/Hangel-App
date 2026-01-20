@@ -1,8 +1,10 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const contracts = [
     { title: 'Kullanıcı Sözleşmesi', href: '#', external: false },
@@ -19,8 +21,12 @@ const contracts = [
 
 
 export default function ContractsPage() {
+    const router = useRouter();
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+            <ArrowLeft className="h-6 w-6" />
+        </Button>
       <div>
         <h1 className="text-2xl font-bold font-headline">Sözleşmeler ve Politikalar</h1>
         <p className="text-muted-foreground text-sm">Uygulama kullanımına ilişkin yasal belgeler.</p>
