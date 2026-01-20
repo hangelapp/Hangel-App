@@ -118,24 +118,24 @@ export default function NgoProfilePage() {
         </div>
       </div>
       <div className="p-4 bg-background">
-        <div className="space-y-1">
-            <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
-            <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
-        </div>
-        <div className="flex gap-4 items-center mt-4">
-             <Avatar className="h-24 w-24 shrink-0 bg-white">
+        <div className="flex gap-4 items-center">
+            <Avatar className="h-24 w-24 shrink-0 bg-white">
                 <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-2"/>
                 <AvatarFallback>{ngo.name.slice(0,2)}</AvatarFallback>
             </Avatar>
-            <div className="grid grid-cols-2 divide-x rounded-lg border flex-1">
-                <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p>
-                    <p className="text-xs text-muted-foreground">Bağışçı</p>
-                </div>
-                <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
-                    <p className="text-xs text-muted-foreground">Gönüllü</p>
-                </div>
+            <div className="space-y-1">
+                <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
+                <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
+            </div>
+        </div>
+        <div className="grid grid-cols-2 divide-x rounded-lg border flex-1 mt-4">
+            <div className="p-3 text-center">
+                <p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p>
+                <p className="text-xs text-muted-foreground">Bağışçı</p>
+            </div>
+            <div className="p-3 text-center">
+                <p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
+                <p className="text-xs text-muted-foreground">Gönüllü</p>
             </div>
         </div>
         <div className="flex gap-2 mt-4">
