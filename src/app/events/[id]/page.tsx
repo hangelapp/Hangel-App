@@ -42,11 +42,12 @@ export default function EventDetailPage() {
   }
 
   const organizerEntity = ngos.find(n => n.name === event.organizer) || studentClubs.find(c => c.name === event.organizer);
-  const organizerLink = organizerEntity ? (('university' in organizerEntity) ? `/admin/clubs/profile/${organizerEntity.id}` : `/ngos/${organizerEntity.id}`) : '#';
   const organizerLogo = organizerEntity?.avatarUrl;
 
   const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+
+  const eventHashtag = `#Hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.date.split(' ')[2].slice(-2)}`;
 
   return (
     <div className="animate-in fade-in-0">
@@ -150,9 +151,9 @@ export default function EventDetailPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="my-4 flex flex-col items-center justify-center p-0">
-                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg text-center border flex flex-col justify-between overflow-hidden">
+                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden">
                     {/* Header with logos */}
-                    <div className="p-4 bg-muted/50 flex justify-between items-center border-b">
+                    <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
                         <span className="text-xl font-bold text-primary">hangel</span>
                         {organizerLogo && (
                             <Avatar className="h-10 w-10 bg-white">
@@ -163,28 +164,28 @@ export default function EventDetailPage() {
                     </div>
 
                     {/* Main content */}
-                    <div className="p-4 flex-1 flex flex-col justify-center items-center">
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium text-muted-foreground">{event.organizer}</p>
-                            <h3 className="text-2xl font-bold text-primary leading-tight">{event.name}</h3>
+                    <div className="p-4 flex-1 flex flex-col justify-center items-center text-center">
+                        <div className="space-y-1">
+                            <p className="text-lg font-semibold text-foreground leading-tight">{event.name}</p>
+                            <p className="text-sm text-muted-foreground">{event.date}</p>
                         </div>
                         
                         <div className="my-4">
-                            <Image src={qrCodeUrl} alt="Katılımcı QR Kodu" width={140} height={140} className="mx-auto rounded-lg border-4 border-primary/50 p-1" />
+                            <Image src={qrCodeUrl} alt="Katılımcı QR Kodu" width={120} height={120} className="mx-auto rounded-lg border-4 border-primary/50 p-1" />
                         </div>
 
-                        <div className='space-y-1'>
-                            <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full inline-block mb-2">
-                               <p className="text-base font-semibold uppercase">Katılımcı</p>
+                        <div className='w-full'>
+                             <div className="bg-primary text-primary-foreground py-1 w-full mb-2">
+                               <p className="text-base font-semibold uppercase tracking-wider">Katılımcı</p>
                             </div>
-                            <p className="text-3xl font-bold pt-2">{user.name}</p>
-                            <p className="text-lg text-muted-foreground">{user.username}</p>
+                            <p className="text-2xl font-bold pt-2 whitespace-nowrap truncate">{user.name}</p>
+                            <p className="text-base text-muted-foreground">{user.username}</p>
                         </div>
                     </div>
                     
                     {/* Footer */}
-                    <div className='bg-muted/50 p-3 text-xs text-muted-foreground border-t space-y-2'>
-                        <p>{event.date} | {event.location}</p>
+                    <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t space-y-1 text-center'>
+                        <p className='font-mono'>{eventHashtag}</p>
                         {organizerEntity && 'transparencyScore' in organizerEntity && (organizerEntity as any).contact.social && (
                             <div className="flex justify-center gap-4 pt-1">
                                 {(organizerEntity as any).contact.social.twitter && <a href={`https://twitter.com/${(organizerEntity as any).contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><Twitter className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
