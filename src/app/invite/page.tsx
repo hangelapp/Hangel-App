@@ -54,11 +54,11 @@ export default function InvitePage() {
   ];
   
     const sampleContacts = [
-      { name: 'Ahmet Yılmaz', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact1/40/40' },
-      { name: 'Zeynep Kaya', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact2/40/40' },
-      { name: 'Mustafa Demir', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact3/40/40' },
-      { name: 'Elif Arslan', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact4/40/40' },
-      { name: 'Ayşe Çelik', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact5/40/40' },
+      { name: 'Ahmet Yılmaz', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact1/40/40', impactScore: 1250 },
+      { name: 'Zeynep Kaya', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact2/40/40', impactScore: null },
+      { name: 'Mustafa Demir', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact3/40/40', impactScore: 870 },
+      { name: 'Elif Arslan', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact4/40/40', impactScore: null },
+      { name: 'Ayşe Çelik', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact5/40/40', impactScore: null },
     ];
     
     const ContactList = ({ contacts }: { contacts: typeof sampleContacts }) => (
@@ -70,7 +70,15 @@ export default function InvitePage() {
                             <AvatarImage src={contact.avatarUrl} />
                             <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <p className="font-medium text-sm">{contact.name}</p>
+                        <div>
+                            <p className="font-medium text-sm">{contact.name}</p>
+                            {contact.onPlatform && contact.impactScore && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <Star className="h-3 w-3 text-primary" />
+                                    {contact.impactScore.toLocaleString('tr-TR')} Puan
+                                </p>
+                            )}
+                        </div>
                     </div>
                     {contact.onPlatform ? (
                         <Badge variant="secondary" className="font-normal">hangel'da</Badge>
@@ -186,3 +194,5 @@ export default function InvitePage() {
     </div>
   );
 }
+
+  

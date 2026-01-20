@@ -18,7 +18,7 @@ export const user: User = {
     personalInfo: {
         email: 'i.adiguzel@email.com',
         phone: '+90 554 700 7007',
-        birthDate: '1992-08-25',
+        birthDate: '1993-05-21',
         gender: 'Erkek',
         nationality: 'Türkiye Cumhuriyeti',
         bloodType: '0 Rh+',
@@ -754,3 +754,5 @@ export const categoryMapping = {
     'Bilet': ['Bilet'],
     'Diğer': ['Diğer', 'Teknoloji'],
 };
+
+  
