@@ -502,7 +502,8 @@ export const events: Event[] = [
       tags: ['Girişimcilik', 'Teknoloji', 'Networking'],
       imageUrl: 'https://picsum.photos/seed/event1/800/400',
       imageHint: 'business conference',
-      description: 'Türkiye\'nin önde gelen girişimcileri, yatırımcıları ve öğrencileri bu zirvede buluşuyor! İlham veren konuşmalar, paneller ve networking fırsatları için yerinizi ayırtın.'
+      description: 'Türkiye\'nin önde gelen girişimcileri, yatırımcıları ve öğrencileri bu zirvede buluşuyor! İlham veren konuşmalar, paneller ve networking fırsatları için yerinizi ayırtın.',
+      providesCertificate: true
     },
      {
       id: '2',
@@ -515,7 +516,8 @@ export const events: Event[] = [
       tags: ['Çevre', 'Gönüllülük', 'Sürdürülebilirlik'],
       imageUrl: 'https://picsum.photos/seed/event2/800/400',
       imageHint: 'beach cleanup volunteering',
-      description: 'Daha temiz bir çevre için el ele veriyoruz. "Temiz Deniz, Sağlıklı Gelecek" projemiz kapsamında bu hafta sonu Caddebostan sahilini temizliyoruz. Eldiven ve çöp poşetleri bizden, enerjiniz sizden!'
+      description: 'Daha temiz bir çevre için el ele veriyoruz. "Temiz Deniz, Sağlıklı Gelecek" projemiz kapsamında bu hafta sonu Caddebostan sahilini temizliyoruz. Eldiven ve çöp poşetleri bizden, enerjiniz sizden!',
+      providesCertificate: false
     },
 ];
 
@@ -565,7 +567,7 @@ export const donationTransactions: DonationTransaction[] = [
 export const managedItems: ManagedItem[] = [
     { name: 'Ahbap Derneği', type: 'STK', icon: 'heart-handshake', href: '/ngo-admin/dashboard', status: 'approved' },
     { name: 'Doğa Dostu Giyim', type: 'Marka', icon: 'store', href: '#', status: 'approved' },
-    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'users', href: '/admin/clubs/profile/1', status: 'approved' },
+    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: '/admin/clubs/profile/1', status: 'approved' },
     { name: 'Yeni Marka Başvurusu', type: 'Marka', icon: 'file-text', href: '#', status: 'pending' },
 ];
 

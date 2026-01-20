@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, BrainCircuit, Calendar, ChevronRight, Contact, Edit, Globe, Handshake, Mail, MapPin, Mic, Milestone, Phone, QrCode, School, Share2, Users, Vision, Users2, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users } from 'lucide-react';
 import { studentClubs, schoolRepresentatives } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -51,31 +51,39 @@ export default function ClubProfilePage() {
 
   return (
     <div className="animate-in fade-in-0">
-      <div className="relative h-40 w-full bg-muted">
-        <Image src={club.coverPhotoUrl} alt={`${club.name} Cover`} fill className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/0" />
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full">
-            <ArrowLeft className="h-5 w-5" />
-        </Button>
-         <div className="absolute top-4 right-4 flex gap-2">
-           <ShareButtons url={profileUrl} title={`Hangel'deki ${club.name} kulüp profilini incele!`} />
-        </div>
-      </div>
-      <div className="p-4 bg-background">
-        <div className="flex gap-4 items-end -mt-16">
-            <Avatar className="h-24 w-24 border-4 border-background shrink-0">
-                <AvatarImage src={club.avatarUrl} alt={club.name} />
-                <AvatarFallback>{club.name.slice(0,2)}</AvatarFallback>
-            </Avatar>
-             <div className="flex-1 pb-2 flex justify-between items-end">
-                <div>
-                     <h1 className="text-2xl font-bold font-headline">{club.name}</h1>
-                     <p className="text-muted-foreground text-sm">{club.university}</p>
-                </div>
+       <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-2">
+                <ShareButtons url={profileUrl} title={`Hangel'deki ${club.name} kulüp profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
             </div>
         </div>
-         <div className="flex gap-2 mt-4">
-            <Button className="flex-1">Kulübe Katıl</Button>
+      <div className="p-4 bg-background">
+        <div className="flex gap-4 items-center">
+            <Avatar className="h-20 w-20 shrink-0 bg-white">
+                <AvatarImage src={club.avatarUrl} alt={club.name} className="object-contain p-2"/>
+                <AvatarFallback>{club.name.slice(0,2)}</AvatarFallback>
+            </Avatar>
+             <div className="space-y-1">
+                 <h1 className="text-2xl font-bold font-headline">{club.name}</h1>
+                 <p className="text-muted-foreground text-sm">{club.university}</p>
+            </div>
+        </div>
+         <div className="mt-4 space-y-2">
+            <div className="grid grid-cols-2">
+                <div className="p-3 text-center">
+                    <p className="font-bold text-lg">{club.members.toLocaleString('tr-TR')}</p>
+                    <p className="text-xs text-muted-foreground">Üye</p>
+                </div>
+                <div className="p-3 text-center">
+                    <p className="font-bold text-lg">{club.points.toLocaleString('tr-TR')}</p>
+                    <p className="text-xs text-muted-foreground">Puan</p>
+                </div>
+            </div>
+            <div className="flex gap-2">
+                <Button className="flex-1">Kulübe Katıl</Button>
+            </div>
         </div>
       </div>
 

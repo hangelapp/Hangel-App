@@ -159,6 +159,11 @@ export default function StudentClubsPage() {
                 ))}
                  <div className="text-center text-muted-foreground pt-8">
                     <p>Yakında daha fazla etkinlik burada olacak.</p>
+                     <Button variant="link" asChild>
+                      <Link href="/settings">
+                        Bildirim almak için etkinlik bildirim ayarlarını aç
+                      </Link>
+                    </Button>
                 </div>
             </div>
         </TabsContent>

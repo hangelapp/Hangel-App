@@ -121,6 +121,7 @@ export type Event = {
   imageUrl: string;
   imageHint?: string;
   description: string;
+  providesCertificate?: boolean;
 };
 
 export type Volunteering = {
