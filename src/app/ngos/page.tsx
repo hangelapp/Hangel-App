@@ -1,12 +1,30 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+'use client';
+
+import { useState, useMemo } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowDownUp, Filter, Heart, Users, Percent, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { ngos } from '@/lib/data';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { NGO } from '@/lib/types';
+
+type NgoType = NGO['type'] | 'Tümü';
 
 export default function NgosPage() {
+    const [activeTab, setActiveTab] = useState<NgoType>('Tümü');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredNgos = useMemo(() => {
+        return ngos.filter(ngo => {
+            const matchesTab = activeTab === 'Tümü' || ngo.type === activeTab;
+            const matchesSearch = searchTerm === '' || ngo.name.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesTab && matchesSearch;
+        });
+    }, [activeTab, searchTerm]);
+
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
         <div className="space-y-1">
@@ -19,6 +37,8 @@ export default function NgosPage() {
                 <Input
                     placeholder="STK ara..."
                     className="pl-10 h-11"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
             <Button variant="outline" size="icon" className="h-11 w-11">
@@ -29,8 +49,19 @@ export default function NgosPage() {
             </Button>
       </div>
 
+       <Tabs defaultValue="Tümü" className="w-full" onValueChange={(value) => setActiveTab(value as NgoType)}>
+        <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="Tümü">Tümü</TabsTrigger>
+            <TabsTrigger value="Dernek">Dernek</TabsTrigger>
+            <TabsTrigger value="Vakıf">Vakıf</TabsTrigger>
+            <TabsTrigger value="Spor Kulübü">Spor Kulübü</TabsTrigger>
+            <TabsTrigger value="Özel İzinli">Özel İzinli</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+
       <div className="space-y-3">
-        {ngos.map((ngo) => (
+        {filteredNgos.length > 0 ? filteredNgos.map((ngo) => (
            <Link href={`/ngos/${ngo.id}`} key={ngo.id} className="block">
             <Card className="hover:bg-accent transition-colors">
               <CardContent className="p-4 flex gap-4 items-center">
@@ -60,7 +91,11 @@ export default function NgosPage() {
               </CardContent>
             </Card>
           </Link>
-        ))}
+        )) : (
+             <div className="text-center text-muted-foreground py-16">
+                <p>Bu filtrelerle eşleşen STK bulunamadı.</p>
+            </div>
+        )}
       </div>
     </div>
   );

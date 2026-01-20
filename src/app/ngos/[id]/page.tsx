@@ -121,10 +121,21 @@ export default function NgoProfilePage() {
                 </div>
             </div>
         </div>
-         <div className="text-sm text-center text-muted-foreground mt-4">
-            <span className="font-bold text-foreground">{ngo.stats.followers.toLocaleString('tr-TR') || 0}</span> kişi bu kuruluşu takip ederek destekliyor.
+        <div className="grid grid-cols-3 divide-x rounded-lg border my-4">
+            <div className="p-3 text-center">
+                <p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p>
+                <p className="text-xs text-muted-foreground">Bağışçı</p>
+            </div>
+            <div className="p-3 text-center">
+                <p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
+                <p className="text-xs text-muted-foreground">Gönüllü</p>
+            </div>
+            <div className="p-3 text-center">
+                <p className="font-bold text-lg">{ngo.stats.followers.toLocaleString('tr-TR')}</p>
+                <p className="text-xs text-muted-foreground">Takipçi</p>
+            </div>
         </div>
-         <div className="flex gap-2 mt-2">
+         <div className="flex gap-2">
             <Button className="flex-1">
                  Bağışçı Ol
             </Button>

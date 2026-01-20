@@ -90,7 +90,7 @@ export default function MyBadgesPage() {
                     <CardHeader>
                         <CardTitle>Etki Puanı Özeti</CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+                    <CardContent className="grid grid-cols-3 gap-4 text-center">
                         {stats.map(stat => (
                             <div key={stat.label}>
                                 <stat.icon className="h-6 w-6 text-primary mx-auto mb-2" />
