@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering, certificates } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useRouter } from 'next/navigation';
 
 
 const InfoRow = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) => (
@@ -38,6 +39,7 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value
 
 export default function ProfilePage() {
     const [profileUrl, setProfileUrl] = useState('');
+    const router = useRouter();
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -87,9 +89,12 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="animate-in fade-in-0 bg-secondary min-h-screen relative">
-            <div className="absolute top-4 right-4 z-10">
-                 <ShareButtons url={profileUrl} title={`${user.name} - Hangel Profili`} />
+        <div className="animate-in fade-in-0 bg-secondary min-h-screen">
+            <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                    <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <ShareButtons url={profileUrl} title={`${user.name} - Hangel Profili`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
             </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center pt-8">
