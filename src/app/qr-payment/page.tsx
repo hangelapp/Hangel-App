@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal } from 'lucide-react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, Send } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import { ngos } from '@/lib/data';
+import Image from 'next/image';
 
 const cardData = [
   {
@@ -23,6 +24,7 @@ const cardData = [
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
     balance: '1.250,75 ₺',
+    ngoId: '1'
   },
   {
     id: 'ogrenci',
@@ -32,6 +34,7 @@ const cardData = [
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '10/27',
     balance: '345,50 ₺',
+    ngoId: '2'
   },
   {
     id: 'ticari',
@@ -41,6 +44,7 @@ const cardData = [
     owner: 'Hangel Ticari Hesap',
     expiry: '08/29',
     balance: '12.870,00 ₺',
+    ngoId: '3'
   },
 ];
 
@@ -81,6 +85,11 @@ const TroyLogo = ({ className }: { className?: string }) => (
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
+  const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
+
+  const handleFlip = (cardId: string) => {
+    setFlippedCardId(prev => (prev === cardId ? null : cardId));
+  };
   
   const handleActionClick = (action: string) => {
     toast({
@@ -90,7 +99,7 @@ export default function QrPaymentPage() {
   };
 
   return (
-    <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
+    <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen pb-24">
         <div className="flex justify-between items-center pt-4">
             <h1 className="text-3xl font-bold font-headline">Cüzdanım</h1>
              <div className="flex items-center gap-2">
@@ -107,7 +116,7 @@ export default function QrPaymentPage() {
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "data-[state=active]:shadow-lg data-[state=inactive]:opacity-70 rounded-none rounded-t-lg border-b-0 p-3 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
+                            "data-[state=active]:shadow-lg data-[state=inactive]:opacity-70 rounded-none rounded-t-lg border-b-0 p-2 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
                              card.bgColor
                         )}
                     >
@@ -116,35 +125,74 @@ export default function QrPaymentPage() {
                 ))}
             </TabsList>
 
-            {cardData.map((card) => (
+            {cardData.map((card) => {
+                 const ngo = ngos.find(n => n.id === card.ngoId);
+                 return (
                 <TabsContent key={card.id} value={card.id} className="mt-0 -translate-y-1">
-                    <div
-                        className={cn(
-                            "relative h-56 rounded-b-2xl p-6 flex flex-col justify-between shadow-lg text-white w-full rounded-tr-2xl",
-                            card.bgColor
-                        )}
-                    >
-                        <div className="flex justify-between items-start">
-                                <p className="font-semibold text-lg">{card.type}</p>
-                                <p className="font-semibold text-2xl">{card.balance}</p>
-                        </div>
-                        <div className="relative">
-                            <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
-                            <div className="flex justify-between items-end">
-                                <div>
-                                    <p className="text-xs opacity-80">Kart Sahibi</p>
-                                    <p className="font-semibold text-sm uppercase">{card.owner}</p>
+                     <div className="relative [perspective:1000px] h-56">
+                        <div
+                            className={cn(
+                                "relative h-full w-full rounded-b-2xl rounded-tr-2xl shadow-lg transition-transform duration-500 [transform-style:preserve-3d]",
+                                flippedCardId === card.id && "[transform:rotateY(180deg)]"
+                            )}
+                        >
+                            {/* FRONT */}
+                            <div
+                                className={cn(
+                                    "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-2xl",
+                                    card.bgColor
+                                )}
+                            >
+                                <div className="flex justify-between items-start">
+                                    <p className="font-semibold text-lg">{card.type}</p>
+                                    <p className="font-semibold text-2xl">{card.balance}</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs opacity-80">SKT</p>
-                                    <p className="font-semibold text-sm">{card.expiry}</p>
+                                <div className="relative">
+                                    <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
+                                    <div className="flex justify-between items-end">
+                                        <div>
+                                            <p className="text-xs opacity-80">Kart Sahibi</p>
+                                            <p className="font-semibold text-sm uppercase">{card.owner}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs opacity-80">SKT</p>
+                                            <p className="font-semibold text-sm">{card.expiry}</p>
+                                        </div>
+                                    </div>
+                                    <TroyLogo className="absolute bottom-0 right-0" />
                                 </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
+                                    onClick={() => handleFlip(card.id)}
+                                >
+                                    <Send className="h-6 w-6" />
+                                </Button>
                             </div>
-                                <TroyLogo className="absolute bottom-0 right-0" />
+
+                            {/* BACK */}
+                            <div
+                                className={cn(
+                                    "absolute inset-0 p-6 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl cursor-pointer",
+                                    card.bgColor
+                                )}
+                                onClick={() => handleFlip(card.id)}
+                            >
+                                <p className="text-sm opacity-80 mb-2">Bu kart ile desteklenen kuruluş</p>
+                                {ngo ? (
+                                    <div className="text-center">
+                                        <Image src={ngo.avatarUrl} alt={ngo.name} width={64} height={64} className="rounded-full bg-white/80 p-2 mb-2 mx-auto"/>
+                                        <p className="font-semibold text-lg">{ngo.name}</p>
+                                    </div>
+                                ) : (
+                                    <p>STK Bilgisi Yok</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </TabsContent>
-            ))}
+            )})}
         </Tabs>
 
 
