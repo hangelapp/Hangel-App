@@ -42,7 +42,7 @@ export default function EventsPage() {
               <p className="text-sm font-medium text-muted-foreground">{event.organizer}</p>
               <div className="text-sm text-muted-foreground flex items-center gap-2 pt-1">
                 <Calendar className='h-4 w-4'/>
-                <span>{event.date}</span>
+                <span>{event.date}{event.time && `, ${event.time}`}</span>
               </div>
                <div className="text-sm text-muted-foreground flex items-center gap-2">
                 <MapPin className='h-4 w-4'/>

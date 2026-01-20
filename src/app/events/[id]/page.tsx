@@ -90,7 +90,7 @@ export default function EventDetailPage() {
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-3 text-base">
                       <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <span>{event.date}</span>
+                      <span>{event.date}{event.time && `, ${event.time}`}</span>
                     </div>
                     <div className="flex items-center gap-3 text-base">
                       <MapPin className="h-5 w-5 text-muted-foreground" />
@@ -176,7 +176,7 @@ export default function EventDetailPage() {
                     <div className="p-4 flex-1 flex flex-col justify-center items-center text-center">
                         <div className="space-y-1">
                             <p className="text-lg font-semibold text-foreground leading-tight">{event.name}</p>
-                            <p className="text-sm text-muted-foreground">{event.date}</p>
+                            <p className="text-sm text-muted-foreground">{event.date}{event.time && `, ${event.time}`}</p>
                         </div>
                         
                         <div className="my-4">

@@ -1,5 +1,3 @@
-
-
 import { LucideIcon } from "lucide-react";
 
 export type NavItem = {
@@ -112,6 +110,7 @@ export type Event = {
   organizer: string;
   type: string;
   date: string;
+  time?: string;
   location: string;
   capacity: {
     current: number;
