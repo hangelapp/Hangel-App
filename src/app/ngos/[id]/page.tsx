@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { useState, useEffect } from 'react';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -69,13 +70,16 @@ export default function NgoProfilePage() {
   const params = useParams();
   const id = params.id as string;
   const ngo = ngos.find(n => n.id === id);
+  const [profileUrl, setProfileUrl] = useState('');
+
+  useEffect(() => {
+    setProfileUrl(window.location.href);
+  }, []);
 
   if (!ngo) {
     notFound();
   }
   
-  const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
-
   const transparencyCriteria = [
       { name: 'Faaliyet Belgesi', completed: true },
       { name: 'Tüzük / Vakıf Senedi', completed: true },

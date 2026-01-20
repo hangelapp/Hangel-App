@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useState, useEffect } from 'react';
 
 const RequirementRow = ({ label, value, isMet }: { label: string, value: string | string[] | undefined, isMet: boolean }) => {
     if (!value || (Array.isArray(value) && value.length === 0)) {
@@ -36,6 +37,11 @@ export default function VolunteeringDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const opportunity = volunteeringOpportunities.find(e => e.id === id);
+  const [profileUrl, setProfileUrl] = useState('');
+
+  useEffect(() => {
+    setProfileUrl(window.location.href);
+  }, []);
   
   if (!opportunity) {
     notFound();
@@ -77,8 +83,6 @@ export default function VolunteeringDetailPage() {
     internationalTravelMet,
     visaMet
   ].every(Boolean);
-
-  const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün - ` : (daysRemaining === 0 ? 'Son Gün - ' : '');

@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
+import { useState, useEffect } from 'react';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -24,13 +25,17 @@ export default function BrandProfilePage() {
   const params = useParams();
   const id = params.id as string;
   const brand = allEntityLists.find(b => b.id === id);
+  const [profileUrl, setProfileUrl] = useState('');
+
+  useEffect(() => {
+    setProfileUrl(window.location.href);
+  }, []);
 
   if (!brand) {
     notFound();
   }
   
   const coverPhotoUrl = brand.coverPhotoUrl || 'https://picsum.photos/seed/brand-cover/1200/400';
-  const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
     <div className="animate-in fade-in-0">

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -41,9 +41,14 @@ const IconButton = ({ children, href, 'aria-label': ariaLabel, onClick }: { chil
 
 export default function InvitePage() {
   const { toast } = useToast();
-  const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}/register?ref=ismail` : '';
+  const [inviteLink, setInviteLink] = useState('');
+
+  useEffect(() => {
+    setInviteLink(`${window.location.origin}/register?ref=ismail`);
+  }, []);
 
   const copyToClipboard = () => {
+    if (!inviteLink) return;
     navigator.clipboard.writeText(inviteLink);
     toast({
       title: "Davet linki kopyalandı!",

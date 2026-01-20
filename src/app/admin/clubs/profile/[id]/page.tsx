@@ -9,6 +9,7 @@ import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ShareButtons } from '@/components/shared/share-buttons';
+import { useState, useEffect } from 'react';
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
@@ -30,6 +31,11 @@ export default function ClubProfilePage() {
   const params = useParams();
   const id = params.id as string;
   const club = studentClubs.find(c => c.id === id);
+  const [profileUrl, setProfileUrl] = useState('');
+
+  useEffect(() => {
+    setProfileUrl(window.location.href);
+  }, []);
 
   if (!club) {
     notFound();
@@ -40,8 +46,6 @@ export default function ClubProfilePage() {
       ...rep,
       role: ['Başkan Yardımcısı', 'Genel Sekreter', 'Sayman', 'Proje Koordinatörü'][schoolRepresentatives.indexOf(rep) - 1]
   }));
-
-  const profileUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
     <div className="animate-in fade-in-0">
