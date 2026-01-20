@@ -176,4 +176,24 @@ export const contractsData: Contract[] = [
       <p><small>*2019 yılında Açık Açık Derneği, Ashoka Türkiye ve Türetim Ekonomisi Derneği tarafından hazırlanmıştır.</small></p>
     `,
   },
+  {
+    slug: 'erisilebilirlik-politikasi',
+    title: 'Erişilebilirlik Politikası',
+    content: `
+      <h4>1. Taahhüdümüz</h4>
+      <p>Hangel olarak, platformumuzu engelli bireyler de dahil olmak üzere herkes için erişilebilir ve kullanılabilir kılmayı taahhüt ediyoruz. Web İçeriği Erişilebilirlik Yönergeleri (WCAG) 2.1 AA seviyesini hedefleyerek, teknolojinin birleştirici gücünü herkesin deneyimlemesini amaçlıyoruz.</p>
+      
+      <h4>2. Erişilebilirlik Özelliklerimiz</h4>
+      <p>Platformumuz, aşağıdaki gibi çeşitli erişilebilirlik özelliklerini desteklemektedir:</p>
+      <ul>
+          <li><strong>Ekran Okuyucu Desteği:</strong> Görme engelli kullanıcılar için ARIA etiketleri ve anlamsal HTML yapısı.</li>
+          <li><strong>Klavye Navigasyonu:</strong> Platformun tüm işlevlerine sadece klavye kullanarak erişim imkanı.</li>
+          <li><strong>Yüksek Kontrast ve Metin Boyutlandırma:</strong> Az gören kullanıcılar için daha iyi okunabilirlik sağlayan tema ve metin boyutu seçenekleri.</li>
+          <li><strong>Azaltılmış Hareket:</strong> Vestibüler rahatsızlıkları olan kullanıcılar için animasyonları azaltma seçeneği.</li>
+      </ul>
+
+      <h4>3. Geri Bildirim</h4>
+      <p>Erişilebilirlik konusundaki çabalarımız süreklidir. Herhangi bir erişilebilirlik engeliyle karşılaşırsanız veya iyileştirme önerileriniz varsa, lütfen <a href="/support">destek merkezimiz</a> aracılığıyla bizimle iletişime geçin. Geri bildirimleriniz, platformumuzu herkes için daha iyi bir yer haline getirmemize yardımcı olacaktır.</p>
+    `,
+  },
 ];

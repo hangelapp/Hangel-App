@@ -27,6 +27,7 @@ const contracts = [
     { title: 'Ücret Politikamız', slug: 'ucret-politikasi' },
     
     // Other
+    { title: 'Erişilebilirlik Politikası', slug: 'erisilebilirlik-politikasi' },
     { title: 'Etik İlkeler', slug: 'etik-ilkeler' },
     { title: 'Bilgilendirme Politikası', slug: 'bilgilendirme-politikasi' },
 ];
