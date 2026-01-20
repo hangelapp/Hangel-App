@@ -146,15 +146,27 @@ export default function EventDetailPage() {
                 Etkinlik için QR kodlu yaka kartınız oluşturuldu. Etkinlik girişinde bu QR kodu göstermeniz gerekmektedir.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="my-4 flex flex-col items-center justify-center p-4 border rounded-lg bg-muted/50">
-                <div className="w-full max-w-[280px] bg-background p-4 rounded-lg shadow-md text-center border">
-                    <h3 className="text-lg font-bold text-primary">{event.name}</h3>
-                    <p className="text-sm text-muted-foreground">{event.organizer}</p>
-                    <div className="my-4">
-                         <Image src={qrCodeUrl} alt="Katılımcı QR Kodu" width={120} height={120} className="mx-auto" />
+            <div className="my-4 flex flex-col items-center justify-center p-0">
+                <div className="w-full max-w-[320px] aspect-[105/148] bg-background p-6 rounded-lg shadow-md text-center border flex flex-col justify-between">
+                    <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">{event.organizer}</p>
+                        <h3 className="text-xl font-bold text-primary leading-tight">{event.name}</h3>
                     </div>
-                    <p className="text-xl font-semibold">{user.name}</p>
-                    <p className="text-xs text-muted-foreground uppercase">Katılımcı</p>
+                    
+                    <div className="flex flex-col items-center space-y-2 my-4">
+                         <Image src={qrCodeUrl} alt="Katılımcı QR Kodu" width={128} height={128} className="mx-auto rounded-md" />
+                    </div>
+
+                    <div className='space-y-1'>
+                        <p className="text-2xl font-bold">{user.name}</p>
+                        <p className="text-base text-muted-foreground">{user.username}</p>
+                        <p className="text-sm font-medium uppercase pt-2">Katılımcı</p>
+                    </div>
+                    
+                    <div className='text-xs text-muted-foreground border-t pt-2 mt-4 space-y-1'>
+                        <p>{event.date}</p>
+                        <p>{event.location}</p>
+                    </div>
                 </div>
             </div>
             <AlertDialogFooter>
