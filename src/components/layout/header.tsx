@@ -22,11 +22,9 @@ const mainMenuItems: SideNavItem[] = [
   { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
   { href: '/my-badges', label: 'Rozetler', icon: 'award' },
   { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
-  { href: '/timeline', label: 'Akış', icon: 'layout-grid' },
 ];
 
 const userMenuItems: SideNavItem[] = [
-  { href: '/profile', label: 'Profilim', icon: 'user' },
   { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
   { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
 ];
@@ -146,7 +144,7 @@ export default function AppHeader() {
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
              <Link href="/market" passHref className="">
-                <span className="text-xl font-bold" style={{ color: isMounted ? '#f34723' : 'inherit' }}>hangel</span>
+                <span className="text-xl font-bold">hangel</span>
             </Link>
           </div>
 
