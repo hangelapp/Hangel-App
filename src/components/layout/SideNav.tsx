@@ -39,7 +39,7 @@ const NavLink = ({ item, pathname }: { item: SideNavItem; pathname: string }) =>
     )
 }
 
-export function SideNav({ mainItems, userItems, secondaryItems }: { mainItems: SideNavItem[], userItems: SideNavItem[], secondaryItems: SideNavItem[] }) {
+export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { mainItems: SideNavItem[], navItems: SideNavItem[], userItems: SideNavItem[], secondaryItems: SideNavItem[] }) {
   const pathname = usePathname();
   const isAuthPage = pathname === '/login' || pathname === '/onboarding' || pathname === '/';
 
@@ -63,10 +63,18 @@ export function SideNav({ mainItems, userItems, secondaryItems }: { mainItems: S
                     ))}
                 </ul>
             </li>
+            {navItems && navItems.length > 0 && (
+                <li>
+                    <ul role="list" className="-mx-2 space-y-1">
+                        {navItems.map((item) => (
+                        <NavLink key={item.label} item={item} pathname={pathname} />
+                        ))}
+                    </ul>
+                </li>
+            )}
             {userItems && userItems.length > 0 && (
                 <li>
-                    <div className="text-xs font-semibold leading-6 text-muted-foreground">Profil</div>
-                    <ul role="list" className="-mx-2 mt-2 space-y-1">
+                    <ul role="list" className="-mx-2 space-y-1">
                         {userItems.map((item) => (
                         <NavLink key={item.label} item={item} pathname={pathname} />
                         ))}
@@ -74,7 +82,6 @@ export function SideNav({ mainItems, userItems, secondaryItems }: { mainItems: S
                 </li>
             )}
              <li className="mt-auto">
-                 <div className="text-xs font-semibold leading-6 text-muted-foreground">Diğer</div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
                     {secondaryItems.map((item) => (
                         <NavLink key={item.label} item={item} pathname={pathname} />

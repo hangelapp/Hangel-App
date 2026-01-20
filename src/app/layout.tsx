@@ -7,23 +7,26 @@ import { SideNav } from '@/components/layout/SideNav';
 import type { SideNavItem } from '@/lib/types';
 
 
-const mainMenuItems: SideNavItem[] = [
+const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
-  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
-  { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
-  { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
-  { href: '/my-badges', label: 'Rozetler', icon: 'award' },
 ];
 
-const userMenuItems: SideNavItem[] = [
-  { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
-  { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
+const group2Items: SideNavItem[] = [
+    { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
+    { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
+    { href: '/my-badges', label: 'Rozetler', icon: 'award' },
+    { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
 ];
 
-const secondaryMenuItems: SideNavItem[] = [
-  { href: '/settings', label: 'Ayarlar', icon: 'settings' },
+const group3Items: SideNavItem[] = [
+    { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
+    { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
+    { href: '/settings', label: 'Ayarlar', icon: 'settings' },
+];
+
+const group4Items: SideNavItem[] = [
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
@@ -39,9 +42,10 @@ export default function RootLayout({
       <body className="antialiased">
         <div className="relative mx-auto flex min-h-screen w-full flex-col bg-background">
           <SideNav 
-            mainItems={mainMenuItems} 
-            userItems={userMenuItems}
-            secondaryItems={secondaryMenuItems}
+            mainItems={group1Items} 
+            navItems={group2Items}
+            userItems={group3Items}
+            secondaryItems={group4Items}
           />
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader />

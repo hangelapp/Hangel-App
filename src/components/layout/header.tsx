@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -14,23 +15,26 @@ import { user } from '@/lib/data';
 import { SideNavItem } from '@/lib/types';
 import { HangelLogo } from '../icons';
 
-const mainMenuItems: SideNavItem[] = [
+const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
-  { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
-  { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
-  { href: '/my-badges', label: 'Rozetler', icon: 'award' },
-  { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
 ];
 
-const userMenuItems: SideNavItem[] = [
-  { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
-  { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
+const group2Items: SideNavItem[] = [
+    { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
+    { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
+    { href: '/my-badges', label: 'Rozetler', icon: 'award' },
+    { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
 ];
 
-const secondaryMenuItems: SideNavItem[] = [
-  { href: '/settings', label: 'Ayarlar', icon: 'settings' },
+const group3Items: SideNavItem[] = [
+    { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
+    { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
+    { href: '/settings', label: 'Ayarlar', icon: 'settings' },
+];
+
+const group4Items: SideNavItem[] = [
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
@@ -52,7 +56,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
         <div className="flex-1 overflow-y-auto">
           <nav className="py-4">
             <ul>
-              {mainMenuItems.map((item) => (
+              {group1Items.map((item) => (
                 <li key={item.label}>
                     <Link href={item.href} passHref>
                         <SheetClose asChild>
@@ -66,7 +70,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
             </ul>
             <Separator className="my-2" />
             <ul>
-              {userMenuItems.map((item) => (
+              {group2Items.map((item) => (
                 <li key={item.label}>
                   <Link href={item.href} passHref>
                     <SheetClose asChild>
@@ -80,7 +84,21 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
             </ul>
             <Separator className="my-2" />
              <ul>
-              {secondaryMenuItems.map((item) => (
+              {group3Items.map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} passHref>
+                    <SheetClose asChild>
+                        <div className="flex items-center justify-between px-4 py-2.5 text-base text-foreground hover:bg-accent">
+                            <span>{item.label}</span>
+                        </div>
+                    </SheetClose>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+             <Separator className="my-2" />
+             <ul>
+              {group4Items.map((item) => (
                 <li key={item.label}>
                   <Link href={item.href} passHref>
                     <SheetClose asChild>
