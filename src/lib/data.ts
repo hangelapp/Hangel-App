@@ -1,4 +1,5 @@
 
+
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
@@ -32,7 +33,9 @@ export const user: User = {
         social: {
             linkedin: 'ismailhilmi',
             github: 'ismailhilmi',
-            behance: 'ismailhilmi'
+            behance: 'ismailhilmi',
+            instagram: 'ismailhilmi',
+            twitter: 'ismailhilmi',
         }
     },
     volunteerInfo: {
@@ -227,6 +230,7 @@ export const ngos: NGO[] = [
             donationCount: 65000,
             avgDonation: 23.07,
             highestSingleDonation: 500,
+            peopleReached: 500000,
         },
         transparencyScore: 92,
         about: "Türkiye Çöl Olmasın! TEMA Vakfı, 1992 yılından bu yana erozyon ve çölleşme tehlikesine karşı mücadele etmekte, doğal varlıklarımızı korumak için çalışmaktadır. Ağaçlandırma projeleri, eğitim programları ve savunuculuk faaliyetleri ile daha yeşil bir Türkiye için umut oluyoruz.",
@@ -258,6 +262,7 @@ export const ngos: NGO[] = [
             donationCount: 300000,
             avgDonation: 41.67,
             highestSingleDonation: 1000,
+            peopleReached: 2000000,
         },
         transparencyScore: 95,
         about: "Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.",
@@ -290,6 +295,7 @@ export const ngos: NGO[] = [
             donationCount: 95000,
             avgDonation: 10.00,
             highestSingleDonation: 250,
+            peopleReached: 100000,
         },
         transparencyScore: 88,
         about: "Tohum Otizm Vakfı, otizmli çocukların erken tanısının konulması, özel eğitimi ile topluma kazandırılmasına öncülük edilmesi ve bunun yurt çapında yaygınlaştırılması amacıyla, kâr amacı gütmeyen bir sivil toplum kuruluşu olarak 2003 yılında kurulmuştur.",

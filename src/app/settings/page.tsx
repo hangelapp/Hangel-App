@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, HeartHandshake, Mail } from 'lucide-react';
+import { Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, HeartHandshake, Mail, PersonStanding, Contrast, Type, MinusCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const SettingsSection = ({ children, className }: { children: React.ReactNode, className?: string }) => (
@@ -76,6 +76,30 @@ export default function SettingsPage() {
 
         <SettingsSection>
           <SettingsLink href="#" icon={Shield} label="Güvenlik ve Şifre" iconColor="bg-green-500" />
+        </SettingsSection>
+        
+        <SettingsSection>
+           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pt-4">Erişilebilirlik</h2>
+           <SettingsSwitch label="Yüksek Kontrast Modu" icon={Contrast} iconColor="bg-indigo-500" />
+           <Separator />
+           <SettingsSwitch label="Animasyonları Azalt" icon={MinusCircle} iconColor="bg-indigo-500" />
+           <Separator />
+            <div className="flex items-center p-4 text-base">
+                <div className="p-1.5 rounded-lg mr-4 bg-indigo-500">
+                    <Type className="h-5 w-5 text-white" />
+                </div>
+                <span className="flex-1 font-medium">Yazı Tipi Boyutu</span>
+                 <Select defaultValue='normal'>
+                  <SelectTrigger className='w-auto border-none bg-accent focus:ring-0'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">Küçük</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="large">Büyük</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
         </SettingsSection>
 
         <SettingsSection>

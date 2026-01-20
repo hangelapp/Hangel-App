@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { user, badges, pastVolunteering } from '@/lib/data';
+import { user, badges, pastVolunteering, certificates } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -96,11 +96,12 @@ export default function ProfilePage() {
             </div>
 
             <Tabs defaultValue="stats" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 px-2">
+                <TabsList className="grid w-full grid-cols-5 px-2">
                     <TabsTrigger value="stats">İstatistikler</TabsTrigger>
                     <TabsTrigger value="about">Hakkında</TabsTrigger>
                     <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
                     <TabsTrigger value="badges">Rozetler</TabsTrigger>
+                    <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="stats" className="p-4 space-y-4">
@@ -146,6 +147,8 @@ export default function ProfilePage() {
                             <InfoRow icon={Linkedin} label="LinkedIn" value={user.personalInfo.social?.linkedin} />
                             <InfoRow icon={Github} label="GitHub" value={user.personalInfo.social?.github} />
                             <InfoRow icon={Palette} label="Behance" value={user.personalInfo.social?.behance} />
+                            <InfoRow icon={Instagram} label="Instagram" value={user.personalInfo.social?.instagram} />
+                            <InfoRow icon={Twitter} label="X (Twitter)" value={user.personalInfo.social?.twitter} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -194,6 +197,40 @@ export default function ProfilePage() {
                             {badges.slice(0, 6).map(badge => <BadgeDisplay key={badge.id} badge={badge} />)}
                         </CardContent>
                         <CardFooter className='pt-4'>
+                             <Button asChild variant="secondary" className='w-full'>
+                                 <Link href="/my-badges">Tüm Rozetleri ve Sertifikaları Gör</Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+                
+                <TabsContent value="certificates" className="p-4">
+                     <Card>
+                        <CardHeader><CardTitle className='text-lg'>Sertifikalarım</CardTitle></CardHeader>
+                        <CardContent>
+                        {certificates.length > 0 ? (
+                            <div className="space-y-4">
+                                {certificates.map(cert => (
+                                    <div key={cert.id} className='relative p-4 rounded-lg border'>
+                                    <div className='pr-24'>
+                                        <p className='text-sm text-muted-foreground'>{cert.organization} - {cert.date}</p>
+                                        <p className='font-semibold mt-1'>{cert.title}</p>
+                                    </div>
+                                    <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7"><Download className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7"><Share2 className="h-4 w-4"/></Button>
+                                    </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center text-muted-foreground py-12">
+                                <p>Henüz kazanılmış bir sertifikanız bulunmuyor.</p>
+                            </div>
+                        )}
+                        </CardContent>
+                          <CardFooter className='pt-4'>
                              <Button asChild variant="secondary" className='w-full'>
                                  <Link href="/my-badges">Tüm Rozetleri ve Sertifikaları Gör</Link>
                             </Button>

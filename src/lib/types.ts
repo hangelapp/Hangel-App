@@ -82,6 +82,7 @@ export type NGO = {
     donationCount: number;
     avgDonation: number;
     highestSingleDonation: number;
+    peopleReached: number;
   };
   transparencyScore: number;
   about: string;
@@ -205,6 +206,8 @@ export type User = {
             linkedin?: string | null;
             github?: string | null;
             behance?: string | null;
+            instagram?: string | null;
+            twitter?: string | null;
         }
     },
     volunteerInfo: {
