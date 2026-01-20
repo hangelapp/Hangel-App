@@ -205,7 +205,7 @@ export default function MarketPage() {
                                     </AvatarFallback>
                                 </Avatar>
                                 {brand.donationRate > 0 && (
-                                    <div className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground ring-2 ring-background h-6 w-6 md:h-9 md:w-9 md:text-sm">
+                                    <div className="absolute top-0 right-0 flex h-12 w-12 transform -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-destructive text-base font-bold text-destructive-foreground ring-4 ring-background">
                                     %{brand.donationRate}
                                     </div>
                                 )}
