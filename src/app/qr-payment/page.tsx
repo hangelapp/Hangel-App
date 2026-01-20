@@ -132,14 +132,14 @@ export default function QrPaymentPage() {
         </div>
         
         <Tabs defaultValue={cardData[0].id} className="w-full" onValueChange={(value) => setActiveCardId(value ?? cardData[0].id)}>
-            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0">
+            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-0">
                 {cardData.map((card) => (
                     <TabsTrigger
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg py-1.5 px-1 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
-                             card.bgColor
+                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg p-1 text-xs font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10 shadow-none",
+                             card.id === 'bireysel' ? 'bg-primary' : card.bgColor
                         )}
                     >
                         {card.type}
@@ -151,7 +151,7 @@ export default function QrPaymentPage() {
                  const ngo = ngos.find(n => n.id === card.ngoId);
                  const isFlipped = flippedCardId === card.id;
                  return (
-                <TabsContent key={card.id} value={card.id} className="-mt-px">
+                <TabsContent key={card.id} value={card.id} className="mt-0">
                      <div className="relative [perspective:1000px] h-56">
                         <div
                             className={cn(
@@ -163,7 +163,7 @@ export default function QrPaymentPage() {
                             <div
                                 className={cn(
                                     "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-b-2xl",
-                                    card.bgColor
+                                    card.id === 'bireysel' ? 'bg-primary' : card.bgColor
                                 )}
                             >
                                 <div className="flex justify-between items-start">
@@ -198,7 +198,7 @@ export default function QrPaymentPage() {
                             <div
                                 className={cn(
                                     "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-b-2xl",
-                                    card.bgColor
+                                    card.id === 'bireysel' ? 'bg-primary' : card.bgColor
                                 )}
                             >
                                <CardSettings />
