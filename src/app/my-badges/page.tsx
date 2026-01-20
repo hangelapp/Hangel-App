@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,22 @@ const levelColors: Record<BadgeType['level'], { bg: string; text: string }> = {
   'Platin': { bg: 'bg-cyan-300/20', text: 'text-cyan-400' },
   'Elmas': { bg: 'bg-sky-400/20', text: 'text-sky-500' },
 };
+
+const allPointTransactions = [
+    { icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2 saat önce" },
+    { icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "1 gün önce" },
+    { icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "3 gün önce" },
+    { icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "3 gün önce" },
+    { icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "5 gün önce" },
+    { icon: HandCoins, description: "Kitap Kurdu alışverişi", points: 80, time: "1 hafta önce" },
+    { icon: Handshake, description: "Barınak ziyareti gönüllülüğü", points: 75, time: "2 hafta önce" },
+    { icon: Users, description: "Ahmet Demir'i davet ettin", points: 100, time: "2 hafta önce" },
+    { icon: DollarSign, description: "Tekno Market alışverişi", points: 25, time: "3 hafta önce" },
+    { icon: Award, description: "'Bronz Hayvan Dostu' rozeti", points: 250, time: "1 ay önce" },
+    { icon: HandCoins, description: "Sürdürülebilir Moda alışverişi", points: 95, time: "1 ay önce" },
+    { icon: Handshake, description: "Sahil temizliği etkinliği", points: 120, time: "1 ay önce" },
+];
+
 
 const VectorBadge = ({ badge }: { badge: BadgeType }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
@@ -64,17 +80,13 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
 };
 
 export default function MyBadgesPage() {
+    const [visibleTxCount, setVisibleTxCount] = useState(5);
+
     const groupedBadges = React.useMemo(() => {
         return groupBy(badges, 'socialArea');
     }, []);
 
-    const recentPointTransactions = [
-        { icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2 saat önce" },
-        { icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "1 gün önce" },
-        { icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "3 gün önce" },
-        { icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "3 gün önce" },
-        { icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "5 gün önce" },
-    ];
+    const recentPointTransactions = allPointTransactions.slice(0, visibleTxCount);
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -140,7 +152,15 @@ export default function MyBadgesPage() {
                         )})}
                     </CardContent>
                     <CardFooter>
-                        <Button variant="outline" className="w-full">Daha Eski</Button>
+                         {visibleTxCount < allPointTransactions.length && (
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => setVisibleTxCount(prev => prev + 5)}
+                            >
+                                Daha Eski
+                            </Button>
+                        )}
                     </CardFooter>
                 </Card>
                 <Card>

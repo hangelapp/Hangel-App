@@ -19,7 +19,7 @@ const cardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-primary to-orange-600',
+    bgColor: 'bg-gradient-to-br from-slate-600 via-slate-500 to-slate-700',
     number: '5549 6010 0000 1234',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
@@ -29,7 +29,7 @@ const cardData = [
   {
     id: 'ogrenci',
     type: 'Öğrenci',
-    bgColor: 'bg-gradient-to-br from-blue-500 to-blue-700',
+    bgColor: 'bg-gradient-to-br from-cyan-700 via-cyan-500 to-cyan-800',
     number: '5549 6010 0000 5678',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '10/27',
@@ -39,7 +39,7 @@ const cardData = [
   {
     id: 'ticari',
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-slate-700 to-black',
+    bgColor: 'bg-gradient-to-br from-gray-800 via-gray-900 to-black',
     number: '5549 6010 0000 9012',
     owner: 'Hangel Ticari Hesap',
     expiry: '08/29',
@@ -139,7 +139,7 @@ export default function QrPaymentPage() {
                         value={card.id}
                         className={cn(
                             "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg p-1 text-xs font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10 shadow-none",
-                             card.id === 'bireysel' ? 'bg-primary' : card.bgColor
+                             card.bgColor
                         )}
                     >
                         {card.type}
@@ -164,7 +164,7 @@ export default function QrPaymentPage() {
                                 <div
                                     className={cn(
                                         "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-b-2xl",
-                                        card.id === 'bireysel' ? 'bg-gradient-to-br from-primary to-orange-600' : card.bgColor
+                                        card.bgColor
                                     )}
                                 >
                                     <div className="flex justify-between items-start">
@@ -199,7 +199,7 @@ export default function QrPaymentPage() {
                                 <div
                                     className={cn(
                                         "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-b-2xl",
-                                        card.id === 'bireysel' ? 'bg-gradient-to-br from-primary to-orange-600' : card.bgColor
+                                        card.bgColor
                                     )}
                                 >
                                 <CardSettings />
@@ -240,9 +240,9 @@ export default function QrPaymentPage() {
         </div>
       
       <Card className={cn('transition-colors border-2', 
-        activeCardId === 'bireysel' && 'border-primary',
-        activeCardId === 'ogrenci' && 'border-blue-500',
-        activeCardId === 'ticari' && 'border-slate-700'
+        activeCardId === 'bireysel' && 'border-slate-600',
+        activeCardId === 'ogrenci' && 'border-cyan-700',
+        activeCardId === 'ticari' && 'border-gray-800'
       )}>
         <CardHeader>
            <CardTitle>Son İşlemler</CardTitle>
