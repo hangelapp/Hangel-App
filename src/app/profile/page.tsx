@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Behance
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -85,7 +85,7 @@ export default function ProfilePage() {
     return (
         <div className="animate-in fade-in-0 bg-secondary min-h-screen relative">
             <div className="absolute top-4 right-4 z-10">
-                <ShareButtons url={profileUrl} title={`${user.name} - Hangel Profili`} />
+                 <ShareButtons url={profileUrl} title={`${user.name} - Hangel Profili`} />
             </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center pt-8">
