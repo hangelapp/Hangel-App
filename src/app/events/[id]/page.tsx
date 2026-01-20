@@ -44,6 +44,15 @@ export default function EventDetailPage() {
   const organizerEntity = ngos.find(n => n.name === event.organizer) || studentClubs.find(c => c.name === event.organizer);
   const organizerLogo = organizerEntity?.avatarUrl;
 
+  let organizerLink = '#';
+  if (organizerEntity) {
+    if ('transparencyScore' in organizerEntity) { // It's an NGO
+      organizerLink = `/ngos/${organizerEntity.id}`;
+    } else if ('university' in organizerEntity) { // It's a Student Club
+      organizerLink = `/admin/clubs/profile/${organizerEntity.id}`;
+    }
+  }
+
   const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
@@ -65,7 +74,7 @@ export default function EventDetailPage() {
       <div className="p-4 space-y-4">
         <div className="-mt-12 relative z-10">
           <h1 className="text-3xl font-bold font-headline text-white drop-shadow-md">{event.name}</h1>
-          <p className="text-lg font-medium text-black drop-shadow-md">{event.organizer}</p>
+          <p className="text-lg font-medium text-white drop-shadow-md">{event.organizer}</p>
         </div>
 
         <Tabs defaultValue="details" className="w-full">
