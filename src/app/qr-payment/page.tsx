@@ -2,22 +2,21 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, History, MoreHorizontal, RefreshCw, ScanLine, Contact, Filter, ArrowDownUp, ToggleRight, CircleDollarSign, QrCode, Lock, BadgePercent, MessageSquareWarning, Plus } from 'lucide-react';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import Link from 'next/link';
-import React, { useState } from 'react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel"
 
 const initialCardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-gray-900 via-gray-800 to-black',
+    bgColor: 'bg-gradient-to-br from-red-500 to-orange-500',
     textColor: 'text-white',
     owner: 'İsmail Hilmi ADIGÜZEL',
     number: '**** 1234',
@@ -35,7 +34,7 @@ const initialCardData = [
   {
     id: 'ticari',
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-amber-500 to-orange-600',
+    bgColor: 'bg-gradient-to-br from-[#042654] to-black',
     textColor: 'text-white',
     owner: 'İsmail H. ADIGÜZEL - TİCARİ',
     number: '**** 9012',
@@ -61,26 +60,54 @@ const allTransactions = {
 
 
 export default function QrPaymentPage() {
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0);
   const [cardData, setCardData] = useState(initialCardData[0]);
+
+  useEffect(() => {
+    if (!api) {
+      return
+    }
+ 
+    setCurrent(api.selectedScrollSnap())
+
+    const handleSelect = () => {
+        const newIndex = api.selectedScrollSnap();
+        setCurrent(newIndex);
+        setCardData(initialCardData[newIndex]);
+    }
+
+    api.on("select", handleSelect)
+
+    return () => {
+      api.off("select", handleSelect)
+    }
+  }, [api])
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
         <h1 className="text-3xl font-bold font-headline pt-4">Cüzdanım</h1>
 
-        <div className="w-full h-56">
-             <div className={cn("w-full h-full rounded-2xl p-6 flex flex-col justify-between shadow-lg text-white", cardData.bgColor)}>
-                <div>
-                  <div className='flex justify-between items-start'>
-                    <p className={`font-semibold text-lg`}>{cardData.type}</p>
-                    <p className="font-semibold text-2xl">{cardData.balance}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="font-mono tracking-widest text-lg">{cardData.number}</p>
-                  <p className={`font-semibold text-sm`}>{cardData.owner}</p>
-                </div>
-            </div>
-        </div>
+        <Carousel setApi={setApi} className="w-full">
+            <CarouselContent className="-ml-4">
+                {initialCardData.map((card, index) => (
+                    <CarouselItem key={index} className="pl-4 basis-5/6 md:basis-1/2">
+                       <div className={cn("h-56 rounded-2xl p-6 flex flex-col justify-between shadow-lg text-white", card.bgColor)}>
+                            <div>
+                                <div className='flex justify-between items-start'>
+                                    <p className={`font-semibold text-lg`}>{card.type}</p>
+                                    <p className="font-semibold text-2xl">{card.balance}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p className="font-mono tracking-widest text-lg">{card.number}</p>
+                                <p className={`font-semibold text-sm`}>{card.owner}</p>
+                            </div>
+                        </div>
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+        </Carousel>
 
         <div className="grid grid-cols-4 gap-4 text-center">
             <div className='flex flex-col items-center gap-2'>
@@ -129,24 +156,6 @@ export default function QrPaymentPage() {
                   Bu kart için henüz işlem yok.
               </div>
           )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-           <CardTitle>Kartlarım</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 divide-y">
-            {initialCardData.map(card => (
-                <button key={card.id} onClick={() => setCardData(card)} className="w-full text-left p-4 flex items-center gap-4 hover:bg-accent transition-colors">
-                    <div className={cn("w-10 h-7 rounded-md", card.bgColor)}></div>
-                    <div className='flex-1'>
-                        <p className="font-semibold">{card.type}</p>
-                        <p className="text-sm text-muted-foreground">{card.number}</p>
-                    </div>
-                    <p className="font-semibold">{card.balance}</p>
-                </button>
-            ))}
         </CardContent>
       </Card>
     </div>
