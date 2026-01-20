@@ -72,15 +72,13 @@ export default function NgosPage() {
                 </Avatar>
                 <div className="flex-1 overflow-hidden">
                   <p className="font-semibold text-sm truncate">{ngo.name}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
                     <span className="truncate">{ngo.category}</span>
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <Heart className="h-3 w-3" /> {ngo.stats.followers / 1000}k
                     </span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
-                    <span className="flex items-center gap-1"><Percent className="h-3 w-3" /> %{ngo.transparencyScore}</span>
+                    <span className="flex items-center gap-1 flex-shrink-0"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
+                    <span className="flex items-center gap-1 flex-shrink-0"><Percent className="h-3 w-3" /> %{ngo.transparencyScore}</span>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
