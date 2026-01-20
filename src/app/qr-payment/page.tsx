@@ -116,7 +116,7 @@ export default function QrPaymentPage() {
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "data-[state=active]:shadow-lg data-[state=inactive]:opacity-70 rounded-none rounded-t-lg border-b-0 p-2 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
+                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg border-b-0 p-1 text-sm font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10",
                              card.bgColor
                         )}
                     >
