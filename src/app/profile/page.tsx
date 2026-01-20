@@ -105,6 +105,50 @@ export default function ProfilePage() {
                 </TabsList>
                 
                 <TabsContent value="stats" className="p-4 space-y-4">
+                    <Card className="text-center">
+                        <CardHeader>
+                            <CardTitle>Toplam Sosyal Etki Puanın</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Puan Cetveli</CardTitle>
+                            <CardDescription>Hangi eylemden ne kadar puan kazandığını ve toplamlarını gör.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                            <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                <div>
+                                    <p className="font-semibold">Alışverişle Bağış</p>
+                                    <p className="text-xs text-muted-foreground">Her 1₺ bağış için <strong>1 Puan</strong></p>
+                                </div>
+                                <p className="font-bold text-base text-primary">{(user.stats.totalDonation).toLocaleString('tr-TR')} Puan</p>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                <div>
+                                    <p className="font-semibold">Gönüllülük</p>
+                                    <p className="text-xs text-muted-foreground">Her 1 saat için <strong>10 Puan</strong></p>
+                                </div>
+                                <p className="font-bold text-base text-primary">{(user.stats.volunteerHours * 10).toLocaleString('tr-TR')} Puan</p>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                <div>
+                                    <p className="font-semibold">Arkadaş Daveti</p>
+                                    <p className="text-xs text-muted-foreground">Her başarılı davet için <strong>100 Puan</strong></p>
+                                </div>
+                                <p className="font-bold text-base text-primary">{(5 * 100).toLocaleString('tr-TR')} Puan</p>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                <div>
+                                    <p className="font-semibold">Rozet Kazanımı</p>
+                                    <p className="text-xs text-muted-foreground">Her rozet için <strong>250 Puan</strong></p>
+                                </div>
+                                <p className="font-bold text-base text-primary">{(badges.filter(b => b.currentPoints >= b.pointsRequired).length * 250).toLocaleString('tr-TR')} Puan</p>
+                            </div>
+                        </CardContent>
+                    </Card>
                     <Card>
                         <CardHeader><CardTitle className='text-lg flex items-center gap-2'><BarChart3 className='h-5 w-5 text-primary' />Gönüllülük İstatistikleri</CardTitle></CardHeader>
                         <CardContent className="divide-y">

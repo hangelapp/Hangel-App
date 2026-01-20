@@ -64,27 +64,18 @@ export default function NgosPage() {
         {filteredNgos.length > 0 ? filteredNgos.map((ngo) => (
            <Link href={`/ngos/${ngo.id}`} key={ngo.id} className="block">
             <Card className="hover:bg-accent transition-colors">
-              <CardContent className="p-4 flex gap-4 items-center">
-                <Avatar className="h-16 w-16">
+              <CardContent className="p-3 flex gap-3 items-center">
+                <Avatar className="h-12 w-12">
                   <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
                   <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <p className="font-semibold text-base">{ngo.name}</p>
-                  <p className="text-sm text-muted-foreground">{ngo.category}</p>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Heart className="h-3 w-3" />
-                      <span>{ngo.stats.followers / 1000}k Takipçi</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <span>{ngo.stats.volunteers / 1000}k Gönüllü</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Percent className="h-3 w-3" />
-                      <span>%{ngo.transparencyScore} Şeffaflık</span>
-                    </div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="font-semibold text-sm truncate">{ngo.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{ngo.category}</p>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {ngo.stats.followers / 1000}k</span>
+                    <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
+                    <span className="flex items-center gap-1"><Percent className="h-3 w-3" /> %{ngo.transparencyScore}</span>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />

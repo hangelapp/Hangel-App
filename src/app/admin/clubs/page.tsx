@@ -12,23 +12,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
     <Link href={`/admin/clubs/profile/${club.id}`} key={club.id} className="block">
         <Card className="hover:bg-accent transition-colors">
-            <CardContent className="p-4 flex gap-4 items-center">
-                <Avatar className="h-16 w-16">
+            <CardContent className="p-3 flex gap-3 items-center">
+                <Avatar className="h-12 w-12">
                     <AvatarImage src={club.avatarUrl} alt={club.name} />
                     <AvatarFallback>{club.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                    <p className="font-semibold text-base">{club.name}</p>
-                    <p className="text-sm text-muted-foreground">{club.university}</p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            <span>{club.members} Üye</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <BrainCircuit className="h-3 w-3" />
-                            <span>{club.points} Puan</span>
-                        </div>
+                <div className="flex-1 overflow-hidden">
+                    <p className="font-semibold text-sm truncate">{club.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{club.university}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {club.members} Üye</span>
+                        <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {club.points} Puan</span>
                     </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -78,7 +72,7 @@ export default function StudentClubsPage() {
   const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
     const filteredClubs = type ? clubs.filter(c => c.type === type) : clubs;
     return (
-        <div className='space-y-4'>
+        <div className='space-y-3'>
             {filteredClubs.length > 0 ? filteredClubs.map((club) => (
                 <ClubCard key={club.id} club={club} />
             )) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>}
