@@ -38,10 +38,10 @@ const SettingsSwitch = ({ label, description, icon: Icon, iconColor, defaultChec
             <Icon className="h-5 w-5 text-white" />
         </div>
         <div className='flex-1 space-y-0.5'>
-            <label className="font-medium">{label}</label>
+            <label htmlFor={label} className="font-medium cursor-pointer">{label}</label>
             {description && <p className='text-xs text-muted-foreground'>{description}</p>}
         </div>
-        <Switch defaultChecked={defaultChecked} />
+        <Switch id={label} defaultChecked={defaultChecked} />
     </div>
 );
 
@@ -80,15 +80,28 @@ export default function SettingsPage() {
         
         <SettingsSection>
            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pt-4">Erişilebilirlik</h2>
-           <SettingsSwitch label="Yüksek Kontrast Modu" icon={Contrast} iconColor="bg-indigo-500" />
+           <SettingsSwitch 
+            label="Yüksek Kontrast Modu"
+            description="Renk kontrastını artırarak okunabilirliği iyileştirir."
+            icon={Contrast} 
+            iconColor="bg-indigo-500" 
+           />
            <Separator />
-           <SettingsSwitch label="Animasyonları Azalt" icon={MinusCircle} iconColor="bg-indigo-500" />
+           <SettingsSwitch 
+            label="Animasyonları Azalt"
+            description="Uygulama içi animasyonları ve geçiş efektlerini azaltır."
+            icon={MinusCircle} 
+            iconColor="bg-indigo-500" 
+           />
            <Separator />
             <div className="flex items-center p-4 text-base">
                 <div className="p-1.5 rounded-lg mr-4 bg-indigo-500">
                     <Type className="h-5 w-5 text-white" />
                 </div>
-                <span className="flex-1 font-medium">Yazı Tipi Boyutu</span>
+                <div className="flex-1">
+                  <p className="font-medium">Yazı Tipi Boyutu</p>
+                  <p className="text-xs text-muted-foreground">Uygulama genelindeki metin boyutunu ayarlar.</p>
+                </div>
                  <Select defaultValue='normal'>
                   <SelectTrigger className='w-auto border-none bg-accent focus:ring-0'>
                     <SelectValue />
@@ -142,9 +155,7 @@ export default function SettingsPage() {
           <Separator />
           <SettingsLink href="/about" icon={Info} label="Hakkımızda" iconColor="bg-cyan-500" />
            <Separator />
-          <SettingsLink href="#" icon={FileText} label="Gizlilik Politikası" iconColor="bg-gray-400" />
-           <Separator />
-          <SettingsLink href="#" icon={FileText} label="Kullanıcı Sözleşmesi" iconColor="bg-gray-400" />
+          <SettingsLink href="/settings/contracts" icon={FileText} label="Sözleşmeler ve Politikalar" iconColor="bg-gray-400" />
         </SettingsSection>
 
         <SettingsSection>
