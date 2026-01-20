@@ -152,64 +152,66 @@ export default function QrPaymentPage() {
                  const isFlipped = flippedCardId === card.id;
                  return (
                 <TabsContent key={card.id} value={card.id} className="mt-0">
-                     <div className="relative [perspective:1000px] h-56">
-                        <div
-                            className={cn(
-                                "relative h-full w-full rounded-b-2xl transition-transform duration-500 [transform-style:preserve-3d]",
-                                isFlipped && "[transform:rotateY(180deg)]"
-                            )}
-                        >
-                            {/* FRONT */}
+                    <div className="px-4 pb-4">
+                        <div className="relative [perspective:1000px] h-56">
                             <div
                                 className={cn(
-                                    "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-b-2xl",
-                                    card.id === 'bireysel' ? 'bg-primary' : card.bgColor
+                                    "relative h-full w-full rounded-b-2xl transition-transform duration-500 [transform-style:preserve-3d]",
+                                    isFlipped && "[transform:rotateY(180deg)]"
                                 )}
                             >
-                                <div className="flex justify-between items-start">
-                                    <p className="font-semibold text-lg">{card.type}</p>
-                                    <p className="font-semibold text-2xl">{card.balance}</p>
-                                </div>
-                                <div className="relative">
-                                    <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
-                                    <div className="flex justify-between items-end">
-                                        <div>
-                                            <p className="text-xs opacity-80">Kart Sahibi</p>
-                                            <p className="font-semibold text-sm uppercase">{card.owner}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs opacity-80">SKT</p>
-                                            <p className="font-semibold text-sm">{card.expiry}</p>
-                                        </div>
+                                {/* FRONT */}
+                                <div
+                                    className={cn(
+                                        "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-b-2xl",
+                                        card.id === 'bireysel' ? 'bg-gradient-to-br from-primary to-orange-600' : card.bgColor
+                                    )}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <p className="font-semibold text-lg">{card.type}</p>
+                                        <p className="font-semibold text-2xl">{card.balance}</p>
                                     </div>
-                                    <TroyLogo className="absolute bottom-0 right-0" />
+                                    <div className="relative">
+                                        <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <p className="text-xs opacity-80">Kart Sahibi</p>
+                                                <p className="font-semibold text-sm uppercase">{card.owner}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs opacity-80">SKT</p>
+                                                <p className="font-semibold text-sm">{card.expiry}</p>
+                                            </div>
+                                        </div>
+                                        <TroyLogo className="absolute bottom-0 right-0" />
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
+                                        onClick={() => handleFlip(card.id)}
+                                    >
+                                        <RotateCw className="h-6 w-6" />
+                                    </Button>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
-                                    onClick={() => handleFlip(card.id)}
-                                >
-                                    <RotateCw className="h-6 w-6" />
-                                </Button>
-                            </div>
 
-                            {/* BACK */}
-                            <div
-                                className={cn(
-                                    "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-b-2xl",
-                                    card.id === 'bireysel' ? 'bg-primary' : card.bgColor
-                                )}
-                            >
-                               <CardSettings />
-                               <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
-                                    onClick={() => handleFlip(card.id)}
+                                {/* BACK */}
+                                <div
+                                    className={cn(
+                                        "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-b-2xl",
+                                        card.id === 'bireysel' ? 'bg-gradient-to-br from-primary to-orange-600' : card.bgColor
+                                    )}
                                 >
-                                    <RotateCw className="h-6 w-6" />
-                                </Button>
+                                <CardSettings />
+                                <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
+                                        onClick={() => handleFlip(card.id)}
+                                    >
+                                        <RotateCw className="h-6 w-6" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
