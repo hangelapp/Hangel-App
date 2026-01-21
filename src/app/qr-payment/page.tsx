@@ -28,7 +28,7 @@ const cardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-primary via-orange-600 to-primary/80',
+    bgColor: 'bg-gradient-to-br from-orange-700 via-orange-500 to-orange-800',
     number: '5549601000001234',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
@@ -50,7 +50,7 @@ const cardData = [
   {
     id: 'ticari',
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-foreground via-blue-900 to-foreground/80',
+    bgColor: 'bg-gradient-to-br from-blue-900 via-blue-700 to-blue-950',
     number: '5549601000009012',
     owner: 'Hangel Ticari Hesap',
     expiry: '08/29',
