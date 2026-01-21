@@ -98,8 +98,9 @@ export default function MyDonationsPage() {
               {sortedAndFilteredDonations.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
                 const tax = donationAmount * 0.20;
-                const hangelShare = donationAmount * 0.10;
-                const ngoShare = donationAmount - tax - hangelShare;
+                const netDonationAfterTaxes = donationAmount - tax;
+                const ngoShare = netDonationAfterTaxes / 1.1;
+                const hangelShare = ngoShare * 0.10;
 
                 return (
                     <AccordionItem key={donation.id} value={`item-${donation.id}`} className="border-b last:border-b-0">
@@ -140,7 +141,7 @@ export default function MyDonationsPage() {
                             <span>{tax.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                          <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>hangel Katkı Payı (%10)</span>
+                            <span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span>
                             <span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                         <Separator />
