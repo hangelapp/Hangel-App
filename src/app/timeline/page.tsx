@@ -18,6 +18,7 @@ import Autoplay from "embla-carousel-autoplay"
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -61,6 +62,7 @@ const AdCarousel = () => {
 export default function TimelinePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Mocking auth
   const router = useRouter();
+  const { toast } = useToast();
   
   if (!isAuthenticated) {
       return null;
@@ -88,10 +90,10 @@ export default function TimelinePage() {
                             className="pl-10 h-11"
                         />
                     </div>
-                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                         <Filter className="h-5 w-5" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                         <ArrowDownUp className="h-5 w-5" />
                     </Button>
                 </div>

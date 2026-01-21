@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -18,6 +17,7 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean }) => (
@@ -45,6 +45,7 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value
 export default function ProfilePage() {
     const [profileUrl, setProfileUrl] = useState('');
     const router = useRouter();
+    const { toast } = useToast();
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -174,10 +175,10 @@ export default function ProfilePage() {
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Son Puan İşlemleri</CardTitle>
                                 <div>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                                         <Filter className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                                         <ArrowDownUp className="h-4 w-4" />
                                     </Button>
                                 </div>

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { studentClubs } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from '@/hooks/use-toast';
 
 const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
     <Link href={`/admin/clubs/profile/${club.id}`} key={club.id} className="block">
@@ -53,6 +54,7 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
 export default function StudentClubsPage() {
   const [clubs, setClubs] = useState(studentClubs);
   const [activeSubTab, setActiveSubTab] = useState('all');
+  const { toast } = useToast();
 
    const sampleEvents = [
         { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
@@ -136,10 +138,10 @@ export default function StudentClubsPage() {
                     className="pl-10 h-11"
                 />
             </div>
-            <Button variant="outline" size="icon" className="h-11 w-11">
+            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                 <Filter className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11">
+            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                 <ArrowDownUp className="h-5 w-5" />
             </Button>
       </div>

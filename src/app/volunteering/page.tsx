@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 
 const RequirementRow = ({ label, value, isMet }: { label: string, value: string, isMet: boolean }) => (
@@ -21,6 +22,7 @@ const RequirementRow = ({ label, value, isMet }: { label: string, value: string,
 
 
 export default function VolunteeringPage() {
+    const { toast } = useToast();
     const userAbilities = [
       ...user.volunteerInfo.skills,
       ...user.volunteerInfo.dailySkills,
@@ -47,10 +49,10 @@ export default function VolunteeringPage() {
                     className="pl-10 h-11"
                 />
             </div>
-             <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+             <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                 <Filter className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                 <ArrowDownUp className="h-5 w-5" />
             </Button>
       </div>

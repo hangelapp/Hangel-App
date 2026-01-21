@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -104,6 +105,7 @@ const fallbackColors = [
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
+  const { toast } = useToast();
 
   const brandsToShow = useMemo(() => {
     let filteredList = allEntityLists;
@@ -141,15 +143,15 @@ export default function MarketPage() {
                         className="pl-10 pr-12 h-9"
                     />
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Görselle arama özelliği yakında gelecek!'})}>
                         <Camera className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
-                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                     <Filter className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                     <ArrowDownUp className="h-5 w-5" />
                 </Button>
             </div>

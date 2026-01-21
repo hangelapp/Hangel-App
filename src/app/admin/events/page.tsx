@@ -6,6 +6,7 @@ import { Search, ArrowDownUp, Filter, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from '@/hooks/use-toast';
 
 const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
     <Card key={event.id}>
@@ -27,6 +28,7 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
 
 export default function StudentClubEventsPage() {
     const [activeSubTab, setActiveSubTab] = useState('all');
+    const { toast } = useToast();
 
     const sampleEvents = [
         { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
@@ -95,10 +97,10 @@ export default function StudentClubEventsPage() {
                         className="pl-10 h-11"
                     />
                 </div>
-                <Button variant="outline" size="icon" className="h-11 w-11">
+                <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                     <Filter className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-11 w-11">
+                <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                     <ArrowDownUp className="h-5 w-5" />
                 </Button>
             </div>

@@ -426,10 +426,10 @@ export default function QrPaymentPage() {
                     <Input placeholder="Ara..." className="pl-8 text-sm h-9 w-full" />
                 </div>
                 <div className='flex'>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!' })}>
                         <Filter className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
                         <ArrowDownUp className="h-4 w-4" />
                     </Button>
                 </div>

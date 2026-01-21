@@ -8,8 +8,10 @@ import { events } from '@/lib/data';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function EventsPage() {
+  const { toast } = useToast();
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <div className="space-y-2">
@@ -19,13 +21,13 @@ export default function EventsPage() {
           <Input placeholder="Etkinlik ara..." className="pl-10 h-11" />
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1">
+          <Button variant="outline" className="flex-1" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
             <Filter className="mr-2 h-4 w-4" /> Filtrele
           </Button>
-          <Button variant="outline" className="flex-1">
+          <Button variant="outline" className="flex-1" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
             <ListFilter className="mr-2 h-4 w-4" /> Sırala
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => toast({ title: 'Harita özelliği yakında gelecek!'})}>
             <Map className="mr-2 h-4 w-4" /> Harita
           </Button>
         </div>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -11,12 +10,14 @@ import Link from 'next/link';
 import { ngos } from '@/lib/data';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 type NgoType = NGO['type'] | 'Tümü';
 
 export default function NgosPage() {
     const [activeTab, setActiveTab] = useState<NgoType>('Tümü');
     const [searchTerm, setSearchTerm] = useState('');
+    const { toast } = useToast();
 
     const filteredNgos = useMemo(() => {
         return ngos.filter(ngo => {
@@ -42,10 +43,10 @@ export default function NgosPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <Button variant="outline" size="icon" className="h-11 w-11">
+            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                 <Filter className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11">
+            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                 <ArrowDownUp className="h-5 w-5" />
             </Button>
       </div>
@@ -94,4 +95,3 @@ export default function NgosPage() {
     </div>
   );
 }
-

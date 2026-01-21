@@ -10,6 +10,7 @@ import { Badge as BadgeType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { groupBy } from 'lodash';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useToast } from '@/hooks/use-toast';
 
 const stats = [
     { icon: Star, value: user.impactScore.toLocaleString('tr-TR'), label: 'Etki Puanı' },
@@ -81,6 +82,7 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
 
 export default function MyBadgesPage() {
     const [visibleTxCount, setVisibleTxCount] = useState(5);
+    const { toast } = useToast();
 
     const groupedBadges = React.useMemo(() => {
         return groupBy(badges, 'socialArea');
@@ -126,10 +128,10 @@ export default function MyBadgesPage() {
                         <div className="flex justify-between items-center">
                             <CardTitle>Son Puan İşlemleri</CardTitle>
                             <div className="flex items-center">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                                     <Filter className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
                                     <ArrowDownUp className="h-4 w-4" />
                                 </Button>
                             </div>
