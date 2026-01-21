@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering, certificates } from '@/lib/data';
-import {
+import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
     HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp
 } from 'lucide-react';
@@ -140,57 +140,6 @@ export default function ProfilePage() {
                                 <InfoRow icon={Target} label="En Çok Desteklenen STK" value={user.stats.mostSupportedNgo} />
                                 <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
                                 <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Nasıl Puan Kazanırım?</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
-                                    <li>Anlaşmalı markalardan yaptığın her alışverişle.</li>
-                                    <li>Gönüllülük faaliyetlerini tamamlayarak.</li>
-                                    <li>Platforma yeni arkadaşlarını davet ederek.</li>
-                                    <li>Rozetler kazanarak ve seviye atlayarak.</li>
-                                </ul>
-                                 <Accordion type="single" collapsible className="w-full mt-2">
-                                    <AccordionItem value="puan-cetveli" className="border-t">
-                                        <AccordionTrigger className="text-sm">Puan Cetvelini Gör</AccordionTrigger>
-                                        <AccordionContent>
-                                            <div className="space-y-3 text-sm pt-2">
-                                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                    <div>
-                                                        <p className="font-semibold">Alışverişle Bağış</p>
-                                                        <p className="text-xs text-muted-foreground">Her 1₺ bağış için <strong>1 Puan</strong></p>
-                                                    </div>
-                                                    <p className="font-bold text-base text-primary">{(user.stats.totalDonation).toLocaleString('tr-TR')} Puan</p>
-                                                </div>
-                                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                    <div>
-                                                        <p className="font-semibold">Gönüllülük</p>
-                                                        <p className="text-xs text-muted-foreground">Her 1 saat için <strong>10 Puan</strong></p>
-                                                    </div>
-                                                    <p className="font-bold text-base text-primary">{(user.stats.volunteerHours * 10).toLocaleString('tr-TR')} Puan</p>
-                                                </div>
-                                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                    <div>
-                                                        <p className="font-semibold">Arkadaş Daveti</p>
-                                                        <p className="text-xs text-muted-foreground">Her başarılı davet için <strong>100 Puan</strong></p>
-                                                    </div>
-                                                    <p className="font-bold text-base text-primary">{(5 * 100).toLocaleString('tr-TR')} Puan</p>
-                                                </div>
-                                                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                    <div>
-                                                        <p className="font-semibold">Rozet Kazanımı</p>
-                                                        <p className="text-xs text-muted-foreground">Her rozet için <strong>250 Puan</strong></p>
-                                                    </div>
-                                                    <p className="font-bold text-base text-primary">{(badges.filter(b => b.currentPoints >= b.pointsRequired).length * 250).toLocaleString('tr-TR')} Puan</p>
-                                                </div>
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </Accordion>
                             </CardContent>
                         </Card>
 
