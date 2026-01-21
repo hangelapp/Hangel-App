@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -20,15 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
 const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
@@ -107,7 +98,6 @@ export default function VolunteerSettingsPage() {
     const [highSchool, setHighSchool] = useState(user.volunteerInfo.education.find(e => e.level === 'Lise')?.school || '');
     const [faculty, setFaculty] = useState('');
     const [department, setDepartment] = useState('');
-    const [isEmergencyContactOpen, setEmergencyContactOpen] = useState(false);
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -122,7 +112,7 @@ export default function VolunteerSettingsPage() {
             <form className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Yetkinlik ve İlgi Alanları</CardTitle>
+                        <CardTitle>Yetkinlik ve Sosyal Hassasiyetler</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <MultiSelect title="Sosyal Hassasiyetler" options={allInterests} selected={interests} onSelectedChange={setInterests} />
@@ -258,8 +248,10 @@ export default function VolunteerSettingsPage() {
                             <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
                         </div>
                         <div className="pt-4">
-                            <Button type="button" variant="secondary" className="w-full" onClick={() => setEmergencyContactOpen(true)}>
-                                Acil Durum Kişilerini Düzenle
+                             <Button asChild type="button" variant="secondary" className="w-full">
+                                <Link href="/settings/emergency-contacts">
+                                    Acil Durum Kişilerini Düzenle
+                                </Link>
                             </Button>
                         </div>
                     </CardContent>
@@ -269,46 +261,6 @@ export default function VolunteerSettingsPage() {
                     <Button type="submit">Değişiklikleri Kaydet</Button>
                 </div>
             </form>
-
-            <Dialog open={isEmergencyContactOpen} onOpenChange={setEmergencyContactOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Acil Durum Kişileri</DialogTitle>
-                        <DialogDescription>
-                            Acil bir durumda ulaşılacak kişilerin bilgilerini girin. Bu bilgiler sadece acil durum prosedürleri için kullanılacaktır.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-6 py-4">
-                        <div className="space-y-4">
-                             <Label className="font-semibold">Acil Durum Kişisi 1</Label>
-                            <div className="space-y-2">
-                                <Label htmlFor="emergency-contact-name-1">Ad Soyad</Label>
-                                <Input id="emergency-contact-name-1" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.name} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
-                                <Input id="emergency-contact-phone-1" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
-                            </div>
-                        </div>
-                        <Separator />
-                         <div className="space-y-4">
-                             <Label className="font-semibold">Acil Durum Kişisi 2</Label>
-                            <div className="space-y-2">
-                                <Label htmlFor="emergency-contact-name-2">Ad Soyad</Label>
-                                <Input id="emergency-contact-name-2" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.name} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="emergency-contact-phone-2">Telefon</Label>
-                                <Input id="emergency-contact-phone-2" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.phone} />
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="secondary" onClick={() => setEmergencyContactOpen(false)}>İptal</Button>
-                        <Button type="button" onClick={() => setEmergencyContactOpen(false)}>Kaydet</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
