@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ngos } from '@/lib/data';
+import { ngos, qrPaymentCardData as cardData } from '@/lib/data';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import {
@@ -23,42 +23,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-const cardData = [
-  {
-    id: 'bireysel',
-    type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-orange-700 via-orange-500 to-orange-800',
-    number: '5549601000001234',
-    owner: 'İsmail Hilmi ADIGÜZEL',
-    expiry: '12/28',
-    balance: '1.250,75 ₺',
-    ngoId: '1',
-    cvv: '123'
-  },
-  {
-    id: 'ogrenci',
-    type: 'Öğrenci',
-    bgColor: 'bg-gradient-to-br from-cyan-700 via-cyan-500 to-cyan-800',
-    number: '5549601000005678',
-    owner: 'İsmail Hilmi ADIGÜZEL',
-    expiry: '10/27',
-    balance: '345,50 ₺',
-    ngoId: '2',
-    cvv: '456'
-  },
-  {
-    id: 'ticari',
-    type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-blue-900 via-blue-700 to-blue-950',
-    number: '5549601000009012',
-    owner: 'Hangel Ticari Hesap',
-    expiry: '08/29',
-    balance: '12.870,00 ₺',
-    ngoId: '3',
-    cvv: '789'
-  },
-];
 
 const donationTransactions = [
     { id: '1', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA Vakfı', 'LÖSEV'], date: '2024-07-21', time: '14:32' },

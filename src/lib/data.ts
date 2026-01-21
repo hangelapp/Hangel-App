@@ -4,7 +4,7 @@
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, Phone, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign, Smartphone } from 'lucide-react';
+import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign, Smartphone } from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -777,4 +777,39 @@ export const categoryMapping = {
     'Diğer': ['Diğer', 'Teknoloji'],
 };
 
+export const qrPaymentCardData = [
+  {
+    id: 'bireysel',
+    type: 'Bireysel',
+    bgColor: 'bg-gradient-to-br from-orange-700 via-orange-500 to-orange-800',
+    number: '5549601000001234',
+    owner: 'İsmail Hilmi ADIGÜZEL',
+    expiry: '12/28',
+    balance: '1.250,75 ₺',
+    ngoId: '1',
+    cvv: '123'
+  },
+  {
+    id: 'ogrenci',
+    type: 'Öğrenci',
+    bgColor: 'bg-gradient-to-br from-cyan-700 via-cyan-500 to-cyan-800',
+    number: '5549601000005678',
+    owner: 'İsmail Hilmi ADIGÜZEL',
+    expiry: '10/27',
+    balance: '345,50 ₺',
+    ngoId: '2',
+    cvv: '456'
+  },
+  {
+    id: 'ticari',
+    type: 'Ticari',
+    bgColor: 'bg-gradient-to-br from-blue-900 via-blue-700 to-blue-950',
+    number: '5549601000009012',
+    owner: 'Hangel Ticari Hesap',
+    expiry: '08/29',
+    balance: '12.870,00 ₺',
+    ngoId: '3',
+    cvv: '789'
+  },
+];
   

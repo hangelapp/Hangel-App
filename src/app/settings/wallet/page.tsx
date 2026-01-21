@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
+import { qrPaymentCardData } from '@/lib/data';
 
 
 const savedCards = [
@@ -40,16 +41,20 @@ export default function WalletSettingsPage() {
             
             <Card>
                 <CardHeader>
-                    <CardTitle>hangel Kart</CardTitle>
-                    <CardDescription>QR kod ile ödeme ve transferler için kullandığınız dijital kartınız.</CardDescription>
+                    <CardTitle>hangel Kartlarım</CardTitle>
+                    <CardDescription>QR kod ile ödeme ve transferler için kullandığınız dijital kartlarınız.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="p-4 rounded-lg bg-primary text-primary-foreground">
-                        <p className="text-lg font-semibold">Bireysel Kart</p>
-                        <p className="text-2xl font-bold">1.250,75 ₺</p>
-                    </div>
+                    {qrPaymentCardData.map(card => (
+                        <div key={card.id} className={cn("p-4 rounded-lg text-primary-foreground", card.bgColor)}>
+                            <div className="flex justify-between items-center">
+                                <p className="text-lg font-semibold">{card.type} Kart</p>
+                                <p className="text-2xl font-bold">{card.balance}</p>
+                            </div>
+                        </div>
+                    ))}
                      <Button variant="outline" className="w-full" onClick={() => router.push('/qr-payment')}>
-                        hangel Kartını Yönet ve İşlemleri Görüntüle
+                        Tüm Kartları Yönet ve İşlemleri Görüntüle
                     </Button>
                 </CardContent>
             </Card>

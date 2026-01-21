@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { 
     Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, 
-    HeartHandshake, PersonStanding, Wallet, Users
+    HeartHandshake, PersonStanding, Wallet, Users, HandCoins
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -70,6 +70,18 @@ export default function SettingsPage() {
                     <SettingsLink href="/settings/accessibility" icon={PersonStanding} label="Erişilebilirlik" iconColor="bg-indigo-500" />
                     <SettingsLink href="/settings/privacy" icon={Users} label="Gizlilik ve Etkileşim" iconColor="bg-fuchsia-500" />
                  </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Bağış Ayarları</CardTitle>
+                <CardDescription>Varsayılan bağış tercihlerinizi yönetin.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+                    <div className="flex flex-col divide-y">
+                    <SettingsLink href="/settings/ngo-selection" icon={HandCoins} label="Varsayılan STK'yı Değiştir" iconColor="bg-amber-500" />
+                    </div>
             </CardContent>
         </Card>
 
