@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Droplets, Megaphone, Siren } from "lucide-react";
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 const activeCalls = [
     { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '15 dakika önce' },
@@ -29,10 +30,21 @@ const pastApplications = [
 export function EmergencyDialog({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+    
+    const handleReportClick = (type: 'disaster' | 'blood') => {
+        toast({
+            title: 'Bildirim Gönderiliyor...',
+            description: type === 'disaster' 
+                ? 'Afet durumu ilgili birimlere iletiliyor.' 
+                : 'Kan ihtiyacı çağrısı oluşturuluyor.',
+        });
+        setIsOpen(false);
+    };
 
     if (!isMounted) {
         return null;
@@ -68,7 +80,7 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                         Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ile paylaşılacaktır.
                       </AlertDescription>
                     </Alert>
-                    <Button variant="destructive" className="w-full">
+                    <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster')}>
                       <Megaphone className="mr-2 h-4 w-4" />
                       Afet Bildiriminde Bulun
                     </Button>
@@ -86,7 +98,7 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                         Konum ve iletişim bilgileriniz potansiyel bağışçılarla paylaşılacaktır.
                       </AlertDescription>
                     </Alert>
-                     <Button variant="destructive" className="w-full">
+                     <Button variant="destructive" className="w-full" onClick={() => handleReportClick('blood')}>
                         <Droplets className="mr-2 h-4 w-4" />
                         Kan İhtiyacı Bildir
                     </Button>

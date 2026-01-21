@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timelinePosts, adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Star } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import {
 import Autoplay from "embla-carousel-autoplay"
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -78,7 +79,22 @@ export default function TimelinePage() {
   return (
     <div className="animate-in fade-in-0 bg-secondary">
        <Tabs defaultValue="special" className="w-full">
-            <div className="p-2 sm:p-4 border-b bg-background/80 backdrop-blur-xl sticky top-12 z-10">
+            <div className="p-2 sm:p-4 border-b bg-background/80 backdrop-blur-xl sticky top-12 z-10 space-y-4">
+                 <div className="flex gap-2 items-center">
+                    <div className="relative flex-grow">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            placeholder="Akışta ara..."
+                            className="pl-10 h-11"
+                        />
+                    </div>
+                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                        <Filter className="h-5 w-5" />
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                        <ArrowDownUp className="h-5 w-5" />
+                    </Button>
+                </div>
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="special">Sana Özel</TabsTrigger>
                     <TabsTrigger value="country">Ülkende</TabsTrigger>

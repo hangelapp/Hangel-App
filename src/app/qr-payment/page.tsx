@@ -202,7 +202,8 @@ export default function QrPaymentPage() {
                         value={card.id}
                         className={cn(
                             "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg p-1 text-xs font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10 shadow-none data-[state=active]:bg-inherit",
-                             card.bgColor
+                             card.bgColor,
+                             activeCardId === card.id ? '' : 'bg-opacity-50'
                         )}
                     >
                         {card.type}
@@ -284,9 +285,9 @@ export default function QrPaymentPage() {
         </Tabs>
       
       <Card className={cn('transition-colors border-2', 
-        activeCardId === 'bireysel' && 'border-primary/50',
-        activeCardId === 'ogrenci' && 'border-cyan-700/50',
-        activeCardId === 'ticari' && 'border-foreground/50'
+        activeCardId === 'bireysel' && 'border-orange-500',
+        activeCardId === 'ogrenci' && 'border-cyan-500',
+        activeCardId === 'ticari' && 'border-blue-700'
       )}>
         <CardHeader>
             <CardTitle>Ödeme Yönetimi</CardTitle>
@@ -365,7 +366,7 @@ export default function QrPaymentPage() {
                 </TabsContent>
             </Tabs>
         </CardContent>
-    </Card>
+      </Card>
 
       {activeCardId === 'ticari' && (
         <Card className="mt-6">
@@ -380,6 +381,7 @@ export default function QrPaymentPage() {
                         <p className="text-xs text-muted-foreground">Müşterilerinizin telefonlarıyla okutarak ödeme yapabileceği sticker.</p>
                     </div>
                     <div className="flex gap-1">
+                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost"><Download className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost"><Share2 className="h-4 w-4" /></Button>
                     </div>
@@ -390,6 +392,7 @@ export default function QrPaymentPage() {
                         <p className="text-xs text-muted-foreground">hangel ile ödeme kabul ettiğinizi gösteren sticker.</p>
                     </div>
                     <div className="flex gap-1">
+                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost"><Download className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost"><Share2 className="h-4 w-4" /></Button>
                     </div>
@@ -400,6 +403,7 @@ export default function QrPaymentPage() {
                         <p className="text-xs text-muted-foreground">İşyeri girişinde kullanabileceğiniz çift taraflı dönkart.</p>
                     </div>
                     <div className="flex gap-1">
+                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost"><Download className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost"><Share2 className="h-4 w-4" /></Button>
                     </div>
@@ -410,9 +414,9 @@ export default function QrPaymentPage() {
 
 
       <Card className={cn('transition-colors border-2', 
-        activeCardId === 'bireysel' && 'border-primary/50',
-        activeCardId === 'ogrenci' && 'border-cyan-700/50',
-        activeCardId === 'ticari' && 'border-foreground/50'
+        activeCardId === 'bireysel' && 'border-orange-500',
+        activeCardId === 'ogrenci' && 'border-cyan-500',
+        activeCardId === 'ticari' && 'border-blue-700'
       )}>
         <CardHeader>
            <CardTitle>Son İşlemler</CardTitle>
