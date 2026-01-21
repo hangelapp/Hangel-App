@@ -228,6 +228,30 @@ export default function VolunteerSettingsPage() {
 
                 <Card>
                     <CardHeader>
+                        <CardTitle>Acil Durum Kişileri</CardTitle>
+                        <CardDescription>Acil bir durumda ulaşılacak kişilerin bilgilerini buradan düzenleyebilirsiniz.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm font-medium">Acil Durum Kişisi 1</p>
+                                <p className="text-muted-foreground">{user.volunteerInfo.emergency.emergencyContacts[0]?.name || 'Belirtilmemiş'} - {user.volunteerInfo.emergency.emergencyContacts[0]?.phone || 'Belirtilmemiş'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium">Acil Durum Kişisi 2</p>
+                                <p className="text-muted-foreground">{user.volunteerInfo.emergency.emergencyContacts[1]?.name || 'Belirtilmemiş'} - {user.volunteerInfo.emergency.emergencyContacts[1]?.phone || 'Belirtilmemiş'}</p>
+                            </div>
+                            <Button asChild type="button" variant="secondary" className="w-full">
+                                <Link href="/settings/emergency-contacts">
+                                    Acil Durum Kişilerini Düzenle
+                                </Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
                         <CardTitle>Sağlık Bilgileri</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
@@ -246,13 +270,6 @@ export default function VolunteerSettingsPage() {
                          <div className="flex items-center space-x-2 p-4 border rounded-lg">
                             <Checkbox id="physical-limitation" defaultChecked={user.volunteerInfo.emergency.hasPhysicalLimitation} />
                             <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
-                        </div>
-                        <div className="pt-4">
-                             <Button asChild type="button" variant="secondary" className="w-full">
-                                <Link href="/settings/emergency-contacts">
-                                    Acil Durum Kişilerini Düzenle
-                                </Link>
-                            </Button>
                         </div>
                     </CardContent>
                 </Card>
