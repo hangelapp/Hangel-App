@@ -19,6 +19,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
 const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
@@ -97,6 +105,7 @@ export default function VolunteerSettingsPage() {
     const [highSchool, setHighSchool] = useState(user.volunteerInfo.education.find(e => e.level === 'Lise')?.school || '');
     const [faculty, setFaculty] = useState('');
     const [department, setDepartment] = useState('');
+    const [isEmergencyContactOpen, setEmergencyContactOpen] = useState(false);
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -226,15 +235,10 @@ export default function VolunteerSettingsPage() {
                          <div className="space-y-2">
                            <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={visas} onSelectedChange={setVisas} />
                         </div>
-                        <div className="space-y-4 pt-4 border-t">
-                             <div className="space-y-2">
-                                <Label htmlFor="emergency-contact-name">Acil Durum Kişisi Ad Soyad</Label>
-                                <Input id="emergency-contact-name" defaultValue={user.volunteerInfo.emergency.emergencyContact.name} />
-                             </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="emergency-contact-phone">Acil Durum Kişisi Telefon</Label>
-                                <Input id="emergency-contact-phone" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContact.phone} />
-                             </div>
+                        <div className="pt-4 border-t">
+                            <Button type="button" variant="secondary" className="w-full" onClick={() => setEmergencyContactOpen(true)}>
+                                Acil Durum Kişisi Bilgilerini Düzenle
+                            </Button>
                         </div>
                         <div className="space-y-2 pt-4 border-t">
                             <div className="flex items-center space-x-2">
@@ -257,6 +261,31 @@ export default function VolunteerSettingsPage() {
                     <Button type="submit">Değişiklikleri Kaydet</Button>
                 </div>
             </form>
+
+            <Dialog open={isEmergencyContactOpen} onOpenChange={setEmergencyContactOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Acil Durum Kişisi</DialogTitle>
+                        <DialogDescription>
+                            Acil bir durumda ulaşılacak kişinin bilgilerini girin. Bu bilgiler sadece acil durum prosedürleri için kullanılacaktır.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="emergency-contact-name-dialog">Ad Soyad</Label>
+                            <Input id="emergency-contact-name-dialog" defaultValue={user.volunteerInfo.emergency.emergencyContact.name} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="emergency-contact-phone-dialog">Telefon</Label>
+                            <Input id="emergency-contact-phone-dialog" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContact.phone} />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" onClick={() => setEmergencyContactOpen(false)}>İptal</Button>
+                        <Button type="button" onClick={() => setEmergencyContactOpen(false)}>Kaydet</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
