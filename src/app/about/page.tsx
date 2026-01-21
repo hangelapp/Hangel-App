@@ -4,9 +4,20 @@ import { Mail, Phone, MapPin, Twitter, Instagram, Linkedin, Users, HandCoins, Ho
 export default function AboutPage() {
   return (
     <div className="p-4 sm:p-6 space-y-6 animate-in fade-in-0">
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-4">
         <h1 className="text-3xl font-bold font-headline">Hakkımızda</h1>
-        <p className="text-muted-foreground">İyiliğin ve sosyal etkinin buluşma noktası.</p>
+        <div className="text-muted-foreground space-y-3 max-w-3xl mx-auto text-base">
+          <p>İyiliğin ve sosyal etkinin buluşma noktası.</p>
+          <p>
+            Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan,
+          </p>
+          <p>
+            Sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan,
+          </p>
+          <p className="font-semibold text-foreground">
+            Bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.
+          </p>
+        </div>
       </div>
 
        <Card>
