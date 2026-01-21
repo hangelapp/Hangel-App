@@ -63,6 +63,10 @@ export const user: User = {
             hasChronicIllness: false,
             usesRegularMedication: false,
             hasPhysicalLimitation: false,
+            emergencyContact: {
+                name: "Ayşe Yılmaz",
+                phone: "+90 555 987 65 43"
+            }
         }
     },
     stats: {
@@ -589,7 +593,7 @@ export const schoolRepresentatives: SchoolRepresentative[] = Array.from({ length
     linkedinUrl: '#',
 }));
 
-export const pastVolunteering: Omit<Volunteering, 'volunteerCount' | 'points' | 'ngoTransparencyScore' >[] = [
+export const pastVolunteering: Volunteering[] = [
     {
       id: 'past-1',
       title: 'Barınak Hayvanları Besleme Günü',
@@ -597,6 +601,7 @@ export const pastVolunteering: Omit<Volunteering, 'volunteerCount' | 'points' | 
       ngoId: '4',
       location: { city: 'İstanbul', district: 'Ataşehir', type: 'Saha' },
       commitment: 'Tek Günlük (4 Saat)',
+      volunteerCount: { needed: 0, applications: 0 },
       dates: { applicationStart: "2024-05-01", applicationEnd: "2024-05-10", eventStart: "2024-05-12", eventEnd: "2024-05-12" },
       hours: { start: '13:00', end: '17:00', total: 4 },
       socialArea: 'Hayvan Hakları',
@@ -605,7 +610,13 @@ export const pastVolunteering: Omit<Volunteering, 'volunteerCount' | 'points' | 
       earnedBadges: ['Hayvan Dostu'],
       hasPreTraining: false,
       description: 'Ataşehir Hayvan Barınağı\'ndaki dostlarımızı ziyaret edip beslenmelerine yardımcı olduk.',
-      taskType: 'Tek Gün'
+      points: 0,
+      ngoTransparencyScore: 0,
+      taskType: 'Tek Gün',
+      review: {
+          rating: 5,
+          comment: "Çok organize ve keyifli bir etkinlikti. HAYTAP ekibine teşekkürler!"
+      }
     }
 ];
 

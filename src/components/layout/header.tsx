@@ -45,13 +45,17 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-[300px] p-0 flex flex-col bg-card">
         <SheetHeader className="p-4 border-b">
-           <SheetTitle className='flex items-center gap-3'>
-              <UserAvatar />
-              <div>
-                <p className="text-base font-semibold">{user.name}</p>
-                <p className="text-sm font-normal text-muted-foreground">{user.username}</p>
-              </div>
-           </SheetTitle>
+           <SheetClose asChild>
+            <Link href="/profile" className="text-left">
+              <SheetTitle className='flex items-center gap-3'>
+                <UserAvatar />
+                <div>
+                  <p className="text-base font-semibold">{user.name}</p>
+                  <p className="text-sm font-normal text-muted-foreground">{user.username}</p>
+                </div>
+              </SheetTitle>
+            </Link>
+          </SheetClose>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto">
           <nav className="py-4">

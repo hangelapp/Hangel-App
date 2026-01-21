@@ -178,6 +178,10 @@ export type Volunteering = {
     points: number;
     ngoTransparencyScore: number;
     taskType: 'Tek Gün' | 'Dönemsel' | 'Sürekli';
+    review?: {
+        rating: number;
+        comment: string;
+    };
 };
 
 export type User = {
@@ -232,6 +236,10 @@ export type User = {
             hasChronicIllness: boolean;
             usesRegularMedication: boolean;
             hasPhysicalLimitation: boolean;
+            emergencyContact: {
+                name: string;
+                phone: string;
+            };
         }
     },
     stats: {

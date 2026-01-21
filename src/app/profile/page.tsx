@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering, certificates } from '@/lib/data';
 import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -16,15 +16,19 @@ import { tr } from 'date-fns/locale';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 
-const InfoRow = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) => (
+const InfoRow = ({ icon: Icon, label, value, verified }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean }) => (
     <div className="flex justify-between items-start py-3 text-sm">
         <div className='flex items-start'>
              <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
              <p className="font-medium ml-4">{label}</p>
         </div>
-        <p className="text-muted-foreground text-right">{value}</p>
+        <div className="flex items-center gap-2 text-right">
+          <p className="text-muted-foreground">{value}</p>
+          {verified && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
+        </div>
     </div>
 );
 
@@ -57,15 +61,37 @@ export default function ProfilePage() {
     
     const VolunteerCard = ({ item }: { item: (typeof pastVolunteering)[0] }) => (
         <Card>
-            <CardHeader>
-                <CardTitle className='text-base'>{item.title}</CardTitle>
-                <CardDescription>{item.organization} - {formatDistanceToNow(new Date(item.dates.eventEnd), { addSuffix: true, locale: tr })}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className='text-sm text-muted-foreground line-clamp-2'>{item.description}</p>
-            </CardContent>
+            <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value={item.id} className="border-b-0">
+                    <CardHeader>
+                        <CardTitle className='text-base'>{item.title}</CardTitle>
+                        <CardDescription>{item.organization} - {formatDistanceToNow(new Date(item.dates.eventEnd), { addSuffix: true, locale: tr })}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className='text-sm text-muted-foreground line-clamp-2'>{item.description}</p>
+                    </CardContent>
+                    {item.review && (
+                        <div className="px-6 pb-2 pt-0">
+                            <AccordionTrigger className="text-sm hover:no-underline p-0 justify-start gap-2">STK Değerlendirmesini Gör</AccordionTrigger>
+                        </div>
+                    )}
+                    <AccordionContent className="px-6">
+                        {item.review && (
+                            <div className="border-t pt-4">
+                                <div className="flex items-center gap-1">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={cn("h-5 w-5", i < item.review.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30")} />
+                                    ))}
+                                    <span className="ml-2 text-sm font-bold">{item.review.rating}/5</span>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-2 italic">"{item.review.comment}"</p>
+                            </div>
+                        )}
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
         </Card>
-    )
+    );
     
     const BadgeDisplay = ({ badge }: { badge: (typeof badges)[0] }) => {
         const isEarned = badge.currentPoints >= badge.pointsRequired;
@@ -102,16 +128,17 @@ export default function ProfilePage() {
                     <h1 className="text-3xl font-bold">{user.name}</h1>
                     <p className="text-lg text-muted-foreground">{user.username}</p>
                 </div>
-                <Tabs defaultValue="stats" className="w-full">
-                    <TabsList className="grid w-full grid-cols-5 px-2">
-                        <TabsTrigger value="stats">İstatistikler</TabsTrigger>
+                <Tabs defaultValue="impact" className="w-full">
+                    <TabsList className="grid w-full grid-cols-6 px-2">
+                        <TabsTrigger value="impact">Etki</TabsTrigger>
                         <TabsTrigger value="about">Hakkında</TabsTrigger>
                         <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
                         <TabsTrigger value="badges">Rozetler</TabsTrigger>
                         <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
+                        <TabsTrigger value="posts">Gönderiler</TabsTrigger>
                     </TabsList>
                     
-                    <TabsContent value="stats" className="p-4 space-y-4">
+                    <TabsContent value="impact" className="p-4 space-y-4">
                         <Card className="text-center">
                             <CardHeader>
                                 <CardTitle>Toplam Sosyal Etki Puanın</CardTitle>
@@ -145,9 +172,14 @@ export default function ProfilePage() {
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Son Puan İşlemleri</CardTitle>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <ArrowDownUp className="h-4 w-4" />
-                                </Button>
+                                <div>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <Filter className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <ArrowDownUp className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 {recentPointTransactions.map((tx, index) => {
@@ -182,8 +214,8 @@ export default function ProfilePage() {
                                 </Button>
                             </CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={Mail} label="E-posta" value={user.personalInfo.email} />
-                                <InfoRow icon={Phone} label="Telefon" value={user.personalInfo.phone} />
+                                <InfoRow icon={Mail} label="E-posta" value={user.personalInfo.email} verified />
+                                <InfoRow icon={Phone} label="Telefon" value={user.personalInfo.phone} verified />
                                 <InfoRow icon={Cake} label="Doğum Tarihi" value={format(new Date(user.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr })} />
                                  <InfoRow icon={Globe} label="Uyruk" value={user.personalInfo.nationality} />
                                 <InfoRow icon={UserIcon} label="Cinsiyet" value={user.personalInfo.gender} />
@@ -225,6 +257,8 @@ export default function ProfilePage() {
                                 <InfoRow icon={HeartPulse} label="Kronik Hastalık" value={user.volunteerInfo.emergency.hasChronicIllness ? 'Var' : 'Yok'} />
                                 <InfoRow icon={HeartPulse} label="Düzenli İlaç" value={user.volunteerInfo.emergency.usesRegularMedication ? 'Var' : 'Yok'} />
                                 <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={user.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
+                                <InfoRow icon={UserIcon} label="Acil Durum Kişisi" value={user.volunteerInfo.emergency.emergencyContact.name} />
+                                <InfoRow icon={Phone} label="Acil Durum Tel" value={user.volunteerInfo.emergency.emergencyContact.phone} />
                             </CardContent>
                         </Card>
                         <Card>
@@ -281,6 +315,20 @@ export default function ProfilePage() {
                                      <Link href="/my-badges">Tüm Rozetleri ve Sertifikaları Gör</Link>
                                 </Button>
                             </CardFooter>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="posts" className="p-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Gönderilerim</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-center text-muted-foreground py-16">
+                                    <Rss className="mx-auto h-12 w-12 text-muted-foreground/50"/>
+                                    <p className="mt-4">Henüz bir gönderi paylaşmadınız.</p>
+                                </div>
+                            </CardContent>
                         </Card>
                     </TabsContent>
 
