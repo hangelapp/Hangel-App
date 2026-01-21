@@ -74,7 +74,7 @@ export default function EventDetailPage() {
       <div className="p-4 space-y-4">
         <div className="-mt-12 relative z-10">
           <h1 className="text-3xl font-bold font-headline text-white drop-shadow-md">{event.name}</h1>
-          <p className="text-lg font-medium text-white drop-shadow-md">{event.organizer}</p>
+          <p className="text-lg font-medium text-black">{event.organizer}</p>
         </div>
 
         <Tabs defaultValue="details" className="w-full">
