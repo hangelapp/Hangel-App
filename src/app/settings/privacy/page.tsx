@@ -50,18 +50,6 @@ export default function PrivacySettingsPage() {
                     >
                         <Switch id="private-profile" />
                     </SettingsItem>
-                    <SettingsItem label="Etkileşimler" icon={Users} iconColor="bg-red-500">
-                        <Select defaultValue='herkes'>
-                          <SelectTrigger className='w-auto border-none bg-accent focus:ring-0'>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="herkes">Herkes Gönderilerinize Yorum Yapabilir</SelectItem>
-                            <SelectItem value="takipciler">Sadece Takipçiler</SelectItem>
-                            <SelectItem value="kimse">Kimse</SelectItem>
-                          </SelectContent>
-                        </Select>
-                    </SettingsItem>
                 </div>
             </CardContent>
         </Card>
@@ -69,20 +57,61 @@ export default function PrivacySettingsPage() {
         <Card>
            <CardHeader>
                 <CardTitle>Veri Gizliliği</CardTitle>
+                 <CardDescription>Profilinizde hangi bilgilerin görüneceğini seçin.</CardDescription>
             </CardHeader>
              <CardContent className="p-0">
                 <div className="flex flex-col">
                     <SettingsItem
                         label="Etki Puanımı Gizle"
-                        description="Sosyal etki puanınız profilinizde görünmez."
+                        description="Sosyal etki puanınız ve istatistikleriniz profilinizde görünmez."
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
                          <Switch id="hide-score" />
                     </SettingsItem>
+                    <SettingsItem
+                        label="Hakkında Bilgilerimi Gizle"
+                        description="Kişisel ve iletişim bilgileriniz profilinizde görünmez."
+                        icon={Shield} 
+                        iconColor="bg-green-500"
+                    >
+                         <Switch id="hide-about" />
+                    </SettingsItem>
+                    <SettingsItem
+                        label="Gönüllülük Bilgilerimi Gizle"
+                        description="Gönüllülük yetkinlikleriniz ve geçmişiniz profilinizde görünmez."
+                        icon={Shield} 
+                        iconColor="bg-green-500"
+                    >
+                         <Switch id="hide-volunteer" />
+                    </SettingsItem>
+                    <SettingsItem
+                        label="Rozetlerimi Gizle"
+                        description="Kazandığınız rozetler profilinizde görünmez."
+                        icon={Shield} 
+                        iconColor="bg-green-500"
+                    >
+                         <Switch id="hide-badges" />
+                    </SettingsItem>
+                    <SettingsItem
+                        label="Sertifikalarımı Gizle"
+                        description="Kazandığınız sertifikalar profilinizde görünmez."
+                        icon={Shield} 
+                        iconColor="bg-green-500"
+                    >
+                         <Switch id="hide-certificates" />
+                    </SettingsItem>
+                    <SettingsItem
+                        label="Gönderilerimi Gizle"
+                        description="Paylaştığınız gönderiler profilinizde görünmez."
+                        icon={Shield} 
+                        iconColor="bg-green-500"
+                    >
+                         <Switch id="hide-posts" />
+                    </SettingsItem>
                      <SettingsItem
                         label="Bağış Aktivitelerimi Gizle"
-                        description="Hangi markalardan alışveriş yaptığınız ve ne kadar bağış yaptığınız görünmez."
+                        description="Bağış ve işlem geçmişiniz profilinizde görünmez."
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >

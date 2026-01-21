@@ -39,9 +39,18 @@ export default function ProfileSettingsPage() {
                 <CardTitle>Temel Bilgiler</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="name">Ad Soyad</Label>
-                    <Input id="name" defaultValue={user.name} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Ad Soyad</Label>
+                        <Input id="name" defaultValue={user.name} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="username">Kullanıcı Adı (Profil Linki)</Label>
+                        <div className="relative">
+                            <Input id="username" defaultValue={user.username.replace('@', '')} className="pl-8"/>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">@</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
