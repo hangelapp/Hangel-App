@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering, certificates } from '@/lib/data';
 import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -120,29 +120,33 @@ export default function ProfilePage() {
                                 <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
                             </CardContent>
                         </Card>
-
+                        
                         <Card>
-                            <CardHeader><CardTitle>Son Puan İşlemleri</CardTitle></CardHeader>
-                            <CardContent className="space-y-3">
-                                {recentPointTransactions.map((tx, index) => {
-                                    const Icon = tx.icon;
-                                    return (
-                                    <div key={index} className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-3">
-                                            <Icon className="h-5 w-5 text-muted-foreground" />
-                                            <div>
-                                                <p>{tx.description}</p>
-                                                <p className="text-xs text-muted-foreground">{tx.time}</p>
-                                            </div>
-                                        </div>
-                                        <p className="font-bold text-green-600">+{tx.points} Puan</p>
-                                    </div>
-                                )})}
+                            <CardHeader><CardTitle className='text-lg flex items-center gap-2'><BarChart3 className='h-5 w-5 text-primary' />Gönüllülük İstatistikleri</CardTitle></CardHeader>
+                            <CardContent className="divide-y">
+                                <InfoRow icon={Hourglass} label="Toplam Gönüllülük Saati" value={`${user.stats.volunteerHours} Saat`} />
+                                <InfoRow icon={Handshake} label="Tamamlanan Proje Sayısı" value={`${user.stats.completedProjects} Proje`} />
+                                <InfoRow icon={Sparkles} label="En Aktif Gönüllülük Alanı" value={user.stats.mostActiveVolunteerArea} />
+                                <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={user.stats.volunteerRank.country} />
+                                 <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={user.stats.volunteerRank.city} />
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardHeader><CardTitle>Nasıl Puan Kazanırım?</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className='text-lg flex items-center gap-2'><HandCoins className='h-5 w-5 text-primary' />Bağış İstatistikleri</CardTitle></CardHeader>
+                            <CardContent className="divide-y">
+                                <InfoRow icon={DollarSign} label="Toplam Bağış Tutarı" value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
+                                <InfoRow icon={FileText} label="Toplam İşlem Adedi" value={`${user.stats.donationCount} İşlem`} />
+                                <InfoRow icon={Target} label="En Çok Desteklenen STK" value={user.stats.mostSupportedNgo} />
+                                <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
+                                <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Nasıl Puan Kazanırım?</CardTitle>
+                            </CardHeader>
                             <CardContent>
                                 <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
                                     <li>Anlaşmalı markalardan yaptığın her alışverişle.</li>
@@ -150,7 +154,7 @@ export default function ProfilePage() {
                                     <li>Platforma yeni arkadaşlarını davet ederek.</li>
                                     <li>Rozetler kazanarak ve seviye atlayarak.</li>
                                 </ul>
-                                <Accordion type="single" collapsible className="w-full mt-2">
+                                 <Accordion type="single" collapsible className="w-full mt-2">
                                     <AccordionItem value="puan-cetveli" className="border-t">
                                         <AccordionTrigger className="text-sm">Puan Cetvelini Gör</AccordionTrigger>
                                         <AccordionContent>
@@ -191,24 +195,33 @@ export default function ProfilePage() {
                         </Card>
 
                         <Card>
-                            <CardHeader><CardTitle className='text-lg flex items-center gap-2'><BarChart3 className='h-5 w-5 text-primary' />Gönüllülük İstatistikleri</CardTitle></CardHeader>
-                            <CardContent className="divide-y">
-                                <InfoRow icon={Hourglass} label="Toplam Gönüllülük Saati" value={`${user.stats.volunteerHours} Saat`} />
-                                <InfoRow icon={Handshake} label="Tamamlanan Proje Sayısı" value={`${user.stats.completedProjects} Proje`} />
-                                <InfoRow icon={Sparkles} label="En Aktif Gönüllülük Alanı" value={user.stats.mostActiveVolunteerArea} />
-                                <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={user.stats.volunteerRank.country} />
-                                 <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={user.stats.volunteerRank.city} />
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle>Son Puan İşlemleri</CardTitle>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <ArrowDownUp className="h-4 w-4" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {recentPointTransactions.map((tx, index) => {
+                                    const Icon = tx.icon;
+                                    return (
+                                    <div key={index} className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-3">
+                                            <Icon className="h-5 w-5 text-muted-foreground" />
+                                            <div>
+                                                <p>{tx.description}</p>
+                                                <p className="text-xs text-muted-foreground">{tx.time}</p>
+                                            </div>
+                                        </div>
+                                        <p className="font-bold text-green-600">+{tx.points} Puan</p>
+                                    </div>
+                                )})}
                             </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader><CardTitle className='text-lg flex items-center gap-2'><HandCoins className='h-5 w-5 text-primary' />Bağış İstatistikleri</CardTitle></CardHeader>
-                            <CardContent className="divide-y">
-                                <InfoRow icon={DollarSign} label="Toplam Bağış Tutarı" value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
-                                <InfoRow icon={FileText} label="Toplam İşlem Adedi" value={`${user.stats.donationCount} İşlem`} />
-                                <InfoRow icon={Target} label="En Çok Desteklenen STK" value={user.stats.mostSupportedNgo} />
-                                <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
-                                <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
-                            </CardContent>
+                             <CardFooter>
+                                <Button asChild variant="secondary" className="w-full">
+                                    <Link href="/my-badges">Tüm İşlemleri Gör</Link>
+                                </Button>
+                            </CardFooter>
                         </Card>
                     </TabsContent>
 
