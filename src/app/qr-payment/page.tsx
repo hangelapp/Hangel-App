@@ -29,7 +29,7 @@ const cardData = [
     id: 'bireysel',
     type: 'Bireysel',
     bgColor: 'bg-gradient-to-br from-primary via-orange-600 to-primary/80',
-    number: '5549 6010 0000 1234',
+    number: '5549601000001234',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
     balance: '1.250,75 ₺',
@@ -40,7 +40,7 @@ const cardData = [
     id: 'ogrenci',
     type: 'Öğrenci',
     bgColor: 'bg-gradient-to-br from-cyan-700 via-cyan-500 to-cyan-800',
-    number: '5549 6010 0000 5678',
+    number: '5549601000005678',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '10/27',
     balance: '345,50 ₺',
@@ -51,7 +51,7 @@ const cardData = [
     id: 'ticari',
     type: 'Ticari',
     bgColor: 'bg-gradient-to-br from-foreground via-blue-900 to-foreground/80',
-    number: '5549 6010 0000 9012',
+    number: '5549601000009012',
     owner: 'Hangel Ticari Hesap',
     expiry: '08/29',
     balance: '12.870,00 ₺',
@@ -204,7 +204,7 @@ export default function QrPaymentPage() {
         
             {showCardDetails[cardId] && (
                  <div className="text-center text-white/90 bg-black/20 p-2 rounded-md mt-1 font-mono tracking-wider">
-                    <p>{card.number}</p>
+                    <p>{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
                     <p>SKT: {card.expiry} / CVV: {card.cvv}</p>
                 </div>
             )}
@@ -271,7 +271,7 @@ export default function QrPaymentPage() {
                                         <p className="font-semibold text-2xl">{card.balance}</p>
                                     </div>
                                     <div className="relative">
-                                        <p className="font-mono tracking-widest text-lg mb-2">{card.number.replace(/(.{4})/g, '$1 ').trim()}</p>
+                                        <p className="font-mono tracking-widest text-lg mb-2">{'**** **** **** ' + card.number.slice(-4)}</p>
                                         <div className="flex justify-between items-end">
                                             <div>
                                                 <p className="text-xs opacity-80">Kart Sahibi</p>
