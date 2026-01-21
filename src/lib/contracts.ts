@@ -119,7 +119,7 @@ export const contractsData: Contract[] = [
       <ul>
         <li><strong>Gönüllülük Başvuruları:</strong> Gönüllülük faaliyetine başvurduğunuzda, profilinizde yer alan ilgili bilgileriniz (iletişim bilgileri hariç olmak üzere, yetkinlikleriniz, deneyimleriniz vb.) başvuruyu değerlendirmesi için ilgili STK veya Kuruluş ile paylaşılır.</li>
         <li><strong>Bağış İşlemleri:</strong> Bağış yaptığınızda, işlemin teyidi için gerekli bilgiler ilgili STK ve ödeme hizmeti sağlayıcısı ile paylaşılır.</li>
-        <li><strong>Yasal Yükümlülülükler:</strong> Mahkeme kararları veya yasal talepler doğrultusunda yetkili kamu kurum ve kuruluşları ile.</li>
+        <li><strong>Yasal Yükümlülükler:</strong> Mahkeme kararları veya yasal talepler doğrultusunda yetkili kamu kurum ve kuruluşları ile.</li>
       </ul>
       
       <h4>4. Veri Saklama Süreleri</h4>
@@ -419,6 +419,7 @@ export const contractsData: Contract[] = [
       <p>Bu sosyal girişim, yukarıdaki maddelerle ilgili bir değişiklik olduğu takdirde Açık Açık’a hemen bildireceğini beyan eder.</p>
       
       <p><small>*2019 yılında Açık Açık Derneği, Ashoka Türkiye ve Türetim Ekonomisi Derneği tarafından hazırlanmıştır.</small></p>
+      <p>Daha fazla bilgi için <a href="https://www.acikacik.org/" target="_blank" rel="noopener noreferrer">Açık Açık web sitesini</a> ziyaret edebilirsiniz.</p>
     `,
   },
   {
@@ -447,3 +448,5 @@ export const contractsData: Contract[] = [
     `,
   },
 ];
+
+    
