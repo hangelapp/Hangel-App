@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Search, ShieldAlert, Filter, ArrowDownUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ngos } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -59,14 +59,22 @@ export default function NgoSelectionPage() {
                 </AlertDescription>
             </Alert>
 
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    placeholder="STK ara..."
-                    className="pl-10 h-11"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="flex gap-2 items-center">
+                <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="STK ara..."
+                        className="pl-10 h-11"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
+                    <Filter className="h-5 w-5" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
+                    <ArrowDownUp className="h-5 w-5" />
+                </Button>
             </div>
 
             <Card>
