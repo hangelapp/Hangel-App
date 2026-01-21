@@ -11,7 +11,7 @@ import {
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -52,11 +52,11 @@ export default function ProfilePage() {
     }, []);
 
     const recentPointTransactions = [
-        { icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2 saat önce" },
-        { icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "1 gün önce" },
-        { icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "3 gün önce" },
-        { icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "3 gün önce" },
-        { icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "5 gün önce" },
+        { icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2024-07-22T14:30:00" },
+        { icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "2024-07-21T10:00:00" },
+        { icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "2024-07-19T18:45:00" },
+        { icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "2024-07-19T11:20:00" },
+        { icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "2024-07-17T09:05:00" },
     ];
     
     const VolunteerCard = ({ item }: { item: (typeof pastVolunteering)[0] }) => (
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                                             <Icon className="h-5 w-5 text-muted-foreground" />
                                             <div>
                                                 <p>{tx.description}</p>
-                                                <p className="text-xs text-muted-foreground">{tx.time}</p>
+                                                <p className="text-xs text-muted-foreground">{format(parseISO(tx.time), 'dd MMMM yyyy, HH:mm', { locale: tr })}</p>
                                             </div>
                                         </div>
                                         <p className="font-bold text-green-600">+{tx.points} Puan</p>
