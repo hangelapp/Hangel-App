@@ -1,5 +1,6 @@
 
 
+
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
@@ -63,10 +64,16 @@ export const user: User = {
             hasChronicIllness: false,
             usesRegularMedication: false,
             hasPhysicalLimitation: false,
-            emergencyContact: {
-                name: "Ayşe Yılmaz",
-                phone: "+90 555 987 65 43"
-            }
+            emergencyContacts: [
+                {
+                    name: "Ayşe Yılmaz",
+                    phone: "+90 555 987 65 43"
+                },
+                {
+                    name: "",
+                    phone: ""
+                }
+            ]
         }
     },
     stats: {

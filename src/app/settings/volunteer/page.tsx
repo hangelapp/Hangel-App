@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -27,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 
 const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
 const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
@@ -217,13 +219,9 @@ export default function VolunteerSettingsPage() {
                 
                  <Card>
                     <CardHeader>
-                        <CardTitle>Acil Durum ve Seyahat</CardTitle>
+                        <CardTitle>Seyahat Uygunluğu</CardTitle>
                     </CardHeader>
                      <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                           <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
-                           <Switch id="emergency-available" defaultChecked={user.volunteerInfo.emergency.available} />
-                        </div>
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="domestic-travel" className="font-medium">Yurtiçi seyahat engelim yok</Label>
                            <Switch id="domestic-travel" defaultChecked={!user.volunteerInfo.travelInfo.domesticObstacle} />
@@ -235,26 +233,36 @@ export default function VolunteerSettingsPage() {
                          <div className="space-y-2">
                            <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={visas} onSelectedChange={setVisas} />
                         </div>
-                        <div className="pt-4 border-t">
+                     </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Sağlık Bilgileri</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                           <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
+                           <Switch id="emergency-available" defaultChecked={user.volunteerInfo.emergency.available} />
+                        </div>
+                        <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                            <Checkbox id="chronic-illness" defaultChecked={user.volunteerInfo.emergency.hasChronicIllness} />
+                            <Label htmlFor="chronic-illness">Kronik bir rahatsızlığım var.</Label>
+                        </div>
+                        <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                            <Checkbox id="regular-medication" defaultChecked={user.volunteerInfo.emergency.usesRegularMedication} />
+                            <Label htmlFor="regular-medication">Düzenli olarak kullandığım bir ilaç var.</Label>
+                        </div>
+                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                            <Checkbox id="physical-limitation" defaultChecked={user.volunteerInfo.emergency.hasPhysicalLimitation} />
+                            <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
+                        </div>
+                        <div className="pt-4">
                             <Button type="button" variant="secondary" className="w-full" onClick={() => setEmergencyContactOpen(true)}>
-                                Acil Durum Kişisi Bilgilerini Düzenle
+                                Acil Durum Kişilerini Düzenle
                             </Button>
                         </div>
-                        <div className="space-y-2 pt-4 border-t">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox id="chronic-illness" defaultChecked={user.volunteerInfo.emergency.hasChronicIllness} />
-                                <Label htmlFor="chronic-illness">Kronik bir rahatsızlığım var.</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox id="regular-medication" defaultChecked={user.volunteerInfo.emergency.usesRegularMedication} />
-                                <Label htmlFor="regular-medication">Düzenli olarak kullandığım bir ilaç var.</Label>
-                            </div>
-                             <div className="flex items-center space-x-2">
-                                <Checkbox id="physical-limitation" defaultChecked={user.volunteerInfo.emergency.hasPhysicalLimitation} />
-                                <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
-                            </div>
-                        </div>
-                     </CardContent>
+                    </CardContent>
                 </Card>
 
                 <div className="flex justify-end">
@@ -265,19 +273,34 @@ export default function VolunteerSettingsPage() {
             <Dialog open={isEmergencyContactOpen} onOpenChange={setEmergencyContactOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Acil Durum Kişisi</DialogTitle>
+                        <DialogTitle>Acil Durum Kişileri</DialogTitle>
                         <DialogDescription>
-                            Acil bir durumda ulaşılacak kişinin bilgilerini girin. Bu bilgiler sadece acil durum prosedürleri için kullanılacaktır.
+                            Acil bir durumda ulaşılacak kişilerin bilgilerini girin. Bu bilgiler sadece acil durum prosedürleri için kullanılacaktır.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="emergency-contact-name-dialog">Ad Soyad</Label>
-                            <Input id="emergency-contact-name-dialog" defaultValue={user.volunteerInfo.emergency.emergencyContact.name} />
+                    <div className="space-y-6 py-4">
+                        <div className="space-y-4">
+                             <Label className="font-semibold">Acil Durum Kişisi 1</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="emergency-contact-name-1">Ad Soyad</Label>
+                                <Input id="emergency-contact-name-1" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.name} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
+                                <Input id="emergency-contact-phone-1" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="emergency-contact-phone-dialog">Telefon</Label>
-                            <Input id="emergency-contact-phone-dialog" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContact.phone} />
+                        <Separator />
+                         <div className="space-y-4">
+                             <Label className="font-semibold">Acil Durum Kişisi 2</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="emergency-contact-name-2">Ad Soyad</Label>
+                                <Input id="emergency-contact-name-2" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.name} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="emergency-contact-phone-2">Telefon</Label>
+                                <Input id="emergency-contact-phone-2" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.phone} />
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

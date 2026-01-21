@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -258,8 +259,14 @@ export default function ProfilePage() {
                                 <InfoRow icon={HeartPulse} label="Kronik Hastalık" value={user.volunteerInfo.emergency.hasChronicIllness ? 'Var' : 'Yok'} />
                                 <InfoRow icon={HeartPulse} label="Düzenli İlaç" value={user.volunteerInfo.emergency.usesRegularMedication ? 'Var' : 'Yok'} />
                                 <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={user.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
-                                <InfoRow icon={UserIcon} label="Acil Durum Kişisi" value={user.volunteerInfo.emergency.emergencyContact.name} />
-                                <InfoRow icon={Phone} label="Acil Durum Tel" value={user.volunteerInfo.emergency.emergencyContact.phone} />
+                                <InfoRow icon={UserIcon} label="Acil Durum Kişisi 1" value={user.volunteerInfo.emergency.emergencyContacts[0]?.name} />
+                                <InfoRow icon={Phone} label="Acil Durum Tel 1" value={user.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
+                                {user.volunteerInfo.emergency.emergencyContacts[1]?.name && (
+                                    <>
+                                        <InfoRow icon={UserIcon} label="Acil Durum Kişisi 2" value={user.volunteerInfo.emergency.emergencyContacts[1]?.name} />
+                                        <InfoRow icon={Phone} label="Acil Durum Tel 2" value={user.volunteerInfo.emergency.emergencyContacts[1]?.phone} />
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                         <Card>

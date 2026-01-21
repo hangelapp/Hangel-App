@@ -1,3 +1,4 @@
+
 import { LucideIcon } from "lucide-react";
 
 export type NavItem = {
@@ -236,10 +237,10 @@ export type User = {
             hasChronicIllness: boolean;
             usesRegularMedication: boolean;
             hasPhysicalLimitation: boolean;
-            emergencyContact: {
+            emergencyContacts: {
                 name: string;
                 phone: string;
-            };
+            }[];
         }
     },
     stats: {
