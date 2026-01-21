@@ -27,7 +27,7 @@ const InfoRow = ({ icon: Icon, label, value, verified }: { icon: React.ElementTy
         </div>
         <div className="flex items-center gap-2 text-right">
           <p className="text-muted-foreground">{value}</p>
-          {verified && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
+          {verified && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
         </div>
     </div>
 );
@@ -245,12 +245,12 @@ export default function ProfilePage() {
                                 <InfoRow icon={Users} label="Sosyal Yetkinlikler" value={user.volunteerInfo.dailySkills.join(', ')} />
                                 <InfoRow icon={Cpu} label="Bildiği Programlar" value={user.volunteerInfo.programs.join(', ')} />
                                 <InfoRow icon={Languages} label="Diller" value={user.volunteerInfo.languages.join(', ')} />
-                                <InfoRow icon={FileText} label="Lisanslar" value={user.volunteerInfo.licenses.join(', ')} />
-                                <InfoRow icon={FileText} label="Belgeler" value={user.volunteerInfo.documents.join(', ')} />
+                                <InfoRow icon={FileText} label="Lisanslar" value={user.volunteerInfo.licenses.join(', ')} verified />
+                                <InfoRow icon={FileText} label="Belgeler" value={user.volunteerInfo.documents.join(', ')} verified />
                                 <InfoRow icon={Plane} label="Yurtiçi Seyahat" value={user.volunteerInfo.travelInfo.domesticObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={user.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Landmark} label="Vizeler" value={user.volunteerInfo.travelInfo.visas.join(', ')} />
-                                <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education.map(e => e.school).join('; ')} />
+                                <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education.map(e => e.school).join('; ')} verified />
                                 <InfoRow icon={Briefcase} label="Sektör" value={user.volunteerInfo.sector} />
                                 <InfoRow icon={Briefcase} label="Pozisyon" value={user.volunteerInfo.profession} />
                                  <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={user.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
