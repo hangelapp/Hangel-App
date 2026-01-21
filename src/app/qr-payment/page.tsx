@@ -15,6 +15,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ngos } from '@/lib/data';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const cardData = [
   {
@@ -76,6 +84,61 @@ const donationTransactions = [
     { id: '21', type: 'expense', brand: 'Süpermarket', purchaseAmount: '180.25', donationAmount: '18.03', ngo: ['LÖSEV', 'Ahbap Derneği'], date: '2024-07-03', time: '18:15' },
 ];
 
+const ActivationDialog = ({ card, open, onClose, onActivate }: { card: any, open: boolean, onClose: () => void, onActivate: (id: string) => void }) => {
+    if (!card) return null;
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onActivate(card.id);
+        onClose();
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onClose}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Kart Aktivasyonu - {card.type}</DialogTitle>
+                    <DialogDescription>Lütfen kartınızı aktif etmek için gerekli bilgileri girin.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+                    {card.type === 'Öğrenci' && (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="school-name">Okul Adı</Label>
+                                <Input id="school-name" placeholder="Boğaziçi Üniversitesi" required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="student-id">Öğrenci Kimlik No</Label>
+                                <Input id="student-id" placeholder="12345678901" required />
+                            </div>
+                        </>
+                    )}
+                    {card.type === 'Ticari' && (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="company-name">Şirket Adı</Label>
+                                <Input id="company-name" placeholder="Hangel A.Ş." required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="tax-no">Vergi Numarası</Label>
+                                <Input id="tax-no" placeholder="1234567890" required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="tax-office">Vergi Dairesi</Label>
+                                <Input id="tax-office" placeholder="Kadıköy" required />
+                            </div>
+                        </>
+                    )}
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" onClick={onClose}>İptal</Button>
+                        <Button type="submit">Kartı Aktive Et</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
@@ -83,6 +146,10 @@ export default function QrPaymentPage() {
   const [activeCardId, setActiveCardId] = useState(cardData[0].id);
   const [frozenCards, setFrozenCards] = useState<Record<string, boolean>>({});
   const [showCardDetails, setShowCardDetails] = useState<Record<string, boolean>>({});
+  const [activatedCards, setActivatedCards] = useState<Record<string, boolean>>({ bireysel: true });
+  const [showActivationDialog, setShowActivationDialog] = useState<string | null>(null);
+
+  const cardToActivate = cardData.find(c => c.id === showActivationDialog);
 
   const handleFlip = (cardId: string) => {
     setFlippedCardId(prev => (prev === cardId ? null : cardId));
@@ -96,6 +163,11 @@ export default function QrPaymentPage() {
     });
     handleFlip(cardId);
   };
+  
+   const handleActivateCard = (cardId: string) => {
+    setActivatedCards(prev => ({ ...prev, [cardId]: true }));
+    toast({ title: "Kart Başarıyla Aktive Edildi!" });
+  };
 
   const CardSettings = ({ cardId }: { cardId: string }) => {
     const handleSettingClick = (settingName: string) => {
@@ -104,15 +176,29 @@ export default function QrPaymentPage() {
             description: `${settingName} işlevi yakında aktif olacaktır.`,
         });
     };
-    const isFrozen = frozenCards[cardId];
+    const isCardActivated = activatedCards[cardId];
+    const isCardFrozen = frozenCards[cardId];
     const card = cardData.find(c => c.id === cardId)!;
 
     return (
-        <div className="w-full h-full flex flex-col justify-center text-left space-y-1 p-3 bg-black/20 rounded-lg backdrop-blur-sm">
+        <div className="w-full h-full flex flex-col justify-start text-left space-y-1 p-3 bg-black/20 rounded-lg backdrop-blur-sm overflow-y-auto">
             <h4 className="font-semibold text-base mb-1 text-center text-white/90">Kart Ayarları</h4>
             <Button onClick={() => setShowCardDetails(prev => ({ ...prev, [cardId]: !prev[cardId] }))} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><KeyRound className="mr-2 h-4 w-4" /> Kart Bilgileri</Button>
             <Button onClick={() => handleSettingClick('Limit Değişikliği')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><SlidersHorizontal className="mr-2 h-4 w-4" /> Limit Değişikliği</Button>
-            <Button onClick={() => toggleFreezeCard(cardId)} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><Power className="mr-2 h-4 w-4" /> {isFrozen ? 'Kartı Aktif Et' : 'Kartı Dondur'}</Button>
+            <Button 
+                onClick={() => {
+                    if (!isCardActivated) {
+                        setShowActivationDialog(cardId);
+                    } else {
+                        toggleFreezeCard(cardId);
+                    }
+                }}
+                variant="ghost" 
+                size="sm" 
+                className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"
+            >
+                <Power className="mr-2 h-4 w-4" /> {!isCardActivated ? 'Kartı Aktive Et' : (isCardFrozen ? 'Kartı Aktif Et' : 'Kartı Dondur')}
+            </Button>
             <Button onClick={() => handleSettingClick('İşlem İtirazı')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><MessageSquareWarning className="mr-2 h-4 w-4" /> İşlem İtirazı</Button>
             <Button onClick={() => handleSettingClick('Kart İptali')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-red-400 hover:bg-red-500/50 hover:text-white text-sm"><MinusCircle className="mr-2 h-4 w-4" /> Kartı İptal Et</Button>
         
@@ -454,6 +540,13 @@ export default function QrPaymentPage() {
           </Accordion>
         </CardContent>
       </Card>
+      
+      <ActivationDialog 
+        card={cardToActivate}
+        open={!!showActivationDialog}
+        onClose={() => setShowActivationDialog(null)}
+        onActivate={handleActivateCard}
+      />
       <div className="pb-24" />
     </div>
   );
