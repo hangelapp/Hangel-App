@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { 
     Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, 
-    HeartHandshake, Mail, PersonStanding, Contrast, Type, MinusCircle, Wallet, Settings2 as AppearanceIcon
+    HeartHandshake, PersonStanding, Wallet, Users
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -65,7 +65,10 @@ export default function SettingsPage() {
              <CardContent className="p-0">
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/settings/notifications" icon={Bell} label="Bildirim Ayarları" iconColor="bg-red-500" />
-                    <SettingsLink href="/settings/appearance" icon={AppearanceIcon} label="Görünüm ve Erişilebilirlik" iconColor="bg-indigo-500" />
+                    <SettingsLink href="/settings/theme" icon={Palette} label="Tema Ayarları" iconColor="bg-sky-500" />
+                    <SettingsLink href="/settings/language" icon={Globe} label="Dil Ayarları" iconColor="bg-rose-500" />
+                    <SettingsLink href="/settings/accessibility" icon={PersonStanding} label="Erişilebilirlik" iconColor="bg-indigo-500" />
+                    <SettingsLink href="/settings/privacy" icon={Users} label="Gizlilik ve Etkileşim" iconColor="bg-fuchsia-500" />
                  </div>
             </CardContent>
         </Card>

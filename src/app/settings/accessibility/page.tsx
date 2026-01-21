@@ -23,7 +23,7 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 );
 
 
-export default function AppearanceSettingsPage() {
+export default function AccessibilitySettingsPage() {
     const router = useRouter();
 
   return (
