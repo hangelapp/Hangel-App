@@ -229,23 +229,34 @@ export default function VolunteerSettingsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Acil Durum Kişileri</CardTitle>
-                        <CardDescription>Acil bir durumda ulaşılacak kişilerin bilgilerini buradan düzenleyebilirsiniz.</CardDescription>
+                        <CardDescription>Acil bir durumda ulaşılacak kişilerin bilgilerini girin. Bu bilgiler sadece acil durum prosedürleri için kullanılacaktır.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div>
-                                <p className="text-sm font-medium">Acil Durum Kişisi 1</p>
-                                <p className="text-muted-foreground">{user.volunteerInfo.emergency.emergencyContacts[0]?.name || 'Belirtilmemiş'} - {user.volunteerInfo.emergency.emergencyContacts[0]?.phone || 'Belirtilmemiş'}</p>
+                    <CardContent className="space-y-6">
+                        <div>
+                            <h4 className="font-medium text-base mb-2">Acil Durum Kişisi 1</h4>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="emergency-contact-name-1">Ad Soyad</Label>
+                                    <Input id="emergency-contact-name-1" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.name} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
+                                    <Input id="emergency-contact-phone-1" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm font-medium">Acil Durum Kişisi 2</p>
-                                <p className="text-muted-foreground">{user.volunteerInfo.emergency.emergencyContacts[1]?.name || 'Belirtilmemiş'} - {user.volunteerInfo.emergency.emergencyContacts[1]?.phone || 'Belirtilmemiş'}</p>
+                        </div>
+                        <div className="border-t pt-6">
+                            <h4 className="font-medium text-base mb-2">Acil Durum Kişisi 2</h4>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="emergency-contact-name-2">Ad Soyad</Label>
+                                    <Input id="emergency-contact-name-2" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.name || ''} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="emergency-contact-phone-2">Telefon</Label>
+                                    <Input id="emergency-contact-phone-2" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} />
+                                </div>
                             </div>
-                            <Button asChild type="button" variant="secondary" className="w-full">
-                                <Link href="/settings/emergency-contacts">
-                                    Acil Durum Kişilerini Düzenle
-                                </Link>
-                            </Button>
                         </div>
                     </CardContent>
                 </Card>
