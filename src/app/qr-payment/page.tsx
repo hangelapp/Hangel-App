@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle, Link as LinkIcon } from 'lucide-react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle, Link as LinkIcon, Contact, Copy } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -253,12 +253,18 @@ export default function QrPaymentPage() {
                         <div className="bg-white p-2 rounded-lg">
                             <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('https://hangel.org/pay/ismail')}`} alt="QR Code" width={150} height={150} />
                         </div>
-                        <Button variant="outline" className="w-full" onClick={() => {
-                            navigator.clipboard.writeText('https://hangel.org/pay/ismail');
-                            toast({ title: 'Ödeme linki kopyalandı!' });
-                        }}>
-                            <LinkIcon className="mr-2 h-4 w-4" /> Linki Kopyala
-                        </Button>
+                         <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted w-full">
+                            <p className="text-base font-mono font-semibold tracking-wider">h-123456</p>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                                navigator.clipboard.writeText('h-123456');
+                                toast({ title: 'Hangel kodu kopyalandı!' });
+                            }}>
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                             <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Share2 className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 </TabsContent>
                 <TabsContent value="scan-qr" className="mt-4">
@@ -274,7 +280,12 @@ export default function QrPaymentPage() {
                     <form className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="phone-number">Telefon Numarası</Label>
-                            <Input id="phone-number" type="tel" placeholder="5XX XXX XX XX" />
+                            <div className="relative flex items-center">
+                                <Input id="phone-number" type="tel" placeholder="5XX XXX XX XX" className="pr-10" />
+                                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8">
+                                    <Contact className="h-5 w-5 text-muted-foreground" />
+                                </Button>
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="amount-phone">Tutar</Label>
