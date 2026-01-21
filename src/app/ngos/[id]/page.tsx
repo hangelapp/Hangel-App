@@ -243,8 +243,11 @@ export default function NgoProfilePage() {
              <Card>
                  <CardHeader><CardTitle className="text-lg">Bağış İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
-                    <StatRow label="Toplam Bağış Tutarı" value={`${ngo.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
+                    <StatRow label="Toplam Bağış Tutarı" value={ngo.stats.totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
                     <StatRow label="Toplam Bağışçı Sayısı" value={ngo.stats.donors.toLocaleString('tr-TR')} />
+                    <StatRow label="Toplam İşlem Adedi" value={ngo.stats.donationCount.toLocaleString('tr-TR')} />
+                    <StatRow label="Ortalama Bağış Tutarı" value={ngo.stats.avgDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
+                    <StatRow label="Tek Seferde En Yüksek Bağış" value={ngo.stats.highestSingleDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
                     <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString('tr-TR')} />
                  </CardContent>
              </Card>
