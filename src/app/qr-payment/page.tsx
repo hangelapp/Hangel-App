@@ -183,6 +183,14 @@ export default function QrPaymentPage() {
     });
   };
 
+  const handleMaterialClick = (action: string) => {
+    toast({
+        title: 'Materyal İşlemi',
+        description: `Bu materyal için ${action} işlevi yakında aktif olacaktır.`,
+    });
+  };
+
+
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
         <div className="flex justify-between items-center pt-4">
@@ -201,9 +209,10 @@ export default function QrPaymentPage() {
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg p-1 text-xs font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10 shadow-none data-[state=active]:bg-inherit",
+                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg p-1 text-xs font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10 shadow-none",
                              card.bgColor,
-                             activeCardId === card.id ? '' : 'bg-opacity-50'
+                             activeCardId === card.id ? '' : 'bg-opacity-50',
+                             activeCardId === card.id ? 'data-[state=active]:bg-inherit' : ''
                         )}
                     >
                         {card.type}
@@ -381,9 +390,9 @@ export default function QrPaymentPage() {
                         <p className="text-xs text-muted-foreground">Müşterilerinizin telefonlarıyla okutarak ödeme yapabileceği sticker.</p>
                     </div>
                     <div className="flex gap-1">
-                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost"><Download className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost"><Share2 className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('paylaşma')}><Share2 className="h-4 w-4" /></Button>
                     </div>
                 </div>
                 <div className="p-3 border rounded-lg flex items-center justify-between">
@@ -392,9 +401,9 @@ export default function QrPaymentPage() {
                         <p className="text-xs text-muted-foreground">hangel ile ödeme kabul ettiğinizi gösteren sticker.</p>
                     </div>
                     <div className="flex gap-1">
-                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost"><Download className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost"><Share2 className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('paylaşma')}><Share2 className="h-4 w-4" /></Button>
                     </div>
                 </div>
                 <div className="p-3 border rounded-lg flex items-center justify-between">
@@ -403,9 +412,9 @@ export default function QrPaymentPage() {
                         <p className="text-xs text-muted-foreground">İşyeri girişinde kullanabileceğiniz çift taraflı dönkart.</p>
                     </div>
                     <div className="flex gap-1">
-                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost"><Download className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost"><Share2 className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('paylaşma')}><Share2 className="h-4 w-4" /></Button>
                     </div>
                 </div>
             </CardContent>

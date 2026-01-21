@@ -51,9 +51,22 @@ export default function SettingsPage() {
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/settings/profile" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
                     <SettingsLink href="/settings/volunteer" icon={HeartHandshake} label="Gönüllülük Bilgilerini Düzenle" iconColor="bg-orange-500" />
-                    <SettingsLink href="/settings/wallet" icon={Wallet} label="Cüzdan ve Ödeme Yöntemleri" iconColor="bg-teal-500" />
-                    <SettingsLink href="/settings/security" icon={Shield} label="Güvenlik ve Şifre" iconColor="bg-green-500" />
+                    <SettingsLink href="/settings/wallet" icon={Wallet} label="Cüzdan ve Ödeme Yöntemleri" iconColor="bg-green-500" />
+                    <SettingsLink href="/settings/security" icon={Shield} label="Güvenlik ve Şifre" iconColor="bg-sky-500" />
                  </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Bağışçı ve Gönüllüsü Olduğun STK'lar</CardTitle>
+                <CardDescription>Desteklediğiniz ve gönüllüsü olduğunuz kuruluşları yönetin.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+                    <div className="flex flex-col divide-y">
+                        <SettingsLink href="/settings/ngo-selection" icon={HandCoins} label="Bağışçısı Olduğun STK'ları Değiştir" iconColor="bg-amber-500" />
+                        <SettingsLink href="/settings/volunteer-ngo-selection" icon={HeartHandshake} label="Gönüllüsü Olduğun STK'ları Değiştir" iconColor="bg-rose-500" />
+                    </div>
             </CardContent>
         </Card>
 
@@ -65,23 +78,11 @@ export default function SettingsPage() {
              <CardContent className="p-0">
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/settings/notifications" icon={Bell} label="Bildirim Ayarları" iconColor="bg-red-500" />
-                    <SettingsLink href="/settings/theme" icon={Palette} label="Tema Ayarları" iconColor="bg-sky-500" />
-                    <SettingsLink href="/settings/language" icon={Globe} label="Dil Ayarları" iconColor="bg-rose-500" />
+                    <SettingsLink href="/settings/theme" icon={Palette} label="Tema Ayarları" iconColor="bg-gray-500" />
+                    <SettingsLink href="/settings/language" icon={Globe} label="Dil Ayarları" iconColor="bg-blue-500" />
                     <SettingsLink href="/settings/accessibility" icon={PersonStanding} label="Erişilebilirlik" iconColor="bg-indigo-500" />
-                    <SettingsLink href="/settings/privacy" icon={Users} label="Gizlilik ve Etkileşim" iconColor="bg-fuchsia-500" />
+                    <SettingsLink href="/settings/privacy" icon={Shield} label="Gizlilik ve Etkileşim" iconColor="bg-teal-500" />
                  </div>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Bağış Ayarları</CardTitle>
-                <CardDescription>Varsayılan bağış tercihlerinizi yönetin.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-                    <div className="flex flex-col divide-y">
-                    <SettingsLink href="/settings/ngo-selection" icon={HandCoins} label="Varsayılan STK'yı Değiştir" iconColor="bg-amber-500" />
-                    </div>
             </CardContent>
         </Card>
 
@@ -93,6 +94,7 @@ export default function SettingsPage() {
              <CardContent className="p-0">
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/about" icon={Info} label="Hakkımızda" iconColor="bg-cyan-500" />
+                    <SettingsLink href="/support" icon={HelpCircle} label="Destek" iconColor="bg-purple-500" />
                     <SettingsLink href="/settings/contracts" icon={FileText} label="Sözleşmeler ve Politikalar" iconColor="bg-slate-500" />
                  </div>
             </CardContent>

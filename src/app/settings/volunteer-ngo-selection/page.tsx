@@ -2,43 +2,30 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, ShieldAlert } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowLeft, CheckCircle, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ngos } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
-export default function NgoSelectionPage() {
+export default function VolunteerNgoSelectionPage() {
     const router = useRouter();
-    const [selectedNgos, setSelectedNgos] = useState(['1', '2']); 
+    const [selectedNgos, setSelectedNgos] = useState(['1', '2']);
     const [searchTerm, setSearchTerm] = useState('');
-    const { toast } = useToast();
 
     const filteredNgos = ngos.filter(ngo => 
         ngo.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleNgoSelect = (ngoId: string) => {
-        setSelectedNgos(prev => {
-            const isSelected = prev.includes(ngoId);
-            if (isSelected) {
-                return prev.filter(id => id !== ngoId);
-            } else {
-                if (prev.length < 2) {
-                    return [...prev, ngoId];
-                } else {
-                    toast({
-                        variant: 'destructive',
-                        title: "Limit Aşıldı",
-                        description: "En fazla 2 varsayılan STK seçebilirsiniz.",
-                    });
-                    return prev;
-                }
-            }
-        });
+    const handleSelectNgo = (ngoId: string) => {
+        setSelectedNgos(prev => 
+            prev.includes(ngoId) 
+                ? prev.filter(id => id !== ngoId) 
+                : [...prev, ngoId]
+        );
     };
 
     return (
@@ -47,17 +34,9 @@ export default function NgoSelectionPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Bağışçısı Olduğun STK'ları Değiştir</h1>
-                <p className="text-muted-foreground text-sm">Alışverişlerinizden doğan bağışların aktarılacağı varsayılan STK'ları seçin. En fazla 2 STK seçebilirsiniz.</p>
+                <h1 className="text-2xl font-bold font-headline">Gönüllüsü Olduğun STK'lar</h1>
+                <p className="text-muted-foreground text-sm">Gönüllülük fırsatlarını takip etmek istediğiniz kuruluşları seçin.</p>
             </div>
-
-             <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Önemli Bilgi</AlertTitle>
-                <AlertDescription>
-                   Varsayılan STK seçiminizi 30 gün boyunca yalnızca bir kez değiştirebilirsiniz.
-                </AlertDescription>
-            </Alert>
 
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -70,18 +49,15 @@ export default function NgoSelectionPage() {
             </div>
 
             <Card>
-                <CardHeader className="p-4">
-                    <p className="text-sm font-medium">{selectedNgos.length} / 2 STK Seçildi</p>
-                </CardHeader>
                 <CardContent className="p-0">
                     <div className="divide-y">
                         {filteredNgos.slice(0, 21).map((ngo) => (
                             <div
                                 key={ngo.id}
                                 className="flex items-center justify-between p-4 hover:bg-accent cursor-pointer"
-                                onClick={() => handleNgoSelect(ngo.id)}
+                                onClick={() => handleSelectNgo(ngo.id)}
                             >
-                                <div className="flex items-center gap-4">
+                                <Label htmlFor={`ngo-${ngo.id}`} className="flex items-center gap-4 cursor-pointer">
                                     <Avatar className="h-10 w-10">
                                         <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
                                         <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
@@ -90,8 +66,12 @@ export default function NgoSelectionPage() {
                                         <p className="font-medium">{ngo.name}</p>
                                         <p className="text-sm text-muted-foreground">{ngo.category}</p>
                                     </div>
-                                </div>
-                                {selectedNgos.includes(ngo.id) && <CheckCircle className="h-6 w-6 text-primary" />}
+                                </Label>
+                                <Checkbox
+                                    id={`ngo-${ngo.id}`}
+                                    checked={selectedNgos.includes(ngo.id)}
+                                    onCheckedChange={() => handleSelectNgo(ngo.id)}
+                                />
                             </div>
                         ))}
                     </div>
