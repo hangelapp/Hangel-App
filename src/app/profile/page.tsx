@@ -240,7 +240,7 @@ export default function ProfilePage() {
                                 </Button>
                             </CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={Sparkles} label="İlgi Alanları" value={user.volunteerInfo.interests.join(', ')} />
+                                <InfoRow icon={Sparkles} label="Sosyal Hassasiyetler" value={user.volunteerInfo.interests.join(', ')} />
                                 <InfoRow icon={Brain} label="Profesyonel Yetkinlikler" value={user.volunteerInfo.skills.join(', ')} />
                                 <InfoRow icon={Users} label="Sosyal Yetkinlikler" value={user.volunteerInfo.dailySkills.join(', ')} />
                                 <InfoRow icon={Cpu} label="Bildiği Programlar" value={user.volunteerInfo.programs.join(', ')} />
@@ -251,8 +251,9 @@ export default function ProfilePage() {
                                 <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={user.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Landmark} label="Vizeler" value={user.volunteerInfo.travelInfo.visas.join(', ')} />
                                 <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education.map(e => e.school).join('; ')} verified />
-                                <InfoRow icon={Briefcase} label="Sektör" value={user.volunteerInfo.sector} />
-                                <InfoRow icon={Briefcase} label="Pozisyon" value={user.volunteerInfo.profession} />
+                                <InfoRow icon={School} label="Fakülte / Bölüm" value="Yönetim Bilişim Sistemleri" />
+                                <InfoRow icon={Briefcase} label="Çalıştığınız Sektör" value={user.volunteerInfo.sector} />
+                                <InfoRow icon={Briefcase} label="Çalıştığınız Pozisyon" value={user.volunteerInfo.profession} />
                                  <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={user.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
                                 <InfoRow icon={HeartPulse} label="Kronik Hastalık" value={user.volunteerInfo.emergency.hasChronicIllness ? 'Var' : 'Yok'} />
                                 <InfoRow icon={HeartPulse} label="Düzenli İlaç" value={user.volunteerInfo.emergency.usesRegularMedication ? 'Var' : 'Yok'} />

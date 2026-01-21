@@ -33,6 +33,15 @@ const allPositions = ['Yazılım Geliştirici', 'Doktor', 'Öğretmen', 'Avukat'
 const allUniversities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi', 'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Hacettepe Üniversitesi', 'Bilkent Üniversitesi'];
 const allHighSchools = ['Kabataş Erkek Lisesi', 'Galatasaray Lisesi', 'İstanbul Erkek Lisesi', 'Robert Kolej', 'Ankara Fen Lisesi', 'İzmir Fen Lisesi'];
 
+const faculties = {
+    'Boğaziçi Üniversitesi': ['Mühendislik Fakültesi', 'İİBF', 'Fen-Edebiyat Fakültesi'],
+    'İstanbul Teknik Üniversitesi': ['İnşaat Fakültesi', 'Mimarlık Fakültesi', 'Makine Fakültesi', 'Elektrik-Elektronik Fakültesi'],
+};
+const departments = {
+    'Mühendislik Fakültesi': ['Bilgisayar Müh.', 'Endüstri Müh.', 'İnşaat Müh.'],
+    'İİBF': ['İşletme', 'Ekonomi', 'Siyaset Bilimi ve Uluslararası İlişkiler'],
+};
+
 const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: string[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
     return (
         <div className="space-y-2">
@@ -86,6 +95,8 @@ export default function VolunteerSettingsPage() {
     
     const [university, setUniversity] = useState(user.volunteerInfo.education.find(e => e.level === 'Lisans')?.school || '');
     const [highSchool, setHighSchool] = useState(user.volunteerInfo.education.find(e => e.level === 'Lise')?.school || '');
+    const [faculty, setFaculty] = useState('');
+    const [department, setDepartment] = useState('');
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -103,7 +114,7 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Yetkinlik ve İlgi Alanları</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <MultiSelect title="İlgi Alanları" options={allInterests} selected={interests} onSelectedChange={setInterests} />
+                        <MultiSelect title="Sosyal Hassasiyetler" options={allInterests} selected={interests} onSelectedChange={setInterests} />
                         <MultiSelect title="Profesyonel Yetkinlikler" options={allSkills} selected={skills} onSelectedChange={setSkills} />
                         <MultiSelect title="Sosyal Yetkinlikler" options={allDailySkills} selected={dailySkills} onSelectedChange={setDailySkills} />
                     </CardContent>
@@ -116,12 +127,32 @@ export default function VolunteerSettingsPage() {
                     <CardContent className="space-y-4">
                          <div className="space-y-2">
                             <Label>Üniversite</Label>
-                            <Select value={university} onValueChange={setUniversity}>
+                            <Select value={university} onValueChange={(value) => { setUniversity(value); setFaculty(''); setDepartment(''); }}>
                                 <SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
                                 <SelectContent>
                                     {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Fakülte</Label>
+                                <Select value={faculty} onValueChange={(value) => { setFaculty(value); setDepartment(''); }} disabled={!university}>
+                                    <SelectTrigger><SelectValue placeholder="Fakülte seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {(faculties[university as keyof typeof faculties] || []).map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Bölüm</Label>
+                                <Select value={department} onValueChange={setDepartment} disabled={!faculty}>
+                                    <SelectTrigger><SelectValue placeholder="Bölüm seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                         {(departments[faculty as keyof typeof departments] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                          <div className="space-y-2">
                             <Label>Lise</Label>
@@ -134,7 +165,7 @@ export default function VolunteerSettingsPage() {
                         </div>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
-                                <Label htmlFor="sector">Sektör</Label>
+                                <Label htmlFor="sector">Çalıştığınız Sektör</Label>
                                 <Select defaultValue={user.volunteerInfo.sector ?? ''}>
                                     <SelectTrigger id="sector"><SelectValue placeholder="Sektör seçin..." /></SelectTrigger>
                                     <SelectContent>
@@ -143,7 +174,7 @@ export default function VolunteerSettingsPage() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="profession">Pozisyon</Label>
+                                <Label htmlFor="profession">Çalıştığınız Pozisyon</Label>
                                 <Select defaultValue={user.volunteerInfo.profession ?? ''}>
                                     <SelectTrigger id="profession"><SelectValue placeholder="Pozisyon seçin..." /></SelectTrigger>
                                     <SelectContent>
@@ -194,6 +225,16 @@ export default function VolunteerSettingsPage() {
                         </div>
                          <div className="space-y-2">
                            <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={visas} onSelectedChange={setVisas} />
+                        </div>
+                        <div className="space-y-4 pt-4 border-t">
+                             <div className="space-y-2">
+                                <Label htmlFor="emergency-contact-name">Acil Durum Kişisi Ad Soyad</Label>
+                                <Input id="emergency-contact-name" defaultValue={user.volunteerInfo.emergency.emergencyContact.name} />
+                             </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="emergency-contact-phone">Acil Durum Kişisi Telefon</Label>
+                                <Input id="emergency-contact-phone" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContact.phone} />
+                             </div>
                         </div>
                         <div className="space-y-2 pt-4 border-t">
                             <div className="flex items-center space-x-2">
