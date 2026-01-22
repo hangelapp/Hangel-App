@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Droplets, Megaphone, Siren } from "lucide-react";
+import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch } from "lucide-react";
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -82,40 +82,30 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                         Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ile paylaşılacaktır.
                       </AlertDescription>
                     </Alert>
-                    <Tabs defaultValue="deprem" className="w-full">
-                        <TabsList className="grid w-full grid-cols-5 h-auto flex-wrap">
-                            <TabsTrigger value="deprem" className="text-xs p-1">Deprem</TabsTrigger>
-                            <TabsTrigger value="sel" className="text-xs p-1">Sel</TabsTrigger>
-                            <TabsTrigger value="yangin" className="text-xs p-1">Yangın</TabsTrigger>
-                            <TabsTrigger value="kaza" className="text-xs p-1">Kaza</TabsTrigger>
-                            <TabsTrigger value="kayip" className="text-xs p-1">Kayıp</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="deprem" className="mt-4">
-                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Deprem')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Deprem')}>
+                            <Zap className="h-6 w-6" />
+                            <span>Deprem</span>
+                        </Button>
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Sel')}>
+                            <CloudRain className="h-6 w-6" />
+                            <span>Sel</span>
+                        </Button>
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Yangın')}>
+                            <Flame className="h-6 w-6" />
+                            <span>Yangın</span>
+                        </Button>
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Kaza')}>
+                            <Ambulance className="h-6 w-6" />
+                            <span>Kaza</span>
+                        </Button>
+                        <div className="col-span-2">
+                            <Button variant="destructive" className="h-20 w-full flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Kayıp')}>
+                                <UserSearch className="h-6 w-6" />
+                                <span>Kayıp</span>
                             </Button>
-                        </TabsContent>
-                        <TabsContent value="sel" className="mt-4">
-                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Sel')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
-                            </Button>
-                        </TabsContent>
-                        <TabsContent value="yangin" className="mt-4">
-                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Yangın')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
-                            </Button>
-                        </TabsContent>
-                        <TabsContent value="kaza" className="mt-4">
-                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Kaza')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
-                            </Button>
-                        </TabsContent>
-                        <TabsContent value="kayip" className="mt-4">
-                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Kayıp')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
-                            </Button>
-                        </TabsContent>
-                    </Tabs>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
              <Card>
