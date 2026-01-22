@@ -1,4 +1,5 @@
 'use client';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,30 @@ const popularArticles = [
 ];
 
 export default function SupportPage() {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredHelpTopics = useMemo(() => {
+        if (!searchTerm.trim()) {
+            return helpTopics;
+        }
+        const lowercased = searchTerm.toLowerCase();
+        return helpTopics.filter(topic =>
+            topic.title.toLowerCase().includes(lowercased) ||
+            topic.description.toLowerCase().includes(lowercased) ||
+            topic.subtopics.some(sub => sub.title.toLowerCase().includes(lowercased) || sub.content.toLowerCase().includes(lowercased))
+        );
+    }, [searchTerm]);
+
+    const filteredFaqArticles = useMemo(() => {
+        if (!searchTerm.trim()) {
+            return popularArticles;
+        }
+        const lowercased = searchTerm.toLowerCase();
+        return popularArticles.filter(article =>
+            article.title.toLowerCase().includes(lowercased)
+        );
+    }, [searchTerm]);
+
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
       <div className="text-center">
@@ -29,14 +54,19 @@ export default function SupportPage() {
 
       <div className="relative mx-auto max-w-lg">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input placeholder="Yardım konularında ara..." className="pl-12 h-12 text-base" />
+        <Input 
+            placeholder="Yardım konularında ara..." 
+            className="pl-12 h-12 text-base" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
       <div>
         <h2 className="text-xl font-bold mb-4">Yardım Konuları</h2>
         <Card>
             <CardContent className='p-0 divide-y'>
-                {helpTopics.map((topic) => {
+                {filteredHelpTopics.map((topic) => {
                     // @ts-ignore
                     const Icon = Icons[topic.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
                     return (
@@ -51,6 +81,7 @@ export default function SupportPage() {
                         </Link>
                     );
                 })}
+                 {filteredHelpTopics.length === 0 && <p className="p-4 text-center text-muted-foreground">Aramanızla eşleşen konu bulunamadı.</p>}
             </CardContent>
         </Card>
       </div>
@@ -60,7 +91,7 @@ export default function SupportPage() {
         <Card>
             <CardContent className='p-0'>
                 <Accordion type="single" collapsible className="w-full">
-                  {popularArticles.map((article, index) => (
+                  {filteredFaqArticles.map((article, index) => (
                       <AccordionItem value={`faq-${index}`} key={article.title} className="px-4">
                           <AccordionTrigger className="py-4 text-sm font-medium hover:no-underline">
                                {article.title}
@@ -128,6 +159,7 @@ export default function SupportPage() {
                           </AccordionContent>
                       </AccordionItem>
                   ))}
+                   {filteredFaqArticles.length === 0 && <p className="p-4 text-center text-muted-foreground">Aramanızla eşleşen soru bulunamadı.</p>}
                 </Accordion>
             </CardContent>
         </Card>

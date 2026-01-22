@@ -59,6 +59,7 @@ export default function StudentClubsPage() {
   const [activeSubTab, setActiveSubTab] = useState('all');
   const [sortConfig, setSortConfig] = useState<{ key: keyof StudentClub | 'members' | 'points'; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
 
    const sampleEvents = [
         { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
@@ -96,8 +97,26 @@ export default function StudentClubsPage() {
     return sortableClubs;
   }, [clubs, sortConfig]);
 
+  const finalClubs = useMemo(() => {
+    if (!searchTerm.trim()) return sortedClubs;
+    const lowercased = searchTerm.toLowerCase();
+    return sortedClubs.filter(club => 
+        club.name.toLowerCase().includes(lowercased) ||
+        club.university.toLowerCase().includes(lowercased)
+    );
+  }, [sortedClubs, searchTerm]);
+
+  const finalEvents = useMemo(() => {
+      if (!searchTerm.trim()) return sampleEvents;
+      const lowercased = searchTerm.toLowerCase();
+      return sampleEvents.filter(event => 
+        event.name.toLowerCase().includes(lowercased) ||
+        event.club.toLowerCase().includes(lowercased)
+      );
+  }, [sampleEvents, searchTerm]);
+
   const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
-    const filteredClubs = type ? sortedClubs.filter(c => c.type === type) : sortedClubs;
+    const filteredClubs = type ? finalClubs.filter(c => c.type === type) : finalClubs;
     return (
         <div className='space-y-3'>
             {filteredClubs.length > 0 ? filteredClubs.map((club) => (
@@ -161,6 +180,8 @@ export default function StudentClubsPage() {
                 <Input
                     placeholder="Kulüp veya etkinlik ara..."
                     className="pl-10 h-11"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
             <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
@@ -193,9 +214,10 @@ export default function StudentClubsPage() {
         </TabsContent>
         <TabsContent value="events" className="mt-4">
             <div className='space-y-4'>
-                {sampleEvents.map((event) => (
+                {finalEvents.length > 0 ? finalEvents.map((event) => (
                     <EventCard key={event.id} event={event} />
-                ))}
+                )) : <div className="text-center text-muted-foreground p-8">Etkinlik bulunamadı.</div>}
+
                  <div className="text-center text-muted-foreground pt-8">
                     <p>Yakında daha fazla etkinlik burada olacak.</p>
                      <Button variant="link" asChild>

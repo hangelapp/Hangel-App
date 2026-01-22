@@ -68,9 +68,22 @@ export default function TimelinePage() {
   const [sortKey, setSortKey] = useState('id');
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const sortedAndFilteredPosts = useMemo(() => {
-    let posts = filterSponsored ? timelinePosts.filter(p => p.sponsored) : [...timelinePosts];
+    let posts = [...timelinePosts];
+
+    if (filterSponsored) {
+        posts = posts.filter(p => p.sponsored);
+    }
+
+    if (searchTerm.trim()) {
+        const lowercased = searchTerm.toLowerCase();
+        posts = posts.filter(post => 
+            post.content.toLowerCase().includes(lowercased) ||
+            post.author.name.toLowerCase().includes(lowercased)
+        );
+    }
     
     posts.sort((a, b) => {
         let valA, valB;
@@ -90,7 +103,7 @@ export default function TimelinePage() {
     });
 
     return posts;
-  }, [sortKey, sortDir, filterSponsored]);
+  }, [sortKey, sortDir, filterSponsored, searchTerm]);
   
   if (!isAuthenticated) {
       return null;
@@ -116,6 +129,8 @@ export default function TimelinePage() {
                         <Input
                             placeholder="Akışta ara..."
                             className="pl-10 h-11"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <DropdownMenu>

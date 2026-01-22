@@ -85,6 +85,7 @@ export default function NewApplicationPage() {
   const ABOUT_MAX_LENGTH = 1000;
   const [officeCity, setOfficeCity] = useState('');
   const [mailCity, setMailCity] = useState('');
+  const [sameAsOffice, setSameAsOffice] = useState(false);
 
   const renderFormFields = () => {
     switch (applicationType) {
@@ -179,37 +180,41 @@ export default function NewApplicationPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex items-center space-x-2">
-                        <Checkbox id="same-address" />
+                        <Checkbox id="same-address" checked={sameAsOffice} onCheckedChange={(checked) => setSameAsOffice(checked as boolean)} />
                         <Label htmlFor="same-address">Ofis adresi ile aynı</Label>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="mail-city">İl</Label>
-                            <Select onValueChange={setMailCity}>
-                                <SelectTrigger id="mail-city"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
-                                <SelectContent>
-                                    {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+                    {!sameAsOffice && (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="mail-city">İl</Label>
+                                <Select onValueChange={setMailCity}>
+                                    <SelectTrigger id="mail-city"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail-district">İlçe</Label>
+                                <Select disabled={!mailCity}>
+                                    <SelectTrigger id="mail-district"><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {mailCity && districts[mailCity] && districts[mailCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="mail-district">İlçe</Label>
-                            <Select disabled={!mailCity}>
-                                <SelectTrigger id="mail-district"><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
-                                <SelectContent>
-                                    {mailCity && districts[mailCity] && districts[mailCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+                            <Label htmlFor="mail-neighborhood">Mahalle</Label>
+                            <Input id="mail-neighborhood" />
                         </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="mail-neighborhood">Mahalle</Label>
-                        <Input id="mail-neighborhood" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="mail-address">Açık Adres (Sokak, Kapı No vb.)</Label>
-                        <Input id="mail-address" />
-                    </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="mail-address">Açık Adres (Sokak, Kapı No vb.)</Label>
+                            <Input id="mail-address" />
+                        </div>
+                    </>
+                    )}
                 </CardContent>
             </Card>
 

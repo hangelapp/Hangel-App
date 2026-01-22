@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState, useMemo } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -13,10 +14,34 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from '@/hooks/use-toast';
 import { ArrowDownUp, ChevronRight, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
-import { librarySections } from '@/lib/library';
+import { librarySections, type LibrarySection } from '@/lib/library';
 
 export default function LibraryPage() {
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredLibrarySections = useMemo(() => {
+    if (!searchTerm.trim()) {
+        return librarySections;
+    }
+    const lowercased = searchTerm.toLowerCase();
+    
+    return librarySections.map(section => {
+        const filteredItems = section.items.filter(item => 
+            item.title.toLowerCase().includes(lowercased) ||
+            item.content.toLowerCase().includes(lowercased)
+        );
+        
+        if (section.title.toLowerCase().includes(lowercased) || filteredItems.length > 0) {
+            return {
+                ...section,
+                items: section.title.toLowerCase().includes(lowercased) ? section.items : filteredItems
+            };
+        }
+        return null;
+    }).filter((section): section is LibrarySection => section !== null);
+
+  }, [searchTerm]);
 
   const handleAction = (actionName: string) => {
     toast({
@@ -38,6 +63,8 @@ export default function LibraryPage() {
                 <Input
                     placeholder="Kaynaklarda ara..."
                     className="pl-10 h-11"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
             <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => handleAction('Filtreleme')}>
@@ -57,38 +84,44 @@ export default function LibraryPage() {
             </DropdownMenu>
       </div>
 
-      <Accordion type="single" collapsible className="w-full space-y-4">
-        {librarySections.map((section) => {
-            const Icon = section.icon;
-            return (
-                <Card key={section.title} className="overflow-hidden">
-                    <AccordionItem value={section.title} className="border-b-0">
-                        <AccordionTrigger className="p-4 hover:no-underline hover:bg-accent/50">
-                            <div className="flex items-center gap-4">
-                                <Icon className="h-6 w-6 text-primary" />
-                                <div className="text-left">
-                                    <p className="font-semibold text-base">{section.title}</p>
-                                    <p className="text-sm text-muted-foreground">{section.description}</p>
-                                </div>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                           <div className="border-t">
-                             {section.items.map(item => (
-                                <Link href={`/library/${item.slug}`} key={item.slug} className="block">
-                                    <div className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-accent/50 transition-colors">
-                                        <span className="font-medium text-sm flex-1 pr-4">{item.title}</span>
-                                        <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                                    </div>
-                                </Link>
-                            ))}
-                           </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Card>
-            )
-        })}
-      </Accordion>
+      {filteredLibrarySections.length > 0 ? (
+        <Accordion type="single" collapsible className="w-full space-y-4">
+          {filteredLibrarySections.map((section) => {
+              const Icon = section.icon;
+              return (
+                  <Card key={section.title} className="overflow-hidden">
+                      <AccordionItem value={section.title} className="border-b-0">
+                          <AccordionTrigger className="p-4 hover:no-underline hover:bg-accent/50">
+                              <div className="flex items-center gap-4">
+                                  <Icon className="h-6 w-6 text-primary" />
+                                  <div className="text-left">
+                                      <p className="font-semibold text-base">{section.title}</p>
+                                      <p className="text-sm text-muted-foreground">{section.description}</p>
+                                  </div>
+                              </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                             <div className="border-t">
+                               {section.items.map(item => (
+                                  <Link href={`/library/${item.slug}`} key={item.slug} className="block">
+                                      <div className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-accent/50 transition-colors">
+                                          <span className="font-medium text-sm flex-1 pr-4">{item.title}</span>
+                                          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                                      </div>
+                                  </Link>
+                              ))}
+                             </div>
+                          </AccordionContent>
+                      </AccordionItem>
+                  </Card>
+              )
+          })}
+        </Accordion>
+      ) : (
+        <div className="text-center text-muted-foreground py-16">
+          <p>Aramanızla eşleşen sonuç bulunamadı.</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -28,6 +28,7 @@ export default function VolunteeringPage() {
     const { toast } = useToast();
     const [sortKey, setSortKey] = useState('points');
     const [filters, setFilters] = useState({ location: 'all', commitment: 'all' });
+    const [searchTerm, setSearchTerm] = useState('');
 
     const userAbilities = [
       ...user.volunteerInfo.skills,
@@ -47,6 +48,15 @@ export default function VolunteeringPage() {
             opportunities = opportunities.filter(opp => opp.taskType === filters.commitment);
         }
 
+        if (searchTerm.trim()) {
+            const lowercased = searchTerm.toLowerCase();
+            opportunities = opportunities.filter(opp => 
+                opp.title.toLowerCase().includes(lowercased) ||
+                opp.organization.toLowerCase().includes(lowercased) ||
+                (opp.skills && opp.skills.some(skill => skill.toLowerCase().includes(lowercased)))
+            );
+        }
+
         // Sorting
         opportunities.sort((a, b) => {
             if (sortKey === 'points') {
@@ -59,7 +69,7 @@ export default function VolunteeringPage() {
         });
 
         return opportunities;
-    }, [sortKey, filters]);
+    }, [sortKey, filters, searchTerm]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -74,6 +84,8 @@ export default function VolunteeringPage() {
                 <Input
                     placeholder="İlan, yetkinlik veya STK ara..."
                     className="pl-10 h-11"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
              <DropdownMenu>

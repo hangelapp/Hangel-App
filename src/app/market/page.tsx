@@ -111,9 +111,15 @@ export default function MarketPage() {
   const { toast } = useToast();
   const [sortKey, setSortKey] = useState('followers');
   const [onlyDonating, setOnlyDonating] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const brandsToShow = useMemo(() => {
     let filteredList: Brand[] = allEntityLists;
+
+    if (searchTerm.trim()) {
+        const lowercased = searchTerm.toLowerCase();
+        filteredList = filteredList.filter(brand => brand.name.toLowerCase().includes(lowercased));
+    }
 
     if (activeEntityType !== 'all') {
       filteredList = filteredList.filter(item => item.type === activeEntityType);
@@ -151,7 +157,7 @@ export default function MarketPage() {
     
     return filteredList;
 
-  }, [activeCategory, activeEntityType, sortKey, onlyDonating]);
+  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm]);
   
   return (
     <div className="flex flex-col h-full">
@@ -162,6 +168,8 @@ export default function MarketPage() {
                     <Input
                         placeholder="hangel'da Ara"
                         className="pl-10 pr-12 h-9"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Görselle arama özelliği yakında gelecek!'})}>
@@ -270,7 +278,7 @@ export default function MarketPage() {
                         )}
                     </Fragment>
                 )}) : (
-                    <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kategoride sonuç bulunmuyor.</p>
+                    <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kriterlere uygun sonuç bulunmuyor.</p>
                 )}
                 </div>
             </div>

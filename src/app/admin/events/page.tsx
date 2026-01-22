@@ -31,6 +31,7 @@ export default function StudentClubEventsPage() {
     const [activeSubTab, setActiveSubTab] = useState('all');
     const { toast } = useToast();
     const [sortKey, setSortKey] = useState('name');
+    const [searchTerm, setSearchTerm] = useState('');
 
     const sampleEvents = [
         { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
@@ -39,7 +40,16 @@ export default function StudentClubEventsPage() {
     ];
 
     const sortedEvents = useMemo(() => {
-        return [...sampleEvents].sort((a, b) => {
+        let events = [...sampleEvents];
+        if (searchTerm.trim()) {
+            const lowercased = searchTerm.toLowerCase();
+            events = events.filter(event => 
+                event.name.toLowerCase().includes(lowercased) ||
+                event.club.toLowerCase().includes(lowercased)
+            );
+        }
+
+        return events.sort((a, b) => {
             if (sortKey === 'name') {
                 return a.name.localeCompare(b.name);
             }
@@ -49,13 +59,13 @@ export default function StudentClubEventsPage() {
             // Date sorting is complex with string dates, so we omit it for now
             return 0;
         });
-    }, [sortKey]);
+    }, [sortKey, searchTerm]);
 
     const EventList = () => (
         <div className='space-y-4'>
-            {sortedEvents.map((event) => (
+            {sortedEvents.length > 0 ? sortedEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
-            ))}
+            )) : <p className="text-center text-muted-foreground py-8">Etkinlik bulunamadı.</p>}
             <div className="text-center text-muted-foreground pt-8">
                 <p>Yakında daha fazla etkinlik burada olacak.</p>
                 <Button variant="link" asChild>
@@ -110,6 +120,8 @@ export default function StudentClubEventsPage() {
                     <Input
                         placeholder="Etkinlik ara..."
                         className="pl-10 h-11"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
