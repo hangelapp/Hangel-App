@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Upload, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
+import Link from 'next/link';
 
 type ApplicationType = 'STK Kayıt Başvurusu' | 'Öğrenci Kulübü Kayıt Başvurusu' | 'Marka Kayıt Başvurusu' | 'Okul Temsilciliği Başvurusu' | '';
 
@@ -16,15 +17,35 @@ type ApplicationType = 'STK Kayıt Başvurusu' | 'Öğrenci Kulübü Kayıt Baş
 const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi'];
 const provinces = ['İstanbul', 'Ankara', 'İzmir'];
 
-const allBeneficiaries = ['Çocuklar', 'Kadınlar', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler'];
+// Updated data from user request
+const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre'];
 const allSdgs = [
-    'Yoksulluğa Son', 'Açlığa Son', 'Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim', 'Toplumsal Cinsiyet Eşitliği', 
-    'Temiz Su ve Sanitasyon', 'Erişilebilir ve Temiz Enerji', 'İnsana Yakışır İş ve Ekonomik Büyüme',
-    'Sanayi, Yenilikçilik ve Altyapı', 'Eşitsizliklerin Azaltılması', 'Sürdürülebilir Şehirler ve Topluluklar',
-    'Sorumlu Üretim ve Tüketim', 'İklim Eylemi', 'Sudaki Yaşam', 'Karasal Yaşam'
+    '1. Yoksulluğa Son', 
+    '2. Açlığa Son', 
+    '3. Sağlıklı ve Kaliteli Yaşam', 
+    '4. Nitelikli Eğitim', 
+    '5. Toplumsal Cinsiyet Eşitliği', 
+    '6. Temiz Su ve Sanitasyon', 
+    '7. Erişilebilir ve Temiz Enerji', 
+    '8. İnsana Yakışır İş ve Ekonomik Büyüme',
+    '9. Sanayi, Yenilikçilik ve Altyapı', 
+    '10. Eşitsizliklerin Azaltılması', 
+    '11. Sürdürülebilir Şehirler ve Topluluklar',
+    '12. Sorumlu Üretim ve Tüketim', 
+    '13. İklim Eylemi', 
+    '14. Sudaki Yaşam', 
+    '15. Karasal Yaşam',
+    '16. Barış, Adalet ve Güçlü Kurumlar',
+    '17. Amaçlar için Ortaklıklar'
 ];
-const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım'];
+const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
 
+const cities = ['İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya'];
+const districts: { [key: string]: string[] } = {
+    'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
+    'Ankara': ['Akyurt', 'Altındağ', 'Ayaş', 'Balâ', 'Beypazarı', 'Çamlıdere', 'Çankaya', 'Çubuk', 'Elmadağ', 'Etimesgut', 'Evren', 'Gölbaşı', 'Güdül', 'Haymana', 'Kahramankazan', 'Kalecik', 'Keçiören', 'Kızılcahamam', 'Mamak', 'Nallıhan', 'Polatlı', 'Pursaklar', 'Sincan', 'Şereflikoçhisar', 'Yenimahalle'],
+    'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Kınık', 'Kiraz', 'Konak', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
+};
 
 const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => {
     return (
@@ -33,8 +54,8 @@ const CheckboxGroup = ({ title, options }: { title: string, options: string[] })
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 rounded-lg border p-4">
                 {options.map(option => (
                     <div key={option} className="flex items-center gap-2">
-                        <Checkbox id={`${title}-${option}`} />
-                        <Label htmlFor={`${title}-${option}`} className="text-sm font-normal">{option}</Label>
+                        <Checkbox id={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} />
+                        <Label htmlFor={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} className="text-sm font-normal">{option}</Label>
                     </div>
                 ))}
             </div>
@@ -58,6 +79,12 @@ export default function NewApplicationPage() {
   const [applicationType, setApplicationType] = useState<ApplicationType>('');
   const [clubSchoolType, setClubSchoolType] = useState<'university' | 'high-school' | ''>('');
   const [repSchoolType, setRepSchoolType] = useState<'university' | 'high-school' | ''>('');
+  
+  // States for STK form
+  const [aboutText, setAboutText] = React.useState("");
+  const ABOUT_MAX_LENGTH = 1000;
+  const [officeCity, setOfficeCity] = useState('');
+  const [mailCity, setMailCity] = useState('');
 
   const renderFormFields = () => {
     switch (applicationType) {
@@ -68,27 +95,124 @@ export default function NewApplicationPage() {
                 <CardHeader><CardTitle>Kuruluş Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2"><Label>Kuruluş Adı</Label><Input placeholder="Kuruluşunuzun tam adı" /></div>
-                    <div className="space-y-2"><Label>Kuruluş Türü</Label><Select><SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger><SelectContent><SelectItem value="dernek">Dernek</SelectItem><SelectItem value="vakif">Vakıf</SelectItem></SelectContent></Select></div>
+                    <div className="space-y-2">
+                      <Label>Kuruluş Türü</Label>
+                      <Select>
+                        <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dernek">Dernek</SelectItem>
+                          <SelectItem value="vakif">Vakıf</SelectItem>
+                          <SelectItem value="spor">Spor Kulübü</SelectItem>
+                          <SelectItem value="ozel">Özel İzinli</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="space-y-2"><Label>Web Sitesi</Label><Input placeholder="https://ornek.org" /></div>
-                    <div className="space-y-2"><Label>Hakkında</Label><Textarea placeholder="Kuruluşunuzu anlatan kısa bir metin." /></div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ngo-about">Hakkında</Label>
+                      <Textarea 
+                        id="ngo-about" 
+                        placeholder="Kuruluşunuzu anlatan kısa bir metin." 
+                        value={aboutText}
+                        onChange={(e) => setAboutText(e.target.value)}
+                        maxLength={ABOUT_MAX_LENGTH}
+                      />
+                      <p className="text-xs text-muted-foreground text-right">{aboutText.length} / {ABOUT_MAX_LENGTH}</p>
+                    </div>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader><CardTitle>Kuruluş Detayları</CardTitle></CardHeader>
                 <CardContent className="space-y-6">
                     <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
-                    <CheckboxGroup title="Desteklenen SKA'lar" options={allSdgs} />
+                    <CheckboxGroup title="Birleşmiş Milletler 17 Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
                 </CardContent>
             </Card>
             <Card>
-                <CardHeader><CardTitle>İletişim ve Adres</CardTitle></CardHeader>
+                <CardHeader><CardTitle>İletişim Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="iletisim@ornek.org" /></div>
+                    <div className="space-y-2"><Label>STK'nın e postası</Label><Input type="email" placeholder="iletisim@ornek.org" /></div>
                     <div className="space-y-2"><Label>Telefon</Label><Input type="tel" placeholder="+90..." /></div>
-                    <div className="space-y-2"><Label>Adres</Label><Input placeholder="Açık adres" /></div>
                 </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Ofis Adresi</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="office-city">İl</Label>
+                            <Select onValueChange={setOfficeCity}>
+                                <SelectTrigger id="office-city"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="office-district">İlçe</Label>
+                            <Select disabled={!officeCity}>
+                                <SelectTrigger id="office-district"><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {officeCity && districts[officeCity] && districts[officeCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="office-neighborhood">Mahalle</Label>
+                        <Input id="office-neighborhood" placeholder="Mahalle adı"/>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="office-address">Açık Adres (Sokak, Kapı No vb.)</Label>
+                        <Input id="office-address" placeholder="Açık adres"/>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Posta Adresi</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <Checkbox id="same-address" />
+                        <Label htmlFor="same-address">Ofis adresi ile aynı</Label>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="mail-city">İl</Label>
+                            <Select onValueChange={setMailCity}>
+                                <SelectTrigger id="mail-city"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="mail-district">İlçe</Label>
+                            <Select disabled={!mailCity}>
+                                <SelectTrigger id="mail-district"><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {mailCity && districts[mailCity] && districts[mailCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="mail-neighborhood">Mahalle</Label>
+                        <Input id="mail-neighborhood" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="mail-address">Açık Adres (Sokak, Kapı No vb.)</Label>
+                        <Input id="mail-address" />
+                    </div>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader><CardTitle>Banka Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
@@ -99,8 +223,34 @@ export default function NewApplicationPage() {
                 <CardHeader><CardTitle>Yasal Belgeler</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <FileUpload label="Logo" />
-                    <FileUpload label="Kapak Fotoğrafı" />
+                    <FileUpload label="Faaliyet Belgesi" />
                     <FileUpload label="Tüzük / Vakıf Senedi" />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Sözleşme ve Politika Onayları</CardTitle>
+                    <CardDescription>Platformda yer alabilmek için bu belgeleri okuyup onaylamanız gerekmektedir.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                        <Checkbox id="terms-ngo" required />
+                        <Label htmlFor="terms-ngo" className="text-sm font-normal text-muted-foreground">
+                            <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>'ni okudum ve kabul ediyorum.
+                        </Label>
+                    </div>
+                     <div className="flex items-start space-x-3">
+                        <Checkbox id="terms-privacy" required />
+                        <Label htmlFor="terms-privacy" className="text-sm font-normal text-muted-foreground">
+                            <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum ve kabul ediyorum.
+                        </Label>
+                    </div>
+                     <div className="flex items-start space-x-3">
+                        <Checkbox id="terms-social-impact" required />
+                        <Label htmlFor="terms-social-impact" className="text-sm font-normal text-muted-foreground">
+                            <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikası</Link>'nı okudum ve kabul ediyorum.
+                        </Label>
+                    </div>
                 </CardContent>
             </Card>
           </div>
