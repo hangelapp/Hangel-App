@@ -937,43 +937,43 @@ export const helpTopics: HelpTopic[] = [
     {
         icon: 'user', title: 'Hesap ve Profil', slug: 'account', description: 'Profil bilgileri, şifre ve hesap ayarları hakkında yardım alın.',
         subtopics: [
-            { title: 'Şifremi nasıl değiştiririm?', link: '#', content: '...' },
-            { title: 'Profil bilgilerimi nasıl güncellerim?', link: '#', content: '...' },
+            { title: 'Şifremi nasıl değiştiririm?', link: '#', content: '<p>Şifrenizi değiştirmek için <strong>Ayarlar > Güvenlik ve Şifre</strong> menüsüne gidin. "Şifre Değiştir" bölümünde mevcut şifrenizi ve belirlediğiniz yeni şifreyi girerek değişikliği tamamlayabilirsiniz.</p>' },
+            { title: 'Profil bilgilerimi nasıl güncellerim?', link: '#', content: '<p>Profil bilgilerinizi güncellemek için ana menüden <strong>Ayarlar</strong>\'a tıklayın. Açılan sayfada "Kişisel Bilgileri Düzenle" ve "Gönüllülük Bilgilerini Düzenle" sekmelerinden ilgili alanları güncelleyebilirsiniz. Değişikliklerin kaydedilmesi için sayfanın altındaki "Değişiklikleri Kaydet" butonuna tıklamayı unutmayın.</p>' },
         ]
     },
     {
         icon: 'heart-handshake', title: 'Gönüllülük', slug: 'volunteering', description: 'Gönüllülük süreçleri, başvurular ve puanlar hakkında her şey.',
         subtopics: [
-            { title: 'Gönüllülük ilanına nasıl başvurulur?', link: '#', content: '...' },
-            { title: 'Sosyal Etki Puanı nedir?', link: '#', content: '...' },
+            { title: 'Gönüllülük ilanına nasıl başvurulur?', link: '#', content: '<p>Ana menüden <strong>Gönüllülük</strong> sayfasına gidin. Burada listelenen ilanları inceleyebilir, filtreleme ve arama özelliklerini kullanabilirsiniz. İlginizi çeken bir ilanın detay sayfasına giderek "Hemen Başvur" butonuna tıklayarak başvurunuzu yapabilirsiniz. Başvurunuzun olumlu değerlendirilmesi için ilanın "Gereklilikler" bölümündeki kriterleri karşıladığınızdan emin olmalısınız.</p>' },
+            { title: 'Sosyal Etki Puanı nedir?', link: '#', content: '<p>Sosyal Etki Puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Gönüllülük faaliyetleri, alışverişle yapılan bağışlar ve platforma yeni arkadaşlar davet ederek puan kazanırsınız. Puanlarınızla belirli alanlarda rozetler kazanabilir ve topluluktaki etki seviyenizi görebilirsiniz.</p>' },
         ]
     },
     {
         icon: 'dollar-sign', title: 'Bağış ve Ödemeler', slug: 'donations', description: 'Bağış yapma, işlem geçmişi ve ödeme yöntemleri.',
         subtopics: [
-            { title: 'Alışverişle bağış nasıl çalışır?', link: '#', content: '...' },
-            { title: 'Bağışlarımın STK\'ya ulaştığını nasıl anlarım?', link: '#', content: '...' },
+            { title: 'Alışverişle bağış nasıl çalışır?', link: '#', content: '<p><strong>Market</strong> sayfasından anlaşmalı bir markayı seçip "Alışverişe Başla" butonuna tıklayarak markanın sitesine gidin. Alışverişinizi normal şekilde tamamlayın. Yaptığınız alışveriş tutarının, markanın belirttiği orandaki bir kısmı (örneğin %5), sizin varsayılan olarak seçtiğiniz STK\'ya hangel tarafından bağış olarak aktarılır. Bu işlem için sizden hiçbir ek ücret alınmaz.</p>' },
+            { title: 'Bağışlarımın STK\'ya ulaştığını nasıl anlarım?', link: '#', content: '<p>Ana menüden <strong>Bağışlarım</strong> sayfasına giderek tüm işlem geçmişinizi şeffaf bir şekilde takip edebilirsiniz. Her bir alışverişinizden doğan bağış tutarını, kesintileri ve net olarak STK\'ya aktarılan miktarı görebilirsiniz. Bağışınız STK\'ya ulaştığında ayrıca bir bildirim alırsınız.</p>' },
         ]
     },
     {
         icon: 'shield-check', title: 'Güvenlik ve Gizlilik', slug: 'security', description: 'Hesap güvenliği, veri gizliliği ve şikayet prosedürleri.',
         subtopics: [
-            { title: 'İki faktörlü kimlik doğrulama nasıl etkinleştirilir?', link: '#', content: '...' },
-            { title: 'Hesap bilgilerimin silinmesini nasıl talep edebilirim?', link: '#', content: '...' },
+            { title: 'İki adımlı doğrulama nasıl etkinleştirilir?', link: '#', content: '<p><strong>Ayarlar > Güvenlik ve Şifre</strong> menüsünde bulunan "İki Adımlı Doğrulama" seçeneğini aktif hale getirebilirsiniz. Bu özellik, hesabınıza giriş yaparken telefonunuza SMS ile bir kod göndererek hesabınıza ek bir güvenlik katmanı ekler.</p>' },
+            { title: 'Hesap bilgilerimin silinmesini nasıl talep edebilirim?', link: '#', content: '<p><strong>Ayarlar</strong> sayfasının en altında bulunan "Hesap İşlemleri" bölümünden "Hesabı Kalıcı Olarak Sil" seçeneğini kullanabilirsiniz. Bu işlemin geri alınamayacağını ve tüm verilerinizin (puanlar, rozetler, işlem geçmişi vb.) kalıcı olarak silineceğini unutmayın.</p>' },
         ]
     },
     {
         icon: 'award', title: 'Rozetler ve Puanlar', slug: 'badges', description: 'Sosyal Etki Puanı kazanma ve rozetlerin anlamları.',
         subtopics: [
-            { title: 'Sosyal Etki Puanı nasıl hesaplanır?', link: '#', content: '...' },
-            { title: 'Rozet seviyeleri nelerdir?', link: '#', content: '...' },
+            { title: 'Sosyal Etki Puanı nasıl hesaplanır?', link: '#', content: '<p>Detaylı puan cetveline <strong>Destek Merkezi</strong>\'nin "Sıkça Sorulan Sorular" bölümünden ulaşabilirsiniz. Temel olarak puan kazanma yöntemleri şunlardır:</p><ul><li><strong>Alışverişle Bağış:</strong> STK\'ya aktarılan her 1₺ net bağış için 1 Puan.</li><li><strong>Gönüllülük:</strong> Tamamladığınız her 1 saat gönüllülük faaliyeti için 10 Puan.</li><li><strong>Arkadaş Daveti:</strong> Platforma davet ettiğiniz ve üye olan her arkadaşınız için 100 Puan.</li><li><strong>Rozet Kazanımı:</strong> Kazandığınız her bir rozet için ekstra 250 Puan.</li></ul>' },
+            { title: 'Rozet seviyeleri nelerdir?', link: '#', content: '<p>Rozetler, belirli bir sosyal alandaki (örn: Çevre, Eğitim, Hayvan Hakları) etkinliğinizi ve katkı düzeyinizi gösterir. İlgili alanda puan kazandıkça, sırasıyla Bronz, Gümüş, Altın ve Elmas gibi seviyelerde rozetler kazanırsınız. Rozetlerinizi ve ilerlemenizi <strong>Rozetlerim</strong> sayfasından takip edebilirsiniz.</p>' },
         ]
     },
     {
         icon: 'smartphone', title: 'Teknik Sorunlar', slug: 'technical', description: 'Uygulama hataları, yavaşlama ve diğer teknik konular.',
         subtopics: [
-            { title: 'Uygulama açılmıyor, ne yapmalıyım?', link: '#', content: '...' },
-            { title: 'Bir hata mesajı alıyorum, ne anlama geliyor?', link: '#', content: '...' },
+            { title: 'Uygulama açılmıyor, ne yapmalıyım?', link: '#', content: '<p>Öncelikle internet bağlantınızı kontrol etmenizi öneririz. Sorun devam ederse, uygulamayı tamamen kapatıp yeniden açmayı veya kullandığınız cihazı (telefon, bilgisayar) yeniden başlatmayı deneyin. Bu adımlar sorunu çözmezse, lütfen <strong>Destek Merkezi</strong> üzerinden bizimle iletişime geçin.</p>' },
+            { title: 'Bir hata mesajı alıyorum, ne anlama geliyor?', link: '#', content: '<p>Karşılaştığınız hata mesajının ekran görüntüsünü alarak <strong>Destek Merkezi > Destek Talebi</strong> bölümünden yeni bir talep oluşturun. Hata mesajını ve hangi işlemi yaparken bu hatayla karşılaştığınızı detaylı olarak açıklamanız, teknik ekibimizin sorunu daha hızlı çözmesine yardımcı olacaktır.</p>' },
         ]
     },
 ];
