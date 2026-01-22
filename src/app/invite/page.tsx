@@ -28,7 +28,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 export default function InvitePage() {
   const { toast } = useToast();
   const [inviteLink, setInviteLink] = useState('');
-  const [googleSynced, setGoogleSynced] = useState(false);
   const [phoneSynced, setPhoneSynced] = useState(false);
   const [sortCriteria, setSortCriteria] = useState('impactScore');
 
@@ -178,30 +177,24 @@ export default function InvitePage() {
                     </TabsTrigger>
                 </TabsList>
                  <TabsContent value="email" className="mt-4">
-                    {googleSynced ? (
-                        <div className="text-left space-y-4">
-                             <div className="flex justify-end">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
-                                            <ArrowDownUp className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı (En Yüksek)</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setSortCriteria('joinDate')}>Katılım Tarihi (En Yeni)</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                            <ContactList contacts={sortedContacts} />
+                    <div className="text-left space-y-4">
+                        <p className="text-sm text-center text-muted-foreground">Gmail ile bağlandınız.</p>
+                         <div className="flex justify-end">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
+                                        <ArrowDownUp className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı (En Yüksek)</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSortCriteria('joinDate')}>Katılım Tarihi (En Yeni)</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                    ) : (
-                        <div className="text-center space-y-4 pt-4">
-                            <p className="text-sm text-muted-foreground">Google hesabını bağlayarak e-posta kişilerini senkronize et.</p>
-                            <Button onClick={() => setGoogleSynced(true)}>Google ile Bağlan</Button>
-                        </div>
-                    )}
+                        <ContactList contacts={sortedContacts} />
+                    </div>
                 </TabsContent>
                 <TabsContent value="phone" className="mt-4">
                      {phoneSynced ? (
