@@ -7,17 +7,38 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
 
-const allBeneficiaries = ['Çocuklar', 'Kadınlar', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler'];
+const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre'];
 const allSdgs = [
-    'Yoksulluğa Son', 'Açlığa Son', 'Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim', 'Toplumsal Cinsiyet Eşitliği', 
-    'Temiz Su ve Sanitasyon', 'Erişilebilir ve Temiz Enerji', 'İnsana Yakışır İş ve Ekonomik Büyüme',
-    'Sanayi, Yenilikçilik ve Altyapı', 'Eşitsizliklerin Azaltılması', 'Sürdürülebilir Şehirler ve Topluluklar',
-    'Sorumlu Üretim ve Tüketim', 'İklim Eylemi', 'Sudaki Yaşam', 'Karasal Yaşam'
+    '1. Yoksulluğa Son', 
+    '2. Açlığa Son', 
+    '3. Sağlıklı ve Kaliteli Yaşam', 
+    '4. Nitelikli Eğitim', 
+    '5. Toplumsal Cinsiyet Eşitliği', 
+    '6. Temiz Su ve Sanitasyon', 
+    '7. Erişilebilir ve Temiz Enerji', 
+    '8. İnsana Yakışır İş ve Ekonomik Büyüme',
+    '9. Sanayi, Yenilikçilik ve Altyapı', 
+    '10. Eşitsizliklerin Azaltılması', 
+    '11. Sürdürülebilir Şehirler ve Topluluklar',
+    '12. Sorumlu Üretim ve Tüketim', 
+    '13. İklim Eylemi', 
+    '14. Sudaki Yaşam', 
+    '15. Karasal Yaşam',
+    '16. Barış, Adalet ve Güçlü Kurumlar',
+    '17. Amaçlar için Ortaklıklar'
 ];
-const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım'];
+const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
+
+const cities = ['İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya'];
+const districts: { [key: string]: string[] } = {
+    'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
+    'Ankara': ['Akyurt', 'Altındağ', 'Ayaş', 'Balâ', 'Beypazarı', 'Çamlıdere', 'Çankaya', 'Çubuk', 'Elmadağ', 'Etimesgut', 'Evren', 'Gölbaşı', 'Güdül', 'Haymana', 'Kahramankazan', 'Kalecik', 'Keçiören', 'Kızılcahamam', 'Mamak', 'Nallıhan', 'Polatlı', 'Pursaklar', 'Sincan', 'Şereflikoçhisar', 'Yenimahalle'],
+    'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Kınık', 'Kiraz', 'Konak', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
+};
 
 const CheckboxGroup = ({ title, options, defaultValues }: { title: string, options: string[], defaultValues: string[] }) => {
     return (
@@ -27,10 +48,10 @@ const CheckboxGroup = ({ title, options, defaultValues }: { title: string, optio
                 {options.map(option => (
                     <div key={option} className="flex items-center gap-2">
                         <Checkbox 
-                            id={`${title}-${option}`}
+                            id={`${title}-${option.replace(/\s/g, '-')}`}
                             defaultChecked={defaultValues.includes(option)}
                         />
-                        <Label htmlFor={`${title}-${option}`} className="text-sm font-normal">{option}</Label>
+                        <Label htmlFor={`${title}-${option.replace(/\s/g, '-')}`} className="text-sm font-normal">{option}</Label>
                     </div>
                 ))}
             </div>
@@ -41,6 +62,9 @@ const CheckboxGroup = ({ title, options, defaultValues }: { title: string, optio
 export default function ManageProfilePage() {
   const [aboutText, setAboutText] = React.useState("Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.");
   const ABOUT_MAX_LENGTH = 1000;
+  
+  const [officeCity, setOfficeCity] = useState('İstanbul');
+  const [mailCity, setMailCity] = useState('İstanbul');
 
   return (
     <div className="space-y-6">
@@ -72,8 +96,8 @@ export default function ManageProfilePage() {
                     <SelectContent>
                         <SelectItem value="dernek">Dernek</SelectItem>
                         <SelectItem value="vakif">Vakıf</SelectItem>
+                        <SelectItem value="spor">Spor Kulübü</SelectItem>
                         <SelectItem value="ozel">Özel İzinli</SelectItem>
-                         <SelectItem value="spor">Spor Kulübü</SelectItem>
                          <SelectItem value="ogrenci">Öğrenci Kulübü</SelectItem>
                     </SelectContent>
                 </Select>
@@ -104,39 +128,99 @@ export default function ManageProfilePage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} defaultValues={["Afetzedeler", "İhtiyaç Sahibi Aileler", "Öğrenciler", "Hastalar"]} />
-                <CheckboxGroup title="Desteklenen BM Sürdürülebilir Kalkınma Amaçları" options={allSdgs} defaultValues={["Yoksulluğa Son", "Sağlıklı ve Kaliteli Yaşam", "Nitelikli Eğitim"]} />
-                <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} defaultValues={["Afet Platformu"]} />
+                <CheckboxGroup title="Birleşmiş Milletler 17 Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} defaultValues={["1. Yoksulluğa Son", "3. Sağlıklı ve Kaliteli Yaşam", "4. Nitelikli Eğitim"]} />
+                <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} defaultValues={["Afet Platformu", "Açık Açık"]} />
+            </CardContent>
+        </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>İletişim Bilgileri</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="ngo-email">STK'nın e-postası</Label>
+                    <Input id="ngo-email" type="email" defaultValue="iletisim@ahbap.org" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="ngo-phone">Telefon Numarası</Label>
+                    <Input id="ngo-phone" type="tel" defaultValue="0216 550 50 50" />
+                </div>
             </CardContent>
         </Card>
 
         <Card>
             <CardHeader>
-                <CardTitle>Adres Bilgileri</CardTitle>
+                <CardTitle>Ofis Adresi</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="ngo-country">Ülke</Label>
-                        <Input id="ngo-country" defaultValue="Türkiye" />
+                        <Label htmlFor="office-city">İl</Label>
+                        <Select defaultValue="İstanbul" onValueChange={setOfficeCity}>
+                            <SelectTrigger id="office-city"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="ngo-city">Şehir</Label>
-                        <Input id="ngo-city" defaultValue="İstanbul" />
+                     <div className="space-y-2">
+                        <Label htmlFor="office-district">İlçe</Label>
+                        <Select defaultValue="Kadıköy" disabled={!officeCity}>
+                            <SelectTrigger id="office-district"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {officeCity && districts[officeCity] && districts[officeCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="office-neighborhood">Mahalle</Label>
+                    <Input id="office-neighborhood" defaultValue="Caferağa" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="office-address">Açık Adres (Sokak, Kapı No vb.)</Label>
+                    <Input id="office-address" defaultValue="Zuhal Sk. No:1" />
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Posta Adresi</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="same-address" />
+                    <Label htmlFor="same-address">Ofis adresi ile aynı</Label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="ngo-district">İlçe</Label>
-                        <Input id="ngo-district" defaultValue="Kadıköy" />
+                        <Label htmlFor="mail-city">İl</Label>
+                        <Select defaultValue="İstanbul" onValueChange={setMailCity}>
+                            <SelectTrigger id="mail-city"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="ngo-neighborhood">Mahalle</Label>
-                        <Input id="ngo-neighborhood" defaultValue="Caferağa" />
+                    <div className="space-y-2">
+                        <Label htmlFor="mail-district">İlçe</Label>
+                        <Select defaultValue="Kadıköy" disabled={!mailCity}>
+                            <SelectTrigger id="mail-district"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {mailCity && districts[mailCity] && districts[mailCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="ngo-address">Açık Adres</Label>
-                    <Input id="ngo-address" defaultValue="Zuhal Sk. No:1" />
+                <div className="space-y-2">
+                    <Label htmlFor="mail-neighborhood">Mahalle</Label>
+                    <Input id="mail-neighborhood" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="mail-address">Açık Adres (Sokak, Kapı No vb.)</Label>
+                    <Input id="mail-address" />
                 </div>
             </CardContent>
         </Card>
@@ -226,13 +310,13 @@ export default function ManageProfilePage() {
                 </div>
             </div>
              <div className="space-y-2">
-                <Label>Kapak Fotoğrafı</Label>
+                <Label>Faaliyet Belgesi</Label>
                 <div className="flex items-center gap-4">
-                    <Input id="cover-upload" type="file" className="hidden" />
+                    <Input id="activity-doc-upload" type="file" className="hidden" />
                     <Button asChild variant="outline">
-                        <label htmlFor="cover-upload" className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />Kapak Yükle</label>
+                        <label htmlFor="activity-doc-upload" className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />Belge Yükle</label>
                     </Button>
-                     <span className="text-sm text-muted-foreground">Mevcut: ahbap_cover.jpg</span>
+                     <span className="text-sm text-muted-foreground">Mevcut: faaliyet_belgesi.pdf</span>
                 </div>
             </div>
              <div className="space-y-2">
@@ -246,6 +330,33 @@ export default function ManageProfilePage() {
                 </div>
             </div>
           </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Sözleşme ve Politika Onayları</CardTitle>
+                <CardDescription>Platformda yer alabilmek için bu belgeleri okuyup onaylamanız gerekmektedir.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-start space-x-3">
+                    <Checkbox id="terms-ngo" required />
+                    <Label htmlFor="terms-ngo" className="text-sm font-normal text-muted-foreground">
+                        <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>'ni okudum ve kabul ediyorum.
+                    </Label>
+                </div>
+                 <div className="flex items-start space-x-3">
+                    <Checkbox id="terms-privacy" required />
+                    <Label htmlFor="terms-privacy" className="text-sm font-normal text-muted-foreground">
+                        <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum ve kabul ediyorum.
+                    </Label>
+                </div>
+                 <div className="flex items-start space-x-3">
+                    <Checkbox id="terms-social-impact" required />
+                    <Label htmlFor="terms-social-impact" className="text-sm font-normal text-muted-foreground">
+                        <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikası</Link>'nı okudum ve kabul ediyorum.
+                    </Label>
+                </div>
+            </CardContent>
         </Card>
         
         <div className="flex justify-end">
