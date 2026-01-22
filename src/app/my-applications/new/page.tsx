@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Upload, Twitter, Instagram, Facebook, Linkedin, Switch } from 'lucide-react';
+import { Upload, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
 
 type ApplicationType = 'STK Kayıt Başvurusu' | 'Öğrenci Kulübü Kayıt Başvurusu' | 'Marka Kayıt Başvurusu' | 'Okul Temsilciliği Başvurusu' | '';
