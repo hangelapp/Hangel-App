@@ -10,22 +10,40 @@ import Link from 'next/link';
 import { ngos } from '@/lib/data';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
-import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 type NgoType = NGO['type'] | 'Tümü';
 
 export default function NgosPage() {
     const [activeTab, setActiveTab] = useState<NgoType>('Tümü');
     const [searchTerm, setSearchTerm] = useState('');
-    const { toast } = useToast();
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
+    const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+    
+    const allCategories = useMemo(() => Array.from(new Set(ngos.map(n => n.category))), []);
 
     const filteredNgos = useMemo(() => {
-        return ngos.filter(ngo => {
+        let filtered = ngos.filter(ngo => {
             const matchesTab = activeTab === 'Tümü' || ngo.type === activeTab;
             const matchesSearch = searchTerm === '' || ngo.name.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesTab && matchesSearch;
+            const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(ngo.category);
+            return matchesTab && matchesSearch && matchesCategory;
         });
-    }, [activeTab, searchTerm]);
+
+        filtered.sort((a, b) => {
+            let valA, valB;
+            switch(sortConfig.key) {
+                case 'followers': valA = a.stats.followers; valB = b.stats.followers; break;
+                case 'volunteers': valA = a.stats.volunteers; valB = b.stats.volunteers; break;
+                case 'transparency': valA = a.transparencyScore; valB = b.transparencyScore; break;
+                default: // name
+                    return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+            }
+            return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+        });
+
+        return filtered;
+    }, [activeTab, searchTerm, sortConfig, categoryFilter]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -43,12 +61,41 @@ export default function NgosPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
-                <Filter className="h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                <ArrowDownUp className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                        <Filter className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                     <DropdownMenuLabel>Kategoriye Göre Filtrele</DropdownMenuLabel>
+                     <DropdownMenuSeparator />
+                     {allCategories.map(category => (
+                        <DropdownMenuCheckboxItem
+                            key={category}
+                            checked={categoryFilter.includes(category)}
+                            onCheckedChange={(checked) => {
+                                setCategoryFilter(prev => checked ? [...prev, category] : prev.filter(c => c !== category));
+                            }}
+                        >
+                            {category}
+                        </DropdownMenuCheckboxItem>
+                     ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                        <ArrowDownUp className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'followers', direction: 'desc' })}>Takipçi Sayısı</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'volunteers', direction: 'desc' })}>Gönüllü Sayısı</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'transparency', direction: 'desc' })}>Şeffaflık Puanı</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
       </div>
 
        <Tabs defaultValue="Tümü" className="w-full" onValueChange={(value) => setActiveTab(value as NgoType)}>

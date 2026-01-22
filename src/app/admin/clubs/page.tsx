@@ -5,12 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { studentClubs } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import type { StudentClub } from '@/lib/types';
 
-const ClubCard = ({ club }: { club: (typeof studentClubs)[0] }) => (
+
+const ClubCard = ({ club }: { club: StudentClub }) => (
     <Link href={`/admin/clubs/profile/${club.id}`} key={club.id} className="block">
         <Card className="hover:bg-accent transition-colors">
             <CardContent className="p-3 flex gap-3 items-center">
@@ -52,8 +55,9 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
 
 
 export default function StudentClubsPage() {
-  const [clubs, setClubs] = useState(studentClubs);
+  const [clubs, setClubs] = useState<StudentClub[]>([]);
   const [activeSubTab, setActiveSubTab] = useState('all');
+  const [sortConfig, setSortConfig] = useState<{ key: keyof StudentClub | 'members' | 'points'; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
   const { toast } = useToast();
 
    const sampleEvents = [
@@ -70,9 +74,30 @@ export default function StudentClubsPage() {
       points: Math.floor(Math.random() * 5000) + 1000
     })));
   }, []);
+  
+  const sortedClubs = useMemo(() => {
+    let sortableClubs = [...clubs];
+    sortableClubs.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+    });
+    if (sortConfig.key === 'members' || sortConfig.key === 'points') {
+        sortableClubs.sort((a, b) => {
+            const valA = a[sortConfig.key] as number;
+            const valB = b[sortConfig.key] as number;
+            return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+        });
+    }
+    return sortableClubs;
+  }, [clubs, sortConfig]);
 
   const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
-    const filteredClubs = type ? clubs.filter(c => c.type === type) : clubs;
+    const filteredClubs = type ? sortedClubs.filter(c => c.type === type) : sortedClubs;
     return (
         <div className='space-y-3'>
             {filteredClubs.length > 0 ? filteredClubs.map((club) => (
@@ -141,9 +166,21 @@ export default function StudentClubsPage() {
             <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                 <Filter className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                <ArrowDownUp className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                        <ArrowDownUp className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>İsme Göre (Z-A)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'members', direction: 'desc' })}>Üye Sayısı (Çoktan Aza)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'members', direction: 'asc' })}>Üye Sayısı (Azdan Çoğa)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'desc' })}>Puan (Yüksekten Düşüğe)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'asc' })}>Puan (Düşükten Yükseğe)</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
       </div>
 
        <Tabs defaultValue="clubs" className="w-full">

@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowDownUp, Filter, Calendar } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
     <Card key={event.id}>
@@ -29,6 +30,7 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
 export default function StudentClubEventsPage() {
     const [activeSubTab, setActiveSubTab] = useState('all');
     const { toast } = useToast();
+    const [sortKey, setSortKey] = useState('name');
 
     const sampleEvents = [
         { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
@@ -36,9 +38,22 @@ export default function StudentClubEventsPage() {
         { id: '3', name: 'Fotoğraf Sergisi: "İstanbul\'un Renkleri"', club: 'Galatasaray Lisesi Sanat Kulübü', clubId: '3', date: '1-7 Aralık 2024' }
     ];
 
+    const sortedEvents = useMemo(() => {
+        return [...sampleEvents].sort((a, b) => {
+            if (sortKey === 'name') {
+                return a.name.localeCompare(b.name);
+            }
+            if (sortKey === 'club') {
+                return a.club.localeCompare(b.club);
+            }
+            // Date sorting is complex with string dates, so we omit it for now
+            return 0;
+        });
+    }, [sortKey]);
+
     const EventList = () => (
         <div className='space-y-4'>
-            {sampleEvents.map((event) => (
+            {sortedEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
             ))}
             <div className="text-center text-muted-foreground pt-8">
@@ -100,9 +115,17 @@ export default function StudentClubEventsPage() {
                 <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
                     <Filter className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                    <ArrowDownUp className="h-5 w-5" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-11 w-11">
+                            <ArrowDownUp className="h-5 w-5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre Sırala</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('club')}>Kulübe Göre Sırala</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <SubTabs />
         </div>

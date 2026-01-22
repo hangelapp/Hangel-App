@@ -10,6 +10,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useState, useMemo } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { parse } from 'date-fns';
 
 
 const RequirementRow = ({ label, value, isMet }: { label: string, value: string, isMet: boolean }) => (
@@ -23,16 +26,40 @@ const RequirementRow = ({ label, value, isMet }: { label: string, value: string,
 
 export default function VolunteeringPage() {
     const { toast } = useToast();
+    const [sortKey, setSortKey] = useState('points');
+    const [filters, setFilters] = useState({ location: 'all', commitment: 'all' });
+
     const userAbilities = [
       ...user.volunteerInfo.skills,
       ...user.volunteerInfo.dailySkills,
       ...user.volunteerInfo.languages,
       ...user.volunteerInfo.programs
     ];
-    const userDocuments = [
-        ...user.volunteerInfo.documents,
-        ...user.volunteerInfo.licenses
-    ];
+    
+    const sortedAndFilteredOpportunities = useMemo(() => {
+        let opportunities = [...volunteeringOpportunities];
+
+        // Filtering
+        if (filters.location !== 'all') {
+            opportunities = opportunities.filter(opp => opp.location.type === filters.location);
+        }
+        if (filters.commitment !== 'all') {
+            opportunities = opportunities.filter(opp => opp.taskType === filters.commitment);
+        }
+
+        // Sorting
+        opportunities.sort((a, b) => {
+            if (sortKey === 'points') {
+                return b.points - a.points;
+            }
+            if (sortKey === 'date') {
+                return parse(a.dates.applicationEnd, 'yyyy-MM-dd', new Date()).getTime() - parse(b.dates.applicationEnd, 'yyyy-MM-dd', new Date()).getTime();
+            }
+            return 0;
+        });
+
+        return opportunities;
+    }, [sortKey, filters]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -49,12 +76,37 @@ export default function VolunteeringPage() {
                     className="pl-10 h-11"
                 />
             </div>
-             <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
-                <Filter className="h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                <ArrowDownUp className="h-5 w-5" />
-            </Button>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                        <Filter className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Konum</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked={filters.location === 'all'} onCheckedChange={() => setFilters(f => ({...f, location: 'all'}))}>Tümü</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={filters.location === 'Online'} onCheckedChange={() => setFilters(f => ({...f, location: 'Online'}))}>Online</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={filters.location === 'Saha'} onCheckedChange={() => setFilters(f => ({...f, location: 'Saha'}))}>Saha</DropdownMenuCheckboxItem>
+                    <DropdownMenuLabel>Çalışma Şekli</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked={filters.commitment === 'all'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'all'}))}>Tümü</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={filters.commitment === 'Tek Gün'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'Tek Gün'}))}>Tek Günlük</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={filters.commitment === 'Dönemsel'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'Dönemsel'}))}>Dönemsel</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={filters.commitment === 'Sürekli'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'Sürekli'}))}>Sürekli</DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+             </DropdownMenu>
+            <DropdownMenu>
+                 <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                        <ArrowDownUp className="h-5 w-5" />
+                    </Button>
+                 </DropdownMenuTrigger>
+                 <DropdownMenuContent>
+                     <DropdownMenuItem onClick={() => setSortKey('points')}>Puan (Yüksekten Düşüğe)</DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => setSortKey('date')}>Son Başvuru Tarihi (En Yakın)</DropdownMenuItem>
+                 </DropdownMenuContent>
+            </DropdownMenu>
       </div>
          <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="item-1">
@@ -74,12 +126,7 @@ export default function VolunteeringPage() {
       </div>
 
       <div className="space-y-4">
-        {volunteeringOpportunities.map((opp) => {
-            const requiredSkillsMet = (opp.skills ?? []).every(skill => userAbilities.includes(skill));
-            const requiredDocsMet = (opp.requirements ?? []).every(doc => userDocuments.includes(doc));
-            const travelMet = opp.location.type === 'Saha' ? !user.volunteerInfo.travelInfo.domesticObstacle : true;
-
-            return (
+        {sortedAndFilteredOpportunities.map((opp) => (
               <Card key={opp.id}>
                 <CardHeader>
                   <CardTitle className="text-base">{opp.title}</CardTitle>
@@ -114,7 +161,7 @@ export default function VolunteeringPage() {
                 </CardFooter>
               </Card>
             )
-        })}
+        )}
         <Button variant="outline" className="w-full">Daha Fazla Yükle</Button>
       </div>
     </div>

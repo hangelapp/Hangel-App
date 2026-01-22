@@ -9,9 +9,27 @@ import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useState, useMemo } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import type { Event } from '@/lib/types';
+
 
 export default function EventsPage() {
   const { toast } = useToast();
+  const [sortKey, setSortKey] = useState('name');
+  
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+        if (sortKey === 'name') {
+            return a.name.localeCompare(b.name);
+        }
+        if (sortKey === 'capacity') {
+            return (b.capacity.max - b.capacity.current) - (a.capacity.max - a.capacity.current);
+        }
+        return 0;
+    });
+  }, [sortKey]);
+
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <div className="space-y-2">
@@ -24,9 +42,17 @@ export default function EventsPage() {
           <Button variant="outline" className="flex-1" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
             <Filter className="mr-2 h-4 w-4" /> Filtrele
           </Button>
-          <Button variant="outline" className="flex-1" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-            <ListFilter className="mr-2 h-4 w-4" /> Sırala
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex-1">
+                    <ListFilter className="mr-2 h-4 w-4" /> Sırala
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortKey('capacity')}>Kalan Kapasite</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" onClick={() => toast({ title: 'Harita özelliği yakında gelecek!'})}>
             <Map className="mr-2 h-4 w-4" /> Harita
           </Button>
@@ -34,7 +60,7 @@ export default function EventsPage() {
       </div>
 
       <div className="space-y-4">
-        {events.map((event) => (
+        {sortedEvents.map((event: Event) => (
           <Card key={event.id} className="overflow-hidden">
             <div className="relative h-40 w-full">
               <Image src={event.imageUrl} alt={event.name} fill className="object-cover" data-ai-hint={event.imageHint}/>

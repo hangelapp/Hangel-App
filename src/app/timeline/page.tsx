@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timelinePosts, adBanners, ngos, allEntityLists } from '@/lib/data';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp } from 'lucide-react';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,6 +19,8 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -63,6 +65,32 @@ export default function TimelinePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Mocking auth
   const router = useRouter();
   const { toast } = useToast();
+  const [sortKey, setSortKey] = useState('id');
+  const [sortDir, setSortDir] = useState('desc');
+  const [filterSponsored, setFilterSponsored] = useState(false);
+
+  const sortedAndFilteredPosts = useMemo(() => {
+    let posts = filterSponsored ? timelinePosts.filter(p => p.sponsored) : [...timelinePosts];
+    
+    posts.sort((a, b) => {
+        let valA, valB;
+        if (sortKey === 'id') {
+            valA = parseInt(a.id);
+            valB = parseInt(b.id);
+        } else { // likes
+            valA = a.likes;
+            valB = b.likes;
+        }
+
+        if (sortDir === 'desc') {
+            return valB - valA;
+        } else {
+            return valA - valB;
+        }
+    });
+
+    return posts;
+  }, [sortKey, sortDir, filterSponsored]);
   
   if (!isAuthenticated) {
       return null;
@@ -90,12 +118,32 @@ export default function TimelinePage() {
                             className="pl-10 h-11"
                         />
                     </div>
-                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
-                        <Filter className="h-5 w-5" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                        <ArrowDownUp className="h-5 w-5" />
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                                <Filter className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuCheckboxItem checked={filterSponsored} onCheckedChange={setFilterSponsored}>
+                                Sadece Sponsorlu
+                            </DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                                <ArrowDownUp className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => {setSortKey('id'); setSortDir('desc')}}>En Yeni</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {setSortKey('id'); setSortDir('asc')}}>En Eski</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {setSortKey('likes'); setSortDir('desc')}}>En Çok Beğenilen</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="special">Sana Özel</TabsTrigger>
@@ -106,7 +154,7 @@ export default function TimelinePage() {
             </div>
             <TabsContent value="special" className="mt-0">
                 <div className="p-2 sm:p-4 space-y-4">
-                    {timelinePosts.map((post, index) => (
+                    {sortedAndFilteredPosts.map((post, index) => (
                     <React.Fragment key={post.id}>
                         <Card className="overflow-hidden shadow-none rounded-xl">
                             <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4">

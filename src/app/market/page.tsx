@@ -17,6 +17,9 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import type { Brand } from '@/lib/types';
+
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -106,31 +109,49 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
   const { toast } = useToast();
+  const [sortKey, setSortKey] = useState('followers');
+  const [onlyDonating, setOnlyDonating] = useState(false);
 
   const brandsToShow = useMemo(() => {
-    let filteredList = allEntityLists;
+    let filteredList: Brand[] = allEntityLists;
 
-    // 1. Filter by Entity Type
     if (activeEntityType !== 'all') {
       filteredList = filteredList.filter(item => item.type === activeEntityType);
     }
 
-    // 2. Filter by Category
-    if (activeCategory === 'Tümü') {
-      return filteredList;
+    if (onlyDonating) {
+        filteredList = filteredList.filter(item => item.donationRate > 0);
     }
-    if (activeCategory === 'Öne çıkanlar') {
-      return [...filteredList].sort((a, b) => (b.followers || 0) - (a.followers || 0)).slice(0, 18);
+
+    if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
+      const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
+      if (brandCategories && brandCategories.length > 0) {
+        filteredList = filteredList.filter(brand => brandCategories.includes(brand.category));
+      } else {
+        filteredList = [];
+      }
     }
     
-    const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
-    if (!brandCategories || brandCategories.length === 0) {
-      return [];
+    // Sorting logic
+    filteredList.sort((a, b) => {
+        switch(sortKey) {
+            case 'donationRate':
+                return (b.donationRate || 0) - (a.donationRate || 0);
+            case 'name':
+                return a.name.localeCompare(b.name);
+            case 'followers':
+            default:
+                return (b.followers || 0) - (a.followers || 0);
+        }
+    });
+
+    if (activeCategory === 'Öne çıkanlar') {
+        return filteredList.slice(0, 18);
     }
+    
+    return filteredList;
 
-    return filteredList.filter(brand => brandCategories.includes(brand.category));
-
-  }, [activeCategory, activeEntityType]);
+  }, [activeCategory, activeEntityType, sortKey, onlyDonating]);
   
   return (
     <div className="flex flex-col h-full">
@@ -148,12 +169,34 @@ export default function MarketPage() {
                         </Button>
                     </div>
                 </div>
-                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
-                    <Filter className="h-5 w-5" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                    <ArrowDownUp className="h-5 w-5" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                         <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                            <Filter className="h-5 w-5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>
+                            Sadece Bağış Yapanlar
+                        </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                            <ArrowDownUp className="h-5 w-5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Sırala</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Takipçi Sayısı</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranı</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             
             <Tabs defaultValue="all" className="w-full flex justify-center" onValueChange={(value) => setActiveEntityType(value as any)}>
@@ -216,12 +259,12 @@ export default function MarketPage() {
                             </div>
                         </Link>
                         {index === 5 && (
-                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
+                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:grid-cols-6 xl:col-span-8 my-2">
                                <AdCarousel />
                            </div>
                         )}
                         {index >= 14 && (index - 14) % 30 === 0 && (
-                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:col-span-6 xl:col-span-8 my-2">
+                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:grid-cols-6 xl:col-span-8 my-2">
                                <VisualAdCarousel />
                            </div>
                         )}
