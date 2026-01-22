@@ -405,44 +405,124 @@ export default function NewApplicationPage() {
         );
       case 'Marka Kayıt Başvurusu':
         return (
-            <Card>
-                <CardHeader><CardTitle>Marka Bilgileri</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2"><Label>Marka Adı</Label><Input placeholder="Markanızın tam adı" /></div>
-                    <div className="space-y-2"><Label>Marka Kategorisi</Label><Input placeholder="Örn: Giyim, Elektronik" /></div>
-                    <div className="space-y-2"><Label>Marka Türü</Label><Select><SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger><SelectContent><SelectItem value="brand">Marka</SelectItem><SelectItem value="cooperative">Kooperatif</SelectItem><SelectItem value="social">Sosyal İşletme</SelectItem><SelectItem value="economic">İktisadi İşletme</SelectItem></SelectContent></Select></div>
-                    <div className="space-y-2"><Label>Marka Hakkında</Label><Textarea placeholder="Markanızı ve sosyal sorumluluk vizyonunuzu anlatın." /></div>
-                    <div className="space-y-2"><Label>Web Sitesi</Label><Input placeholder="https://marka.com" /></div>
-                    <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="kurumsal@marka.com" /></div>
-                    <div className="space-y-2"><Label>Ortalama Bağış Oranı (%)</Label><Input type="number" placeholder="Örn: 5" /></div>
-                    <div className="space-y-2"><Label>Kategori Bazlı Oranlar (İsteğe bağlı)</Label><Textarea placeholder="Örn: Elektronik - %3, Giyim - %8" /></div>
-                    
-                    <div className="space-y-4 pt-4 border-t">
-                        <Label>Sosyal Medya Hesapları</Label>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Marka Kimlik Bilgileri</CardTitle>
+                        <CardDescription>Markanızın platformda nasıl görüneceğini ve temel bilgilerini girin.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2"><Label>Marka Adı</Label><Input placeholder="Markanızın platformdaki adı" /></div>
+                        <div className="space-y-2"><Label>Marka Kategorisi</Label><Input placeholder="Örn: Giyim, Restoran, Elektronik" /></div>
                         <div className="space-y-2">
-                            <Label htmlFor="social-twitter" className="text-xs">Twitter (X)</Label>
-                            <div className='flex items-center gap-2'><Twitter className='h-5 w-5 text-muted-foreground' /><Input id="social-twitter" placeholder="Kullanıcı Adı" /></div>
+                            <Label>Marka Türü</Label>
+                            <Select>
+                                <SelectTrigger><SelectValue placeholder="Marka türünü seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="brand">Marka</SelectItem>
+                                    <SelectItem value="cooperative">Kooperatif</SelectItem>
+                                    <SelectItem value="social">Sosyal İşletme</SelectItem>
+                                    <SelectItem value="economic">İktisadi İşletme</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="social-instagram" className="text-xs">Instagram</Label>
-                            <div className='flex items-center gap-2'><Instagram className='h-5 w-5 text-muted-foreground' /><Input id="social-instagram" placeholder="Kullanıcı Adı" /></div>
+                            <Label>Marka Hakkında</Label>
+                            <Textarea placeholder="Markanızı, misyonunuzu ve sosyal sorumluluk vizyonunuzu anlatın." />
+                        </div>
+                    </CardContent>
+                </Card>
+                
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Yasal ve Finansal Bilgiler</CardTitle>
+                        <CardDescription>Resmi işlemler ve bağış aktarımları için gereklidir.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2"><Label>Yasal Şirket Unvanı</Label><Input placeholder="Ticaret sicilindeki tam unvanınız" /></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2"><Label>Vergi Numarası</Label><Input placeholder="10 haneli vergi kimlik numaranız" /></div>
+                          <div className="space-y-2"><Label>Vergi Dairesi</Label><Input placeholder="Bağlı olduğunuz vergi dairesi" /></div>
+                        </div>
+                        <div className="space-y-2 border-t pt-4">
+                          <Label>Banka IBAN Numarası</Label>
+                          <Input placeholder="TR..." />
+                          <p className="text-xs text-muted-foreground">Hak edişlerinizin yatırılacağı banka hesabı.</p>
+                        </div>
+                    </CardContent>
+                </Card>
+      
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Bağış Yapılandırması</CardTitle>
+                        <CardDescription>Alışverişler üzerinden STK'lara aktarılacak bağış oranlarını belirleyin.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Ortalama Bağış Oranı (%)</Label>
+                            <Input type="number" placeholder="Örn: 5" />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="social-facebook" className="text-xs">Facebook</Label>
-                            <div className='flex items-center gap-2'><Facebook className='h-5 w-5 text-muted-foreground' /><Input id="social-facebook" placeholder="Sayfa Adı" /></div>
+                            <Label>Kategori Bazlı Oranlar (İsteğe bağlı)</Label>
+                            <Textarea placeholder="Farklı ürün kategorileri için farklı oranlar belirleyebilirsiniz. Örn: Elektronik - %3, Giyim - %8" />
+                        </div>
+                    </CardContent>
+                </Card>
+      
+                <Card>
+                    <CardHeader>
+                        <CardTitle>İletişim ve Adres Bilgileri</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2"><Label>Yetkili Adı Soyadı</Label><Input placeholder="İletişime geçilecek kişi" /></div>
+                          <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="kurumsal@marka.com" /></div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="social-linkedin" className="text-xs">LinkedIn</Label>
-                            <div className='flex items-center gap-2'><Linkedin className='h-5 w-5 text-muted-foreground' /><Input id="social-linkedin" placeholder="Sayfa Adı" /></div>
+                            <Label>Fiziksel Mağaza Adresi (varsa)</Label>
+                            <Input placeholder="Açık adres" />
                         </div>
-                    </div>
-
-                    <div className="space-y-4 pt-4 border-t">
-                       <FileUpload label="Marka Logosu" />
-                       <FileUpload label="Kapak Fotoğrafı" />
-                    </div>
-                </CardContent>
-            </Card>
+                        <div className="space-y-2">
+                            <Label>Web Sitesi</Label>
+                            <Input placeholder="https://marka.com" />
+                        </div>
+                    </CardContent>
+                </Card>
+      
+                <Card>
+                    <CardHeader><CardTitle>Sosyal Medya ve Görseller</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2"><Label htmlFor="social-twitter" className="text-sm">Twitter (X)</Label><div className='flex items-center gap-2'><Twitter className='h-5 w-5 text-muted-foreground' /><Input id="social-twitter" placeholder="Kullanıcı Adı" /></div></div>
+                        <div className="space-y-2"><Label htmlFor="social-instagram" className="text-sm">Instagram</Label><div className='flex items-center gap-2'><Instagram className='h-5 w-5 text-muted-foreground' /><Input id="social-instagram" placeholder="Kullanıcı Adı" /></div></div>
+                        <div className="space-y-2"><Label htmlFor="social-facebook" className="text-sm">Facebook</Label><div className='flex items-center gap-2'><Facebook className='h-5 w-5 text-muted-foreground' /><Input id="social-facebook" placeholder="Sayfa Adı" /></div></div>
+                        <div className="space-y-2"><Label htmlFor="social-linkedin" className="text-sm">LinkedIn</Label><div className='flex items-center gap-2'><Linkedin className='h-5 w-5 text-muted-foreground' /><Input id="social-linkedin" placeholder="Sayfa Adı" /></div></div>
+                        <div className="space-y-4 pt-4 border-t">
+                            <FileUpload label="Marka Logosu (Zorunlu)" />
+                            <FileUpload label="Kapak Fotoğrafı (İsteğe Bağlı)" />
+                        </div>
+                    </CardContent>
+                </Card>
+      
+                 <Card>
+                      <CardHeader>
+                          <CardTitle>Sözleşme Onayları</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                          <div className="flex items-start space-x-3">
+                              <Checkbox id="terms-brand" required />
+                              <Label htmlFor="terms-brand" className="text-sm font-normal text-muted-foreground">
+                                  <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>'ni ve Hangel'in <Link href="/settings/contracts/ucret-politikasi" className="font-medium text-primary hover:underline">Ücret Politikası</Link>'nı okudum ve kabul ediyorum.
+                              </Label>
+                          </div>
+                           <div className="flex items-start space-x-3">
+                              <Checkbox id="terms-privacy-brand" required />
+                              <Label htmlFor="terms-privacy-brand" className="text-sm font-normal text-muted-foreground">
+                                  <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link>'nı okudum ve kabul ediyorum.
+                              </Label>
+                          </div>
+                      </CardContent>
+                  </Card>
+            </div>
         );
         case 'Okul Temsilciliği Başvurusu':
         return (
