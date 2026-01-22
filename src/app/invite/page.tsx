@@ -178,8 +178,8 @@ export default function InvitePage() {
                 </TabsList>
                  <TabsContent value="email" className="mt-4">
                     <div className="text-left space-y-4">
-                        <p className="text-sm text-center text-muted-foreground">Gmail ile bağlandınız.</p>
-                         <div className="flex justify-end">
+                        <div className="flex justify-between items-center">
+                            <p className="text-sm text-muted-foreground">Gmail ile bağlandınız.</p>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
