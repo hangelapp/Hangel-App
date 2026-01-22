@@ -92,27 +92,27 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                         </TabsList>
                         <TabsContent value="deprem" className="mt-4">
                             <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Deprem')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Deprem Bildir
+                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
                             </Button>
                         </TabsContent>
                         <TabsContent value="sel" className="mt-4">
                             <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Sel')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Sel Bildir
+                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
                             </Button>
                         </TabsContent>
                         <TabsContent value="yangin" className="mt-4">
                             <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Yangın')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Yangın Bildir
+                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
                             </Button>
                         </TabsContent>
                         <TabsContent value="kaza" className="mt-4">
                             <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Kaza')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Kaza Bildir
+                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
                             </Button>
                         </TabsContent>
                         <TabsContent value="kayip" className="mt-4">
                             <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Kayıp')}>
-                                <Megaphone className="mr-2 h-4 w-4" /> Kayıp Bildir
+                                <Megaphone className="mr-2 h-4 w-4" /> Bildirimde Bulun
                             </Button>
                         </TabsContent>
                     </Tabs>
@@ -179,5 +179,3 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
     </Dialog>
   );
 }
-
-    
