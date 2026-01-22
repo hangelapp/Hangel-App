@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useRef, Fragment } from 'react';
+import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Camera, Filter, ArrowDownUp } from 'lucide-react';
+import { Search, Camera, Filter, ArrowDownUp, Bot } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
+import { Skeleton } from '@/components/ui/skeleton';
+import { HangelLogo } from '@/components/icons';
 
 
 const AdCarousel = () => {
@@ -113,6 +124,12 @@ export default function MarketPage() {
   const [onlyDonating, setOnlyDonating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // AI Assistant State
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [assistantQuestion, setAssistantQuestion] = useState('');
+  const [assistantResponse, setAssistantResponse] = useState('');
+  const [isAssistantLoading, setIsAssistantLoading] = useState(false);
+
   const brandsToShow = useMemo(() => {
     let filteredList: Brand[] = allEntityLists;
 
@@ -159,6 +176,38 @@ export default function MarketPage() {
 
   }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm]);
   
+  const handleAskAssistant = useCallback(async () => {
+    if (!assistantQuestion.trim()) return;
+
+    setIsAssistantLoading(true);
+    setAssistantResponse('');
+
+    try {
+        const brandsContext = allEntityLists.map(b => 
+            `Marka: ${b.name}, Kategori: ${b.category}, Bağış Oranı: %${b.donationRate}, Tür: ${b.type}, Hakkında: ${b.about || 'Bilgi yok.'}`
+        ).join('\n---\n');
+
+      const result = await askMarketAssistant({
+        userQuestion: assistantQuestion,
+        brandsContext: brandsContext,
+      });
+
+      if (result.answer) {
+        setAssistantResponse(result.answer);
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Bir hata oluştu",
+        description: "Yapay zeka asistanı yanıt verirken bir sorun oluştu. Lütfen tekrar deneyin.",
+      });
+    } finally {
+      setIsAssistantLoading(false);
+      setAssistantQuestion('');
+    }
+  }, [assistantQuestion, toast]);
+
   return (
     <div className="flex flex-col h-full">
         <div className="p-2 space-y-2 border-b shrink-0">
@@ -177,6 +226,52 @@ export default function MarketPage() {
                         </Button>
                     </div>
                 </div>
+                <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                            <Bot className="h-5 w-5" />
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                        <DialogTitle>Market Asistanı</DialogTitle>
+                        <DialogDescription>
+                            Alışverişinizle ilgili sorularınızı yapay zeka asistanına sorun.
+                        </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            {assistantResponse && !isAssistantLoading && (
+                                <div className="flex items-start gap-3">
+                                    <Avatar className="h-8 w-8 bg-primary/10">
+                                       <HangelLogo className="h-5 w-5 text-primary m-auto"/>
+                                    </Avatar>
+                                    <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">{assistantResponse}</div>
+                                </div>
+                            )}
+                             {isAssistantLoading && (
+                                <div className="flex items-start gap-3">
+                                    <Avatar className="h-8 w-8 bg-primary/10">
+                                       <HangelLogo className="h-5 w-5 text-primary m-auto"/>
+                                    </Avatar>
+                                    <div className="space-y-2 p-2">
+                                        <Skeleton className="h-4 w-[250px]" />
+                                        <Skeleton className="h-4 w-[200px]" />
+                                    </div>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    placeholder="Sürdürülebilir markalar hangileri?"
+                                    value={assistantQuestion}
+                                    onChange={(e) => setAssistantQuestion(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
+                                    disabled={isAssistantLoading}
+                                />
+                                <Button onClick={handleAskAssistant} disabled={isAssistantLoading}>Sor</Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                          <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
