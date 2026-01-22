@@ -119,7 +119,7 @@ export default function QrPaymentPage() {
     setFlippedCardId(prev => (prev === cardId ? null : cardId));
   };
   
-  const toggleFreezeCard = (cardId: string) => {
+   const toggleFreezeCard = (cardId: string) => {
     const isCurrentlyFrozen = frozenCards[cardId] || false;
     setFrozenCards(prev => ({...prev, [cardId]: !isCurrentlyFrozen }));
     toast({
@@ -202,7 +202,7 @@ export default function QrPaymentPage() {
             </div>
         </div>
         
-        <Tabs value={activeCardId} className="w-full" onValueChange={setActiveCardId}>
+        <Tabs value={activeCardId} onValueChange={setActiveCardId} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-0 rounded-none h-auto">
                 {cardData.map((card) => (
                     <TabsTrigger
@@ -211,8 +211,7 @@ export default function QrPaymentPage() {
                         className={cn(
                             "rounded-none rounded-t-lg p-1 text-xs font-semibold text-white shadow-none",
                             "focus-visible:ring-0 focus-visible:ring-offset-0",
-                            "data-[state=active]:z-10",
-                            "data-[state=inactive]:opacity-70",
+                            "data-[state=active]:z-10 data-[state=inactive]:opacity-70 data-[state=active]:shadow-lg",
                             card.bgColor
                         )}
                     >
@@ -221,77 +220,13 @@ export default function QrPaymentPage() {
                 ))}
             </TabsList>
 
-            {cardData.map((card) => {
-                 const ngo = ngos.find(n => n.id === card.ngoId);
-                 const isFlipped = flippedCardId === card.id;
-                 return (
+            {cardData.map((card) => (
                 <TabsContent key={card.id} value={card.id} className="mt-0">
-                    <div>
-                        <div className="relative [perspective:1000px] h-56">
-                            <div
-                                className={cn(
-                                    "relative h-full w-full rounded-b-2xl transition-transform duration-500 [transform-style:preserve-3d]",
-                                    isFlipped && "[transform:rotateY(180deg)]"
-                                )}
-                            >
-                                {/* FRONT */}
-                                <div
-                                    className={cn(
-                                        "absolute inset-0 p-6 flex flex-col justify-between text-white [backface-visibility:hidden] rounded-b-2xl",
-                                        card.bgColor
-                                    )}
-                                >
-                                    <div className="flex justify-between items-start w-full">
-                                        <p className="font-semibold text-lg">{card.type}</p>
-                                        <p className="font-semibold text-2xl">{card.balance}</p>
-                                    </div>
-                                    <div className="relative w-full">
-                                        <p className="font-mono tracking-widest text-lg mb-2">{'**** **** **** ' + card.number.slice(-4)}</p>
-                                        <div className="flex justify-between items-end w-full">
-                                            <div>
-                                                <p className="text-xs opacity-80">Kart Sahibi</p>
-                                                <p className="font-semibold text-sm uppercase">{card.owner}</p>
-                                            </div>
-                                             <CreditCard className="h-8 w-auto text-white/80" />
-                                        </div>
-                                    </div>
-                                    {frozenCards[card.id] && (
-                                        <div className="absolute inset-0 bg-black/60 rounded-b-2xl flex items-center justify-center">
-                                            <p className="text-white font-bold text-3xl -rotate-12 border-4 border-white p-4 rounded-lg">DONDURULDU</p>
-                                        </div>
-                                    )}
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
-                                        onClick={() => handleFlip(card.id)}
-                                    >
-                                        <RotateCw className="h-6 w-6" />
-                                    </Button>
-                                </div>
-
-                                {/* BACK */}
-                                <div
-                                    className={cn(
-                                        "absolute inset-0 p-4 flex flex-col justify-center items-center text-white [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-b-2xl",
-                                        card.bgColor
-                                    )}
-                                >
-                                <CardSettings cardId={card.id} />
-                                <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute top-1/2 right-4 -translate-y-1/2 h-12 w-12 rounded-full text-white/70 hover:bg-white/20 hover:text-white"
-                                        onClick={() => handleFlip(card.id)}
-                                    >
-                                        <RotateCw className="h-6 w-6" />
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="h-56 flex items-center justify-center bg-muted rounded-b-2xl">
+                        <p className="text-muted-foreground">Kart detayı burada gösterilecek.</p>
                     </div>
                 </TabsContent>
-            )})}
+            ))}
         </Tabs>
       
       <Card className={cn('transition-colors border-2', 
