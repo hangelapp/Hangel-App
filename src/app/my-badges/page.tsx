@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,9 @@ import { Badge as BadgeType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { groupBy } from 'lodash';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { format, parseISO } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 const stats = [
     { icon: Star, value: user.impactScore.toLocaleString('tr-TR'), label: 'Etki Puanı' },
@@ -33,20 +35,21 @@ const levelColors: Record<BadgeType['level'], { bg: string; text: string }> = {
 };
 
 const allPointTransactions = [
-    { icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2 saat önce" },
-    { icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "1 gün önce" },
-    { icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "3 gün önce" },
-    { icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "3 gün önce" },
-    { icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "5 gün önce" },
-    { icon: HandCoins, description: "Kitap Kurdu alışverişi", points: 80, time: "1 hafta önce" },
-    { icon: Handshake, description: "Barınak ziyareti gönüllülüğü", points: 75, time: "2 hafta önce" },
-    { icon: Users, description: "Ahmet Demir'i davet ettin", points: 100, time: "2 hafta önce" },
-    { icon: DollarSign, description: "Tekno Market alışverişi", points: 25, time: "3 hafta önce" },
-    { icon: Award, description: "'Bronz Hayvan Dostu' rozeti", points: 250, time: "1 ay önce" },
-    { icon: HandCoins, description: "Sürdürülebilir Moda alışverişi", points: 95, time: "1 ay önce" },
-    { icon: Handshake, description: "Sahil temizliği etkinliği", points: 120, time: "1 ay önce" },
+    { type: 'Alışveriş', icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+    { type: 'Gönüllülük', icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Davet', icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Rozet', icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Alışveriş', icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Alışveriş', icon: HandCoins, description: "Kitap Kurdu alışverişi", points: 80, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Gönüllülük', icon: Handshake, description: "Barınak ziyareti gönüllülüğü", points: 75, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Davet', icon: Users, description: "Ahmet Demir'i davet ettin", points: 100, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Alışveriş', icon: DollarSign, description: "Tekno Market alışverişi", points: 25, date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Rozet', icon: Award, description: "'Bronz Hayvan Dostu' rozeti", points: 250, date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Alışveriş', icon: HandCoins, description: "Sürdürülebilir Moda alışverişi", points: 95, date: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString() },
+    { type: 'Gönüllülük', icon: Handshake, description: "Sahil temizliği etkinliği", points: 120, date: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString() },
 ];
 
+const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
 const VectorBadge = ({ badge }: { badge: BadgeType }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
@@ -81,14 +84,39 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
 };
 
 export default function MyBadgesPage() {
-    const [visibleTxCount, setVisibleTxCount] = useState(5);
-    const { toast } = useToast();
+    const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+    const [filters, setFilters] = useState<string[]>([]);
 
     const groupedBadges = React.useMemo(() => {
         return groupBy(badges, 'socialArea');
     }, []);
 
-    const recentPointTransactions = allPointTransactions.slice(0, visibleTxCount);
+    const sortedAndFilteredTransactions = useMemo(() => {
+        let transactions = [...allPointTransactions];
+
+        if (filters.length > 0) {
+            transactions = transactions.filter(tx => filters.includes(tx.type));
+        }
+
+        transactions.sort((a, b) => {
+            let valA, valB;
+            if (sortConfig.key === 'date') {
+                valA = parseISO(a.date).getTime();
+                valB = parseISO(b.date).getTime();
+            } else { // points
+                valA = a.points;
+                valB = b.points;
+            }
+
+            if (sortConfig.direction === 'desc') {
+                return valB - valA;
+            } else {
+                return valA - valB;
+            }
+        });
+
+        return transactions;
+    }, [sortConfig, filters]);
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -128,17 +156,46 @@ export default function MyBadgesPage() {
                         <div className="flex justify-between items-center">
                             <CardTitle>Son Puan İşlemleri</CardTitle>
                             <div className="flex items-center">
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
-                                    <Filter className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                                    <ArrowDownUp className="h-4 w-4" />
-                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <Filter className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>İşlem Türü</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        {transactionTypes.map(type => (
+                                            <DropdownMenuCheckboxItem
+                                                key={type}
+                                                checked={filters.includes(type)}
+                                                onCheckedChange={(checked) => {
+                                                    setFilters(prev => checked ? [...prev, type] : prev.filter(t => t !== type));
+                                                }}
+                                            >
+                                                {type}
+                                            </DropdownMenuCheckboxItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <ArrowDownUp className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'desc' })}>Tarihe Göre (En Yeni)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'asc' })}>Tarihe Göre (En Eski)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'desc' })}>Puana Göre (En Yüksek)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'asc' })}>Puana Göre (En Düşük)</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {recentPointTransactions.map((tx, index) => {
+                        {sortedAndFilteredTransactions.map((tx, index) => {
                             const Icon = tx.icon;
                             return (
                             <div key={index} className="flex items-center justify-between text-sm">
@@ -146,24 +203,13 @@ export default function MyBadgesPage() {
                                     <Icon className="h-5 w-5 text-muted-foreground" />
                                     <div>
                                         <p>{tx.description}</p>
-                                        <p className="text-xs text-muted-foreground">{tx.time}</p>
+                                        <p className="text-xs text-muted-foreground">{format(parseISO(tx.date), "dd MMMM yyyy, HH:mm", { locale: tr })}</p>
                                     </div>
                                 </div>
                                 <p className="font-bold text-green-600">+{tx.points} Puan</p>
                             </div>
                         )})}
                     </CardContent>
-                    <CardFooter>
-                         {visibleTxCount < allPointTransactions.length && (
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => setVisibleTxCount(prev => prev + 5)}
-                            >
-                                Daha Eski
-                            </Button>
-                        )}
-                    </CardFooter>
                 </Card>
             </TabsContent>
             <TabsContent value="badges" className="mt-4 space-y-6">

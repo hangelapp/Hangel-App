@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,8 +9,12 @@ import { applications, ngos } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Search, ArrowDownUp, Filter } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import type { Application } from '@/lib/types';
+
 
 const statusVariantMap = {
     'Onaylandı': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
@@ -18,18 +23,14 @@ const statusVariantMap = {
 } as const;
 
 
-const ApplicationList = ({ type }: { type: (typeof applications)[0]['type'] | 'Tümü' }) => {
-    const filteredApps = type === 'Tümü'
-      ? applications
-      : applications.filter(app => app.type === type);
-
-    if (filteredApps.length === 0) {
-        return <div className="text-center text-muted-foreground p-16">Bu kategoride başvuru bulunmuyor.</div>
+const ApplicationList = ({ apps }: { apps: Application[] }) => {
+    if (apps.length === 0) {
+        return <div className="text-center text-muted-foreground p-16">Bu kriterlere uygun başvuru bulunmuyor.</div>
     }
 
     return (
         <Accordion type="single" collapsible className="w-full space-y-3">
-            {filteredApps.map(app => {
+            {apps.map(app => {
                 const ngo = ngos.find(n => n.name === app.org);
                 return (
                     <AccordionItem value={app.id} key={app.id} className="border-b-0">
@@ -66,6 +67,35 @@ const ApplicationList = ({ type }: { type: (typeof applications)[0]['type'] | 'T
 }
 
 export default function MyApplicationsPage() {
+  const [activeTab, setActiveTab] = useState('Gönüllülük');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' or 'desc'
+  const [statusFilter, setStatusFilter] = useState('Tümü'); // 'Tümü', 'Onaylandı', 'Beklemede', 'Reddedildi'
+  const allStatuses = ['Tümü', 'Onaylandı', 'Beklemede', 'Reddedildi'];
+
+
+  const filteredApps = useMemo(() => {
+    let apps = activeTab === 'Tümü'
+      ? applications
+      : applications.filter(app => app.type === activeTab);
+    
+    if (searchTerm) {
+        apps = apps.filter(app => app.title.toLowerCase().includes(searchTerm.toLowerCase()) || app.org.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    if (statusFilter !== 'Tümü') {
+        apps = apps.filter(app => app.status === statusFilter);
+    }
+
+    apps.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+
+    return apps;
+  }, [activeTab, searchTerm, sortOrder, statusFilter]);
+
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <div className="flex justify-between items-center">
@@ -81,26 +111,69 @@ export default function MyApplicationsPage() {
         </Button>
       </div>
       
-        <Tabs defaultValue="Gönüllülük" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="Gönüllülük">Gönüllülük</TabsTrigger>
-                <TabsTrigger value="Kulüpler">Kulüpler</TabsTrigger>
-                <TabsTrigger value="STK">STK</TabsTrigger>
-                <TabsTrigger value="Marka">Marka</TabsTrigger>
-            </TabsList>
-            <TabsContent value="Gönüllülük" className='mt-4'>
-                <ApplicationList type="Gönüllülük" />
-            </TabsContent>
-            <TabsContent value="Kulüpler" className='mt-4'>
-                <ApplicationList type="Kulüpler" />
-            </TabsContent>
-             <TabsContent value="STK" className='mt-4'>
-                <ApplicationList type="STK" />
-            </TabsContent>
-             <TabsContent value="Marka" className='mt-4'>
-                <ApplicationList type="Marka" />
-            </TabsContent>
-        </Tabs>
+       <div className="p-0 flex gap-2 items-center">
+            <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder="Başvurularda ara..."
+                    className="pl-10 h-11"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                        <Filter className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                     <DropdownMenuLabel>Duruma Göre Filtrele</DropdownMenuLabel>
+                     <DropdownMenuSeparator />
+                     {allStatuses.map(status => (
+                        <DropdownMenuCheckboxItem
+                            key={status}
+                            checked={statusFilter === status}
+                            onCheckedChange={() => setStatusFilter(status)}
+                        >
+                            {status}
+                        </DropdownMenuCheckboxItem>
+                     ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                        <ArrowDownUp className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSortOrder('desc')}>Tarihe Göre (En Yeni)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortOrder('asc')}>Tarihe Göre (En Eski)</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+      </div>
+
+      <Tabs defaultValue="Gönüllülük" className="w-full" onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="Gönüllülük">Gönüllülük</TabsTrigger>
+              <TabsTrigger value="Kulüpler">Kulüpler</TabsTrigger>
+              <TabsTrigger value="STK">STK</TabsTrigger>
+              <TabsTrigger value="Marka">Marka</TabsTrigger>
+          </TabsList>
+          <TabsContent value="Gönüllülük" className='mt-4'>
+              <ApplicationList apps={filteredApps} />
+          </TabsContent>
+          <TabsContent value="Kulüpler" className='mt-4'>
+              <ApplicationList apps={filteredApps} />
+          </TabsContent>
+           <TabsContent value="STK" className='mt-4'>
+              <ApplicationList apps={filteredApps} />
+          </TabsContent>
+           <TabsContent value="Marka" className='mt-4'>
+              <ApplicationList apps={filteredApps} />
+          </TabsContent>
+      </Tabs>
     </div>
   );
 }

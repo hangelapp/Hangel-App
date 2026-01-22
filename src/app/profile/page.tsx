@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering, certificates } from '@/lib/data';
@@ -17,7 +17,7 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 
 const InfoRow = ({ icon: Icon, label, value, verified }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean }) => (
@@ -41,25 +41,55 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value
     </div>
 );
 
+const pointTransactions = [
+    { type: 'Alışveriş', icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2024-07-22T14:30:00" },
+    { type: 'Gönüllülük', icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "2024-07-21T10:00:00" },
+    { type: 'Davet', icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "2024-07-19T18:45:00" },
+    { type: 'Rozet', icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "2024-07-19T11:20:00" },
+    { type: 'Alışveriş', icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "2024-07-17T09:05:00" },
+];
+
+const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
 export default function ProfilePage() {
     const [profileUrl, setProfileUrl] = useState('');
     const router = useRouter();
-    const { toast } = useToast();
+    const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+    const [filters, setFilters] = useState<string[]>([]);
+    
+    const sortedAndFilteredTransactions = useMemo(() => {
+        let transactions = [...pointTransactions];
+
+        if (filters.length > 0) {
+            transactions = transactions.filter(tx => filters.includes(tx.type));
+        }
+
+        transactions.sort((a, b) => {
+            let valA, valB;
+            if (sortConfig.key === 'date') {
+                valA = parseISO(a.time).getTime();
+                valB = parseISO(b.time).getTime();
+            } else { // points
+                valA = a.points;
+                valB = b.points;
+            }
+
+            if (sortConfig.direction === 'desc') {
+                return valB - valA;
+            } else {
+                return valA - valB;
+            }
+        });
+
+        return transactions;
+    }, [sortConfig, filters]);
+
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setProfileUrl(window.location.href);
         }
     }, []);
-
-    const recentPointTransactions = [
-        { icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2024-07-22T14:30:00" },
-        { icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "2024-07-21T10:00:00" },
-        { icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "2024-07-19T18:45:00" },
-        { icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "2024-07-19T11:20:00" },
-        { icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "2024-07-17T09:05:00" },
-    ];
     
     const VolunteerCard = ({ item }: { item: (typeof pastVolunteering)[0] }) => (
         <Card>
@@ -176,16 +206,45 @@ export default function ProfilePage() {
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Son Puan İşlemleri</CardTitle>
                                 <div>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
-                                        <Filter className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!'})}>
-                                        <ArrowDownUp className="h-4 w-4" />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <Filter className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>İşlem Türü</DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            {transactionTypes.map(type => (
+                                                <DropdownMenuCheckboxItem
+                                                    key={type}
+                                                    checked={filters.includes(type)}
+                                                    onCheckedChange={(checked) => {
+                                                        setFilters(prev => checked ? [...prev, type] : prev.filter(t => t !== type));
+                                                    }}
+                                                >
+                                                    {type}
+                                                </DropdownMenuCheckboxItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <ArrowDownUp className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'desc' })}>Tarihe Göre (En Yeni)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'asc' })}>Tarihe Göre (En Eski)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'desc' })}>Puana Göre (En Yüksek)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'asc' })}>Puana Göre (En Düşük)</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {recentPointTransactions.map((tx, index) => {
+                                {sortedAndFilteredTransactions.slice(0, 5).map((tx, index) => {
                                     const Icon = tx.icon;
                                     return (
                                     <div key={index} className="flex items-center justify-between text-sm">
