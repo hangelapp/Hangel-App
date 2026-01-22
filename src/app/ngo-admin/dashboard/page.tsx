@@ -1,19 +1,15 @@
 'use client';
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronRight, DollarSign, Users, Heart } from 'lucide-react';
+import { ChevronRight, DollarSign, Users, Heart, BarChart3, Newspaper, Building } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { user } from '@/lib/data';
 
 const menuItems = [
-  { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: 'heart-handshake', color: 'bg-red-500' },
   { label: 'Bağış Takibi', href: '/ngo-admin/donations', icon: 'dollar-sign', color: 'bg-green-500' },
   { label: 'Demografi', href: '/ngo-admin/demographics', icon: 'bar-chart-3', color: 'bg-blue-500' },
   { label: 'Gönderiler', href: '/ngo-admin/posts', icon: 'newspaper', color: 'bg-orange-500' },
-  { label: 'STK Profil QR Kodu', href: '/ngo-admin/qr', icon: 'qr-code', color: 'bg-gray-700' },
-  { label: 'Raporlar', href: '/ngo-admin/reports', icon: 'file-text', color: 'bg-indigo-500' },
-  { label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: 'shield-check', color: 'bg-teal-500' },
   { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: 'building', color: 'bg-sky-500' },
 ];
 
@@ -51,7 +47,7 @@ export default function NgoDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold font-headline">Ahbap Derneği Yönetim Paneli</h1>
+        <h1 className="text-2xl font-bold font-headline">Kuruluş Yönetim Paneli</h1>
         <p className="text-muted-foreground">Hoş geldin, {userName}</p>
       </div>
 
@@ -68,22 +64,22 @@ export default function NgoDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Gönüllü</CardTitle>
+            <CardTitle className="text-sm font-medium">Destekçi Sayısı</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+2.350</div>
-            <p className="text-xs text-muted-foreground">Bu ay +180 yeni gönüllü</p>
+            <p className="text-xs text-muted-foreground">Bu ay +180 yeni destekçi</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Yeni Başvurular</CardTitle>
+            <CardTitle className="text-sm font-medium">Yeni Etkileşimler</CardTitle>
              <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+12</div>
-            <p className="text-xs text-muted-foreground">Onay bekleyen gönüllü başvuruları</p>
+            <p className="text-xs text-muted-foreground">Onay bekleyen etkileşimler</p>
           </CardContent>
         </Card>
       </div>

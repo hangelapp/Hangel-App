@@ -9,15 +9,21 @@ import { usePathname, useRouter } from 'next/navigation';
 
 const menuItems: SideNavItem[] = [
   { label: 'Genel Bakış', href: '/ngo-admin/dashboard', icon: 'layout-dashboard' },
-  { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: 'heart-handshake' },
   { label: 'Bağış Takibi', href: '/ngo-admin/donations', icon: 'dollar-sign' },
   { label: 'Demografi', href: '/ngo-admin/demographics', icon: 'bar-chart-3' },
   { label: 'Gönderiler', href: '/ngo-admin/posts', icon: 'newspaper' },
-  { label: 'STK Profil QR Kodu', href: '/ngo-admin/qr', icon: 'qr-code' },
-  { label: 'Raporlar', href: '/ngo-admin/reports', icon: 'file-text' },
-  { label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: 'shield-check' },
   { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: 'building' },
 ];
+
+// This is a placeholder for logic that would check the organization type
+const isNgo = true; 
+if (isNgo) {
+    menuItems.splice(1, 0, { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: 'heart-handshake' });
+    menuItems.push({ label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: 'shield-check' });
+    menuItems.push({ label: 'Raporlar', href: '/ngo-admin/reports', icon: 'file-text' });
+    menuItems.push({ label: 'STK Profil QR Kodu', href: '/ngo-admin/qr', icon: 'qr-code' });
+}
+
 
 const secondaryMenuItems: SideNavItem[] = [
     { label: 'Destek', href: '/ngo-admin/support', icon: 'help-circle' },
