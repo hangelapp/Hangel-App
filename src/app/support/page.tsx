@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
-import { helpTopics } from '@/lib/data';
+import { helpTopics, user, badges } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const popularArticles = [
@@ -85,16 +85,64 @@ export default function SupportPage() {
                                {article.title}
                           </AccordionTrigger>
                           <AccordionContent className="px-4 pb-4">
-                              <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground pt-2 space-y-4">
-                                  <p>Bu sorunun cevabı yakında burada olacak. Anlayışınız için teşekkür ederiz.</p>
-                                  <div className="mt-6 border-t pt-4 text-center">
-                                      <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
-                                      <div className="flex justify-center gap-2">
-                                          <Button variant="outline" size="sm">Evet</Button>
-                                          <Button variant="outline" size="sm">Hayır</Button>
-                                      </div>
+                            <div className="text-muted-foreground pt-2 space-y-4">
+                              {article.title === 'hangel Etki Puanı nasıl hesaplanır?' ? (
+                                <>
+                                  <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                                      <li>Anlaşmalı markalardan yaptığın her alışverişle.</li>
+                                      <li>Gönüllülük faaliyetlerini tamamlayarak.</li>
+                                      <li>Platforma yeni arkadaşlarını davet ederek.</li>
+                                      <li>Rozetler kazanarak ve seviye atlayarak.</li>
+                                  </ul>
+                                  <Accordion type="single" collapsible className="w-full mt-2">
+                                      <AccordionItem value="puan-cetveli" className="border-t">
+                                          <AccordionTrigger className="text-sm">Puan Cetvelini Gör</AccordionTrigger>
+                                          <AccordionContent>
+                                              <div className="space-y-3 text-sm pt-2">
+                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                                      <div>
+                                                          <p className="font-semibold">Alışverişle Bağış</p>
+                                                          <p className="text-xs text-muted-foreground">Her 1₺ bağış için <strong>1 Puan</strong></p>
+                                                      </div>
+                                                      <p className="font-bold text-base text-primary">{(user.stats.totalDonation).toLocaleString('tr-TR')} Puan</p>
+                                                  </div>
+                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                                      <div>
+                                                          <p className="font-semibold">Gönüllülük</p>
+                                                          <p className="text-xs text-muted-foreground">Her 1 saat için <strong>10 Puan</strong></p>
+                                                      </div>
+                                                      <p className="font-bold text-base text-primary">{(user.stats.volunteerHours * 10).toLocaleString('tr-TR')} Puan</p>
+                                                  </div>
+                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                                      <div>
+                                                          <p className="font-semibold">Arkadaş Daveti</p>
+                                                          <p className="text-xs text-muted-foreground">Her başarılı davet için <strong>100 Puan</strong></p>
+                                                      </div>
+                                                      <p className="font-bold text-base text-primary">{(5 * 100).toLocaleString('tr-TR')} Puan</p>
+                                                  </div>
+                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                                      <div>
+                                                          <p className="font-semibold">Rozet Kazanımı</p>
+                                                          <p className="text-xs text-muted-foreground">Her rozet için <strong>250 Puan</strong></p>
+                                                      </div>
+                                                      <p className="font-bold text-base text-primary">{(badges.filter(b => b.currentPoints >= b.pointsRequired).length * 250).toLocaleString('tr-TR')} Puan</p>
+                                                  </div>
+                                              </div>
+                                          </AccordionContent>
+                                      </AccordionItem>
+                                  </Accordion>
+                                </>
+                              ) : (
+                                <p>Bu sorunun cevabı yakında burada olacak. Anlayışınız için teşekkür ederiz.</p>
+                              )}
+                              <div className="mt-6 border-t pt-4 text-center">
+                                  <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
+                                  <div className="flex justify-center gap-2">
+                                      <Button variant="outline" size="sm">Evet</Button>
+                                      <Button variant="outline" size="sm">Hayır</Button>
                                   </div>
                               </div>
+                            </div>
                           </AccordionContent>
                       </AccordionItem>
                   ))}
