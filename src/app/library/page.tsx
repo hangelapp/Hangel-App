@@ -11,53 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowDownUp, BookCopy, BookOpen, Building, ChevronRight, Film, Filter, GraduationCap, HeartHandshake, FileText, Search } from 'lucide-react';
+import { ArrowDownUp, ChevronRight, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
-
-const librarySections = [
-    {
-        title: "Sosyal Etki Raporları",
-        description: "Hangel'in ve paydaşlarının yarattığı etkiyi inceleyin.",
-        icon: FileText,
-        links: Array.from({ length: 21 }, (_, i) => ({ title: `202${3 - (i % 3)} Yılı ${['Çevre', 'Eğitim', 'Genel'][i%3]} Etki Raporu #${i + 1}`, href: "#" }))
-    },
-    {
-        title: "Gönüllülük Rehberleri",
-        description: "Gönüllülük yolculuğunuzda size yardımcı olacak kaynaklar.",
-        icon: HeartHandshake,
-        links: Array.from({ length: 21 }, (_, i) => ({ title: `Etkili Gönüllülük Kılavuzu #${i + 1}`, href: "#" }))
-    },
-    {
-        title: "STK'lar için Kaynaklar",
-        description: "STK'ların kapasitelerini geliştirmelerine yönelik kılavuzlar.",
-        icon: Building,
-        links: Array.from({ length: 21 }, (_, i) => ({ title: `Dijital Kaynak Geliştirme Yöntemleri #${i + 1}`, href: "#" }))
-    },
-    {
-        title: "Kitaplar",
-        description: "Sosyal etki ve sivil toplum alanında ilham veren kitaplar.",
-        icon: BookCopy,
-        links: Array.from({ length: 21 }, (_, i) => ({ title: `Sosyal Değişim Kitabı #${i + 1}`, href: "#" }))
-    },
-    {
-        title: "Filmler ve Belgeseller",
-        description: "Ufkunuzu genişletecek, farkındalık yaratan filmler ve belgeseller.",
-        icon: Film,
-        links: Array.from({ length: 21 }, (_, i) => ({ title: `Farkındalık Belgeseli #${i + 1}`, href: "#" }))
-    },
-    {
-        title: "Akademik Makaleler",
-        description: "Sivil toplum ve sosyal etki üzerine bilimsel çalışmalar.",
-        icon: GraduationCap,
-        links: Array.from({ length: 21 }, (_, i) => ({ title: `Sosyal Girişimcilik Makalesi #${i + 1}`, href: "#" }))
-    },
-    {
-        title: "Hangel Sözlük",
-        description: "Platforma özgü terimlerin ve kavramların açıklamaları.",
-        icon: BookOpen,
-        links: Array.from({ length: 21 }, (_, i) => ({ title: `Sosyal Etki Puanı Nedir? #${i + 1}`, href: "#" }))
-    }
-];
+import { librarySections } from '@/lib/library';
 
 export default function LibraryPage() {
   const { toast } = useToast();
@@ -118,10 +74,10 @@ export default function LibraryPage() {
                         </AccordionTrigger>
                         <AccordionContent>
                            <div className="border-t">
-                             {section.links.map(link => (
-                                <Link href={link.href} key={link.title} className="block">
+                             {section.items.map(item => (
+                                <Link href={`/library/${item.slug}`} key={item.slug} className="block">
                                     <div className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-accent/50 transition-colors">
-                                        <span className="font-medium text-sm flex-1 pr-4">{link.title}</span>
+                                        <span className="font-medium text-sm flex-1 pr-4">{item.title}</span>
                                         <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                                     </div>
                                 </Link>

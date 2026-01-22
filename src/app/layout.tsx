@@ -50,7 +50,7 @@ export default function RootLayout({
           />
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader />
-            <main className="flex-1 pt-12 pb-12 lg:pb-0">{children}</main>
+            <main className="flex-1 pt-12 pb-24 lg:pb-8">{children}</main>
           </div>
           <AppBottomNav />
         </div>

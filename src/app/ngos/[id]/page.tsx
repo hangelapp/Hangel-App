@@ -149,7 +149,7 @@ export default function NgoProfilePage() {
       </div>
 
       <Tabs defaultValue="about" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 px-2">
+        <TabsList className="flex flex-wrap justify-center h-auto p-1">
             <TabsTrigger value="about">Hakkında</TabsTrigger>
             <TabsTrigger value="opportunities">Fırsatlar</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>

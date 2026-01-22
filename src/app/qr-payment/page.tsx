@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ngos, qrPaymentCardData as cardData } from '@/lib/data';
+import { ngos, qrPaymentCardData as cardData, user } from '@/lib/data';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import {
@@ -112,6 +112,8 @@ export default function QrPaymentPage() {
   const [showCardDetails, setShowCardDetails] = useState<Record<string, boolean>>({});
   const [activatedCards, setActivatedCards] = useState<Record<string, boolean>>({ bireysel: true });
   const [showActivationDialog, setShowActivationDialog] = useState<string | null>(null);
+  const qrData = `https://hangel.org/pay/${user.username.replace('@', '')}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
   const cardToActivate = cardData.find(c => c.id === showActivationDialog);
 
@@ -249,7 +251,7 @@ export default function QrPaymentPage() {
                 <TabsContent value="my-qr" className="mt-4 text-center">
                     <div className="flex flex-col items-center gap-4">
                         <div className="bg-white p-2 rounded-lg">
-                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('https://hangel.org/pay/ismail')}`} alt="QR Code" width={150} height={150} />
+                            <Image src={qrCodeUrl} alt="QR Code" width={150} height={150} />
                         </div>
                          <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted w-full">
                             <p className="text-base font-mono font-semibold tracking-wider">h-123456</p>
@@ -465,7 +467,6 @@ export default function QrPaymentPage() {
         onClose={() => setShowActivationDialog(null)}
         onActivate={handleActivateCard}
       />
-      <div className="pb-24" />
     </div>
   );
 }
