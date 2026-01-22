@@ -202,17 +202,18 @@ export default function QrPaymentPage() {
             </div>
         </div>
         
-        <Tabs defaultValue={cardData[0].id} className="w-full" onValueChange={(value) => setActiveCardId(value ?? cardData[0].id)}>
+        <Tabs value={activeCardId} className="w-full" onValueChange={setActiveCardId}>
             <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-0 rounded-none h-auto">
                 {cardData.map((card) => (
                     <TabsTrigger
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "data-[state=inactive]:opacity-70 rounded-none rounded-t-lg p-1 text-xs font-semibold text-white focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:z-10 shadow-none",
-                             card.bgColor,
-                             activeCardId === card.id ? '' : 'bg-opacity-50',
-                             activeCardId === card.id ? 'data-[state=active]:bg-inherit' : ''
+                            "rounded-none rounded-t-lg p-1 text-xs font-semibold text-white shadow-none",
+                            "focus-visible:ring-0 focus-visible:ring-offset-0",
+                            "data-[state=active]:z-10",
+                            "data-[state=inactive]:opacity-70",
+                            card.bgColor
                         )}
                     >
                         {card.type}
@@ -246,7 +247,7 @@ export default function QrPaymentPage() {
                                     </div>
                                     <div className="relative w-full">
                                         <p className="font-mono tracking-widest text-lg mb-2">{'**** **** **** ' + card.number.slice(-4)}</p>
-                                        <div className="flex justify-between items-end">
+                                        <div className="flex justify-between items-end w-full">
                                             <div>
                                                 <p className="text-xs opacity-80">Kart Sahibi</p>
                                                 <p className="font-semibold text-sm uppercase">{card.owner}</p>
