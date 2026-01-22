@@ -1,6 +1,5 @@
-
 'use client';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -37,39 +36,21 @@ export default function SupportPage() {
         <h2 className="text-xl font-bold mb-4">Yardım Konuları</h2>
         <Card>
             <CardContent className='p-0 divide-y'>
-                <Accordion type="single" collapsible className="w-full">
                 {helpTopics.map((topic) => {
                     // @ts-ignore
                     const Icon = Icons[topic.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
                     return (
-                        <AccordionItem value={topic.slug} key={topic.slug}>
-                            <AccordionTrigger className="p-4 text-base hover:no-underline">
+                        <Link href={`/support/${topic.slug}`} key={topic.slug} className="block">
+                            <div className="flex items-center justify-between p-4 hover:bg-accent transition-colors">
                                 <div className="flex items-center gap-4">
-                                    <Icon className="h-6 w-6 text-primary" />
+                                     <Icon className="h-6 w-6 text-primary" />
                                     <p className="font-semibold">{topic.title}</p>
                                 </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-4">
-                                <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground border-t pt-4 space-y-4">
-                                    <div className='flex flex-col gap-3'>
-                                      {topic.subtopics.map(sub => (
-                                          <Link href="#" key={sub.title} className="font-medium text-foreground hover:underline">{sub.title}</Link>
-                                      ))}
-                                    </div>
-                                    <p className='text-sm mt-4'>{topic.description}</p>
-                                    <div className="mt-6 border-t pt-4 text-center">
-                                        <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
-                                        <div className="flex justify-center gap-2">
-                                            <Button variant="outline" size="sm">Evet</Button>
-                                            <Button variant="outline" size="sm">Hayır</Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
+                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                        </Link>
                     );
                 })}
-                </Accordion>
             </CardContent>
         </Card>
       </div>
@@ -80,21 +61,22 @@ export default function SupportPage() {
             <CardContent className='p-0'>
                 <Accordion type="single" collapsible className="w-full">
                   {popularArticles.map((article, index) => (
-                      <AccordionItem value={`faq-${index}`} key={article.title}>
-                          <AccordionTrigger className="p-4 text-sm font-medium hover:no-underline">
+                      <AccordionItem value={`faq-${index}`} key={article.title} className="px-4">
+                          <AccordionTrigger className="py-4 text-sm font-medium hover:no-underline">
                                {article.title}
                           </AccordionTrigger>
-                          <AccordionContent className="px-4 pb-4">
-                            <div className="text-muted-foreground pt-2 space-y-4">
+                          <AccordionContent>
+                            <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground pt-2 space-y-4">
                               {article.title === 'hangel Etki Puanı nasıl hesaplanır?' ? (
                                 <>
+                                  <p>hangel Etki Puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Puanları şu şekillerde kazanırsınız:</p>
                                   <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
                                       <li>Anlaşmalı markalardan yaptığın her alışverişle.</li>
                                       <li>Gönüllülük faaliyetlerini tamamlayarak.</li>
                                       <li>Platforma yeni arkadaşlarını davet ederek.</li>
                                       <li>Rozetler kazanarak ve seviye atlayarak.</li>
                                   </ul>
-                                  <Accordion type="single" collapsible className="w-full mt-2">
+                                  <Accordion type="single" collapsible className="w-full mt-4">
                                       <AccordionItem value="puan-cetveli" className="border-t">
                                           <AccordionTrigger className="text-sm">Puan Cetvelini Gör</AccordionTrigger>
                                           <AccordionContent>
@@ -162,8 +144,9 @@ export default function SupportPage() {
           </Button>
         </div>
       </div>
+      <footer className="pt-8 pb-4 text-center text-xs text-muted-foreground">
+        <p>® hangel.org v.12</p>
+      </footer>
     </div>
   );
 }
-
-    
