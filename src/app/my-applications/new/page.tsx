@@ -50,6 +50,13 @@ const districts: { [key: string]: string[] } = {
     'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Kınık', 'Kiraz', 'Konak', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
 };
 
+const neighborhoods: { [key: string]: string[] } = {
+    'Kadıköy': ['Caferağa', 'Osmanağa', 'Rasimpaşa', 'Moda', 'Fenerbahçe'],
+    'Çankaya': ['Kızılay', 'Kavaklıdere', 'Maltepe', 'Bahçelievler'],
+    'Konak': ['Alsancak', 'Göztepe', 'Hatay', 'Basmane'],
+    'Beşiktaş': ['Levent', 'Etiler', 'Bebek', 'Arnavutköy'],
+};
+
 const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => {
     return (
         <div className="space-y-2">
@@ -87,8 +94,15 @@ export default function NewApplicationPage() {
   const [aboutText, setAboutText] = React.useState("");
   const ABOUT_MAX_LENGTH = 1000;
   const [officeCity, setOfficeCity] = useState('');
+  const [officeDistrict, setOfficeDistrict] = useState('');
   const [mailCity, setMailCity] = useState('');
+  const [mailDistrict, setMailDistrict] = useState('');
   const [sameAsOffice, setSameAsOffice] = useState(false);
+  
+  // States for Club form
+  const [clubCity, setClubCity] = useState('');
+  const [clubDistrict, setClubDistrict] = useState('');
+
 
   const renderFormFields = () => {
     switch (applicationType) {
@@ -168,7 +182,7 @@ export default function NewApplicationPage() {
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="office-district">İlçe</Label>
-                            <Select disabled={!officeCity}>
+                            <Select onValueChange={setOfficeDistrict} disabled={!officeCity}>
                                 <SelectTrigger id="office-district"><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
                                 <SelectContent>
                                     {officeCity && districts[officeCity] && districts[officeCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -176,13 +190,20 @@ export default function NewApplicationPage() {
                             </Select>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="office-neighborhood">Mahalle</Label>
-                        <Input id="office-neighborhood" placeholder="Mahalle adı"/>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="office-address">Açık Adres (Sokak, Kapı No vb.)</Label>
-                        <Input id="office-address" placeholder="Açık adres"/>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="office-neighborhood">Mahalle</Label>
+                             <Select disabled={!officeDistrict}>
+                                <SelectTrigger id="office-neighborhood"><SelectValue placeholder="Mahalle seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {officeDistrict && neighborhoods[officeDistrict] && neighborhoods[officeDistrict].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="office-address">Açık Adres (Sokak, Kapı No vb.)</Label>
+                            <Input id="office-address" placeholder="Açık adres"/>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -210,7 +231,7 @@ export default function NewApplicationPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="mail-district">İlçe</Label>
-                                <Select disabled={!mailCity}>
+                                <Select onValueChange={setMailDistrict} disabled={!mailCity}>
                                     <SelectTrigger id="mail-district"><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {mailCity && districts[mailCity] && districts[mailCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -218,13 +239,20 @@ export default function NewApplicationPage() {
                                 </Select>
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="mail-neighborhood">Mahalle</Label>
-                            <Input id="mail-neighborhood" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="mail-address">Açık Adres (Sokak, Kapı No vb.)</Label>
-                            <Input id="mail-address" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="mail-neighborhood">Mahalle</Label>
+                                 <Select disabled={!mailDistrict}>
+                                    <SelectTrigger id="mail-neighborhood"><SelectValue placeholder="Mahalle seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {mailDistrict && neighborhoods[mailDistrict] && neighborhoods[mailDistrict].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="mail-address">Açık Adres (Sokak, Kapı No vb.)</Label>
+                                <Input id="mail-address" placeholder="Açık adres" />
+                            </div>
                         </div>
                     </>
                     )}
@@ -286,50 +314,92 @@ export default function NewApplicationPage() {
         );
       case 'Öğrenci Kulübü Kayıt Başvurusu':
         return (
-            <Card>
-                <CardHeader><CardTitle>Kulüp Bilgileri</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label>Kulüp Türü</Label>
-                        <Select onValueChange={(value: 'university' | 'high-school') => setClubSchoolType(value)}>
-                            <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="university">Üniversite</SelectItem>
-                                <SelectItem value="high-school">Lise</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    
-                    {clubSchoolType === 'university' && (
-                         <div className="space-y-2">
-                            <Label>Üniversite</Label>
-                            <Select><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger><SelectContent>
-                                {universities.map(uni => <SelectItem key={uni} value={uni}>{uni}</SelectItem>)}
-                            </SelectContent></Select>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader><CardTitle>Kulüp Temel Bilgileri</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Kulüp Türü</Label>
+                            <Select onValueChange={(value: 'university' | 'high-school') => setClubSchoolType(value)}>
+                                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="university">Üniversite</SelectItem>
+                                    <SelectItem value="high-school">Lise</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                    )}
-
-                    {clubSchoolType === 'high-school' && (
-                        <div className='space-y-4'>
+                        
+                        {clubSchoolType === 'university' && (
                             <div className="space-y-2">
-                                <Label>İl</Label>
-                                 <Select><SelectTrigger><SelectValue placeholder="İl seçin..." /></SelectTrigger><SelectContent>
-                                    {provinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                <Label>Üniversite</Label>
+                                <Select><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger><SelectContent>
+                                    {universities.map(uni => <SelectItem key={uni} value={uni}>{uni}</SelectItem>)}
                                 </SelectContent></Select>
                             </div>
-                            <div className="space-y-2"><Label>İlçe</Label><Input placeholder="İlçe adı" /></div>
-                            <div className="space-y-2"><Label>Lise Adı</Label><Input placeholder="Lisenizin tam adı" /></div>
-                        </div>
-                    )}
-                    
-                    <div className="space-y-2"><Label>Kulüp Adı</Label><Input placeholder="Kulübünüzün tam adı" /></div>
-                    <div className="space-y-2"><Label>Kulüp Açıklaması</Label><Textarea placeholder="Kulübünüzün faaliyetlerini ve amacını açıklayın." /></div>
-                    <div className="space-y-2"><Label>Vizyon</Label><Textarea placeholder="Kulübünüzün vizyonunu paylaşın." /></div>
-                    <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="kulup@okul.edu.tr" /></div>
-                    <FileUpload label="Kulüp Logosu" />
-                    <FileUpload label="Kapak Fotoğrafı" />
-                </CardContent>
-            </Card>
+                        )}
+
+                        {clubSchoolType === 'high-school' && (
+                            <div className='space-y-4'>
+                                <div className="space-y-2">
+                                    <Label>İl</Label>
+                                    <Select onValueChange={setClubCity}>
+                                        <SelectTrigger><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                                        <SelectContent>{provinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>İlçe</Label>
+                                    <Select onValueChange={setClubDistrict} disabled={!clubCity}>
+                                        <SelectTrigger><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
+                                        <SelectContent>{clubCity && districts[clubCity] && districts[clubCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label>Lise Adı</Label><Input placeholder="Lisenizin tam adı" />
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="space-y-2"><Label>Kulüp Adı</Label><Input placeholder="Kulübünüzün tam adı" /></div>
+                        <div className="space-y-2"><Label>Kulüp Açıklaması</Label><Textarea placeholder="Kulübünüzün faaliyetlerini ve amacını açıklayın." /></div>
+                        <div className="space-y-2"><Label>Vizyon</Label><Textarea placeholder="Kulübünüzün vizyonunu paylaşın." /></div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>Kulüp İletişim Bilgileri</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="kulup@okul.edu.tr" /></div>
+                        <div className="space-y-2"><Label>Telefon Numarası (İsteğe Bağlı)</Label><Input type="tel" placeholder="+90..." /></div>
+                        <div className="space-y-2"><Label>Web Sitesi (İsteğe Bağlı)</Label><Input placeholder="https://kulup.org" /></div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle>Sosyal Medya Hesapları</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2"><Label htmlFor="social-twitter" className="text-xs">Twitter (X)</Label><div className='flex items-center gap-2'><Twitter className='h-5 w-5 text-muted-foreground' /><Input id="social-twitter" placeholder="Kullanıcı Adı" /></div></div>
+                        <div className="space-y-2"><Label htmlFor="social-instagram" className="text-xs">Instagram</Label><div className='flex items-center gap-2'><Instagram className='h-5 w-5 text-muted-foreground' /><Input id="social-instagram" placeholder="Kullanıcı Adı" /></div></div>
+                        <div className="space-y-2"><Label htmlFor="social-facebook" className="text-xs">Facebook</Label><div className='flex items-center gap-2'><Facebook className='h-5 w-5 text-muted-foreground' /><Input id="social-facebook" placeholder="Sayfa Adı" /></div></div>
+                        <div className="space-y-2"><Label htmlFor="social-linkedin" className="text-xs">LinkedIn</Label><div className='flex items-center gap-2'><Linkedin className='h-5 w-5 text-muted-foreground' /><Input id="social-linkedin" placeholder="Sayfa Adı" /></div></div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle>Yönetim Bilgileri</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                         <div className="space-y-2"><Label>Kulüp Başkanı Adı</Label><Input placeholder="Başkanın adı ve soyadı" /></div>
+                         <div className="space-y-2">
+                             <Label>Yönetim Kurulu Üyeleri</Label>
+                             <Textarea placeholder="Her üyeyi yeni bir satıra 'İsim Soyisim - Rol' formatında yazınız." rows={5} />
+                         </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>Görseller</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <FileUpload label="Kulüp Logosu" />
+                        <FileUpload label="Kapak Fotoğrafı" />
+                    </CardContent>
+                </Card>
+            </div>
         );
       case 'Marka Kayıt Başvurusu':
         return (
