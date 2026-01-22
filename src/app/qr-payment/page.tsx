@@ -384,8 +384,8 @@ export default function QrPaymentPage() {
           <Accordion type="single" collapsible className="w-full">
               {donationTransactions.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
-                const tax = donationAmount * 0.20;
-                const netDonationAfterTaxes = donationAmount - tax;
+                const gelirVergisi = donationAmount * 0.20;
+                const netDonationAfterTaxes = donationAmount - gelirVergisi;
                 const ngoShare = netDonationAfterTaxes / 1.1;
                 const hangelShare = ngoShare * 0.10;
 
@@ -421,8 +421,12 @@ export default function QrPaymentPage() {
                                     <span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                                 </div>
                                 <div className='flex justify-between text-xs'>
+                                    <span className='text-muted-foreground'>Gelir Vergisi (%20)</span>
+                                    <span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                                </div>
+                                <div className='flex justify-between text-xs'>
                                     <span className='text-muted-foreground'>KDV (%20)</span>
-                                    <span>{tax.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                                    <span>{(0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                                 </div>
                                 <div className='flex justify-between text-xs'>
                                     <span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span>
