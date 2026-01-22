@@ -1,6 +1,12 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChevronRight, BookOpen, FileText, HeartHandshake, Building, Film, GraduationCap, BookCopy } from 'lucide-react';
+import { ChevronRight, BookOpen, FileText, HeartHandshake, Building, Film, GraduationCap, BookCopy, Search, Filter, ArrowDownUp } from 'lucide-react';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 const librarySections = [
     {
@@ -77,11 +83,45 @@ const librarySections = [
 
 
 export default function LibraryPage() {
+  const { toast } = useToast();
+
+  const handleAction = (actionName: string) => {
+    toast({
+        title: 'Özellik Yakında!',
+        description: `${actionName} özelliği yakında aktif olacaktır.`
+    });
+  };
+
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
       <div className="text-center">
         <h1 className="text-3xl font-bold font-headline">Kütüphane</h1>
         <p className="mt-2 text-muted-foreground">Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları keşfedin.</p>
+      </div>
+
+       <div className="p-0 flex gap-2 items-center max-w-lg mx-auto">
+            <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder="Kaynaklarda ara..."
+                    className="pl-10 h-11"
+                />
+            </div>
+            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => handleAction('Filtreleme')}>
+                <Filter className="h-5 w-5" />
+            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                        <ArrowDownUp className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleAction('Tarihe göre sıralama')}>Tarihe Göre (En Yeni)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleAction('Popülerliğe göre sıralama')}>Popülerliğe Göre</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleAction('Alfabetik sıralama')}>Alfabetik (A-Z)</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
       </div>
 
       <div className="space-y-6">
