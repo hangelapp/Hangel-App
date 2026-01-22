@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Upload, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
+import { Upload, Twitter, Instagram, Facebook, Linkedin, Switch } from 'lucide-react';
 import Link from 'next/link';
 
 type ApplicationType = 'STK Kayıt Başvurusu' | 'Öğrenci Kulübü Kayıt Başvurusu' | 'Marka Kayıt Başvurusu' | 'Okul Temsilciliği Başvurusu' | '';
@@ -18,7 +18,9 @@ const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversites
 const provinces = ['İstanbul', 'Ankara', 'İzmir'];
 
 // Updated data from user request
-const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre'];
+const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel'];
+const allActivityAreas = ['Çevre', 'Hayvanlar', 'Hukuk, İnsan Hakları ve Politika Geliştirme', 'Kültür, Sanat ve Spor', 'Sağlık', 'Eğitim', 'Dini Hizmetler', 'Ekonomik, Sosyal ve Toplumsal Gelişim', 'Sosyal Hizmetler', 'Uluslararası', 'Bilim ve Teknoloji'];
+
 const allSdgs = [
     '1. Yoksulluğa Son', 
     '2. Açlığa Son', 
@@ -96,6 +98,10 @@ export default function NewApplicationPage() {
                 <CardHeader><CardTitle>Kuruluş Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2"><Label>Kuruluş Adı</Label><Input placeholder="Kuruluşunuzun tam adı" /></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2"><Label>Kuruluş Kısa Adı</Label><Input placeholder="Örn: TEMA" /></div>
+                        <div className="space-y-2"><Label>Kuruluş Yılı</Label><Input type="number" placeholder="Örn: 1992" /></div>
+                    </div>
                     <div className="space-y-2">
                       <Label>Kuruluş Türü</Label>
                       <Select>
@@ -128,6 +134,12 @@ export default function NewApplicationPage() {
                     <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
                     <CheckboxGroup title="Birleşmiş Milletler 17 Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader><CardTitle>Ana Faaliyet Alanları</CardTitle></CardHeader>
+                <CardContent>
+                    <CheckboxGroup title="" options={allActivityAreas} />
                 </CardContent>
             </Card>
             <Card>
@@ -222,6 +234,17 @@ export default function NewApplicationPage() {
                 <CardHeader><CardTitle>Banka Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2"><Label>Banka IBAN Numarası</Label><Input placeholder="TR..." /></div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Online Bağış</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                       <Label htmlFor="online-donation-switch" className="font-medium">Online bağış kabul ediyor musunuz?</Label>
+                       <Switch id="online-donation-switch" />
+                    </div>
                 </CardContent>
             </Card>
              <Card>
