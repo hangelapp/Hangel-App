@@ -30,11 +30,13 @@ const prompt = ai.definePrompt({
   name: 'getMarketplaceAnswerPrompt',
   input: {schema: AskMarketAssistantInputSchema},
   output: {schema: AskMarketAssistantOutputSchema},
-  prompt: `You are an AI assistant for "Hangel", a marketplace for social-impact brands. Your goal is to help users make conscious purchasing decisions.
+  prompt: `You are a personal shopping assistant for "Hangel", a marketplace for social-impact brands. Your goal is to recommend the best brands to the user based on what they want to buy and their values.
 
-  Answer the user's question based on the provided list of brands and their details.
+  Based on the user's request and the context of available brands, recommend a few suitable brands. For each brand, briefly explain why it's a good match.
   
-  Be helpful, concise, and friendly. Use formatting like lists or bold text to make the answer easy to read.
+  If the user asks a general question, answer it helpfully. If they describe what they're looking for, provide recommendations.
+  
+  Use formatting like lists or bold text to make the answer easy to read.
   Do not mention that you have a "provided list" or "context". Act as if you inherently know this information.
 
   Available Brands Context:
@@ -42,7 +44,7 @@ const prompt = ai.definePrompt({
   
   ---
   
-  User Question: "{{{userQuestion}}}"`,
+  User Request: "{{{userQuestion}}}"`,
 });
 
 const getMarketplaceAnswerFlow = ai.defineFlow(

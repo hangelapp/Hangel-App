@@ -234,9 +234,9 @@ export default function MarketPage() {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
-                        <DialogTitle>Market Asistanı</DialogTitle>
+                        <DialogTitle>Yapay Zeka Alışveriş Asistanı</DialogTitle>
                         <DialogDescription>
-                            Alışverişinizle ilgili sorularınızı yapay zeka asistanına sorun.
+                            Ne aradığınızı yazın, asistanımız size en uygun sosyal etki odaklı markaları önersin.
                         </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
@@ -261,13 +261,13 @@ export default function MarketPage() {
                             )}
                             <div className="flex items-center gap-2">
                                 <Input
-                                    placeholder="Sürdürülebilir markalar hangileri?"
+                                    placeholder="Sürdürülebilir bir koşu ayakkabısı arıyorum..."
                                     value={assistantQuestion}
                                     onChange={(e) => setAssistantQuestion(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
                                     disabled={isAssistantLoading}
                                 />
-                                <Button onClick={handleAskAssistant} disabled={isAssistantLoading}>Sor</Button>
+                                <Button onClick={handleAskAssistant} disabled={isAssistantLoading}>Öneri Al</Button>
                             </div>
                         </div>
                     </DialogContent>
