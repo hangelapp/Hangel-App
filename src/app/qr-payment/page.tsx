@@ -461,7 +461,7 @@ export default function QrPaymentPage() {
                             <div className="flex-1 text-left">
                                 <p>{donation.brand}</p>
                                 <p className="text-xs text-muted-foreground">
-                                    {format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}
+                                    {format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}
                                 </p>
                             </div>
                             <div className="text-right">
@@ -486,7 +486,7 @@ export default function QrPaymentPage() {
                                     <span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                                 </div>
                                 <div className='flex justify-between text-xs'>
-                                    <span className='text-muted-foreground'>Vergi (%20)</span>
+                                    <span className='text-muted-foreground'>KDV (%20)</span>
                                     <span>{tax.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                                 </div>
                                 <div className='flex justify-between text-xs'>
@@ -503,7 +503,7 @@ export default function QrPaymentPage() {
                                 <div className='flex justify-between items-center text-xs pt-2'>
                                     <div>
                                         <span className='text-muted-foreground'>İşlem Tarihi: </span>
-                                        <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy - HH:mm', { locale: tr })}</span>
+                                        <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}</span>
                                     </div>
                                     <div className="flex">
                                         <Button size="icon" variant="ghost" onClick={() => handleActionClick('görüntüleme')}><Eye className="h-4 w-4"/></Button>

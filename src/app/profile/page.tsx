@@ -131,13 +131,12 @@ export default function ProfilePage() {
                     <p className="text-lg text-muted-foreground">{user.username}</p>
                 </div>
                 <Tabs defaultValue="impact" className="w-full">
-                    <TabsList className="grid w-full grid-cols-6 px-2">
+                    <TabsList className="grid w-full grid-cols-5 px-2">
                         <TabsTrigger value="impact">Etki</TabsTrigger>
                         <TabsTrigger value="about">Hakkında</TabsTrigger>
                         <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
-                        <TabsTrigger value="badges">Rozetler</TabsTrigger>
-                        <TabsTrigger value="certificates">Sertifikalar</TabsTrigger>
-                        <TabsTrigger value="posts">Gönderiler</TabsTrigger>
+                        <TabsTrigger value="badges-certificates">Rozetler & Sertifikalar</TabsTrigger>
+                        <TabsTrigger value="posts">Gönderi</TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="impact" className="p-4 space-y-4">
@@ -279,21 +278,18 @@ export default function ProfilePage() {
                         </Card>
                     </TabsContent>
                     
-                    <TabsContent value="badges" className="p-4">
+                    <TabsContent value="badges-certificates" className="p-4 space-y-4">
                         <Card>
                             <CardHeader><CardTitle className='text-lg'>Kazanılan Rozetler</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-3 gap-4">
                                 {badges.slice(0, 6).map(badge => <BadgeDisplay key={badge.id} badge={badge} />)}
                             </CardContent>
-                            <CardFooter className='pt-4'>
+                             <CardFooter className='pt-4'>
                                  <Button asChild variant="secondary" className='w-full'>
                                      <Link href="/my-badges">Tüm Rozetleri ve Sertifikaları Gör</Link>
                                 </Button>
                             </CardFooter>
                         </Card>
-                    </TabsContent>
-                    
-                    <TabsContent value="certificates" className="p-4">
                          <Card>
                             <CardHeader><CardTitle className='text-lg'>Sertifikalarım</CardTitle></CardHeader>
                             <CardContent>
@@ -319,11 +315,6 @@ export default function ProfilePage() {
                                 </div>
                             )}
                             </CardContent>
-                              <CardFooter className='pt-4'>
-                                 <Button asChild variant="secondary" className='w-full'>
-                                     <Link href="/my-badges">Tüm Rozetleri ve Sertifikaları Gör</Link>
-                                </Button>
-                            </CardFooter>
                         </Card>
                     </TabsContent>
 

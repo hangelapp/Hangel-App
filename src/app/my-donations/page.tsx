@@ -112,7 +112,7 @@ export default function MyDonationsPage() {
                         <div className="flex-1 text-left">
                             <p>{donation.brand}</p>
                             <p className="text-xs text-muted-foreground">
-                                {donation.ngo && donation.ngo.length > 0 ? donation.ngo.join(', ') : format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}
+                                {donation.ngo && donation.ngo.length > 0 ? donation.ngo.join(', ') : `${format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - ${donation.time}`}
                             </p>
                         </div>
                         <div className="text-right">
@@ -137,7 +137,7 @@ export default function MyDonationsPage() {
                             <span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                          <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>Vergi (%20)</span>
+                            <span className='text-muted-foreground'>KDV (%20)</span>
                             <span>{tax.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                          <div className='flex justify-between text-xs'>
@@ -145,14 +145,14 @@ export default function MyDonationsPage() {
                             <span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                         <Separator />
-                        <div className='flex justify-between text-xs mt-2'>
+                        <div className='flex justify-between items-center text-xs mt-2'>
                             <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
                             <span className="text-right">{donation.ngo.join(', ')}</span>
                         </div>
                         <div className='flex justify-between items-center text-xs'>
                             <div>
                                 <span className='text-muted-foreground'>İşlem Tarihi: </span>
-                                <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy - HH:mm', { locale: tr })}</span>
+                                <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}</span>
                             </div>
                             <div className="flex">
                                 <Button size="icon" variant="ghost" onClick={() => handleActionClick('görüntüleme')}><Eye className="h-4 w-4"/></Button>
