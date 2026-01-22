@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2 } from 'lucide-react';
 import { donationTransactions } from '@/lib/data';
@@ -13,12 +14,14 @@ import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 
+type SortKey = 'date' | 'purchaseAmount' | 'donationAmount';
 type SortDirection = 'desc' | 'asc';
 type FilterType = 'all' | 'income' | 'expense';
 
 export default function MyDonationsPage() {
   const { toast } = useToast();
-  const [transactions, setTransactions] = useState(donationTransactions);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
   const [filterType, setFilterType] = useState<FilterType>('all');
 
@@ -33,20 +36,27 @@ export default function MyDonationsPage() {
     .filter(tx => tx.type === 'expense')
     .reduce((acc, curr) => acc + parseFloat(curr.donationAmount), 0);
 
-  const toggleSortDirection = () => {
-    setSortDir(current => (current === 'desc' ? 'asc' : 'desc'));
-  };
-
-  const sortedAndFilteredDonations = transactions
+  const sortedAndFilteredDonations = useMemo(() => {
+    return donationTransactions
     .filter(tx => {
-        if (filterType === 'all') return true;
-        return tx.type === filterType;
+        const matchesFilter = filterType === 'all' || tx.type === filterType;
+        const matchesSearch = searchTerm === '' || 
+                              tx.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              tx.ngo.join(', ').toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesFilter && matchesSearch;
     })
     .sort((a, b) => {
-      const dateA = parse(a.date, 'yyyy-MM-dd', new Date()).getTime();
-      const dateB = parse(b.date, 'yyyy-MM-dd', new Date()).getTime();
-      return sortDir === 'desc' ? dateB - dateA : dateA - dateB;
+        let comparison = 0;
+        if (sortKey === 'date') {
+            const dateA = parse(`${a.date} ${a.time}`, 'yyyy-MM-dd HH:mm', new Date()).getTime();
+            const dateB = parse(`${b.date} ${b.time}`, 'yyyy-MM-dd HH:mm', new Date()).getTime();
+            comparison = dateA - dateB;
+        } else {
+            comparison = parseFloat(a[sortKey]) - parseFloat(b[sortKey]);
+        }
+        return sortDir === 'desc' ? -comparison : comparison;
     });
+  }, [filterType, searchTerm, sortKey, sortDir]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -71,7 +81,12 @@ export default function MyDonationsPage() {
                 <div className="flex justify-between items-center gap-2">
                     <div className="relative w-full">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Ara..." className="pl-8 text-sm h-9 w-full" />
+                        <Input 
+                          placeholder="Ara..." 
+                          className="pl-8 text-sm h-9 w-full"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
                     <div className='flex'>
                         <DropdownMenu>
@@ -80,15 +95,27 @@ export default function MyDonationsPage() {
                               <Filter className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent>
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setFilterType('all')}>Tümü</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setFilterType('income')}>Gelir</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setFilterType('expense')}>Gider</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        <Button variant="ghost" size="icon" onClick={toggleSortDirection}>
-                            <ArrowDownUp className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <ArrowDownUp className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('desc'); }}>Tarihe Göre (En Yeni)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('asc'); }}>Tarihe Göre (En Eski)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('desc'); }}>Alışveriş Tutarı (Azalan)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('asc'); }}>Alışveriş Tutarı (Artan)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSortKey('donationAmount'); setSortDir('desc'); }}>Bağış Tutarı (Azalan)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSortKey('donationAmount'); setSortDir('asc'); }}>Bağış Tutarı (Artan)</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </div>
@@ -175,3 +202,5 @@ export default function MyDonationsPage() {
     </div>
   );
 }
+
+    

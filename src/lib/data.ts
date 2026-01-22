@@ -69,8 +69,8 @@ export const user: User = {
                     phone: "+90 555 987 65 43"
                 },
                 {
-                    name: "",
-                    phone: ""
+                    name: "Ahmet Yılmaz",
+                    phone: "+90 555 123 45 67"
                 }
             ]
         }
@@ -147,7 +147,7 @@ export const timelinePosts: Post[] = Array.from({ length: 21 }, (_, i) => ({
   timestamp: `${i + 1} saat önce`,
   likes: Math.floor(Math.random() * 500) + 50,
   comments: Math.floor(Math.random() * 50) + 5,
-  sponsored: i % 5 === 2,
+  sponsored: i === 0,
 }));
 
 export const volunteeringOpportunities: Volunteering[] = [
@@ -1113,5 +1113,7 @@ export const qrPaymentCardData = [
   },
 ];
   
+
+    
 
     

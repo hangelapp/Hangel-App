@@ -36,12 +36,14 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
         setIsMounted(true);
     }, []);
     
-    const handleReportClick = (type: 'disaster' | 'blood') => {
+    const handleReportClick = (type: 'disaster' | 'blood', details?: string) => {
+        let description = type === 'blood'
+            ? 'Kan ihtiyacı çağrısı oluşturuluyor.'
+            : `${details} durumu ilgili birimlere iletiliyor.`;
+
         toast({
             title: 'Bildirim Gönderiliyor...',
-            description: type === 'disaster' 
-                ? 'Afet durumu ilgili birimlere iletiliyor.' 
-                : 'Kan ihtiyacı çağrısı oluşturuluyor.',
+            description: description,
         });
         setIsOpen(false);
     };
@@ -80,10 +82,40 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                         Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ile paylaşılacaktır.
                       </AlertDescription>
                     </Alert>
-                    <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster')}>
-                      <Megaphone className="mr-2 h-4 w-4" />
-                      Afet Bildiriminde Bulun
-                    </Button>
+                    <Tabs defaultValue="deprem" className="w-full">
+                        <TabsList className="grid w-full grid-cols-5 h-auto flex-wrap">
+                            <TabsTrigger value="deprem" className="text-xs p-1">Deprem</TabsTrigger>
+                            <TabsTrigger value="sel" className="text-xs p-1">Sel</TabsTrigger>
+                            <TabsTrigger value="yangin" className="text-xs p-1">Yangın</TabsTrigger>
+                            <TabsTrigger value="kaza" className="text-xs p-1">Kaza</TabsTrigger>
+                            <TabsTrigger value="kayip" className="text-xs p-1">Kayıp</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="deprem" className="mt-4">
+                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Deprem')}>
+                                <Megaphone className="mr-2 h-4 w-4" /> Deprem Bildir
+                            </Button>
+                        </TabsContent>
+                        <TabsContent value="sel" className="mt-4">
+                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Sel')}>
+                                <Megaphone className="mr-2 h-4 w-4" /> Sel Bildir
+                            </Button>
+                        </TabsContent>
+                        <TabsContent value="yangin" className="mt-4">
+                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Yangın')}>
+                                <Megaphone className="mr-2 h-4 w-4" /> Yangın Bildir
+                            </Button>
+                        </TabsContent>
+                        <TabsContent value="kaza" className="mt-4">
+                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Kaza')}>
+                                <Megaphone className="mr-2 h-4 w-4" /> Kaza Bildir
+                            </Button>
+                        </TabsContent>
+                        <TabsContent value="kayip" className="mt-4">
+                            <Button variant="destructive" className="w-full" onClick={() => handleReportClick('disaster', 'Kayıp')}>
+                                <Megaphone className="mr-2 h-4 w-4" /> Kayıp Bildir
+                            </Button>
+                        </TabsContent>
+                    </Tabs>
                 </CardContent>
             </Card>
              <Card>
@@ -147,3 +179,5 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
     </Dialog>
   );
 }
+
+    
