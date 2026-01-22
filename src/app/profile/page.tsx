@@ -131,13 +131,15 @@ export default function ProfilePage() {
                     <p className="text-lg text-muted-foreground">{user.username}</p>
                 </div>
                 <Tabs defaultValue="impact" className="w-full">
-                    <TabsList className="grid w-full grid-cols-5 px-2">
-                        <TabsTrigger value="impact">Etki</TabsTrigger>
-                        <TabsTrigger value="about">Hakkında</TabsTrigger>
-                        <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
-                        <TabsTrigger value="badges-certificates">Rozetler & Sertifikalar</TabsTrigger>
-                        <TabsTrigger value="posts">Gönderi</TabsTrigger>
-                    </TabsList>
+                    <div className="flex justify-center">
+                        <TabsList className="h-auto p-1 flex-wrap">
+                            <TabsTrigger value="impact">Etki</TabsTrigger>
+                            <TabsTrigger value="about">Hakkında</TabsTrigger>
+                            <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
+                            <TabsTrigger value="badges-certificates">Rozetler & Sertifikalar</TabsTrigger>
+                            <TabsTrigger value="posts">Gönderi</TabsTrigger>
+                        </TabsList>
+                    </div>
                     
                     <TabsContent value="impact" className="p-4 space-y-4">
                         <Card className="text-center">
