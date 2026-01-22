@@ -36,7 +36,7 @@ export const librarySections: LibrarySection[] = [
             const contents = [
                 '<h4>1. İlgi Alanlarını Belirle</h4><p>Hangi alanda (çevre, eğitim, hayvan hakları vb.) etki yaratmak istediğini düşün.</p><h4>2. Zamanını Planla</h4><p>Ne kadar süre ayırabileceğini gerçekçi bir şekilde değerlendir.</p><h4>3. Araştırma Yap</h4><p>İlgili alanda çalışan STK\'ları ve projelerini incele.</p><h4>4. Başvur ve İletişime Geç</h4><p>Kendini ve motivasyonunu iyi ifade eden bir başvuru yap.</p><h4>5. Geri Bildirimde Bulun</h4><p>Deneyimlerini hem STK ile hem de çevrenle paylaşarak daha fazla insana ilham ver.</p>',
                 '<h4>1. Neden Başladığını Hatırla</h4><p>Gönüllülüğe başlarkenki ilk motivasyonunu ve hedeflerini kendine hatırlat.</p><h4>2. Küçük Başarıları Kutla</h4><p>Yarattığın etkinin her adımını fark et ve kendini takdir et.</p><h4>3. Toplulukla Bağlantıda Kal</h4><p>Diğer gönüllülerle deneyimlerini paylaşmak motivasyonunu artıracaktır.</p>',
-                '<h4>1. Şeffaflığı Kontrol Et</h4><p>STK\'nın web sitesini, faaliyet ve mali raporlarını incele. Hangel üzerindeki şeffaflık puanı iyi bir göstergedir.</p><h4>2. Misyon ve Vizyonunu Anla</h4><p>Kuruluşun amacı ve değerleri senin kendi değerlerinle örtüşüyor mu?</p><h4>3. Gönüllü Yorumlarını Oku</h4><p>Daha önce o STK\'da gönüllülük yapmış kişilerin deneyimlerini araştır.</p>'
+                '<h4>1. Şeffaflığı Kontrol Et</h4><p>STK\'nın web sitesini, faaliyet ve raporlarını incele. Hangel üzerindeki şeffaflık puanı iyi bir göstergedir.</p><h4>2. Misyon ve Vizyonunu Anla</h4><p>Kuruluşun amacı ve değerleri senin kendi değerlerinle örtüşüyor mu?</p><h4>3. Gönüllü Yorumlarını Oku</h4><p>Daha önce o STK\'da gönüllülük yapmış kişilerin deneyimlerini araştır.</p>'
             ];
             return {
                 slug: `gonulluluk-rehberi-${i + 1}`,
@@ -84,19 +84,38 @@ export const librarySections: LibrarySection[] = [
         })
     },
     {
-        slug: 'filmler-ve-belgeseller',
-        title: "Filmler ve Belgeseller",
-        description: "Ufkunuzu genişletecek, farkındalık yaratan filmler ve belgeseller.",
+        slug: 'filmler',
+        title: "Filmler",
+        description: "Toplumsal konulara değinen ve ilham veren kurmaca filmler.",
         icon: Film,
         items: Array.from({ length: 21 }, (_, i) => {
-            const titles = ["The Social Dilemma (Sosyal İkilem)", "An Inconvenient Truth (Uygunsuz Gerçek)", "Inside Job (İç İşler)"];
+            const titles = ["Captain Fantastic (2016)", "The Boy Who Harnessed the Wind (2019)", "Erin Brockovich (2000)"];
             const contents = [
-                '<h5>2020</h5><p>Sosyal medyanın toplum ve bireyler üzerindeki etkilerini, onu tasarlayanların gözünden anlatan düşündürücü bir belgesel.</p>',
-                '<h5>2006</h5><p>Al Gore\'un iklim değişikliği ve küresel ısınma konusundaki sunumlarını içeren ve bu konuda küresel bir farkındalık yaratan Oscar ödüllü bir belgesel.</p>',
-                '<h5>2010</h5><p>2008 küresel finansal krizinin perde arkasını anlatan ve sistemik sorunlara dikkat çeken, Oscar ödüllü bir belgesel.</p>'
+                '<h5>Viggo Mortensen</h5><p>Modern toplumdan izole bir şekilde 6 çocuğunu yetiştiren bir babanın hikayesi. Tüketim kültürü, eğitim sistemi ve modern yaşam üzerine bir eleştiri.</p>',
+                '<h5>Chiwetel Ejiofor</h5><p>Kuraklıkla boğuşan köyünü kurtarmak için rüzgar türbini inşa eden Malavili bir gencin gerçek hikayesi. Azim, eğitim ve toplumsal değişim.</p>',
+                '<h5>Julia Roberts</h5><p>Bir şirketin neden olduğu çevre kirliliğine karşı tek başına hukuk mücadelesi veren bir kadının gerçek hikayesi. Adalet, sivil aktivizm ve kararlılık.</p>'
             ];
             return {
                 slug: `film-${i+1}`,
+                title: `${titles[i % titles.length]}`,
+                content: contents[i % contents.length]
+            }
+        })
+    },
+    {
+        slug: 'belgeseller',
+        title: "Belgeseller",
+        description: "Gerçek hikayelerle dünyaya farklı bir gözle bakmanızı sağlayacak belgeseller.",
+        icon: Film,
+        items: Array.from({ length: 21 }, (_, i) => {
+            const titles = ["Seaspiracy (2021)", "The Minimalists: Less Is Now (2021)", "I Am Not Your Negro (2016)"];
+            const contents = [
+                '<h5>Ali Tabrizi</h5><p>Ticari balıkçılığın okyanus ekosistemleri üzerindeki yıkıcı etkisini gözler önüne seren bir belgesel.</p>',
+                '<h5>Matt D\'Avella</h5><p>Tüketim kültürüne karşı minimalist bir yaşam tarzını savunan Joshua Fields Millburn ve Ryan Nicodemus\'un hikayesi.</p>',
+                '<h5>Raoul Peck</h5><p>Yazar James Baldwin\'in bitmemiş eseri üzerinden Amerika\'daki ırkçılığın tarihini ve bugününü anlatan güçlü bir belgesel.</p>'
+            ];
+            return {
+                slug: `belgesel-${i+1}`,
                 title: `${titles[i % titles.length]}`,
                 content: contents[i % contents.length]
             }
