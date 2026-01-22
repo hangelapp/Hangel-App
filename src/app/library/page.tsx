@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChevronRight, BookOpen, FileText, HeartHandshake, Building } from 'lucide-react';
+import { ChevronRight, BookOpen, FileText, HeartHandshake, Building, Film, GraduationCap, BookCopy } from 'lucide-react';
 import Link from 'next/link';
 
 const librarySections = [
@@ -31,6 +31,36 @@ const librarySections = [
             { title: "Dijital Kaynak Geliştirme Yöntemleri", href: "#" },
             { title: "Gönüllü Yönetimi ve Motivasyon", href: "#" },
             { title: "Şeffaflık ve Hesap Verebilirlik İlkeleri", href: "#" },
+        ]
+    },
+    {
+        title: "Kitaplar",
+        description: "Sosyal etki ve sivil toplum alanında ilham veren kitaplar.",
+        icon: BookCopy,
+        links: [
+            { title: "Sapiens: İnsan Türünün Kısa Bir Tarihi", href: "#" },
+            { title: "Etkili İnsanların 7 Alışkanlığı", href: "#" },
+            { title: "Factfulness: Dünya Hakkında Yanıldığımız 10 Neden", href: "#" },
+        ]
+    },
+    {
+        title: "Filmler ve Belgeseller",
+        description: "Ufkunuzu genişletecek, farkındalık yaratan filmler ve belgeseller.",
+        icon: Film,
+        links: [
+            { title: "The Social Dilemma", href: "#" },
+            { title: "Cowspiracy: Sürdürülebilirlik Sırrı", href: "#" },
+            { title: "Minimalism: A Documentary About the Important Things", href: "#" },
+        ]
+    },
+    {
+        title: "Akademik Makaleler",
+        description: "Sivil toplum ve sosyal etki üzerine bilimsel çalışmalar.",
+        icon: GraduationCap,
+        links: [
+            { title: "Sosyal Girişimcilikte İnovasyonun Rolü", href: "#" },
+            { title: "Gönüllü Motivasyonunu Etkileyen Faktörler", href: "#" },
+            { title: "Dijital Platformların STK Kapasitesine Etkisi", href: "#" },
         ]
     },
     {
