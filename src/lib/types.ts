@@ -67,6 +67,8 @@ export type Brand = {
 export type NGO = {
   id: string;
   name: string;
+  shortName?: string;
+  foundationYear?: number;
   category: string;
   type: 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli';
   avatarUrl: string;
@@ -99,6 +101,11 @@ export type NGO = {
       facebook: string;
       linkedin: string;
     };
+    address?: {
+        fullAddress: string;
+        city: string;
+        district: string;
+    }
   };
   economicEnterpriseUrl?: string;
   posts: Post[];

@@ -122,7 +122,13 @@ export default function NgoProfilePage() {
                 <AvatarFallback>{ngo.name.slice(0,2)}</AvatarFallback>
             </Avatar>
             <div className="space-y-1">
-                <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
+                <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
+                    <Badge variant="outline" className="text-base font-bold border-primary/50 text-primary bg-primary/10">
+                        <ShieldCheck className="h-4 w-4 mr-1.5"/>
+                        {ngo.transparencyScore}
+                    </Badge>
+                </div>
                 <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
             </div>
         </div>
@@ -164,8 +170,10 @@ export default function NgoProfilePage() {
                         <p key={index}>{paragraph}</p>
                     ))}
                     <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
+                        {ngo.shortName && <Badge variant="secondary">{ngo.shortName}</Badge>}
                         <Badge variant="secondary">{ngo.type}</Badge>
                         <Badge variant="secondary">{ngo.category}</Badge>
+                        {ngo.foundationYear && <Badge variant="outline" className='text-xs'>Kuruluş: {ngo.foundationYear}</Badge>}
                         {ngo.joinDate && <Badge variant="outline" className='text-xs'>Katılım: {ngo.joinDate}</Badge>}
                     </div>
                 </CardContent>
@@ -174,24 +182,30 @@ export default function NgoProfilePage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg">Detaylar</CardTitle></CardHeader>
                 <CardContent className="text-sm space-y-4">
-                    <div>
-                        <h4 className="font-semibold mb-2">Faydalanıcı Gruplar</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {ngo.beneficiaryGroups.map(group => <Badge key={group} variant="outline">{group}</Badge>)}
+                    {ngo.beneficiaryGroups && ngo.beneficiaryGroups.length > 0 && (
+                        <div>
+                            <h4 className="font-semibold mb-2">Faydalanıcı Gruplar</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {ngo.beneficiaryGroups.map(group => <Badge key={group} variant="outline">{group}</Badge>)}
+                            </div>
                         </div>
-                    </div>
-                    <div className="pt-4 border-t">
-                        <h4 className="font-semibold mb-2">Desteklenen SKA'lar</h4>
-                         <div className="flex flex-wrap gap-2">
-                            {ngo.supportedSDGs.map(sdg => <Badge key={sdg} variant="outline">{sdg}</Badge>)}
+                    )}
+                    {ngo.supportedSDGs && ngo.supportedSDGs.length > 0 && (
+                        <div className="pt-4 border-t">
+                            <h4 className="font-semibold mb-2">Desteklenen SKA'lar</h4>
+                             <div className="flex flex-wrap gap-2">
+                                {ngo.supportedSDGs.map(sdg => <Badge key={sdg} variant="outline">{sdg}</Badge>)}
+                            </div>
                         </div>
-                    </div>
-                     <div className="pt-4 border-t">
-                        <h4 className="font-semibold mb-2">Üye Olunan Platformlar</h4>
-                         <div className="flex flex-wrap gap-2">
-                            {ngo.memberOf.map(platform => <Badge key={platform} variant="outline">{platform}</Badge>)}
+                    )}
+                    {ngo.memberOf && ngo.memberOf.length > 0 && (
+                        <div className="pt-4 border-t">
+                            <h4 className="font-semibold mb-2">Üye Olunan Platformlar</h4>
+                             <div className="flex flex-wrap gap-2">
+                                {ngo.memberOf.map(platform => <Badge key={platform} variant="outline">{platform}</Badge>)}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </CardContent>
             </Card>
 
@@ -201,6 +215,12 @@ export default function NgoProfilePage() {
                     <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.email}</span></div>
                     <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.phone}</span></div>
                     <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.website}</span></div>
+                    {ngo.contact.address && (
+                        <div className="flex items-start gap-3 text-sm pt-3 border-t">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                            <span>{ngo.contact.address.fullAddress}<br/>{ngo.contact.address.district}, {ngo.contact.address.city}</span>
+                        </div>
+                     )}
                     <Separator className="my-4" />
                     <div className="flex gap-4">
                         <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><Twitter className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>

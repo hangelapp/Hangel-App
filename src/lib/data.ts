@@ -226,6 +226,8 @@ export const ngos: NGO[] = [
     {
         id: '1',
         name: 'TEMA Vakfı',
+        shortName: 'TEMA',
+        foundationYear: 1992,
         category: 'Çevre',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/tema.org.tr',
@@ -235,15 +237,27 @@ export const ngos: NGO[] = [
         about: "Türkiye Çöl Olmasın! TEMA Vakfı, 1992 yılından bu yana erozyon ve çölleşme tehlikesine karşı mücadele etmekte, doğal varlıklarımızı korumak için çalışmaktadır. Ağaçlandırma projeleri, eğitim programları ve savunuculuk faaliyetleri ile daha yeşil bir Türkiye için umut oluyoruz.",
         joinDate: "2023-01-10",
         supportedSDGs: ['İklim Eylemi', 'Karasal Yaşam', 'Temiz Su ve Sanitasyon'],
-        beneficiaryGroups: ['Tüm Canlılar', 'Gelecek Nesiller'],
+        beneficiaryGroups: ['Tüm Canlılar', 'Gelecek Nesiller', 'Çevre'],
         memberOf: ['Açık Açık', 'Tüsev'],
-        contact: { email: 'iletisim@tema.org.tr', phone: '0212 292 69 69', website: 'https://www.tema.org.tr', social: { twitter: 'temavakfi', instagram: 'temavakfi', facebook: 'temavakfi', linkedin: 'tema-vakfi' } },
+        contact: { 
+            email: 'iletisim@tema.org.tr', 
+            phone: '0212 292 69 69', 
+            website: 'https://www.tema.org.tr', 
+            social: { twitter: 'temavakfi', instagram: 'temavakfi', facebook: 'temavakfi', linkedin: 'tema-vakfi' },
+            address: {
+                fullAddress: 'Cumhuriyet Cad. No:14 Büyükdere',
+                city: 'İstanbul',
+                district: 'Sarıyer',
+            }
+        },
         posts: timelinePosts.filter(p => p.author.name === 'TEMA Vakfı'),
         opportunities: volunteeringOpportunities.filter(o => o.ngoId === '1')
     },
     {
         id: '2',
         name: 'Ahbap Derneği',
+        shortName: 'Ahbap',
+        foundationYear: 2017,
         category: 'Dayanışma',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/ahbap.org',
@@ -254,8 +268,18 @@ export const ngos: NGO[] = [
         joinDate: "2023-02-20",
         supportedSDGs: ['Yoksulluğa Son', 'Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Afetzedeler', 'İhtiyaç Sahibi Aileler', 'Öğrenciler', 'Hastalar'],
-        memberOf: ['Afet Platformu'],
-        contact: { email: 'iletisim@ahbap.org', phone: '0216 550 50 50', website: 'https://ahbap.org', social: { twitter: 'ahbap', instagram: 'ahbap', facebook: 'ahbapdernegi', linkedin: 'ahbap-dernegi' } },
+        memberOf: ['Afet Platformu', 'HelpSteps'],
+        contact: { 
+            email: 'iletisim@ahbap.org', 
+            phone: '0216 550 50 50', 
+            website: 'https://ahbap.org', 
+            social: { twitter: 'ahbap', instagram: 'ahbap', facebook: 'ahbapdernegi', linkedin: 'ahbap-dernegi' },
+            address: {
+                fullAddress: 'Esentepe Mah. Ecza Sok. No:4',
+                city: 'İstanbul',
+                district: 'Şişli',
+            }
+        },
         economicEnterpriseUrl: '/market/1',
         posts: timelinePosts.filter(p => p.author.name === 'Ahbap Derneği'),
         opportunities: volunteeringOpportunities.filter(o => o.ngoId === '2')
@@ -263,6 +287,8 @@ export const ngos: NGO[] = [
     {
         id: '3',
         name: 'Tohum Otizm Vakfı',
+        shortName: 'Tohum Otizm',
+        foundationYear: 2003,
         category: 'Eğitim',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/tohumotizm.org.tr',
@@ -274,7 +300,17 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması', 'Sağlıklı ve Kaliteli Yaşam'],
         beneficiaryGroups: ['Çocuklar', 'Engelliler', 'Aileler'],
         memberOf: ['Açık Açık'],
-        contact: { email: 'info@tohumotizm.org.tr', phone: '0212 244 75 00', website: 'https://www.tohumotizm.org.tr', social: { twitter: 'tohumotizm', instagram: 'tohumotizm', facebook: 'tohumotizm', linkedin: 'tohum-otizm-vakfi' } },
+        contact: { 
+            email: 'info@tohumotizm.org.tr', 
+            phone: '0212 244 75 00', 
+            website: 'https://www.tohumotizm.org.tr', 
+            social: { twitter: 'tohumotizm', instagram: 'tohumotizm', facebook: 'tohumotizm', linkedin: 'tohum-otizm-vakfi' },
+            address: {
+                fullAddress: 'Merkez Mah. Ayazma Cad. No:37',
+                city: 'İstanbul',
+                district: 'Kağıthane',
+            }
+        },
         economicEnterpriseUrl: '/market/25',
         posts: [],
         opportunities: volunteeringOpportunities.filter(o => o.ngoId === '3')
@@ -282,6 +318,8 @@ export const ngos: NGO[] = [
     {
         id: '4',
         name: 'LÖSEV',
+        shortName: 'LÖSEV',
+        foundationYear: 1998,
         category: 'Sağlık',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/losev.org.tr',
@@ -293,7 +331,17 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim'],
         beneficiaryGroups: ['Çocuklar', 'Hastalar', 'Aileler'],
         memberOf: ['Açık Açık', 'Tüsev'],
-        contact: { email: 'iletisim@losev.org.tr', phone: '0312 447 06 60', website: 'https://www.losev.org.tr', social: { twitter: 'losev1998', instagram: 'losev1998', facebook: 'losev', linkedin: 'losev' } },
+        contact: { 
+            email: 'iletisim@losev.org.tr', 
+            phone: '0312 447 06 60', 
+            website: 'https://www.losev.org.tr', 
+            social: { twitter: 'losev1998', instagram: 'losev1998', facebook: 'losev', linkedin: 'losev' },
+            address: {
+                fullAddress: 'Turgutlu Sk. No:30, Ümitköy',
+                city: 'Ankara',
+                district: 'Çankaya',
+            }
+        },
         economicEnterpriseUrl: '/market/24',
         posts: [],
         opportunities: []
@@ -301,6 +349,8 @@ export const ngos: NGO[] = [
     {
         id: '5',
         name: 'TEGV',
+        shortName: 'TEGV',
+        foundationYear: 1995,
         category: 'Eğitim',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/tegv.org',
@@ -312,13 +362,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Çocuklar', 'Öğrenciler'],
         memberOf: ['Açık Açık', 'Tüsev'],
-        contact: { email: 'tegv@tegv.org', phone: '0216 290 70 00', website: 'https://tegv.org', social: { twitter: 'tegv', instagram: 'tegv', facebook: 'tegv', linkedin: 'tegv' } },
+        contact: { 
+            email: 'tegv@tegv.org', 
+            phone: '0216 290 70 00', 
+            website: 'https://tegv.org', 
+            social: { twitter: 'tegv', instagram: 'tegv', facebook: 'tegv', linkedin: 'tegv' },
+            address: {
+                fullAddress: 'Acıbadem Cad. No:30',
+                city: 'İstanbul',
+                district: 'Üsküdar',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '6',
         name: 'AKUT',
+        shortName: 'AKUT',
+        foundationYear: 1996,
         category: 'Arama Kurtarma',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/akut.org.tr',
@@ -330,13 +392,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sürdürülebilir Şehirler ve Topluluklar', 'İklim Eylemi'],
         beneficiaryGroups: ['Afetzedeler', 'Tüm Canlılar'],
         memberOf: ['Afet Platformu'],
-        contact: { email: 'info@akut.org.tr', phone: '0212 217 04 10', website: 'https://www.akut.org.tr', social: { twitter: 'akut', instagram: 'akutdernegi', facebook: 'AKUT', linkedin: 'akut-arama-kurtarma-dernegi' } },
+        contact: { 
+            email: 'info@akut.org.tr', 
+            phone: '0212 217 04 10', 
+            website: 'https://www.akut.org.tr', 
+            social: { twitter: 'akut', instagram: 'akutdernegi', facebook: 'AKUT', linkedin: 'akut-arama-kurtarma-dernegi' },
+            address: {
+                fullAddress: 'Büyükdere Cad. No:120',
+                city: 'İstanbul',
+                district: 'Şişli',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '7',
         name: 'WWF-Türkiye',
+        shortName: 'WWF',
+        foundationYear: 1996,
         category: 'Çevre',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/wwf.org.tr',
@@ -348,13 +422,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sudaki Yaşam', 'Karasal Yaşam', 'İklim Eylemi'],
         beneficiaryGroups: ['Tüm Canlılar', 'Gelecek Nesiller'],
         memberOf: ['Tüsev'],
-        contact: { email: 'info@wwf.org.tr', phone: '0212 528 20 30', website: 'https://www.wwf.org.tr', social: { twitter: 'wwf_turkiye', instagram: 'wwf_turkiye', facebook: 'WWFTurkiye', linkedin: 'wwf-turkiye' } },
+        contact: { 
+            email: 'info@wwf.org.tr', 
+            phone: '0212 528 20 30', 
+            website: 'https://www.wwf.org.tr', 
+            social: { twitter: 'wwf_turkiye', instagram: 'wwf_turkiye', facebook: 'WWFTurkiye', linkedin: 'wwf-turkiye' },
+            address: {
+                fullAddress: 'Büyük Postane Cad. No:19',
+                city: 'İstanbul',
+                district: 'Fatih',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '8',
         name: 'Türk Kızılay',
+        shortName: 'Kızılay',
+        foundationYear: 1868,
         category: 'İnsani Yardım',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/kizilay.org.tr',
@@ -366,13 +452,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'Yoksulluğa Son', 'Açlığa Son'],
         beneficiaryGroups: ['Afetzedeler', 'İhtiyaç Sahipleri', 'Mülteciler', 'Hastalar'],
         memberOf: [],
-        contact: { email: 'info@kizilay.org.tr', phone: '168', website: 'https://www.kizilay.org.tr', social: { twitter: 'kizilay', instagram: 'kizilay', facebook: 'kizilay', linkedin: 'turk-kizilay' } },
+        contact: { 
+            email: 'info@kizilay.org.tr', 
+            phone: '168', 
+            website: 'https://www.kizilay.org.tr', 
+            social: { twitter: 'kizilay', instagram: 'kizilay', facebook: 'kizilay', linkedin: 'turk-kizilay' },
+            address: {
+                fullAddress: 'Ataç-1 Sk. No:32',
+                city: 'Ankara',
+                district: 'Çankaya',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '9',
         name: 'Mor Çatı',
+        shortName: 'Mor Çatı',
+        foundationYear: 1990,
         category: 'Kadın Hakları',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/morcati.org.tr',
@@ -384,13 +482,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Toplumsal Cinsiyet Eşitliği', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Kadınlar', 'Çocuklar'],
         memberOf: [],
-        contact: { email: 'morcati@morcati.org.tr', phone: '0212 292 52 31', website: 'https://morcati.org.tr', social: { twitter: 'morcativakfi', instagram: 'morcativakfi', facebook: 'morcativakfi', linkedin: '' } },
+        contact: { 
+            email: 'morcati@morcati.org.tr', 
+            phone: '0212 292 52 31', 
+            website: 'https://morcati.org.tr', 
+            social: { twitter: 'morcativakfi', instagram: 'morcativakfi', facebook: 'morcativakfi', linkedin: '' },
+            address: {
+                fullAddress: 'İstiklal Cad. No:10',
+                city: 'İstanbul',
+                district: 'Beyoğlu',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '10',
         name: 'TOFD',
+        shortName: 'TOFD',
+        foundationYear: 1998,
         category: 'Engelli Hakları',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/tofd.org.tr',
@@ -402,13 +512,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'İnsana Yakışır İş ve Ekonomik Büyüme', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Engelliler', 'Aileler'],
         memberOf: [],
-        contact: { email: 'info@tofd.org.tr', phone: '0212 661 16 61', website: 'https://www.tofd.org.tr', social: { twitter: 'tofdgenelmerkez', instagram: 'tofdgenelmerkez', facebook: 'tofd.genelmerkez', linkedin: 'türkiye-omurilik-felçlileri-derneği' } },
+        contact: { 
+            email: 'info@tofd.org.tr', 
+            phone: '0212 661 16 61', 
+            website: 'https://www.tofd.org.tr', 
+            social: { twitter: 'tofdgenelmerkez', instagram: 'tofdgenelmerkez', facebook: 'tofd.genelmerkez', linkedin: 'türkiye-omurilik-felçlileri-derneği' },
+            address: {
+                fullAddress: 'Ataköy 7-8-9-10. Kısım Mah.',
+                city: 'İstanbul',
+                district: 'Bakırköy',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '11',
         name: 'Darüşşafaka',
+        shortName: 'Darüşşafaka',
+        foundationYear: 1863,
         category: 'Eğitim',
         type: 'Özel İzinli',
         avatarUrl: 'https://logo.clearbit.com/darussafaka.org',
@@ -420,13 +542,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Yoksulluğa Son', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Çocuklar', 'Öğrenciler'],
         memberOf: ['Tüsev'],
-        contact: { email: 'bilgi@darussafaka.org', phone: '0212 276 50 20', website: 'https://www.darussafaka.org', social: { twitter: 'darussafaka', instagram: 'darussafaka', facebook: 'darussafaka', linkedin: 'darüşşafaka-cemiyeti' } },
+        contact: { 
+            email: 'bilgi@darussafaka.org', 
+            phone: '0212 276 50 20', 
+            website: 'https://www.darussafaka.org', 
+            social: { twitter: 'darussafaka', instagram: 'darussafaka', facebook: 'darussafaka', linkedin: 'darüşşafaka-cemiyeti' },
+            address: {
+                fullAddress: 'Darüşşafaka Cad. No:5',
+                city: 'İstanbul',
+                district: 'Sarıyer',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '12',
         name: 'İhtiyaç Haritası',
+        shortName: 'İhtiyaç Haritası',
+        foundationYear: 2015,
         category: 'Dayanışma',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/ihtiyacharitasianadolukooperatifi.com',
@@ -438,13 +572,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Yoksulluğa Son', 'Eşitsizliklerin Azaltılması', 'Sürdürülebilir Şehirler ve Topluluklar'],
         beneficiaryGroups: ['İhtiyaç Sahipleri', 'Okullar', 'STK\'lar'],
         memberOf: ['Açık Açık'],
-        contact: { email: 'iletisim@ihtiyacharitasianadolukooperatifi.com', phone: '0850 304 35 42', website: 'https://www.ihtiyacharitasianadolukooperatifi.com', social: { twitter: 'ihtiyacharita', instagram: 'ihtiyacharitasi', facebook: 'ihtiyacharitasianadolukooperatifi', linkedin: 'ihtiyaç-haritası' } },
+        contact: { 
+            email: 'iletisim@ihtiyacharitasianadolukooperatifi.com', 
+            phone: '0850 304 35 42', 
+            website: 'https://www.ihtiyacharitasianadolukooperatifi.com', 
+            social: { twitter: 'ihtiyacharita', instagram: 'ihtiyacharitasi', facebook: 'ihtiyacharitasianadolukooperatifi', linkedin: 'ihtiyaç-haritası' },
+            address: {
+                fullAddress: 'Hasanpaşa Mah. Lavanta Sk. No:12',
+                city: 'İstanbul',
+                district: 'Kadıköy',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '13',
         name: 'TOG',
+        shortName: 'TOG',
+        foundationYear: 2002,
         category: 'Gençlik',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/tog.org.tr',
@@ -456,13 +602,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Toplumsal Cinsiyet Eşitliği', 'Sürdürülebilir Şehirler ve Topluluklar'],
         beneficiaryGroups: ['Gençler', 'Çocuklar', 'Toplum'],
         memberOf: ['Tüsev'],
-        contact: { email: 'tog@tog.org.tr', phone: '0216 321 89 89', website: 'https://www.tog.org.tr', social: { twitter: 'togvakfi', instagram: 'togvakfi', facebook: 'TogVakfi', linkedin: 'toplum-gonulluleri-vakfi' } },
+        contact: { 
+            email: 'tog@tog.org.tr', 
+            phone: '0216 321 89 89', 
+            website: 'https://www.tog.org.tr', 
+            social: { twitter: 'togvakfi', instagram: 'togvakfi', facebook: 'TogVakfi', linkedin: 'toplum-gonulluleri-vakfi' },
+            address: {
+                fullAddress: 'İstiklal Cad. No:56',
+                city: 'İstanbul',
+                district: 'Beyoğlu',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '14',
         name: 'HAYTAP',
+        shortName: 'HAYTAP',
+        foundationYear: 2008,
         category: 'Hayvan Hakları',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/haytap.org',
@@ -474,13 +632,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Karasal Yaşam'],
         beneficiaryGroups: ['Hayvanlar'],
         memberOf: [],
-        contact: { email: 'info@haytap.org', phone: '0212 243 55 44', website: 'https://www.haytap.org', social: { twitter: 'haytap', instagram: 'haytap', facebook: 'haytap', linkedin: 'haytap' } },
+        contact: { 
+            email: 'info@haytap.org', 
+            phone: '0212 243 55 44', 
+            website: 'https://www.haytap.org', 
+            social: { twitter: 'haytap', instagram: 'haytap', facebook: 'haytap', linkedin: 'haytap' },
+            address: {
+                fullAddress: 'Şişli Merkez Mah. Abide-i Hürriyet Cad. No:162',
+                city: 'İstanbul',
+                district: 'Şişli',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '15',
         name: 'KEDV',
+        shortName: 'KEDV',
+        foundationYear: 1986,
         category: 'Kadın Hakları',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/kedv.org.tr',
@@ -492,13 +662,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Toplumsal Cinsiyet Eşitliği', 'Yoksulluğa Son', 'İnsana Yakışır İş ve Ekonomik Büyüme'],
         beneficiaryGroups: ['Kadınlar'],
         memberOf: [],
-        contact: { email: 'kedv@kedv.org.tr', phone: '0212 249 50 47', website: 'https://www.kedv.org.tr', social: { twitter: 'kedv_vakif', instagram: 'kedv_vakif', facebook: 'kedv.vakif', linkedin: 'kadın-emeğini-değerlendirme-vakfı-(kedv)' } },
+        contact: { 
+            email: 'kedv@kedv.org.tr', 
+            phone: '0212 249 50 47', 
+            website: 'https://www.kedv.org.tr', 
+            social: { twitter: 'kedv_vakif', instagram: 'kedv_vakif', facebook: 'kedv.vakif', linkedin: 'kadın-emeğini-değerlendirme-vakfı-(kedv)' },
+            address: {
+                fullAddress: 'Katip Mustafa Çelebi Mah. Tel Sk. No:21',
+                city: 'İstanbul',
+                district: 'Beyoğlu',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '16',
         name: 'ÇYDD',
+        shortName: 'ÇYDD',
+        foundationYear: 1989,
         category: 'Eğitim',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/cydd.org.tr',
@@ -510,13 +692,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Toplumsal Cinsiyet Eşitliği', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Öğrenciler', 'Çocuklar', 'Gençler', 'Kadınlar'],
         memberOf: ['Tüsev'],
-        contact: { email: 'cydd@cydd.org.tr', phone: '0212 252 44 40', website: 'https://www.cydd.org.tr', social: { twitter: 'cyddgenelmerkez', instagram: 'cyddgenelmerkez', facebook: 'cydd', linkedin: 'çağdaş-yaşamı-destekleme-derneği' } },
+        contact: { 
+            email: 'cydd@cydd.org.tr', 
+            phone: '0212 252 44 40', 
+            website: 'https://www.cydd.org.tr', 
+            social: { twitter: 'cyddgenelmerkez', instagram: 'cyddgenelmerkez', facebook: 'cydd', linkedin: 'çağdaş-yaşamı-destekleme-derneği' },
+            address: {
+                fullAddress: 'Şehit Muhtar Mh. Öğüt Sk. No:20',
+                city: 'İstanbul',
+                district: 'Beyoğlu',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '17',
         name: 'TSÇV',
+        shortName: 'TSÇV',
+        foundationYear: 1989,
         category: 'Engelli Hakları',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/tscv.org.tr',
@@ -528,13 +722,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Çocuklar', 'Engelliler', 'Aileler'],
         memberOf: [],
-        contact: { email: 'vakif@tscv.org.tr', phone: '0212 288 18 61', website: 'https://www.tscv.org.tr', social: { twitter: 'tscv_tr', instagram: 'tscv_tr', facebook: 'TurkiyeSpastikCocuklarVakfi', linkedin: 'türkiye-spastik-çocuklar-vakfı-cerebral-palsy-türkiye' } },
+        contact: { 
+            email: 'vakif@tscv.org.tr', 
+            phone: '0212 288 18 61', 
+            website: 'https://www.tscv.org.tr', 
+            social: { twitter: 'tscv_tr', instagram: 'tscv_tr', facebook: 'TurkiyeSpastikCocuklarVakfi', linkedin: 'türkiye-spastik-çocuklar-vakfı-cerebral-palsy-türkiye' },
+            address: {
+                fullAddress: 'Prof. Dr. Hıfzı Özcan Cd. No:8',
+                city: 'İstanbul',
+                district: 'Ataşehir',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '18',
         name: 'TEV',
+        shortName: 'TEV',
+        foundationYear: 1967,
         category: 'Eğitim',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/tev.org.tr',
@@ -546,13 +752,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Öğrenciler', 'Gençler'],
         memberOf: ['Tüsev'],
-        contact: { email: 'tev@tev.org.tr', phone: '0212 318 68 00', website: 'https://www.tev.org.tr', social: { twitter: 'tevkurumsal', instagram: 'tevkurumsal', facebook: 'TEVKurumsal', linkedin: 'türk-eğitim-vakfı' } },
+        contact: { 
+            email: 'tev@tev.org.tr', 
+            phone: '0212 318 68 00', 
+            website: 'https://www.tev.org.tr', 
+            social: { twitter: 'tevkurumsal', instagram: 'tevkurumsal', facebook: 'TEVKurumsal', linkedin: 'türk-eğitim-vakfı' },
+            address: {
+                fullAddress: 'Büyükdere Cad. No:111',
+                city: 'İstanbul',
+                district: 'Şişli',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '19',
         name: 'AÇEV',
+        shortName: 'AÇEV',
+        foundationYear: 1993,
         category: 'Eğitim',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/acev.org',
@@ -564,13 +782,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Toplumsal Cinsiyet Eşitliği', 'Sağlıklı ve Kaliteli Yaşam'],
         beneficiaryGroups: ['Çocuklar', 'Kadınlar', 'Aileler'],
         memberOf: ['Açık Açık'],
-        contact: { email: 'acev@acev.org', phone: '0216 492 68 18', website: 'https://www.acev.org', social: { twitter: 'acevkurumsal', instagram: 'acevkurumsal', facebook: 'ACEV', linkedin: 'açev-(anne-çocuk-eğitim-vakfı)' } },
+        contact: { 
+            email: 'acev@acev.org', 
+            phone: '0216 492 68 18', 
+            website: 'https://www.acev.org', 
+            social: { twitter: 'acevkurumsal', instagram: 'acevkurumsal', facebook: 'ACEV', linkedin: 'açev-(anne-çocuk-eğitim-vakfı)' },
+            address: {
+                fullAddress: 'Göztepe Mah. Işık Sk. No:7',
+                city: 'İstanbul',
+                district: 'Kadıköy',
+            }
+        },
         posts: [],
         opportunities: []
     },
     {
         id: '20',
         name: 'Koruncuk Vakfı',
+        shortName: 'Koruncuk',
+        foundationYear: 1979,
         category: 'Çocuk',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/koruncuk.org',
@@ -582,13 +812,25 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Yoksulluğa Son', 'Sağlıklı ve Kaliteli Yaşam'],
         beneficiaryGroups: ['Çocuklar'],
         memberOf: [],
-        contact: { email: 'koruncuk@koruncuk.org', phone: '0212 202 69 70', website: 'https://www.koruncuk.org', social: { twitter: 'koruncuk', instagram: 'koruncuk', facebook: 'koruncuk', linkedin: 'koruncuk-vakfı' } },
+        contact: { 
+            email: 'koruncuk@koruncuk.org', 
+            phone: '0212 202 69 70', 
+            website: 'https://www.koruncuk.org', 
+            social: { twitter: 'koruncuk', instagram: 'koruncuk', facebook: 'koruncuk', linkedin: 'koruncuk-vakfı' },
+            address: {
+                fullAddress: 'Bolluca Mah. Koruncukköy Sk. No:1',
+                city: 'İstanbul',
+                district: 'Arnavutköy',
+            }
+        },
         posts: [],
         opportunities: []
     },
      {
         id: '21',
         name: 'LÖDER',
+        shortName: 'LÖDER',
+        foundationYear: 2003,
         category: 'Sağlık',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/loder.org.tr',
@@ -600,7 +842,17 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam'],
         beneficiaryGroups: ['Çocuklar', 'Hastalar', 'Aileler'],
         memberOf: [],
-        contact: { email: 'info@loder.org.tr', phone: '0232 464 61 61', website: 'http://www.loder.org.tr', social: { twitter: '', instagram: 'loderizmir', facebook: 'loderizmir', linkedin: '' } },
+        contact: { 
+            email: 'info@loder.org.tr', 
+            phone: '0232 464 61 61', 
+            website: 'http://www.loder.org.tr', 
+            social: { twitter: '', instagram: 'loderizmir', facebook: 'loderizmir', linkedin: '' },
+            address: {
+                fullAddress: 'Alsancak Mah. 1471 Sk. No:10',
+                city: 'İzmir',
+                district: 'Konak',
+            }
+        },
         posts: [],
         opportunities: []
     }
