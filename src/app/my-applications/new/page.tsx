@@ -446,44 +446,62 @@ export default function NewApplicationPage() {
         );
         case 'Okul Temsilciliği Başvurusu':
         return (
-             <Card>
-                <CardHeader><CardTitle>Temsilci Aday Bilgileri</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                     <div className="space-y-2">
-                        <Label>Okul Türü</Label>
-                        <Select onValueChange={(value: 'university' | 'high-school') => setRepSchoolType(value)}>
-                            <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="university">Üniversite</SelectItem>
-                                <SelectItem value="high-school">Lise</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    {repSchoolType === 'university' && (
-                         <div className="space-y-2">
-                            <Label>Üniversite</Label>
-                            <Select><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger><SelectContent>
-                                {universities.map(uni => <SelectItem key={uni} value={uni}>{uni}</SelectItem>)}
-                            </SelectContent></Select>
+             <div className="space-y-6">
+                <Card>
+                    <CardHeader><CardTitle>Temsilci Aday Bilgileri</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Okul Türü</Label>
+                            <Select onValueChange={(value: 'university' | 'high-school') => setRepSchoolType(value)}>
+                                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="university">Üniversite</SelectItem>
+                                    <SelectItem value="high-school">Lise</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                    )}
-                    {repSchoolType === 'high-school' && (
-                        <div className='space-y-4'>
+                        {repSchoolType === 'university' && (
                             <div className="space-y-2">
-                                <Label>İl</Label>
-                                 <Select><SelectTrigger><SelectValue placeholder="İl seçin..." /></SelectTrigger><SelectContent>
-                                    {provinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                <Label>Üniversite</Label>
+                                <Select><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger><SelectContent>
+                                    {universities.map(uni => <SelectItem key={uni} value={uni}>{uni}</SelectItem>)}
                                 </SelectContent></Select>
                             </div>
-                            <div className="space-y-2"><Label>İlçe</Label><Input placeholder="İlçe adı" /></div>
-                            <div className="space-y-2"><Label>Lise Adı</Label><Input placeholder="Lisenizin tam adı" /></div>
+                        )}
+                        {repSchoolType === 'high-school' && (
+                            <div className='space-y-4'>
+                                <div className="space-y-2">
+                                    <Label>İl</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="İl seçin..." /></SelectTrigger><SelectContent>
+                                        {provinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                    </SelectContent></Select>
+                                </div>
+                                <div className="space-y-2"><Label>İlçe</Label><Input placeholder="İlçe adı" /></div>
+                                <div className="space-y-2"><Label>Lise Adı</Label><Input placeholder="Lisenizin tam adı" /></div>
+                            </div>
+                        )}
+                        <div className="space-y-2"><Label>Ad Soyad</Label><Input placeholder="Adınız ve Soyadınız" /></div>
+                        <div className="space-y-2"><Label>Fakülte / Bölüm</Label><Input placeholder="Fakülte ve bölümünüz" /></div>
+                        <div className="space-y-2"><Label>Motivasyon Mektubu</Label><Textarea placeholder="Neden okul temsilcisi olmak istediğinizi, hangel vizyonuna nasıl katkı sağlayacağınızı açıklayın." rows={8}/></div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>İletişim Bilgileri</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2"><Label>E-posta Adresi</Label><Input type="email" placeholder="ornek@eposta.com" /></div>
+                        <div className="space-y-2"><Label>Telefon Numarası</Label><Input type="tel" placeholder="+90..." /></div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>Üyesi Olduğunuz Kulüp ve STK'lar</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Lütfen üyesi olduğunuz diğer öğrenci kulüplerini veya sivil toplum kuruluşlarını belirtiniz.</Label>
+                            <Textarea placeholder="Örn: İTÜ Pazarlama Kulübü - Üye, TEMA Vakfı - Gönüllü" rows={4} />
                         </div>
-                    )}
-                    <div className="space-y-2"><Label>Ad Soyad</Label><Input placeholder="Adınız ve Soyadınız" /></div>
-                    <div className="space-y-2"><Label>Fakülte / Bölüm</Label><Input placeholder="Fakülte ve bölümünüz" /></div>
-                    <div className="space-y-2"><Label>Motivasyon Mektubu</Label><Textarea placeholder="Neden okul temsilcisi olmak istediğinizi, hangel vizyonuna nasıl katkı sağlayacağınızı açıklayın." rows={8}/></div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+             </div>
         );
       default:
         return null;
