@@ -240,11 +240,11 @@ export default function QrPaymentPage() {
                                         card.bgColor
                                     )}
                                 >
-                                    <div className="flex justify-between items-start">
+                                    <div className="flex justify-between items-start w-full">
                                         <p className="font-semibold text-lg">{card.type}</p>
                                         <p className="font-semibold text-2xl">{card.balance}</p>
                                     </div>
-                                    <div className="relative">
+                                    <div className="relative w-full">
                                         <p className="font-mono tracking-widest text-lg mb-2">{'**** **** **** ' + card.number.slice(-4)}</p>
                                         <div className="flex justify-between items-end">
                                             <div>
