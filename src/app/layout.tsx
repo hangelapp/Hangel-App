@@ -11,6 +11,7 @@ const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
+  { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
 ];
 
 const group2Items: SideNavItem[] = [
