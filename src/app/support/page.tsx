@@ -13,6 +13,17 @@ import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { helpTopics, user, badges } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 const popularArticles = [
     { title: 'hangel Etki Puanı nasıl hesaplanır?', link: '#' },
@@ -170,7 +181,41 @@ export default function SupportPage() {
         <h3 className="text-lg font-semibold">Aradığınızı bulamadınız mı?</h3>
         <p className="text-muted-foreground text-sm">Destek ekibimiz size yardımcı olmak için burada.</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-          <Button size="lg">Destek Talebi Oluştur</Button>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button size="lg">Destek Talebi Oluştur</Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Destek Talebi Oluştur</DialogTitle>
+                      <DialogDescription>
+                        Aklınıza takılanları, önerilerinizi veya yaşadığınız sorunları bize iletin. Ekibimiz en kısa sürede size geri dönüş yapacaktır.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="support-subject">Konu</Label>
+                          <Select>
+                            <SelectTrigger id="support-subject">
+                              <SelectValue placeholder="Bir konu seçin..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="technical">Teknik Sorun</SelectItem>
+                              <SelectItem value="payment">Ödeme ve Bağışlar</SelectItem>
+                              <SelectItem value="volunteer">Gönüllülük Süreçleri</SelectItem>
+                              <SelectItem value="suggestion">Öneri ve Geri Bildirim</SelectItem>
+                              <SelectItem value="other">Diğer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="support-message">Mesajınız</Label>
+                          <Textarea id="support-message" placeholder="Lütfen mesajınızı buraya yazın..." rows={6} />
+                        </div>
+                        <Button type="submit" className="w-full">Gönder</Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
            <Button size="lg" variant="outline">
             <Mail className="mr-2 h-5 w-5" />
             Bize E-posta Gönder

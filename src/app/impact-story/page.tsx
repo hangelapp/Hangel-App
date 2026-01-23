@@ -111,8 +111,8 @@ const StoryCarousel = ({ stories, author, avatar }: { stories: {title: string, c
 
 export default function ImpactStoryPage() {
   return (
-    <div className="fixed top-12 bottom-16 left-0 right-0 z-50 bg-black lg:left-64 lg:top-12 lg:bottom-0 lg:bg-background lg:flex lg:items-center lg:justify-center">
-      <div className="relative w-full h-full lg:max-w-sm lg:aspect-[9/16] lg:h-auto bg-card lg:rounded-2xl lg:overflow-hidden lg:shadow-2xl lg:border">
+    <div className="fixed top-12 bottom-16 left-0 right-0 z-50 bg-black lg:left-64 lg:top-12 lg:bottom-0">
+      <div className="relative w-full h-full bg-card">
         <Tabs defaultValue="community" className="w-full h-full flex flex-col">
           <TabsContent value="community" className="flex-1 mt-0 overflow-hidden">
               <StoryCarousel stories={generalStories} author="Hangel Topluluk" avatar="" />
