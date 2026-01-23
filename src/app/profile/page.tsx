@@ -229,9 +229,10 @@ export default function ProfilePage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {story ? (
-                                    <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted rounded-lg">
-                                        <p>{story}</p>
-                                    </div>
+                                    <div
+                                        className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted rounded-lg"
+                                        dangerouslySetInnerHTML={{ __html: story }}
+                                    />
                                 ) : (
                                     <Button onClick={handleGenerateStory} disabled={isStoryLoading} className="w-full">
                                         {isStoryLoading ? 'Hikayen oluşturuluyor...' : 'Bu Ayki Hikayeni Oluştur'}

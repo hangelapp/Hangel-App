@@ -20,7 +20,7 @@ const ImpactStoryInputSchema = z.object({
 export type ImpactStoryInput = z.infer<typeof ImpactStoryInputSchema>;
 
 const ImpactStoryOutputSchema = z.object({
-  story: z.string().describe('A short, personal, and inspiring story summarizing the user\'s positive impact this month. It should be written in a friendly and encouraging tone, suitable for sharing on social media. Use markdown for formatting.'),
+  story: z.string().describe('A short, personal, and inspiring story summarizing the user\'s positive impact this month. It should be written in a friendly and encouraging tone, suitable for sharing on social media. Use HTML tags for formatting.'),
 });
 export type ImpactStoryOutput = z.infer<typeof ImpactStoryOutputSchema>;
 
@@ -40,7 +40,7 @@ Your tone should be:
 - **Specific:** Weave in the details from their monthly activities.
 - **Creative:** Don't just list the facts. Connect them into a narrative. Use metaphors or a bit of flair.
 - **Action-oriented:** End with a positive and forward-looking statement.
-- **Formatted for Social Media:** Use markdown for **bold text**, *italics*, and maybe a simple list. Always include a couple of relevant hashtags like #hangel, #iyilikhareketi, #sosyaletki.
+- **Formatted for Social Media:** Use HTML tags like <strong> for bold text, <em> for italics, and <p> for paragraphs. Always include a couple of relevant hashtags like #hangel, #iyilikhareketi, #sosyaletki at the end, inside a paragraph tag.
 
 Here are the user's activities for this month:
 - **User's Name:** {{{userName}}}
@@ -52,16 +52,16 @@ Here are the user's activities for this month:
 **Example Stories for Inspiration:**
 
 **Example 1 (Focus on Environment):**
-"Bu ay harikalar yarattın, {{{userName}}}! 🌿 Yaptığın bağışlarla sadece fidan dikilmesine yardımcı olmakla kalmadın, aynı zamanda *doğaya bir nefes* oldun. Gönüllü olarak katıldığın sahil temizliği ise dalgaların sana teşekkürüydü. Emeklerin sayesinde **'Bronz Çevre Koruyucusu'** rozetini göğsünde gururla taşıyorsun. Bu iyilik yolculuğunda birlikte yürümek ne güzel! #hangel #doğaiçin"
+"<p>Bu ay harikalar yarattın, {{{userName}}}! 🌿 Yaptığın bağışlarla sadece fidan dikilmesine yardımcı olmakla kalmadın, aynı zamanda <em>doğaya bir nefes</em> oldun. Gönüllü olarak katıldığın sahil temizliği ise dalgaların sana teşekkürüydü. Emeklerin sayesinde <strong>'Bronz Çevre Koruyucusu'</strong> rozetini göğsünde gururla taşıyorsun. Bu iyilik yolculuğunda birlikte yürümek ne güzel!</p><p>#hangel #doğaiçin</p>"
 
 **Example 2 (Focus on Animals):**
-"Patili dostlarımızın bu ayki kahramanı sensin, {{{userName}}}! 🐾 Barınakta geçirdiğin her saat, onlara sevgi ve umut oldu. Yaptığın bağışlar sayesinde karınları doydu, yüzleri güldü. Bu güzel kalbin sayesinde **'Gümüş Hayvan Dostu'** rozetine bir adım daha yaklaştın. Birlikte daha nice cana dokunmak dileğiyle! #hangel #hayvansever"
+"<p>Patili dostlarımızın bu ayki kahramanı sensin, {{{userName}}}! 🐾 Barınakta geçirdiğin her saat, onlara sevgi ve umut oldu. Yaptığın bağışlar sayesinde karınları doydu, yüzleri güldü. Bu güzel kalbin sayesinde <strong>'Gümüş Hayvan Dostu'</strong> rozetine bir adım daha yaklaştın. Birlikte daha nice cana dokunmak dileğiyle!</p><p>#hangel #hayvansever</p>"
 
 **Example 3 (Focus on Education):**
-"{{{userName}}}, senin sayende bir çocuğun daha geleceği aydınlanıyor! ✨ Bu ay eğitim için yaptığın bağışlar, bir öğrencinin defteri, kalemi oldu. Gönüllü olarak verdiğin ders desteği ise onların ufkunu açtı. Kazandığın **'Eğitim Destekçisi'** rozeti, bu anlamlı çabanın en güzel sembolü. İyi ki varsın, iyi ki bizimlesin! #hangel #eğitimedestek"
+"<p>{{{userName}}}, senin sayende bir çocuğun daha geleceği aydınlanıyor! ✨ Bu ay eğitim için yaptığın bağışlar, bir öğrencinin defteri, kalemi oldu. Gönüllü olarak verdiğin ders desteği ise onların ufkunu açtı. Kazandığın <strong>'Eğitim Destekçisi'</strong> rozeti, bu anlamlı çabanın en güzel sembolü. İyi ki varsın, iyi ki bizimlesin!</p><p>#hangel #eğitimedestek</p>"
 
 ---
-Now, using these examples as a guide, generate a **new, unique, and personal story** for {{{userName}}} based on their specific activities.`,
+Now, using these examples as a guide, generate a **new, unique, and personal story** for {{{userName}}} based on their specific activities. Ensure the output is a single string of HTML.`,
 });
 
 const generateImpactStoryFlow = ai.defineFlow(
