@@ -1,11 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timelinePosts, adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf } from 'lucide-react';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Progress } from '@/components/ui/progress';
 
 
 const AdCarousel = () => {
@@ -168,6 +169,35 @@ export default function TimelinePage() {
                 </TabsList>
             </div>
             <TabsContent value="special" className="mt-0">
+                <div className="p-2 sm:p-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Sana Özel</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <h3 className="text-sm font-semibold mb-2">Yaklaşan Gönüllülük Etkinliği</h3>
+                                <Link href="/volunteering/1" className="block p-3 rounded-lg border hover:bg-accent">
+                                    <p className="font-semibold text-sm">Afet Bölgesi Yardım Dağıtımı</p>
+                                    <p className="text-xs text-muted-foreground">Ahbap Derneği - 1 Ağustos'ta başlıyor</p>
+                                </Link>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-semibold mb-2">Rozet Hedefi</h3>
+                                <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">
+                                    <div className="flex items-center gap-4">
+                                        <Leaf className="h-8 w-8 text-green-600"/>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-sm">Gümüş Çevre Koruyucusu</p>
+                                            <Progress value={80} className="mt-1 h-2" />
+                                            <p className="text-xs text-muted-foreground mt-1">1000 puandan 800'ü tamamlandı.</p>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
                 <div className="p-2 sm:p-4 space-y-4">
                     {sortedAndFilteredPosts.map((post, index) => (
                     <React.Fragment key={post.id}>

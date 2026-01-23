@@ -18,6 +18,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { getImpactStory } from '@/ai/flows/impact-story-flow';
+import { useToast } from '@/hooks/use-toast';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean, href?: string }) => {
@@ -67,6 +69,34 @@ export default function ProfilePage() {
     const router = useRouter();
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [filters, setFilters] = useState<string[]>([]);
+    const { toast } = useToast();
+    const [isStoryLoading, setIsStoryLoading] = useState(false);
+    const [story, setStory] = useState('');
+    
+    const handleGenerateStory = async () => {
+        setIsStoryLoading(true);
+        setStory('');
+        try {
+            const result = await getImpactStory({
+                userName: user.name.split(' ')[0],
+                donations: `${user.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${user.stats.mostSupportedNgo}.`,
+                volunteering: `${user.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${user.stats.mostActiveVolunteerArea}.`,
+                badges: `Toplamda ${badges.filter(b => b.currentPoints >= b.pointsRequired).length} rozet kazanıldı.`
+            });
+            if (result.story) {
+                setStory(result.story);
+            }
+        } catch (error) {
+            console.error("Story generation failed:", error);
+            toast({
+                variant: "destructive",
+                title: "Hikaye oluşturulamadı",
+                description: "Yapay zeka ile hikaye oluşturulurken bir sorun oluştu."
+            });
+        } finally {
+            setIsStoryLoading(false);
+        }
+    }
     
     const sortedAndFilteredTransactions = useMemo(() => {
         let transactions = [...pointTransactions];
@@ -190,6 +220,35 @@ export default function ProfilePage() {
                             <CardContent>
                                 <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
                             </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Yapay Zeka Destekli Etki Hikayen</CardTitle>
+                                <CardDescription>Bu ayki katkılarınla yarattığın pozitif etkiyi gör ve paylaş!</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {story ? (
+                                    <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted rounded-lg">
+                                        <p>{story}</p>
+                                    </div>
+                                ) : (
+                                    <Button onClick={handleGenerateStory} disabled={isStoryLoading} className="w-full">
+                                        {isStoryLoading ? 'Hikayen oluşturuluyor...' : 'Bu Ayki Hikayeni Oluştur'}
+                                    </Button>
+                                )}
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2 text-xs text-muted-foreground">
+                                {story && (
+                                    <Button onClick={handleGenerateStory} disabled={isStoryLoading} variant="secondary" className="w-full">
+                                        {isStoryLoading ? 'Hikayen oluşturuluyor...' : 'Yeni Bir Hikaye Oluştur'}
+                                    </Button>
+                                )}
+                                <div className="w-full flex justify-between items-center">
+                                    <p>Yapay zeka tarafından üretilmiştir.</p>
+                                    <Link href="/support/ai-assistants" className="hover:underline text-primary">Nasıl çalışır?</Link>
+                                </div>
+                            </CardFooter>
                         </Card>
                         
                         <Card>

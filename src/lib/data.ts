@@ -1222,6 +1222,33 @@ export const helpTopics: HelpTopic[] = [
         ]
     },
     {
+        icon: 'bot', title: 'Yapay Zeka Asistanları', slug: 'ai-assistants', description: 'Market Asistanı ve Etki Hikayen özelliklerinin nasıl çalıştığını öğrenin.',
+        subtopics: [
+            { 
+                title: 'Yapay Zeka Market Asistanı nasıl çalışır?', 
+                link: '#', 
+                content: `
+                    <p>Market Asistanı, alışveriş deneyiminizi kişiselleştirmek ve bilinçli kararlar vermenize yardımcı olmak için tasarlanmıştır. Asistana ne aradığınızı yazdığınızda, yapay zeka platformdaki tüm markaların verilerini (kategori, bağış oranları, sosyal etki alanları, sürdürülebilirlik bilgileri vb.) analiz eder.</p>
+                    <p>Örneğin, "Hayvanlar üzerinde test yapmayan vegan ayakkabı markası var mı?" diye sorduğunuzda, asistan bu kriterlere uyan markaları sizin için listeler ve neden uygun olduklarını kısaca açıklar. Bu sayede yüzlerce marka arasında kaybolmadan, kendi değerlerinizle en çok örtüşen seçenekleri kolayca bulabilirsiniz.</p>
+                ` 
+            },
+            { 
+                title: 'Yapay Zeka Destekli Etki Hikayem nedir?', 
+                link: '#', 
+                content: `
+                    <p>"Etki Hikayem", her ayın sonunda o ay boyunca platformda yarattığınız pozitif etkiyi özetleyen, yapay zeka tarafından size özel olarak oluşturulan kısa ve motive edici bir metindir. Profilinizdeki "Etki" sekmesinde bulabilirsiniz.</p>
+                    <p>Hikayeniz oluşturulurken şu verileriniz analiz edilir:</p>
+                    <ul>
+                        <li>Yaptığınız bağışların hangi STK'lara gittiği ve hangi alanları (çevre, eğitim vb.) desteklediği.</li>
+                        <li>Tamamladığınız gönüllülük faaliyetlerinin süresi ve konusu.</li>
+                        <li>O ay içinde kazandığınız yeni rozetler veya ulaştığınız önemli dönüm noktaları.</li>
+                    </ul>
+                    <p>Sonuçta ortaya çıkan kişisel hikayenizi, yarattığınız somut etkiyi görmek ve dilerseniz sosyal medyada paylaşarak çevrenize de ilham vermek için kullanabilirsiniz.</p>
+                ` 
+            },
+        ]
+    },
+    {
         icon: 'smartphone', title: 'Teknik Sorunlar', slug: 'technical', description: 'Uygulama hataları, yavaşlama ve diğer teknik konular.',
         subtopics: [
             { title: 'Uygulama açılmıyor, ne yapmalıyım?', link: '#', content: '<p>Öncelikle internet bağlantınızı kontrol etmenizi öneririz. Sorun devam ederse, uygulamayı tamamen kapatıp yeniden açmayı veya kullandığınız cihazı (telefon, bilgisayar) yeniden başlatmayı deneyin. Bu adımlar sorunu çözmezse, lütfen <strong>Destek Merkezi</strong> üzerinden bizimle iletişime geçin.</p>' },
