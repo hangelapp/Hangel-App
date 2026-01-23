@@ -40,7 +40,7 @@ const userStories = [
 const StoryCard = ({ title, content, authorName, authorImage, backgroundImageUrl }: { title: string, content: string, authorName: string, authorImage: string, backgroundImageUrl: string }) => (
     <div className="relative h-full w-full bg-black">
         <Image src={backgroundImageUrl} alt={title} fill className="object-cover opacity-70" data-ai-hint="story background" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
         <div className="relative h-full flex flex-col justify-end p-6 text-white text-center z-10">
             <div className="space-y-2">
                 <h3 className="text-2xl font-bold drop-shadow-lg">{title}</h3>
@@ -58,27 +58,29 @@ type CarouselApi = UseEmblaCarouselType[1]
 const StoryCarousel = ({ stories, author, avatar }: { stories: {title: string, content: string}[], author: string, avatar: string}) => {
     const [api, setApi] = React.useState<CarouselApi>()
     const [current, setCurrent] = React.useState(0)
+    const [count, setCount] = React.useState(0)
 
     React.useEffect(() => {
         if (!api) return
-        setCurrent(api.selectedScrollSnap() + 1)
+        setCount(api.scrollSnapList().length)
+        setCurrent(api.selectedScrollSnap())
         api.on("select", () => {
-            setCurrent(api.selectedScrollSnap() + 1)
+            setCurrent(api.selectedScrollSnap())
         })
     }, [api])
 
     return (
         <div className="relative h-full w-full">
-            <div className="absolute inset-x-0 top-0 p-2 z-20">
+            <div className="absolute inset-x-0 top-0 p-3 z-20 space-y-2">
                  <div className="flex items-center gap-1">
                     {stories.map((_, index) => (
                         <div key={index} className="relative h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
-                           {index < current -1 && <div className="absolute top-0 left-0 h-full w-full bg-white"></div>}
+                           <div className={`absolute top-0 left-0 h-full bg-white transition-all duration-300 ${index < current ? 'w-full' : 'w-0'}`}></div>
                         </div>
                     ))}
                 </div>
-                 <div className="flex items-center gap-2 pt-2">
-                    <Avatar className="w-8 h-8 border-2 border-white/80">
+                 <div className="flex items-center gap-3 pt-1">
+                    <Avatar className="w-9 h-9 border-2 border-white/80">
                         <AvatarImage src={avatar} />
                         <AvatarFallback>{author.charAt(0)}</AvatarFallback>
                     </Avatar>
@@ -94,13 +96,13 @@ const StoryCarousel = ({ stories, author, avatar }: { stories: {title: string, c
                             content={story.content}
                             authorName={author}
                             authorImage={avatar}
-                            backgroundImageUrl={`https://picsum.photos/seed/${author.replace(/\s/g, '-')}-${index}/400/800`}
+                            backgroundImageUrl={`https://picsum.photos/seed/${author.replace(/\s/g, '-')}-${index}/450/800`}
                         />
                     </CarouselItem>
                 ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-4" />
-                <CarouselNext className="right-4"/>
+                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
+                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
             </Carousel>
         </div>
     );
@@ -108,19 +110,21 @@ const StoryCarousel = ({ stories, author, avatar }: { stories: {title: string, c
 
 export default function ImpactStoryPage() {
   return (
-    <div className="fixed inset-0 top-12 lg:top-0 lg:left-64 bottom-16 lg:bottom-0 bg-background z-20">
-      <Tabs defaultValue="community" className="w-full h-full flex flex-col-reverse lg:flex-col">
-        <TabsList className="grid w-full grid-cols-2 rounded-none h-14 shrink-0">
-          <TabsTrigger value="community" className="h-full text-base rounded-none data-[state=active]:border-b-2 lg:data-[state=active]:border-b-0 lg:data-[state=active]:border-t-2 border-primary">Topluluğun Hikayeleri</TabsTrigger>
-          <TabsTrigger value="personal" className="h-full text-base rounded-none data-[state=active]:border-b-2 lg:data-[state=active]:border-b-0 lg:data-[state=active]:border-t-2 border-primary">Senin Hikayelerin</TabsTrigger>
-        </TabsList>
-        <TabsContent value="community" className="flex-1 mt-0">
-            <StoryCarousel stories={generalStories} author="Hangel Topluluk" avatar="" />
-        </TabsContent>
-        <TabsContent value="personal" className="flex-1 mt-0">
-            <StoryCarousel stories={userStories} author={user.name} avatar={user.avatarUrl} />
-        </TabsContent>
-      </Tabs>
+    <div className="w-full h-full flex items-center justify-center p-0 sm:p-4 bg-secondary">
+      <div className="relative w-full max-w-sm aspect-[9/16] bg-card rounded-none sm:rounded-2xl overflow-hidden shadow-2xl border">
+        <Tabs defaultValue="community" className="w-full h-full flex flex-col">
+          <TabsContent value="community" className="flex-1 mt-0 rounded-t-none sm:rounded-t-2xl overflow-hidden">
+              <StoryCarousel stories={generalStories} author="Hangel Topluluk" avatar="" />
+          </TabsContent>
+          <TabsContent value="personal" className="flex-1 mt-0 rounded-t-none sm:rounded-t-2xl overflow-hidden">
+              <StoryCarousel stories={userStories} author={user.name} avatar={user.avatarUrl} />
+          </TabsContent>
+          <TabsList className="grid w-full grid-cols-2 rounded-none h-16 shrink-0 border-t">
+            <TabsTrigger value="community" className="h-full text-base rounded-none data-[state=active]:border-t-2 border-primary data-[state=active]:shadow-inner">Topluluğun Hikayeleri</TabsTrigger>
+            <TabsTrigger value="personal" className="h-full text-base rounded-none data-[state=active]:border-t-2 border-primary data-[state=active]:shadow-inner">Senin Hikayelerin</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
     </div>
   );
 }
