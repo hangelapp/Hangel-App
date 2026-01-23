@@ -54,7 +54,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
             <HangelLogo className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-foreground">hangel</span>
         </div>
-        <nav className="flex flex-1 flex-col pt-4">
+        <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
             <li>
                 <ul role="list" className="-mx-2 space-y-1">
