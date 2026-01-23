@@ -7,10 +7,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import type { UseEmblaCarouselType } from "embla-carousel-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { user } from "@/lib/data";
 import { HangelLogo } from "@/components/icons";
 import Image from 'next/image';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React from 'react';
 
 const generalStories = [
     { title: "Eğitimle Değişen Hayatlar", content: "Bağışlarınız sayesinde 200'den fazla öğrencinin eğitim masrafları karşılandı ve hayallerine bir adım daha yaklaştılar." },
@@ -33,102 +36,91 @@ const userStories = [
     { title: "İyilik Zincirini Büyütmen", content: `Platforma davet ettiğin arkadaşların sayesinde iyilik hareketimiz daha da güçlendi. Davetlerinle 200 Sosyal Etki Puanı kazandın.` },
 ];
 
+
 const StoryCard = ({ title, content, authorName, authorImage, backgroundImageUrl }: { title: string, content: string, authorName: string, authorImage: string, backgroundImageUrl: string }) => (
-    <div className="relative h-[70vh] max-h-[550px] w-full rounded-xl overflow-hidden shadow-lg">
-        <Image src={backgroundImageUrl} alt={title} fill className="object-cover" data-ai-hint="story background" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70" />
-        <div className="relative h-full flex flex-col justify-between p-4 text-white">
-            <div className="flex items-center gap-2">
-                <Avatar className="w-10 h-10 border-2 border-white/80">
-                    <AvatarImage src={authorImage} />
-                    <AvatarFallback>{authorName.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <p className="font-semibold text-sm drop-shadow-md">{authorName}</p>
-            </div>
-            <div className="text-center space-y-2">
+    <div className="relative h-full w-full bg-black">
+        <Image src={backgroundImageUrl} alt={title} fill className="object-cover opacity-70" data-ai-hint="story background" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+        <div className="relative h-full flex flex-col justify-end p-6 text-white text-center z-10">
+            <div className="space-y-2">
                 <h3 className="text-2xl font-bold drop-shadow-lg">{title}</h3>
                 <p className="text-base drop-shadow-md max-w-xs mx-auto">{content}</p>
             </div>
-            <div className="text-center opacity-80 pt-4">
+             <div className="text-center opacity-80 pt-12">
                 <HangelLogo className="w-8 h-8 mx-auto" />
             </div>
         </div>
     </div>
 );
 
+type CarouselApi = UseEmblaCarouselType[1]
 
-export default function ImpactStoryPage() {
-  return (
-    <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold font-headline">Hangel Etki Hikayeleri</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">Birlikte başardıklarımızı ve yarattığımız pozitif değişimi keşfedin.</p>
-      </div>
+const StoryCarousel = ({ stories, author, avatar }: { stories: {title: string, content: string}[], author: string, avatar: string}) => {
+    const [api, setApi] = React.useState<CarouselApi>()
+    const [current, setCurrent] = React.useState(0)
 
-      <div className="space-y-8">
-        <div>
-            <div className="flex items-center gap-3 mb-4">
-                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border">
-                    <HangelLogo className="w-7 h-7 text-primary"/>
-                 </div>
-                 <h2 className="text-xl font-semibold">Topluluğun Hikayeleri</h2>
+    React.useEffect(() => {
+        if (!api) return
+        setCurrent(api.selectedScrollSnap() + 1)
+        api.on("select", () => {
+            setCurrent(api.selectedScrollSnap() + 1)
+        })
+    }, [api])
+
+    return (
+        <div className="relative h-full w-full">
+            <div className="absolute inset-x-0 top-0 p-2 z-20">
+                 <div className="flex items-center gap-1">
+                    {stories.map((_, index) => (
+                        <div key={index} className="relative h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
+                           {index < current -1 && <div className="absolute top-0 left-0 h-full w-full bg-white"></div>}
+                        </div>
+                    ))}
+                </div>
+                 <div className="flex items-center gap-2 pt-2">
+                    <Avatar className="w-8 h-8 border-2 border-white/80">
+                        <AvatarImage src={avatar} />
+                        <AvatarFallback>{author.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <p className="font-semibold text-sm text-white drop-shadow-md">{author}</p>
+                </div>
             </div>
-            <Carousel
-                opts={{
-                    align: "start",
-                }}
-                className="w-full"
-            >
-                <CarouselContent className="-ml-2">
-                {generalStories.map((story, index) => (
-                    <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+            <Carousel setApi={setApi} className="w-full h-full">
+                <CarouselContent>
+                {stories.map((story, index) => (
+                    <CarouselItem key={index} className="basis-full">
                         <StoryCard 
                             title={story.title} 
                             content={story.content}
-                            authorName="Hangel Topluluk"
-                            authorImage=""
-                            backgroundImageUrl={`https://picsum.photos/seed/gen-story-${index}/400/600`}
+                            authorName={author}
+                            authorImage={avatar}
+                            backgroundImageUrl={`https://picsum.photos/seed/${author.replace(/\s/g, '-')}-${index}/400/800`}
                         />
                     </CarouselItem>
                 ))}
                 </CarouselContent>
-                <CarouselPrevious className="ml-12 hidden sm:flex" />
-                <CarouselNext className="mr-12 hidden sm:flex"/>
+                <CarouselPrevious className="left-4" />
+                <CarouselNext className="right-4"/>
             </Carousel>
         </div>
+    );
+};
 
-        <div>
-            <div className="flex items-center gap-3 mb-4">
-                 <Avatar className="w-12 h-12 border-2 border-primary">
-                    <AvatarImage src={user.avatarUrl} />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <h2 className="text-xl font-semibold">Senin Hikayelerin</h2>
-            </div>
-            <Carousel
-                opts={{
-                    align: "start",
-                }}
-                className="w-full"
-            >
-                <CarouselContent className="-ml-2">
-                {userStories.map((story, index) => (
-                    <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                       <StoryCard 
-                            title={story.title} 
-                            content={story.content}
-                            authorName={user.name}
-                            authorImage={user.avatarUrl}
-                            backgroundImageUrl={`https://picsum.photos/seed/user-story-${index}/400/600`}
-                        />
-                    </CarouselItem>
-                ))}
-                </CarouselContent>
-                <CarouselPrevious className="ml-12 hidden sm:flex"/>
-                <CarouselNext className="mr-12 hidden sm:flex"/>
-            </Carousel>
-        </div>
-      </div>
+export default function ImpactStoryPage() {
+  return (
+    <div className="fixed inset-0 top-12 lg:top-0 lg:left-64 bottom-16 lg:bottom-0 bg-background z-20">
+      <Tabs defaultValue="community" className="w-full h-full flex flex-col-reverse lg:flex-col">
+        <TabsList className="grid w-full grid-cols-2 rounded-none h-14 shrink-0">
+          <TabsTrigger value="community" className="h-full text-base rounded-none data-[state=active]:border-b-2 lg:data-[state=active]:border-b-0 lg:data-[state=active]:border-t-2 border-primary">Topluluğun Hikayeleri</TabsTrigger>
+          <TabsTrigger value="personal" className="h-full text-base rounded-none data-[state=active]:border-b-2 lg:data-[state=active]:border-b-0 lg:data-[state=active]:border-t-2 border-primary">Senin Hikayelerin</TabsTrigger>
+        </TabsList>
+        <TabsContent value="community" className="flex-1 mt-0">
+            <StoryCarousel stories={generalStories} author="Hangel Topluluk" avatar="" />
+        </TabsContent>
+        <TabsContent value="personal" className="flex-1 mt-0">
+            <StoryCarousel stories={userStories} author={user.name} avatar={user.avatarUrl} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
