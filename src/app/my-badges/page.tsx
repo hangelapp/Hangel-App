@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp } from 'lucide-react';
+import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { badges, certificates, user } from '@/lib/data';
@@ -13,6 +13,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Progress } from '@/components/ui/progress';
+import Link from 'next/link';
 
 const stats = [
     { icon: Star, value: user.impactScore.toLocaleString('tr-TR'), label: 'Etki Puanı' },
@@ -50,6 +52,35 @@ const allPointTransactions = [
 ];
 
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
+
+const NextBadgeGoal = () => {
+    const nextBadge = {
+        name: 'Gümüş Çevre Koruyucusu',
+        icon: Leaf,
+        progress: 80,
+        current: 800,
+        required: 1000,
+    };
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Sıradaki Rozet Hedefi</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">
+                    <div className="flex items-center gap-4">
+                        <nextBadge.icon className="h-8 w-8 text-green-600"/>
+                        <div className="flex-1">
+                            <p className="font-semibold text-sm">{nextBadge.name}</p>
+                            <Progress value={nextBadge.progress} className="mt-1 h-2" />
+                            <p className="text-xs text-muted-foreground mt-1">{nextBadge.current} / {nextBadge.required} Puan</p>
+                        </div>
+                    </div>
+                </Link>
+            </CardContent>
+        </Card>
+    );
+};
 
 const VectorBadge = ({ badge }: { badge: BadgeType }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
@@ -111,7 +142,7 @@ export default function MyBadgesPage() {
             if (sortConfig.direction === 'desc') {
                 return valB - valA;
             } else {
-                return valA - valB;
+                return valA - valA;
             }
         });
 
@@ -122,6 +153,8 @@ export default function MyBadgesPage() {
     <div className="p-4 space-y-6 animate-in fade-in-0">
         <h1 className="text-2xl font-bold font-headline">Puan, Rozet ve Sertifikalar</h1>
         
+        <NextBadgeGoal />
+
         <Tabs defaultValue="impact-score" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="impact-score">Sosyal Etki Puanı</TabsTrigger>

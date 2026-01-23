@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering, certificates } from '@/lib/data';
 import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean, href?: string }) => {
@@ -63,6 +64,35 @@ const pointTransactions = [
 ];
 
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
+
+const NextBadgeGoal = () => {
+    const nextBadge = {
+        name: 'Gümüş Çevre Koruyucusu',
+        icon: Leaf,
+        progress: 80,
+        current: 800,
+        required: 1000,
+    };
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Sıradaki Rozet Hedefi</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">
+                    <div className="flex items-center gap-4">
+                        <nextBadge.icon className="h-8 w-8 text-green-600"/>
+                        <div className="flex-1">
+                            <p className="font-semibold text-sm">{nextBadge.name}</p>
+                            <Progress value={nextBadge.progress} className="mt-1 h-2" />
+                            <p className="text-xs text-muted-foreground mt-1">{nextBadge.current} / {nextBadge.required} Puan</p>
+                        </div>
+                    </div>
+                </Link>
+            </CardContent>
+        </Card>
+    );
+};
 
 export default function ProfilePage() {
     const [profileUrl, setProfileUrl] = useState('');
@@ -118,7 +148,7 @@ export default function ProfilePage() {
             if (sortConfig.direction === 'desc') {
                 return valB - valA;
             } else {
-                return valA - valB;
+                return valA - valA;
             }
         });
 
@@ -411,6 +441,7 @@ export default function ProfilePage() {
                     </TabsContent>
                     
                     <TabsContent value="badges-certificates" className="p-4 space-y-4">
+                        <NextBadgeGoal />
                         <Card>
                             <CardHeader><CardTitle className='text-lg'>Kazanılan Rozetler</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-3 gap-4">
