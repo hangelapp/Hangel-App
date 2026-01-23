@@ -31,12 +31,12 @@ const group3Items: SideNavItem[] = [
     { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
     { href: '/impact-story', label: 'Etki Hikayem', icon: 'sparkles' },
-    { href: '/settings', label: 'Ayarlar', icon: 'settings' },
+    { href: '/library', label: 'Kütüphane', icon: 'library' },
 ];
 
 const group4Items: SideNavItem[] = [
   { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
-  { href: '/library', label: 'Kütüphane', icon: 'library' },
+  { href: '/settings', label: 'Ayarlar', icon: 'settings' },
   { href: '/bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', icon: 'book-copy' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },

@@ -49,12 +49,12 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
 
   return (
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">
-      <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-card border-r px-4 pb-4">
+      <div className="flex grow flex-col overflow-y-auto bg-card border-r px-4 pb-4">
         <div className="flex h-12 shrink-0 items-center gap-2 px-2">
             <HangelLogo className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-foreground">hangel</span>
         </div>
-        <nav className="flex flex-1 flex-col">
+        <nav className="flex flex-1 flex-col pt-4">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
             <li>
                 <ul role="list" className="-mx-2 space-y-1">
