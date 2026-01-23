@@ -13,6 +13,7 @@ const contractGroups = [
             { title: 'Kullanıcı Sözleşmesi', slug: 'kullanici-sozlesmesi' },
             { title: 'Kuruluş Sözleşmesi', slug: 'kurulus-sozlesmesi' },
             { title: 'Gönüllülük Sözleşmesi', slug: 'gonulluluk-sozlesmesi' },
+            { title: 'Gönüllü Hakları ve Sorumlulukları Beyannamesi', slug: 'gonullu-haklari-beyannamesi' },
         ]
     },
     {
@@ -31,6 +32,7 @@ const contractGroups = [
             { title: 'Sosyal Etki Politikası', slug: 'sosyal-etki-politikasi' },
             { title: 'Açık Açık Sosyal Girişim Beyanı', slug: 'acik-acik-sosyal-girisim-beyani' },
             { title: 'Bağış ve Yardım Politikası', slug: 'bagis-ve-yardim-politikasi' },
+            { title: 'Bağışçı Hakları Beyannamesi', slug: 'bagisci-haklari-beyannamesi' },
             { title: 'Kâr Dağıtım Politikası', slug: 'kar-dagitim-politikasi' },
             { title: 'Ücret Politikamız', slug: 'ucret-politikasi' },
         ]

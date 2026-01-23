@@ -447,6 +447,58 @@ export const contractsData: Contract[] = [
       <p>Erişilebilirlik konusundaki çabalarımız süreklidir. Herhangi bir erişilebilirlik engeliyle karşılaşırsanız veya iyileştirme önerileriniz varsa, lütfen <a href="/support">destek merkezimiz</a> aracılığıyla bizimle iletişime geçin. Geri bildirimleriniz, platformumuzu herkes için daha iyi bir yer haline getirmemize yardımcı olacaktır.</p>
     `,
   },
+  {
+    slug: 'gonullu-haklari-beyannamesi',
+    title: 'Gönüllü Hakları ve Sorumlulukları Beyannamesi',
+    content: `
+      <h4>Giriş</h4>
+      <p>Gönüllülük, bireyin kendi özgür iradesiyle, maddi bir karşılık beklemeden, toplumsal fayda amacıyla bir sivil toplum kuruluşunun (STK) faaliyetlerine katılmasıdır. Bu süreç, hem gönüllüye hem de STK'ya karşılıklı fayda sağlayan bir ortaklıktır. Bu beyanname, bu ortaklığın sağlıklı ve verimli bir şekilde yürütülmesi için gönüllülerin sahip olduğu hakları ve üstlendiği sorumlulukları tanımlar.</p>
+      
+      <h4>Gönüllünün Hakları</h4>
+      <ol>
+        <li><strong>Bilgilendirilme Hakkı:</strong> Gönüllü, çalıştığı STK'nın misyonunu, vizyonunu, faaliyetlerini ve gönüllüden beklentilerini açıkça bilme hakkına sahiptir.</li>
+        <li><strong>Görev Tanımı Hakkı:</strong> Gönüllüye, yapacağı işin tanımı, süresi, sorumlulukları ve kiminle çalışacağı hakkında net bilgi verilmelidir.</li>
+        <li><strong>Oryantasyon ve Eğitim Hakkı:</strong> Görevini daha iyi yapabilmesi için gerekli oryantasyon ve eğitim desteğini alma hakkına sahiptir.</li>
+        <li><strong>Saygı Görme Hakkı:</strong> Gönüllü, fikirlerine, inançlarına ve kişiliğine saygı duyulan, ayrımcılıktan uzak, adil bir ortamda faaliyet gösterme hakkına sahiptir.</li>
+        <li><strong>Güvenli Ortam Hakkı:</strong> Faaliyetlerini sağlıklı ve güvenli bir ortamda yürütme ve olası risklere karşı bilgilendirilme hakkına sahiptir.</li>
+        <li><strong>Yönlendirilme ve Destek Alma Hakkı:</strong> Faaliyet süresince bir sorumlu tarafından yönlendirilme, denetlenme ve ihtiyaç duyduğunda destek alma hakkına sahiptir.</li>
+        <li><strong>Takdir Edilme Hakkı:</strong> Yaptığı katkılardan dolayı manevi olarak takdir edilme ve çabalarının değerli olduğunun hissettirilmesi hakkına sahiptir.</li>
+        <li><strong>Geri Bildirim Hakkı:</strong> Hem performansı hakkında yapıcı geri bildirim alma hem de gönüllülük süreciyle ilgili görüş ve önerilerini sunma hakkına sahiptir.</li>
+        <li><strong>Ayrılma Hakkı:</strong> Makul bir bildirim süresine uyarak gönüllülük faaliyetini sonlandırma hakkına sahiptir.</li>
+      </ol>
+
+      <h4>Gönüllünün Sorumlulukları</h4>
+      <ol>
+        <li><strong>Taahhütlere Bağlılık:</strong> Üstlendiği görevi, belirlenen süre ve standartlarda, zamanında ve eksiksiz bir şekilde yerine getirmekle sorumludur.</li>
+        <li><strong>Kurum Kurallarına Uyum:</strong> Faaliyet gösterdiği STK'nın politika, prosedür ve etik ilkelerine uymakla sorumludur.</li>
+        <li><strong>Gizliliğe Saygı:</strong> Faaliyet sırasında edindiği, STK'ya veya faydalanıcılara ait özel ve gizli bilgileri korumak ve üçüncü kişilerle paylaşmamakla sorumludur.</li>
+        <li><strong>Profesyonellik ve Temsiliyet:</strong> STK'yı temsil ettiğinin bilinciyle, faaliyetler sırasında ve dışında kurumun itibarına zarar verecek davranışlardan kaçınmakla sorumludur.</li>
+        <li><strong>Ekip Çalışması:</strong> Diğer gönüllüler, çalışanlar ve faydalanıcılarla saygı ve işbirliği içinde çalışmakla sorumludur.</li>
+        <li><strong>Güvenilirlik:</strong> Devamlılığını veya katılımını etkileyecek durumları (hastalık, özel işler vb.) ilgili sorumluya zamanında bildirmekle sorumludur.</li>
+        <li><strong>Kaynakları Özenli Kullanma:</strong> STK tarafından kendisine emanet edilen kaynakları (malzeme, ekipman, para vb.) özenle ve sadece faaliyetin amacı doğrultusunda kullanmakla sorumludur.</li>
+      </ol>
+    `
+  },
+  {
+    slug: 'bagisci-haklari-beyannamesi',
+    title: 'Bağışçı Hakları Beyannamesi',
+    content: `
+      <p>Filantropi (karşılıksız yardımseverlik), toplumun gelişimi için gönüllü eyleme dayanır. Bağışçılık, bu gönüllü eylemin en temel biçimlerinden biridir. Bağışçıların ve potansiyel bağışçıların, destekledikleri sivil toplum kuruluşlarına (STK) tam güven duymalarını sağlamak amacıyla, tüm bağışçıların aşağıdaki haklara sahip olduğunu beyan ederiz:</p>
+      <ol>
+        <li>Kuruluşun misyonunu, bu misyonu gerçekleştirmek için kaynaklarını nasıl kullanmayı planladığını ve misyonunu yerine getirme kapasitesini bilme hakkı.</li>
+        <li>Kuruluşun yönetim kurulunda kimlerin görev yaptığını bilme ve yöneticilerin kendi sorumluluklarını basiretli bir şekilde yerine getirmesini bekleme hakkı.</li>
+        <li>Kuruluşun en güncel finansal tablolarına erişim hakkı.</li>
+        <li>Yaptığı bağışın, belirtilen amaçlar doğrultusunda kullanılacağından emin olma hakkı.</li>
+        <li>Uygun bir şekilde tanınma ve takdir edilme hakkı.</li>
+        <li>Bağışıyla ilgili bilgilerin, yasaların gerektirdiği durumlar dışında, saygı ve gizlilik çerçevesinde ele alınacağından emin olma hakkı.</li>
+        <li>Kuruluşu temsil eden tüm bireylerle olan ilişkilerinin profesyonel bir doğa taşımasını bekleme hakkı.</li>
+        <li>Bağış talebinde bulunanların gönüllü mü, çalışan mı yoksa ücretli bir danışman mı olduğunu bilme hakkı.</li>
+        <li>Kuruluşun posta veya e-posta listelerinden isminin çıkarılmasını isteme fırsatına sahip olma hakkı.</li>
+        <li>Bağış yaparken soru sormakta özgür hissetme ve anında, doğru ve açık cevaplar alma hakkı.</li>
+      </ol>
+      <p><small><i>Bu beyanname, uluslararası kabul görmüş "A Donor Bill of Rights" metninden uyarlanmıştır. Orijinal metin, Association of Fundraising Professionals (AFP), Association for Healthcare Philanthropy (AHP), Council for Advancement and Support of Education (CASE) ve Giving Institute tarafından oluşturulmuş ve geliştirilmiştir.</i></small></p>
+    `
+  }
 ];
 
     
