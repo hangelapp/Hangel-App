@@ -40,6 +40,7 @@ const group4Items: SideNavItem[] = [
   { href: '/bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', icon: 'book-copy' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
+  { href: '/support/ai-assistants', label: 'Yapay Zeka Asistanları', icon: 'bot' },
 ];
 
 

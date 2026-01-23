@@ -16,7 +16,7 @@ export default function SupportTopicPage({ params }: { params: { slug: string } 
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+      <Button onClick={() => router.push('/support')} variant="ghost" size="icon" className="mb-2 -ml-2">
         <ArrowLeft className="h-6 w-6" />
       </Button>
       <div>
