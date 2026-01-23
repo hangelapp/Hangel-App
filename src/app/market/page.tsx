@@ -269,6 +269,9 @@ export default function MarketPage() {
                                 />
                                 <Button onClick={handleAskAssistant} disabled={isAssistantLoading}>Öneri Al</Button>
                             </div>
+                            <Button variant="link" asChild className="text-xs text-muted-foreground p-0 h-auto">
+                                <Link href="/support/ai-assistants">Nasıl çalışır?</Link>
+                            </Button>
                         </div>
                     </DialogContent>
                 </Dialog>

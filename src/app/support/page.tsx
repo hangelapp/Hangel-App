@@ -7,6 +7,7 @@ import {
   Search,
   ChevronRight,
   Mail,
+  Bot
 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';

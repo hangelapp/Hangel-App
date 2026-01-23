@@ -4,3 +4,4 @@ config();
 
 import '@/ai/flows/marketplace-ai-product-description.ts';
 import '@/ai/flows/marketplace-ai-assistant.ts';
+import '@/ai/flows/impact-story-flow.ts';

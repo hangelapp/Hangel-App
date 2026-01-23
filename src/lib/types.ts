@@ -110,6 +110,7 @@ export type NGO = {
   economicEnterpriseUrl?: string;
   posts: Post[];
   opportunities: Volunteering[];
+  campaigns?: Campaign[];
 };
 
 export type Event = {
@@ -299,6 +300,9 @@ export type Campaign = {
   imageUrl: string;
   imageHint: string;
   sponsored?: boolean;
+  goal: number;
+  currentAmount: number;
+  ngoId: string;
 };
 
 export type StudentClub = {
