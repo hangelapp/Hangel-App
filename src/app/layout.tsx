@@ -17,24 +17,23 @@ const group1Items: SideNavItem[] = [
 const group2Items: SideNavItem[] = [
     { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
     { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
-    { href: '/my-badges', label: 'Rozetler', icon: 'award' },
+    { href: '/my-badges', label: 'Rozetler ve Sertifikalar', icon: 'award' },
     { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
 ];
 
 const group3Items: SideNavItem[] = [
-    { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
+    { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
     { href: '/impact-story', label: 'Etki Hikayem', icon: 'sparkles' },
     { href: '/settings', label: 'Ayarlar', icon: 'settings' },
 ];
 
 const group4Items: SideNavItem[] = [
-  { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
+  { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
   { href: '/library', label: 'Kütüphane', icon: 'library' },
   { href: '/bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', icon: 'book-copy' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
-  { href: '/support/ai-assistants', label: 'Yapay Zeka Asistanları', icon: 'bot' },
 ];
 
 

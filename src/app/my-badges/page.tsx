@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useMemo } from 'react';
@@ -158,7 +159,7 @@ export default function MyBadgesPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-        <h1 className="text-2xl font-bold font-headline">Puan, Rozet ve Sertifikalar</h1>
+        <h1 className="text-2xl font-bold font-headline">Rozetler ve Sertifikalar</h1>
         
         <NextBadgeGoal />
 
