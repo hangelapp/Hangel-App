@@ -54,34 +54,38 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
             <HangelLogo className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-foreground">hangel</span>
         </div>
-        <nav className="flex flex-1 flex-col">
-          <ul role="list" className="flex flex-1 flex-col gap-y-7">
-            <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                    {mainItems.map((item) => (
-                       <NavLink key={item.label} item={item} pathname={pathname} />
-                    ))}
-                </ul>
-            </li>
+        <nav className="flex flex-1 flex-col mt-4">
+          <div className="flex flex-1 flex-col">
+            <ul role="list" className="-mx-2 space-y-1">
+                {mainItems.map((item) => (
+                   <NavLink key={item.label} item={item} pathname={pathname} />
+                ))}
+            </ul>
+
             {navItems && navItems.length > 0 && (
-                <li>
+                <>
+                    <Separator className="my-4" />
                     <ul role="list" className="-mx-2 space-y-1">
                         {navItems.map((item) => (
                         <NavLink key={item.label} item={item} pathname={pathname} />
                         ))}
                     </ul>
-                </li>
+                </>
             )}
+
             {userItems && userItems.length > 0 && (
-                <li>
+                <>
+                    <Separator className="my-4" />
                     <ul role="list" className="-mx-2 space-y-1">
                         {userItems.map((item) => (
                         <NavLink key={item.label} item={item} pathname={pathname} />
                         ))}
                     </ul>
-                </li>
+                </>
             )}
-             <li className="mt-auto">
+
+             <div className="mt-auto">
+                <Separator className="my-4" />
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
                     {secondaryItems.map((item) => (
                         <NavLink key={item.label} item={item} pathname={pathname} />
@@ -96,8 +100,8 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
                         </Link>
                     </li>
                 </ul>
-            </li>
-          </ul>
+            </div>
+          </div>
         </nav>
       </div>
     </div>

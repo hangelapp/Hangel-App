@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -5,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { timelinePosts, adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, X } from 'lucide-react';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +71,7 @@ export default function TimelinePage() {
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSanaOzelVisible, setIsSanaOzelVisible] = useState(true);
 
   const sortedAndFilteredPosts = useMemo(() => {
     let posts = [...timelinePosts];
@@ -169,35 +171,45 @@ export default function TimelinePage() {
                 </TabsList>
             </div>
             <TabsContent value="special" className="mt-0">
-                <div className="p-2 sm:p-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Sana Özel</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <h3 className="text-sm font-semibold mb-2">Yaklaşan Gönüllülük Etkinliği</h3>
-                                <Link href="/volunteering/1" className="block p-3 rounded-lg border hover:bg-accent">
-                                    <p className="font-semibold text-sm">Afet Bölgesi Yardım Dağıtımı</p>
-                                    <p className="text-xs text-muted-foreground">Ahbap Derneği - 1 Ağustos'ta başlıyor</p>
-                                </Link>
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-semibold mb-2">Rozet Hedefi</h3>
-                                <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">
-                                    <div className="flex items-center gap-4">
-                                        <Leaf className="h-8 w-8 text-green-600"/>
-                                        <div className="flex-1">
-                                            <p className="font-semibold text-sm">Gümüş Çevre Koruyucusu</p>
-                                            <Progress value={80} className="mt-1 h-2" />
-                                            <p className="text-xs text-muted-foreground mt-1">1000 puandan 800'ü tamamlandı.</p>
+                {isSanaOzelVisible && (
+                    <div className="p-2 sm:p-4">
+                        <Card className="relative">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Sana Özel</CardTitle>
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute top-2 right-2 h-7 w-7" 
+                                    onClick={() => setIsSanaOzelVisible(false)}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <h3 className="text-sm font-semibold mb-2">Yaklaşan Gönüllülük Etkinliği</h3>
+                                    <Link href="/volunteering/1" className="block p-3 rounded-lg border hover:bg-accent">
+                                        <p className="font-semibold text-sm">Afet Bölgesi Yardım Dağıtımı</p>
+                                        <p className="text-xs text-muted-foreground">Ahbap Derneği - 1 Ağustos'ta başlıyor</p>
+                                    </Link>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold mb-2">Rozet Hedefi</h3>
+                                    <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">
+                                        <div className="flex items-center gap-4">
+                                            <Leaf className="h-8 w-8 text-green-600"/>
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-sm">Gümüş Çevre Koruyucusu</p>
+                                                <Progress value={80} className="mt-1 h-2" />
+                                                <p className="text-xs text-muted-foreground mt-1">1000 puandan 800'ü tamamlandı.</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                                    </Link>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
                 <div className="p-2 sm:p-4 space-y-4">
                     {sortedAndFilteredPosts.map((post, index) => (
                     <React.Fragment key={post.id}>
