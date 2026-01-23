@@ -35,7 +35,9 @@ const group3Items: SideNavItem[] = [
 ];
 
 const group4Items: SideNavItem[] = [
+  { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
   { href: '/library', label: 'Kütüphane', icon: 'library' },
+  { href: '/bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', icon: 'book-copy' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
