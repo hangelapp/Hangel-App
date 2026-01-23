@@ -93,8 +93,6 @@ export default function SettingsPage() {
             </CardHeader>
              <CardContent className="p-0">
                  <div className="flex flex-col divide-y">
-                    <SettingsLink href="/about" icon={Info} label="Hakkımızda" iconColor="bg-cyan-500" />
-                    <SettingsLink href="/support" icon={HelpCircle} label="Destek" iconColor="bg-purple-500" />
                     <SettingsLink href="/settings/contracts" icon={FileText} label="Sözleşmeler ve Politikalar" iconColor="bg-slate-500" />
                  </div>
             </CardContent>

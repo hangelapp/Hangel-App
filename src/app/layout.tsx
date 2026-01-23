@@ -31,7 +31,6 @@ const group3Items: SideNavItem[] = [
 const group4Items: SideNavItem[] = [
   { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
   { href: '/settings', label: 'Ayarlar', icon: 'settings' },
-  { href: '/bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', icon: 'book-copy' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
