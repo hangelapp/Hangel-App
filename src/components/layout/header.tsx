@@ -3,16 +3,37 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren,
+  Menu, Bell, Siren, LogOut, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { UserAvatar } from '@/components/shared/user-avatar';
-import { Separator } from '../ui/separator';
 import { usePathname } from 'next/navigation';
 import { user } from '@/lib/data';
 import { SideNavItem } from '@/lib/types';
-import { HangelLogo } from '../icons';
+import * as Icons from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+
+// iOS-style icon background colors
+const iconColorMap: { [key: string]: string } = {
+  store: 'bg-green-500',
+  building: 'bg-orange-500',
+  users: 'bg-blue-500',
+  'dollar-sign': 'bg-green-600',
+  'file-text': 'bg-sky-500',
+  award: 'bg-amber-500',
+  'heart-handshake': 'bg-red-500',
+  'bar-chart-3': 'bg-indigo-500',
+  send: 'bg-cyan-500',
+  sparkles: 'bg-purple-500',
+  library: 'bg-amber-700',
+  'layout-grid': 'bg-slate-500',
+  settings: 'bg-gray-500',
+  info: 'bg-blue-400',
+  'help-circle': 'bg-teal-500',
+};
+
 
 const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
@@ -41,12 +62,48 @@ const group4Items: SideNavItem[] = [
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
 
+const MobileNavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
+    // @ts-ignore
+    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+    
+    const color = iconColorMap[item.icon] || 'bg-gray-500';
+
+    return (
+        <li className={cn(!isLast && 'border-b')}>
+             <SheetClose asChild>
+                <Link
+                    href={item.href}
+                    className={'group flex items-center justify-between p-3 transition-colors'}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className={cn('w-7 h-7 rounded-md flex items-center justify-center', color)}>
+                            <Icon className="h-4 w-4 text-white" aria-hidden="true" />
+                        </div>
+                        <span className={'text-base font-medium text-foreground'}>
+                            {item.label}
+                        </span>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                </Link>
+             </SheetClose>
+        </li>
+    );
+};
+
+const MobileNavList = ({ items }: { items: SideNavItem[] }) => (
+    <ul role="list" className="bg-card rounded-lg overflow-hidden border">
+        {items.map((item, index) => (
+            <MobileNavLink key={item.label} item={item} isLast={index === items.length - 1} />
+        ))}
+    </ul>
+);
+
 
 function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-[300px] p-0 flex flex-col bg-card">
-        <SheetHeader className="p-4 border-b">
+      <SheetContent side="left" className="w-[300px] p-0 flex flex-col bg-secondary">
+        <SheetHeader className="p-4 border-b bg-card">
            <SheetClose asChild>
             <Link href="/profile" className="text-left">
               <SheetTitle className='flex items-center gap-3'>
@@ -59,70 +116,29 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
             </Link>
           </SheetClose>
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto">
-          <nav className="py-4">
-            <ul>
-              {group1Items.map((item) => (
-                <li key={item.label}>
-                    <Link href={item.href} passHref>
-                        <SheetClose asChild>
-                            <div className="flex items-center justify-between px-4 py-2.5 text-base text-foreground hover:bg-accent">
-                                <span>{item.label}</span>
-                            </div>
-                        </SheetClose>
-                    </Link>
-                </li>
-              ))}
-            </ul>
-            <Separator className="my-2" />
-            <ul>
-              {group2Items.map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} passHref>
-                    <SheetClose asChild>
-                        <div className="flex items-center justify-between px-4 py-2.5 text-base text-foreground hover:bg-accent">
-                            <span>{item.label}</span>
-                        </div>
-                    </SheetClose>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <Separator className="my-2" />
-             <ul>
-              {group3Items.map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} passHref>
-                    <SheetClose asChild>
-                        <div className="flex items-center justify-between px-4 py-2.5 text-base text-foreground hover:bg-accent">
-                            <span>{item.label}</span>
-                        </div>
-                    </SheetClose>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-             <Separator className="my-2" />
-             <ul>
-              {group4Items.map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} passHref>
-                    <SheetClose asChild>
-                        <div className="flex items-center justify-between px-4 py-2.5 text-base text-foreground hover:bg-accent">
-                            <span>{item.label}</span>
-                        </div>
-                    </SheetClose>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <MobileNavList items={group1Items} />
+            <MobileNavList items={group2Items} />
+            <MobileNavList items={group3Items} />
+            <MobileNavList items={group4Items} />
         </div>
-        <SheetClose asChild>
-          <div className='p-4 border-t'>
-            <Link href="/login" className="text-destructive w-full text-center p-2 block">Çıkış Yap</Link>
-          </div>
-        </SheetClose>
+         <div className='p-4 border-t bg-secondary'>
+            <ul role="list" className="bg-card rounded-lg overflow-hidden border">
+                <li>
+                    <SheetClose asChild>
+                         <Link
+                            href="/login"
+                            className='group flex items-center p-3'
+                        >
+                            <div className='w-7 h-7 rounded-md flex items-center justify-center bg-red-500'>
+                                <Icons.LogOut className='h-4 w-4 text-white' aria-hidden="true" />
+                            </div>
+                            <span className='ml-4 text-base font-medium text-destructive'>Çıkış Yap</span>
+                        </Link>
+                    </SheetClose>
+                </li>
+            </ul>
+        </div>
       </SheetContent>
     </Sheet>
   );
