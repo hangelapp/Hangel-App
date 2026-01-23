@@ -1,11 +1,16 @@
+'use client';
+
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { user } from "@/lib/data";
+import { HangelLogo } from "@/components/icons";
+import Image from 'next/image';
 
 const generalStories = [
     { title: "Eğitimle Değişen Hayatlar", content: "Bağışlarınız sayesinde 200'den fazla öğrencinin eğitim masrafları karşılandı ve hayallerine bir adım daha yaklaştılar." },
@@ -28,6 +33,29 @@ const userStories = [
     { title: "İyilik Zincirini Büyütmen", content: `Platforma davet ettiğin arkadaşların sayesinde iyilik hareketimiz daha da güçlendi. Davetlerinle 200 Sosyal Etki Puanı kazandın.` },
 ];
 
+const StoryCard = ({ title, content, authorName, authorImage, backgroundImageUrl }: { title: string, content: string, authorName: string, authorImage: string, backgroundImageUrl: string }) => (
+    <div className="relative h-[70vh] max-h-[550px] w-full rounded-xl overflow-hidden shadow-lg">
+        <Image src={backgroundImageUrl} alt={title} fill className="object-cover" data-ai-hint="story background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70" />
+        <div className="relative h-full flex flex-col justify-between p-4 text-white">
+            <div className="flex items-center gap-2">
+                <Avatar className="w-10 h-10 border-2 border-white/80">
+                    <AvatarImage src={authorImage} />
+                    <AvatarFallback>{authorName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <p className="font-semibold text-sm drop-shadow-md">{authorName}</p>
+            </div>
+            <div className="text-center space-y-2">
+                <h3 className="text-2xl font-bold drop-shadow-lg">{title}</h3>
+                <p className="text-base drop-shadow-md max-w-xs mx-auto">{content}</p>
+            </div>
+            <div className="text-center opacity-80 pt-4">
+                <HangelLogo className="w-8 h-8 mx-auto" />
+            </div>
+        </div>
+    </div>
+);
+
 
 export default function ImpactStoryPage() {
   return (
@@ -37,39 +65,68 @@ export default function ImpactStoryPage() {
         <p className="text-muted-foreground max-w-2xl mx-auto">Birlikte başardıklarımızı ve yarattığımız pozitif değişimi keşfedin.</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
-            <h2 className="text-2xl font-semibold mb-4">Topluluğun Hikayeleri</h2>
-            <Accordion type="single" collapsible className="w-full space-y-3">
-            {generalStories.map((story, index) => (
-                <AccordionItem value={`item-g-${index}`} key={index} className="border rounded-lg px-4 bg-card">
-                    <AccordionTrigger className="hover:no-underline text-left font-semibold">{story.title}</AccordionTrigger>
-                    <AccordionContent className="pt-2">
-                       <p className="text-muted-foreground">{story.content}</p>
-                    </AccordionContent>
-                </AccordionItem>
-            ))}
-            </Accordion>
+            <div className="flex items-center gap-3 mb-4">
+                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border">
+                    <HangelLogo className="w-7 h-7 text-primary"/>
+                 </div>
+                 <h2 className="text-xl font-semibold">Topluluğun Hikayeleri</h2>
+            </div>
+            <Carousel
+                opts={{
+                    align: "start",
+                }}
+                className="w-full"
+            >
+                <CarouselContent className="-ml-2">
+                {generalStories.map((story, index) => (
+                    <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                        <StoryCard 
+                            title={story.title} 
+                            content={story.content}
+                            authorName="Hangel Topluluk"
+                            authorImage=""
+                            backgroundImageUrl={`https://picsum.photos/seed/gen-story-${index}/400/600`}
+                        />
+                    </CarouselItem>
+                ))}
+                </CarouselContent>
+                <CarouselPrevious className="ml-12 hidden sm:flex" />
+                <CarouselNext className="mr-12 hidden sm:flex"/>
+            </Carousel>
         </div>
 
         <div>
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-3">
-                <Avatar>
+            <div className="flex items-center gap-3 mb-4">
+                 <Avatar className="w-12 h-12 border-2 border-primary">
                     <AvatarImage src={user.avatarUrl} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                Senin Hikayelerin
-            </h2>
-            <Accordion type="single" collapsible className="w-full space-y-3">
-            {userStories.map((story, index) => (
-                <AccordionItem value={`item-u-${index}`} key={index} className="border rounded-lg px-4 bg-card">
-                    <AccordionTrigger className="hover:no-underline text-left font-semibold">{story.title}</AccordionTrigger>
-                    <AccordionContent className="pt-2">
-                       <p className="text-muted-foreground">{story.content}</p>
-                    </AccordionContent>
-                </AccordionItem>
-            ))}
-            </Accordion>
+                <h2 className="text-xl font-semibold">Senin Hikayelerin</h2>
+            </div>
+            <Carousel
+                opts={{
+                    align: "start",
+                }}
+                className="w-full"
+            >
+                <CarouselContent className="-ml-2">
+                {userStories.map((story, index) => (
+                    <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                       <StoryCard 
+                            title={story.title} 
+                            content={story.content}
+                            authorName={user.name}
+                            authorImage={user.avatarUrl}
+                            backgroundImageUrl={`https://picsum.photos/seed/user-story-${index}/400/600`}
+                        />
+                    </CarouselItem>
+                ))}
+                </CarouselContent>
+                <CarouselPrevious className="ml-12 hidden sm:flex"/>
+                <CarouselNext className="mr-12 hidden sm:flex"/>
+            </Carousel>
         </div>
       </div>
     </div>
