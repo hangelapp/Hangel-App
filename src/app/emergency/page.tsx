@@ -1,65 +1,90 @@
+'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Droplets, Siren } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function EmergencyPage() {
+    const { toast } = useToast();
+    
+    const handleReportClick = (type: 'disaster' | 'blood', details?: string) => {
+        let description = type === 'blood'
+            ? 'Kan ihtiyacı çağrısı oluşturuluyor.'
+            : `${details} durumu ilgili birimlere iletiliyor.`;
+
+        toast({
+            title: 'Bildirim Gönderiliyor...',
+            description: description,
+        });
+    };
+
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-      <h1 className="text-2xl font-bold font-headline">Acil Durum</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <Siren />
-            Yardım Çağrısı
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center">
-          <p className="text-muted-foreground mb-4">
-            Gerçek bir acil durumda ilgili butona basın.
-          </p>
-          <Button variant="destructive" size="lg" className="w-full">
-            Acil Durum Çağrısı Yap
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Droplets className="text-red-500" />
-            Aktif Kan İhtiyaçları
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 rounded-lg border bg-card">
-              <div>
-                <p className="font-bold">
-                  A Rh+ <span className="font-normal text-sm text-muted-foreground">(2 ünite)</span>
-                </p>
-                <p className="text-sm text-muted-foreground">Ankara Şehir Hastanesi</p>
-              </div>
-              <Button variant="outline" size="sm">
-                Detaylar
-              </Button>
-            </div>
-            <div className="flex justify-between items-center p-3 rounded-lg border bg-card">
-              <div>
-                <p className="font-bold">
-                  0 Rh- <span className="font-normal text-sm text-muted-foreground">(Acil)</span>
-                </p>
-                <p className="text-sm text-muted-foreground">İstanbul Çapa Tıp Fakültesi</p>
-              </div>
-              <Button variant="outline" size="sm">
-                Detaylar
-              </Button>
-            </div>
-             <div className="text-center text-muted-foreground py-4">
-                <p>Şu anda başka acil kan ihtiyacı bulunmuyor.</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="text-center">
+            <h1 className="text-3xl font-bold font-headline">Acil Durum Merkezi</h1>
+            <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
+                Acil bir durumu bildirin veya mevcut çağrılara yanıt verin. Lütfen sadece gerçekten acil durumlarda kullanın.
+            </p>
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <Card>
+                <CardHeader>
+                    <CardTitle className='text-base flex items-center gap-2 text-destructive'><Siren className='h-5 w-5' /> Afet Bildirimi</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                     <Alert variant="destructive" className='text-xs'>
+                      <Siren className="h-4 w-4" />
+                      <AlertTitle>Uyarı!</AlertTitle>
+                      <AlertDescription>
+                        Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ile paylaşılacaktır.
+                      </AlertDescription>
+                    </Alert>
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Deprem')}>
+                            <Zap className="h-6 w-6" />
+                            <span>Deprem</span>
+                        </Button>
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Sel')}>
+                            <CloudRain className="h-6 w-6" />
+                            <span>Sel</span>
+                        </Button>
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Yangın')}>
+                            <Flame className="h-6 w-6" />
+                            <span>Yangın</span>
+                        </Button>
+                        <Button variant="destructive" className="h-20 flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Kaza')}>
+                            <Ambulance className="h-6 w-6" />
+                            <span>Kaza</span>
+                        </Button>
+                        <div className="col-span-2">
+                            <Button variant="destructive" className="h-20 w-full flex-col gap-2 text-base" onClick={() => handleReportClick('disaster', 'Kayıp')}>
+                                <UserSearch className="h-6 w-6" />
+                                <span>Kayıp</span>
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className='text-base flex items-center gap-2 text-destructive'><Droplets className='h-5 w-5' /> Kan İhtiyacı</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                    <Alert variant="destructive" className='text-xs'>
+                      <Droplets className="h-4 w-4" />
+                      <AlertTitle>Uyarı!</AlertTitle>
+                      <AlertDescription>
+                        Konum ve iletişim bilgileriniz potansiyel bağışçılarla paylaşılacaktır.
+                      </AlertDescription>
+                    </Alert>
+                     <Button variant="destructive" className="w-full" onClick={() => handleReportClick('blood')}>
+                        <Droplets className="mr-2 h-4 w-4" />
+                        Kan İhtiyacı Bildir
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
     </div>
   );
 }

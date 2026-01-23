@@ -8,7 +8,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { UserAvatar } from '@/components/shared/user-avatar';
-import { EmergencyDialog } from '@/components/shared/emergency-dialog';
 import { Separator } from '../ui/separator';
 import { usePathname } from 'next/navigation';
 import { user } from '@/lib/data';
@@ -31,6 +30,7 @@ const group2Items: SideNavItem[] = [
 const group3Items: SideNavItem[] = [
     { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
+    { href: '/impact-story', label: 'Etki Hikayem', icon: 'sparkles' },
     { href: '/settings', label: 'Ayarlar', icon: 'settings' },
 ];
 
@@ -172,11 +172,11 @@ export default function AppHeader() {
           </div>
 
           <div className="flex items-center gap-1">
-            <EmergencyDialog>
-              <Button variant="ghost" size="icon">
+            <Button asChild variant="ghost" size="icon">
+              <Link href="/emergency">
                 <Siren className="h-5 w-5 text-destructive" />
-              </Button>
-            </EmergencyDialog>
+              </Link>
+            </Button>
              <Link href="/notifications" passHref>
                 <Button variant="ghost" size="icon">
                     <Bell className="h-5 w-5" />

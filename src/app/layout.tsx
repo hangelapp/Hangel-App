@@ -24,6 +24,7 @@ const group2Items: SideNavItem[] = [
 const group3Items: SideNavItem[] = [
     { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
+    { href: '/impact-story', label: 'Etki Hikayem', icon: 'sparkles' },
     { href: '/settings', label: 'Ayarlar', icon: 'settings' },
 ];
 
