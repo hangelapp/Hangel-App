@@ -1,8 +1,14 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Building2, Users, FileText, Eye, UserCheck, Briefcase, ChevronRight } from 'lucide-react';
+import { Building2, Users, FileText, Eye, UserCheck, Briefcase, ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 export default function InformationSocietyServicesPage() {
+  const router = useRouter();
+
   const boardMembers = [
     { name: 'İsmail Hilmi Adıgüzel', role: 'Yönetim Kurulu Başkanı' },
     { name: 'Ayşe Yılmaz', role: 'Yönetim Kurulu Başkan Yrd.' },
@@ -17,6 +23,9 @@ export default function InformationSocietyServicesPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 animate-in fade-in-0">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+        <ArrowLeft className="h-6 w-6" />
+      </Button>
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold font-headline">Bilgi Toplumu Hizmetleri</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">

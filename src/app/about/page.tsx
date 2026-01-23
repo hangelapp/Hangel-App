@@ -23,6 +23,29 @@ export default function AboutPage() {
 
        <Card>
         <CardHeader>
+          <CardTitle className="text-xl">Sosyal Etki Raporu (Özet)</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-4 text-center">
+            <div>
+                <Users className="h-8 w-8 text-primary mx-auto mb-2"/>
+                <p className="text-xl font-bold">1 Milyon+</p>
+                <p className="text-xs text-muted-foreground">Ulaşılan İnsan</p>
+            </div>
+             <div>
+                <HandCoins className="h-8 w-8 text-primary mx-auto mb-2"/>
+                <p className="text-xl font-bold">500.000 ₺+</p>
+                <p className="text-xs text-muted-foreground">Aktarılan Bağış</p>
+            </div>
+             <div>
+                <Hourglass className="h-8 w-8 text-primary mx-auto mb-2"/>
+                <p className="text-xl font-bold">10.000+ Saat</p>
+                <p className="text-xs text-muted-foreground">Gönüllülük</p>
+            </div>
+        </CardContent>
+      </Card>
+
+       <Card>
+        <CardHeader>
           <CardTitle className="text-xl">hangel'e Hoş Geldiniz</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground text-sm">
@@ -60,29 +83,6 @@ export default function AboutPage() {
         </CardContent>
       </Card>
       
-       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Sosyal Etki Raporu (Özet)</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4 text-center">
-            <div>
-                <Users className="h-8 w-8 text-primary mx-auto mb-2"/>
-                <p className="text-xl font-bold">1 Milyon+</p>
-                <p className="text-xs text-muted-foreground">Ulaşılan İnsan</p>
-            </div>
-             <div>
-                <HandCoins className="h-8 w-8 text-primary mx-auto mb-2"/>
-                <p className="text-xl font-bold">500.000 ₺+</p>
-                <p className="text-xs text-muted-foreground">Aktarılan Bağış</p>
-            </div>
-             <div>
-                <Hourglass className="h-8 w-8 text-primary mx-auto mb-2"/>
-                <p className="text-xl font-bold">10.000+ Saat</p>
-                <p className="text-xs text-muted-foreground">Gönüllülük</p>
-            </div>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Kurumsal</CardTitle>
