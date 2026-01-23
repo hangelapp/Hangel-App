@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { user, badges, pastVolunteering, certificates } from '@/lib/data';
 import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -66,6 +66,7 @@ const pointTransactions = [
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
 const NextBadgeGoal = () => {
+    const [isVisible, setIsVisible] = useState(true);
     const nextBadge = {
         name: 'Gümüş Çevre Koruyucusu',
         icon: Leaf,
@@ -73,10 +74,14 @@ const NextBadgeGoal = () => {
         current: 800,
         required: 1000,
     };
+    if (!isVisible) return null;
     return (
-        <Card>
+        <Card className="relative bg-transparent shadow-none">
             <CardHeader>
                 <CardTitle className="text-lg">Sıradaki Rozet Hedefi</CardTitle>
+                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setIsVisible(false)}>
+                    <X className="h-4 w-4" />
+                </Button>
             </CardHeader>
             <CardContent>
                 <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">

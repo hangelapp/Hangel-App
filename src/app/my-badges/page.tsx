@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp, Leaf } from 'lucide-react';
+import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp, Leaf, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { badges, certificates, user } from '@/lib/data';
@@ -54,6 +54,7 @@ const allPointTransactions = [
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
 const NextBadgeGoal = () => {
+    const [isVisible, setIsVisible] = useState(true);
     const nextBadge = {
         name: 'Gümüş Çevre Koruyucusu',
         icon: Leaf,
@@ -61,10 +62,16 @@ const NextBadgeGoal = () => {
         current: 800,
         required: 1000,
     };
+    
+    if (!isVisible) return null;
+
     return (
-        <Card>
+        <Card className="relative bg-transparent shadow-none">
             <CardHeader>
                 <CardTitle className="text-lg">Sıradaki Rozet Hedefi</CardTitle>
+                <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setIsVisible(false)}>
+                    <X className="h-4 w-4" />
+                </Button>
             </CardHeader>
             <CardContent>
                 <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">
