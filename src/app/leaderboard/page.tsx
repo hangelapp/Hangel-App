@@ -30,6 +30,8 @@ export default function LeaderboardPage() {
     const sortedData = useMemo(() => 
         [...data].sort((a, b) => b[valueKey] - a[valueKey]), 
     [data, valueKey]);
+    
+    const headerLabel = unit === 'Puan' ? 'Puan' : (unit === 'Saat' ? 'Saat' : 'Tutar');
 
     return (
         <Table>
@@ -37,7 +39,7 @@ export default function LeaderboardPage() {
                 <TableRow>
                     <TableHead className="w-16">Sıra</TableHead>
                     <TableHead>Kullanıcı</TableHead>
-                    <TableHead className="text-right">Puan</TableHead>
+                    <TableHead className="text-right">{headerLabel}</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -55,6 +57,12 @@ export default function LeaderboardPage() {
                                 <div>
                                     <p className="font-medium">{user.name}</p>
                                     <p className="text-sm text-muted-foreground">{user.username}</p>
+                                    {valueKey !== 'impactScore' && (
+                                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                            <Star className="h-3 w-3 text-amber-500" />
+                                            <span>{user.impactScore.toLocaleString('tr-TR')} Puan</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </TableCell>
