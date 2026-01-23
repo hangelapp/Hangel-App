@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Building2, Users, FileText, Download, UserCheck, Briefcase, ChevronRight } from 'lucide-react';
+import { Building2, Users, FileText, Eye, UserCheck, Briefcase, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function InformationSocietyServicesPage() {
@@ -75,7 +75,7 @@ export default function InformationSocietyServicesPage() {
           {legalDocuments.map((doc) => (
             <a key={doc.name} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
               <span className="font-medium">{doc.name}</span>
-              <Download className="h-5 w-5 text-muted-foreground" />
+              <Eye className="h-5 w-5 text-muted-foreground" />
             </a>
           ))}
             <Link href="/settings/contracts" className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors text-primary font-bold">
