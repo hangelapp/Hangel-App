@@ -20,18 +20,29 @@ import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 
-const InfoRow = ({ icon: Icon, label, value, verified }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean }) => (
-    <div className="flex justify-between items-start py-3 text-sm">
-        <div className='flex items-start'>
-             <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
-             <p className="font-medium ml-4">{label}</p>
+const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean, href?: string }) => {
+    const ValueComponent = href ? (
+        <Link href={href} className="flex items-center gap-1 text-muted-foreground hover:underline">
+            <span>{value}</span>
+            <ChevronRight className="h-4 w-4" />
+        </Link>
+    ) : (
+        <p className="text-muted-foreground">{value}</p>
+    );
+
+    return (
+        <div className="flex justify-between items-start py-3 text-sm">
+            <div className='flex items-start'>
+                <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <p className="font-medium ml-4">{label}</p>
+            </div>
+            <div className="flex items-center gap-2 text-right">
+                {ValueComponent}
+                {verified && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
+            </div>
         </div>
-        <div className="flex items-center gap-2 text-right">
-          <p className="text-muted-foreground">{value}</p>
-          {verified && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
-        </div>
-    </div>
-);
+    );
+};
 
 const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value: string | number, label: string }) => (
     <div className='text-center p-2'>
@@ -187,8 +198,8 @@ export default function ProfilePage() {
                                 <InfoRow icon={Hourglass} label="Toplam Gönüllülük Saati" value={`${user.stats.volunteerHours} Saat`} />
                                 <InfoRow icon={Handshake} label="Tamamlanan Proje Sayısı" value={`${user.stats.completedProjects} Proje`} />
                                 <InfoRow icon={Sparkles} label="En Aktif Gönüllülük Alanı" value={user.stats.mostActiveVolunteerArea} />
-                                <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={user.stats.volunteerRank.country} />
-                                 <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={user.stats.volunteerRank.city} />
+                                <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={user.stats.volunteerRank.country} href="/leaderboard" />
+                                 <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={user.stats.volunteerRank.city} href="/leaderboard" />
                             </CardContent>
                         </Card>
 
