@@ -1,24 +1,22 @@
 'use client';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, BarChart3, ShieldCheck, UserCog, QrCode, Settings, HelpCircle, Newspaper, HeartHandshake } from 'lucide-react';
+import { DollarSign, Users, Heart, ChevronRight } from 'lucide-react';
 import { user } from '@/lib/data';
-import VolunteerApplications from './_components/volunteer-applications';
-import OpportunityManagement from './_components/opportunity-management';
-import SupportForm from './_components/support-form';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
 
 const iconColorMap: { [key: string]: string } = {
+  'user-cog': 'bg-gray-500',
   'heart-handshake': 'bg-red-500',
   'dollar-sign': 'bg-green-600',
   newspaper: 'bg-orange-500',
   'bar-chart-3': 'bg-indigo-500',
   'shield-check': 'bg-green-500',
-  'user-cog': 'bg-gray-500',
   'qr-code': 'bg-slate-500',
   users: 'bg-blue-500',
+  bell: 'bg-purple-500',
   settings: 'bg-gray-500',
   'help-circle': 'bg-teal-500',
 };
@@ -40,15 +38,16 @@ const NavLink = ({ href, icon, label }: { href: string, icon: string, label: str
 }
 
 const ngoAdminNavItems = [
+    { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog' },
     { href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake' },
     { href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: 'dollar-sign' },
     { href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper' },
     { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart-3' },
     { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check' },
-    { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog' },
     { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code' },
     { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users' },
-    { href: '/ngo-admin/settings', label: 'Ayarlar', icon: 'settings' },
+    { href: '/ngo-admin/notifications', label: 'Bildirim Ayarları', icon: 'bell' },
+    { href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings' },
     { href: '/ngo-admin/support', label: 'Destek', icon: 'help-circle' },
 ];
 
@@ -107,17 +106,6 @@ export default function NgoDashboardPage() {
             </div>
         </CardContent>
       </Card>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-            <VolunteerApplications />
-            <OpportunityManagement />
-        </div>
-        <div className="space-y-6">
-            <SupportForm />
-        </div>
-      </div>
-      
     </div>
   );
 }

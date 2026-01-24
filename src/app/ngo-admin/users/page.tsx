@@ -24,9 +24,9 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Yetkili ve Bildirim Yönetimi</h1>
+        <h1 className="text-2xl font-bold">Yetkili Yönetimi</h1>
         <p className="text-muted-foreground">
-          Panele erişebilecek kullanıcıları ve bildirim tercihlerinizi yönetin.
+          Panele erişebilecek kullanıcıları yönetin.
         </p>
       </div>
 
@@ -53,35 +53,6 @@ export default function UsersPage() {
              <Button>
                 <User className="mr-2 h-4 w-4"/> Yeni Kullanıcı Ekle
             </Button>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Bildirim Tercihleri</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <Label htmlFor="new-volunteer-notif" className="flex items-center gap-3">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <span>Yeni Gönüllü Başvurusu</span>
-            </Label>
-            <Switch id="new-volunteer-notif" defaultChecked />
-          </div>
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <Label htmlFor="new-donation-notif" className="flex items-center gap-3">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <span>Yeni Bağış Yapıldığında</span>
-            </Label>
-            <Switch id="new-donation-notif" defaultChecked />
-          </div>
-           <div className="flex items-center justify-between p-4 border rounded-lg">
-            <Label htmlFor="platform-notif" className="flex items-center gap-3">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <span>hangel Platform Duyuruları</span>
-            </Label>
-            <Switch id="platform-notif" />
-          </div>
         </CardContent>
       </Card>
     </div>

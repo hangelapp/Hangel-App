@@ -11,14 +11,12 @@ const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
-  { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
 ];
 
 const group2Items: SideNavItem[] = [
     { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
     { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
     { href: '/my-badges', label: 'Rozetler ve Sertifikalar', icon: 'award' },
-    { href: '/volunteering', label: 'Gönüllülük', icon: 'heart-handshake' },
 ];
 
 const group3Items: SideNavItem[] = [
@@ -32,6 +30,7 @@ const group4Items: SideNavItem[] = [
   { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
   { href: '/settings', label: 'Ayarlar', icon: 'settings' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
+  { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
 
