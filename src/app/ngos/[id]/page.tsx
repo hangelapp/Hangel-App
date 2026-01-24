@@ -14,6 +14,8 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { differenceInDays, format, parse } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -94,12 +96,20 @@ export default function NgoProfilePage() {
   };
   
   const transparencyCriteria = [
-      { name: 'Faaliyet Belgesi', completed: true },
-      { name: 'Tüzük / Vakıf Senedi', completed: true },
-      { name: 'Yıllık Faaliyet Raporu', completed: true },
-      { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
-      { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
-      { name: 'Web Sitesi', completed: true },
+    { name: 'Faaliyet Belgesi', completed: true },
+    { name: 'Tüzük / Vakıf Senedi', completed: true },
+    { name: 'Yönetim Kurulu Listesi', completed: ngo.transparencyScore > 80 },
+    { name: 'Yıllık Faaliyet Raporu', completed: true },
+    { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
+    { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
+    { name: 'Etki Raporu', completed: ngo.transparencyScore > 75 },
+    { name: 'Web Sitesi', completed: true },
+    { name: 'Posta Adresi', completed: true },
+    { name: 'Ofis Adresi', completed: ngo.transparencyScore > 70 },
+    { name: 'E-posta Adresi', completed: true },
+    { name: 'Telefon Numarası', completed: true },
+    { name: 'Açık Açık Üyeliği', completed: ngo.transparencyScore > 50 },
+    { name: 'Afet Platformu Üyeliği', completed: ngo.transparencyScore > 60 },
   ];
 
   return (
