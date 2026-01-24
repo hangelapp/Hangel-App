@@ -11,7 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import Link from 'next/link';
+import { ngos } from '@/lib/data';
 
 const themes = [
     { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/theme-modern/400/300' },
@@ -19,73 +20,27 @@ const themes = [
     { id: 'impactful', name: 'Etkili', imageUrl: 'https://picsum.photos/seed/theme-impact/400/300' },
 ];
 
-const contentSections = [
-    { id: 'about', label: 'Hakkımızda ve İletişim', icon: Globe, default: true },
-    { id: 'volunteer', label: 'Gönüllülük İlanları', icon: Handshake, default: true },
-    { id: 'posts', label: 'Gönderiler', icon: Newspaper, default: true },
-    { id: 'transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck, default: true },
-    { id: 'stats', label: 'Bağış İstatistikleri', icon: BarChart3, default: false },
-    { id: 'reports', label: 'Etki Raporları', icon: Newspaper, default: false },
-];
-
-const WebsitePreview = ({ theme, enabledSections }: { theme: string, enabledSections: string[] }) => {
-    const ngo = {
-        name: 'Ahbap Derneği',
-        logoUrl: 'https://logo.clearbit.com/ahbap.org',
-        about: 'Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.',
-    };
-
-    const sectionsToRender = contentSections.filter(s => enabledSections.includes(s.id));
-
-    return (
-        <div className="w-full h-[70vh] bg-muted rounded-lg overflow-hidden flex flex-col">
-            {/* Browser chrome */}
-            <div className="flex-shrink-0 h-8 bg-gray-200 dark:bg-gray-800 flex items-center px-2 gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            </div>
-            {/* Website Content */}
-            <div className="flex-1 overflow-y-auto">
-                <header className="p-8 text-center border-b bg-background">
-                    <h1 className="text-3xl font-bold text-foreground">{ngo.name}</h1>
-                    <nav className="mt-4 flex justify-center gap-6 text-sm text-muted-foreground">
-                        {sectionsToRender.map(section => (
-                            <a key={section.id} href="#" className="hover:text-foreground">{section.label}</a>
-                        ))}
-                    </nav>
-                </header>
-                <main className="p-8 bg-background">
-                    <h2 className="text-2xl font-semibold mb-4">Hakkımızda</h2>
-                    <p className="text-muted-foreground">{ngo.about}</p>
-                    <div className="mt-8">
-                        <h3 className="text-xl font-semibold mb-4">Gönüllülük Fırsatları</h3>
-                        <div className="space-y-4">
-                            <div className="p-4 border rounded-lg">
-                                <h4 className="font-bold">Afet Bölgesi Yardım Dağıtımı</h4>
-                                <p className="text-sm text-muted-foreground">Hatay, Antakya</p>
-                            </div>
-                             <div className="p-4 border rounded-lg">
-                                <h4 className="font-bold">Ağaç Dikme Şenliği</h4>
-                                <p className="text-sm text-muted-foreground">İstanbul, Çekmeköy</p>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            </div>
-        </div>
-    );
-};
-
 
 export default function WebsiteBuilderPage() {
     const [isPublished, setIsPublished] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState('modern');
-    const [enabledSections, setEnabledSections] = useState<string[]>(
-        contentSections.filter(s => s.default).map(s => s.id)
-    );
+    const [enabledSections, setEnabledSections] = useState<string[]>([]);
     const { toast } = useToast();
     const [customDomain, setCustomDomain] = useState('');
+    const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği for preview data
+
+    const contentSections = [
+        { id: 'about', label: 'Hakkımızda ve İletişim', icon: Globe, default: true, description: ngo?.about },
+        { id: 'volunteer', label: 'Gönüllülük İlanları', icon: Handshake, default: true, description: `${ngo?.opportunities.length || 0} aktif ilan bulunuyor.` },
+        { id: 'posts', label: 'Gönderiler', icon: Newspaper, default: true, description: `${ngo?.posts.length || 0} gönderi mevcut.` },
+        { id: 'transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck, default: true, description: `Mevcut puan: ${ngo?.transparencyScore}/100` },
+        { id: 'stats', label: 'Bağış İstatistikleri', icon: BarChart3, default: false, description: `Toplam ${ngo?.stats.totalDonation.toLocaleString('tr-TR')} ₺ bağış toplandı.` },
+        { id: 'reports', label: 'Etki Raporları', icon: Newspaper, default: false, description: "Yayınlanmış etki raporları listelenir." },
+    ];
+    
+    useState(() => {
+        setEnabledSections(contentSections.filter(s => s.default).map(s => s.id));
+    }, []);
 
     const handleSave = () => {
         toast({
@@ -192,8 +147,12 @@ export default function WebsiteBuilderPage() {
                                 <p className="font-semibold">{section.label}</p>
                             </div>
                             </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-4">
-                            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                            <AccordionContent className="px-4 pb-4 space-y-4">
+                               <div className="text-sm p-4 bg-muted/50 rounded-lg border">
+                                    <p className="font-semibold">Bölüm Detayları:</p>
+                                    <p className="text-muted-foreground line-clamp-2">{section.description}</p>
+                                 </div>
+                                <div className="flex items-center justify-between p-4 border rounded-lg">
                                 <Label htmlFor={`publish-${section.id}`} className="font-medium text-sm">
                                     Bu bölümü sitede yayınla
                                 </Label>
@@ -206,15 +165,15 @@ export default function WebsiteBuilderPage() {
                                         )
                                     }}
                                 />
-                            </div>
+                                </div>
                             </AccordionContent>
                         </AccordionItem>
                         ))}
                     </Accordion>
                 </CardContent>
             </Card>
-
-             <Card>
+            
+            <Card>
                 <CardHeader>
                     <CardTitle>Genel Durum</CardTitle>
                     <CardDescription>Web sitenizin yayın durumunu ve adresini yönetin.</CardDescription>
@@ -227,19 +186,14 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <Switch id="publish-switch" checked={isPublished} onCheckedChange={setIsPublished} />
                     </div>
-                     <Dialog>
-                        <DialogTrigger asChild>
-                            <Button className="w-full" disabled={!isPublished}>
-                                <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl p-0 border-0">
-                           <WebsitePreview theme={selectedTheme} enabledSections={enabledSections} />
-                        </DialogContent>
-                    </Dialog>
+                     <Button asChild className="w-full" disabled={!isPublished}>
+                        <Link href="/ngo-admin/website/preview" target="_blank">
+                            <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
-            
+
             <div className="flex justify-end">
                 <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
             </div>
