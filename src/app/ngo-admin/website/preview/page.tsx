@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
     Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin, 
-    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin
+    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,7 +18,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Copy } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { HangelLogo } from '@/components/icons';
 
 const transparencyCriteria = [
   { name: 'Faaliyet Belgesi', completed: true },
@@ -70,10 +69,9 @@ export default function WebsitePreviewPage() {
     const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0, 5); 
 
     const donationMethods = [
-        { name: 'hangel ile', icon: HangelLogo, description: 'Alışverişlerinizle komisyonsuz destek olun.' },
+        { name: 'hangel ile', icon: () => <span className="font-bold text-lg">hangel</span>, description: 'Alışverişlerinizle komisyonsuz destek olun.' },
         { name: 'HelpSteps ile', icon: HeartHandshake, description: 'Adımlarınızı iyiliğe dönüştürün.' },
         { name: 'Kredi Kartı ile', icon: CreditCard, description: 'Güvenli ödeme altyapısıyla doğrudan bağış yapın.' },
-        { name: 'Banka Transferi (EFT/IBAN)', icon: Landmark, description: 'Doğrudan banka hesabımıza transfer yapın.', iban: 'TR00 0000 0000 0000 0000 0000 00' },
         { name: 'SMS ile', icon: MessageSquare, description: '"AHBAP" yazıp 3406\'ya göndererek 20 TL bağış yapabilirsiniz.' },
     ];
     
@@ -183,7 +181,7 @@ export default function WebsitePreviewPage() {
 
                 <section id="destek-yontemleri" className="scroll-mt-20">
                      <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-foreground">Desteklerinizle Büyüyoruz</h2>
-                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {donationMethods.map(method => {
                             const Icon = method.icon;
                             return (
@@ -196,17 +194,6 @@ export default function WebsitePreviewPage() {
                                 </CardHeader>
                                 <CardContent className="flex-1">
                                     <p className="text-sm text-muted-foreground">{method.description}</p>
-                                    {method.iban && (
-                                        <div className="mt-4">
-                                            <div className="flex items-center justify-between text-sm font-mono tracking-wider p-3 bg-muted rounded-lg">
-                                                <span className="truncate">{method.iban}</span>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={() => { navigator.clipboard.writeText(method.iban!); toast({ title: 'IBAN Kopyalandı!' }); }}>
-                                                    <Copy className="h-4 w-4"/>
-                                                </Button>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground mt-1 text-center">Lütfen açıklama kısmına "BAĞIŞ" yazınız.</p>
-                                        </div>
-                                    )}
                                 </CardContent>
                                 <CardFooter>
                                     <Button variant="ghost" className="w-full justify-start text-primary hover:text-primary/90">
@@ -215,6 +202,26 @@ export default function WebsitePreviewPage() {
                                 </CardFooter>
                             </Card>
                         )})}
+                        <Card className="flex flex-col bg-card md:col-span-2">
+                             <CardHeader className="flex-row items-center gap-4">
+                                     <div className="p-3 bg-primary/10 rounded-full">
+                                        <Landmark className="h-6 w-6 text-primary"/>
+                                    </div>
+                                    <CardTitle className="text-lg text-foreground">Banka Transferi (EFT/IBAN)</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex-1">
+                                    <p className="text-sm text-muted-foreground">Doğrudan banka hesabımıza transfer yapın.</p>
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-between text-sm font-mono tracking-wider p-3 bg-muted rounded-lg">
+                                            <span className="truncate">TR00 0000 0000 0000 0000 0000 00</span>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={() => { navigator.clipboard.writeText("TR00 0000 0000 0000 0000 0000 00"); toast({ title: 'IBAN Kopyalandı!' }); }}>
+                                                <Copy className="h-4 w-4"/>
+                                            </Button>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mt-1 text-center">Lütfen açıklama kısmına "BAĞIŞ" yazınız.</p>
+                                    </div>
+                                </CardContent>
+                        </Card>
                      </div>
                 </section>
                 
@@ -303,6 +310,19 @@ export default function WebsitePreviewPage() {
                                     <Button variant="link" className="p-0 h-auto">Devamını Oku</Button>
                                 </CardFooter>
                             </Card>
+                        ))}
+                    </div>
+                </section>
+
+                <section id="sdg" className="scroll-mt-20">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-foreground">
+                        <Target className="h-8 w-8 text-primary" /> Desteklenen SKA'lar
+                    </h2>
+                    <div className="flex flex-wrap justify-center gap-4">
+                        {ngo.supportedSDGs.map((sdg) => (
+                            <div key={sdg} className="p-3 border rounded-lg text-center bg-card flex flex-col items-center justify-center w-36 h-36">
+                                <p className="text-sm font-semibold text-foreground">{sdg}</p>
+                            </div>
                         ))}
                     </div>
                 </section>

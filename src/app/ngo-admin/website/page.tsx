@@ -147,19 +147,25 @@ export default function WebsiteBuilderPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="primary-color">Ana Renk</Label>
-                        <Input type="color" id="primary-color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="p-1 h-12 w-full" />
-                        <p className="text-xs text-muted-foreground font-mono">{primaryColor}</p>
+                        <Label htmlFor="primary-color-text">Ana Renk</Label>
+                        <div className="flex items-center gap-2">
+                            <Input type="color" id="primary-color-picker" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="p-1 h-12 w-16" />
+                            <Input id="primary-color-text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono"/>
+                        </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="secondary-color">İkinci Renk (Arka Plan)</Label>
-                        <Input type="color" id="secondary-color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="p-1 h-12 w-full" />
-                        <p className="text-xs text-muted-foreground font-mono">{secondaryColor}</p>
+                        <Label htmlFor="secondary-color-text">İkinci Renk (Arka Plan)</Label>
+                        <div className="flex items-center gap-2">
+                            <Input type="color" id="secondary-color-picker" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="p-1 h-12 w-16" />
+                            <Input id="secondary-color-text" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono"/>
+                        </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="accent-color">Vurgu Rengi (Metin)</Label>
-                        <Input type="color" id="accent-color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="p-1 h-12 w-full" />
-                        <p className="text-xs text-muted-foreground font-mono">{accentColor}</p>
+                        <Label htmlFor="accent-color-text">Vurgu Rengi (Metin)</Label>
+                         <div className="flex items-center gap-2">
+                            <Input type="color" id="accent-color-picker" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="p-1 h-12 w-16" />
+                            <Input id="accent-color-text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="font-mono"/>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
