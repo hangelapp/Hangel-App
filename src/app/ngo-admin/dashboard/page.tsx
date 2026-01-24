@@ -6,9 +6,6 @@ import { user } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
-import VolunteerApplications from './_components/volunteer-applications';
-import OpportunityManagement from './_components/opportunity-management';
-import SupportForm from './_components/support-form';
 
 
 const iconColorMap: { [key: string]: string } = {
@@ -99,8 +96,7 @@ export default function NgoDashboardPage() {
         </Card>
       </div>
 
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-         <Card>
+        <Card>
             <CardHeader>
                 <CardTitle>Yönetim Araçları</CardTitle>
                 <CardDescription>Kuruluşunuzla ilgili tüm yönetim araçlarına buradan erişin.</CardDescription>
@@ -113,12 +109,6 @@ export default function NgoDashboardPage() {
                 </div>
             </CardContent>
         </Card>
-        <div className="space-y-6">
-            <VolunteerApplications />
-            <OpportunityManagement />
-            <SupportForm />
-        </div>
-       </div>
     </div>
   );
 }
