@@ -56,27 +56,6 @@ export default function WebsiteBuilderPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Genel Durum</CardTitle>
-                    <CardDescription>Web sitenizin yayın durumunu ve adresini yönetin.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                            <Label htmlFor="publish-switch">Web Sitesini Yayınla</Label>
-                            <p className="text-xs text-muted-foreground">Siteniz <a href="#" className="underline font-semibold">ahbap.hangel.site</a> adresinde yayınlanacak.</p>
-                        </div>
-                        <Switch id="publish-switch" checked={isPublished} onCheckedChange={setIsPublished} />
-                    </div>
-                     <Button asChild className="w-full" disabled={!isPublished}>
-                        <a href="#" target="_blank" rel="noopener noreferrer">
-                            <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
-                        </a>
-                    </Button>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Server className="h-5 w-5 text-primary" />Alan Adı (Domain) ve DNS</CardTitle>
                     <CardDescription>Sitenizi kendi alan adınızda yayınlayın.</CardDescription>
                 </CardHeader>
@@ -94,11 +73,18 @@ export default function WebsiteBuilderPage() {
                         <Server className="h-4 w-4" />
                         <AlertTitle>DNS Kayıtlarını Güncelleyin</AlertTitle>
                         <AlertDescription>
-                            Alan adınızı kaydettikten sonra, alan adı sağlayıcınızın (örn: GoDaddy, Natro) DNS paneline giderek aşağıdaki CNAME kaydını oluşturun. Değişikliklerin internete yayılması 24 saati bulabilir.
-                            <div className="mt-2 p-2 bg-muted rounded font-mono text-xs">
-                                <p><strong>Tür:</strong> CNAME</p>
-                                <p><strong>İsim:</strong> www</p>
-                                <p><strong>Değer:</strong> host.hangel.site</p>
+                            Alan adınızı kaydettikten sonra, alan adı sağlayıcınızın (örn: GoDaddy, Natro) DNS paneline giderek aşağıdaki kayıtları oluşturun. Değişikliklerin internete yayılması 24 saati bulabilir.
+                            <div className="mt-2 space-y-2 p-2 bg-muted rounded font-mono text-xs">
+                                <div>
+                                    <p><strong>Tür:</strong> CNAME</p>
+                                    <p><strong>İsim/Host:</strong> www</p>
+                                    <p><strong>Değer/Yönlendirilen:</strong> host.hangel.site</p>
+                                </div>
+                                <div className="pt-2 border-t border-muted-foreground/20">
+                                     <p>Ayrıca, alan adınızın isim sunucularını (NS) aşağıdaki gibi güncelleyin:</p>
+                                     <p><strong>NS1:</strong> ns1.hangel.site</p>
+                                     <p><strong>NS2:</strong> ns2.hangel.site</p>
+                                </div>
                             </div>
                         </AlertDescription>
                     </Alert>
@@ -151,6 +137,27 @@ export default function WebsiteBuilderPage() {
                             <Switch id={`section-${section.id}`} defaultChecked={section.default} />
                         </div>
                     ))}
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Genel Durum</CardTitle>
+                    <CardDescription>Web sitenizin yayın durumunu ve adresini yönetin.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-1">
+                            <Label htmlFor="publish-switch">Web Sitesini Yayınla</Label>
+                            <p className="text-xs text-muted-foreground">Siteniz <a href="https://ahbap.hangel.site" target="_blank" rel="noopener noreferrer" className="underline font-semibold">ahbap.hangel.site</a> adresinde yayınlanacak.</p>
+                        </div>
+                        <Switch id="publish-switch" checked={isPublished} onCheckedChange={setIsPublished} />
+                    </div>
+                     <Button asChild className="w-full" disabled={!isPublished}>
+                        <a href="https://ahbap.hangel.site" target="_blank" rel="noopener noreferrer">
+                            <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
+                        </a>
+                    </Button>
                 </CardContent>
             </Card>
             
