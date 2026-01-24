@@ -278,6 +278,8 @@ export default function NewApplicationPage() {
             <Card>
                 <CardHeader><CardTitle>Banka Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
+                    <div className="space-y-2"><Label>Hesap Sahibi Adı</Label><Input placeholder="Hesap sahibinin tam adı" /></div>
+                    <div className="space-y-2"><Label>Banka Adı</Label><Input placeholder="Örn: Türkiye İş Bankası" /></div>
                     <div className="space-y-2"><Label>Banka IBAN Numarası</Label><Input placeholder="TR..." /></div>
                 </CardContent>
             </Card>

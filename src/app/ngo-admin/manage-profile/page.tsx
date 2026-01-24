@@ -268,6 +268,14 @@ export default function ManageProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
+                    <Label htmlFor="account-holder">Hesap Sahibi Adı</Label>
+                    <Input id="account-holder" defaultValue="Ahbap Derneği" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="bank-name">Banka Adı</Label>
+                    <Input id="bank-name" defaultValue="Türkiye İş Bankası" />
+                </div>
+                <div className="space-y-2">
                     <Label htmlFor="ngo-iban">Banka IBAN Numarası</Label>
                     <Input id="ngo-iban" defaultValue="TR00 0000 0000 0000 0000 0000 00" />
                 </div>

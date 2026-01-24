@@ -242,24 +242,12 @@ export default function WebsiteBuilderPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-start justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-3 text-lg"><CreditCard className="h-5 w-5 text-primary" /> Banka ve Ödeme Bilgileri</CardTitle>
-                            <CardDescription className="pt-1">Doğrudan bağışlar için IBAN ve Sanal POS bilgileri.</CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2 pl-4">
-                            <Switch id="publish-banking" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                       <Button asChild variant="secondary" className="w-full">
-                            <Link href="/ngo-admin/manage-profile">
-                                <Edit className="mr-2 h-4 w-4" /> Ödeme Bilgilerini Düzenle
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <ReadOnlySectionCard 
+                    icon={CreditCard}
+                    title="Banka ve Ödeme Bilgileri"
+                    description="Doğrudan bağışlar için IBAN ve Sanal POS bilgileri."
+                    editHref="/ngo-admin/manage-profile"
+                />
                 
                  <Card>
                     <CardHeader className="flex flex-row items-start justify-between">
