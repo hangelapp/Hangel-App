@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,7 @@ export default function WebsiteBuilderPage() {
     const [isPublished, setIsPublished] = useState(false);
     const { toast } = useToast();
     const [customDomain, setCustomDomain] = useState('');
+    const [domainProvider, setDomainProvider] = useState('');
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği for preview data
     const [primaryColor, setPrimaryColor] = useState('#f34723');
     const [secondaryColor, setSecondaryColor] = useState('#f1f5f9');
@@ -90,7 +91,7 @@ export default function WebsiteBuilderPage() {
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="domain-provider">Domain Hizmet Sağlayıcınız</Label>
-                        <Select>
+                        <Select onValueChange={setDomainProvider}>
                             <SelectTrigger id="domain-provider"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="natro">Natro</SelectItem>
@@ -100,6 +101,12 @@ export default function WebsiteBuilderPage() {
                                 <SelectItem value="other">Diğer</SelectItem>
                             </SelectContent>
                         </Select>
+                        {domainProvider === 'other' && (
+                            <div className="space-y-2 pt-2">
+                                <Label htmlFor="other-domain-provider">Diğer Sağlayıcı</Label>
+                                <Input id="other-domain-provider" placeholder="Alan adı sağlayıcınızı yazın..." />
+                            </div>
+                        )}
                     </div>
                     <Alert>
                         <Server className="h-4 w-4" />
@@ -142,14 +149,17 @@ export default function WebsiteBuilderPage() {
                     <div className="space-y-2">
                         <Label htmlFor="primary-color">Ana Renk</Label>
                         <Input type="color" id="primary-color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="p-1 h-12 w-full" />
+                        <p className="text-xs text-muted-foreground font-mono">{primaryColor}</p>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="secondary-color">İkinci Renk (Arka Plan)</Label>
                         <Input type="color" id="secondary-color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="p-1 h-12 w-full" />
+                        <p className="text-xs text-muted-foreground font-mono">{secondaryColor}</p>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="accent-color">Vurgu Rengi (Metin)</Label>
                         <Input type="color" id="accent-color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="p-1 h-12 w-full" />
+                        <p className="text-xs text-muted-foreground font-mono">{accentColor}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -217,7 +227,7 @@ export default function WebsiteBuilderPage() {
                 />
                 <ReadOnlySectionCard 
                     icon={ShieldCheck} 
-                    title="Şeffaflık Endeksi" 
+                    title="Şeffaflık" 
                     description={`Mevcut puan: ${ngo?.transparencyScore}/100.`}
                     editHref="/ngo-admin/transparency"
                 />
@@ -241,8 +251,8 @@ export default function WebsiteBuilderPage() {
                          <Button variant="outline"><Edit className="mr-2 h-4 w-4" /> Manuel Ürün Ekle/Düzenle</Button>
                     </CardContent>
                 </Card>
-
-                <ReadOnlySectionCard 
+                
+                 <ReadOnlySectionCard 
                     icon={CreditCard}
                     title="Banka ve Ödeme Bilgileri"
                     description="Doğrudan bağışlar için IBAN ve Sanal POS bilgileri."
@@ -303,4 +313,4 @@ export default function WebsiteBuilderPage() {
             </div>
         </div>
     );
-    
+}

@@ -48,20 +48,20 @@ export default function WebsitePreviewPage() {
     const themeStyle = {
       '--background': backgroundColor,
       '--foreground': foregroundColor,
-      '--card': '#ffffff', // Assuming cards are always on a white-like bg, or could be derived
+      '--card': '#ffffff',
       '--card-foreground': foregroundColor,
       '--popover': backgroundColor,
       '--popover-foreground': foregroundColor,
       '--primary': primaryColor,
-      '--primary-foreground': '#ffffff', // Assume white is fine.
-      '--secondary': '#f1f5f9', // Default light secondary
-      '--secondary-foreground': '#0f172a', // Default light secondary-foreground
-      '--muted': '#f8fafc', // Default light muted
-      '--muted-foreground': '#64748b', // Default light muted-foreground
-      '--accent': '#f1f5f9', // Default light accent
-      '--accent-foreground': '#0f172a', // Default light accent-foreground
-      '--border': '#e2e8f0', // Default light border
-      '--input': '#e2e8f0', // Default light input
+      '--primary-foreground': '#ffffff',
+      '--secondary': '#f1f5f9', 
+      '--secondary-foreground': '#0f172a',
+      '--muted': '#f8fafc', 
+      '--muted-foreground': '#64748b',
+      '--accent': '#f1f5f9',
+      '--accent-foreground': '#0f172a',
+      '--border': '#e2e8f0',
+      '--input': '#e2e8f0',
       '--ring': primaryColor,
     } as React.CSSProperties;
 
@@ -83,6 +83,13 @@ export default function WebsitePreviewPage() {
       imageUrl: `https://picsum.photos/seed/product${i}/200/200`,
       price: `${(Math.random() * 100 + 20).toFixed(2)} ₺`,
     }));
+    
+    const governingBodies: { [key: string]: { name: string; logo: React.ElementType } } = {
+        'Dernek': { name: 'İçişleri Bakanlığı Sivil Toplumla İlişkiler Genel Müdürlüğü', logo: Landmark },
+        'Vakıf': { name: 'Kültür ve Turizm Bakanlığı Vakıflar Genel Müdürlüğü', logo: Landmark },
+        'Spor Kulübü': { name: 'Gençlik ve Spor Bakanlığı', logo: Landmark }
+    };
+    const governingBody = governingBodies[ngo.type];
 
     return (
         <div style={themeStyle} className="bg-background text-foreground">
@@ -210,8 +217,8 @@ export default function WebsitePreviewPage() {
                         )})}
                      </div>
                 </section>
-
-                <section id="isletme" className="scroll-mt-20">
+                
+                 <section id="isletme" className="scroll-mt-20">
                      <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-foreground">İktisadi İşletme Ürünleri</h2>
                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {products.map(product => (
@@ -229,6 +236,7 @@ export default function WebsitePreviewPage() {
                         ))}
                     </div>
                 </section>
+
 
                 <section id="hakkimizda" className="scroll-mt-20">
                      <Card className="overflow-hidden bg-card">
@@ -381,16 +389,26 @@ export default function WebsitePreviewPage() {
 
              <footer className="bg-white dark:bg-gray-800 border-t mt-12 py-8">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground">
-                    {ngo.affiliatedWith && (
+                    {governingBody && (
                       <div className="mb-8">
-                        <h4 className="text-sm font-semibold text-gray-500 mb-2">Bağlı Olduğu Üst Kuruluş</h4>
+                        <h4 className="text-sm font-semibold text-gray-500 mb-2">Bağlı Olduğu Kurum</h4>
                         <div className="flex justify-center items-center gap-2">
-                          <Image src={ngo.affiliatedWith.logoUrl || ''} alt={ngo.affiliatedWith.name} width={24} height={24} />
-                          <span className="font-semibold text-gray-700">{ngo.affiliatedWith.name}</span>
+                          <Landmark className="h-6 w-6 text-muted-foreground" />
+                          <span className="font-semibold text-gray-700">{governingBody.name}</span>
                         </div>
                       </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-left">
+                    {ngo.memberOf && ngo.memberOf.length > 0 && (
+                        <div className="mb-8">
+                            <h4 className="font-bold text-foreground mb-2">Üye Olduğu Platformlar</h4>
+                            <div className="flex items-center justify-center gap-4 text-sm font-semibold text-foreground">
+                                {ngo.memberOf.map(platform => (
+                                    <span key={platform}>{platform}</span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-left">
                         <div>
                             <h4 className="font-bold text-foreground mb-2">İletişim</h4>
                             <div className="space-y-2 text-sm">
@@ -409,14 +427,6 @@ export default function WebsitePreviewPage() {
                                 <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Linkedin /></a>
                             </div>
                         </div>
-                        <div>
-                            <h4 className="font-bold text-foreground mb-2">Üye Olduğu Platformlar</h4>
-                            <div className="flex items-center gap-4 text-sm font-semibold text-foreground">
-                                {ngo.memberOf.map(platform => (
-                                    <span key={platform}>{platform}</span>
-                                ))}
-                            </div>
-                        </div>
                     </div>
                     <p>&copy; {new Date().getFullYear()} {ngo.name}. Tüm hakları saklıdır.</p>
                     <p className="text-xs text-slate-400 mt-2 flex items-center justify-center gap-1">
@@ -427,5 +437,3 @@ export default function WebsitePreviewPage() {
         </div>
     );
 }
-
-    

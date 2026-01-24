@@ -142,20 +142,6 @@ export default function ManageProfilePage() {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Bağlı Olunan Üst Kuruluş (İsteğe Bağlı)</CardTitle>
-                <CardDescription>Kuruluşunuz bir federasyon, konfederasyon veya platforma bağlıysa belirtin.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label>Üst Kuruluş Adı</Label>
-                    <Input placeholder="Örn: Anadolu Platformu" defaultValue="Anadolu Platformu"/>
-                </div>
-                <FileUpload label="Üst Kuruluş Logosu" currentFile="anadolu_platformu.png"/>
-            </CardContent>
-        </Card>
         
         <Card>
             <CardHeader>
@@ -397,5 +383,3 @@ export default function ManageProfilePage() {
     </div>
   );
 }
-
-    
