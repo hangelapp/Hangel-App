@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import { Upload, Facebook, Instagram, Linkedin, Twitter, Youtube, Link as LinkIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
@@ -84,10 +84,16 @@ export default function ManageProfilePage() {
             <CardDescription>Kuruluşunuzun temel kimlik bilgileri.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             <div className="space-y-2">
-                <Label htmlFor="ngo-name">Kuruluşun Tam Adı</Label>
-                <Input id="ngo-name" defaultValue="Ahbap Derneği" />
-              </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="ngo-name">Kuruluşun Tam Adı</Label>
+                    <Input id="ngo-name" defaultValue="Ahbap Derneği" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="ngo-short-name">Kuruluş Kısa Adı</Label>
+                    <Input id="ngo-short-name" defaultValue="Ahbap" placeholder="Örn: AHBAP" />
+                </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ngo-type">Kuruluş Türü</Label>
@@ -289,6 +295,20 @@ export default function ManageProfilePage() {
                      <div className='flex items-center gap-2'>
                         <Linkedin className='h-5 w-5 text-muted-foreground' />
                         <Input id="social-linkedin" placeholder="Sayfa Adı" defaultValue="ahbap-dernegi" />
+                    </div>
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="social-youtube">YouTube</Label>
+                     <div className='flex items-center gap-2'>
+                        <Youtube className='h-5 w-5 text-muted-foreground' />
+                        <Input id="social-youtube" placeholder="Kanal ID veya kullanıcı adı" />
+                    </div>
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="social-other">Blog / Diğer</Label>
+                     <div className='flex items-center gap-2'>
+                        <LinkIcon className='h-5 w-5 text-muted-foreground' />
+                        <Input id="social-other" placeholder="https://..." />
                     </div>
                 </div>
             </CardContent>
