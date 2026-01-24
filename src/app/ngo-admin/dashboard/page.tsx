@@ -1,24 +1,57 @@
 'use client';
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronRight, DollarSign, Users, Heart, BarChart3, Newspaper, Building } from 'lucide-react';
+import { ChevronRight, DollarSign, Users, Heart } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { user } from '@/lib/data';
+import { cn } from '@/lib/utils';
+import type { SideNavItem } from '@/lib/types';
 
-const menuItems = [
-  { label: 'Bağış Takibi', href: '/ngo-admin/donations', icon: 'dollar-sign', color: 'bg-green-500' },
-  { label: 'Demografi', href: '/ngo-admin/demographics', icon: 'bar-chart-3', color: 'bg-blue-500' },
-  { label: 'Gönderiler', href: '/ngo-admin/posts', icon: 'newspaper', color: 'bg-orange-500' },
-  { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: 'building', color: 'bg-sky-500' },
+
+const iconColorMap: { [key: string]: string } = {
+  store: 'bg-green-500',
+  building: 'bg-orange-500',
+  users: 'bg-blue-500',
+  zap: 'bg-yellow-500',
+  'dollar-sign': 'bg-green-600',
+  'file-text': 'bg-sky-500',
+  award: 'bg-amber-500',
+  'heart-handshake': 'bg-red-500',
+  'bar-chart-3': 'bg-indigo-500',
+  send: 'bg-cyan-500',
+  sparkles: 'bg-purple-500',
+  settings: 'bg-gray-500',
+  info: 'bg-blue-400',
+  'help-circle': 'bg-teal-500',
+  'layout-grid': 'bg-slate-500',
+  library: 'bg-amber-700',
+  'arrow-left': 'bg-gray-400',
+  'layout-dashboard': 'bg-blue-500',
+  'shield-check': 'bg-green-500',
+  newspaper: 'bg-orange-500',
+  'qr-code': 'bg-slate-500',
+  calendar: 'bg-red-400',
+};
+
+const menuItems: SideNavItem[] = [
+  { label: 'Gönüllülük', href: '/ngo-admin/volunteer', icon: 'heart-handshake' },
+  { label: 'Bağış Takibi', href: '/ngo-admin/donations', icon: 'dollar-sign' },
+  { label: 'Demografi', href: '/ngo-admin/demographics', icon: 'bar-chart-3' },
+  { label: 'Gönderiler', href: '/ngo-admin/posts', icon: 'newspaper' },
+  { label: 'Profili Yönet', href: '/ngo-admin/manage-profile', icon: 'building' },
+  { label: 'Şeffaflık Endeksi', href: '/ngo-admin/transparency', icon: 'shield-check' },
+  { label: 'Raporlar', href: '/ngo-admin/reports', icon: 'file-text' },
+  { label: 'STK Profil QR Kodu', href: '/ngo-admin/qr', icon: 'qr-code' },
+  { label: 'Yetkili Yönetimi', href: '/ngo-admin/users', icon: 'users' },
 ];
 
-const secondaryMenuItems = [
-  { label: 'Destek', href: '/ngo-admin/support', icon: 'help-circle', color: 'bg-blue-600' },
-  { label: 'Ayarlar', href: '/ngo-admin/settings', icon: 'settings', color: 'bg-gray-500' },
+const secondaryMenuItems: SideNavItem[] = [
+    { label: 'Destek', href: '/ngo-admin/support', icon: 'help-circle' },
+    { label: 'Ayarlar', href: '/ngo-admin/settings', icon: 'settings' },
 ];
 
-const MenuList = ({ items }: { items: typeof menuItems | typeof secondaryMenuItems }) => (
+const MenuList = ({ items }: { items: SideNavItem[] }) => (
     <Card className="overflow-hidden">
         <div className="divide-y divide-border">
             {items.map((item) => {
@@ -27,7 +60,7 @@ const MenuList = ({ items }: { items: typeof menuItems | typeof secondaryMenuIte
                 return (
                     <Link href={item.href} key={item.label} passHref>
                         <div className="flex items-center p-3 hover:bg-accent transition-colors active:bg-accent/50">
-                            <div className={`p-2 ${item.color} rounded-lg mr-4`}>
+                            <div className={cn("p-2 rounded-lg mr-4", iconColorMap[item.icon] || 'bg-gray-500')}>
                                 <Icon className="h-5 w-5 text-white" />
                             </div>
                             <div className="flex-1">
