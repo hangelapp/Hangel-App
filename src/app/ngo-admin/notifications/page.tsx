@@ -8,28 +8,39 @@ import { Bell, Mail, MessageSquare } from 'lucide-react';
 const notificationGroups = [
   {
     title: 'Gönüllülük ve Başvurular',
-    description: 'Yeni başvurular ve gönüllülük süreçleriyle ilgili bildirimler.',
+    description: 'Gönüllülük ilanları ve başvurularınızla ilgili tüm bildirimler.',
     items: [
-      { id: 'new-volunteer-app', label: 'Yeni Gönüllü Başvurusu Geldiğinde' },
-      { id: 'app-status-change', label: 'Başvuru Durumu Değiştiğinde (Gönüllüye)' },
-      { id: 'volunteer-feedback', label: 'Gönüllü Geri Bildirimi Geldiğinde' },
+      { id: 'new-volunteer-app', label: 'Yeni gönüllü başvurusu geldiğinde' },
+      { id: 'opportunity-expiring', label: 'İlanınızın süresi dolmak üzereyken' },
+      { id: 'volunteer-feedback', label: 'Tamamlanan bir gönüllülük için geri bildirim alındığında' },
     ],
   },
   {
     title: 'Bağış ve Finansal',
-    description: 'Kuruluşunuza yapılan bağışlar ve hak edişlerle ilgili bildirimler.',
+    description: 'Kuruluşunuza yapılan bağışlar, hak edişler ve finansal işlemlerle ilgili bildirimler.',
     items: [
-      { id: 'new-donation', label: 'Yeni Bağış Yapıldığında' },
-      { id: 'monthly-payout', label: 'Aylık Hak Ediş Tamamlandığında' },
+      { id: 'new-donation', label: 'Yeni bir bağış yapıldığında' },
+      { id: 'monthly-payout', label: 'Aylık hak ediş tamamlandığında' },
+      { id: 'payment-failed', label: 'Hak ediş ödemesi başarısız olduğunda' },
+    ],
+  },
+   {
+    title: 'Etkileşim ve Topluluk',
+    description: 'Profiliniz ve gönderilerinizle ilgili sosyal etkileşimler.',
+    items: [
+      { id: 'new-follower', label: 'Yeni bir takipçi kazandığınızda' },
+      { id: 'post-comment', label: 'Gönderinize yeni bir yorum yapıldığında' },
+      { id: 'post-like', label: 'Gönderiniz beğenildiğinde' },
     ],
   },
   {
-    title: 'Platform ve Duyurular',
-    description: 'Hangel\'den gelen önemli duyurular ve güncellemeler.',
+    title: 'Hesap ve Yönetim',
+    description: 'Hesap güvenliği, panel yönetimi ve platform güncellemeleri.',
     items: [
-      { id: 'announcements', label: 'Platform Duyuruları ve Güncellemeler' },
-      { id: 'transparency-alert', label: 'Şeffaflık Puanı Uyarısı' },
-      { id: 'new-features', label: 'Yönetim Paneli İçin Yeni Özellikler' },
+      { id: 'new-panel-user', label: 'Panele yeni bir yetkili eklendiğinde' },
+      { id: 'support-reply', label: 'Destek talebinize yanıt geldiğinde' },
+      { id: 'transparency-alert', label: 'Şeffaflık puanınız kritik seviyeye düştüğünde' },
+      { id: 'announcements', label: 'Hangel platform duyuruları ve güncellemeleri' },
     ],
   },
 ];
