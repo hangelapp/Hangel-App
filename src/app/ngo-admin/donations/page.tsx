@@ -4,13 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowDownUp } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const donationHistory = [
   { id: 'TXN123', brand: 'Doğa Dostu Giyim', purchaseAmount: 150, ngoShare: 12.75, date: '2024-07-20', status: 'Tamamlandı' },
@@ -72,40 +73,35 @@ const TransactionList = ({ transactions }: { transactions: typeof donationHistor
     </div>
 );
 
-const MonthlyTransactionList = ({ transactions }: { transactions: typeof donationHistory }) => {
-    const grouped = transactions.reduce((acc, tx) => {
-        const monthYear = format(parse(tx.date, 'yyyy-MM-dd', new Date()), 'MMMM yyyy', { locale: tr });
-        if (!acc[monthYear]) {
-            acc[monthYear] = [];
-        }
-        acc[monthYear].push(tx);
-        return acc;
-    }, {} as Record<string, typeof donationHistory>);
-
-    return (
-        <Accordion type="single" collapsible className="w-full space-y-4">
-            {Object.entries(grouped).map(([monthYear, txsInMonth]) => (
-                <AccordionItem value={monthYear} key={monthYear} className="border-b-0 rounded-lg overflow-hidden bg-background">
-                    <Card>
-                        <AccordionTrigger className="p-4 text-lg font-semibold hover:no-underline w-full text-left">
-                            {monthYear}
-                        </AccordionTrigger>
-                        <AccordionContent className="p-4 pt-0">
-                            <div className="border-t pt-4 space-y-4">
-                                <TransactionList transactions={txsInMonth} />
-                            </div>
-                        </AccordionContent>
-                    </Card>
-                </AccordionItem>
-            ))}
-        </Accordion>
-    )
-}
-
 
 export default function DonationsPage() {
     const pastTransactions = donationHistory.filter(tx => tx.status === 'Tamamlandı');
     const futureTransactions = donationHistory.filter(tx => tx.status === 'Beklemede');
+    
+    const donationStats = useMemo(() => {
+        const totalNgoShare = donationHistory.reduce((acc, tx) => acc + tx.ngoShare, 0);
+        const totalTransactions = donationHistory.length;
+        const donationsByBrand = donationHistory.reduce((acc, tx) => {
+            if (!acc[tx.brand]) {
+                acc[tx.brand] = 0;
+            }
+            acc[tx.brand] += tx.ngoShare;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const brandChartData = Object.entries(donationsByBrand)
+            .map(([name, Bağış]) => ({ name, Bağış }))
+            .sort((a, b) => b.Bağış - a.Bağış);
+
+        return {
+            totalNgoShare,
+            totalTransactions,
+            averageNgoShare: totalTransactions > 0 ? totalNgoShare / totalTransactions : 0,
+            brandChartData,
+        };
+    }, []);
+    
+    const currentMonthYear = format(new Date(), 'MMMM yyyy', { locale: tr });
 
   return (
     <div className="space-y-6">
@@ -122,7 +118,10 @@ export default function DonationsPage() {
         <CardContent>
             <div className="space-y-3">
                 {monthlyEarnings.map(earning => (
-                    <div key={earning.month} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                    <div key={earning.month} className={cn(
+                        "flex justify-between items-center p-3 rounded-lg bg-muted/50",
+                        earning.month.toLowerCase() === currentMonthYear.toLowerCase() && "ring-2 ring-primary"
+                    )}>
                         <div>
                             <p className="font-semibold">{earning.month}</p>
                             <p className="text-xs text-muted-foreground">{earning.status} Hak Ediş</p>
@@ -155,7 +154,7 @@ export default function DonationsPage() {
                     <TabsTrigger value="all">Tüm İşlemler</TabsTrigger>
                     <TabsTrigger value="past">Kesinleşenler</TabsTrigger>
                     <TabsTrigger value="future">Bekleyenler</TabsTrigger>
-                    <TabsTrigger value="monthly">Aylık Döküm</TabsTrigger>
+                    <TabsTrigger value="stats">İstatistikler</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
                     <TransactionList transactions={donationHistory} />
@@ -166,8 +165,43 @@ export default function DonationsPage() {
                 <TabsContent value="future" className="mt-4">
                     <TransactionList transactions={futureTransactions} />
                 </TabsContent>
-                <TabsContent value="monthly" className="mt-4">
-                    <MonthlyTransactionList transactions={donationHistory} />
+                <TabsContent value="stats" className="mt-4 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Genel Bağış Özeti</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                            <div>
+                                <p className="text-2xl font-bold">{donationStats.totalNgoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                                <p className="text-sm text-muted-foreground">Toplam STK Payı</p>
+                            </div>
+                             <div>
+                                <p className="text-2xl font-bold">{donationStats.totalTransactions}</p>
+                                <p className="text-sm text-muted-foreground">Toplam İşlem Sayısı</p>
+                            </div>
+                             <div>
+                                <p className="text-2xl font-bold">{donationStats.averageNgoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                                <p className="text-sm text-muted-foreground">Ortalama Bağış Tutarı</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Markalara Göre Bağış Dağılımı</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={donationStats.brandChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
+                                    <YAxis />
+                                    <Tooltip formatter={(value: number) => `${value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}`} />
+                                    <Legend />
+                                    <Bar dataKey="Bağış" fill="#f34723" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
             </Tabs>
         </CardContent>

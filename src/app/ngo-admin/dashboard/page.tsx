@@ -21,6 +21,7 @@ const iconColorMap: { [key: string]: string } = {
   bell: 'bg-purple-500',
   settings: 'bg-gray-500',
   'help-circle': 'bg-teal-500',
+  sparkles: 'bg-purple-500',
 };
 
 const NavLink = ({ href, icon, label }: { href: string, icon: string, label: string }) => {
@@ -46,6 +47,7 @@ const ngoAdminNavItems = [
     { href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper' },
     { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart-3' },
     { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check' },
+    { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: 'sparkles' },
     { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code' },
     { href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe' },
     { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users' },
