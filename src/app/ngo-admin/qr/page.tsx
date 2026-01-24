@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Download, Copy, Twitter, Linkedin } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { user } from '@/lib/data';
 
 export default function QrPage() {
   const { toast } = useToast();
-  const profileUrl = `hangel.org/${user.username.replace('@', '')}`;
-  const shareText = `Hangel'deki ${user.name} profilini incele!`;
+  const ngo = { name: 'Ahbap Derneği', username: '@ahbap' };
+  const profileUrl = `hangel.org/${ngo.username.replace('@', '')}`;
+  const shareText = `Hangel'deki ${ngo.name} profilini incele!`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}`;
 
   const copyToClipboard = () => {
@@ -30,12 +30,12 @@ export default function QrPage() {
       
       <Card className="max-w-sm w-full">
         <CardHeader>
-          <CardTitle>{user.name}</CardTitle>
+          <CardTitle>{ngo.name}</CardTitle>
           <CardDescription>Profil QR Kodu</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
           <div className="bg-white p-4 rounded-lg">
-            <Image src={qrCodeUrl} alt={`${user.name} QR Kodu`} width={200} height={200} />
+            <Image src={qrCodeUrl} alt={`${ngo.name} QR Kodu`} width={200} height={200} />
           </div>
 
           <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted w-full">
@@ -48,7 +48,7 @@ export default function QrPage() {
           <div className="w-full space-y-2">
             <div className="grid grid-cols-1 gap-2">
                 <Button variant="outline" asChild>
-                <a href={qrCodeUrl} download={`${user.username.replace('@','')}-qr-kodu.png`}>
+                <a href={qrCodeUrl} download={`${ngo.username.replace('@','')}-qr-kodu.png`}>
                     <Download className="mr-2 h-4 w-4" />
                     QR Kodu İndir
                 </a>
