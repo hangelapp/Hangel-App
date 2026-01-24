@@ -1,11 +1,56 @@
 'use client';
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Heart } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { DollarSign, Users, Heart, ChevronRight, BarChart3, ShieldCheck, UserCog, QrCode, Settings, HelpCircle, Newspaper, HeartHandshake } from 'lucide-react';
 import { user } from '@/lib/data';
 import VolunteerApplications from './_components/volunteer-applications';
 import OpportunityManagement from './_components/opportunity-management';
 import SupportForm from './_components/support-form';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import * as Icons from 'lucide-react';
+
+const iconColorMap: { [key: string]: string } = {
+  'heart-handshake': 'bg-red-500',
+  'dollar-sign': 'bg-green-600',
+  newspaper: 'bg-orange-500',
+  'bar-chart-3': 'bg-indigo-500',
+  'shield-check': 'bg-green-500',
+  'user-cog': 'bg-gray-500',
+  'qr-code': 'bg-slate-500',
+  users: 'bg-blue-500',
+  settings: 'bg-gray-500',
+  'help-circle': 'bg-teal-500',
+};
+
+const NavLink = ({ href, icon, label }: { href: string, icon: string, label: string }) => {
+  // @ts-ignore
+  const Icon = Icons[icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+  const color = iconColorMap[icon] || 'bg-gray-500';
+
+  return (
+    <Link href={href} className="flex items-center p-4 hover:bg-accent transition-colors w-full text-sm sm:text-base">
+      <div className={cn("p-1.5 rounded-lg mr-4", color)}>
+          <Icon className="h-5 w-5 text-white" />
+      </div>
+      <span className="flex-1 font-medium">{label}</span>
+      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+    </Link>
+  )
+}
+
+const ngoAdminNavItems = [
+    { href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake' },
+    { href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: 'dollar-sign' },
+    { href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper' },
+    { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart-3' },
+    { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check' },
+    { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog' },
+    { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code' },
+    { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users' },
+    { href: '/ngo-admin/settings', label: 'Ayarlar', icon: 'settings' },
+    { href: '/ngo-admin/support', label: 'Destek', icon: 'help-circle' },
+];
 
 export default function NgoDashboardPage() {
     const userName = user.name;
@@ -48,6 +93,20 @@ export default function NgoDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      
+      <Card>
+        <CardHeader>
+            <CardTitle>Yönetim Araçları</CardTitle>
+            <CardDescription>Kuruluşunuzla ilgili tüm yönetim araçlarına buradan erişin.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+            <div className="divide-y">
+                {ngoAdminNavItems.map(item => (
+                    <NavLink key={item.href} {...item} />
+                ))}
+            </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
