@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,6 @@ const themes = [
 export default function WebsiteBuilderPage() {
     const [isPublished, setIsPublished] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState('modern');
-    const [enabledSections, setEnabledSections] = useState<string[]>([]);
     const { toast } = useToast();
     const [customDomain, setCustomDomain] = useState('');
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği for preview data
@@ -38,11 +37,23 @@ export default function WebsiteBuilderPage() {
         { id: 'stats', label: 'Bağış İstatistikleri', icon: BarChart3, default: false, description: `Toplam ${ngo?.stats.totalDonation.toLocaleString('tr-TR')} ₺ bağış toplandı.` },
         { id: 'reports', label: 'Etki Raporları', icon: Newspaper, default: false, description: "Yayınlanmış etki raporları listelenir." },
         { id: 'banking', label: 'Banka ve Ödeme Bilgileri', icon: CreditCard, default: false, description: "Doğrudan bağışlar için IBAN ve Sanal POS bilgileri." },
+        { id: 'sms', label: 'SMS Kampanyası', icon: MessageSquare, default: false, description: "SMS ile bağış kampanyası bilgilerinizi girin ve sitenizde yayınlayın." }
     ];
     
-    useState(() => {
-        setEnabledSections(contentSections.filter(s => s.default).map(s => s.id));
-    }, []);
+    const contentSectionIds = contentSections.map(s => s.id);
+    const [enabledSections, setEnabledSections] = useState<string[]>(contentSections.filter(s => s.default).map(s => s.id));
+    const [allSectionsEnabled, setAllSectionsEnabled] = useState(contentSections.filter(s => s.default).length === contentSections.length);
+
+
+    const handleMasterSwitch = (checked: boolean) => {
+        setAllSectionsEnabled(checked);
+        if (checked) {
+            setEnabledSections(contentSectionIds);
+        } else {
+            setEnabledSections([]);
+        }
+    };
+
 
     const handleSave = () => {
         toast({
@@ -180,8 +191,16 @@ export default function WebsiteBuilderPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>İçerik Yönetimi</CardTitle>
-                    <CardDescription>Sitenizde hangi bölümlerin gösterileceğini seçin. Bu veriler Hangel profilinizden otomatik olarak çekilir.</CardDescription>
+                     <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle>İçerik Yönetimi</CardTitle>
+                            <CardDescription>Sitenizde hangi bölümlerin gösterileceğini seçin.</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Label htmlFor="publish-all" className="text-sm font-medium">Tümünü Yayınla</Label>
+                            <Switch id="publish-all" checked={allSectionsEnabled} onCheckedChange={handleMasterSwitch} />
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Accordion type="multiple" className="w-full">
@@ -212,6 +231,22 @@ export default function WebsiteBuilderPage() {
                                     }}
                                 />
                                 </div>
+                                 {section.id === 'sms' && (
+                                    <div className="space-y-4 pt-4 border-t mt-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="sms-keyword">Anahtar Kelime (Keyword)</Label>
+                                            <Input id="sms-keyword" placeholder="DESTEK" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="sms-number">Numara</Label>
+                                            <Input id="sms-number" placeholder="3406" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="sms-description">Açıklama (Örn: 20 TL bağış için)</Label>
+                                            <Input id="sms-description" placeholder="Bir SMS 20 TL değerindedir." />
+                                        </div>
+                                    </div>
+                                )}
                             </AccordionContent>
                         </AccordionItem>
                         ))}

@@ -47,7 +47,7 @@ export default function WebsitePreviewPage() {
         { name: 'Hangel ile', icon: HangelLogo, description: 'Alışverişlerinizle komisyonsuz destek olun.' },
         { name: 'Kredi Kartı ile', icon: CreditCard, description: 'Güvenli ödeme altyapısıyla doğrudan bağış yapın.' },
         { name: 'Banka Transferi (EFT/IBAN)', icon: Landmark, description: 'Doğrudan banka hesabımıza transfer yapın.', iban: 'TR00 0000 0000 0000 0000 0000 00' },
-        { name: 'SMS ile', icon: MessageSquare, description: 'Kısa mesaj göndererek hızlıca destek olun.' },
+        { name: 'SMS ile', icon: MessageSquare, description: '"AHBAP" yazıp 1234\'e göndererek 20 TL bağış yapabilirsiniz.' },
     ];
 
     return (
