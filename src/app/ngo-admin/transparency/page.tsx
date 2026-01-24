@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const criteria = [
   { id: 1, name: 'Faaliyet Belgesi', points: 10, isCompleted: true, type: 'document' },
@@ -72,6 +73,25 @@ export default function TransparencyPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 p-0">
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{item.name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="py-4">
+                                {item.isCompleted ? (
+                                    <p>Bu kriterle ilgili belge veya bilgi burada görüntülenecektir.</p>
+                                ) : (
+                                    <p>Bu kriter henüz karşılanmamıştır. Yüklendiğinde burada görüntülenecektir.</p>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                   {item.isCompleted ? (
                     <>
                       {item.type === 'document' ? (

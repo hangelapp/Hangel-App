@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -305,9 +306,25 @@ export default function NgoProfilePage() {
                                     )}
                                     <span className={!item.completed ? 'text-muted-foreground' : ''}>{item.name}</span>
                                 </div>
-                                <Button size="icon" variant="ghost" className="h-8 w-8">
-                                    <Eye className="h-4 w-4" />
-                                </Button>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button size="icon" variant="ghost" className="h-8 w-8">
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>{item.name}</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="py-4">
+                                            {item.completed ? (
+                                                <p>Bu kriterle ilgili belge veya bilgi burada görüntülenecektir.</p>
+                                            ) : (
+                                                <p>Bu kriter henüz karşılanmamıştır. Kuruluş tarafından ilgili belge veya bilgi yüklendiğinde burada görüntülenecektir.</p>
+                                            )}
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         ))}
                     </div>
