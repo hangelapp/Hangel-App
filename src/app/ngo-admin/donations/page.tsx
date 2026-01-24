@@ -107,11 +107,15 @@ export default function DonationsPage() {
           </div>
         </CardHeader>
         <CardContent>
-            <Tabs defaultValue="past" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="past">Geçmiş Hak Edişler</TabsTrigger>
-                    <TabsTrigger value="future">Gelecek Hak Edişler</TabsTrigger>
+            <Tabs defaultValue="all" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="all">Tüm İşlemler</TabsTrigger>
+                    <TabsTrigger value="past">Kesinleşenler</TabsTrigger>
+                    <TabsTrigger value="future">Bekleyenler</TabsTrigger>
                 </TabsList>
+                <TabsContent value="all" className="mt-4">
+                    <TransactionList transactions={donationHistory} />
+                </TabsContent>
                 <TabsContent value="past" className="mt-4">
                    <TransactionList transactions={pastTransactions} />
                 </TabsContent>

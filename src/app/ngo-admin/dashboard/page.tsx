@@ -59,8 +59,8 @@ export default function NgoDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold font-headline">Genel Bakış</h1>
-        <p className="text-muted-foreground">Hoş geldin, {userName}. İşte kuruluşunun bugünkü özeti.</p>
+        <h1 className="text-2xl font-bold font-headline">Ahbap Derneği</h1>
+        <p className="text-muted-foreground">Yönetim Paneline hoş geldin, {userName}. İşte kuruluşunun bugünkü özeti.</p>
       </div>
 
        <div className="grid gap-4 md:grid-cols-3">
