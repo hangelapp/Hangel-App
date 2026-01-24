@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -37,6 +37,7 @@ export default function WebsiteBuilderPage() {
         { id: 'transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck, default: true, description: `Mevcut puan: ${ngo?.transparencyScore}/100` },
         { id: 'stats', label: 'Bağış İstatistikleri', icon: BarChart3, default: false, description: `Toplam ${ngo?.stats.totalDonation.toLocaleString('tr-TR')} ₺ bağış toplandı.` },
         { id: 'reports', label: 'Etki Raporları', icon: Newspaper, default: false, description: "Yayınlanmış etki raporları listelenir." },
+        { id: 'banking', label: 'Banka ve Ödeme Bilgileri', icon: CreditCard, default: false, description: "Doğrudan bağışlar için IBAN ve Sanal POS bilgileri." },
     ];
     
     useState(() => {
@@ -133,15 +134,15 @@ export default function WebsiteBuilderPage() {
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="primary-color">Ana Renk</Label>
-                        <Input type="color" id="primary-color" defaultValue="#f34723" className="h-12 p-1" />
+                        <Input type="text" id="primary-color" defaultValue="#f34723" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="secondary-color">İkinci Renk (Arka Plan)</Label>
-                        <Input type="color" id="secondary-color" defaultValue="#f8fafc" className="h-12 p-1" />
+                        <Input type="text" id="secondary-color" defaultValue="#f1f5f9" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="accent-color">Vurgu Rengi (Metin)</Label>
-                        <Input type="color" id="accent-color" defaultValue="#042654" className="h-12 p-1" />
+                        <Input type="text" id="accent-color" defaultValue="#042654" />
                     </div>
                 </CardContent>
             </Card>

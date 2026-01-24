@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
     Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin, 
-    CreditCard, Landmark, MessageSquare, QrCode, ArrowRight, Download, Eye, CheckCircle, AlertCircle
+    CreditCard, Landmark, MessageSquare, QrCode, ArrowRight, Download, Eye, CheckCircle, AlertCircle, ChevronRight
 } from 'lucide-react';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
+import React from 'react';
+import { cn } from '@/lib/utils';
 
-// Mock transparency criteria data for the preview
+
 const transparencyCriteria = [
   { name: 'Faaliyet Belgesi', completed: true },
   { name: 'Tüzük / Vakıf Senedi', completed: true },
@@ -24,6 +26,7 @@ const transparencyCriteria = [
 
 export default function WebsitePreviewPage() {
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği
+    const [selectedDoc, setSelectedDoc] = React.useState(transparencyCriteria[0]);
 
     if (!ngo) {
         return <div className="h-screen flex items-center justify-center">Kuruluş bulunamadı.</div>;
@@ -37,8 +40,8 @@ export default function WebsitePreviewPage() {
         'secondary-foreground': '#475569' // Slate 600
     };
 
-    const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name).slice(0,2);
-    const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0,4); // Changed to 4
+    const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name).slice(0, 6);
+    const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0,4); 
 
     const donationMethods = [
         { name: 'Hangel ile', icon: HangelLogo, description: 'Alışverişlerinizle komisyonsuz destek olun.' },
@@ -117,6 +120,19 @@ export default function WebsitePreviewPage() {
                      </div>
                 </section>
 
+                 <section id="dogrudan-bagis" className="scroll-mt-20">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><Landmark className="h-8 w-8 text-[--primary]"/> Doğrudan Bağış Kanalları</h2>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Banka Hesap Bilgileri (IBAN)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-lg font-mono tracking-wider p-4 bg-muted rounded-lg text-center">TR00 0000 0000 0000 0000 0000 00</p>
+                            <p className="text-sm text-muted-foreground mt-2 text-center">Lütfen açıklama kısmına "BAĞIŞ" yazmayı unutmayınız.</p>
+                        </CardContent>
+                    </Card>
+                </section>
+
 
                 <section id="hakkimizda" className="scroll-mt-20">
                      <Card className="overflow-hidden">
@@ -133,7 +149,7 @@ export default function WebsitePreviewPage() {
                 </section>
 
                 <section id="gonulluluk" className="scroll-mt-20">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><HeartHandshake className="h-8 w-8 text-[--primary]"/> Gönüllülük Fırsatları</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><HeartHandshake className="h-8 w-8 text-[--primary]"/> Gönüllülük İlanları</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {ngoOpportunities.map(opp => (
                             <Card key={opp.id} className="flex flex-col">
@@ -154,55 +170,79 @@ export default function WebsitePreviewPage() {
 
                  <section id="haberler" className="scroll-mt-20">
                     <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><Newspaper className="h-8 w-8 text-[--primary]"/> Haberler</h2>
-                    <div className="space-y-8 max-w-2xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {ngoPosts.map(post => (
-                            <Card key={post.id}>
-                                <CardHeader className="flex flex-row items-center gap-3">
-                                    <Avatar>
-                                        <AvatarImage src={post.author.avatarUrl} />
-                                        <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
+                            <Card key={post.id} className="flex flex-col">
+                                {post.imageUrl && (
+                                    <div className="relative aspect-video w-full overflow-hidden rounded-t-lg">
+                                        <Image src={post.imageUrl} alt="Post image" fill className="object-cover"/>
+                                    </div>
+                                )}
+                                <CardHeader className="flex-row items-center gap-3">
                                     <div>
-                                        <p className="font-semibold text-[--accent]">{post.author.name}</p>
+                                        <p className="font-semibold text-[--accent] text-sm">{post.author.name}</p>
                                         <p className="text-xs text-[--secondary-foreground]">{post.timestamp}</p>
                                     </div>
                                 </CardHeader>
-                                <CardContent>
-                                    <p>{post.content}</p>
-                                    {post.imageUrl && <div className="mt-4 relative aspect-video rounded-lg overflow-hidden"><Image src={post.imageUrl} alt="Post image" fill className="object-cover"/></div>}
+                                <CardContent className="flex-1">
+                                    <p className="text-sm line-clamp-3">{post.content}</p>
                                 </CardContent>
+                                <CardFooter>
+                                    <Button variant="link" className="p-0 h-auto text-[--primary]">Devamını Oku</Button>
+                                </CardFooter>
                             </Card>
                         ))}
                     </div>
                 </section>
 
                 <section id="seffaflik" className="scroll-mt-20">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><ShieldCheck className="h-8 w-8 text-[--primary]"/> Şeffaflık</h2>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                        <Card className="md:col-span-1 text-center">
-                            <CardHeader>
-                                <CardTitle>Şeffaflık Puanı</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-7xl font-bold text-[--primary]">{ngo.transparencyScore}</p>
-                                <p className="text-muted-foreground">/ 100</p>
-                            </CardContent>
-                        </Card>
-                        <div className="md:col-span-2 space-y-3">
-                            {transparencyCriteria.map(item => (
-                                <div key={item.name} className="flex items-center justify-between p-3 border rounded-lg bg-white">
-                                    <div className='flex items-center gap-3'>
-                                        {item.completed ? <CheckCircle className="h-5 w-5 text-green-500" /> : <AlertCircle className="h-5 w-5 text-yellow-500" />}
-                                        <p className="font-medium text-sm text-[--accent]">{item.name}</p>
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
-                                        <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
-                                    </div>
-                                </div>
-                            ))}
+                    <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
+                        <h2 className="text-3xl md:text-4xl font-bold flex items-center gap-3 text-[--accent]">
+                            <ShieldCheck className="h-8 w-8 text-[--primary]"/> Şeffaflık
+                        </h2>
+                        <div className="text-center p-4 border-2 border-dashed rounded-xl">
+                            <p className="text-sm text-muted-foreground">Şeffaflık Puanı</p>
+                            <p className="text-4xl font-bold text-[--primary]">{ngo.transparencyScore}</p>
                         </div>
-                     </div>
+                    </div>
+                    <Card className="overflow-hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-3">
+                            <div className="md:col-span-1 border-r bg-muted/50">
+                                <CardHeader>
+                                    <CardTitle className="text-base text-[--accent]">Kriterler</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    {transparencyCriteria.map(item => (
+                                        <button
+                                            key={item.name}
+                                            onClick={() => setSelectedDoc(item)}
+                                            className={cn(
+                                                "flex w-full items-center gap-3 p-3 text-left text-sm transition-colors",
+                                                selectedDoc.name === item.name ? "bg-accent" : "hover:bg-accent/50"
+                                            )}
+                                        >
+                                            {item.completed ? <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />}
+                                            <span className="flex-1">{item.name}</span>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                        </button>
+                                    ))}
+                                </CardContent>
+                            </div>
+                            <div className="md:col-span-2 p-6 flex flex-col justify-center">
+                                <h3 className="text-lg font-semibold text-[--accent]">{selectedDoc.name}</h3>
+                                {selectedDoc.completed ? (
+                                    <p className="mt-2 text-green-600 flex items-center gap-2"><CheckCircle className="h-5 w-5" /> Bu kriter karşılanmıştır.</p>
+                                ) : (
+                                    <p className="mt-2 text-yellow-600 flex items-center gap-2"><AlertCircle className="h-5 w-5" /> Bu kriter henüz karşılanmamıştır.</p>
+                                )}
+                                <p className="mt-4 text-sm text-[--secondary-foreground]">Bu belge veya bilgi, şeffaflığı artırmak amacıyla kuruluş tarafından sağlanmıştır. Detayları görüntülemek veya indirmek için aşağıdaki butonları kullanabilirsiniz.</p>
+                                <div className="mt-6 flex gap-2">
+                                    <Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Görüntüle</Button>
+                                    <Button variant="outline"><Download className="mr-2 h-4 w-4" /> İndir</Button>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
                 </section>
             </main>
 
