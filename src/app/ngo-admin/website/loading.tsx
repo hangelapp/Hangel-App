@@ -15,6 +15,15 @@ export default function Loading() {
       </div>
 
        <div className="space-y-4 rounded-lg border p-6">
+        <Skeleton className="h-6 w-48 mb-4" />
+        <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+        <Skeleton className="h-24 w-full" />
+      </div>
+
+       <div className="space-y-4 rounded-lg border p-6">
         <Skeleton className="h-6 w-32 mb-4" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Skeleton className="h-32 w-full" />
@@ -26,6 +35,9 @@ export default function Loading() {
        <div className="space-y-4 rounded-lg border p-6">
         <Skeleton className="h-6 w-48 mb-4" />
         <div className="space-y-2">
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
             <Skeleton className="h-14 w-full" />
             <Skeleton className="h-14 w-full" />
             <Skeleton className="h-14 w-full" />

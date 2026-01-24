@@ -3,11 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Dns, ShieldCheck, BarChart3 } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const themes = [
     { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/theme-modern/400/300' },
@@ -16,22 +18,31 @@ const themes = [
 ];
 
 const contentSections = [
-    { id: 'about', label: 'Hakkımızda', icon: Globe, default: true },
+    { id: 'about', label: 'Hakkımızda ve İletişim', icon: Globe, default: true },
     { id: 'volunteer', label: 'Gönüllülük İlanları', icon: Handshake, default: true },
+    { id: 'posts', label: 'Gönderiler', icon: Newspaper, default: true },
+    { id: 'transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck, default: true },
+    { id: 'stats', label: 'Bağış İstatistikleri', icon: BarChart3, default: false },
     { id: 'reports', label: 'Etki Raporları', icon: Newspaper, default: false },
-    { id: 'contact', label: 'İletişim', icon: Mail, default: true },
 ];
 
 export default function WebsiteBuilderPage() {
     const [isPublished, setIsPublished] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState('modern');
     const { toast } = useToast();
+    const [customDomain, setCustomDomain] = useState('');
 
     const handleSave = () => {
         toast({
             title: "Kaydedildi!",
             description: "Web sitesi ayarlarınız başarıyla güncellendi.",
         });
+        if(customDomain) {
+            toast({
+                title: "Domain Kaydedildi!",
+                description: `Lütfen ${customDomain} için DNS kayıtlarınızı güncelleyin. Siteniz 24 saat içinde aktif olacaktır.`,
+            });
+        }
     };
 
     return (
@@ -61,6 +72,36 @@ export default function WebsiteBuilderPage() {
                             <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
                         </a>
                     </Button>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Dns className="h-5 w-5 text-primary" />Alan Adı (Domain) ve DNS</CardTitle>
+                    <CardDescription>Sitenizi kendi alan adınızda yayınlayın.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="custom-domain">Kendi Alan Adınız</Label>
+                        <Input 
+                            id="custom-domain" 
+                            placeholder="ornek-stk.org.tr" 
+                            value={customDomain} 
+                            onChange={(e) => setCustomDomain(e.target.value)} 
+                        />
+                    </div>
+                    <Alert>
+                        <Dns className="h-4 w-4" />
+                        <AlertTitle>DNS Kayıtlarını Güncelleyin</AlertTitle>
+                        <AlertDescription>
+                            Alan adınızı kaydettikten sonra, alan adı sağlayıcınızın (örn: GoDaddy, Natro) DNS paneline giderek aşağıdaki CNAME kaydını oluşturun. Değişikliklerin internete yayılması 24 saati bulabilir.
+                            <div className="mt-2 p-2 bg-muted rounded font-mono text-xs">
+                                <p><strong>Tür:</strong> CNAME</p>
+                                <p><strong>İsim:</strong> www</p>
+                                <p><strong>Değer:</strong> host.hangel.site</p>
+                            </div>
+                        </AlertDescription>
+                    </Alert>
                 </CardContent>
             </Card>
 
@@ -98,7 +139,7 @@ export default function WebsiteBuilderPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>İçerik Yönetimi</CardTitle>
-                    <CardDescription>Sitenizde hangi bölümlerin gösterileceğini seçin.</CardDescription>
+                    <CardDescription>Sitenizde hangi bölümlerin gösterileceğini seçin. Bu veriler Hangel profilinizden otomatik olarak çekilir.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
                     {contentSections.map(section => (
