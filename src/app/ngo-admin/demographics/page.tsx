@@ -212,7 +212,7 @@ export default function DemographicsPage() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="Destekçi" fill="#1f1f1f" />
+                        <Bar dataKey="Destekçi" fill="#f34723" />
                     </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -287,3 +287,5 @@ export default function DemographicsPage() {
     </div>
   );
 }
+
+    
