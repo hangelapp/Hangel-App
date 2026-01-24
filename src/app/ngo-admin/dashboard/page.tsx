@@ -1,11 +1,15 @@
 'use client';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight } from 'lucide-react';
+import { DollarSign, Users, Heart, ChevronRight, Globe } from 'lucide-react';
 import { user } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
+import VolunteerApplications from './_components/volunteer-applications';
+import OpportunityManagement from './_components/opportunity-management';
+import SupportForm from './_components/support-form';
+
 
 const iconColorMap: { [key: string]: string } = {
   'user-cog': 'bg-gray-500',
@@ -15,6 +19,7 @@ const iconColorMap: { [key: string]: string } = {
   'bar-chart-3': 'bg-indigo-500',
   'shield-check': 'bg-green-500',
   'qr-code': 'bg-slate-500',
+  'globe': 'bg-cyan-500',
   users: 'bg-blue-500',
   bell: 'bg-purple-500',
   settings: 'bg-gray-500',
@@ -45,6 +50,7 @@ const ngoAdminNavItems = [
     { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart-3' },
     { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check' },
     { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code' },
+    { href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe' },
     { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users' },
     { href: '/ngo-admin/notifications', label: 'Bildirim Ayarları', icon: 'bell' },
     { href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings' },
@@ -92,20 +98,27 @@ export default function NgoDashboardPage() {
           </CardContent>
         </Card>
       </div>
-      
-      <Card>
-        <CardHeader>
-            <CardTitle>Yönetim Araçları</CardTitle>
-            <CardDescription>Kuruluşunuzla ilgili tüm yönetim araçlarına buradan erişin.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-            <div className="divide-y">
-                {ngoAdminNavItems.map(item => (
-                    <NavLink key={item.href} {...item} />
-                ))}
-            </div>
-        </CardContent>
-      </Card>
+
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         <Card>
+            <CardHeader>
+                <CardTitle>Yönetim Araçları</CardTitle>
+                <CardDescription>Kuruluşunuzla ilgili tüm yönetim araçlarına buradan erişin.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div className="divide-y">
+                    {ngoAdminNavItems.map(item => (
+                        <NavLink key={item.href} {...item} />
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+        <div className="space-y-6">
+            <VolunteerApplications />
+            <OpportunityManagement />
+            <SupportForm />
+        </div>
+       </div>
     </div>
   );
 }
