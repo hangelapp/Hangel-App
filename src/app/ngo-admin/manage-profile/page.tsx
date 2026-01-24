@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,6 +42,19 @@ const districts: { [key: string]: string[] } = {
     'Ankara': ['Akyurt', 'Altındağ', 'Ayaş', 'Balâ', 'Beypazarı', 'Çamlıdere', 'Çankaya', 'Çubuk', 'Elmadağ', 'Etimesgut', 'Evren', 'Gölbaşı', 'Güdül', 'Haymana', 'Kahramankazan', 'Kalecik', 'Keçiören', 'Kızılcahamam', 'Mamak', 'Nallıhan', 'Polatlı', 'Pursaklar', 'Sincan', 'Şereflikoçhisar', 'Yenimahalle'],
     'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Kınık', 'Kiraz', 'Konak', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
 };
+
+const FileUpload = ({label, currentFile}: {label: string, currentFile?: string}) => (
+    <div className="space-y-2">
+        <Label>{label}</Label>
+        <div className="flex items-center gap-4">
+            <Input id={`${label}-upload`} type="file" className="hidden" />
+            <Button asChild variant="outline">
+                <label htmlFor={`${label}-upload`} className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />{currentFile ? 'Değiştir' : 'Yükle'}</label>
+            </Button>
+            {currentFile && <span className="text-sm text-muted-foreground">Mevcut: {currentFile}</span>}
+        </div>
+    </div>
+)
 
 const CheckboxGroup = ({ title, options, defaultValues }: { title: string, options: string[], defaultValues: string[] }) => {
     return (
@@ -127,6 +141,20 @@ export default function ManageProfilePage() {
               <p className="text-xs text-muted-foreground text-right">{aboutText.length} / {ABOUT_MAX_LENGTH}</p>
             </div>
           </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Bağlı Olunan Üst Kuruluş (İsteğe Bağlı)</CardTitle>
+                <CardDescription>Kuruluşunuz bir federasyon, konfederasyon veya platforma bağlıysa belirtin.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label>Üst Kuruluş Adı</Label>
+                    <Input placeholder="Örn: Anadolu Platformu" defaultValue="Anadolu Platformu"/>
+                </div>
+                <FileUpload label="Üst Kuruluş Logosu" currentFile="anadolu_platformu.png"/>
+            </CardContent>
         </Card>
         
         <Card>
@@ -321,36 +349,9 @@ export default function ManageProfilePage() {
             <CardDescription>Bu bilgiler şeffaflık puanınızı etkiler.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             <div className="space-y-2">
-                <Label>Logo</Label>
-                <div className="flex items-center gap-4">
-                    <Input id="logo-upload" type="file" className="hidden" />
-                    <Button asChild variant="outline">
-                        <label htmlFor="logo-upload" className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />Logo Yükle</label>
-                    </Button>
-                    <span className="text-sm text-muted-foreground">Mevcut: ahbap_logo.png</span>
-                </div>
-            </div>
-             <div className="space-y-2">
-                <Label>Faaliyet Belgesi</Label>
-                <div className="flex items-center gap-4">
-                    <Input id="activity-doc-upload" type="file" className="hidden" />
-                    <Button asChild variant="outline">
-                        <label htmlFor="activity-doc-upload" className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />Belge Yükle</label>
-                    </Button>
-                     <span className="text-sm text-muted-foreground">Mevcut: faaliyet_belgesi.pdf</span>
-                </div>
-            </div>
-             <div className="space-y-2">
-                <Label>Tüzük / Vakıf Senedi</Label>
-                <div className="flex items-center gap-4">
-                    <Input id="charter-upload" type="file" className="hidden" />
-                    <Button asChild variant="outline">
-                        <label htmlFor="charter-upload" className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />Belge Yükle</label>
-                    </Button>
-                     <span className="text-sm text-muted-foreground">Mevcut: ahbap_tuzuk.pdf</span>
-                </div>
-            </div>
+             <FileUpload label="Logo" currentFile="ahbap_logo.png" />
+             <FileUpload label="Faaliyet Belgesi" currentFile="faaliyet_belgesi.pdf" />
+             <FileUpload label="Tüzük / Vakıf Senedi" currentFile="ahbap_tuzuk.pdf" />
           </CardContent>
         </Card>
 
@@ -361,19 +362,19 @@ export default function ManageProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-start space-x-3">
-                    <Checkbox id="terms-ngo" required />
+                    <Checkbox id="terms-ngo" required defaultChecked/>
                     <Label htmlFor="terms-ngo" className="text-sm font-normal text-muted-foreground">
                         <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>'ni okudum ve kabul ediyorum.
                     </Label>
                 </div>
                  <div className="flex items-start space-x-3">
-                    <Checkbox id="terms-privacy" required />
+                    <Checkbox id="terms-privacy" required defaultChecked/>
                     <Label htmlFor="terms-privacy" className="text-sm font-normal text-muted-foreground">
                         <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum ve kabul ediyorum.
                     </Label>
                 </div>
                  <div className="flex items-start space-x-3">
-                    <Checkbox id="terms-social-impact" required />
+                    <Checkbox id="terms-social-impact" required defaultChecked/>
                     <Label htmlFor="terms-social-impact" className="text-sm font-normal text-muted-foreground">
                         <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikası</Link>'nı okudum ve kabul ediyorum.
                     </Label>

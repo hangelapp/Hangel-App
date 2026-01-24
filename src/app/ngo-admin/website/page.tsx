@@ -1,9 +1,10 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -224,6 +225,26 @@ export default function WebsiteBuilderPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-start justify-between">
                         <div>
+                            <CardTitle className="flex items-center gap-3 text-lg"><Store className="h-5 w-5 text-primary" /> İktisadi İşletme</CardTitle>
+                            <CardDescription className="pt-1">İktisadi işletmenize ait ürünleri sergileyin.</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2 pl-4">
+                            <Switch id="publish-ecommerce" />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <div className="space-y-2">
+                            <Label htmlFor="xml-feed">XML Ürün Feed Linki</Label>
+                            <Input id="xml-feed" placeholder="https://ornek.com/urunler.xml" />
+                            <p className="text-xs text-muted-foreground">Ürünlerinizi otomatik olarak çekmek için XML linkini girin.</p>
+                        </div>
+                         <Button variant="outline"><Edit className="mr-2 h-4 w-4" /> Manuel Ürün Ekle/Düzenle</Button>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-start justify-between">
+                        <div>
                             <CardTitle className="flex items-center gap-3 text-lg"><CreditCard className="h-5 w-5 text-primary" /> Banka ve Ödeme Bilgileri</CardTitle>
                             <CardDescription className="pt-1">Doğrudan bağışlar için IBAN ve Sanal POS bilgileri.</CardDescription>
                         </div>
@@ -231,15 +252,12 @@ export default function WebsiteBuilderPage() {
                             <Switch id="publish-banking" />
                         </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="bank-iban">Banka IBAN Numarası</Label>
-                            <Input id="bank-iban" placeholder="TR..." />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="bank-account-holder">Hesap Sahibi</Label>
-                            <Input id="bank-account-holder" placeholder="Kuruluşun yasal adı" />
-                        </div>
+                    <CardContent>
+                       <Button asChild variant="secondary" className="w-full">
+                            <Link href="/ngo-admin/manage-profile">
+                                <Edit className="mr-2 h-4 w-4" /> Ödeme Bilgilerini Düzenle
+                            </Link>
+                        </Button>
                     </CardContent>
                 </Card>
                 

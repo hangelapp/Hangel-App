@@ -91,6 +91,10 @@ export type NGO = {
   supportedSDGs: string[];
   beneficiaryGroups: string[];
   memberOf: string[];
+  affiliatedWith?: {
+    name: string;
+    logoUrl?: string;
+  };
   contact: {
     email: string;
     phone: string;

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -143,6 +144,19 @@ export default function NewApplicationPage() {
                       />
                       <p className="text-xs text-muted-foreground text-right">{aboutText.length} / {ABOUT_MAX_LENGTH}</p>
                     </div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Bağlı Olunan Üst Kuruluş (İsteğe Bağlı)</CardTitle>
+                    <CardDescription>Kuruluşunuz bir federasyon, konfederasyon veya platforma bağlıysa belirtin.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Üst Kuruluş Adı</Label>
+                        <Input placeholder="Örn: Türkiye Dernekler Federasyonu"/>
+                    </div>
+                    <FileUpload label="Üst Kuruluş Logosu" />
                 </CardContent>
             </Card>
             <Card>

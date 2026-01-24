@@ -1,5 +1,4 @@
 
-
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
@@ -269,6 +268,10 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Yoksulluğa Son', 'Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Afetzedeler', 'İhtiyaç Sahibi Aileler', 'Öğrenciler', 'Hastalar'],
         memberOf: ['Afet Platformu', 'HelpSteps'],
+        affiliatedWith: {
+          name: 'Anadolu Platformu',
+          logoUrl: 'https://logo.clearbit.com/anadolu.edu.tr'
+        },
         contact: { 
             email: 'iletisim@ahbap.org', 
             phone: '0216 550 50 50', 
