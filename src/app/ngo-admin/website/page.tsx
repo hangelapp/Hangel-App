@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -32,6 +32,7 @@ export default function WebsiteBuilderPage() {
 
     const contentSections = [
         { id: 'about', label: 'Hakkımızda ve İletişim', icon: Globe, default: true, description: ngo?.about },
+        { id: 'counter', label: 'Sayaç İstatistikleri', icon: BarChart3, default: true, description: 'Sitenizde öne çıkan rakamlar (kuruluş yılı, gönüllü sayısı vb.).' },
         { id: 'volunteer', label: 'Gönüllülük İlanları', icon: Handshake, default: true, description: `${ngo?.opportunities.length || 0} aktif ilan bulunuyor.` },
         { id: 'posts', label: 'Gönderiler', icon: Newspaper, default: true, description: `${ngo?.posts.length || 0} gönderi mevcut.` },
         { id: 'transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck, default: true, description: `Mevcut puan: ${ngo?.transparencyScore}/100` },
@@ -173,7 +174,7 @@ export default function WebsiteBuilderPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Accordion type="multiple" className="w-full">
+                    <Accordion type="multiple" className="w-full" defaultValue={['about']}>
                         {contentSections.map(section => (
                         <AccordionItem value={section.id} key={section.id} className="border-b last:border-b-0">
                             <AccordionTrigger className="p-4 hover:no-underline">
@@ -201,6 +202,18 @@ export default function WebsiteBuilderPage() {
                                     }}
                                 />
                                 </div>
+                                {section.id === 'banking' && (
+                                    <div className="space-y-4 pt-4 border-t mt-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="bank-iban">Banka IBAN Numarası</Label>
+                                            <Input id="bank-iban" placeholder="TR..." />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="bank-account-holder">Hesap Sahibi</Label>
+                                            <Input id="bank-account-holder" placeholder="Kuruluşun yasal adı" />
+                                        </div>
+                                    </div>
+                                )}
                                  {section.id === 'sms' && (
                                     <div className="space-y-4 pt-4 border-t mt-4">
                                         <div className="space-y-2">
@@ -212,8 +225,33 @@ export default function WebsiteBuilderPage() {
                                             <Input id="sms-number" placeholder="3406" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="sms-description">Açıklama (Örn: 20 TL bağış için)</Label>
+                                            <Label htmlFor="sms-description">Açıklama (Örn: Bir SMS 20 TL değerindedir.)</Label>
                                             <Input id="sms-description" placeholder="Bir SMS 20 TL değerindedir." />
+                                        </div>
+                                    </div>
+                                )}
+                                {section.id === 'counter' && (
+                                    <div className="space-y-4 pt-4 border-t mt-4">
+                                        <p className="text-sm text-muted-foreground">Sitenizin ana sayfasında gösterilecek önemli rakamları buradan yönetin.</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="counter-year">Kuruluş Yılı</Label>
+                                                <Input id="counter-year" placeholder="Örn: 1992" defaultValue={ngo?.foundationYear || ''}/>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="counter-volunteers">Toplam Gönüllü</Label>
+                                                <Input id="counter-volunteers" placeholder="Örn: 80000" type="number" defaultValue={ngo?.stats.volunteers || ''} />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="counter-projects">Tamamlanan Proje</Label>
+                                                <Input id="counter-projects" placeholder="Örn: 150" type="number" defaultValue={ngo?.stats.projects || ''} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="counter-reached">Ulaşılan İnsan</Label>
+                                                <Input id="counter-reached" placeholder="Örn: 500000" type="number" defaultValue={ngo?.stats.peopleReached || ''} />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -251,4 +289,6 @@ export default function WebsiteBuilderPage() {
         </div>
     );
 }
+    
+
     
