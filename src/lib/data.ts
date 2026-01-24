@@ -1114,7 +1114,7 @@ export const donationTransactions: DonationTransaction[] = [
 export const managedItems: ManagedItem[] = [
     { name: 'Ahbap Derneği', type: 'STK', icon: 'heart-handshake', href: '/ngo-admin/dashboard', status: 'approved' },
     { name: 'Doğa Dostu Giyim', type: 'Marka', icon: 'store', href: '#', status: 'approved' },
-    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: '/admin/clubs/profile/1', status: 'approved' },
+    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'users', href: '/admin/clubs/profile/1', status: 'approved' },
     { name: 'Yeni Marka Başvurusu', type: 'Marka', icon: 'file-text', href: '#', status: 'pending' },
 ];
 
