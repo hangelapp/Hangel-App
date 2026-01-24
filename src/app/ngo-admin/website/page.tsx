@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3 } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
 import { ngos } from '@/lib/data';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const themes = [
     { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/theme-modern/400/300' },
@@ -79,11 +80,24 @@ export default function WebsiteBuilderPage() {
                             onChange={(e) => setCustomDomain(e.target.value)} 
                         />
                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="domain-provider">Domain Hizmet Sağlayıcınız</Label>
+                        <Select>
+                            <SelectTrigger id="domain-provider"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="natro">Natro</SelectItem>
+                                <SelectItem value="turhost">Turhost</SelectItem>
+                                <SelectItem value="isimtescil">İsimtescil</SelectItem>
+                                <SelectItem value="godaddy">GoDaddy</SelectItem>
+                                <SelectItem value="other">Diğer</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <Alert>
                         <Server className="h-4 w-4" />
                         <AlertTitle>DNS Kayıtlarını Güncelleyin</AlertTitle>
                         <AlertDescription>
-                            Alan adınızı kaydettikten sonra, alan adı sağlayıcınızın (örn: GoDaddy, Natro) DNS paneline giderek aşağıdaki kayıtları oluşturun. Değişikliklerin internete yayılması 24 saati bulabilir.
+                            Alan adınızı kaydettikten sonra, alan adı sağlayıcınızın DNS paneline giderek aşağıdaki kayıtları oluşturun. Değişikliklerin internete yayılması 24 saati bulabilir.
                             <div className="mt-2 space-y-2 p-2 bg-muted rounded font-mono text-xs">
                                 <div>
                                     <p><strong>Tür:</strong> CNAME</p>
@@ -92,12 +106,43 @@ export default function WebsiteBuilderPage() {
                                 </div>
                                 <div className="pt-2 border-t border-muted-foreground/20">
                                      <p>Ayrıca, alan adınızın isim sunucularını (NS) aşağıdaki gibi güncelleyin:</p>
-                                     <p><strong>NS1:</strong> ns1.hangel.org</p>
-                                     <p><strong>NS2:</strong> ns2.hangel.org</p>
+                                     <div className="flex items-center justify-between">
+                                        <p><strong>NS1:</strong> ns1.hangel.org</p>
+                                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText('ns1.hangel.org'); toast({ title: 'Kopyalandı!' }); }}>
+                                            <Copy className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <p><strong>NS2:</strong> ns2.hangel.org</p>
+                                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText('ns2.hangel.org'); toast({ title: 'Kopyalandı!' }); }}>
+                                            <Copy className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </AlertDescription>
                     </Alert>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary" />Tema Renkleri</CardTitle>
+                    <CardDescription>Sitenizin ana renklerini belirleyin. Logonuzla uyumlu renkler seçmeniz önerilir.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="primary-color">Ana Renk</Label>
+                        <Input type="color" id="primary-color" defaultValue="#f34723" className="h-12 p-1" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="secondary-color">İkinci Renk (Arka Plan)</Label>
+                        <Input type="color" id="secondary-color" defaultValue="#f8fafc" className="h-12 p-1" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="accent-color">Vurgu Rengi (Metin)</Label>
+                        <Input type="color" id="accent-color" defaultValue="#042654" className="h-12 p-1" />
+                    </div>
                 </CardContent>
             </Card>
 
