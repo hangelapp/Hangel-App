@@ -1,10 +1,9 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -16,35 +15,34 @@ import Link from 'next/link';
 import { ngos } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const themes = [
-    { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/theme-modern/400/300' },
-    { id: 'minimalist', name: 'Minimalist', imageUrl: 'https://picsum.photos/seed/theme-minimal/400/300' },
-    { id: 'impactful', name: 'Etkili', imageUrl: 'https://picsum.photos/seed/theme-impact/400/300' },
-];
+// A new component for read-only sections with an edit link
+const ReadOnlySectionCard = ({ icon: Icon, title, description, editHref }: { icon: React.ElementType, title: string, description: string, editHref: string }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-start justify-between">
+            <div>
+                <CardTitle className="flex items-center gap-3 text-lg"><Icon className="h-5 w-5 text-primary" /> {title}</CardTitle>
+                <CardDescription className="pt-1 line-clamp-2">{description}</CardDescription>
+            </div>
+            <div className="flex items-center gap-2 pl-4">
+                <Switch id={`publish-${title.toLowerCase().replace(' ', '-')}`} defaultChecked />
+            </div>
+        </CardHeader>
+        <CardContent>
+            <Button asChild variant="secondary" className="w-full">
+                <Link href={editHref}>
+                    <Edit className="mr-2 h-4 w-4" /> İçeriği Düzenle
+                </Link>
+            </Button>
+        </CardContent>
+    </Card>
+);
 
 
 export default function WebsiteBuilderPage() {
     const [isPublished, setIsPublished] = useState(false);
-    const [selectedTheme, setSelectedTheme] = useState('modern');
     const { toast } = useToast();
     const [customDomain, setCustomDomain] = useState('');
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği for preview data
-
-    const contentSections = [
-        { id: 'about', label: 'Hakkımızda ve İletişim', icon: Globe, default: true, description: ngo?.about },
-        { id: 'counter', label: 'Sayaç İstatistikleri', icon: BarChart3, default: true, description: 'Sitenizde öne çıkan rakamlar (kuruluş yılı, gönüllü sayısı vb.).' },
-        { id: 'volunteer', label: 'Gönüllülük İlanları', icon: Handshake, default: true, description: `${ngo?.opportunities.length || 0} aktif ilan bulunuyor.` },
-        { id: 'posts', label: 'Gönderiler', icon: Newspaper, default: true, description: `${ngo?.posts.length || 0} gönderi mevcut.` },
-        { id: 'transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck, default: true, description: `Mevcut puan: ${ngo?.transparencyScore}/100` },
-        { id: 'stats', label: 'Bağış İstatistikleri', icon: BarChart3, default: false, description: `Toplam ${ngo?.stats.totalDonation.toLocaleString('tr-TR')} ₺ bağış toplandı.` },
-        { id: 'reports', label: 'Etki Raporları', icon: Newspaper, default: false, description: "Yayınlanmış etki raporları listelenir." },
-        { id: 'banking', label: 'Banka ve Ödeme Bilgileri', icon: CreditCard, default: false, description: "Doğrudan bağışlar için IBAN ve Sanal POS bilgileri." },
-        { id: 'sms', label: 'SMS Kampanyası', icon: MessageSquare, default: false, description: "SMS ile bağış kampanyası bilgilerinizi girin ve sitenizde yayınlayın." }
-    ];
-    
-    const contentSectionIds = contentSections.map(s => s.id);
-    const [enabledSections, setEnabledSections] = useState<string[]>(contentSections.filter(s => s.default).map(s => s.id));
-
 
     const handleSave = () => {
         toast({
@@ -149,99 +147,122 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            <div className="space-y-4">
-                <div className="space-y-1">
-                    <h2 className="text-xl font-semibold">İçerik Yönetimi</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Sitenizde hangi bölümlerin gösterileceğini seçin.
-                    </p>
-                </div>
+            <div className="space-y-1">
+                <h2 className="text-xl font-semibold">İçerik Yönetimi</h2>
+                <p className="text-sm text-muted-foreground">
+                    Sitenizde hangi bölümlerin gösterileceğini seçin.
+                </p>
+            </div>
 
-                {contentSections.map(section => {
-                    const Icon = section.icon;
-                    const hasExtraContent = ['banking', 'sms', 'counter'].includes(section.id);
-                    return (
-                        <Card key={section.id}>
-                            <CardHeader>
-                                <div className="flex justify-between items-start gap-4">
-                                    <div>
-                                        <CardTitle className="flex items-center gap-3 text-lg"><Icon className="h-5 w-5 text-primary" /> {section.label}</CardTitle>
-                                        <CardDescription className="pt-1">{section.description}</CardDescription>
-                                    </div>
-                                    <div className="flex items-center gap-2 pl-4">
-                                        <Label htmlFor={`publish-${section.id}`} className="text-sm font-medium">Yayınla</Label>
-                                        <Switch 
-                                            id={`publish-${section.id}`} 
-                                            checked={enabledSections.includes(section.id)}
-                                            onCheckedChange={(checked) => {
-                                                setEnabledSections(prev => 
-                                                checked ? [...prev, section.id] : prev.filter(id => id !== section.id)
-                                                )
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            {hasExtraContent && (
-                                <CardContent className="pt-4 border-t">
-                                    {section.id === 'banking' && (
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="bank-iban">Banka IBAN Numarası</Label>
-                                                <Input id="bank-iban" placeholder="TR..." />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="bank-account-holder">Hesap Sahibi</Label>
-                                                <Input id="bank-account-holder" placeholder="Kuruluşun yasal adı" />
-                                            </div>
-                                        </div>
-                                    )}
-                                    {section.id === 'sms' && (
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="sms-keyword">Anahtar Kelime (Keyword)</Label>
-                                                <Input id="sms-keyword" placeholder="DESTEK" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="sms-number">Numara</Label>
-                                                <Input id="sms-number" placeholder="3406" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="sms-description">Açıklama (Örn: Bir SMS 20 TL değerindedir.)</Label>
-                                                <Input id="sms-description" placeholder="Bir SMS 20 TL değerindedir." />
-                                            </div>
-                                        </div>
-                                    )}
-                                    {section.id === 'counter' && (
-                                        <div className="space-y-4">
-                                            <p className="text-sm text-muted-foreground">Sitenizin ana sayfasında gösterilecek önemli rakamları buradan yönetin.</p>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="counter-year">Kuruluş Yılı</Label>
-                                                    <Input id="counter-year" placeholder="Örn: 1992" defaultValue={ngo?.foundationYear || ''}/>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="counter-volunteers">Toplam Gönüllü</Label>
-                                                    <Input id="counter-volunteers" placeholder="Örn: 80000" type="number" defaultValue={ngo?.stats.volunteers || ''} />
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="counter-projects">Tamamlanan Proje</Label>
-                                                    <Input id="counter-projects" placeholder="Örn: 150" type="number" defaultValue={ngo?.stats.projects || ''} />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="counter-reached">Ulaşılan İnsan</Label>
-                                                    <Input id="counter-reached" placeholder="Örn: 500000" type="number" defaultValue={ngo?.stats.peopleReached || ''} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            )}
-                        </Card>
-                    );
-                })}
+            <div className="space-y-4">
+                <ReadOnlySectionCard 
+                    icon={Globe} 
+                    title="Hakkımızda ve İletişim" 
+                    description={ngo?.about ?? "Kuruluş açıklaması ve iletişim bilgileri."}
+                    editHref="/ngo-admin/manage-profile"
+                />
+
+                <Card>
+                    <CardHeader className="flex flex-row items-start justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-3 text-lg"><BarChart3 className="h-5 w-5 text-primary" /> Sayaç İstatistikleri</CardTitle>
+                            <CardDescription className="pt-1">Sitenizin ana sayfasında gösterilecek önemli rakamlar.</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2 pl-4">
+                            <Switch id="publish-counter" defaultChecked />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="counter-year">Kuruluş Yılı</Label>
+                                <Input id="counter-year" placeholder="Örn: 1992" defaultValue={ngo?.foundationYear || ''}/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="counter-volunteers">Toplam Gönüllü</Label>
+                                <Input id="counter-volunteers" placeholder="Örn: 80000" type="number" defaultValue={ngo?.stats.volunteers || ''} />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="counter-projects">Tamamlanan Proje</Label>
+                                <Input id="counter-projects" placeholder="Örn: 150" type="number" defaultValue={ngo?.stats.projects || ''} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="counter-reached">Ulaşılan İnsan</Label>
+                                <Input id="counter-reached" placeholder="Örn: 500000" type="number" defaultValue={ngo?.stats.peopleReached || ''} />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <ReadOnlySectionCard 
+                    icon={Handshake} 
+                    title="Gönüllülük İlanları" 
+                    description={`${ngo?.opportunities.length || 0} aktif ilan bulunuyor.`}
+                    editHref="/ngo-admin/volunteer"
+                />
+                 <ReadOnlySectionCard 
+                    icon={Newspaper} 
+                    title="Haberler (Gönderiler)" 
+                    description={`${ngo?.posts.length || 0} gönderi mevcut.`}
+                    editHref="/ngo-admin/posts"
+                />
+                <ReadOnlySectionCard 
+                    icon={ShieldCheck} 
+                    title="Şeffaflık Endeksi" 
+                    description={`Mevcut puan: ${ngo?.transparencyScore}/100.`}
+                    editHref="/ngo-admin/transparency"
+                />
+
+                <Card>
+                    <CardHeader className="flex flex-row items-start justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-3 text-lg"><CreditCard className="h-5 w-5 text-primary" /> Banka ve Ödeme Bilgileri</CardTitle>
+                            <CardDescription className="pt-1">Doğrudan bağışlar için IBAN ve Sanal POS bilgileri.</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2 pl-4">
+                            <Switch id="publish-banking" />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="bank-iban">Banka IBAN Numarası</Label>
+                            <Input id="bank-iban" placeholder="TR..." />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bank-account-holder">Hesap Sahibi</Label>
+                            <Input id="bank-account-holder" placeholder="Kuruluşun yasal adı" />
+                        </div>
+                    </CardContent>
+                </Card>
+                
+                 <Card>
+                    <CardHeader className="flex flex-row items-start justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-3 text-lg"><MessageSquare className="h-5 w-5 text-primary" /> SMS Kampanyası</CardTitle>
+                            <CardDescription className="pt-1">SMS ile bağış kampanyası bilgilerinizi girin.</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2 pl-4">
+                            <Switch id="publish-sms" />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                       <div className="space-y-2">
+                            <Label htmlFor="sms-keyword">Anahtar Kelime (Keyword)</Label>
+                            <Input id="sms-keyword" placeholder="DESTEK" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sms-number">Numara</Label>
+                            <Input id="sms-number" placeholder="3406" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sms-description">Açıklama (Örn: Bir SMS 20 TL değerindedir.)</Label>
+                            <Input id="sms-description" placeholder="Bir SMS 20 TL değerindedir." />
+                        </div>
+                    </CardContent>
+                </Card>
+
             </div>
             
             <Card>
@@ -270,9 +291,4 @@ export default function WebsiteBuilderPage() {
             </div>
         </div>
     );
-}
-    
-
-    
-
     
