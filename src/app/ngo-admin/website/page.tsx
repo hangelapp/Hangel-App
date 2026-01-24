@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const themes = [
     { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/theme-modern/400/300' },
@@ -27,9 +28,62 @@ const contentSections = [
     { id: 'reports', label: 'Etki Raporları', icon: Newspaper, default: false },
 ];
 
+const WebsitePreview = ({ theme, enabledSections }: { theme: string, enabledSections: string[] }) => {
+    const ngo = {
+        name: 'Ahbap Derneği',
+        logoUrl: 'https://logo.clearbit.com/ahbap.org',
+        about: 'Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.',
+    };
+
+    const sectionsToRender = contentSections.filter(s => enabledSections.includes(s.id));
+
+    return (
+        <div className="w-full h-[70vh] bg-muted rounded-lg overflow-hidden flex flex-col">
+            {/* Browser chrome */}
+            <div className="flex-shrink-0 h-8 bg-gray-200 dark:bg-gray-800 flex items-center px-2 gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            </div>
+            {/* Website Content */}
+            <div className="flex-1 overflow-y-auto">
+                <header className="p-8 text-center border-b bg-background">
+                    <h1 className="text-3xl font-bold text-foreground">{ngo.name}</h1>
+                    <nav className="mt-4 flex justify-center gap-6 text-sm text-muted-foreground">
+                        {sectionsToRender.map(section => (
+                            <a key={section.id} href="#" className="hover:text-foreground">{section.label}</a>
+                        ))}
+                    </nav>
+                </header>
+                <main className="p-8 bg-background">
+                    <h2 className="text-2xl font-semibold mb-4">Hakkımızda</h2>
+                    <p className="text-muted-foreground">{ngo.about}</p>
+                    <div className="mt-8">
+                        <h3 className="text-xl font-semibold mb-4">Gönüllülük Fırsatları</h3>
+                        <div className="space-y-4">
+                            <div className="p-4 border rounded-lg">
+                                <h4 className="font-bold">Afet Bölgesi Yardım Dağıtımı</h4>
+                                <p className="text-sm text-muted-foreground">Hatay, Antakya</p>
+                            </div>
+                             <div className="p-4 border rounded-lg">
+                                <h4 className="font-bold">Ağaç Dikme Şenliği</h4>
+                                <p className="text-sm text-muted-foreground">İstanbul, Çekmeköy</p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
+};
+
+
 export default function WebsiteBuilderPage() {
     const [isPublished, setIsPublished] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState('modern');
+    const [enabledSections, setEnabledSections] = useState<string[]>(
+        contentSections.filter(s => s.default).map(s => s.id)
+    );
     const { toast } = useToast();
     const [customDomain, setCustomDomain] = useState('');
 
@@ -143,7 +197,15 @@ export default function WebsiteBuilderPage() {
                                 <Label htmlFor={`publish-${section.id}`} className="font-medium text-sm">
                                     Bu bölümü sitede yayınla
                                 </Label>
-                                <Switch id={`publish-${section.id}`} defaultChecked={section.default} />
+                                <Switch 
+                                    id={`publish-${section.id}`} 
+                                    checked={enabledSections.includes(section.id)}
+                                    onCheckedChange={(checked) => {
+                                        setEnabledSections(prev => 
+                                        checked ? [...prev, section.id] : prev.filter(id => id !== section.id)
+                                        )
+                                    }}
+                                />
                             </div>
                             </AccordionContent>
                         </AccordionItem>
@@ -165,11 +227,16 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <Switch id="publish-switch" checked={isPublished} onCheckedChange={setIsPublished} />
                     </div>
-                     <Button asChild className="w-full" disabled={!isPublished}>
-                        <a href="https://ahbap.hangel.org" target="_blank" rel="noopener noreferrer">
-                            <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
-                        </a>
-                    </Button>
+                     <Dialog>
+                        <DialogTrigger asChild>
+                            <Button className="w-full" disabled={!isPublished}>
+                                <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl p-0 border-0">
+                           <WebsitePreview theme={selectedTheme} enabledSections={enabledSections} />
+                        </DialogContent>
+                    </Dialog>
                 </CardContent>
             </Card>
             
