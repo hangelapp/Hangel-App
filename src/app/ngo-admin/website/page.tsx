@@ -43,6 +43,12 @@ export default function WebsiteBuilderPage() {
     const { toast } = useToast();
     const [customDomain, setCustomDomain] = useState('');
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği for preview data
+    const [primaryColor, setPrimaryColor] = useState('#f34723');
+    const [secondaryColor, setSecondaryColor] = useState('#f1f5f9');
+    const [accentColor, setAccentColor] = useState('#042654');
+
+    const previewLink = `/ngo-admin/website/preview?primary=${primaryColor.substring(1)}&secondary=${secondaryColor.substring(1)}&accent=${accentColor.substring(1)}`;
+
 
     const handleSave = () => {
         toast({
@@ -134,15 +140,15 @@ export default function WebsiteBuilderPage() {
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="primary-color">Ana Renk</Label>
-                        <Input type="color" id="primary-color" defaultValue="#f34723" className="p-1 h-12 w-full" />
+                        <Input type="color" id="primary-color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="p-1 h-12 w-full" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="secondary-color">İkinci Renk (Arka Plan)</Label>
-                        <Input type="color" id="secondary-color" defaultValue="#f1f5f9" className="p-1 h-12 w-full" />
+                        <Input type="color" id="secondary-color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="p-1 h-12 w-full" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="accent-color">Vurgu Rengi (Metin)</Label>
-                        <Input type="color" id="accent-color" defaultValue="#042654" className="p-1 h-12 w-full" />
+                        <Input type="color" id="accent-color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="p-1 h-12 w-full" />
                     </div>
                 </CardContent>
             </Card>
@@ -279,7 +285,7 @@ export default function WebsiteBuilderPage() {
                         <Switch id="publish-switch" checked={isPublished} onCheckedChange={setIsPublished} />
                     </div>
                      <Button asChild className="w-full" disabled={!isPublished}>
-                        <Link href="/ngo-admin/website/preview" target="_blank">
+                        <Link href={previewLink} target="_blank">
                             <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
                         </Link>
                     </Button>

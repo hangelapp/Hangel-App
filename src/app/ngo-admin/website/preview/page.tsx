@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
     Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin, 
-    CreditCard, Landmark, MessageSquare, QrCode, ArrowRight, Download, Eye, CheckCircle, AlertCircle, ChevronRight, Menu
+    CreditCard, Landmark, MessageSquare, QrCode, ArrowRight, Download, Eye, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 import { useToast } from '@/hooks/use-toast';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Copy } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 const transparencyCriteria = [
   { name: 'Faaliyet Belgesi', completed: true },
@@ -29,6 +30,7 @@ const transparencyCriteria = [
 ];
 
 export default function WebsitePreviewPage() {
+    const searchParams = useSearchParams();
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği
     const { toast } = useToast();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,9 +41,9 @@ export default function WebsitePreviewPage() {
     }
     
     const theme = {
-        primary: '#f34723',
-        secondary: '#f1f5f9',
-        accent: '#042654',
+        primary: `#${searchParams.get('primary') || 'f34723'}`,
+        secondary: `#${searchParams.get('secondary') || 'f1f5f9'}`,
+        accent: `#${searchParams.get('accent') || '042654'}`,
         'secondary-foreground': '#475569',
     };
 
