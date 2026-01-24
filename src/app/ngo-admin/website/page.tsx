@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Dns, ShieldCheck, BarChart3 } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3 } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -77,7 +77,7 @@ export default function WebsiteBuilderPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Dns className="h-5 w-5 text-primary" />Alan Adı (Domain) ve DNS</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><Server className="h-5 w-5 text-primary" />Alan Adı (Domain) ve DNS</CardTitle>
                     <CardDescription>Sitenizi kendi alan adınızda yayınlayın.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -91,7 +91,7 @@ export default function WebsiteBuilderPage() {
                         />
                     </div>
                     <Alert>
-                        <Dns className="h-4 w-4" />
+                        <Server className="h-4 w-4" />
                         <AlertTitle>DNS Kayıtlarını Güncelleyin</AlertTitle>
                         <AlertDescription>
                             Alan adınızı kaydettikten sonra, alan adı sağlayıcınızın (örn: GoDaddy, Natro) DNS paneline giderek aşağıdaki CNAME kaydını oluşturun. Değişikliklerin internete yayılması 24 saati bulabilir.
