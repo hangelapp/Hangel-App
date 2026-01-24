@@ -73,9 +73,20 @@ export default function TransparencyPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {item.isCompleted ? (
-                    <Button variant="outline" size="sm">
-                      <Eye className="mr-2 h-4 w-4" /> İncele
-                    </Button>
+                    <>
+                      {item.type === 'document' ? (
+                        <Button asChild variant="secondary" size="sm">
+                          <label htmlFor={`upload-${item.id}`} className="cursor-pointer">
+                            <Upload className="mr-2 h-4 w-4" /> Güncelle
+                            <Input id={`upload-${item.id}`} type="file" className="hidden" />
+                          </label>
+                        </Button>
+                      ) : (
+                        <Button variant="secondary" size="sm">
+                          <LinkIcon className="mr-2 h-4 w-4" /> Güncelle
+                        </Button>
+                      )}
+                    </>
                   ) : (
                     <>
                       {item.type === 'document' && (
