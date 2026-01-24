@@ -8,6 +8,9 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { format, parse } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 const donationHistory = [
   { id: 'TXN123', brand: 'Doğa Dostu Giyim', purchaseAmount: 150, ngoShare: 12.75, date: '2024-07-20', status: 'Tamamlandı' },
@@ -20,10 +23,14 @@ const donationHistory = [
 ];
 
 const monthlyEarnings = [
-    { month: 'Temmuz 2024', amount: 92.65, description: 'Tahmini Hak Ediş' },
-    { month: 'Haziran 2024', amount: 21.25, description: 'Kesinleşen Hak Ediş' },
-    { month: 'Mayıs 2024', amount: 28.33, description: 'Kesinleşen Hak Ediş' },
-    { month: 'Nisan 2024', amount: 10.20, description: 'Kesinleşen Hak Ediş' },
+    { month: 'Kasım 2024', amount: 135.50, status: 'Tahmini' },
+    { month: 'Ekim 2024', amount: 110.00, status: 'Tahmini' },
+    { month: 'Eylül 2024', amount: 95.75, status: 'Tahmini' },
+    { month: 'Ağustos 2024', amount: 88.20, status: 'Tahmini' },
+    { month: 'Temmuz 2024', amount: 92.65, status: 'Tahmini' },
+    { month: 'Haziran 2024', amount: 21.25, status: 'Kesinleşti' },
+    { month: 'Mayıs 2024', amount: 28.33, status: 'Kesinleşti' },
+    { month: 'Nisan 2024', amount: 10.20, status: 'Kesinleşti' },
 ];
 
 const statusVariantMap = {
@@ -65,6 +72,36 @@ const TransactionList = ({ transactions }: { transactions: typeof donationHistor
     </div>
 );
 
+const MonthlyTransactionList = ({ transactions }: { transactions: typeof donationHistory }) => {
+    const grouped = transactions.reduce((acc, tx) => {
+        const monthYear = format(parse(tx.date, 'yyyy-MM-dd', new Date()), 'MMMM yyyy', { locale: tr });
+        if (!acc[monthYear]) {
+            acc[monthYear] = [];
+        }
+        acc[monthYear].push(tx);
+        return acc;
+    }, {} as Record<string, typeof donationHistory>);
+
+    return (
+        <Accordion type="single" collapsible className="w-full space-y-4">
+            {Object.entries(grouped).map(([monthYear, txsInMonth]) => (
+                <AccordionItem value={monthYear} key={monthYear} className="border-b-0 rounded-lg overflow-hidden bg-background">
+                    <Card>
+                        <AccordionTrigger className="p-4 text-lg font-semibold hover:no-underline w-full text-left">
+                            {monthYear}
+                        </AccordionTrigger>
+                        <AccordionContent className="p-4 pt-0">
+                            <div className="border-t pt-4 space-y-4">
+                                <TransactionList transactions={txsInMonth} />
+                            </div>
+                        </AccordionContent>
+                    </Card>
+                </AccordionItem>
+            ))}
+        </Accordion>
+    )
+}
+
 
 export default function DonationsPage() {
     const pastTransactions = donationHistory.filter(tx => tx.status === 'Tamamlandı');
@@ -77,19 +114,25 @@ export default function DonationsPage() {
         <p className="text-muted-foreground">Kuruluşunuza aktarılan bağışların geçmişini ve aylık hak edişlerinizi takip edin.</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {monthlyEarnings.map(earning => (
-             <Card key={earning.month}>
-                <CardHeader>
-                  <CardTitle className="text-base">{earning.month}</CardTitle>
-                  <CardDescription className="text-xs">{earning.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">{earning.amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
-                </CardContent>
-              </Card>
-        ))}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Aylık Hak Edişler</CardTitle>
+          <CardDescription>Geçmiş ve gelecek aylara ait kesinleşmiş ve tahmini hak edişleriniz.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="space-y-3">
+                {monthlyEarnings.map(earning => (
+                    <div key={earning.month} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                        <div>
+                            <p className="font-semibold">{earning.month}</p>
+                            <p className="text-xs text-muted-foreground">{earning.status} Hak Ediş</p>
+                        </div>
+                        <p className="text-lg font-bold text-primary">{earning.amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                    </div>
+                ))}
+            </div>
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>
@@ -108,10 +151,11 @@ export default function DonationsPage() {
         </CardHeader>
         <CardContent>
             <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="all">Tüm İşlemler</TabsTrigger>
                     <TabsTrigger value="past">Kesinleşenler</TabsTrigger>
                     <TabsTrigger value="future">Bekleyenler</TabsTrigger>
+                    <TabsTrigger value="monthly">Aylık Döküm</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
                     <TransactionList transactions={donationHistory} />
@@ -121,6 +165,9 @@ export default function DonationsPage() {
                 </TabsContent>
                 <TabsContent value="future" className="mt-4">
                     <TransactionList transactions={futureTransactions} />
+                </TabsContent>
+                <TabsContent value="monthly" className="mt-4">
+                    <MonthlyTransactionList transactions={donationHistory} />
                 </TabsContent>
             </Tabs>
         </CardContent>
