@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const themes = [
     { id: 'modern', name: 'Modern', imageUrl: 'https://picsum.photos/seed/theme-modern/400/300' },
@@ -78,12 +79,12 @@ export default function WebsiteBuilderPage() {
                                 <div>
                                     <p><strong>Tür:</strong> CNAME</p>
                                     <p><strong>İsim/Host:</strong> www</p>
-                                    <p><strong>Değer/Yönlendirilen:</strong> host.hangel.site</p>
+                                    <p><strong>Değer/Yönlendirilen:</strong> host.hangel.org</p>
                                 </div>
                                 <div className="pt-2 border-t border-muted-foreground/20">
                                      <p>Ayrıca, alan adınızın isim sunucularını (NS) aşağıdaki gibi güncelleyin:</p>
-                                     <p><strong>NS1:</strong> ns1.hangel.site</p>
-                                     <p><strong>NS2:</strong> ns2.hangel.site</p>
+                                     <p><strong>NS1:</strong> ns1.hangel.org</p>
+                                     <p><strong>NS2:</strong> ns2.hangel.org</p>
                                 </div>
                             </div>
                         </AlertDescription>
@@ -127,16 +128,27 @@ export default function WebsiteBuilderPage() {
                     <CardTitle>İçerik Yönetimi</CardTitle>
                     <CardDescription>Sitenizde hangi bölümlerin gösterileceğini seçin. Bu veriler Hangel profilinizden otomatik olarak çekilir.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                    {contentSections.map(section => (
-                         <div key={section.id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <Label htmlFor={`section-${section.id}`} className="flex items-center gap-2 font-medium cursor-pointer">
-                                <section.icon className="h-5 w-5 text-muted-foreground" />
-                                {section.label}
-                            </Label>
-                            <Switch id={`section-${section.id}`} defaultChecked={section.default} />
-                        </div>
-                    ))}
+                <CardContent className="p-0">
+                    <Accordion type="multiple" className="w-full">
+                        {contentSections.map(section => (
+                        <AccordionItem value={section.id} key={section.id} className="border-b last:border-b-0">
+                            <AccordionTrigger className="p-4 hover:no-underline">
+                            <div className="flex items-center gap-3 text-base">
+                                <section.icon className="h-5 w-5 text-primary" />
+                                <p className="font-semibold">{section.label}</p>
+                            </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-4 pb-4">
+                            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                                <Label htmlFor={`publish-${section.id}`} className="font-medium text-sm">
+                                    Bu bölümü sitede yayınla
+                                </Label>
+                                <Switch id={`publish-${section.id}`} defaultChecked={section.default} />
+                            </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                        ))}
+                    </Accordion>
                 </CardContent>
             </Card>
 
@@ -149,12 +161,12 @@ export default function WebsiteBuilderPage() {
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="space-y-1">
                             <Label htmlFor="publish-switch">Web Sitesini Yayınla</Label>
-                            <p className="text-xs text-muted-foreground">Siteniz <a href="https://ahbap.hangel.site" target="_blank" rel="noopener noreferrer" className="underline font-semibold">ahbap.hangel.site</a> adresinde yayınlanacak.</p>
+                            <p className="text-xs text-muted-foreground">Siteniz <a href="https://ahbap.hangel.org" target="_blank" rel="noopener noreferrer" className="underline font-semibold">ahbap.hangel.org</a> adresinde yayınlanacak.</p>
                         </div>
                         <Switch id="publish-switch" checked={isPublished} onCheckedChange={setIsPublished} />
                     </div>
                      <Button asChild className="w-full" disabled={!isPublished}>
-                        <a href="https://ahbap.hangel.site" target="_blank" rel="noopener noreferrer">
+                        <a href="https://ahbap.hangel.org" target="_blank" rel="noopener noreferrer">
                             <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
                         </a>
                     </Button>
