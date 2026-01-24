@@ -46,7 +46,7 @@ export default function WebsitePreviewPage() {
     const donationMethods = [
         { name: 'Hangel ile', icon: HangelLogo, description: 'Alışverişlerinizle komisyonsuz destek olun.' },
         { name: 'Kredi Kartı ile', icon: CreditCard, description: 'Güvenli ödeme altyapısıyla doğrudan bağış yapın.' },
-        { name: 'Banka Transferi (EFT/IBAN)', icon: Landmark, description: 'Doğrudan banka hesabımıza transfer yapın.' },
+        { name: 'Banka Transferi (EFT/IBAN)', icon: Landmark, description: 'Doğrudan banka hesabımıza transfer yapın.', iban: 'TR00 0000 0000 0000 0000 0000 00' },
         { name: 'SMS ile', icon: MessageSquare, description: 'Kısa mesaj göndererek hızlıca destek olun.' },
     ];
 
@@ -98,17 +98,23 @@ export default function WebsitePreviewPage() {
                 {/* Donation Methods Section */}
                 <section id="destek-yontemleri" className="scroll-mt-20">
                      <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]">Desteklerinizle Büyüyoruz</h2>
-                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {donationMethods.map(method => (
-                             <Card key={method.name}>
+                             <Card key={method.name} className="flex flex-col">
                                 <CardHeader className="flex-row items-center gap-4">
                                      <div className="p-3 bg-[--primary]/10 rounded-full">
                                         <method.icon className="h-6 w-6 text-[--primary]"/>
                                     </div>
                                     <CardTitle className="text-lg text-[--accent]">{method.name}</CardTitle>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="flex-1">
                                     <p className="text-sm text-[--secondary-foreground]">{method.description}</p>
+                                    {(method as any).iban && (
+                                        <div className="mt-4">
+                                            <p className="text-sm font-mono tracking-wider p-3 bg-muted rounded-lg text-center text-foreground">{(method as any).iban}</p>
+                                            <p className="text-xs text-muted-foreground mt-1 text-center">Lütfen açıklama kısmına "BAĞIŞ" yazınız.</p>
+                                        </div>
+                                    )}
                                 </CardContent>
                                 <CardFooter>
                                     <Button variant="ghost" className="w-full justify-start text-[--primary] hover:text-[--primary]">
@@ -119,20 +125,6 @@ export default function WebsitePreviewPage() {
                         ))}
                      </div>
                 </section>
-
-                 <section id="dogrudan-bagis" className="scroll-mt-20">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><Landmark className="h-8 w-8 text-[--primary]"/> Doğrudan Bağış Kanalları</h2>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Banka Hesap Bilgileri (IBAN)</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-lg font-mono tracking-wider p-4 bg-muted rounded-lg text-center">TR00 0000 0000 0000 0000 0000 00</p>
-                            <p className="text-sm text-muted-foreground mt-2 text-center">Lütfen açıklama kısmına "BAĞIŞ" yazmayı unutmayınız.</p>
-                        </CardContent>
-                    </Card>
-                </section>
-
 
                 <section id="hakkimizda" className="scroll-mt-20">
                      <Card className="overflow-hidden">
