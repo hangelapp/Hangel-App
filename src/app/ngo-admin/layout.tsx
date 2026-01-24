@@ -45,6 +45,7 @@ export default function NgoAdminLayout({
     <div className="flex min-h-screen">
       <SideNav 
         mainItems={menuItems}
+        navItems={[]}
         userItems={[]}
         secondaryItems={secondaryMenuItems}
       />

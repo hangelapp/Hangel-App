@@ -29,6 +29,7 @@ export default function AdminLayout({
     <div className="flex min-h-screen">
       <SideNav 
         mainItems={adminMenuItems}
+        navItems={[]}
         userItems={[]}
         secondaryItems={backToSiteItem}
       />
