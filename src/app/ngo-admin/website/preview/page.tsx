@@ -407,30 +407,11 @@ export default function WebsitePreviewPage() {
                 </section>
             </main>
 
-             <footer className="bg-white dark:bg-gray-800 border-t mt-12 py-8">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground">
-                    {governingBody && (
-                      <div className="mb-8">
-                        <h4 className="text-sm font-semibold text-gray-500 mb-2">Bağlı Olduğu Kurum</h4>
-                        <div className="flex justify-center items-center gap-2">
-                          <Landmark className="h-6 w-6 text-muted-foreground" />
-                          <span className="font-semibold text-gray-700">{governingBody.name}</span>
-                        </div>
-                      </div>
-                    )}
-                    {ngo.memberOf && ngo.memberOf.length > 0 && (
-                        <div className="mb-8">
-                            <h4 className="font-bold text-foreground mb-2">Üye Olduğu Platformlar</h4>
-                            <div className="flex items-center justify-center gap-4 text-sm font-semibold text-foreground">
-                                {ngo.memberOf.map(platform => (
-                                    <span key={platform}>{platform}</span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-left">
+            <footer className="bg-white dark:bg-gray-800 border-t mt-12 py-8">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-left">
                         <div>
-                            <h4 className="font-bold text-foreground mb-2">İletişim</h4>
+                            <h4 className="font-bold text-foreground mb-4">İletişim</h4>
                             <div className="space-y-2 text-sm">
                                 <a href={`mailto:${ngo.contact.email}`} className="flex items-center gap-2 hover:text-primary"><Mail className="h-4 w-4" /><span>{ngo.contact.email}</span></a>
                                 <a href={`tel:${ngo.contact.phone.replace(/\s/g, '')}`} className="flex items-center gap-2 hover:text-primary"><Phone className="h-4 w-4" /><span>{ngo.contact.phone}</span></a>
@@ -438,8 +419,32 @@ export default function WebsitePreviewPage() {
                                 {ngo.contact.address && <div className="flex items-start gap-2 pt-2"><MapPin className="h-4 w-4 mt-1" /><span>{ngo.contact.address.fullAddress}<br/>{ngo.contact.address.district}, {ngo.contact.address.city}</span></div>}
                             </div>
                         </div>
+                        <div>
+                             <h4 className="font-bold text-foreground mb-4">Bağlı Olunan ve Üye Platformlar</h4>
+                             <div className="space-y-4">
+                                {governingBody && (
+                                  <div>
+                                    <h5 className="text-sm font-semibold text-muted-foreground mb-1">Bağlı Olduğu Kurum</h5>
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <Landmark className="h-5 w-5 text-muted-foreground" />
+                                      <span className="font-semibold text-foreground">{governingBody.name}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {ngo.memberOf && ngo.memberOf.length > 0 && (
+                                    <div>
+                                        <h5 className="text-sm font-semibold text-muted-foreground mb-1">Üye Olunan Platformlar</h5>
+                                        <div className="flex flex-col items-start gap-1 text-sm font-semibold text-foreground">
+                                            {ngo.memberOf.map(platform => (
+                                                <span key={platform}>{platform}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                             </div>
+                        </div>
                          <div>
-                            <h4 className="font-bold text-foreground mb-2">Sosyal Medya</h4>
+                            <h4 className="font-bold text-foreground mb-4">Sosyal Medya</h4>
                             <div className="flex items-center gap-4">
                                 <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Twitter /></a>
                                 <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Instagram /></a>
@@ -448,10 +453,12 @@ export default function WebsitePreviewPage() {
                             </div>
                         </div>
                     </div>
-                    <p>&copy; {new Date().getFullYear()} {ngo.name}. Tüm hakları saklıdır.</p>
-                    <p className="text-xs text-slate-400 mt-2 flex items-center justify-center gap-1">
-                        <span className="font-bold">hangel</span> tarafından güçlendirilmiştir.
-                    </p>
+                    <div className="border-t pt-8 text-center text-xs text-muted-foreground">
+                        <p>&copy; {new Date().getFullYear()} {ngo.name}. Tüm hakları saklıdır.</p>
+                        <p className="mt-2 flex items-center justify-center gap-1">
+                            <span className="font-bold">hangel</span> tarafından güçlendirilmiştir.
+                        </p>
+                    </div>
                 </div>
             </footer>
         </div>
