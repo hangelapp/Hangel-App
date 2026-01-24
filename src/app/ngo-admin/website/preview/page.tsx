@@ -3,10 +3,24 @@ import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
+import { 
+    Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin, 
+    CreditCard, Landmark, MessageSquare, QrCode, ArrowRight, Download, Eye, CheckCircle, AlertCircle
+} from 'lucide-react';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
+
+// Mock transparency criteria data for the preview
+const transparencyCriteria = [
+  { name: 'Faaliyet Belgesi', completed: true },
+  { name: 'Tüzük / Vakıf Senedi', completed: true },
+  { name: 'Yönetim Kurulu Listesi', completed: true },
+  { name: 'Yıllık Faaliyet Raporu', completed: true },
+  { name: 'Finansal Tablolar', completed: true },
+  { name: 'Bağımsız Denetim Raporu', completed: false },
+  { name: 'Etki Raporu', completed: true },
+];
 
 export default function WebsitePreviewPage() {
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği
@@ -24,7 +38,14 @@ export default function WebsitePreviewPage() {
     };
 
     const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name).slice(0,2);
-    const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0,3);
+    const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0,4); // Changed to 4
+
+    const donationMethods = [
+        { name: 'Hangel ile', icon: HangelLogo, description: 'Alışverişlerinizle komisyonsuz destek olun.' },
+        { name: 'Kredi Kartı ile', icon: CreditCard, description: 'Güvenli ödeme altyapısıyla doğrudan bağış yapın.' },
+        { name: 'Banka Transferi (EFT/IBAN)', icon: Landmark, description: 'Doğrudan banka hesabımıza transfer yapın.' },
+        { name: 'SMS ile', icon: MessageSquare, description: 'Kısa mesaj göndererek hızlıca destek olun.' },
+    ];
 
     return (
         <div style={{
@@ -46,11 +67,11 @@ export default function WebsitePreviewPage() {
                     <nav className="hidden md:flex gap-6 text-sm font-medium text-[--accent]">
                         <a href="#hakkimizda" className="hover:text-[--primary]">Hakkımızda</a>
                         <a href="#gonulluluk" className="hover:text-[--primary]">Gönüllülük</a>
-                        <a href="#gonderiler" className="hover:text-[--primary]">Gönderiler</a>
+                        <a href="#haberler" className="hover:text-[--primary]">Haberler</a>
                         <a href="#seffaflik" className="hover:text-[--primary]">Şeffaflık</a>
                     </nav>
                      <Button className="hidden md:flex bg-[--primary] hover:bg-[--primary]/90 text-white">
-                        Destek Ol
+                        Bağış Yap
                     </Button>
                 </div>
             </header>
@@ -65,10 +86,35 @@ export default function WebsitePreviewPage() {
                         <h2 className="text-4xl md:text-6xl font-bold drop-shadow-lg">İyiliğin ve Dayanışmanın Adresi</h2>
                         <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md">Toplumsal fayda için bir araya gelerek, daha güzel bir gelecek inşa ediyoruz.</p>
                         <div className="mt-8 flex flex-wrap justify-center gap-4">
-                            <Button size="lg" className="bg-[--primary] hover:bg-[--primary]/90 text-white">Hemen Bağış Yap</Button>
+                            <Button size="lg" className="bg-[--primary] hover:bg-[--primary]/90 text-white">Bağış Yap</Button>
                             <Button size="lg" variant="secondary" className="bg-white/20 backdrop-blur-sm border-white/50 text-white hover:bg-white/30">Gönüllü Ol</Button>
                         </div>
                     </div>
+                </section>
+                
+                {/* Donation Methods Section */}
+                <section id="destek-yontemleri" className="scroll-mt-20">
+                     <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]">Desteklerinizle Büyüyoruz</h2>
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {donationMethods.map(method => (
+                             <Card key={method.name}>
+                                <CardHeader className="flex-row items-center gap-4">
+                                     <div className="p-3 bg-[--primary]/10 rounded-full">
+                                        <method.icon className="h-6 w-6 text-[--primary]"/>
+                                    </div>
+                                    <CardTitle className="text-lg text-[--accent]">{method.name}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-[--secondary-foreground]">{method.description}</p>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button variant="ghost" className="w-full justify-start text-[--primary] hover:text-[--primary]">
+                                        Destek Ol <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                     </div>
                 </section>
 
 
@@ -78,11 +124,6 @@ export default function WebsitePreviewPage() {
                            <div className="p-8 md:p-12">
                                 <h3 className="text-3xl font-bold text-[--accent] flex items-center gap-3 mb-4"><Globe className="h-8 w-8 text-[--primary]"/> Hakkımızda</h3>
                                 <p className="text-[--secondary-foreground] leading-relaxed">{ngo.about}</p>
-                                <div className="mt-6 space-y-3 pt-6 border-t">
-                                    <a href={`mailto:${ngo.contact.email}`} className="flex items-center gap-3 text-sm hover:text-[--primary]"><Mail className="h-4 w-4" /><span>{ngo.contact.email}</span></a>
-                                    <a href={`tel:${ngo.contact.phone.replace(/\s/g, '')}`} className="flex items-center gap-3 text-sm hover:text-[--primary]"><Phone className="h-4 w-4" /><span>{ngo.contact.phone}</span></a>
-                                    <a href={ngo.contact.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-[--primary]"><Globe className="h-4 w-4" /><span>{ngo.contact.website}</span></a>
-                                </div>
                            </div>
                             <div className="relative min-h-[300px] md:min-h-full">
                                 <Image src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Hakkımızda" fill className="object-cover"/>
@@ -93,7 +134,7 @@ export default function WebsitePreviewPage() {
 
                 <section id="gonulluluk" className="scroll-mt-20">
                     <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><HeartHandshake className="h-8 w-8 text-[--primary]"/> Gönüllülük Fırsatları</h2>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {ngoOpportunities.map(opp => (
                             <Card key={opp.id} className="flex flex-col">
                                 <CardHeader>
@@ -111,8 +152,8 @@ export default function WebsitePreviewPage() {
                     </div>
                 </section>
 
-                 <section id="gonderiler" className="scroll-mt-20">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><Newspaper className="h-8 w-8 text-[--primary]"/> Son Gönderiler</h2>
+                 <section id="haberler" className="scroll-mt-20">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><Newspaper className="h-8 w-8 text-[--primary]"/> Haberler</h2>
                     <div className="space-y-8 max-w-2xl mx-auto">
                         {ngoPosts.map(post => (
                             <Card key={post.id}>
@@ -137,30 +178,62 @@ export default function WebsitePreviewPage() {
 
                 <section id="seffaflik" className="scroll-mt-20">
                     <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-[--accent]"><ShieldCheck className="h-8 w-8 text-[--primary]"/> Şeffaflık</h2>
-                     <Card className="max-w-md mx-auto text-center">
-                        <CardHeader>
-                            <CardTitle>Şeffaflık Puanı</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-7xl font-bold text-[--primary]">{ngo.transparencyScore}</p>
-                            <p className="text-muted-foreground">/ 100</p>
-                        </CardContent>
-                        <CardFooter>
-                            <Button asChild variant="link" className="mx-auto text-[--primary]">
-                                <Link href="#">Detaylı Şeffaflık Raporunu İncele</Link>
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                        <Card className="md:col-span-1 text-center">
+                            <CardHeader>
+                                <CardTitle>Şeffaflık Puanı</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-7xl font-bold text-[--primary]">{ngo.transparencyScore}</p>
+                                <p className="text-muted-foreground">/ 100</p>
+                            </CardContent>
+                        </Card>
+                        <div className="md:col-span-2 space-y-3">
+                            {transparencyCriteria.map(item => (
+                                <div key={item.name} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                                    <div className='flex items-center gap-3'>
+                                        {item.completed ? <CheckCircle className="h-5 w-5 text-green-500" /> : <AlertCircle className="h-5 w-5 text-yellow-500" />}
+                                        <p className="font-medium text-sm text-[--accent]">{item.name}</p>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                     </div>
                 </section>
             </main>
 
              <footer className="bg-white dark:bg-gray-800 border-t mt-12 py-8">
                 <div className="container mx-auto text-center text-[--secondary-foreground]">
-                    <div className="flex justify-center gap-6 mb-4">
-                       <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer" className="hover:text-[--primary]"><Twitter /></a>
-                       <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer" className="hover:text-[--primary]"><Instagram /></a>
-                       <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer" className="hover:text-[--primary]"><Facebook /></a>
-                       <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="hover:text-[--primary]"><Linkedin /></a>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-left">
+                        <div>
+                            <h4 className="font-bold text-[--accent] mb-2">İletişim</h4>
+                            <div className="space-y-2 text-sm">
+                                <a href={`mailto:${ngo.contact.email}`} className="flex items-center gap-2 hover:text-[--primary]"><Mail className="h-4 w-4" /><span>{ngo.contact.email}</span></a>
+                                <a href={`tel:${ngo.contact.phone.replace(/\s/g, '')}`} className="flex items-center gap-2 hover:text-[--primary]"><Phone className="h-4 w-4" /><span>{ngo.contact.phone}</span></a>
+                                <a href={ngo.contact.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[--primary]"><Globe className="h-4 w-4" /><span>{ngo.contact.website}</span></a>
+                            </div>
+                        </div>
+                         <div>
+                            <h4 className="font-bold text-[--accent] mb-2">Sosyal Medya</h4>
+                            <div className="flex items-center gap-4">
+                                <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-[--primary]/20 text-[--accent] hover:text-[--primary]"><Twitter /></a>
+                                <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-[--primary]/20 text-[--accent] hover:text-[--primary]"><Instagram /></a>
+                                <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-[--primary]/20 text-[--accent] hover:text-[--primary]"><Facebook /></a>
+                                <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-[--primary]/20 text-[--accent] hover:text-[--primary]"><Linkedin /></a>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-[--accent] mb-2">Üye Olduğu Platformlar</h4>
+                            <div className="flex items-center gap-4 text-sm font-semibold text-[--accent]">
+                                {ngo.memberOf.map(platform => (
+                                    <span key={platform}>{platform}</span>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     <p>&copy; {new Date().getFullYear()} {ngo.name}. Tüm hakları saklıdır.</p>
                     <p className="text-xs text-slate-400 mt-2 flex items-center justify-center gap-1">
