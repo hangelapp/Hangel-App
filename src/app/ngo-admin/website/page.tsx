@@ -145,47 +145,16 @@ export default function WebsiteBuilderPage() {
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="primary-color">Ana Renk</Label>
-                        <Input type="text" id="primary-color" defaultValue="#f34723" />
+                        <Input type="color" id="primary-color" defaultValue="#f34723" className="p-1 h-12 w-full" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="secondary-color">İkinci Renk (Arka Plan)</Label>
-                        <Input type="text" id="secondary-color" defaultValue="#f1f5f9" />
+                        <Input type="color" id="secondary-color" defaultValue="#f1f5f9" className="p-1 h-12 w-full" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="accent-color">Vurgu Rengi (Metin)</Label>
-                        <Input type="text" id="accent-color" defaultValue="#042654" />
+                        <Input type="color" id="accent-color" defaultValue="#042654" className="p-1 h-12 w-full" />
                     </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Tema Seçimi</CardTitle>
-                    <CardDescription>Web sitenizin görünümünü seçin.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {themes.map(theme => (
-                        <div 
-                            key={theme.id}
-                            className={cn(
-                                "relative rounded-lg border-2 cursor-pointer transition-all",
-                                selectedTheme === theme.id ? "border-primary ring-2 ring-primary ring-offset-2" : "border-border hover:border-primary/50"
-                            )}
-                            onClick={() => setSelectedTheme(theme.id)}
-                        >
-                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                               {selectedTheme === theme.id && <CheckCircle className="h-12 w-12 text-white" />}
-                            </div>
-                            <Image 
-                                src={theme.imageUrl} 
-                                alt={theme.name} 
-                                width={400} 
-                                height={300} 
-                                className="rounded-md object-cover aspect-[4/3]" 
-                            />
-                            <p className="p-2 text-center font-medium text-sm bg-muted/50 rounded-b-md">{theme.name}</p>
-                        </div>
-                    ))}
                 </CardContent>
             </Card>
 

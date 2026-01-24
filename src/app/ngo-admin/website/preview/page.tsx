@@ -41,7 +41,7 @@ export default function WebsitePreviewPage() {
     };
 
     const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name).slice(0, 6);
-    const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0,4); 
+    const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0,5); 
 
     const donationMethods = [
         { name: 'Hangel ile', icon: HangelLogo, description: 'Alışverişlerinizle komisyonsuz destek olun.' },
@@ -223,15 +223,22 @@ export default function WebsitePreviewPage() {
                             <div className="md:col-span-2 p-6 flex flex-col justify-center">
                                 <h3 className="text-lg font-semibold text-[--accent]">{selectedDoc.name}</h3>
                                 {selectedDoc.completed ? (
-                                    <p className="mt-2 text-green-600 flex items-center gap-2"><CheckCircle className="h-5 w-5" /> Bu kriter karşılanmıştır.</p>
+                                    <div className="mt-4 space-y-2 text-sm">
+                                        <p className="text-green-600 flex items-center gap-2"><CheckCircle className="h-5 w-5" /> Bu kriter karşılanmıştır.</p>
+                                        <div className="p-4 border bg-muted rounded-lg">
+                                            <p className="font-semibold">Belge Önizlemesi</p>
+                                            <p className="text-muted-foreground mt-2">"{selectedDoc.name}" belgesinin içeriği burada görüntülenecektir. Bu, kuruluşun şeffaflığını göstermek için kamuya açık bir belgedir.</p>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <p className="mt-2 text-yellow-600 flex items-center gap-2"><AlertCircle className="h-5 w-5" /> Bu kriter henüz karşılanmamıştır.</p>
+                                    <div className="mt-4 space-y-2 text-sm">
+                                        <p className="text-yellow-600 flex items-center gap-2"><AlertCircle className="h-5 w-5" /> Bu kriter henüz karşılanmamıştır.</p>
+                                        <div className="p-4 border bg-muted rounded-lg">
+                                            <p className="font-semibold">Belge Eksik</p>
+                                            <p className="text-muted-foreground mt-2">Bu belge henüz kuruluş tarafından yüklenmemiştir.</p>
+                                        </div>
+                                    </div>
                                 )}
-                                <p className="mt-4 text-sm text-[--secondary-foreground]">Bu belge veya bilgi, şeffaflığı artırmak amacıyla kuruluş tarafından sağlanmıştır. Detayları görüntülemek veya indirmek için aşağıdaki butonları kullanabilirsiniz.</p>
-                                <div className="mt-6 flex gap-2">
-                                    <Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Görüntüle</Button>
-                                    <Button variant="outline"><Download className="mr-2 h-4 w-4" /> İndir</Button>
-                                </div>
                             </div>
                         </div>
                     </Card>
