@@ -4,27 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, AreaChart, Area, LineChart, Line } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+// Existing data
 const ageGroupData = [
   { age: '18-24', Gönüllü: 400, Bağışçı: 240 },
   { age: '25-34', Gönüllü: 300, Bağışçı: 480 },
   { age: '35-44', Gönüllü: 200, Bağışçı: 320 },
   { age: '45-54', Gönüllü: 278, Bağışçı: 280 },
   { age: '55+', Gönüllü: 189, Bağışçı: 150 },
-];
-
-const volunteerInterestData = [
-  { subject: 'Çevre', value: 120 },
-  { subject: 'Eğitim', value: 110 },
-  { subject: 'Hayvan Hakları', value: 95 },
-  { subject: 'Afet', value: 80 },
-  { subject: 'Sağlık', value: 70 },
-  { subject: 'Çocuk', value: 85 },
-];
-
-const donorGenderData = [
-  { name: 'Kadın', value: 550 },
-  { name: 'Erkek', value: 420 },
-  { name: 'Belirtilmemiş', value: 80 },
 ];
 
 const cityData = [
@@ -35,23 +21,50 @@ const cityData = [
     { name: 'Antalya', Gönüllü: 120, Bağışçı: 90 },
 ];
 
-const newSupporterData = [
-    { month: 'Ocak', Gönüllü: 24, Bağışçı: 35 },
-    { month: 'Şubat', month_tr: 'Şub', Gönüllü: 18, Bağışçı: 28 },
-    { month: 'Mart', Gönüllü: 32, Bağışçı: 45 },
-    { month: 'Nisan', Gönüllü: 25, Bağışçı: 40 },
-    { month: 'Mayıs', Gönüllü: 41, Bağışçı: 55 },
-    { month: 'Haziran', Gönüllü: 38, Bağışçı: 62 },
-]
+// New data
+const volunteerInterestData = [
+  { name: 'Çevre', Gönüllü: 120 },
+  { name: 'Eğitim', Gönüllü: 110 },
+  { name: 'Hayvan Hakları', Gönüllü: 95 },
+  { name: 'Afet', Gönüllü: 80 },
+  { name: 'Sağlık', Gönüllü: 70 },
+  { name: 'Çocuk', Gönüllü: 85 },
+];
 
-const donationMethodData = [
-    { name: 'Market Alışverişi', value: 650 },
-    { name: 'Direkt Bağış', value: 250 },
-    { name: 'QR Kod ile Bağış', value: 100 },
+const genderAgeData = [
+    { age: '18-24', Kadın: 250, Erkek: 150, Diğer: 10 },
+    { age: '25-34', Kadın: 200, Erkek: 280, Diğer: 20 },
+    { age: '35-44', Kadın: 150, Erkek: 170, Diğer: 15 },
+    { age: '45-54', Kadın: 180, Erkek: 100, Diğer: 5 },
+    { age: '55+', Kadın: 100, Erkek: 50, Diğer: 2 },
+];
+
+const schoolData = [
+    { name: 'Boğaziçi Üni.', Destekçi: 320 },
+    { name: 'İTÜ', Destekçi: 280 },
+    { name: 'ODTÜ', Destekçi: 250 },
+    { name: 'Koç Üni.', Destekçi: 210 },
+    { name: 'Sabancı Üni.', Destekçi: 180 },
+    { name: 'Diğer', Destekçi: 450 },
+];
+
+const spendingHabitsData = [
+    { name: 'Sürdürülebilir Markalar', value: 400 },
+    { name: 'Yerel Üreticiler', value: 300 },
+    { name: 'İkinci El', value: 150 },
+    { name: 'Diğer', value: 150 },
+];
+
+const competencyData = [
+    { name: 'Proje Yönetimi', value: 85 },
+    { name: 'Sosyal Medya', value: 110 },
+    { name: 'Grafik Tasarım', value: 75 },
+    { name: 'Tercümanlık', value: 60 },
+    { name: 'Organizasyon', value: 130 },
 ];
 
 
-const COLORS = ['#f34723', '#042654', '#1f1f1f'];
+const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8'];
 
 export default function DemographicsPage() {
   return (
@@ -95,32 +108,72 @@ export default function DemographicsPage() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={volunteerInterestData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis />
-                    <Radar name="Gönüllü Sayısı" dataKey="value" stroke="#f34723" fill="#f34723" fillOpacity={0.6} />
-                    <Tooltip />
-                  </RadarChart>
+                   <BarChart layout="vertical" data={volunteerInterestData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" />
+                        <YAxis dataKey="name" type="category" />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="Gönüllü" fill="#f34723" />
+                    </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>Bağışçı Cinsiyet Dağılımı</CardTitle>
-                <CardDescription>Bağışçılarınızın cinsiyetlere göre dağılımı.</CardDescription>
+                <CardTitle>Cinsiyete Göre Yaş Dağılımı</CardTitle>
+                <CardDescription>Destekçilerinizin yaş ve cinsiyet kırılımı.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={genderAgeData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="age" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Kadın" stackId="a" fill="#f34723" />
+                    <Bar dataKey="Erkek" stackId="a" fill="#042654" />
+                    <Bar dataKey="Diğer" stackId="a" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle>Gönüllü Yetkinlikleri</CardTitle>
+                    <CardDescription>Gönüllü havuzunuzdaki en yaygın yetkinlikler.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                       <BarChart layout="vertical" data={competencyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" />
+                            <YAxis dataKey="name" type="category" />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="value" name="Kişi Sayısı" fill="#042654" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Bağışçı Tüketim Alışkanlıkları</CardTitle>
+                <CardDescription>Bağışçılarınızın Hangel üzerindeki marka tercihleri.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie data={donorGenderData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                      {donorGenderData.map((entry, index) => (
+                    <Pie data={spendingHabitsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {spendingHabitsData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip />
-                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -145,45 +198,26 @@ export default function DemographicsPage() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Aylık Yeni Destekçi Kazanımı</CardTitle>
-                    <CardDescription>Son 6 ayda platforma katılan yeni gönüllü ve bağışçılar.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={newSupporterData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="Gönüllü" stroke="#f34723" activeDot={{ r: 8 }} />
-                            <Line type="monotone" dataKey="Bağışçı" stroke="#042654" />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-
-            <Card>
+            
+            <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Bağış Yöntemi Dağılımı</CardTitle>
-                <CardDescription>Bağışların hangi kanallardan geldiğinin dağılımı.</CardDescription>
+                <CardTitle>Destekçilerin Okullara Göre Dağılımı</CardTitle>
+                <CardDescription>Destekçilerinizin en yoğun olduğu ilk 5 üniversite.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie data={donationMethodData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5} label>
-                      {donationMethodData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                    <BarChart data={schoolData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="Destekçi" fill="#1f1f1f" />
+                    </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+
           </div>
         </TabsContent>
         <TabsContent value="numbers" className="mt-6 space-y-6">
@@ -199,6 +233,17 @@ export default function DemographicsPage() {
                 </CardContent>
             </Card>
             <Card>
+                <CardHeader><CardTitle>Cinsiyete Göre Yaş Dağılımı (Sayısal)</CardTitle></CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader><TableRow><TableHead>Yaş Grubu</TableHead><TableHead className='text-right'>Kadın</TableHead><TableHead className='text-right'>Erkek</TableHead><TableHead className='text-right'>Diğer</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            {genderAgeData.map(d => (<TableRow key={d.age}><TableCell>{d.age}</TableCell><TableCell className='text-right'>{d.Kadın}</TableCell><TableCell className='text-right'>{d.Erkek}</TableCell><TableCell className='text-right'>{d.Diğer}</TableCell></TableRow>))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+            <Card>
                 <CardHeader><CardTitle>Şehirlere Göre Dağılım (Sayısal)</CardTitle></CardHeader>
                 <CardContent>
                     <Table>
@@ -209,24 +254,31 @@ export default function DemographicsPage() {
                     </Table>
                 </CardContent>
             </Card>
+             <Card>
+                <CardHeader><CardTitle>Okullara Göre Dağılım (Sayısal)</CardTitle></CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader><TableRow><TableHead>Okul</TableHead><TableHead className='text-right'>Destekçi Sayısı</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            {schoolData.map(d => (<TableRow key={d.name}><TableCell>{d.name}</TableCell><TableCell className='text-right'>{d.Destekçi}</TableCell></TableRow>))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader><CardTitle>Detaylı Kırılımlar</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className='space-y-2'>
                         <h4 className='font-semibold'>Gönüllü İlgi Alanları</h4>
-                        {volunteerInterestData.map(d => (<div key={d.subject} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.subject}</span><span>{d.value} kişi</span></div>))}
+                        {volunteerInterestData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.Gönüllü} kişi</span></div>))}
                     </div>
                      <div className='space-y-2'>
-                        <h4 className='font-semibold'>Bağışçı Cinsiyet</h4>
-                        {donorGenderData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} kişi</span></div>))}
+                        <h4 className='font-semibold'>Gönüllü Yetkinlikleri</h4>
+                        {competencyData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} kişi</span></div>))}
                     </div>
                      <div className='space-y-2'>
-                        <h4 className='font-semibold'>Aylık Yeni Destekçiler</h4>
-                        {newSupporterData.map(d => (<div key={d.month} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.month}</span><span>{d.Gönüllü} Gön. / {d.Bağışçı} Bağış.</span></div>))}
-                    </div>
-                     <div className='space-y-2'>
-                        <h4 className='font-semibold'>Bağış Yöntemleri</h4>
-                        {donationMethodData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} işlem</span></div>))}
+                        <h4 className='font-semibold'>Bağışçı Tüketim Alışkanlıkları</h4>
+                        {spendingHabitsData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} kişi</span></div>))}
                     </div>
                 </CardContent>
             </Card>
