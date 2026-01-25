@@ -204,9 +204,7 @@ export default function UsersPage() {
                                    <Badge variant={user.status === 'Aktif' ? 'default' : 'secondary'}>{user.status}</Badge>
                                    <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>Profili Düzenle</Button>
                                    <Button variant="outline" size="sm" onClick={() => handleToggleStatus(user.id)}>{user.status === 'Aktif' ? 'Askıya Al' : 'Aktif Et'}</Button>
-                                    <AlertDialogTrigger asChild>
-                                       <Button variant="destructive" size="sm" onClick={() => setDeletingUser(user)}>Sil</Button>
-                                   </AlertDialogTrigger>
+                                   <Button variant="destructive" size="sm" onClick={() => setDeletingUser(user)}>Sil</Button>
                                </div>
                            </div>
                         ))}
