@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -11,19 +12,58 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+const applicationData = {
+  ngo: [
+    { id: 'ngo1', name: 'Doğa Koruma Derneği', date: '2024-07-22', avatar: 'https://logo.clearbit.com/wwf.org' },
+    { id: 'ngo2', name: 'Eğitim Meşalesi Vakfı', date: '2024-07-21', avatar: 'https://logo.clearbit.com/tegv.org' },
+  ],
+  brand: [
+    { id: 'brand1', name: 'Eko Giyim', date: '2024-07-22', avatar: 'https://logo.clearbit.com/patagonia.com' },
+    { id: 'brand2', name: 'Sağlıklı Atıştırmalıklar', date: '2024-07-20', avatar: 'https://logo.clearbit.com/fellasfoods.com.tr' },
+  ],
+  club: [
+    { id: 'club1', name: 'YTÜ Sosyal Sorumluluk Kulübü', date: '2024-07-21', avatar: 'https://logo.clearbit.com/yildiz.edu.tr' },
+  ],
+};
+
+const ApplicationCard = ({ item }: { item: { id: string, name: string, date: string, avatar: string } }) => (
+    <Card>
+        <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+                <Avatar>
+                    <AvatarImage src={item.avatar} />
+                    <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-semibold">{item.name}</p>
+                    <p className="text-sm text-muted-foreground">{item.date}</p>
+                </div>
+            </div>
+            <div className="flex gap-2">
+                <Button variant="secondary" size="sm">İncele</Button>
+                <Button variant="outline" size="sm" className="text-green-600 border-green-600 hover:bg-green-100">Onayla</Button>
+                <Button variant="destructive" size="sm">Reddet</Button>
+            </div>
+        </CardContent>
+    </Card>
+);
 
 export default function ApplicationsPage() {
+    const allApplications = [...applicationData.ngo, ...applicationData.brand, ...applicationData.club].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     return (
         <>
             <h1 className="text-lg font-semibold md:text-2xl">Başvuru Yönetimi</h1>
             <Tabs defaultValue="all">
-                <TabsList>
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
-                    <TabsTrigger value="ngo">STK</TabsTrigger>
-                    <TabsTrigger value="brand">Marka</TabsTrigger>
-                    <TabsTrigger value="club">Kulüp</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="all">Tümü ({allApplications.length})</TabsTrigger>
+                    <TabsTrigger value="ngo">STK ({applicationData.ngo.length})</TabsTrigger>
+                    <TabsTrigger value="brand">Marka ({applicationData.brand.length})</TabsTrigger>
+                    <TabsTrigger value="club">Kulüp ({applicationData.club.length})</TabsTrigger>
                 </TabsList>
-                <TabsContent value="all">
+                <TabsContent value="all" className="mt-4">
                     <Card>
                         <CardHeader>
                             <CardTitle>Tüm Bekleyen Başvurular</CardTitle>
@@ -31,8 +71,38 @@ export default function ApplicationsPage() {
                                 Onay bekleyen tüm başvuruları burada yönetin.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                           <p>Başvuru listesi burada görünecek.</p>
+                        <CardContent className="space-y-4">
+                           {allApplications.length > 0 ? allApplications.map(app => <ApplicationCard key={app.id} item={app} />) : <p className="text-muted-foreground text-center p-8">Bekleyen başvuru bulunmuyor.</p>}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="ngo" className="mt-4">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>STK Başvuruları</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                           {applicationData.ngo.length > 0 ? applicationData.ngo.map(app => <ApplicationCard key={app.id} item={app} />) : <p className="text-muted-foreground text-center p-8">Bekleyen STK başvurusu bulunmuyor.</p>}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="brand" className="mt-4">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Marka Başvuruları</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                           {applicationData.brand.length > 0 ? applicationData.brand.map(app => <ApplicationCard key={app.id} item={app} />) : <p className="text-muted-foreground text-center p-8">Bekleyen marka başvurusu bulunmuyor.</p>}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                 <TabsContent value="club" className="mt-4">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Öğrenci Kulübü Başvuruları</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                           {applicationData.club.length > 0 ? applicationData.club.map(app => <ApplicationCard key={app.id} item={app} />) : <p className="text-muted-foreground text-center p-8">Bekleyen öğrenci kulübü başvurusu bulunmuyor.</p>}
                         </CardContent>
                     </Card>
                 </TabsContent>
