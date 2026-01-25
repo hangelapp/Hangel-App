@@ -1,78 +1,49 @@
 
+
 "use client";
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { applications, ngos } from '@/lib/data';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { applications as initialApplications } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Search, ArrowDownUp, Filter } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { PlusCircle, Search, ArrowDownUp, Filter, Eye, Trash2, CheckCircle, Hourglass, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Application } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-
-const statusVariantMap = {
-    'Onaylandı': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
-    'Beklemede': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
-    'Reddedildi': "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 border-red-300/50",
-} as const;
-
-
-const ApplicationList = ({ apps }: { apps: Application[] }) => {
-    if (apps.length === 0) {
-        return <div className="text-center text-muted-foreground p-16">Bu kriterlere uygun başvuru bulunmuyor.</div>
-    }
-
-    return (
-        <Accordion type="single" collapsible className="w-full space-y-3">
-            {apps.map(app => {
-                const ngo = ngos.find(n => n.name === app.org);
-                return (
-                    <AccordionItem value={app.id} key={app.id} className="border-b-0">
-                        <Card className="hover:bg-accent/50 transition-colors">
-                            <AccordionTrigger className="p-4 w-full hover:no-underline [&>svg]:ml-auto">
-                                <div className="flex justify-between items-start w-full">
-                                    <div>
-                                        <p className="text-base font-semibold text-left">{app.title}</p>
-                                        <p className="text-sm text-muted-foreground text-left">{app.org}</p>
-                                    </div>
-                                    <div className='text-right flex-shrink-0 ml-4 space-y-1'>
-                                        <Badge variant="outline" className={cn("text-xs font-medium", statusVariantMap[app.status])}>{app.status}</Badge>
-                                        <p className='text-xs text-muted-foreground'>{app.date}</p>
-                                    </div>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-4">
-                                {ngo ? (
-                                    <div className="pt-4 border-t text-sm space-y-2">
-                                        <h4 className="font-semibold">{ngo.name} İletişim</h4>
-                                        <p className="text-muted-foreground">E-posta: {ngo.contact.email}</p>
-                                        <p className="text-muted-foreground">Telefon: {ngo.contact.phone}</p>
-                                    </div>
-                                ) : (
-                                    <p className="pt-4 border-t text-sm text-muted-foreground">Kuruluş iletişim bilgisi bulunamadı.</p>
-                                )}
-                            </AccordionContent>
-                        </Card>
-                    </AccordionItem>
-                )
-            })}
-        </Accordion>
-    )
-}
 
 export default function MyApplicationsPage() {
+  const [applications, setApplications] = useState(initialApplications);
   const [activeTab, setActiveTab] = useState('Gönüllülük');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc' or 'desc'
   const [statusFilter, setStatusFilter] = useState('Tümü'); // 'Tümü', 'Onaylandı', 'Beklemede', 'Reddedildi'
   const allStatuses = ['Tümü', 'Onaylandı', 'Beklemede', 'Reddedildi'];
+  const { toast } = useToast();
 
+  const handleWithdrawApplication = (appId: string, appTitle: string) => {
+    setApplications(prev => prev.filter(app => app.id !== appId));
+    toast({
+        title: 'Başvuru Geri Çekildi',
+        description: `"${appTitle}" başvurunuz başarıyla iptal edildi.`,
+    });
+  };
 
   const filteredApps = useMemo(() => {
     let apps = activeTab === 'Tümü'
@@ -94,7 +65,81 @@ export default function MyApplicationsPage() {
     });
 
     return apps;
-  }, [activeTab, searchTerm, sortOrder, statusFilter]);
+  }, [activeTab, searchTerm, sortOrder, statusFilter, applications]);
+
+  const ApplicationCard = ({ app, onWithdraw }: { app: Application, onWithdraw: (id: string, title: string) => void }) => {
+    const getEntityLink = () => {
+        if (!app.entityId) return '#';
+        switch (app.type) {
+            case 'Gönüllülük': return `/volunteering/${app.entityId}`;
+            case 'Kulüpler': return `/admin/clubs/profile/${app.entityId}`;
+            default: return '#';
+        }
+    };
+
+    const StatusIcon = {
+        'Onaylandı': <CheckCircle className="h-5 w-5 text-green-600" />,
+        'Beklemede': <Hourglass className="h-5 w-5 text-yellow-500" />,
+        'Reddedildi': <XCircle className="h-5 w-5 text-destructive" />,
+    }[app.status];
+
+    return (
+        <Card className="transition-colors hover:bg-accent/50">
+            <CardHeader className="flex flex-row items-start justify-between gap-4 p-4">
+                 <div>
+                    <CardTitle className="text-base">{app.title}</CardTitle>
+                    <CardDescription>{app.org} - {app.location}</CardDescription>
+                </div>
+                <div className='text-right flex-shrink-0 ml-4 space-y-1'>
+                    <div className="flex items-center justify-end gap-2">
+                        {StatusIcon}
+                        <p className="font-semibold text-sm">{app.status}</p>
+                    </div>
+                    <p className='text-xs text-muted-foreground'>{app.date}</p>
+                </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 text-sm space-y-4">
+                {app.status === 'Reddedildi' && app.rejectionReason && (
+                    <Alert variant="destructive">
+                        <AlertTitle>Reddedilme Nedeni</AlertTitle>
+                        <AlertDescription>{app.rejectionReason}</AlertDescription>
+                    </Alert>
+                )}
+                 <div className="flex gap-2">
+                    <Button asChild variant="secondary" className="flex-1">
+                        <Link href={getEntityLink()}>
+                            <Eye className="mr-2 h-4 w-4" /> İlanı Görüntüle
+                        </Link>
+                    </Button>
+                    {app.status === 'Beklemede' && (
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" className="flex-1">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Başvuruyu Geri Çek
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Başvuruyu Geri Çekmek İstediğinizden Emin misiniz?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Bu işlem geri alınamaz. "{app.title}" başvurunuz kalıcı olarak iptal edilecektir.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => onWithdraw(app.id, app.title)} className={cn(buttonVariants({ variant: "destructive" }))}>
+                                        Evet, Geri Çek
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+                 </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -162,16 +207,32 @@ export default function MyApplicationsPage() {
               <TabsTrigger value="Marka">Marka</TabsTrigger>
           </TabsList>
           <TabsContent value="Gönüllülük" className='mt-4'>
-              <ApplicationList apps={filteredApps} />
+            {filteredApps.length > 0 ? (
+                <div className="space-y-4">
+                    {filteredApps.map(app => <ApplicationCard key={app.id} app={app} onWithdraw={handleWithdrawApplication} />)}
+                </div>
+            ) : <div className="text-center text-muted-foreground p-16">Bu kriterlere uygun başvuru bulunmuyor.</div>}
           </TabsContent>
           <TabsContent value="Kulüpler" className='mt-4'>
-              <ApplicationList apps={filteredApps} />
+            {filteredApps.length > 0 ? (
+                <div className="space-y-4">
+                    {filteredApps.map(app => <ApplicationCard key={app.id} app={app} onWithdraw={handleWithdrawApplication} />)}
+                </div>
+            ) : <div className="text-center text-muted-foreground p-16">Bu kriterlere uygun başvuru bulunmuyor.</div>}
           </TabsContent>
            <TabsContent value="STK" className='mt-4'>
-              <ApplicationList apps={filteredApps} />
+            {filteredApps.length > 0 ? (
+                <div className="space-y-4">
+                    {filteredApps.map(app => <ApplicationCard key={app.id} app={app} onWithdraw={handleWithdrawApplication} />)}
+                </div>
+            ) : <div className="text-center text-muted-foreground p-16">Bu kriterlere uygun başvuru bulunmuyor.</div>}
           </TabsContent>
            <TabsContent value="Marka" className='mt-4'>
-              <ApplicationList apps={filteredApps} />
+            {filteredApps.length > 0 ? (
+                <div className="space-y-4">
+                    {filteredApps.map(app => <ApplicationCard key={app.id} app={app} onWithdraw={handleWithdrawApplication} />)}
+                </div>
+            ) : <div className="text-center text-muted-foreground p-16">Bu kriterlere uygun başvuru bulunmuyor.</div>}
           </TabsContent>
       </Tabs>
     </div>

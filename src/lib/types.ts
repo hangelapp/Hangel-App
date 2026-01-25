@@ -350,6 +350,8 @@ export type Application = {
     date: string;
     location: string;
     status: 'Onaylandı' | 'Beklemede' | 'Reddedildi';
+    entityId?: string;
+    rejectionReason?: string;
 }
 
 export type DonationTransaction = {

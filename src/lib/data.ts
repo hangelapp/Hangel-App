@@ -1201,10 +1201,10 @@ export const certificates: Certificate[] = [
 ];
 
 export const applications: Application[] = [
-  { id: '1', title: 'Afet Bölgesi Yardım Dağıtımı', type: 'Gönüllülük', org: 'Ahbap Derneği', date: '2024-07-15', location: 'Hatay, Antakya', status: 'Onaylandı' },
-  { id: '2', title: 'Sosyal Medya İçerik Gönüllüsü', type: 'Gönüllülük', org: 'Tohum Otizm Vakfı', date: '2024-07-20', location: 'Online', status: 'Beklemede' },
-  { id: '3', title: 'İTÜ Girişimcilik Kulübü Üyeliği', type: 'Kulüpler', org: 'İTÜ Girişimcilik Kulübü', date: '2024-06-01', location: 'İstanbul', status: 'Onaylandı' },
-  { id: '4', title: 'Arama Kurtarma Gönüllüsü', type: 'Gönüllülük', org: 'AKUT', date: '2024-05-10', location: 'İstanbul', status: 'Reddedildi' },
+  { id: '1', title: 'Afet Bölgesi Yardım Dağıtımı', type: 'Gönüllülük', org: 'Ahbap Derneği', date: '2024-07-15', location: 'Hatay, Antakya', status: 'Onaylandı', entityId: '1' },
+  { id: '2', title: 'Sosyal Medya İçerik Gönüllüsü', type: 'Gönüllülük', org: 'Tohum Otizm Vakfı', date: '2024-07-20', location: 'Online', status: 'Beklemede', entityId: '3' },
+  { id: '3', title: 'İTÜ Girişimcilik Kulübü Üyeliği', type: 'Kulüpler', org: 'İTÜ Girişimcilik Kulübü', date: '2024-06-01', location: 'İstanbul', status: 'Onaylandı', entityId: '1' },
+  { id: '4', title: 'Arama Kurtarma Gönüllüsü', type: 'Gönüllülük', org: 'AKUT', date: '2024-05-10', location: 'İstanbul', status: 'Reddedildi', entityId: '6', rejectionReason: 'Başvuru kotası dolmuştur. İlginiz için teşekkür ederiz.' },
 ];
 
 export const donationTransactions: DonationTransaction[] = [
@@ -1500,5 +1500,6 @@ export const qrPaymentCardData = [
     
 
     
+
 
 
