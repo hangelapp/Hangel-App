@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -13,10 +12,73 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import type { DonationTransaction } from '@/lib/types';
 
 type SortKey = 'date' | 'purchaseAmount' | 'donationAmount';
 type SortDirection = 'desc' | 'asc';
 type FilterType = 'all' | 'income' | 'expense';
+
+// New Receipt Dialog Component
+const ReceiptDialog = ({ transaction, open, onOpenChange }: { transaction: DonationTransaction | null, open: boolean, onOpenChange: (open: boolean) => void }) => {
+    const { toast } = useToast();
+
+    if (!transaction) return null;
+
+    // Calculation from the accordion
+    const donationAmount = parseFloat(transaction.donationAmount);
+    const gelirVergisi = donationAmount * 0.20;
+    const netDonationAfterTaxes = donationAmount - gelirVergisi;
+    const ngoShare = netDonationAfterTaxes / 1.1;
+    const hangelShare = ngoShare * 0.10;
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>İşlem Dekontu</DialogTitle>
+                    <DialogDescription>İşlem ID: {transaction.id}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="p-4 border rounded-lg bg-muted/50">
+                        <div className="flex justify-between items-center font-bold">
+                            <span>{transaction.brand}</span>
+                            <span>{transaction.purchaseAmount} ₺</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                            {format(parse(transaction.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {transaction.time}
+                        </div>
+                    </div>
+                    {transaction.type === 'expense' && (
+                        <div className="space-y-2 text-sm">
+                            <h4 className="font-semibold">Bağış Detayları</h4>
+                            <div className='flex justify-between'><span className='text-muted-foreground'>Toplam Bağış</span><span className='font-medium text-primary'>{transaction.donationAmount} ₺</span></div>
+                            <Separator />
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Desteklenen STK Payı</span><span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Gelir Vergisi (%20)</span><span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>KDV (%20)</span><span>{(0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span><span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            {transaction.ngo.length > 0 && <Separator />}
+                             {transaction.ngo.length > 0 && (
+                                <div className='flex justify-between items-center text-xs mt-2'>
+                                    <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
+                                    <span className="text-right font-medium">{transaction.ngo.join(', ')}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Kapat</Button>
+                    <Button onClick={() => toast({ title: 'Dekont indiriliyor...' })}>
+                        <Download className="mr-2 h-4 w-4" /> PDF İndir
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 export default function MyDonationsPage() {
   const { toast } = useToast();
@@ -24,13 +86,9 @@ export default function MyDonationsPage() {
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
   const [filterType, setFilterType] = useState<FilterType>('all');
+  const [selectedTransaction, setSelectedTransaction] = useState<DonationTransaction | null>(null);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
-  const handleActionClick = (action: string) => {
-    toast({
-      title: 'İşlevsellik Yakında!',
-      description: `Dekont ${action} özelliği yakında aktif olacaktır.`,
-    });
-  };
 
   const totalDonations = donationTransactions
     .filter(tx => tx.type === 'expense')
@@ -176,19 +234,21 @@ export default function MyDonationsPage() {
                             <span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                         <Separator />
-                        <div className='flex justify-between items-center text-xs mt-2'>
-                            <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
-                            <span className="text-right">{donation.ngo.join(', ')}</span>
-                        </div>
+                        {donation.ngo.length > 0 && (
+                            <div className='flex justify-between items-center text-xs mt-2'>
+                                <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
+                                <span className="text-right font-medium">{donation.ngo.join(', ')}</span>
+                            </div>
+                        )}
                         <div className='flex justify-between items-center text-xs'>
                             <div>
                                 <span className='text-muted-foreground'>İşlem Tarihi: </span>
                                 <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}</span>
                             </div>
                             <div className="flex">
-                                <Button size="icon" variant="ghost" onClick={() => handleActionClick('görüntüleme')}><Eye className="h-4 w-4"/></Button>
-                                <Button size="icon" variant="ghost" onClick={() => handleActionClick('indirme')}><Download className="h-4 w-4"/></Button>
-                                <Button size="icon" variant="ghost" onClick={() => handleActionClick('paylaşma')}><Share2 className="h-4 w-4"/></Button>
+                                <Button size="icon" variant="ghost" onClick={() => { setSelectedTransaction(donation); setIsReceiptOpen(true); }}><Eye className="h-4 w-4"/></Button>
+                                <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Dekont indiriliyor...' })}><Download className="h-4 w-4"/></Button>
+                                <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Paylaşım seçenekleri açılıyor...' })}><Share2 className="h-4 w-4"/></Button>
                             </div>
                         </div>
                         </div>
@@ -199,8 +259,7 @@ export default function MyDonationsPage() {
             </Accordion>
           </CardContent>
         </Card>
+        <ReceiptDialog transaction={selectedTransaction} open={isReceiptOpen} onOpenChange={setIsReceiptOpen} />
     </div>
   );
 }
-
-    
