@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -155,10 +156,10 @@ export default function NgoProfilePage() {
                 </div>
             </div>
             <div className="flex gap-2">
-                <Button className="flex-1">
+                <Button className="flex-1" onClick={() => toast({ title: 'Bağış yapma özelliği yakında eklenecektir.'})}>
                      Bağışçı Ol
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" onClick={() => toast({ title: 'Gönüllülük başvurusu yakında eklenecektir.'})}>
                     <Heart className="mr-2 h-4 w-4" /> Gönüllü Ol
                 </Button>
             </div>
