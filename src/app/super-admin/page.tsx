@@ -16,14 +16,18 @@ import {
   BookCopy,
   Settings,
   HelpCircle,
-  Newspaper
+  Newspaper,
+  UserCog,
+  School,
+  LifeBuoy
 } from "lucide-react";
 
 const iconColorMap: { [key: string]: string } = {
   'FileText': 'bg-sky-500',
-  'Users': 'bg-purple-500',
+  'UserCog': 'bg-purple-500',
   'Building': 'bg-orange-500',
   'Store': 'bg-green-500',
+  'School': 'bg-gray-500',
   'HeartHandshake': 'bg-red-500',
   'Newspaper': 'bg-blue-500',
   'BarChart3': 'bg-indigo-500',
@@ -32,6 +36,7 @@ const iconColorMap: { [key: string]: string } = {
   'Bell': 'bg-teal-500',
   'Settings': 'bg-gray-500',
   'HelpCircle': 'bg-pink-500',
+  'LifeBuoy': 'bg-blue-400',
 };
 
 const NavLink = ({ href, icon, label, description }: { href: string, icon: keyof typeof Icons, label: string, description: string }) => {
@@ -55,25 +60,27 @@ const NavLink = ({ href, icon, label, description }: { href: string, icon: keyof
 }
 
 const superAdminNavItems = [
-    { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını onayla/reddet.' },
-    { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'Users', description: 'Tüm kullanıcıları görüntüle, düzenle veya askıya al.' },
-    { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki tüm STK\'ları yönet.' },
-    { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Tüm markaları ve bağış oranlarını yönet.' },
-    { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake', description: 'Gönüllülük ilanlarını onayla, yönet.' },
-    { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Gönderileri onayla, yönet.' },
-    { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3', description: 'Kullanıcı, etki ve finansal metrikleri izle.' },
-    { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'STK ve kulüplerin belgelerini yönet.' },
-    { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy', description: 'Kütüphane içeriklerini ekle, düzenle, sil.' },
-    { href: '/super-admin/communications', label: 'Bildirimler ve İletişim', icon: 'Bell', description: 'Genel duyurular ve bültenler gönder.' },
+    { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },
+    { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog', description: 'Platformdaki kullanıcıları görüntüle ve yönet.' },
+    { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki STK\'ları görüntüle ve yönet.' },
+    { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Platformdaki markaları görüntüle ve yönet.' },
+    { href: '/super-admin/clubs', label: 'Kulüp Yönetimi', icon: 'School', description: 'Öğrenci kulüplerini görüntüle ve yönet.' },
+    { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake', description: 'Gönüllülük ilanlarını onayla ve yönet.' },
+    { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Tüm gönderileri denetle ve yönet.' },
+    { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3', description: 'Platformun genel metriklerini izle.' },
+    { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
+    { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy', description: 'Kütüphane içeriklerini ekle, düzenle veya sil.' },
+    { href: '/super-admin/communications', label: 'Bildirimler ve Bülten', icon: 'Bell', description: 'Toplu bildirimler ve e-posta bültenleri gönder.' },
     { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings', description: 'Platformun genel ayarlarını yönet.' },
-    { href: '/super-admin/support', label: 'Destek', icon: 'HelpCircle', description: 'Kullanıcı destek taleplerini yönet.' },
+    { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle', description: 'Kullanıcılardan gelen destek taleplerini yönet.' },
+    { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy', description: 'Admin paneli kullanımı hakkında bilgi al.' },
 ];
 
 export default function SuperAdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold font-headline">Süper Yönetici Paneli</h1>
+        <h1 className="text-2xl font-bold font-headline">Admin Paneli</h1>
         <p className="text-muted-foreground">hangel platformunu buradan yönetebilirsiniz.</p>
       </div>
 

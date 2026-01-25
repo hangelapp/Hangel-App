@@ -17,7 +17,8 @@ import {
   Settings,
   HelpCircle,
   School,
-  UserCog
+  UserCog,
+  LifeBuoy
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -41,7 +42,8 @@ const navItems: SideNavItem[] = [
   { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy' },
   { href: '/super-admin/communications', label: 'Bildirimler ve Bülten', icon: 'Bell' },
   { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings' },
-  { href: '/super-admin/support', label: 'Destek', icon: 'HelpCircle' },
+  { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle' },
+  { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy' },
 ];
 
 const NavLink = ({ item }: { item: SideNavItem }) => {
@@ -80,7 +82,7 @@ export default function SuperAdminLayout({
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/super-admin" className="flex items-center gap-2 font-semibold">
               <span className="text-xl font-bold text-primary">hangel</span>
-              <span className="text-foreground">Yönetim</span>
+              <span className="text-foreground">Admin Paneli</span>
             </Link>
           </div>
           <div className="flex-1">
