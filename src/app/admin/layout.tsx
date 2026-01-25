@@ -13,8 +13,8 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Show back button only on sub-pages
-  const showBackButton = pathname !== '/admin';
+  // Show back button on all admin pages
+  const showBackButton = pathname.startsWith('/admin');
 
   return (
     <div className="min-h-screen">
