@@ -98,7 +98,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
                 <ul className="bg-card rounded-lg overflow-hidden border">
                     <li>
                         <Link
-                            href="/login"
+                            href="/timeline"
                             className='group flex items-center p-3 hover:bg-accent/50'
                         >
                             <div className='w-7 h-7 rounded-md flex items-center justify-center bg-red-500'>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -18,7 +19,8 @@ import {
   HelpCircle,
   School,
   UserCog,
-  LifeBuoy
+  LifeBuoy,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -85,10 +87,16 @@ export default function SuperAdminLayout({
               <span className="text-foreground">Admin Paneli</span>
             </Link>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               {navItems.map(item => <NavLink key={item.href} item={item} />)}
             </nav>
+            <div className="mt-auto p-4">
+                <Link href="/timeline" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-destructive">
+                    <LogOut className="h-4 w-4" />
+                    <span>Panelden Çık</span>
+                </Link>
+            </div>
           </div>
         </div>
       </div>
