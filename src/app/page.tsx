@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
 export default function RootPage() {
-  // Kullanıcıyı uygulama ana akışına yönlendir.
-  redirect('/timeline');
+  // Kullanıcıyı web sitesi tarzı giriş sayfasına yönlendir.
+  redirect('/login');
 }
