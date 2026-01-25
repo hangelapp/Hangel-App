@@ -6,10 +6,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export default function ContentPage() {
+export default function VolunteerManagementPage() {
     return (
         <>
-            <h1 className="text-lg font-semibold md:text-2xl">İçerik Yönetimi</h1>
+            <h1 className="text-lg font-semibold md:text-2xl">Gönüllülük Yönetimi</h1>
              <Card>
                 <CardHeader>
                     <CardTitle>Gönüllülük İlanları</CardTitle>

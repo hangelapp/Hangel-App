@@ -12,21 +12,30 @@ import {
   Bell,
   HeartHandshake,
   BarChart3,
+  Shield,
+  BookCopy,
+  Settings,
+  HelpCircle,
+  Newspaper
 } from "lucide-react";
 
 const iconColorMap: { [key: string]: string } = {
-  'file-text': 'bg-sky-500',
-  'users': 'bg-purple-500',
-  'building': 'bg-orange-500',
-  'store': 'bg-green-500',
-  'heart-handshake': 'bg-red-500',
-  'bar-chart-3': 'bg-indigo-500',
-  'bell': 'bg-teal-500',
+  'FileText': 'bg-sky-500',
+  'Users': 'bg-purple-500',
+  'Building': 'bg-orange-500',
+  'Store': 'bg-green-500',
+  'HeartHandshake': 'bg-red-500',
+  'Newspaper': 'bg-blue-500',
+  'BarChart3': 'bg-indigo-500',
+  'Shield': 'bg-green-600',
+  'BookCopy': 'bg-amber-600',
+  'Bell': 'bg-teal-500',
+  'Settings': 'bg-gray-500',
+  'HelpCircle': 'bg-pink-500',
 };
 
-const NavLink = ({ href, icon, label, description }: { href: string, icon: string, label: string, description: string }) => {
-  // @ts-ignore
-  const Icon = Icons[icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+const NavLink = ({ href, icon, label, description }: { href: string, icon: keyof typeof Icons, label: string, description: string }) => {
+  const Icon = Icons[icon] || Icons.HelpCircle;
   const color = iconColorMap[icon] || 'bg-gray-500';
 
   return (
@@ -50,9 +59,14 @@ const superAdminNavItems = [
     { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'Users', description: 'Tüm kullanıcıları görüntüle, düzenle veya askıya al.' },
     { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki tüm STK\'ları yönet.' },
     { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Tüm markaları ve bağış oranlarını yönet.' },
-    { href: '/super-admin/content', label: 'İçerik Yönetimi', icon: 'HeartHandshake', description: 'Gönüllülük ilanları ve diğer içerikleri onayla.' },
-    { href: '/super-admin/analytics', label: 'Platform Analizleri', icon: 'BarChart3', description: 'Kullanıcı, etki ve finansal metrikleri izle.' },
-    { href: '/super-admin/communications', label: 'İletişim Araçları', icon: 'Bell', description: 'Genel duyurular ve bültenler gönder.' },
+    { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake', description: 'Gönüllülük ilanlarını onayla, yönet.' },
+    { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Gönderileri onayla, yönet.' },
+    { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3', description: 'Kullanıcı, etki ve finansal metrikleri izle.' },
+    { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'STK ve kulüplerin belgelerini yönet.' },
+    { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy', description: 'Kütüphane içeriklerini ekle, düzenle, sil.' },
+    { href: '/super-admin/communications', label: 'Bildirimler ve İletişim', icon: 'Bell', description: 'Genel duyurular ve bültenler gönder.' },
+    { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings', description: 'Platformun genel ayarlarını yönet.' },
+    { href: '/super-admin/support', label: 'Destek', icon: 'HelpCircle', description: 'Kullanıcı destek taleplerini yönet.' },
 ];
 
 export default function SuperAdminDashboard() {

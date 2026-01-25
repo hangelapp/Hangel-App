@@ -11,7 +11,11 @@ import {
   BarChart3,
   Shield,
   LayoutDashboard,
-  ArrowLeft
+  ArrowLeft,
+  Newspaper,
+  BookCopy,
+  Settings,
+  HelpCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -28,16 +32,21 @@ const navItems: SideNavItem[] = [
   { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'Users' },
   { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building' },
   { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store' },
-  { href: '/super-admin/content', label: 'İçerik Yönetimi', icon: 'HeartHandshake' },
-  { href: '/super-admin/analytics', label: 'Platform Analizleri', icon: 'BarChart3' },
-  { href: '/super-admin/communications', label: 'İletişim Araçları', icon: 'Bell' },
+  { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake' },
+  { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper' },
+  { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3' },
+  { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield' },
+  { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy' },
+  { href: '/super-admin/communications', label: 'Bildirimler ve İletişim', icon: 'Bell' },
+  { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings' },
+  { href: '/super-admin/support', label: 'Destek', icon: 'HelpCircle' },
 ];
 
 const NavLink = ({ item }: { item: SideNavItem }) => {
     const pathname = usePathname();
     const isActive = pathname === item.href;
     // @ts-ignore
-    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+    const Icon = Icons[item.icon] || Icons.HelpCircle;
 
     return (
         <Link href={item.href} className={cn(
