@@ -136,6 +136,11 @@ export default function NgoProfilePage() {
                     <Store className="h-4 w-4" />
                 </Button>
                 <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
+                <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+                  <Link href={`/ngo-admin/website/preview`} target="_blank">
+                    <Globe className="h-4 w-4" />
+                  </Link>
+                </Button>
             </div>
         </div>
       <div className="p-4 pt-4 bg-background">
@@ -357,3 +362,5 @@ export default function NgoProfilePage() {
     </div>
   );
 }
+
+    
