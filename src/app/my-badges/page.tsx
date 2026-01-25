@@ -10,12 +10,12 @@ import { badges, certificates, user } from '@/lib/data';
 import { Badge as BadgeType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { groupBy } from 'lodash';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 const stats = [
     { icon: Star, value: user.impactScore.toLocaleString('tr-TR'), label: 'Etki Puanı' },
@@ -123,6 +123,7 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
 };
 
 export default function MyBadgesPage() {
+    const { toast } = useToast();
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [filters, setFilters] = useState<string[]>([]);
 
@@ -150,7 +151,7 @@ export default function MyBadgesPage() {
             if (sortConfig.direction === 'desc') {
                 return valB - valA;
             } else {
-                return valA - valA;
+                return valA - valB;
             }
         });
 
@@ -278,9 +279,9 @@ export default function MyBadgesPage() {
                                      <p className='font-semibold mt-1'>{cert.title}</p>
                                    </div>
                                    <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
-                                       <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-4 w-4"/></Button>
-                                       <Button size="icon" variant="ghost" className="h-7 w-7"><Download className="h-4 w-4"/></Button>
-                                       <Button size="icon" variant="ghost" className="h-7 w-7"><Share2 className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika Görüntüleme", description: "Bu özellik yakında eklenecektir." })}><Eye className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika İndirme", description: "Bu özellik yakında eklenecektir." })}><Download className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika Paylaşma", description: "Bu özellik yakında eklenecektir." })}><Share2 className="h-4 w-4"/></Button>
                                    </div>
                                 </div>
                             ))}
