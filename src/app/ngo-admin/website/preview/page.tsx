@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
     Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin, 
-    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, Award, Calendar, Separator
+    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, Award, Calendar
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
