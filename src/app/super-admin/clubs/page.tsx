@@ -60,7 +60,7 @@ export default function ClubsPage() {
                            </div>
                            <div className="flex items-center gap-2">
                                <span className="text-sm font-medium">{club.points} Puan</span>
-                               <Button variant="outline" size="sm">Profili Düzenle</Button>
+                               <Button variant="outline" size="sm" onClick={() => toast({ title: "Bu özellik yakında eklenecektir."})}>Profili Düzenle</Button>
                                <Button variant="outline" size="sm" onClick={() => handleToggleActive(club.id)}>
                                  {club.status === 'Aktif' ? 'Pasife Al' : 'Aktif Et'}
                                </Button>
