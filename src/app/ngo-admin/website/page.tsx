@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target, ArrowLeft } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import Link from 'next/link';
 import { ngos } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useRouter } from 'next/navigation';
 
 // A new component for read-only sections with an edit link
 const ReadOnlySectionCard = ({ icon: Icon, title, description, editHref }: { icon: React.ElementType, title: string, description: string, editHref: string }) => (
@@ -40,6 +41,7 @@ const ReadOnlySectionCard = ({ icon: Icon, title, description, editHref }: { ico
 
 
 export default function WebsiteBuilderPage() {
+    const router = useRouter();
     const [isPublished, setIsPublished] = useState(false);
     const { toast } = useToast();
     const [customDomain, setCustomDomain] = useState('');
@@ -67,6 +69,9 @@ export default function WebsiteBuilderPage() {
 
     return (
         <div className="space-y-6">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+                <ArrowLeft className="h-6 w-6" />
+            </Button>
             <div>
                 <h1 className="text-2xl font-bold">Web Sitesi Yönetimi</h1>
                 <p className="text-muted-foreground">
