@@ -30,6 +30,7 @@ const iconColorMap: { [key: string]: string } = {
   // NGO Admin specific
   'layout-dashboard': 'bg-blue-500',
   'shield-check': 'bg-green-500',
+  'shield': 'bg-red-600',
   newspaper: 'bg-orange-500',
   'qr-code': 'bg-slate-500',
   // Admin specific

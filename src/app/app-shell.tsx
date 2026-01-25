@@ -29,6 +29,7 @@ const group3Items: SideNavItem[] = [
 
 const group4Items: SideNavItem[] = [
   { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
+  { href: '/super-admin', label: 'Süper Admin', icon: 'shield' },
   { href: '/settings', label: 'Ayarlar', icon: 'settings' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
@@ -38,8 +39,10 @@ const group4Items: SideNavItem[] = [
 export function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
+    const isSuperAdminPage = pathname.startsWith('/super-admin');
 
-    if (isPreviewPage) {
+
+    if (isPreviewPage || isSuperAdminPage) {
         return <>{children}</>;
     }
 
