@@ -1,4 +1,6 @@
+
 'use client';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -22,11 +24,13 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
-import { Users, Building, Store, HandCoins, Bot, TrendingUp } from "lucide-react";
+import { Users, Building, Store, HandCoins, Bot, Filter, ArrowDownUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+
 
 // Data for charts and tables
 const userGrowthData = [
@@ -71,49 +75,63 @@ const aiProjectionData = [
 
 export default function AnalyticsPage() {
     const { toast } = useToast();
+    const [userGrowthSort, setUserGrowthSort] = useState({ key: 'users', direction: 'desc' });
+    const [donationSort, setDonationSort] = useState({ key: 'Bagis', direction: 'desc' });
+
+    const showComingSoon = () => toast({ title: 'Bu özellik yakında gelecek!' });
+
+    const sortedUserGrowthData = useMemo(() => {
+        return [...userGrowthData].sort((a, b) => {
+            const valA = a[userGrowthSort.key as keyof typeof a];
+            const valB = b[userGrowthSort.key as keyof typeof b];
+            if (userGrowthSort.direction === 'asc') return valA - valB;
+            return valB - valA;
+        });
+    }, [userGrowthSort]);
+
+    const sortedDonationVolunteerData = useMemo(() => {
+        return [...donationVolunteerData].sort((a, b) => {
+            const valA = a[donationSort.key as keyof typeof a];
+            const valB = b[donationSort.key as keyof typeof b];
+            if (donationSort.direction === 'asc') return valA - valB;
+            return valB - valA;
+        });
+    }, [donationSort]);
+
+    const ChartToolbar = () => (
+        <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={showComingSoon}><Filter className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={showComingSoon}><ArrowDownUp className="h-4 w-4" /></Button>
+        </div>
+    );
+
     return (
         <div className="space-y-6">
             <h1 className="text-lg font-semibold md:text-2xl">Platform Analizleri</h1>
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Toplam Kullanıcı</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold">14,234</p>
-                        <p className="text-sm text-muted-foreground">+%20.1 geçen aydan</p>
-                    </CardContent>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                    <Users className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-3xl font-bold mt-2">14,234</p>
+                    <CardTitle className="text-sm font-medium mt-1">Toplam Kullanıcı</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">+%20.1 geçen aydan</p>
                 </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Aktif STK</CardTitle>
-                        <Building className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold">128</p>
-                        <p className="text-sm text-muted-foreground">+12 geçen aydan</p>
-                    </CardContent>
+                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                    <Building className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-3xl font-bold mt-2">128</p>
+                    <CardTitle className="text-sm font-medium mt-1">Aktif STK</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">+12 geçen aydan</p>
                 </Card>
-                 <Card>
-                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Aktif Marka</CardTitle>
-                        <Store className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold">542</p>
-                        <p className="text-sm text-muted-foreground">+45 geçen aydan</p>
-                    </CardContent>
+                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                    <Store className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-3xl font-bold mt-2">542</p>
+                    <CardTitle className="text-sm font-medium mt-1">Aktif Marka</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">+45 geçen aydan</p>
                 </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Toplam Bağış</CardTitle>
-                        <HandCoins className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold">1.2M ₺</p>
-                        <p className="text-sm text-muted-foreground">+%15 geçen aydan</p>
-                    </CardContent>
+                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                    <HandCoins className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-3xl font-bold mt-2">1.2M ₺</p>
+                    <CardTitle className="text-sm font-medium mt-1">Toplam Bağış</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">+%15 geçen aydan</p>
                 </Card>
             </div>
             
@@ -130,7 +148,10 @@ export default function AnalyticsPage() {
                         <TabsContent value="graphs" className="mt-4">
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Kullanıcı Büyümesi (Son 6 Ay)</CardTitle></CardHeader>
+                                    <CardHeader className="flex-row items-center justify-between">
+                                        <CardTitle className="text-base">Kullanıcı Büyümesi (Son 6 Ay)</CardTitle>
+                                        <ChartToolbar />
+                                    </CardHeader>
                                     <CardContent>
                                         <ResponsiveContainer width="100%" height={300}>
                                             <LineChart data={userGrowthData}>
@@ -145,7 +166,10 @@ export default function AnalyticsPage() {
                                     </CardContent>
                                 </Card>
                                  <Card>
-                                    <CardHeader><CardTitle className="text-base">Bağış ve Gönüllülük Değeri</CardTitle></CardHeader>
+                                     <CardHeader className="flex-row items-center justify-between">
+                                        <CardTitle className="text-base">Bağış ve Gönüllülük Değeri</CardTitle>
+                                        <ChartToolbar />
+                                    </CardHeader>
                                     <CardContent>
                                          <ResponsiveContainer width="100%" height={300}>
                                             <BarChart data={donationVolunteerData}>
@@ -161,7 +185,10 @@ export default function AnalyticsPage() {
                                     </CardContent>
                                 </Card>
                                  <Card>
-                                    <CardHeader><CardTitle className="text-base">Kullanıcı Yaş Dağılımı</CardTitle></CardHeader>
+                                    <CardHeader className="flex-row items-center justify-between">
+                                        <CardTitle className="text-base">Kullanıcı Yaş Dağılımı</CardTitle>
+                                        <ChartToolbar />
+                                    </CardHeader>
                                     <CardContent>
                                          <ResponsiveContainer width="100%" height={300}>
                                             <PieChart>
@@ -174,7 +201,10 @@ export default function AnalyticsPage() {
                                     </CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Platform Etkileşimi</CardTitle></CardHeader>
+                                    <CardHeader className="flex-row items-center justify-between">
+                                        <CardTitle className="text-base">Platform Etkileşimi</CardTitle>
+                                        <ChartToolbar />
+                                    </CardHeader>
                                     <CardContent>
                                         <ResponsiveContainer width="100%" height={300}>
                                             <AreaChart data={engagementData}>
@@ -195,12 +225,32 @@ export default function AnalyticsPage() {
                         <TabsContent value="numbers" className="mt-4">
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Kullanıcı Büyümesi (Sayısal)</CardTitle></CardHeader>
-                                    <CardContent><Table><TableHeader><TableRow><TableHead>Ay</TableHead><TableHead className="text-right">Yeni Kullanıcı</TableHead></TableRow></TableHeader><TableBody>{userGrowthData.map(d => (<TableRow key={d.month}><TableCell>{d.month}</TableCell><TableCell className="text-right">{d.users.toLocaleString()}</TableCell></TableRow>))}</TableBody></Table></CardContent>
+                                    <CardHeader className="flex-row items-center justify-between">
+                                        <CardTitle className="text-base">Kullanıcı Büyümesi (Sayısal)</CardTitle>
+                                         <DropdownMenu>
+                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowDownUp className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => setUserGrowthSort({ key: 'users', direction: 'desc' })}>Yeni Kullanıcı (En Yüksek)</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setUserGrowthSort({ key: 'users', direction: 'asc' })}>Yeni Kullanıcı (En Düşük)</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </CardHeader>
+                                    <CardContent><Table><TableHeader><TableRow><TableHead>Ay</TableHead><TableHead className="text-right">Yeni Kullanıcı</TableHead></TableRow></TableHeader><TableBody>{sortedUserGrowthData.map(d => (<TableRow key={d.month}><TableCell>{d.month}</TableCell><TableCell className="text-right">{d.users.toLocaleString()}</TableCell></TableRow>))}</TableBody></Table></CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader><CardTitle className="text-base">Bağış ve Gönüllülük (Sayısal)</CardTitle></CardHeader>
-                                    <CardContent><Table><TableHeader><TableRow><TableHead>Ay</TableHead><TableHead className="text-right">Bağış (₺)</TableHead><TableHead className="text-right">Gönüllülük (Saat)</TableHead></TableRow></TableHeader><TableBody>{donationVolunteerData.map(d => (<TableRow key={d.name}><TableCell>{d.name}</TableCell><TableCell className="text-right">{d.Bagis.toLocaleString()}</TableCell><TableCell className="text-right">{d.Gonulluluk.toLocaleString()}</TableCell></TableRow>))}</TableBody></Table></CardContent>
+                                    <CardHeader className="flex-row items-center justify-between">
+                                        <CardTitle className="text-base">Bağış ve Gönüllülük (Sayısal)</CardTitle>
+                                         <DropdownMenu>
+                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowDownUp className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => setDonationSort({ key: 'Bagis', direction: 'desc' })}>Bağış (En Yüksek)</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setDonationSort({ key: 'Bagis', direction: 'asc' })}>Bağış (En Düşük)</DropdownMenuItem>
+                                                 <DropdownMenuItem onClick={() => setDonationSort({ key: 'Gonulluluk', direction: 'desc' })}>Gönüllülük (En Yüksek)</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setDonationSort({ key: 'Gonulluluk', direction: 'asc' })}>Gönüllülük (En Düşük)</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </CardHeader>
+                                    <CardContent><Table><TableHeader><TableRow><TableHead>Ay</TableHead><TableHead className="text-right">Bağış (₺)</TableHead><TableHead className="text-right">Gönüllülük (Saat)</TableHead></TableRow></TableHeader><TableBody>{sortedDonationVolunteerData.map(d => (<TableRow key={d.name}><TableCell>{d.name}</TableCell><TableCell className="text-right">{d.Bagis.toLocaleString()}</TableCell><TableCell className="text-right">{d.Gonulluluk.toLocaleString()}</TableCell></TableRow>))}</TableBody></Table></CardContent>
                                 </Card>
                             </div>
                         </TabsContent>
@@ -279,4 +329,5 @@ export default function AnalyticsPage() {
             </Card>
         </div>
     )
-}
+
+    
