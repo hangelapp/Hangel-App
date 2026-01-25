@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -181,7 +181,7 @@ export default function WebsiteBuilderPage() {
                 <ReadOnlySectionCard 
                     icon={Globe} 
                     title="Hakkımızda ve İletişim" 
-                    description={ngo?.about ?? "Kuruluş açıklaması ve iletişim bilgileri."}
+                    description={ngo?.about ?? "Kuruluş açıklaması, odak alanları ve iletişim bilgileri."}
                     editHref="/ngo-admin/manage-profile"
                 />
 
@@ -218,6 +218,13 @@ export default function WebsiteBuilderPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                <ReadOnlySectionCard 
+                    icon={Target}
+                    title="Bağış Kampanyaları"
+                    description="Devam eden veya tamamlanmış bağış kampanyalarınız."
+                    editHref="/ngo-admin/campaigns"
+                />
 
                 <ReadOnlySectionCard 
                     icon={Handshake} 

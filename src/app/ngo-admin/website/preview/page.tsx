@@ -20,7 +20,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Copy } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type { Volunteering, Post } from '@/lib/types';
+import type { Volunteering, Post, Campaign } from '@/lib/types';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 const transparencyCriteria = [
   { name: 'Faaliyet Belgesi', completed: true },
@@ -46,7 +48,7 @@ export default function WebsitePreviewPage() {
     }
     
     const primaryColor = `#${searchParams.get('primary') || 'f34723'}`;
-    const backgroundColor = `#${searchParams.get('secondary') || 'f1f5f9'}`;
+    const backgroundColor = `#${searchParams.get('secondary') || 'ffffff'}`;
     const foregroundColor = `#${searchParams.get('accent') || '042654'}`;
 
     const themeStyle = {
@@ -167,6 +169,7 @@ export default function WebsitePreviewPage() {
                     </Link>
                     <nav className="hidden md:flex gap-6 text-sm font-medium text-foreground">
                         <a href="#hakkimizda" className="hover:text-primary">Hakkımızda</a>
+                        <a href="#kampanyalar" className="hover:text-primary">Kampanyalar</a>
                         <a href="#gonulluluk" className="hover:text-primary">Gönüllülük</a>
                         <a href="#haberler" className="hover:text-primary">Haberler</a>
                         <a href="#seffaflik" className="hover:text-primary">Şeffaflık</a>
@@ -187,6 +190,7 @@ export default function WebsitePreviewPage() {
                                 </SheetHeader>
                                 <nav className="flex flex-col gap-4 py-6">
                                     <SheetClose asChild><a href="#hakkimizda" className="text-lg hover:text-primary">Hakkımızda</a></SheetClose>
+                                    <SheetClose asChild><a href="#kampanyalar" className="text-lg hover:text-primary">Kampanyalar</a></SheetClose>
                                     <SheetClose asChild><a href="#gonulluluk" className="text-lg hover:text-primary">Gönüllülük</a></SheetClose>
                                     <SheetClose asChild><a href="#haberler" className="text-lg hover:text-primary">Haberler</a></SheetClose>
                                     <SheetClose asChild><a href="#seffaflik" className="text-lg hover:text-primary">Şeffaflık</a></SheetClose>
@@ -208,7 +212,7 @@ export default function WebsitePreviewPage() {
                     </div>
                 </section>
 
-                <Card className="bg-card -mt-8 md:-mt-12">
+                <Card className="bg-card -mt-8 md:-mt-16">
                   <CardContent className="p-4 sm:p-6">
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                           <div className="text-center sm:text-left">
@@ -315,6 +319,12 @@ export default function WebsitePreviewPage() {
                            <div className="p-8 md:p-12">
                                 <h3 className="text-3xl font-bold text-foreground flex items-center gap-3 mb-4"><Globe className="h-8 w-8 text-primary"/> Hakkımızda</h3>
                                 <p className="text-muted-foreground leading-relaxed">{ngo.about}</p>
+                                <h4 className="text-xl font-bold text-foreground mt-8 mb-4">Odak Alanlarımız</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {ngo.beneficiaryGroups.map(group => (
+                                        <Badge key={group} variant="secondary" className="text-sm">{group}</Badge>
+                                    ))}
+                                </div>
                            </div>
                             <div className="relative min-h-[300px] md:min-h-full">
                                 <Image src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Hakkımızda" fill className="object-cover"/>
@@ -322,6 +332,37 @@ export default function WebsitePreviewPage() {
                         </div>
                     </Card>
                 </section>
+
+                {ngo.campaigns && ngo.campaigns.length > 0 && (
+                <section id="kampanyalar" className="scroll-mt-20">
+                     <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-foreground"><Target className="h-8 w-8 text-primary"/> Bağış Kampanyaları</h2>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {ngo.campaigns.map(campaign => (
+                            <Card key={campaign.id} className="flex flex-col bg-card overflow-hidden">
+                                <div className="relative aspect-[16/9] w-full">
+                                    <Image src={campaign.imageUrl} alt={campaign.title} fill className="object-cover" />
+                                </div>
+                                <CardHeader>
+                                    <CardTitle>{campaign.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex-1 space-y-4">
+                                    <p className="text-sm text-muted-foreground">{campaign.description}</p>
+                                    <div>
+                                        <Progress value={(campaign.currentAmount / campaign.goal) * 100} className="h-2" />
+                                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                            <span>{campaign.currentAmount.toLocaleString('tr-TR')} ₺ Toplandı</span>
+                                            <span>{campaign.goal.toLocaleString('tr-TR')} ₺ Hedef</span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button className="w-full">Hemen Bağış Yap</Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                     </div>
+                </section>
+                )}
 
                 <section id="gonulluluk" className="scroll-mt-20">
                     <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-foreground"><HeartHandshake className="h-8 w-8 text-primary"/> Gönüllülük İlanları</h2>

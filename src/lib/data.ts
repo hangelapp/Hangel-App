@@ -382,7 +382,11 @@ export const ngos: NGO[] = [
         },
         economicEnterpriseUrl: '/market/1',
         posts: timelinePosts.filter(p => p.author.name === 'Ahbap Derneği'),
-        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '2')
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '2'),
+        campaigns: [
+            { id: '1', title: 'Afet Bölgesi Konteyner Kent', description: 'Depremden etkilenen ailelerimiz için güvenli ve sıcak bir yuva kuruyoruz. Desteğinizle daha fazla aileyi yeni evlerine kavuşturalım.', imageUrl: 'https://picsum.photos/seed/konteyner/800/450', imageHint: "container homes", goal: 500000, currentAmount: 320000, ngoId: '2' },
+            { id: '2', title: 'Geleceğe Işık Tut: Öğrenci Bursu', description: 'Maddi imkansızlıklar nedeniyle eğitimine devam etmekte zorlanan başarılı üniversite öğrencilerine burs desteği sağlıyoruz.', imageUrl: 'https://picsum.photos/seed/burs/800/450', imageHint: "student studying", goal: 200000, currentAmount: 85000, ngoId: '2' }
+        ]
     },
     {
         id: '3',
@@ -1496,3 +1500,4 @@ export const qrPaymentCardData = [
     
 
     
+
