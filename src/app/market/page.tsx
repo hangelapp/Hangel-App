@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
@@ -144,11 +145,7 @@ export default function MarketPage() {
         filteredList = filteredList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
-    if (activeCategory === 'hangel bağış') {
-        filteredList = filteredList.filter(item => item.donationRate > 0);
-    } else if (activeCategory === 'hangel imece') {
-        filteredList = filteredList.filter(item => item.type === 'cooperative' || item.type === 'social');
-    } else if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
+    if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (brandCategories && brandCategories.length > 0) {
         filteredList = filteredList.filter(brand => brandCategories.includes(brand.category));
@@ -405,7 +402,7 @@ export default function MarketPage() {
                     activeCategory === cat.mainCategory
                         ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
                         : "text-muted-foreground hover:bg-accent",
-                    (cat.mainCategory === 'Öne çıkanlar' || cat.mainCategory === 'hangel bağış' || cat.mainCategory === 'hangel imece') && "font-bold"
+                    (cat.mainCategory === 'Öne çıkanlar') && "font-bold"
                     )}
                 >
                     {cat.mainCategory}
