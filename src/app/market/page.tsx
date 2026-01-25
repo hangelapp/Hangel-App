@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
@@ -129,6 +130,12 @@ export default function MarketPage() {
   const [assistantResponse, setAssistantResponse] = useState('');
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
 
+  // Visual Search State
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
+  const [visualSearchImage, setVisualSearchImage] = useState<string | null>(null);
+  const [isVisualSearching, setIsVisualSearching] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const brandsToShow = useMemo(() => {
     let filteredList: Brand[] = allEntityLists;
 
@@ -207,6 +214,26 @@ export default function MarketPage() {
     }
   }, [assistantQuestion, toast]);
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVisualSearchImage(reader.result as string);
+        setIsVisualSearching(true);
+        setTimeout(() => {
+          setIsVisualSearching(false);
+          toast({
+            title: "Özellik Yakında",
+            description: "Görsel arama sonuçları yakında bu ekranda görüntülenecektir.",
+          });
+        }, 3000); // Simulate search for 3 seconds
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+
   return (
     <div className="flex flex-col h-full">
         <div className="p-2 space-y-2 border-b shrink-0">
@@ -220,9 +247,56 @@ export default function MarketPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'Görselle arama özelliği yakında gelecek!'})}>
-                        <Camera className="h-5 w-5" />
-                        </Button>
+                       <Dialog open={isVisualSearchOpen} onOpenChange={(open) => {
+                            setIsVisualSearchOpen(open);
+                            if (!open) {
+                                setVisualSearchImage(null);
+                                setIsVisualSearching(false);
+                            }
+                        }}>
+                            <DialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Camera className="h-5 w-5" />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Görselle Ara</DialogTitle>
+                                    <DialogDescription>
+                                        Bir ürünün fotoğrafını yükleyerek benzer ürünleri ve markaları bulun.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="py-4 text-center">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        accept="image/*"
+                                    />
+                                    {!visualSearchImage && (
+                                        <div 
+                                            className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            <Camera className="h-12 w-12 text-muted-foreground mb-2" />
+                                            <p className="text-muted-foreground">Fotoğraf yüklemek için tıklayın</p>
+                                        </div>
+                                    )}
+                                    {visualSearchImage && (
+                                        <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
+                                            <Image src={visualSearchImage} alt="Yüklenen görsel" fill className="object-contain rounded-lg" />
+                                            {isVisualSearching && (
+                                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-lg">
+                                                    <div className="animate-pulse rounded-full bg-muted h-12 w-12" />
+                                                    <p className="text-white mt-2">Benzer ürünler aranıyor...</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
                 <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
