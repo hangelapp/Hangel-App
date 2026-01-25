@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -26,7 +26,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FileText } from "lucide-react";
+
 
 type Application = {
   id: string;
@@ -66,7 +78,7 @@ const initialData: {
 };
 
 const ApplicationDetailsDialog = ({ application }: { application: Application }) => (
-    <DialogContent>
+    <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
             <DialogTitle>Başvuru Detayları: {application.name}</DialogTitle>
             <DialogDescription>
@@ -74,20 +86,94 @@ const ApplicationDetailsDialog = ({ application }: { application: Application })
                 <strong>Başvuru Tarihi:</strong> {application.date}
             </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-            <p>Burada başvuruyla ilgili detaylı belgeler, form bilgileri ve diğer ekler yer alacaktır. Bu bir örnek inceleme penceresidir.</p>
+        <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+            <Card>
+                <CardHeader><CardTitle className="text-base">Kuruluş Bilgileri</CardTitle></CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                    <p><strong>Yasal Adı:</strong> {application.name}</p>
+                    <p><strong>Web Sitesi:</strong> <a href="#" className="text-primary underline">https://ornek-site.org</a></p>
+                    <p><strong>Kategori:</strong> {application.type === 'STK' ? 'Eğitim' : 'Giyim'}</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader><CardTitle className="text-base">Yetkili Bilgileri</CardTitle></CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                    <p><strong>Ad Soyad:</strong> Ali Veli</p>
+                    <p><strong>E-posta:</strong> ali.veli@ornek-site.org</p>
+                    <p><strong>Telefon:</strong> +90 555 123 45 67</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader><CardTitle className="text-base">Yasal Belgeler</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                    <Button variant="outline" size="sm" className="w-full justify-start"><FileText className="mr-2 h-4 w-4"/> Faaliyet Belgesi.pdf</Button>
+                    <Button variant="outline" size="sm" className="w-full justify-start"><FileText className="mr-2 h-4 w-4"/> Vergi Levhası.pdf</Button>
+                </CardContent>
+            </Card>
         </div>
         <DialogFooter>
-            <DialogTrigger asChild>
+            <DialogClose asChild>
                 <Button variant="secondary">Kapat</Button>
-            </DialogTrigger>
+            </DialogClose>
         </DialogFooter>
     </DialogContent>
 );
 
-const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Application, onApprove: (item: Application) => void, onReject: (item: Application) => void }) => (
+const EditApplicationDialog = ({ application, open, onOpenChange, onSave }: { application: Application | null, open: boolean, onOpenChange: (open: boolean) => void, onSave: (updatedApp: Application) => void }) => {
+    const [name, setName] = useState('');
+    const [type, setType] = useState<'STK' | 'Marka' | 'Kulüp'>('STK');
+
+    useEffect(() => {
+        if (application) {
+            setName(application.name);
+            setType(application.type);
+        }
+    }, [application]);
+    
+    if (!application) return null;
+
+    const handleSave = () => {
+        onSave({ ...application, name, type });
+    };
+    
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Başvuruyu Düzenle</DialogTitle>
+                    <DialogDescription>{application.name} başvurusunun bilgilerini güncelleyin.</DialogDescription>
+                </DialogHeader>
+                 <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Kuruluş Adı</Label>
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="type">Başvuru Türü</Label>
+                        <Select value={type} onValueChange={(value) => setType(value as 'STK' | 'Marka' | 'Kulüp')}>
+                            <SelectTrigger id="type">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="STK">STK</SelectItem>
+                                <SelectItem value="Marka">Marka</SelectItem>
+                                <SelectItem value="Kulüp">Kulüp</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="ghost" onClick={() => onOpenChange(false)}>İptal</Button>
+                    <Button onClick={handleSave}>Kaydet</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+const PendingApplicationCard = ({ item, onApprove, onReject, onEdit }: { item: Application, onApprove: (item: Application) => void, onReject: (item: Application) => void, onEdit: (item: Application) => void }) => (
     <Card>
-        <CardContent className="p-4 flex items-center justify-between">
+        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
                 <Avatar>
                     <AvatarImage src={item.avatar} />
@@ -98,23 +184,24 @@ const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Applicati
                     <p className="text-sm text-muted-foreground">{item.date} - {item.type}</p>
                 </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="secondary" size="sm">İncele</Button>
+                        <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0">İncele</Button>
                     </DialogTrigger>
                     <ApplicationDetailsDialog application={item} />
                 </Dialog>
-                <Button variant="outline" size="sm" className="text-green-600 border-green-600 hover:bg-green-100" onClick={() => onApprove(item)}>Onayla</Button>
-                <Button variant="destructive" size="sm" onClick={() => onReject(item)}>Reddet</Button>
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => onEdit(item)}>Düzenle</Button>
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => onApprove(item)}>Onayla</Button>
+                <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => onReject(item)}>Reddet</Button>
             </div>
         </CardContent>
     </Card>
 );
 
-const ProcessedApplicationCard = ({ item }: { item: Application }) => (
+const ProcessedApplicationCard = ({ item, onEdit }: { item: Application, onEdit: (item: Application) => void }) => (
     <Card>
-        <CardContent className="p-4 flex items-center justify-between">
+        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
                 <Avatar>
                     <AvatarImage src={item.avatar} />
@@ -125,12 +212,15 @@ const ProcessedApplicationCard = ({ item }: { item: Application }) => (
                     <p className="text-sm text-muted-foreground">{item.type} - Onaylandı: {item.date}</p>
                 </div>
             </div>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">Profili Görüntüle</Button>
-                </DialogTrigger>
-                <ApplicationDetailsDialog application={item} />
-            </Dialog>
+            <div className="flex gap-2 w-full sm:w-auto">
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0">Profili Görüntüle</Button>
+                    </DialogTrigger>
+                    <ApplicationDetailsDialog application={item} />
+                </Dialog>
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => onEdit(item)}>Düzenle</Button>
+            </div>
         </CardContent>
     </Card>
 );
@@ -157,6 +247,7 @@ const RejectedApplicationCard = ({ item }: { item: Application }) => (
 export default function ApplicationsPage() {
     const { toast } = useToast();
     const [data, setData] = useState(initialData);
+    const [editingApplication, setEditingApplication] = useState<Application | null>(null);
 
     const handleApprove = (appToApprove: Application) => {
         setData(prevData => {
@@ -190,6 +281,23 @@ export default function ApplicationsPage() {
             description: `${appToReject.name} başvurusu reddedildi.`,
         });
     };
+    
+    const handleSave = (updatedApp: Application) => {
+        setData(prevData => ({
+            pending: {
+                ngo: prevData.pending.ngo.map(app => app.id === updatedApp.id ? updatedApp : app),
+                brand: prevData.pending.brand.map(app => app.id === updatedApp.id ? updatedApp : app),
+                club: prevData.pending.club.map(app => app.id === updatedApp.id ? updatedApp : app),
+            },
+            approved: prevData.approved.map(app => app.id === updatedApp.id ? updatedApp : app),
+            rejected: prevData.rejected.map(app => app.id === updatedApp.id ? updatedApp : app),
+        }));
+        toast({
+            title: "Başvuru Güncellendi",
+            description: `${updatedApp.name} başvurusu başarıyla güncellendi.`,
+        });
+        setEditingApplication(null);
+    };
 
     const allPending = [...data.pending.ngo, ...data.pending.brand, ...data.pending.club].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
@@ -219,7 +327,7 @@ export default function ApplicationsPage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                {allPending.length > 0 ? allPending.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} />) : <p className="text-muted-foreground text-center p-8">Bekleyen başvuru bulunmuyor.</p>}
+                                {allPending.length > 0 ? allPending.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen başvuru bulunmuyor.</p>}
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -229,7 +337,7 @@ export default function ApplicationsPage() {
                                     <CardTitle>Bekleyen STK Başvuruları</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                {data.pending.ngo.length > 0 ? data.pending.ngo.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} />) : <p className="text-muted-foreground text-center p-8">Bekleyen STK başvurusu bulunmuyor.</p>}
+                                {data.pending.ngo.length > 0 ? data.pending.ngo.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen STK başvurusu bulunmuyor.</p>}
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -239,7 +347,7 @@ export default function ApplicationsPage() {
                                     <CardTitle>Bekleyen Marka Başvuruları</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                {data.pending.brand.length > 0 ? data.pending.brand.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} />) : <p className="text-muted-foreground text-center p-8">Bekleyen marka başvurusu bulunmuyor.</p>}
+                                {data.pending.brand.length > 0 ? data.pending.brand.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen marka başvurusu bulunmuyor.</p>}
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -249,7 +357,7 @@ export default function ApplicationsPage() {
                                     <CardTitle>Bekleyen Öğrenci Kulübü Başvuruları</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                {data.pending.club.length > 0 ? data.pending.club.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} />) : <p className="text-muted-foreground text-center p-8">Bekleyen öğrenci kulübü başvurusu bulunmuyor.</p>}
+                                {data.pending.club.length > 0 ? data.pending.club.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen öğrenci kulübü başvurusu bulunmuyor.</p>}
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -264,7 +372,7 @@ export default function ApplicationsPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                           {data.approved.length > 0 ? data.approved.map(app => <ProcessedApplicationCard key={app.id} item={app} />) : <p className="text-muted-foreground text-center p-8">Henüz onaylanmış bir başvuru bulunmuyor.</p>}
+                           {data.approved.length > 0 ? data.approved.map(app => <ProcessedApplicationCard key={app.id} item={app} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Henüz onaylanmış bir başvuru bulunmuyor.</p>}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -282,6 +390,12 @@ export default function ApplicationsPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+            <EditApplicationDialog 
+                application={editingApplication}
+                open={!!editingApplication}
+                onOpenChange={() => setEditingApplication(null)}
+                onSave={handleSave}
+            />
         </>
     )
 }
