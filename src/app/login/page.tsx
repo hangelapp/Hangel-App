@@ -40,7 +40,7 @@ export default function LoginPage() {
             <Link href="/login/individual">Giriş Yap</Link>
           </Button>
           <Button size="lg" variant="outline" asChild className="w-full bg-white/10 border-white/20 text-white hover:bg-white hover:text-black">
-            <Link href="/login/individual">Kayıt Ol</Link>
+            <Link href="/login/corporate">Kurumsal Giriş</Link>
           </Button>
         </div>
       </main>
