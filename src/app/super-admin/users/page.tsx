@@ -30,7 +30,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -189,24 +188,26 @@ export default function UsersPage() {
                     </div>
                     <div className="space-y-3">
                         {filteredUsers.map(user => (
-                            <div key={user.id} className="p-3 border rounded-lg flex items-center justify-between">
-                               <div className="flex items-center gap-3">
-                                   <Avatar>
-                                       <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                       <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                   </Avatar>
-                                   <div>
-                                       <p className="font-semibold">{user.name}</p>
-                                       <p className="text-sm text-muted-foreground">{user.email}</p>
-                                   </div>
-                               </div>
-                               <div className="flex items-center gap-2">
-                                   <Badge variant={user.status === 'Aktif' ? 'default' : 'secondary'}>{user.status}</Badge>
-                                   <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>Profili Düzenle</Button>
-                                   <Button variant="outline" size="sm" onClick={() => handleToggleStatus(user.id)}>{user.status === 'Aktif' ? 'Askıya Al' : 'Aktif Et'}</Button>
-                                   <Button variant="destructive" size="sm" onClick={() => setDeletingUser(user)}>Sil</Button>
-                               </div>
-                           </div>
+                           <div key={user.id} className="p-4 border rounded-lg flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Avatar>
+                                        <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-semibold">{user.name}</p>
+                                            <Badge variant={user.status === 'Aktif' ? 'default' : 'secondary'}>{user.status}</Badge>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 sm:flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>Düzenle</Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleToggleStatus(user.id)}>{user.status === 'Aktif' ? 'Askıya Al' : 'Aktif Et'}</Button>
+                                    <Button variant="destructive" size="sm" onClick={() => setDeletingUser(user)}>Sil</Button>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </CardContent>
