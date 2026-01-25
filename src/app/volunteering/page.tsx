@@ -29,6 +29,7 @@ export default function VolunteeringPage() {
     const [sortKey, setSortKey] = useState('points');
     const [filters, setFilters] = useState({ location: 'all', commitment: 'all' });
     const [searchTerm, setSearchTerm] = useState('');
+    const [aiSearchTerm, setAiSearchTerm] = useState('');
 
     const userAbilities = [
       ...user.volunteerInfo.skills,
@@ -130,8 +131,17 @@ export default function VolunteeringPage() {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pt-4">
                 <p className='text-sm text-muted-foreground'>Yetenek ve ilgi alanlarınıza en uygun ilanları sizin için bulalım.</p>
-                <Input placeholder="Örn: Grafik Tasarım, Hayvan Hakları..." />
-                <Button className="w-full">Önerileri Getir</Button>
+                <Input 
+                    placeholder="Örn: Grafik Tasarım, Hayvan Hakları..." 
+                    value={aiSearchTerm}
+                    onChange={(e) => setAiSearchTerm(e.target.value)}
+                />
+                <Button 
+                    className="w-full"
+                    onClick={() => toast({ title: 'Yapay Zeka Önerisi', description: 'Bu özellik yakında daha detaylı sonuçlar sunacaktır.' })}
+                >
+                    Önerileri Getir
+                </Button>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
