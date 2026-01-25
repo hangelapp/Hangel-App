@@ -1,4 +1,3 @@
-
 'use client';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -181,7 +180,7 @@ export default function WebsitePreviewPage() {
                         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                             <SheetTrigger asChild>
                                 <Button variant="outline" size="icon" className="md:hidden">
-                                    <Menu className="h-6 w-6" />
+                                    <Menu className="h-7 w-7" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent>
@@ -525,6 +524,15 @@ export default function WebsitePreviewPage() {
                             </div>
                         </div>
                         <div>
+                            <h4 className="font-bold text-foreground mb-4">Sosyal Medya</h4>
+                            <div className="flex items-center gap-4">
+                                <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Twitter /></a>
+                                <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Instagram /></a>
+                                <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Facebook /></a>
+                                <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Linkedin /></a>
+                            </div>
+                        </div>
+                        <div>
                              <h4 className="font-bold text-foreground mb-4">Bağlı Olunan ve Üye Platformlar</h4>
                              <div className="space-y-4">
                                 {governingBody && (
@@ -548,15 +556,6 @@ export default function WebsitePreviewPage() {
                                 )}
                              </div>
                         </div>
-                         <div>
-                            <h4 className="font-bold text-foreground mb-4">Sosyal Medya</h4>
-                            <div className="flex items-center gap-4">
-                                <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Twitter /></a>
-                                <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Instagram /></a>
-                                <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Facebook /></a>
-                                <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Linkedin /></a>
-                            </div>
-                        </div>
                     </div>
                     <div className="border-t pt-8 text-center text-xs text-muted-foreground">
                         <p>&copy; {new Date().getFullYear()} {ngo.name}. Tüm hakları saklıdır.</p>
@@ -572,3 +571,5 @@ export default function WebsitePreviewPage() {
         </div>
     );
 }
+
+    
