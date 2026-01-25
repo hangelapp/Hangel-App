@@ -181,7 +181,7 @@ export default function WebsitePreviewPage() {
                         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                             <SheetTrigger asChild>
                                 <Button variant="outline" size="icon" className="md:hidden">
-                                    <Menu className="h-5 w-5" />
+                                    <Menu className="h-6 w-6" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent>
