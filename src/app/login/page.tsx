@@ -22,7 +22,9 @@ export default function LoginPage() {
       </div>
 
       <header className="relative z-10 w-full pt-4">
-        <HangelLogo className="text-4xl" />
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg py-2 px-4 inline-block">
+            <HangelLogo className="text-3xl text-[#042654]" />
+          </div>
       </header>
 
       <main className="relative z-10 flex flex-col items-center justify-center flex-1 w-full my-8">
@@ -47,6 +49,8 @@ export default function LoginPage() {
             <div className="container mx-auto px-6 text-center text-white/80">
             <div className="flex justify-center gap-x-8 gap-y-2 flex-wrap">
                 <Link href="/timeline" className="hover:text-white font-medium">Keşfet</Link>
+                <Link href="/market" className="hover:text-white font-bold text-lg">hangel bağış</Link>
+                <Link href="/market" className="hover:text-white font-bold text-lg">hangel imece</Link>
                 <Link href="/market" className="hover:text-white font-medium">Markalar</Link>
                 <Link href="/volunteering" className="hover:text-white font-medium">Gönüllülük</Link>
                 <Link href="/ngos" className="hover:text-white font-medium">STK'lar</Link>
