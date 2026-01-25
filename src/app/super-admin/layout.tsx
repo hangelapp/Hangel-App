@@ -10,15 +10,17 @@ import {
   HeartHandshake,
   BarChart3,
   Shield,
-  LayoutDashboard
+  LayoutDashboard,
+  ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { HangelLogo } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { SideNavItem } from '@/lib/types';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import * as Icons from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const navItems: SideNavItem[] = [
   { href: '/super-admin', label: 'Genel Bakış', icon: 'LayoutDashboard' },
@@ -54,6 +56,11 @@ export default function SuperAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Show back button only on sub-pages
+  const showBackButton = pathname !== '/super-admin';
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -81,6 +88,11 @@ export default function SuperAdminLayout({
             <UserAvatar />
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-secondary">
+          {showBackButton && (
+              <Button onClick={() => router.back()} variant="ghost" size="icon" className="-mt-2 -ml-2 h-8 w-8 self-start">
+                  <ArrowLeft className="h-5 w-5" />
+              </Button>
+          )}
           {children}
         </main>
       </div>
