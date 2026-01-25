@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, Globe } from 'lucide-react';
+import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, HandCoins } from 'lucide-react';
 import { user } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,8 @@ const iconColorMap: { [key: string]: string } = {
   settings: 'bg-gray-500',
   'help-circle': 'bg-teal-500',
   sparkles: 'bg-purple-500',
+  'trending-up': 'bg-pink-500',
+  'hand-coins': 'bg-yellow-500',
 };
 
 const NavLink = ({ href, icon, label }: { href: string, icon: string, label: string }) => {
@@ -58,6 +60,13 @@ const ngoAdminNavItems = [
 
 export default function NgoDashboardPage() {
     const userName = user.name;
+    const totalDonation = 1245.78;
+    const volunteerHours = 2350;
+    // Assuming 1 hour of volunteering is valued at 100 TL for this calculation
+    const volunteerValue = volunteerHours * 100;
+    const cashDonation = totalDonation; // Assuming total donation is cash for now
+    const totalImpactValue = volunteerValue + cashDonation;
+
   return (
     <div className="space-y-6">
       <div className="space-y-1">
@@ -65,14 +74,14 @@ export default function NgoDashboardPage() {
         <p className="text-muted-foreground">Yönetim Paneline hoş geldin, {userName}. İşte kuruluşunun bugünkü özeti.</p>
       </div>
 
-       <div className="grid gap-4 md:grid-cols-3">
+       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam Bağış</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1.245,78 ₺</div>
+            <div className="text-2xl font-bold">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
             <p className="text-xs text-muted-foreground">+%20.1 geçen aydan</p>
           </CardContent>
         </Card>
@@ -82,7 +91,7 @@ export default function NgoDashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+2.350</div>
+            <div className="text-2xl font-bold">+{volunteerHours.toLocaleString('tr-TR')}</div>
             <p className="text-xs text-muted-foreground">Bu ay +180 yeni gönüllü</p>
           </CardContent>
         </Card>
@@ -94,6 +103,36 @@ export default function NgoDashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">+12</div>
             <p className="text-xs text-muted-foreground">Onay bekleyen başvurular</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Nakit Bağış</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{cashDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+            <p className="text-xs text-muted-foreground">+%20.1 geçen aydan</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Gönüllülüğün Nakti Dönüşümü</CardTitle>
+            <HandCoins className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{volunteerValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+            <p className="text-xs text-muted-foreground">Tahmini değer</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bağış + Gönüllü Toplamı</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+            <p className="text-xs text-muted-foreground">Toplam yaratılan etki</p>
           </CardContent>
         </Card>
       </div>
