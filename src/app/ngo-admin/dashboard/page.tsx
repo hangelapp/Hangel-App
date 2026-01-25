@@ -1,8 +1,9 @@
+
 'use client';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, HandCoins } from 'lucide-react';
-import { user } from '@/lib/data';
+import { user, ngos } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
@@ -60,8 +61,12 @@ const ngoAdminNavItems = [
 
 export default function NgoDashboardPage() {
     const userName = user.name;
-    const totalDonation = 1245.78;
-    const volunteerHours = 2350;
+    const ngo = ngos.find(n => n.id === '2'); // Ahbap
+
+    if (!ngo) return null;
+
+    const totalDonation = ngo.stats.totalDonation;
+    const volunteerHours = ngo.stats.volunteerHours;
     // Assuming 1 hour of volunteering is valued at 100 TL for this calculation
     const volunteerValue = volunteerHours * 100;
     const cashDonation = totalDonation; // Assuming total donation is cash for now
@@ -70,7 +75,7 @@ export default function NgoDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold font-headline">Ahbap Derneği</h1>
+        <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
         <p className="text-muted-foreground">Yönetim Paneline hoş geldin, {userName}. İşte kuruluşunun bugünkü özeti.</p>
       </div>
 
@@ -91,7 +96,7 @@ export default function NgoDashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{volunteerHours.toLocaleString('tr-TR')}</div>
+            <div className="text-2xl font-bold">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</div>
             <p className="text-xs text-muted-foreground">Bu ay +180 yeni gönüllü</p>
           </CardContent>
         </Card>

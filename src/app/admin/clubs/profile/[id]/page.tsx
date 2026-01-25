@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -134,9 +135,9 @@ export default function ClubProfilePage() {
                 <CardHeader><CardTitle className="text-lg">Kulüp İstatistikleri</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.members}</p><p className="text-sm text-muted-foreground">Toplam Üye</p></div>
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.projects || 12}</p><p className="text-sm text-muted-foreground">Tamamlanan Projeler</p></div>
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.volunteerHours || 150} Saat</p><p className="text-sm text-muted-foreground">Gönüllülük Saati</p></div>
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">%{club.activeMemberRate || 75}</p><p className="text-sm text-muted-foreground">Aktif Üye Oranı</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.projects}</p><p className="text-sm text-muted-foreground">Tamamlanan Projeler</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.volunteerHours} Saat</p><p className="text-sm text-muted-foreground">Gönüllülük Saati</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">%{club.activeMemberRate}</p><p className="text-sm text-muted-foreground">Aktif Üye Oranı</p></div>
                 </CardContent>
              </Card>
         </TabsContent>
