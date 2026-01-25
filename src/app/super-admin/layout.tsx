@@ -24,13 +24,13 @@ import { Button } from '@/components/ui/button';
 
 const navItems: SideNavItem[] = [
   { href: '/super-admin', label: 'Genel Bakış', icon: 'LayoutDashboard' },
-  { href: '/super-admin/applications', label: 'Başvurular', icon: 'FileText' },
-  { href: '/super-admin/users', label: 'Kullanıcılar', icon: 'Users' },
-  { href: '/super-admin/ngos', label: 'STK\'lar', icon: 'Building' },
-  { href: '/super-admin/brands', label: 'Markalar', icon: 'Store' },
+  { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText' },
+  { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'Users' },
+  { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building' },
+  { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store' },
   { href: '/super-admin/content', label: 'İçerik Yönetimi', icon: 'HeartHandshake' },
-  { href: '/super-admin/analytics', label: 'Analizler', icon: 'BarChart3' },
-  { href: '/super-admin/communications', label: 'İletişim', icon: 'Bell' },
+  { href: '/super-admin/analytics', label: 'Platform Analizleri', icon: 'BarChart3' },
+  { href: '/super-admin/communications', label: 'İletişim Araçları', icon: 'Bell' },
 ];
 
 const NavLink = ({ item }: { item: SideNavItem }) => {

@@ -32,6 +32,8 @@ const iconColorMap: { [key: string]: string } = {
   settings: 'bg-gray-500',
   info: 'bg-blue-400',
   'help-circle': 'bg-teal-500',
+  'shield': 'bg-red-600',
+  'zap': 'bg-yellow-500',
 };
 
 
@@ -57,8 +59,10 @@ const group3Items: SideNavItem[] = [
 
 const group4Items: SideNavItem[] = [
   { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
+  { href: '/super-admin', label: 'Süper Admin', icon: 'shield' },
   { href: '/settings', label: 'Ayarlar', icon: 'settings' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
+  { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
 
