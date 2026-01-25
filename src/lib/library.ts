@@ -1,5 +1,3 @@
-import { BookCopy, BookOpen, Building, Film, GraduationCap, HeartHandshake, FileText } from 'lucide-react';
-
 export interface LibraryItem {
   slug: string;
   title: string;
@@ -10,7 +8,7 @@ export interface LibrarySection {
   slug: string;
   title: string;
   description: string;
-  icon: React.ElementType;
+  icon: string;
   items: LibraryItem[];
 }
 
@@ -19,7 +17,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'sosyal-etki-raporlari',
         title: "Sosyal Etki Raporları",
         description: "Hangel'in ve paydaşlarının yarattığı etkiyi inceleyin.",
-        icon: FileText,
+        icon: "FileText",
         items: Array.from({ length: 21 }, (_, i) => ({
             slug: `etki-raporu-202${3 - (i % 3)}-${['cevre', 'egitim', 'genel'][i%3]}-${i + 1}`,
             title: `202${3 - (i % 3)} Yılı ${['Çevre', 'Eğitim', 'Genel'][i%3]} Etki Raporu #${i + 1}`,
@@ -30,7 +28,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'gonulluluk-rehberleri',
         title: "Gönüllülük Rehberleri",
         description: "Gönüllülük yolculuğunuzda size yardımcı olacak kaynaklar.",
-        icon: HeartHandshake,
+        icon: "HeartHandshake",
         items: Array.from({ length: 21 }, (_, i) => {
             const titles = ['Etkili Gönüllülük İçin 5 Adım', 'Gönüllülükte Motivasyonunu Koruma', 'Doğru STK\'yı Nasıl Seçersin?'];
             const contents = [
@@ -49,7 +47,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'stklar-icin-kaynaklar',
         title: "STK'lar için Kaynaklar",
         description: "STK'ların kapasitelerini geliştirmelerine yönelik kılavuzlar.",
-        icon: Building,
+        icon: "Building",
         items: Array.from({ length: 21 }, (_, i) => {
             const titles = ['Dijital Kaynak Geliştirme Yöntemleri', 'Etkili Gönüllü Yönetimi El Kitabı', 'Sosyal Medyada Görünürlüğü Artırma'];
             const contents = [
@@ -68,7 +66,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'kitaplar',
         title: "Kitaplar",
         description: "Sosyal etki ve sivil toplum alanında ilham veren kitaplar.",
-        icon: BookCopy,
+        icon: "BookCopy",
         items: Array.from({ length: 21 }, (_, i) => {
             const titles = ["Sapiens: Hayvanlardan Tanrılara", "Etkili İnsanların 7 Alışkanlığı", "Dürtme: Sağlık, Zenginlik ve Mutlulukla İlgili Kararları Uygulamak"];
             const contents = [
@@ -87,7 +85,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'filmler',
         title: "Filmler",
         description: "Toplumsal konulara değinen ve ilham veren kurmaca filmler.",
-        icon: Film,
+        icon: "Film",
         items: Array.from({ length: 21 }, (_, i) => {
             const titles = ["Captain Fantastic (2016)", "The Boy Who Harnessed the Wind (2019)", "Erin Brockovich (2000)"];
             const contents = [
@@ -106,7 +104,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'belgeseller',
         title: "Belgeseller",
         description: "Gerçek hikayelerle dünyaya farklı bir gözle bakmanızı sağlayacak belgeseller.",
-        icon: Film,
+        icon: "Film",
         items: Array.from({ length: 21 }, (_, i) => {
             const titles = ["Seaspiracy (2021)", "The Minimalists: Less Is Now (2021)", "I Am Not Your Negro (2016)"];
             const contents = [
@@ -125,7 +123,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'akademik-makaleler',
         title: "Akademik Makaleler",
         description: "Sivil toplum ve sosyal etki üzerine bilimsel çalışmalar.",
-        icon: GraduationCap,
+        icon: "GraduationCap",
         items: Array.from({ length: 21 }, (_, i) => {
             const titles = ["Sosyal Girişimcilikte Etki Ölçümleme Modelleri", "Türkiye'de Gönüllülüğe Katılım Motivasyonları Üzerine Bir Araştırma", "Dijital Aktivizmin Sivil Toplum Üzerindeki Etkisi"];
             const contents = [
@@ -144,7 +142,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'sivil-toplum-sozlugu',
         title: "Sivil Toplum Sözlüğü",
         description: "Sivil toplum alanında sıkça kullanılan terimlerin açıklamaları.",
-        icon: BookOpen,
+        icon: "BookOpen",
         items: [
           { slug: 'stk', title: 'Sivil Toplum Kuruluşu (STK)', content: '<p>Devletten bağımsız olarak çalışan, kâr amacı gütmeyen ve toplumsal, çevresel veya kültürel hedefler doğrultusunda faaliyet gösteren dernek, vakıf gibi organizasyonlardır.</p>' },
           { slug: 'savunuculuk', title: 'Savunuculuk (Advocacy)', content: '<p>Belirli bir konuyu, politikayı veya ihmal edilmiş bir grubun haklarını kamuoyu ve karar vericiler nezdinde destekleme, koruma ve gündeme getirme faaliyetlerinin tümüdür.</p>' },
@@ -175,7 +173,7 @@ export const librarySections: LibrarySection[] = [
         slug: 'hangel-sozluk',
         title: "Hangel Sözlük",
         description: "Platforma özgü terimlerin ve kavramların açıklamaları.",
-        icon: BookOpen,
+        icon: 'BookOpen',
         items: Array.from({ length: 21 }, (_, i) => {
             const titles = ["Sosyal Etki Puanı", "Şeffaflık Endeksi", "hangel Katkı Payı"];
             const contents = [

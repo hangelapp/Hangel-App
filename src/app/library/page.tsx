@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import * as Icons from 'lucide-react';
 import { ArrowDownUp, ChevronRight, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
 import { librarySections, type LibrarySection } from '@/lib/library';
@@ -96,7 +97,7 @@ export default function LibraryPage() {
       {filteredAndSortedLibrarySections.length > 0 ? (
         <Accordion type="single" collapsible className="w-full space-y-4">
           {filteredAndSortedLibrarySections.map((section) => {
-              const Icon = section.icon;
+              const Icon = Icons[section.icon as keyof typeof Icons] || Icons.HelpCircle;
               return (
                   <Card key={section.title} className="overflow-hidden">
                       <AccordionItem value={section.title} className="border-b-0">
