@@ -44,12 +44,15 @@ export default function LoginPage() {
               </Button>
             </div>
 
+            <div className="mt-8 flex justify-center gap-x-8">
+                <Link href="/market" className="hover:text-white font-bold text-xl">hangel bağış</Link>
+                <Link href="/market" className="hover:text-white font-bold text-xl">hangel imece</Link>
+            </div>
+
             <nav className="relative z-10 w-full pt-8 mt-8">
                 <div className="container mx-auto px-6 text-center text-white/80">
                 <div className="flex justify-center gap-x-8 gap-y-2 flex-wrap">
                     <Link href="/timeline" className="hover:text-white font-medium">Keşfet</Link>
-                    <Link href="/market" className="hover:text-white font-bold text-lg">hangel bağış</Link>
-                    <Link href="/market" className="hover:text-white font-bold text-lg">hangel imece</Link>
                     <Link href="/market" className="hover:text-white font-medium">Markalar</Link>
                     <Link href="/volunteering" className="hover:text-white font-medium">Gönüllülük</Link>
                     <Link href="/ngos" className="hover:text-white font-medium">STK'lar</Link>
