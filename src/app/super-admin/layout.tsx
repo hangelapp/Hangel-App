@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { HangelLogo } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { SideNavItem } from '@/lib/types';
 import { UserAvatar } from '@/components/shared/user-avatar';
@@ -80,8 +79,8 @@ export default function SuperAdminLayout({
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/super-admin" className="flex items-center gap-2 font-semibold">
-              <HangelLogo className="h-6 w-6 text-primary" />
-              <span className="">Hangel Yönetim</span>
+              <span className="text-xl font-bold text-primary">hangel</span>
+              <span className="text-foreground">Yönetim</span>
             </Link>
           </div>
           <div className="flex-1">
@@ -97,7 +96,9 @@ export default function SuperAdminLayout({
             <div className="w-full flex-1">
                  {/* Optional search bar */}
             </div>
-            <UserAvatar />
+            <Link href="/profile">
+              <UserAvatar />
+            </Link>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-secondary">
           {showBackButton && (

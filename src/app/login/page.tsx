@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { HangelLogo } from '@/components/icons';
 import { ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
@@ -12,7 +11,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col h-screen p-4 bg-secondary">
       <div className="flex-1 flex flex-col items-center justify-center text-center">
-          <HangelLogo className="h-16 w-16 text-primary mb-4" />
+          <span className="text-5xl font-bold text-primary mb-4">hangel</span>
           <h1 className="text-4xl font-bold text-foreground tracking-tight">
             hangel'a Hoş Geldiniz
           </h1>

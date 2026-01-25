@@ -11,7 +11,6 @@ import {
 import type { UseEmblaCarouselType } from "embla-carousel-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { user } from "@/lib/data";
-import { HangelLogo } from "@/components/icons";
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React from 'react';
@@ -48,7 +47,7 @@ const StoryCard = ({ title, content, authorName, authorImage, backgroundImageUrl
                 <p className="text-base drop-shadow-md max-w-xs mx-auto">{content}</p>
             </div>
              <div className="text-center opacity-80 pt-12">
-                <HangelLogo className="w-8 h-8 mx-auto" />
+                <span className="text-2xl font-bold text-primary/80">hangel</span>
             </div>
         </div>
     </div>

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Menu, Bell, ShieldAlert, UserCircle } from 'lucide-react';
 import { Button } from './ui/button';
-import { HangelLogo } from './icons';
 
 export default function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
   return (
@@ -12,7 +11,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
             <Menu className="h-6 w-6" />
           </Button>
           <Link href="/timeline" className="flex items-center gap-2">
-            <HangelLogo className="h-8 w-8 text-primary" />
+            <span className="text-2xl font-bold text-primary">hangel</span>
           </Link>
         </div>
         <div className="flex items-center gap-1">

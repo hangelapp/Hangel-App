@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/dialog";
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
-import { HangelLogo } from '@/components/icons';
 
 
 const AdCarousel = () => {
@@ -243,7 +242,7 @@ export default function MarketPage() {
                             {assistantResponse && !isAssistantLoading && (
                                 <div className="flex items-start gap-3">
                                     <Avatar className="h-8 w-8 bg-primary/10">
-                                       <HangelLogo className="h-5 w-5 text-primary m-auto"/>
+                                       <Bot className="h-5 w-5 text-primary m-auto"/>
                                     </Avatar>
                                     <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">{assistantResponse}</div>
                                 </div>
@@ -251,7 +250,7 @@ export default function MarketPage() {
                              {isAssistantLoading && (
                                 <div className="flex items-start gap-3">
                                     <Avatar className="h-8 w-8 bg-primary/10">
-                                       <HangelLogo className="h-5 w-5 text-primary m-auto"/>
+                                       <Bot className="h-5 w-5 text-primary m-auto"/>
                                     </Avatar>
                                     <div className="space-y-2 p-2">
                                         <Skeleton className="h-4 w-[250px]" />
