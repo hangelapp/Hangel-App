@@ -39,8 +39,9 @@ export default function WebsitePreviewPage() {
     const { toast } = useToast();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(transparencyCriteria[0]);
-    const [selectedOpp, setSelectedOpp] = useState<Volunteering | null>(null);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+
 
     if (!ngo) {
         return <div className="h-screen flex items-center justify-center">Kuruluş bulunamadı.</div>;
@@ -94,33 +95,6 @@ export default function WebsitePreviewPage() {
     };
     const governingBody = governingBodies[ngo.type];
 
-    const OpportunityDetailDialog = ({ opportunity, open, onClose }: { opportunity: Volunteering | null, open: boolean, onClose: () => void }) => {
-        if (!opportunity) return null;
-        return (
-            <Dialog open={open} onOpenChange={onClose}>
-                <DialogContent className="sm:max-w-xl">
-                    <DialogHeader>
-                        <DialogTitle>{opportunity.title}</DialogTitle>
-                        <DialogDescription>{opportunity.organization}</DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto">
-                        <p className="text-sm text-muted-foreground">{opportunity.description}</p>
-                        <Separator />
-                        <div className="text-sm space-y-2">
-                             <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
-                            <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({opportunity.taskType})</span></div>
-                            <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.points} Sosyal Etki Puanı</span></div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="secondary" onClick={onClose}>Kapat</Button>
-                        <Button>Hemen Başvur</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        );
-    };
-
     const PostDetailDialog = ({ post, open, onClose }: { post: Post | null, open: boolean, onClose: () => void }) => {
         if (!post) return null;
         return (
@@ -172,6 +146,7 @@ export default function WebsitePreviewPage() {
                         <a href="#gonulluluk" className="hover:text-primary">Gönüllülük</a>
                         <a href="#haberler" className="hover:text-primary">Haberler</a>
                         <a href="#seffaflik" className="hover:text-primary">Şeffaflık</a>
+                        <a href="#iletisim" className="hover:text-primary">İletişim</a>
                     </nav>
                      <div className="flex items-center gap-2">
                         <Button>
@@ -193,6 +168,7 @@ export default function WebsitePreviewPage() {
                                     <SheetClose asChild><a href="#gonulluluk" className="text-lg hover:text-primary">Gönüllülük</a></SheetClose>
                                     <SheetClose asChild><a href="#haberler" className="text-lg hover:text-primary">Haberler</a></SheetClose>
                                     <SheetClose asChild><a href="#seffaflik" className="text-lg hover:text-primary">Şeffaflık</a></SheetClose>
+                                    <SheetClose asChild><a href="#iletisim" className="text-lg hover:text-primary">İletişim</a></SheetClose>
                                 </nav>
                             </SheetContent>
                         </Sheet>
@@ -251,6 +227,7 @@ export default function WebsitePreviewPage() {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {donationMethods.map(method => {
                             const Icon = method.icon;
+                            const isHangel = method.name === 'hangel ile';
                             return (
                              <Card key={method.name} className="flex flex-col bg-card">
                                 <CardHeader className="flex-row items-center gap-4">
@@ -263,8 +240,12 @@ export default function WebsitePreviewPage() {
                                     <p className="text-sm text-muted-foreground">{method.description}</p>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button variant="ghost" className="w-full justify-start text-primary hover:text-primary/90">
-                                        Destek Ol <ArrowRight className="ml-2 h-4 w-4" />
+                                    <Button asChild variant="ghost" className="w-full justify-start text-primary hover:text-primary/90">
+                                      {isHangel ? (
+                                        <Link href={`/ngos/${ngo.id}`}>Destek Ol <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                      ) : (
+                                        <a href="#">Destek Ol <ArrowRight className="ml-2 h-4 w-4" /></a>
+                                      )}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -317,7 +298,10 @@ export default function WebsitePreviewPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2">
                            <div className="p-8 md:p-12">
                                 <h3 className="text-3xl font-bold text-foreground flex items-center gap-3 mb-4"><Globe className="h-8 w-8 text-primary"/> Hakkımızda</h3>
-                                <p className="text-muted-foreground leading-relaxed">{ngo.about}</p>
+                                <p className={cn("text-muted-foreground leading-relaxed", !isAboutExpanded && "line-clamp-4")}>{ngo.about}</p>
+                                <Button variant="link" className="p-0 h-auto mt-2" onClick={() => setIsAboutExpanded(!isAboutExpanded)}>
+                                    {isAboutExpanded ? 'Daha Az Göster' : 'Devamını Oku'}
+                                </Button>
                                 <h4 className="text-xl font-bold text-foreground mt-8 mb-4">Odak Alanlarımız</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {ngo.beneficiaryGroups.map(group => (
@@ -378,8 +362,8 @@ export default function WebsitePreviewPage() {
                                             <p className="text-sm text-muted-foreground line-clamp-3">{opp.description}</p>
                                         </CardContent>
                                         <CardFooter>
-                                            <Button onClick={() => setSelectedOpp(opp)} variant="outline" className="w-full">
-                                                Detayları Gör
+                                            <Button asChild variant="outline" className="w-full">
+                                                <Link href={`/volunteering/${opp.id}`}>Hemen Başvur</Link>
                                             </Button>
                                         </CardFooter>
                                     </Card>
@@ -420,13 +404,15 @@ export default function WebsitePreviewPage() {
 
                 <section id="sdg" className="scroll-mt-20">
                     <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center flex items-center justify-center gap-3 text-foreground">
-                        <Target className="h-8 w-8 text-primary" /> Desteklenen SKA'lar
+                        <Target className="h-8 w-8 text-primary" /> Sürdürülebilir kalkınma için Küresel Amaçlar
                     </h2>
                     <div className="flex flex-wrap justify-center gap-4">
                         {ngo.supportedSDGs.map((sdg) => (
-                            <div key={sdg} className="p-3 border rounded-lg text-center bg-card flex flex-col items-center justify-center w-36 h-36">
+                           <a href="https://www.kureselamaclar.org" target="_blank" rel="noopener noreferrer" key={sdg}>
+                            <div className="p-3 border rounded-lg text-center bg-card flex flex-col items-center justify-center w-36 h-36 hover:bg-accent transition-colors">
                                 <p className="text-sm font-semibold text-foreground">{sdg}</p>
                             </div>
+                           </a>
                         ))}
                     </div>
                 </section>
@@ -511,7 +497,7 @@ export default function WebsitePreviewPage() {
                 </section>
             </main>
 
-            <footer className="bg-white dark:bg-gray-800 border-t mt-12 py-8">
+            <footer id="iletisim" className="bg-white dark:bg-gray-800 border-t mt-12 py-8">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-left">
                         <div>
@@ -532,7 +518,7 @@ export default function WebsitePreviewPage() {
                                 <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Linkedin /></a>
                             </div>
                         </div>
-                        <div>
+                         <div>
                              <h4 className="font-bold text-foreground mb-4">Bağlı Olunan ve Üye Platformlar</h4>
                              <div className="space-y-4">
                                 {governingBody && (
@@ -560,13 +546,12 @@ export default function WebsitePreviewPage() {
                     <div className="border-t pt-8 text-center text-xs text-muted-foreground">
                         <p>&copy; {new Date().getFullYear()} {ngo.name}. Tüm hakları saklıdır.</p>
                         <p className="mt-2 flex items-center justify-center gap-1">
-                            <span className="font-bold">hangel</span> tarafından güçlendirilmiştir.
+                            <a href="https://hangel.org" target="_blank" rel="noopener noreferrer" className="underline font-semibold">hangel</a> tarafından güçlendirilmiştir.
                         </p>
                     </div>
                 </div>
             </footer>
 
-            <OpportunityDetailDialog opportunity={selectedOpp} open={!!selectedOpp} onClose={() => setSelectedOpp(null)} />
             <PostDetailDialog post={selectedPost} open={!!selectedPost} onClose={() => setSelectedPost(null)} />
         </div>
     );
