@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,6 +27,13 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 export default function AccessibilitySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
+
+    const [highContrast, setHighContrast] = useState(false);
+    const [fontSize, setFontSize] = useState('normal');
+    const [colorFilter, setColorFilter] = useState('yok');
+    const [dyslexiaFont, setDyslexiaFont] = useState(false);
+    const [reduceMotion, setReduceMotion] = useState(false);
+    const [screenReader, setScreenReader] = useState(true);
 
     const handleSave = () => {
         toast({
@@ -56,10 +64,10 @@ export default function AccessibilitySettingsPage() {
                         icon={Contrast} 
                         iconColor="bg-indigo-500" 
                     >
-                        <Switch id="a11y-contrast" />
+                        <Switch id="a11y-contrast" checked={highContrast} onCheckedChange={setHighContrast} />
                     </SettingsItem>
                      <SettingsItem label="Yazı Tipi Boyutu" icon={Type} iconColor="bg-indigo-500">
-                        <Select defaultValue='normal'>
+                        <Select value={fontSize} onValueChange={setFontSize}>
                           <SelectTrigger className='w-auto border-none bg-accent focus:ring-0'>
                             <SelectValue />
                           </SelectTrigger>
@@ -71,7 +79,7 @@ export default function AccessibilitySettingsPage() {
                         </Select>
                     </SettingsItem>
                      <SettingsItem label="Renk Körlüğü Filtresi" icon={Eye} iconColor="bg-indigo-500">
-                        <Select defaultValue='yok'>
+                        <Select value={colorFilter} onValueChange={setColorFilter}>
                           <SelectTrigger className='w-auto border-none bg-accent focus:ring-0'>
                             <SelectValue />
                           </SelectTrigger>
@@ -89,7 +97,7 @@ export default function AccessibilitySettingsPage() {
                         icon={Pilcrow} 
                         iconColor="bg-indigo-500" 
                     >
-                        <Switch id="a11y-dyslexia" />
+                        <Switch id="a11y-dyslexia" checked={dyslexiaFont} onCheckedChange={setDyslexiaFont} />
                     </SettingsItem>
                 </div>
             </CardContent>
@@ -107,7 +115,7 @@ export default function AccessibilitySettingsPage() {
                         icon={MinusCircle} 
                         iconColor="bg-teal-500"
                     >
-                         <Switch id="a11y-animations" />
+                         <Switch id="a11y-animations" checked={reduceMotion} onCheckedChange={setReduceMotion} />
                     </SettingsItem>
                      <SettingsItem
                         label="Ekran Okuyucu İyileştirmeleri"
@@ -115,7 +123,7 @@ export default function AccessibilitySettingsPage() {
                         icon={Ear} 
                         iconColor="bg-teal-500"
                     >
-                         <Switch id="a11y-screenreader" defaultChecked />
+                         <Switch id="a11y-screenreader" checked={screenReader} onCheckedChange={setScreenReader} />
                     </SettingsItem>
                 </div>
             </CardContent>

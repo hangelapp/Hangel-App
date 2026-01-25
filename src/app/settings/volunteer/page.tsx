@@ -99,6 +99,23 @@ export default function VolunteerSettingsPage() {
     const [faculty, setFaculty] = useState('');
     const [department, setDepartment] = useState('');
     
+    const [sector, setSector] = useState(user.volunteerInfo.sector ?? '');
+    const [profession, setProfession] = useState(user.volunteerInfo.profession ?? '');
+
+    const [domesticTravel, setDomesticTravel] = useState(!user.volunteerInfo.travelInfo.domesticObstacle);
+    const [internationalTravel, setInternationalTravel] = useState(!user.volunteerInfo.travelInfo.internationalObstacle);
+
+    const [emergencyContact1Name, setEmergencyContact1Name] = useState(user.volunteerInfo.emergency.emergencyContacts[0]?.name || '');
+    const [emergencyContact1Phone, setEmergencyContact1Phone] = useState(user.volunteerInfo.emergency.emergencyContacts[0]?.phone || '');
+    const [emergencyContact2Name, setEmergencyContact2Name] = useState(user.volunteerInfo.emergency.emergencyContacts[1]?.name || '');
+    const [emergencyContact2Phone, setEmergencyContact2Phone] = useState(user.volunteerInfo.emergency.emergencyContacts[1]?.phone || '');
+
+    const [emergencyAvailable, setEmergencyAvailable] = useState(user.volunteerInfo.emergency.available);
+    const [chronicIllness, setChronicIllness] = useState(user.volunteerInfo.emergency.hasChronicIllness);
+    const [regularMedication, setRegularMedication] = useState(user.volunteerInfo.emergency.usesRegularMedication);
+    const [physicalLimitation, setPhysicalLimitation] = useState(user.volunteerInfo.emergency.hasPhysicalLimitation);
+
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         toast({
@@ -175,7 +192,7 @@ export default function VolunteerSettingsPage() {
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="sector">Çalıştığınız Sektör</Label>
-                                <Select defaultValue={user.volunteerInfo.sector ?? ''}>
+                                <Select value={sector} onValueChange={setSector}>
                                     <SelectTrigger id="sector"><SelectValue placeholder="Sektör seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -184,7 +201,7 @@ export default function VolunteerSettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="profession">Çalıştığınız Pozisyon</Label>
-                                <Select defaultValue={user.volunteerInfo.profession ?? ''}>
+                                <Select value={profession} onValueChange={setProfession}>
                                     <SelectTrigger id="profession"><SelectValue placeholder="Pozisyon seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allPositions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -222,11 +239,11 @@ export default function VolunteerSettingsPage() {
                      <CardContent className="space-y-4">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="domestic-travel" className="font-medium">Yurtiçi seyahat engelim yok</Label>
-                           <Switch id="domestic-travel" defaultChecked={!user.volunteerInfo.travelInfo.domesticObstacle} />
+                           <Switch id="domestic-travel" checked={domesticTravel} onCheckedChange={setDomesticTravel} />
                         </div>
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="international-travel" className="font-medium">Yurtdışı seyahat engelim yok</Label>
-                           <Switch id="international-travel" defaultChecked={!user.volunteerInfo.travelInfo.internationalObstacle} />
+                           <Switch id="international-travel" checked={internationalTravel} onCheckedChange={setInternationalTravel} />
                         </div>
                          <div className="space-y-2">
                            <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={visas} onSelectedChange={setVisas} />
@@ -245,11 +262,11 @@ export default function VolunteerSettingsPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-name-1">Ad Soyad</Label>
-                                    <Input id="emergency-contact-name-1" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.name} />
+                                    <Input id="emergency-contact-name-1" value={emergencyContact1Name} onChange={(e) => setEmergencyContact1Name(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
-                                    <Input id="emergency-contact-phone-1" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
+                                    <Input id="emergency-contact-phone-1" type="tel" value={emergencyContact1Phone} onChange={(e) => setEmergencyContact1Phone(e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -258,11 +275,11 @@ export default function VolunteerSettingsPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-name-2">Ad Soyad</Label>
-                                    <Input id="emergency-contact-name-2" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.name || ''} />
+                                    <Input id="emergency-contact-name-2" value={emergencyContact2Name} onChange={(e) => setEmergencyContact2Name(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-phone-2">Telefon</Label>
-                                    <Input id="emergency-contact-phone-2" type="tel" defaultValue={user.volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} />
+                                    <Input id="emergency-contact-phone-2" type="tel" value={emergencyContact2Phone} onChange={(e) => setEmergencyContact2Phone(e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -276,18 +293,18 @@ export default function VolunteerSettingsPage() {
                     <CardContent className="space-y-2">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
-                           <Switch id="emergency-available" defaultChecked={user.volunteerInfo.emergency.available} />
+                           <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={setEmergencyAvailable} />
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="chronic-illness" defaultChecked={user.volunteerInfo.emergency.hasChronicIllness} />
+                            <Checkbox id="chronic-illness" checked={chronicIllness} onCheckedChange={(checked) => setChronicIllness(checked as boolean)} />
                             <Label htmlFor="chronic-illness">Kronik bir rahatsızlığım var.</Label>
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="regular-medication" defaultChecked={user.volunteerInfo.emergency.usesRegularMedication} />
+                            <Checkbox id="regular-medication" checked={regularMedication} onCheckedChange={(checked) => setRegularMedication(checked as boolean)} />
                             <Label htmlFor="regular-medication">Düzenli olarak kullandığım bir ilaç var.</Label>
                         </div>
                          <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="physical-limitation" defaultChecked={user.volunteerInfo.emergency.hasPhysicalLimitation} />
+                            <Checkbox id="physical-limitation" checked={physicalLimitation} onCheckedChange={(checked) => setPhysicalLimitation(checked as boolean)} />
                             <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
                         </div>
                     </CardContent>

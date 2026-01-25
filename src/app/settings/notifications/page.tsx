@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -37,9 +38,30 @@ const notificationGroups = [
   },
 ];
 
+type NotificationSettings = {
+    [key: string]: boolean;
+};
+
+const initialSettings: NotificationSettings = {
+    'app-status-push': true, 'app-status-email': true, 'app-status-sms': false,
+    'new-opportunity-push': true, 'new-opportunity-email': false, 'new-opportunity-sms': false,
+    'event-reminder-push': true, 'event-reminder-email': true, 'event-reminder-sms': true,
+    'donation-success-push': true, 'donation-success-email': true, 'donation-success-sms': false,
+    'new-badge-push': true, 'new-badge-email': false, 'new-badge-sms': false,
+    'impact-report-push': false, 'impact-report-email': true, 'impact-report-sms': false,
+    'announcements-push': true, 'announcements-email': true, 'announcements-sms': false,
+    'newsletter-push': false, 'newsletter-email': true, 'newsletter-sms': false,
+    'social-push': true, 'social-email': false, 'social-sms': false,
+};
+
 export default function NotificationSettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [settings, setSettings] = useState<NotificationSettings>(initialSettings);
+
+  const handleToggle = (id: string) => {
+      setSettings(prev => ({...prev, [id]: !prev[id] }));
+  };
 
   const handleSave = () => {
     toast({
@@ -76,9 +98,9 @@ export default function NotificationSettingsPage() {
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <label htmlFor={`${item.id}-push`} className="font-medium text-sm flex-1">{item.label}</label>
                     <div className="flex items-center gap-4">
-                        <Switch id={`${item.id}-push`} defaultChecked />
-                        <Switch id={`${item.id}-email`} />
-                        <Switch id={`${item.id}-sms`} />
+                        <Switch id={`${item.id}-push`} checked={settings[`${item.id}-push`]} onCheckedChange={() => handleToggle(`${item.id}-push`)} />
+                        <Switch id={`${item.id}-email`} checked={settings[`${item.id}-email`]} onCheckedChange={() => handleToggle(`${item.id}-email`)} />
+                        <Switch id={`${item.id}-sms`} checked={settings[`${item.id}-sms`]} onCheckedChange={() => handleToggle(`${item.id}-sms`)} />
                     </div>
                   </div>
                 ))}

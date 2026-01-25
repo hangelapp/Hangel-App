@@ -24,8 +24,25 @@ const districts: { [key: string]: string[] } = {
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
-  const [selectedCity, setSelectedCity] = useState(user.personalInfo.address.city);
   const { toast } = useToast();
+
+  const [name, setName] = useState(user.name);
+  const [username, setUsername] = useState(user.username.replace('@', ''));
+  const [email, setEmail] = useState(user.personalInfo.email);
+  const [phone, setPhone] = useState(user.personalInfo.phone);
+  const [birthDate, setBirthDate] = useState(user.personalInfo.birthDate);
+  const [gender, setGender] = useState(user.personalInfo.gender);
+  const [nationality, setNationality] = useState(user.personalInfo.nationality);
+  const [bloodType, setBloodType] = useState(user.personalInfo.bloodType);
+  const [city, setCity] = useState(user.personalInfo.address.city);
+  const [district, setDistrict] = useState(user.personalInfo.address.district);
+  const [fullAddress, setFullAddress] = useState(user.personalInfo.address.fullAddress);
+  const [website, setWebsite] = useState(user.personalInfo.website ?? '');
+  const [linkedin, setLinkedin] = useState(user.personalInfo.social?.linkedin ?? '');
+  const [github, setGithub] = useState(user.personalInfo.social?.github ?? '');
+  const [twitter, setTwitter] = useState(user.personalInfo.social?.twitter ?? '');
+  const [instagram, setInstagram] = useState(user.personalInfo.social?.instagram ?? '');
+  const [behance, setBehance] = useState(user.personalInfo.social?.behance ?? '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,12 +71,12 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Ad Soyad</Label>
-                        <Input id="name" defaultValue={user.name} />
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="username">Kullanıcı Adı (Profil Linki)</Label>
                         <div className="relative">
-                            <Input id="username" defaultValue={user.username.replace('@', '')} className="pl-8"/>
+                            <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} className="pl-8"/>
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">@</span>
                         </div>
                     </div>
@@ -67,21 +84,21 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="email">E-posta</Label>
-                        <Input id="email" type="email" defaultValue={user.personalInfo.email} />
+                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="phone">Telefon</Label>
-                        <Input id="phone" type="tel" defaultValue={user.personalInfo.phone} />
+                        <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
                     </div>
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="birthDate">Doğum Tarihi</Label>
-                        <Input id="birthDate" type="date" defaultValue={user.personalInfo.birthDate} />
+                        <Input id="birthDate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="gender">Cinsiyet</Label>
-                        <Select defaultValue={user.personalInfo.gender}>
+                        <Select value={gender} onValueChange={setGender}>
                             <SelectTrigger id="gender"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Erkek">Erkek</SelectItem>
@@ -94,7 +111,7 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="nationality">Uyruk</Label>
-                        <Select defaultValue={user.personalInfo.nationality}>
+                        <Select value={nationality} onValueChange={setNationality}>
                             <SelectTrigger id="nationality"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 {nationalities.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
@@ -103,7 +120,7 @@ export default function ProfileSettingsPage() {
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="bloodType">Kan Grubu</Label>
-                         <Select defaultValue={user.personalInfo.bloodType}>
+                         <Select value={bloodType} onValueChange={setBloodType}>
                             <SelectTrigger id="bloodType"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 {bloodGroups.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
@@ -122,7 +139,7 @@ export default function ProfileSettingsPage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="city">Şehir</Label>
-                        <Select defaultValue={user.personalInfo.address.city} onValueChange={setSelectedCity}>
+                        <Select value={city} onValueChange={setCity}>
                             <SelectTrigger id="city"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -131,17 +148,17 @@ export default function ProfileSettingsPage() {
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="district">İlçe</Label>
-                        <Select defaultValue={user.personalInfo.address.district} disabled={!selectedCity}>
+                        <Select value={district} onValueChange={setDistrict} disabled={!city}>
                             <SelectTrigger id="district"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                                {selectedCity && districts[selectedCity] && districts[selectedCity].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                {city && districts[city] && districts[city].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="fullAddress">Açık Adres</Label>
-                    <Input id="fullAddress" placeholder="Mahalle, cadde, sokak, no..." defaultValue={user.personalInfo.address.fullAddress} />
+                    <Input id="fullAddress" placeholder="Mahalle, cadde, sokak, no..." value={fullAddress} onChange={(e) => setFullAddress(e.target.value)} />
                 </div>
             </CardContent>
         </Card>
@@ -156,42 +173,42 @@ export default function ProfileSettingsPage() {
                     <Label htmlFor="website">Web Sitesi</Label>
                     <div className="flex items-center gap-2">
                         <Globe className="h-5 w-5 text-muted-foreground" />
-                        <Input id="website" placeholder="https://..." defaultValue={user.personalInfo.website ?? ''} />
+                        <Input id="website" placeholder="https://..." value={website} onChange={(e) => setWebsite(e.target.value)} />
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="linkedin">LinkedIn</Label>
                     <div className="flex items-center gap-2">
                         <Linkedin className="h-5 w-5 text-muted-foreground" />
-                        <Input id="linkedin" placeholder="linkedin.com/in/kullaniciadi" defaultValue={user.personalInfo.social?.linkedin ?? ''} />
+                        <Input id="linkedin" placeholder="linkedin.com/in/kullaniciadi" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} />
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="github">GitHub</Label>
                     <div className="flex items-center gap-2">
                         <Github className="h-5 w-5 text-muted-foreground" />
-                        <Input id="github" placeholder="kullaniciadi" defaultValue={user.personalInfo.social?.github ?? ''} />
+                        <Input id="github" placeholder="kullaniciadi" value={github} onChange={(e) => setGithub(e.target.value)} />
                     </div>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="twitter">X (Twitter)</Label>
                     <div className="flex items-center gap-2">
                         <Twitter className="h-5 w-5 text-muted-foreground" />
-                        <Input id="twitter" placeholder="kullaniciadi" defaultValue={user.personalInfo.social?.twitter ?? ''} />
+                        <Input id="twitter" placeholder="kullaniciadi" value={twitter} onChange={(e) => setTwitter(e.target.value)} />
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="instagram">Instagram</Label>
                     <div className="flex items-center gap-2">
                         <Instagram className="h-5 w-5 text-muted-foreground" />
-                        <Input id="instagram" placeholder="kullaniciadi" defaultValue={user.personalInfo.social?.instagram ?? ''} />
+                        <Input id="instagram" placeholder="kullaniciadi" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="behance">Behance</Label>
                     <div className="flex items-center gap-2">
                         <Palette className="h-5 w-5 text-muted-foreground" />
-                        <Input id="behance" placeholder="kullaniciadi" defaultValue={user.personalInfo.social?.behance ?? ''} />
+                        <Input id="behance" placeholder="kullaniciadi" value={behance} onChange={(e) => setBehance(e.target.value)} />
                     </div>
                 </div>
             </CardContent>

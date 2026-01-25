@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,12 +18,25 @@ const activeSessions = [
 export default function SecuritySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Add validation logic here
+        if (newPassword && newPassword !== confirmPassword) {
+            toast({
+                variant: "destructive",
+                title: "Hata",
+                description: "Yeni şifreler eşleşmiyor.",
+            });
+            return;
+        }
         toast({
             title: "Ayarlar Kaydedildi",
-            description: "Şifreniz başarıyla güncellendi.",
+            description: "Güvenlik ayarlarınız başarıyla güncellendi.",
         });
     };
 
@@ -44,15 +58,15 @@ export default function SecuritySettingsPage() {
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="current-password">Mevcut Şifre</Label>
-                            <Input id="current-password" type="password" />
+                            <Input id="current-password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="new-password">Yeni Şifre</Label>
-                            <Input id="new-password" type="password" />
+                            <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="confirm-password">Yeni Şifre (Tekrar)</Label>
-                            <Input id="confirm-password" type="password" />
+                            <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                         </div>
                     </CardContent>
                 </Card>
@@ -68,7 +82,10 @@ export default function SecuritySettingsPage() {
                              <Label htmlFor="2fa-switch">Telefon Numarası ile Doğrulama</Label>
                              <p className="text-xs text-muted-foreground">Giriş yaparken telefonunuza bir kod gönderilir.</p>
                            </div>
-                            <Switch id="2fa-switch" onCheckedChange={(checked) => toast({ title: 'İki Adımlı Doğrulama', description: checked ? 'Aktif edildi.' : 'Devre dışı bırakıldı.'})} />
+                            <Switch id="2fa-switch" checked={twoFactorEnabled} onCheckedChange={(checked) => {
+                                setTwoFactorEnabled(checked);
+                                toast({ title: 'İki Adımlı Doğrulama', description: checked ? 'Aktif edildi.' : 'Devre dışı bırakıldı.'});
+                            }} />
                         </div>
                     </CardContent>
                 </Card>

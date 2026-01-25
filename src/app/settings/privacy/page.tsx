@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -25,6 +26,16 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 export default function PrivacySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
+    
+    const [isPrivate, setIsPrivate] = useState(false);
+    const [hideScore, setHideScore] = useState(false);
+    const [hideAbout, setHideAbout] = useState(false);
+    const [hideVolunteer, setHideVolunteer] = useState(false);
+    const [hideBadges, setHideBadges] = useState(false);
+    const [hideCertificates, setHideCertificates] = useState(false);
+    const [hidePosts, setHidePosts] = useState(false);
+    const [hideDonations, setHideDonations] = useState(false);
+
 
     const handleSave = () => {
         toast({
@@ -55,7 +66,7 @@ export default function PrivacySettingsPage() {
                         icon={Lock} 
                         iconColor="bg-red-500" 
                     >
-                        <Switch id="private-profile" />
+                        <Switch id="private-profile" checked={isPrivate} onCheckedChange={setIsPrivate} />
                     </SettingsItem>
                 </div>
             </CardContent>
@@ -74,7 +85,7 @@ export default function PrivacySettingsPage() {
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
-                         <Switch id="hide-score" />
+                         <Switch id="hide-score" checked={hideScore} onCheckedChange={setHideScore} />
                     </SettingsItem>
                     <SettingsItem
                         label="Hakkında Bilgilerimi Gizle"
@@ -82,7 +93,7 @@ export default function PrivacySettingsPage() {
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
-                         <Switch id="hide-about" />
+                         <Switch id="hide-about" checked={hideAbout} onCheckedChange={setHideAbout} />
                     </SettingsItem>
                     <SettingsItem
                         label="Gönüllülük Bilgilerimi Gizle"
@@ -90,7 +101,7 @@ export default function PrivacySettingsPage() {
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
-                         <Switch id="hide-volunteer" />
+                         <Switch id="hide-volunteer" checked={hideVolunteer} onCheckedChange={setHideVolunteer} />
                     </SettingsItem>
                     <SettingsItem
                         label="Rozetlerimi Gizle"
@@ -98,7 +109,7 @@ export default function PrivacySettingsPage() {
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
-                         <Switch id="hide-badges" />
+                         <Switch id="hide-badges" checked={hideBadges} onCheckedChange={setHideBadges} />
                     </SettingsItem>
                     <SettingsItem
                         label="Sertifikalarımı Gizle"
@@ -106,7 +117,7 @@ export default function PrivacySettingsPage() {
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
-                         <Switch id="hide-certificates" />
+                         <Switch id="hide-certificates" checked={hideCertificates} onCheckedChange={setHideCertificates} />
                     </SettingsItem>
                     <SettingsItem
                         label="Gönderilerimi Gizle"
@@ -114,7 +125,7 @@ export default function PrivacySettingsPage() {
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
-                         <Switch id="hide-posts" />
+                         <Switch id="hide-posts" checked={hidePosts} onCheckedChange={setHidePosts} />
                     </SettingsItem>
                      <SettingsItem
                         label="Bağış Aktivitelerimi Gizle"
@@ -122,7 +133,7 @@ export default function PrivacySettingsPage() {
                         icon={Shield} 
                         iconColor="bg-green-500"
                     >
-                         <Switch id="hide-donations" />
+                         <Switch id="hide-donations" checked={hideDonations} onCheckedChange={setHideDonations} />
                     </SettingsItem>
                 </div>
             </CardContent>
