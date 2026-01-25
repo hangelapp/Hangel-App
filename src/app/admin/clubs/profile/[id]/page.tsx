@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
@@ -33,6 +34,7 @@ export default function ClubProfilePage() {
   const id = params.id as string;
   const club = studentClubs.find(c => c.id === id);
   const [profileUrl, setProfileUrl] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -83,7 +85,7 @@ export default function ClubProfilePage() {
                 </div>
             </div>
             <div className="flex gap-2">
-                <Button className="flex-1">Kulübe Katıl</Button>
+                <Button className="flex-1" onClick={() => toast({ title: 'Başvurunuz alındı!', description: 'Kulüp yönetimi başvurunuzu inceleyecektir.'})}>Kulübe Katıl</Button>
             </div>
         </div>
       </div>

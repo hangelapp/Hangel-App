@@ -9,7 +9,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { studentClubs } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
 
 
@@ -60,6 +60,7 @@ export default function StudentClubsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof StudentClub | 'members' | 'points'; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [universityFilter, setUniversityFilter] = useState<string[]>([]);
 
    const sampleEvents = [
         { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
@@ -76,6 +77,11 @@ export default function StudentClubsPage() {
     })));
   }, []);
   
+  const allUniversities = useMemo(() => {
+    const uniqueUniversities = [...new Set(studentClubs.map(club => club.university))];
+    return uniqueUniversities.sort((a, b) => a.localeCompare(b));
+  }, []);
+
   const sortedClubs = useMemo(() => {
     let sortableClubs = [...clubs];
     sortableClubs.sort((a, b) => {
@@ -98,13 +104,22 @@ export default function StudentClubsPage() {
   }, [clubs, sortConfig]);
 
   const finalClubs = useMemo(() => {
-    if (!searchTerm.trim()) return sortedClubs;
+    let clubsToFilter = [...sortedClubs];
+    
+    if (universityFilter.length > 0) {
+      clubsToFilter = clubsToFilter.filter(club => universityFilter.includes(club.university));
+    }
+    
+    if (!searchTerm.trim()) {
+      return clubsToFilter;
+    }
+
     const lowercased = searchTerm.toLowerCase();
-    return sortedClubs.filter(club => 
+    return clubsToFilter.filter(club => 
         club.name.toLowerCase().includes(lowercased) ||
         club.university.toLowerCase().includes(lowercased)
     );
-  }, [sortedClubs, searchTerm]);
+  }, [sortedClubs, searchTerm, universityFilter]);
 
   const finalEvents = useMemo(() => {
       if (!searchTerm.trim()) return sampleEvents;
@@ -184,9 +199,30 @@ export default function StudentClubsPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
-                <Filter className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                        <Filter className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Okula Göre Filtrele</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {allUniversities.map(uni => (
+                        <DropdownMenuCheckboxItem
+                            key={uni}
+                            checked={universityFilter.includes(uni)}
+                            onCheckedChange={(checked) => {
+                                setUniversityFilter(prev => 
+                                    checked ? [...prev, uni] : prev.filter(u => u !== uni)
+                                );
+                            }}
+                        >
+                            {uni}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="h-11 w-11">
