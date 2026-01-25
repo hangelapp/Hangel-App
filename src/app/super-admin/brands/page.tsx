@@ -37,6 +37,7 @@ export default function BrandsPage() {
                            <div className="flex items-center gap-2">
                                <span className="text-sm font-bold text-primary">%{brand.donationRate}</span>
                                <Button variant="outline" size="sm">Profili Düzenle</Button>
+                               <Button variant="outline" size="sm">Pasife Al</Button>
                                <Button variant="destructive" size="sm">Kaldır</Button>
                            </div>
                        </div>
