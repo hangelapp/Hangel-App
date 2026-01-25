@@ -13,8 +13,7 @@ type BrandWithStatus = Brand & { status: 'Aktif' | 'Pasif' };
 
 export default function BrandsPage() {
     const { toast } = useToast();
-    const initialBrands = allEntityLists.filter(e => e.type === 'brand');
-    const [brands, setBrands] = useState<BrandWithStatus[]>(initialBrands.map(b => ({...b, status: 'Aktif'})));
+    const [brands, setBrands] = useState<BrandWithStatus[]>(allEntityLists.map(b => ({...b, status: 'Aktif'})));
 
     const handleToggleActive = (id: string) => {
         setBrands(prevBrands => prevBrands.map(b => {
@@ -43,7 +42,7 @@ export default function BrandsPage() {
                 <CardHeader>
                     <CardTitle>Tüm Markalar</CardTitle>
                     <CardDescription>
-                        Platformdaki tüm markaları görüntüleyin, düzenleyin veya kaldırın.
+                        Platformdaki tüm markaları, kooperatifleri ve sosyal işletmeleri görüntüleyin, düzenleyin veya kaldırın.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -56,12 +55,12 @@ export default function BrandsPage() {
                                </Avatar>
                                <div>
                                    <p className="font-semibold">{brand.name}</p>
-                                   <p className="text-sm text-muted-foreground">{brand.category}</p>
+                                   <p className="text-sm text-muted-foreground">{brand.category} - <span className="capitalize">{brand.type}</span></p>
                                </div>
                            </div>
                            <div className="flex items-center gap-2">
                                <span className="text-sm font-bold text-primary">%{brand.donationRate}</span>
-                               <Button variant="outline" size="sm">Profili Düzenle</Button>
+                               <Button variant="outline" size="sm" onClick={() => toast({ title: "Bu özellik yakında eklenecektir."})}>Profili Düzenle</Button>
                                <Button variant="outline" size="sm" onClick={() => handleToggleActive(brand.id)}>
                                  {brand.status === 'Aktif' ? 'Pasife Al' : 'Aktif Et'}
                                </Button>
