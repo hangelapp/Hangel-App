@@ -5,44 +5,50 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-
-const libraryItems = [
-    { id: 1, title: 'Etkili Gönüllülük İçin 5 Adım', type: 'Rehber' },
-    { id: 2, title: 'Sapiens: Hayvanlardan Tanrılara', type: 'Kitap' },
-    { id: 3, title: 'Captain Fantastic (2016)', type: 'Film' },
-];
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { librarySections } from "@/lib/library";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { PlusCircle } from "lucide-react";
 
 export default function LibraryPage() {
     return (
-        <>
-            <h1 className="text-lg font-semibold md:text-2xl">Kütüphane Yönetimi</h1>
-            <Card>
-                <CardHeader className="flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>Kütüphane İçerikleri</CardTitle>
-                        <CardDescription>
-                            Kütüphaneye yeni içerikler ekleyin, mevcutları düzenleyin veya silin.
-                        </CardDescription>
-                    </div>
-                    <Button>Yeni İçerik Ekle</Button>
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <h1 className="text-lg font-semibold md:text-2xl">Kütüphane Yönetimi</h1>
+                <Button><PlusCircle className="mr-2 h-4 w-4"/>Yeni İçerik Ekle</Button>
+            </div>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Kütüphane İçerikleri</CardTitle>
+                    <CardDescription>
+                        Kütüphaneye yeni içerikler ekleyin, mevcutları düzenleyin veya silin.
+                    </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                   {libraryItems.map(item => (
-                       <div key={item.id} className="p-3 border rounded-lg flex items-center justify-between">
-                           <div>
-                               <p className="font-semibold">{item.title}</p>
-                               <p className="text-sm text-muted-foreground">{item.type}</p>
-                           </div>
-                           <div className="flex gap-2">
-                               <Button variant="outline" size="sm">Düzenle</Button>
-                               <Button variant="destructive" size="sm">Sil</Button>
-                           </div>
-                       </div>
-                   ))}
+                <CardContent>
+                    <Accordion type="single" collapsible className="w-full space-y-2">
+                        {librarySections.map(section => (
+                            <AccordionItem key={section.slug} value={section.slug} className="border rounded-lg px-4 bg-background">
+                                <AccordionTrigger className="hover:no-underline text-left font-bold">{section.title} ({section.items.length})</AccordionTrigger>
+                                <AccordionContent className="pt-2">
+                                    <div className="space-y-2 border-t pt-4">
+                                        {section.items.slice(0,5).map(item => ( // show first 5 for brevity
+                                            <div key={item.slug} className="p-2 border-b flex justify-between items-center">
+                                                <p className="text-sm">{item.title}</p>
+                                                <div className="flex gap-2">
+                                                    <Button variant="outline" size="sm">Düzenle</Button>
+                                                    <Button variant="destructive" size="sm">Sil</Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {section.items.length > 5 && <p className="text-center text-sm text-muted-foreground pt-2">...ve {section.items.length - 5} diğer içerik.</p>}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
                 </CardContent>
             </Card>
-        </>
+        </div>
     )
 }

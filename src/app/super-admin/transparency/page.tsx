@@ -12,33 +12,35 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 
 const documents = {
-    ngo: [
-        { id: 1, org: 'TEMA Vakfı', doc: '2023 Faaliyet Raporu', status: 'Onay Bekliyor' },
-        { id: 2, org: 'Ahbap Derneği', doc: 'Vakıf Senedi Güncellemesi', status: 'Onaylandı' },
+    pending: [
+        { id: 1, org: 'TEMA Vakfı', doc: '2023 Faaliyet Raporu', date: '2024-07-22', type: 'STK' },
+        { id: 3, org: 'İTÜ Girişimcilik Kulübü', doc: 'Yönetim Kurulu Listesi', date: '2024-07-21', type: 'Kulüp' },
     ],
-    club: [
-        { id: 3, org: 'İTÜ Girişimcilik Kulübü', doc: 'Yönetim Kurulu Listesi', status: 'Onay Bekliyor' },
+    approved: [
+        { id: 2, org: 'Ahbap Derneği', doc: 'Vakıf Senedi Güncellemesi', date: '2024-07-20', approver: 'İsmail H.', type: 'STK' },
     ]
 }
 
-const DocumentItem = ({ item }: { item: { id: number, org: string, doc: string, status: string } }) => (
-    <div className="p-3 border rounded-lg flex items-center justify-between">
+const DocumentItem = ({ item, isPending }: { item: { id: number, org: string, doc: string, date: string, approver?: string }, isPending: boolean }) => (
+    <div className="p-3 border rounded-lg flex items-center justify-between gap-4">
         <div>
             <p className="font-semibold">{item.doc}</p>
-            <p className="text-sm text-muted-foreground">{item.org}</p>
+            <p className="text-sm text-muted-foreground">{item.org} - Yükleme: {item.date}</p>
         </div>
         <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-amber-600">{item.status}</span>
-            <Button variant="secondary" size="sm">İncele</Button>
-            {item.status === 'Onay Bekliyor' && (
+            {isPending ? (
                 <>
+                    <Button variant="secondary" size="sm">İncele</Button>
                     <Button size="sm" className="bg-green-600 hover:bg-green-700">Onayla</Button>
                     <Button variant="destructive" size="sm">Reddet</Button>
                 </>
+            ) : (
+                <div className="text-sm text-muted-foreground">
+                    <p>Onaylayan: {item.approver}</p>
+                </div>
             )}
         </div>
     </div>
@@ -49,34 +51,34 @@ export default function TransparencyPage() {
     return (
         <>
             <h1 className="text-lg font-semibold md:text-2xl">Şeffaflık Yönetimi</h1>
-            <Tabs defaultValue="ngo">
+            <Tabs defaultValue="pending">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="ngo">STK'lar</TabsTrigger>
-                    <TabsTrigger value="club">Öğrenci Kulüpleri</TabsTrigger>
+                    <TabsTrigger value="pending">Onay Bekleyen Belgeler ({documents.pending.length})</TabsTrigger>
+                    <TabsTrigger value="approved">Onaylanmış Belgeler ({documents.approved.length})</TabsTrigger>
                 </TabsList>
-                <TabsContent value="ngo" className="mt-4">
+                <TabsContent value="pending" className="mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>STK Şeffaflık Belgeleri</CardTitle>
+                            <CardTitle>Onay Bekleyen Şeffaflık Belgeleri</CardTitle>
                             <CardDescription>
-                                STK'lar tarafından yüklenen şeffaflık belgelerini kontrol edin, onaylayın veya reddedin.
+                                STK ve kulüpler tarafından yüklenen belgeleri kontrol edin, onaylayın veya reddedin.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                           {documents.ngo.map(item => <DocumentItem key={item.id} item={item} />)}
+                           {documents.pending.map(item => <DocumentItem key={item.id} item={item} isPending={true} />)}
                         </CardContent>
                     </Card>
                 </TabsContent>
-                <TabsContent value="club" className="mt-4">
+                <TabsContent value="approved" className="mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Öğrenci Kulübü Bilgileri</CardTitle>
+                            <CardTitle>Onaylanmış Belgeler</CardTitle>
                             <CardDescription>
-                                Öğrenci kulüplerinin bilgilerini ve belgelerini kontrol edin.
+                                Yakın zamanda onaylanan şeffaflık belgeleri.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                           {documents.club.map(item => <DocumentItem key={item.id} item={item} />)}
+                           {documents.approved.map(item => <DocumentItem key={item.id} item={item} isPending={false} />)}
                         </CardContent>
                     </Card>
                 </TabsContent>

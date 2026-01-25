@@ -20,14 +20,14 @@ export default function EmergencyPage() {
     };
 
   return (
-    <div className="p-4 flex flex-col h-full animate-in fade-in-0 space-y-4">
+    <div className="p-4 flex flex-col h-[calc(100vh-8rem)] animate-in fade-in-0 space-y-4">
         <div className="text-center space-y-1">
             <h1 className="text-2xl font-bold font-headline">Acil Durum Merkezi</h1>
-            <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-                Acil bir durumu bildirin veya mevcut çağrılara yanıt verin. Lütfen sadece gerçekten acil durumlarda kullanın.
+            <p className="text-muted-foreground text-xs sm:text-sm max-w-lg mx-auto">
+                Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk doğurur.
             </p>
         </div>
-        <div className='flex-1 grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0'>
             <Card className="flex flex-col">
                 <CardHeader className="pb-2">
                     <CardTitle className='text-base flex items-center gap-2 text-destructive'><Siren className='h-5 w-5' /> Afet Bildirimi</CardTitle>
@@ -41,24 +41,24 @@ export default function EmergencyPage() {
                       </AlertDescription>
                     </Alert>
                     <div className="flex-1 grid grid-cols-2 gap-2 pt-2">
-                        <Button variant="destructive" className="h-full flex-col gap-1 text-base" onClick={() => handleReportClick('disaster', 'Deprem')}>
+                        <Button variant="destructive" className="h-full flex-col gap-1 text-sm sm:text-base" onClick={() => handleReportClick('disaster', 'Deprem')}>
                             <Zap className="h-5 w-5" />
                             <span>Deprem</span>
                         </Button>
-                        <Button variant="destructive" className="h-full flex-col gap-1 text-base" onClick={() => handleReportClick('disaster', 'Sel')}>
+                        <Button variant="destructive" className="h-full flex-col gap-1 text-sm sm:text-base" onClick={() => handleReportClick('disaster', 'Sel')}>
                             <CloudRain className="h-5 w-5" />
                             <span>Sel</span>
                         </Button>
-                        <Button variant="destructive" className="h-full flex-col gap-1 text-base" onClick={() => handleReportClick('disaster', 'Yangın')}>
+                        <Button variant="destructive" className="h-full flex-col gap-1 text-sm sm:text-base" onClick={() => handleReportClick('disaster', 'Yangın')}>
                             <Flame className="h-5 w-5" />
                             <span>Yangın</span>
                         </Button>
-                        <Button variant="destructive" className="h-full flex-col gap-1 text-base" onClick={() => handleReportClick('disaster', 'Kaza')}>
+                        <Button variant="destructive" className="h-full flex-col gap-1 text-sm sm:text-base" onClick={() => handleReportClick('disaster', 'Kaza')}>
                             <Ambulance className="h-5 w-5" />
                             <span>Kaza</span>
                         </Button>
                         <div className="col-span-2">
-                            <Button variant="destructive" className="h-full w-full flex-col gap-1 text-base" onClick={() => handleReportClick('disaster', 'Kayıp')}>
+                            <Button variant="destructive" className="h-full w-full flex-col gap-1 text-sm sm:text-base" onClick={() => handleReportClick('disaster', 'Kayıp')}>
                                 <UserSearch className="h-5 w-5" />
                                 <span>Kayıp</span>
                             </Button>
