@@ -5,6 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card"
 import {
   Table,
@@ -22,6 +23,10 @@ import {
 } from "@/components/ui/tabs"
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import { Users, Building, Store, HandCoins, Bot, TrendingUp } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 // Data for charts and tables
 const userGrowthData = [
@@ -65,6 +70,7 @@ const aiProjectionData = [
 
 
 export default function AnalyticsPage() {
+    const { toast } = useToast();
     return (
         <div className="space-y-6">
             <h1 className="text-lg font-semibold md:text-2xl">Platform Analizleri</h1>
@@ -205,7 +211,7 @@ export default function AnalyticsPage() {
              <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5"/> Yapay Zeka Tahminleri</CardTitle>
-                    <CardDescription>Mevcut verilere dayalı gelecek projeksiyonları.</CardDescription>
+                    <CardDescription>Mevcut verilere dayalı gelecek projeksiyonlarını görüntüleyin veya yeni bir tahmin talebinde bulunun.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="graph">
@@ -249,8 +255,28 @@ export default function AnalyticsPage() {
                         </TabsContent>
                     </Tabs>
                 </CardContent>
+                <CardFooter className="border-t pt-6">
+                    <div className="w-full space-y-4">
+                        <h4 className="font-semibold text-base">Yeni Tahmin Talebi Oluştur</h4>
+                        <div className="space-y-2">
+                            <Label htmlFor="prediction-request">Tahmin İsteğiniz</Label>
+                            <Textarea 
+                                id="prediction-request" 
+                                placeholder="Örn: Gelecek 2 yıl içinde gönüllü sayısındaki artışın, bağış miktarına etkisini tahmin et." 
+                            />
+                        </div>
+                        <Button className="w-full" onClick={() => {
+                            toast({
+                                title: "Tahmin İsteği Gönderildi",
+                                description: "Yapay zeka, istediğiniz tahmini oluşturmak için çalışıyor. Sonuçlar bu ekranda görüntülenecektir.",
+                            });
+                        }}>
+                            <Bot className="mr-2 h-4 w-4" />
+                            Tahmin Oluştur
+                        </Button>
+                    </div>
+                </CardFooter>
             </Card>
         </div>
     )
 }
-    
