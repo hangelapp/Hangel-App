@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
     Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin, 
-    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target
+    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, Award, Calendar, Separator
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,6 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Copy } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { Volunteering, Post } from '@/lib/types';
 
 const transparencyCriteria = [
   { name: 'Faaliyet Belgesi', completed: true },
@@ -35,6 +37,8 @@ export default function WebsitePreviewPage() {
     const { toast } = useToast();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(transparencyCriteria[0]);
+    const [selectedOpp, setSelectedOpp] = useState<Volunteering | null>(null);
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
     if (!ngo) {
         return <div className="h-screen flex items-center justify-center">Kuruluş bulunamadı.</div>;
@@ -64,7 +68,6 @@ export default function WebsitePreviewPage() {
       '--ring': primaryColor,
     } as React.CSSProperties;
 
-
     const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name).slice(0, 6);
     const ngoOpportunities = volunteeringOpportunities.filter(o => o.ngoId === ngo.id).slice(0, 5); 
 
@@ -88,6 +91,66 @@ export default function WebsitePreviewPage() {
         'Spor Kulübü': { name: 'Gençlik ve Spor Bakanlığı', logo: Landmark }
     };
     const governingBody = governingBodies[ngo.type];
+
+    const OpportunityDetailDialog = ({ opportunity, open, onClose }: { opportunity: Volunteering | null, open: boolean, onClose: () => void }) => {
+        if (!opportunity) return null;
+        return (
+            <Dialog open={open} onOpenChange={onClose}>
+                <DialogContent className="sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>{opportunity.title}</DialogTitle>
+                        <DialogDescription>{opportunity.organization}</DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                        <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+                        <Separator />
+                        <div className="text-sm space-y-2">
+                             <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
+                            <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({opportunity.taskType})</span></div>
+                            <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.points} Sosyal Etki Puanı</span></div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={onClose}>Kapat</Button>
+                        <Button>Hemen Başvur</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        );
+    };
+
+    const PostDetailDialog = ({ post, open, onClose }: { post: Post | null, open: boolean, onClose: () => void }) => {
+        if (!post) return null;
+        return (
+            <Dialog open={open} onOpenChange={onClose}>
+                <DialogContent>
+                    <DialogHeader>
+                        <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+                                <AvatarFallback>{post.author.name.slice(0, 2)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <DialogTitle>{post.author.name}</DialogTitle>
+                                <DialogDescription>{post.timestamp}</DialogDescription>
+                            </div>
+                        </div>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                        {post.imageUrl && (
+                            <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                                <Image src={post.imageUrl} alt="Post image" fill className="object-cover"/>
+                            </div>
+                        )}
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{post.content}</p>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={onClose}>Kapat</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        );
+    };
 
     return (
         <div style={themeStyle} className="bg-background text-foreground">
@@ -274,8 +337,8 @@ export default function WebsitePreviewPage() {
                                             <p className="text-sm text-muted-foreground line-clamp-3">{opp.description}</p>
                                         </CardContent>
                                         <CardFooter>
-                                            <Button asChild variant="outline" className="w-full">
-                                                <Link href={`/volunteering/${opp.id}`}>Detayları Gör</Link>
+                                            <Button onClick={() => setSelectedOpp(opp)} variant="outline" className="w-full">
+                                                Detayları Gör
                                             </Button>
                                         </CardFooter>
                                     </Card>
@@ -307,7 +370,7 @@ export default function WebsitePreviewPage() {
                                     <p className="text-sm line-clamp-3">{post.content}</p>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button variant="link" className="p-0 h-auto">Devamını Oku</Button>
+                                     <Button onClick={() => setSelectedPost(post)} variant="link" className="p-0 h-auto">Devamını Oku</Button>
                                 </CardFooter>
                             </Card>
                         ))}
@@ -461,6 +524,9 @@ export default function WebsitePreviewPage() {
                     </div>
                 </div>
             </footer>
+
+            <OpportunityDetailDialog opportunity={selectedOpp} open={!!selectedOpp} onClose={() => setSelectedOpp(null)} />
+            <PostDetailDialog post={selectedPost} open={!!selectedPost} onClose={() => setSelectedPost(null)} />
         </div>
     );
 }

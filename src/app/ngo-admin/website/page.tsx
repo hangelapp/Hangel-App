@@ -254,7 +254,6 @@ export default function WebsiteBuilderPage() {
                             <Input id="xml-feed" placeholder="https://ornek.com/urunler.xml" />
                             <p className="text-xs text-muted-foreground">Ürünlerinizi otomatik olarak çekmek için XML linkini girin.</p>
                         </div>
-                         <Button variant="outline"><Edit className="mr-2 h-4 w-4" /> Manuel Ürün Ekle/Düzenle</Button>
                     </CardContent>
                 </Card>
                 
