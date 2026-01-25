@@ -60,7 +60,7 @@ export default function NgosPage() {
                            </div>
                            <div className="flex items-center gap-2">
                                <span className="text-sm font-medium">{ngo.transparencyScore} Puan</span>
-                               <Button variant="outline" size="sm">Profili Düzenle</Button>
+                               <Button variant="outline" size="sm" onClick={() => toast({ title: "Bu özellik yakında eklenecektir."})}>Profili Düzenle</Button>
                                <Button variant="outline" size="sm" onClick={() => handleToggleActive(ngo.id)}>
                                  {ngo.status === 'Aktif' ? 'Pasife Al' : 'Aktif Et'}
                                </Button>
