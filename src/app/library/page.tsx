@@ -19,29 +19,39 @@ import { librarySections, type LibrarySection } from '@/lib/library';
 export default function LibraryPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortCriteria, setSortCriteria] = useState('default'); // 'default' or 'alphabetical'
 
-  const filteredLibrarySections = useMemo(() => {
-    if (!searchTerm.trim()) {
-        return librarySections;
-    }
-    const lowercased = searchTerm.toLowerCase();
-    
-    return librarySections.map(section => {
-        const filteredItems = section.items.filter(item => 
-            item.title.toLowerCase().includes(lowercased) ||
-            item.content.toLowerCase().includes(lowercased)
-        );
+  const filteredAndSortedLibrarySections = useMemo(() => {
+    let sections: LibrarySection[] = JSON.parse(JSON.stringify(librarySections)); // Deep copy to avoid mutating original data
+
+    if (searchTerm.trim()) {
+        const lowercased = searchTerm.toLowerCase();
         
-        if (section.title.toLowerCase().includes(lowercased) || filteredItems.length > 0) {
-            return {
-                ...section,
-                items: section.title.toLowerCase().includes(lowercased) ? section.items : filteredItems
-            };
-        }
-        return null;
-    }).filter((section): section is LibrarySection => section !== null);
+        sections = sections.map(section => {
+            const filteredItems = section.items.filter(item => 
+                item.title.toLowerCase().includes(lowercased) ||
+                item.content.toLowerCase().includes(lowercased)
+            );
+            
+            if (section.title.toLowerCase().includes(lowercased) || filteredItems.length > 0) {
+                return {
+                    ...section,
+                    items: section.title.toLowerCase().includes(lowercased) ? section.items : filteredItems
+                };
+            }
+            return null;
+        }).filter((section): section is LibrarySection => section !== null);
+    }
 
-  }, [searchTerm]);
+    if (sortCriteria === 'alphabetical') {
+        sections.forEach(section => {
+            section.items.sort((a, b) => a.title.localeCompare(b.title, 'tr'));
+        });
+    }
+
+    return sections;
+
+  }, [searchTerm, sortCriteria]);
 
   const handleAction = (actionName: string) => {
     toast({
@@ -77,16 +87,15 @@ export default function LibraryPage() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleAction('Tarihe göre sıralama')}>Tarihe Göre (En Yeni)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleAction('Popülerliğe göre sıralama')}>Popülerliğe Göre</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleAction('Alfabetik sıralama')}>Alfabetik (A-Z)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortCriteria('default')}>Varsayılan</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
       </div>
 
-      {filteredLibrarySections.length > 0 ? (
+      {filteredAndSortedLibrarySections.length > 0 ? (
         <Accordion type="single" collapsible className="w-full space-y-4">
-          {filteredLibrarySections.map((section) => {
+          {filteredAndSortedLibrarySections.map((section) => {
               const Icon = section.icon;
               return (
                   <Card key={section.title} className="overflow-hidden">

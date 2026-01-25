@@ -6,9 +6,11 @@ import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LibraryItemPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
+  const { toast } = useToast();
   
   const itemWithSection = librarySections.flatMap(section => 
     section.items.map(item => ({ ...item, sectionSlug: section.slug }))
@@ -26,6 +28,24 @@ export default function LibraryItemPage({ params }: { params: { slug: string } }
   const isViewable = item.sectionSlug === 'filmler' || item.sectionSlug === 'belgeseller';
   const completionText = isViewable ? 'İzledim' : 'Okudum';
   const CompletionIcon = isViewable ? Film : Book;
+  
+  const handleToggleComplete = () => {
+    const newStatus = !isCompleted;
+    setIsCompleted(newStatus);
+    toast({
+        title: newStatus ? "İçerik Tamamlandı Olarak İşaretlendi" : "Tamamlandı İşareti Kaldırıldı",
+        description: `"${item.title}"`,
+    });
+  };
+
+  const handleRecommend = (rec: 'up' | 'down') => {
+      const newRecommendation = recommendation === rec ? null : rec;
+      setRecommendation(newRecommendation);
+      toast({
+          title: "Değerlendirmeniz Alındı",
+          description: "Geri bildiriminiz için teşekkürler!",
+      });
+  };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -51,7 +71,7 @@ export default function LibraryItemPage({ params }: { params: { slug: string } }
             </p>
             <Button 
               variant={isCompleted ? 'default' : 'outline'}
-              onClick={() => setIsCompleted(!isCompleted)}
+              onClick={handleToggleComplete}
               className="w-28"
             >
               {isCompleted && <Check className="mr-2 h-4 w-4" />}
@@ -64,14 +84,14 @@ export default function LibraryItemPage({ params }: { params: { slug: string } }
                 <Button 
                   variant={recommendation === 'up' ? 'default' : 'outline'} 
                   size="icon"
-                  onClick={() => setRecommendation(recommendation === 'up' ? null : 'up')}
+                  onClick={() => handleRecommend('up')}
                 >
                   <ThumbsUp />
                 </Button>
                 <Button 
                   variant={recommendation === 'down' ? 'destructive' : 'outline'} 
                   size="icon"
-                  onClick={() => setRecommendation(recommendation === 'down' ? null : 'down')}
+                  onClick={() => handleRecommend('down')}
                 >
                   <ThumbsDown />
                 </Button>
