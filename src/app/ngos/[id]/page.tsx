@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2 } from 'lucide-react';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -48,6 +48,17 @@ const PostCard = ({ post }: { post: (typeof timelinePosts)[0] }) => (
                 </div>
             )}
         </CardContent>
+        <CardFooter className="flex justify-start gap-0 border-t p-0">
+            <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
+                <Heart className="h-5 w-5" /> 
+                <span>Beğen</span>
+            </Button>
+            <div className="w-[1px] h-6 bg-border self-center" />
+            <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
+                <Share2 className="h-5 w-5" /> 
+                <span>Paylaş</span>
+            </Button>
+        </CardFooter>
     </Card>
 );
 
@@ -181,12 +192,11 @@ export default function NgoProfilePage() {
                     {ngo.about.split('\n\n').map((paragraph, index) => (
                         <p key={index}>{paragraph}</p>
                     ))}
-                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
-                        {ngo.shortName && <Badge variant="secondary">{ngo.shortName}</Badge>}
-                        <Badge variant="secondary">{ngo.type}</Badge>
-                        <Badge variant="secondary">{ngo.category}</Badge>
-                        {ngo.foundationYear && <Badge variant="outline" className='text-xs'>Kuruluş: {ngo.foundationYear}</Badge>}
-                        {ngo.joinDate && <Badge variant="outline" className='text-xs'>Katılım: {ngo.joinDate}</Badge>}
+                    <div className="pt-4 border-t text-xs text-muted-foreground space-y-1">
+                        <div className="flex justify-between"><span className="font-medium text-foreground">Kuruluş Türü:</span><span>{ngo.type}</span></div>
+                        <div className="flex justify-between"><span className="font-medium text-foreground">Kategori:</span><span>{ngo.category}</span></div>
+                        {ngo.foundationYear && <div className="flex justify-between"><span className="font-medium text-foreground">Kuruluş Yılı:</span><span>{ngo.foundationYear}</span></div>}
+                        {ngo.joinDate && <div className="flex justify-between"><span className="font-medium text-foreground">Katılım Tarihi:</span><span>{new Date(ngo.joinDate).toLocaleDateString('tr-TR')}</span></div>}
                     </div>
                 </CardContent>
             </Card>
@@ -198,7 +208,7 @@ export default function NgoProfilePage() {
                         <div>
                             <h4 className="font-semibold mb-2">Faydalanıcı Gruplar</h4>
                             <div className="flex flex-wrap gap-2">
-                                {ngo.beneficiaryGroups.map(group => <Badge key={group} variant="outline">{group}</Badge>)}
+                                {ngo.beneficiaryGroups.map(group => <Link key={group} href={`/ngos?filter=${encodeURIComponent(group)}`}><Badge variant="outline" className="cursor-pointer hover:bg-accent">{group}</Badge></Link>)}
                             </div>
                         </div>
                     )}
@@ -206,7 +216,7 @@ export default function NgoProfilePage() {
                         <div className="pt-4 border-t">
                             <h4 className="font-semibold mb-2">Desteklenen SKA'lar</h4>
                              <div className="flex flex-wrap gap-2">
-                                {ngo.supportedSDGs.map(sdg => <Badge key={sdg} variant="outline">{sdg}</Badge>)}
+                                {ngo.supportedSDGs.map(sdg => <Link key={sdg} href={`/ngos?filter=${encodeURIComponent(sdg)}`}><Badge variant="outline" className="cursor-pointer hover:bg-accent">{sdg}</Badge></Link>)}
                             </div>
                         </div>
                     )}
@@ -214,7 +224,7 @@ export default function NgoProfilePage() {
                         <div className="pt-4 border-t">
                             <h4 className="font-semibold mb-2">Üye Olunan Platformlar</h4>
                              <div className="flex flex-wrap gap-2">
-                                {ngo.memberOf.map(platform => <Badge key={platform} variant="outline">{platform}</Badge>)}
+                                {ngo.memberOf.map(platform => <Link key={platform} href={`/ngos?filter=${encodeURIComponent(platform)}`}><Badge variant="outline" className="cursor-pointer hover:bg-accent">{platform}</Badge></Link>)}
                             </div>
                         </div>
                     )}
@@ -268,6 +278,7 @@ export default function NgoProfilePage() {
                  <CardHeader><CardTitle className="text-lg">Gönüllülük İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
                      <StatRow label="Toplam Gönüllülük Saati" value={`${ngo.stats.volunteerHours.toLocaleString('tr-TR')} saat`} />
+                     <StatRow label="Gönüllülük Mali Değeri" value={`${(ngo.stats.volunteerHours * 100).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}`} />
                      <StatRow label="Toplam Gönüllü Sayısı" value={ngo.stats.volunteers.toLocaleString('tr-TR')} />
                      <StatRow label="Tamamlanan Proje Sayısı" value={ngo.stats.projects} />
                  </CardContent>
