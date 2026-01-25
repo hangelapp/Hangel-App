@@ -2,10 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const languages = [
     { code: 'tr', name: 'Türkçe', country: 'Türkiye' },
@@ -15,6 +15,15 @@ const languages = [
 export default function LanguageSettingsPage() {
     const router = useRouter();
     const [selectedLanguage, setSelectedLanguage] = useState('tr');
+    const { toast } = useToast();
+
+    const handleSave = () => {
+        const langName = languages.find(l => l.code === selectedLanguage)?.name;
+        toast({
+            title: "Dil Ayarları Kaydedildi",
+            description: `Uygulama dili "${langName}" olarak ayarlandı.`,
+        });
+    };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -47,7 +56,7 @@ export default function LanguageSettingsPage() {
         </Card>
 
         <div className="flex justify-end">
-            <Button>Değişiklikleri Kaydet</Button>
+            <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
         </div>
     </div>
   );

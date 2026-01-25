@@ -1,15 +1,24 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Monitor, Moon, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ThemeSettingsPage() {
     const router = useRouter();
     const [theme, setTheme] = useState('system');
+    const { toast } = useToast();
+
+    const handleSave = () => {
+        toast({
+            title: "Tema Ayarları Kaydedildi",
+            description: `Tema "${theme}" olarak ayarlandı.`,
+        });
+    };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -50,7 +59,7 @@ export default function ThemeSettingsPage() {
         </Card>
 
         <div className="flex justify-end">
-            <Button>Değişiklikleri Kaydet</Button>
+            <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
         </div>
     </div>
   );

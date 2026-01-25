@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Laptop, Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const activeSessions = [
     { device: 'Chrome, macOS', location: 'İstanbul, TR', time: 'Şu an aktif', icon: Laptop },
@@ -15,6 +16,16 @@ const activeSessions = [
 
 export default function SecuritySettingsPage() {
     const router = useRouter();
+    const { toast } = useToast();
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        toast({
+            title: "Ayarlar Kaydedildi",
+            description: "Şifreniz başarıyla güncellendi.",
+        });
+    };
+
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
              <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
@@ -25,7 +36,7 @@ export default function SecuritySettingsPage() {
                 <p className="text-muted-foreground text-sm">Hesap güvenliğinizi yönetin ve şifrenizi güncelleyin.</p>
             </div>
             
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
                 <Card>
                     <CardHeader>
                         <CardTitle>Şifre Değiştir</CardTitle>
@@ -57,7 +68,7 @@ export default function SecuritySettingsPage() {
                              <Label htmlFor="2fa-switch">Telefon Numarası ile Doğrulama</Label>
                              <p className="text-xs text-muted-foreground">Giriş yaparken telefonunuza bir kod gönderilir.</p>
                            </div>
-                            <Switch id="2fa-switch" />
+                            <Switch id="2fa-switch" onCheckedChange={(checked) => toast({ title: 'İki Adımlı Doğrulama', description: checked ? 'Aktif edildi.' : 'Devre dışı bırakıldı.'})} />
                         </div>
                     </CardContent>
                 </Card>
@@ -82,7 +93,7 @@ export default function SecuritySettingsPage() {
                                 </div>
                             )
                         })}
-                         <Button variant="outline" className="w-full">Diğer tüm oturumları kapat</Button>
+                         <Button type="button" variant="outline" className="w-full" onClick={() => toast({ title: 'Oturumlar Kapatıldı', description: 'Mevcut oturum dışındaki tüm oturumlarınız sonlandırıldı.'})}>Diğer tüm oturumları kapat</Button>
                     </CardContent>
                 </Card>
                 

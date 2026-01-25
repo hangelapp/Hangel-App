@@ -41,6 +41,13 @@ export default function NgoSelectionPage() {
         });
     };
 
+    const handleSave = () => {
+        toast({
+            title: "Tercihler Kaydedildi",
+            description: "Varsayılan STK seçimleriniz başarıyla güncellendi.",
+        });
+    };
+
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
@@ -107,7 +114,7 @@ export default function NgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button>Değişiklikleri Kaydet</Button>
+                <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
             </div>
         </div>
     );

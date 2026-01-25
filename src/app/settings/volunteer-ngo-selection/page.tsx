@@ -3,18 +3,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ngos } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 export default function VolunteerNgoSelectionPage() {
     const router = useRouter();
     const [selectedNgos, setSelectedNgos] = useState(['1', '2']);
     const [searchTerm, setSearchTerm] = useState('');
+    const { toast } = useToast();
 
     const filteredNgos = ngos.filter(ngo => 
         ngo.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -26,6 +28,13 @@ export default function VolunteerNgoSelectionPage() {
                 ? prev.filter(id => id !== ngoId) 
                 : [...prev, ngoId]
         );
+    };
+    
+    const handleSave = () => {
+        toast({
+            title: "Tercihler Kaydedildi",
+            description: "Gönüllüsü olduğunuz STK seçimleriniz başarıyla güncellendi.",
+        });
     };
 
     return (
@@ -79,7 +88,7 @@ export default function VolunteerNgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button>Değişiklikleri Kaydet</Button>
+                <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
             </div>
         </div>
     );

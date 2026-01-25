@@ -2,14 +2,14 @@
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { 
     Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, 
     HeartHandshake, PersonStanding, Wallet, Users, HandCoins
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,20 @@ const SettingsLink = ({ href, icon, label, iconColor }: { href: string, icon: Re
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleDeleteAccount = () => {
+    toast({
+        variant: 'destructive',
+        title: 'Hesap Silindi',
+        description: 'Hesabınız kalıcı olarak silindi. Güvenli bir şekilde çıkış yapılıyor.',
+    });
+    setTimeout(() => {
+        router.push('/login');
+    }, 2000);
+  };
+  
   return (
     <div className="p-4 space-y-8 animate-in fade-in-0">
       <h1 className="text-3xl font-bold font-headline">Ayarlar</h1>
@@ -104,7 +118,7 @@ export default function SettingsPage() {
                 <CardDescription>Hesabınızı yönetin, dondurun veya silin.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <Button variant="secondary" className="w-full justify-start text-base p-6">
+                <Button variant="secondary" className="w-full justify-start text-base p-6" onClick={() => router.push('/login')}>
                     <LogOut className="mr-2 h-5 w-5" /> Çıkış Yap
                 </Button>
                  <AlertDialog>
@@ -122,7 +136,7 @@ export default function SettingsPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                      <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }))}>Evet, Hesabımı Sil</AlertDialogAction>
+                      <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }))} onClick={handleDeleteAccount}>Evet, Hesabımı Sil</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { user } from '@/lib/data';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
@@ -19,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
 const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
@@ -84,6 +83,7 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
 
 export default function VolunteerSettingsPage() {
     const router = useRouter();
+    const { toast } = useToast();
 
     const [interests, setInterests] = useState(user.volunteerInfo.interests);
     const [skills, setSkills] = useState(user.volunteerInfo.skills);
@@ -98,6 +98,14 @@ export default function VolunteerSettingsPage() {
     const [highSchool, setHighSchool] = useState(user.volunteerInfo.education.find(e => e.level === 'Lise')?.school || '');
     const [faculty, setFaculty] = useState('');
     const [department, setDepartment] = useState('');
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        toast({
+            title: "Gönüllülük Bilgileri Güncellendi",
+            description: "Bilgileriniz başarıyla kaydedildi.",
+        });
+    };
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -109,7 +117,7 @@ export default function VolunteerSettingsPage() {
                 <p className="text-muted-foreground text-sm">Size en uygun fırsatları önerebilmemiz için bilgilerinizi güncel tutun.</p>
             </div>
             
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
                 <Card>
                     <CardHeader>
                         <CardTitle>Yetkinlik ve Sosyal Hassasiyetler</CardTitle>

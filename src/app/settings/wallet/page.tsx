@@ -1,9 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ArrowLeft, CreditCard, Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
@@ -19,15 +18,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { qrPaymentCardData } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
 
-
-const savedCards = [
+const initialSavedCards = [
     { id: '1', type: 'Visa', last4: '4242', expiry: '12/25' },
     { id: '2', type: 'Mastercard', last4: '5555', expiry: '08/26' },
 ];
 
 export default function WalletSettingsPage() {
     const router = useRouter();
+    const { toast } = useToast();
+    const [savedCards, setSavedCards] = useState(initialSavedCards);
+
+    const handleCardDelete = (cardId: string) => {
+        setSavedCards(prev => prev.filter(card => card.id !== cardId));
+        toast({
+            variant: "destructive",
+            title: "Kart Silindi",
+            description: "Kayıtlı kartınız başarıyla silindi.",
+        });
+    };
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -89,13 +99,13 @@ export default function WalletSettingsPage() {
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                     <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                                    <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }))}>Evet, Sil</AlertDialogAction>
+                                    <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }))} onClick={() => handleCardDelete(card.id)}>Evet, Sil</AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
                         </div>
                     ))}
-                    <Button variant="secondary" className="w-full">
+                    <Button variant="secondary" className="w-full" onClick={() => toast({ title: 'Yeni Kart Ekleme', description: 'Bu özellik yakında eklenecektir.' })}>
                         <Plus className="mr-2 h-4 w-4" />
                         Yeni Kart Ekle
                     </Button>

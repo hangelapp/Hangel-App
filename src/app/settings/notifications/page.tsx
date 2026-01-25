@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Bell, Mail, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const notificationGroups = [
   {
@@ -38,6 +39,14 @@ const notificationGroups = [
 
 export default function NotificationSettingsPage() {
   const router = useRouter();
+  const { toast } = useToast();
+
+  const handleSave = () => {
+    toast({
+      title: "Ayarlar Kaydedildi",
+      description: "Bildirim tercihleriniz başarıyla güncellendi.",
+    });
+  };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -79,7 +88,7 @@ export default function NotificationSettingsPage() {
         ))}
       </div>
         <div className="flex justify-end">
-            <Button>Değişiklikleri Kaydet</Button>
+            <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
         </div>
     </div>
   );

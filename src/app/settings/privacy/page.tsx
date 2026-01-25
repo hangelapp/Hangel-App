@@ -2,12 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, Lock, Shield, Users } from 'lucide-react';
+import { ArrowLeft, Lock, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
+import { useToast } from '@/hooks/use-toast';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -25,6 +24,14 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 
 export default function PrivacySettingsPage() {
     const router = useRouter();
+    const { toast } = useToast();
+
+    const handleSave = () => {
+        toast({
+            title: "Ayarlar Kaydedildi",
+            description: "Gizlilik tercihleriniz başarıyla güncellendi.",
+        });
+    };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
@@ -122,7 +129,7 @@ export default function PrivacySettingsPage() {
         </Card>
 
         <div className="flex justify-end">
-            <Button>Değişiklikleri Kaydet</Button>
+            <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
         </div>
     </div>
   );
