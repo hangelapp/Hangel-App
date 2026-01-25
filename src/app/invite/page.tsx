@@ -45,6 +45,14 @@ export default function InvitePage() {
       title: "Davet linki kopyalandı!",
     });
   };
+  
+  const handleInvite = (name: string) => {
+    toast({
+      title: 'Davet Gönderildi!',
+      description: `${name} kişisine hangel davetiniz gönderildi.`,
+    });
+  };
+
 
   const shareOptions = [
     { name: 'WhatsApp', icon: MessageSquare, href: `https://wa.me/?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
@@ -107,7 +115,7 @@ export default function InvitePage() {
                     {contact.onPlatform ? (
                         <Badge variant="secondary" className="font-normal">hangel'da</Badge>
                     ) : (
-                        <Button size="sm">Davet Et</Button>
+                        <Button size="sm" onClick={() => handleInvite(contact.name)}>Davet Et</Button>
                     )}
                 </div>
             ))}
