@@ -203,8 +203,8 @@ export default function QrPaymentPage() {
                   <AlertDialogHeader>
                       <AlertDialogTitle>Kartı İptal Etmek İstediğinizden Emin misiniz?</AlertDialogTitle>
                       <AlertDialogDescription>
-                          Bu işlem geri alınamaz. {card.type} kartınız kalıcı olarak iptal edilecektir.
-                      </CardDescription>
+                          {`Bu işlem geri alınamaz. ${card.type} kartınız kalıcı olarak iptal edilecektir.`}
+                      </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                       <AlertDialogCancel>Vazgeç</AlertDialogCancel>
