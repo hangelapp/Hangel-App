@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
 export default function RootPage() {
-  // Kullanıcıyı market sayfasına yönlendir.
-  redirect('/market');
+  // Kullanıcıyı yeni landing page'e yönlendir.
+  redirect('/login');
 }
