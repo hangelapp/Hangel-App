@@ -3,14 +3,16 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Star } from "lucide-react";
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { volunteeringOpportunities } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
 
-const applications = [
+
+const initialApplications = [
   { id: 1, applicant: 'Ayşe Yılmaz', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-21', avatar: 'https://i.pravatar.cc/150?u=ayse', impactScore: 12540 },
   { id: 2, applicant: 'Mehmet Kaya', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-20', avatar: 'https://i.pravatar.cc/150?u=mehmet', impactScore: 9800 },
   { id: 3, applicant: 'Zeynep Arslan', opportunity: 'Sosyal Medya İçerik Gönüllüsü', date: '2024-07-19', avatar: 'https://i.pravatar.cc/150?u=zeynep', impactScore: 15200 },
@@ -18,6 +20,18 @@ const applications = [
 ];
 
 const VolunteerApplicationsTab = () => {
+    const { toast } = useToast();
+    const [applications, setApplications] = useState(initialApplications);
+
+    const handleApplication = (appId: number, decision: 'approved' | 'rejected') => {
+        const app = applications.find(a => a.id === appId);
+        setApplications(prev => prev.filter(app => app.id !== appId));
+        toast({
+            title: `Başvuru ${decision === 'approved' ? 'Onaylandı' : 'Reddedildi'}`,
+            description: `${app?.applicant} kullanıcısının başvurusu işlendi.`,
+        });
+    };
+
     const groupedApplications = applications.reduce((acc, app) => {
         const key = app.opportunity;
         if (!acc[key]) {
@@ -25,7 +39,7 @@ const VolunteerApplicationsTab = () => {
         }
         acc[key].push(app);
         return acc;
-    }, {} as Record<string, typeof applications>);
+    }, {} as Record<string, typeof initialApplications>);
 
     return (
         <div className="space-y-6">
@@ -55,9 +69,9 @@ const VolunteerApplicationsTab = () => {
                                     <p className="text-xs text-muted-foreground">Etki Puanı</p>
                                 </div>
                                 <div className="flex gap-2 basis-full sm:basis-auto justify-end">
-                                  <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0">Detay</Button>
-                                  <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100">Onayla</Button>
-                                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0">Reddet</Button>
+                                  <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => toast({title: "Detaylar yakında eklenecek."})}>Detay</Button>
+                                  <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app.id, 'approved')}>Onayla</Button>
+                                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app.id, 'rejected')}>Reddet</Button>
                                 </div>
                             </div>
                         ))}
@@ -70,10 +84,20 @@ const VolunteerApplicationsTab = () => {
 
 
 const OpportunityManagementTab = () => {
-    const ngoOpportunities = volunteeringOpportunities.filter(o => o.organization === 'Ahbap Derneği');
+    const { toast } = useToast();
+    const [opportunities, setOpportunities] = useState(volunteeringOpportunities.filter(o => o.organization === 'Ahbap Derneği'));
+
+    const handleDeactivate = (oppId: string) => {
+        setOpportunities(prev => prev.filter(opp => opp.id !== oppId));
+        toast({
+            title: "İlan Pasife Alındı",
+            description: "Gönüllülük ilanı yayından kaldırıldı."
+        });
+    };
+
     return (
         <div className="space-y-4">
-            {ngoOpportunities.map((opp) => (
+            {opportunities.length > 0 ? opportunities.map((opp) => (
               <Card key={opp.id}>
                 <CardHeader className='pb-4'>
                   <CardTitle className="text-base">{opp.title}</CardTitle>
@@ -85,11 +109,13 @@ const OpportunityManagementTab = () => {
                     </div>
                 </CardContent>
                 <CardFooter className="flex gap-2">
-                    <Button variant="secondary" size="sm" className='flex-1'>Görüntüle</Button>
-                    <Button variant="destructive" size="sm" className='flex-1'>Pasife Al</Button>
+                    <Button asChild variant="secondary" size="sm" className='flex-1'>
+                        <Link href={`/volunteering/${opp.id}`}>Görüntüle</Link>
+                    </Button>
+                    <Button variant="destructive" size="sm" className='flex-1' onClick={() => handleDeactivate(opp.id)}>Pasife Al</Button>
                 </CardFooter>
               </Card>
-            ))}
+            )) : <p className="text-center p-8 text-muted-foreground">Aktif ilanınız bulunmuyor.</p>}
         </div>
     );
 };
