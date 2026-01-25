@@ -34,7 +34,7 @@ export default function LoginPage() {
           Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %20’ye varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.
         </p>
 
-        <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
+        <div className="mt-12 flex flex-row items-center justify-center gap-4 w-full max-w-md">
           <Button size="lg" asChild className="w-full h-12 text-base">
             <Link href="/login/selection?action=login">Giriş Yap</Link>
           </Button>
