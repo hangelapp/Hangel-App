@@ -13,6 +13,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const pushHistory = [
     { id: 2, type: 'Bildirim', title: 'Yeni Gönüllülük Fırsatı!', date: '2024-07-18', status: 'Gönderildi', seen: '8,120', clicks: '1,250' },
@@ -32,6 +38,8 @@ export default function CommunicationsPage() {
     const [pushContent, setPushContent] = useState('');
     const [newsletterSubject, setNewsletterSubject] = useState('');
     const [newsletterContent, setNewsletterContent] = useState('');
+    const [pushDate, setPushDate] = useState<Date | undefined>();
+    const [newsletterDate, setNewsletterDate] = useState<Date | undefined>();
 
     return (
         <div className="space-y-6">
@@ -51,6 +59,22 @@ export default function CommunicationsPage() {
                                 <TabsTrigger value="history">Geçmiş</TabsTrigger>
                             </TabsList>
                             <TabsContent value="send" className="mt-4 space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="push-audience">Hedef Kitle</Label>
+                                    <Select>
+                                        <SelectTrigger id="push-audience">
+                                            <SelectValue placeholder="Bir kitle seçin..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Tüm Kullanıcılar</SelectItem>
+                                            <SelectItem value="volunteers">Sadece Gönüllüler</SelectItem>
+                                            <SelectItem value="donors">Sadece Bağışçılar</SelectItem>
+                                            <SelectItem value="ngos">STK Yöneticileri</SelectItem>
+                                            <SelectItem value="brands">Marka Yöneticileri</SelectItem>
+                                            <SelectItem value="clubs">Kulüp Yöneticileri</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="push-title">Bildirim Başlığı</Label>
                                     <Input 
@@ -74,19 +98,50 @@ export default function CommunicationsPage() {
                                     />
                                     <p className="text-xs text-muted-foreground text-right">{pushContent.length} / {MAX_PUSH_CONTENT}</p>
                                 </div>
-                                <Button className="w-full">Bildirimi Gönder</Button>
+                                 <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Gönderim Tarihi</Label>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-full justify-start text-left font-normal",
+                                                        !pushDate && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {pushDate ? format(pushDate, "PPP") : <span>Tarih seçin</span>}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={pushDate}
+                                                    onSelect={setPushDate}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="push-time">Gönderim Saati</Label>
+                                        <Input id="push-time" type="time" defaultValue="09:00" />
+                                    </div>
+                                </div>
+                                <Button className="w-full">Bildirimi Zamanla</Button>
                             </TabsContent>
                             <TabsContent value="history" className="mt-4 space-y-3">
                                 {pushHistory.map(item => (
                                    <div key={item.id} className="p-3 border rounded-lg">
                                        <p className="font-semibold">{item.title}</p>
                                        <p className="text-sm text-muted-foreground">Gönderim Tarihi: {item.date}</p>
-                                       <div className="flex gap-4 mt-2">
-                                            <div className="text-center">
+                                       <div className="grid grid-cols-2 gap-2 mt-2 text-center">
+                                            <div>
                                                 <p className="font-bold">{item.seen}</p>
                                                 <p className="text-xs text-muted-foreground">Görüntülenme</p>
                                             </div>
-                                             <div className="text-center">
+                                             <div>
                                                 <p className="font-bold">{item.clicks}</p>
                                                 <p className="text-xs text-muted-foreground">Tıklanma</p>
                                             </div>
@@ -112,6 +167,19 @@ export default function CommunicationsPage() {
                             </TabsList>
                             <TabsContent value="send" className="mt-4 space-y-4">
                                 <div className="space-y-2">
+                                    <Label htmlFor="newsletter-audience">Hedef Kitle</Label>
+                                    <Select>
+                                        <SelectTrigger id="newsletter-audience">
+                                            <SelectValue placeholder="Bir kitle seçin..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Tüm Kullanıcılar</SelectItem>
+                                            <SelectItem value="active">Aktif Kullanıcılar (Son 30 Gün)</SelectItem>
+                                            <SelectItem value="inactive">Pasif Kullanıcılar</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
                                     <Label htmlFor="subject">Konu</Label>
                                     <Input 
                                         id="subject" 
@@ -134,19 +202,50 @@ export default function CommunicationsPage() {
                                     />
                                      <p className="text-xs text-muted-foreground text-right">{newsletterContent.length} / {MAX_NEWSLETTER_CONTENT}</p>
                                 </div>
-                                <Button className="w-full">Bülteni Gönder</Button>
+                                 <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Gönderim Tarihi</Label>
+                                         <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-full justify-start text-left font-normal",
+                                                        !newsletterDate && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {newsletterDate ? format(newsletterDate, "PPP") : <span>Tarih seçin</span>}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={newsletterDate}
+                                                    onSelect={setNewsletterDate}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="newsletter-time">Gönderim Saati</Label>
+                                        <Input id="newsletter-time" type="time" defaultValue="10:00" />
+                                    </div>
+                                </div>
+                                <Button className="w-full">Bülteni Zamanla</Button>
                             </TabsContent>
                              <TabsContent value="history" className="mt-4 space-y-3">
                                 {newsletterHistory.map(item => (
                                    <div key={item.id} className="p-3 border rounded-lg">
                                        <p className="font-semibold">{item.title}</p>
                                        <p className="text-sm text-muted-foreground">Gönderim Tarihi: {item.date}</p>
-                                        <div className="flex gap-4 mt-2">
-                                            <div className="text-center">
+                                        <div className="grid grid-cols-2 gap-2 mt-2 text-center">
+                                            <div>
                                                 <p className="font-bold">{item.seen}</p>
                                                 <p className="text-xs text-muted-foreground">Görüntülenme</p>
                                             </div>
-                                             <div className="text-center">
+                                             <div>
                                                 <p className="font-bold">{item.clicks}</p>
                                                 <p className="text-xs text-muted-foreground">Tıklanma</p>
                                             </div>

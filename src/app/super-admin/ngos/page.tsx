@@ -1,15 +1,40 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+'use client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ngos } from "@/lib/data";
+import { ngos as initialNgos } from "@/lib/data";
+import React, { useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import type { NGO } from "@/lib/types";
+
+type NGOWithStatus = NGO & { status: 'Aktif' | 'Pasif' };
 
 export default function NgosPage() {
+    const { toast } = useToast();
+    const [ngos, setNgos] = useState<NGOWithStatus[]>(initialNgos.map(n => ({...n, status: 'Aktif'})));
+
+    const handleToggleActive = (id: string) => {
+        setNgos(prevNgos => prevNgos.map(n => {
+            if (n.id === id) {
+                const newStatus = n.status === 'Aktif' ? 'Pasif' : 'Aktif';
+                toast({ title: `Kuruluş ${newStatus} Hale Getirildi`, description: `${n.name} durumu güncellendi.` });
+                return { ...n, status: newStatus };
+            }
+            return n;
+        }));
+    };
+
+    const handleRemove = (id: string, name: string) => {
+        setNgos(prevNgos => prevNgos.filter(n => n.id !== id));
+        toast({
+            variant: 'destructive',
+            title: "Kuruluş Kaldırıldı",
+            description: `${name} platformdan kalıcı olarak kaldırıldı.`,
+        });
+    };
+
     return (
         <>
             <h1 className="text-lg font-semibold md:text-2xl">STK Yönetimi</h1>
@@ -36,8 +61,30 @@ export default function NgosPage() {
                            <div className="flex items-center gap-2">
                                <span className="text-sm font-medium">{ngo.transparencyScore} Puan</span>
                                <Button variant="outline" size="sm">Profili Düzenle</Button>
-                               <Button variant="outline" size="sm">Pasife Al</Button>
-                               <Button variant="destructive" size="sm">Kaldır</Button>
+                               <Button variant="outline" size="sm" onClick={() => handleToggleActive(ngo.id)}>
+                                 {ngo.status === 'Aktif' ? 'Pasife Al' : 'Aktif Et'}
+                               </Button>
+                               <AlertDialog>
+                                   <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" size="sm">Kaldır</Button>
+                                   </AlertDialogTrigger>
+                                   <AlertDialogContent>
+                                       <AlertDialogHeader>
+                                           <AlertDialogTitle>{ngo.name} kuruluşunu kaldırmak istediğinizden emin misiniz?</AlertDialogTitle>
+                                           <AlertDialogDescription>
+                                            Bu işlem geri alınamaz. Kuruluş ve ilişkili tüm veriler platformdan kalıcı olarak silinecektir.
+                                           </AlertDialogDescription>
+                                       </AlertDialogHeader>
+                                       <AlertDialogFooter>
+                                           <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                           <AlertDialogAction 
+                                            className={cn(buttonVariants({ variant: "destructive" }))} 
+                                            onClick={() => handleRemove(ngo.id, ngo.name)}>
+                                                Evet, Kaldır
+                                            </AlertDialogAction>
+                                       </AlertDialogFooter>
+                                   </AlertDialogContent>
+                               </AlertDialog>
                            </div>
                        </div>
                    ))}

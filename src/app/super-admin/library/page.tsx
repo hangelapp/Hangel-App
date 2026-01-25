@@ -32,7 +32,7 @@ export default function LibraryPage() {
                                 <AccordionTrigger className="hover:no-underline text-left font-bold">{section.title} ({section.items.length})</AccordionTrigger>
                                 <AccordionContent className="pt-2">
                                     <div className="space-y-2 border-t pt-4">
-                                        {section.items.slice(0,5).map(item => ( // show first 5 for brevity
+                                        {section.items.map(item => ( 
                                             <div key={item.slug} className="p-2 border-b flex justify-between items-center">
                                                 <p className="text-sm">{item.title}</p>
                                                 <div className="flex gap-2">
@@ -41,7 +41,6 @@ export default function LibraryPage() {
                                                 </div>
                                             </div>
                                         ))}
-                                        {section.items.length > 5 && <p className="text-center text-sm text-muted-foreground pt-2">...ve {section.items.length - 5} diğer içerik.</p>}
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
