@@ -1,22 +1,20 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import * as Icons from 'lucide-react';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 const notifications = [
-    { id: 1, icon: 'HeartHandshake', title: 'Yeni Gönüllü Başvurusu', description: 'Ayşe Yılmaz, "Afet Bölgesi Yardım Dağıtımı" ilanına başvurdu.', time: '20 dakika önce', read: false, link: '/ngo-admin/volunteer' },
-    { id: 2, icon: 'DollarSign', title: 'Yeni Bağış Alındı', description: 'Doğa Dostu Giyim alışverişinden 12.75 ₺ bağış hesabınıza aktarıldı.', time: '2 saat önce', read: false, link: '/ngo-admin/donations' },
-    { id: 3, icon: 'Newspaper', title: 'Gönderiniz Beğenildi', description: 'Bir kullanıcı "Fidan dikme etkinliğimiz" gönderinizi beğendi.', time: '5 saat önce', read: true, link: '/ngo-admin/posts' },
-    { id: 4, icon: 'ShieldCheck', title: 'Şeffaflık Belgeniz Onaylandı', description: '"2023 Faaliyet Raporu" belgeniz admin tarafından onaylandı.', time: '1 gün önce', read: true, link: '/ngo-admin/transparency' },
+    { id: 1, icon: 'FileText', title: 'Yeni STK Başvurusu', description: 'Doğa Koruma Derneği platforma katılmak için başvurdu.', time: '15 dakika önce', read: false },
+    { id: 2, icon: 'Shield', title: 'Şeffaflık Belgesi Onay Bekliyor', description: 'TEMA Vakfı, "2023 Faaliyet Raporu" belgesini yükledi.', time: '1 saat önce', read: false },
+    { id: 3, icon: 'UserCog', title: 'Kullanıcı Şikayeti', description: 'Bir kullanıcı, bir gönderi hakkında şikayette bulundu.', time: '3 saat önce', read: true },
+    { id: 4, icon: 'Bot', title: 'Haftalık Analiz Raporu Hazır', description: 'Platformun haftalık performans raporunu görüntüleyebilirsiniz.', time: '1 gün önce', read: true },
 ];
 
-export default function NgoNotificationsPage() {
+export default function InboxPage() {
     const [data, setData] = useState(notifications);
-    const router = useRouter();
 
     const handleMarkAsRead = (id: number) => {
         setData(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -25,15 +23,12 @@ export default function NgoNotificationsPage() {
     const unreadCount = data.filter(n => !n.read).length;
 
     return (
-        <div className="space-y-6 animate-in fade-in-0">
-            <div>
-                <h1 className="text-2xl font-bold font-headline">Gelen Kutusu ({unreadCount})</h1>
-                <p className="text-muted-foreground text-sm">Kuruluşunuzla ilgili önemli güncellemeler ve bildirimler.</p>
-            </div>
-            
+        <div className="space-y-6">
+            <h1 className="text-lg font-semibold md:text-2xl">Gelen Kutusu ({unreadCount})</h1>
             <Card>
                 <CardHeader>
                     <CardTitle>Bildirimler</CardTitle>
+                    <CardDescription>Platform ile ilgili önemli güncellemeler ve yapılması gereken işlemler.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="all">
@@ -47,7 +42,7 @@ export default function NgoNotificationsPage() {
                                 return (
                                 <div key={notification.id} className={`p-4 border rounded-lg flex items-start gap-4 ${notification.read ? 'opacity-60' : ''}`}>
                                     <Icon className="h-5 w-5 mt-1 text-muted-foreground" />
-                                    <div className="flex-1 cursor-pointer" onClick={() => notification.link && router.push(notification.link)}>
+                                    <div className="flex-1">
                                         <p className="font-semibold">{notification.title}</p>
                                         <p className="text-sm text-muted-foreground">{notification.description}</p>
                                         <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
@@ -62,7 +57,7 @@ export default function NgoNotificationsPage() {
                                 return (
                                 <div key={notification.id} className="p-4 border rounded-lg flex items-start gap-4">
                                     <Icon className="h-5 w-5 mt-1 text-muted-foreground" />
-                                    <div className="flex-1 cursor-pointer" onClick={() => notification.link && router.push(notification.link)}>
+                                    <div className="flex-1">
                                         <p className="font-semibold">{notification.title}</p>
                                         <p className="text-sm text-muted-foreground">{notification.description}</p>
                                          <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>

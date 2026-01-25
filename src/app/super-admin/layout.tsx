@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button';
 
 const navItems: SideNavItem[] = [
   { href: '/super-admin', label: 'Genel Bakış', icon: 'LayoutDashboard' },
+  { href: '/super-admin/inbox', label: 'Gelen Kutusu', icon: 'Inbox' },
   { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText' },
   { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog' },
   { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building' },
@@ -43,6 +44,7 @@ const navItems: SideNavItem[] = [
   { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield' },
   { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy' },
   { href: '/super-admin/communications', label: 'Bildirimler ve Bülten', icon: 'Bell' },
+  { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone' },
   { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings' },
   { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle' },
   { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy' },

@@ -54,7 +54,7 @@ const ngoAdminNavItems = [
     { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code' },
     { href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe' },
     { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users' },
-    { href: '/ngo-admin/notifications', label: 'Bildirim Ayarları', icon: 'bell' },
+    { href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell' },
     { href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings' },
     { href: '/ngo-admin/support', label: 'Destek', icon: 'help-circle' },
 ];
