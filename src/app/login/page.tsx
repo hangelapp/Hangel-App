@@ -30,36 +30,32 @@ export default function LoginPage() {
           yok öyle yalnız başına mücadele etmek!
         </h1>
         
-        <p className="mt-4 text-lg md:text-xl max-w-3xl">
-          Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
-        </p>
-
         <p className="mt-8 max-w-3xl text-base text-white/80 leading-relaxed">
-          Günlük alışverişlerini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün. Sahip olduğun profesyonel yetkinliklerle gönüllülük faaliyetlerine katılarak değer kat. Kollektif bilinç ile mücadele ediyoruz.
+          Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %20’ye varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.
         </p>
 
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
           <Button size="lg" asChild className="w-full h-12 text-base">
-            <Link href="/login/individual">Bireysel Giriş / Kayıt Ol</Link>
+            <Link href="/login/selection?action=login">Giriş Yap</Link>
           </Button>
           <Button size="lg" variant="outline" asChild className="w-full h-12 text-base bg-white/10 border-white/20 text-white hover:bg-white hover:text-[#042654]">
-            <Link href="/login/corporate">Kurumsal Giriş / Kayıt Ol</Link>
+            <Link href="/login/selection?action=register">Kayıt Ol</Link>
           </Button>
         </div>
-      </main>
 
-      <nav className="relative z-10 w-full py-8">
-        <div className="container mx-auto px-6 text-center text-white/80">
-          <div className="flex justify-center gap-x-8 gap-y-2 flex-wrap">
-            <Link href="/timeline" className="hover:text-white font-medium">Keşfet</Link>
-            <Link href="/market" className="hover:text-white font-medium">Markalar</Link>
-            <Link href="/volunteering" className="hover:text-white font-medium">Gönüllülük</Link>
-            <Link href="/ngos" className="hover:text-white font-medium">STK'lar</Link>
-            <Link href="/admin/clubs" className="hover:text-white font-medium">Öğrenci Kulüpleri</Link>
-            <Link href="/library" className="hover:text-white font-medium">Kütüphane</Link>
-          </div>
-        </div>
-      </nav>
+        <nav className="relative z-10 w-full pt-8 mt-8">
+            <div className="container mx-auto px-6 text-center text-white/80">
+            <div className="flex justify-center gap-x-8 gap-y-2 flex-wrap">
+                <Link href="/timeline" className="hover:text-white font-medium">Keşfet</Link>
+                <Link href="/market" className="hover:text-white font-medium">Markalar</Link>
+                <Link href="/volunteering" className="hover:text-white font-medium">Gönüllülük</Link>
+                <Link href="/ngos" className="hover:text-white font-medium">STK'lar</Link>
+                <Link href="/admin/clubs" className="hover:text-white font-medium">Öğrenci Kulüpleri</Link>
+                <Link href="/library" className="hover:text-white font-medium">Kütüphane</Link>
+            </div>
+            </div>
+        </nav>
+      </main>
 
       <footer className="relative z-10 w-full pt-8 pb-4">
          <div className="container mx-auto px-6 text-center text-white/60 text-xs space-y-4">

@@ -1,17 +1,20 @@
 'use client';
 
+import React, { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export default function CorporateLoginPage() {
+function CorporateLoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +31,7 @@ export default function CorporateLoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background relative">
-      <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-4 left-4">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4">
           <ArrowLeft className="h-6 w-6" />
        </Button>
       <div className="w-full max-w-sm space-y-6">
@@ -38,7 +41,7 @@ export default function CorporateLoginPage() {
           </h1>
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Giriş Yap</TabsTrigger>
             <TabsTrigger value="register">Kayıt Ol</TabsTrigger>
@@ -110,4 +113,13 @@ export default function CorporateLoginPage() {
       </div>
     </div>
   );
+}
+
+
+export default function CorporateLoginPage() {
+    return (
+        <Suspense fallback={<div>Yükleniyor...</div>}>
+            <CorporateLoginContent />
+        </Suspense>
+    );
 }

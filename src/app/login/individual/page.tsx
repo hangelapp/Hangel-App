@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from 'lucide-react';
 
-export default function IndividualLoginPage() {
+function IndividualLoginContent() {
   const [loginStep, setLoginStep] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
 
   const handleSendCode = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +39,7 @@ export default function IndividualLoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background relative">
-       <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-4 left-4">
+       <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4">
           <ArrowLeft className="h-6 w-6" />
        </Button>
       <div className="w-full max-w-sm space-y-6">
@@ -47,7 +49,7 @@ export default function IndividualLoginPage() {
           </h1>
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Giriş Yap</TabsTrigger>
             <TabsTrigger value="register">Kayıt Ol</TabsTrigger>
@@ -135,4 +137,12 @@ export default function IndividualLoginPage() {
       </div>
     </div>
   );
+}
+
+export default function IndividualLoginPage() {
+    return (
+        <Suspense fallback={<div>Yükleniyor...</div>}>
+            <IndividualLoginContent />
+        </Suspense>
+    );
 }
