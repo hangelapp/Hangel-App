@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
@@ -16,6 +15,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { HangelLogo } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -144,21 +144,25 @@ export default function MarketPage() {
         filteredList = filteredList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
-    if (activeEntityType !== 'all') {
-      filteredList = filteredList.filter(item => item.type === activeEntityType);
-    }
-
-    if (onlyDonating) {
+    if (activeCategory === 'hangel bağış') {
         filteredList = filteredList.filter(item => item.donationRate > 0);
-    }
-
-    if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
+    } else if (activeCategory === 'hangel imece') {
+        filteredList = filteredList.filter(item => item.type === 'cooperative' || item.type === 'social');
+    } else if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (brandCategories && brandCategories.length > 0) {
         filteredList = filteredList.filter(brand => brandCategories.includes(brand.category));
       } else {
         filteredList = [];
       }
+    }
+
+    if (activeEntityType !== 'all') {
+      filteredList = filteredList.filter(item => item.type === activeEntityType);
+    }
+
+    if (onlyDonating) {
+        filteredList = filteredList.filter(item => item.donationRate > 0);
     }
     
     // Sorting logic
@@ -238,6 +242,7 @@ export default function MarketPage() {
     <div className="flex flex-col h-full">
         <div className="p-2 space-y-2 border-b shrink-0">
             <div className="flex items-center gap-2">
+                <HangelLogo className="text-2xl" />
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
@@ -400,7 +405,7 @@ export default function MarketPage() {
                     activeCategory === cat.mainCategory
                         ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
                         : "text-muted-foreground hover:bg-accent",
-                    cat.mainCategory === 'Öne çıkanlar' && "font-bold"
+                    (cat.mainCategory === 'Öne çıkanlar' || cat.mainCategory === 'hangel bağış' || cat.mainCategory === 'hangel imece') && "font-bold"
                     )}
                 >
                     {cat.mainCategory}

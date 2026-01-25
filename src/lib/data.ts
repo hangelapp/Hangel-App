@@ -1402,6 +1402,8 @@ export const ngoFaqArticles = [
 
 export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Öne çıkanlar', subCategories: [] },
+    { mainCategory: 'hangel bağış', subCategories: [] },
+    { mainCategory: 'hangel imece', subCategories: [] },
     { mainCategory: 'Tümü', subCategories: [] },
     { mainCategory: 'Pazaryeri', subCategories: [] },
     { mainCategory: 'Giyim', subCategories: [] },
@@ -1500,6 +1502,7 @@ export const qrPaymentCardData = [
     
 
     
+
 
 
 
