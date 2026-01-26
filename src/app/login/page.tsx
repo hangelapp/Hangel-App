@@ -205,13 +205,7 @@ export default function LoginPage() {
                     </SelectContent>
                 </Select>
             </div>
-            <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-row-reverse sm:justify-between">
-                <div className="flex items-center gap-4 justify-center">
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><Twitter className="h-5 w-5" /></a>
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><Instagram className="h-5 w-5" /></a>
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5" /></a>
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><SpotifyIcon className="h-5 w-5" /></a>
-                </div>
+            <div className="space-y-4 sm:flex sm:flex-col sm:items-start sm:gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center text-left gap-y-2 gap-x-4">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex flex-wrap gap-x-3 gap-y-1">
@@ -220,6 +214,12 @@ export default function LoginPage() {
                         <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
                         <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                     </div>
+                </div>
+                <div className="flex items-center gap-4 justify-start">
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><Twitter className="h-5 w-5" /></a>
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><Instagram className="h-5 w-5" /></a>
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5" /></a>
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><SpotifyIcon className="h-5 w-5" /></a>
                 </div>
             </div>
         </div>
