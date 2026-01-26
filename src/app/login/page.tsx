@@ -98,8 +98,8 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto p-6 md:px-8 space-y-8">
-            <div className="flex items-center text-sm text-muted-foreground border-b pb-8">
+        <div className="container mx-auto p-6 md:px-8 space-y-6">
+            <div className="flex items-center text-sm text-muted-foreground border-b pb-6">
                 <HangelLogo className="text-xl" />
                 <span className="mx-2">&gt;</span>
                 <span>Sosyal Etki Platformu</span>
@@ -111,7 +111,7 @@ export default function LoginPage() {
                     <AccordionItem key={section.title} value={section.title}>
                         <AccordionTrigger className="text-base">{section.title}</AccordionTrigger>
                         <AccordionContent>
-                        <ul className="space-y-4 pt-2">
+                        <ul className="space-y-3 pt-2">
                             {section.links.map((link) => (
                             <li key={link.label}>
                                 <Link href={link.href} className="text-muted-foreground hover:text-foreground">
