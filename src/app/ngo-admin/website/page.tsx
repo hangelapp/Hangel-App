@@ -97,31 +97,41 @@ export default function WebsiteBuilderPage() {
     const [primaryColor, setPrimaryColor] = useState('#f34723');
     const [secondaryColor, setSecondaryColor] = useState('#f1f5f9');
     const [accentColor, setAccentColor] = useState('#042654');
+    const [openBanners, setOpenBanners] = useState<{ [key: number]: boolean }>({ 1: true, 2: false, 3: false });
+
+    const handleBannerToggle = (bannerIndex: number) => {
+        setOpenBanners(prev => ({...prev, [bannerIndex]: !prev[bannerIndex]}));
+    };
 
     const allLanguages = [
-        { code: 'tr', name: 'Türkçe' },
-        { code: 'en', name: 'English' },
-        { code: 'de', name: 'Deutsch' },
         { code: 'ar', name: 'العربية' },
-        { code: 'fr', name: 'Français' },
-        { code: 'es', name: 'Español' },
-        { code: 'ru', name: 'Русский' },
-        { code: 'zh', name: '中文' },
-        { code: 'ja', name: '日本語' },
-        { code: 'it', name: 'Italiano' },
-        { code: 'pt', name: 'Português' },
-        { code: 'nl', name: 'Nederlands' },
-        { code: 'sv', name: 'Svenska' },
-        { code: 'no', name: 'Norsk' },
+        { code: 'az', name: 'Azərbaycanca' },
         { code: 'da', name: 'Dansk' },
+        { code: 'de', name: 'Deutsch' },
+        { code: 'en', name: 'English' },
+        { code: 'es', name: 'Español' },
         { code: 'fi', name: 'Suomi' },
+        { code: 'fr', name: 'Français' },
         { code: 'el', name: 'Ελληνικά' },
-        { code: 'ko', name: '한국어' },
         { code: 'hi', name: 'हिन्दी' },
+        { code: 'it', name: 'Italiano' },
+        { code: 'ja', name: '日本語' },
+        { code: 'kk', name: 'Қазақша' },
+        { code: 'ko', name: '한국어' },
+        { code: 'ky', name: 'Кыргызча' },
+        { code: 'nl', name: 'Nederlands' },
+        { code: 'no', name: 'Norsk' },
+        { code: 'uz', name: 'Oʻzbekcha' },
         { code: 'pl', name: 'Polski' },
-        { code: 'uk', name: 'Українська' }
+        { code: 'pt', name: 'Português' },
+        { code: 'ru', name: 'Русский' },
+        { code: 'sv', name: 'Svenska' },
+        { code: 'tk', name: 'Türkmençe' },
+        { code: 'tr', name: 'Türkçe' },
+        { code: 'uk', name: 'Українська' },
+        { code: 'zh', name: '中文' }
     ];
-
+    
     const [supportedLanguages, setSupportedLanguages] = useState<string[]>(['tr']);
     const [defaultLanguage, setDefaultLanguage] = useState<string>('tr');
 
@@ -355,27 +365,43 @@ export default function WebsiteBuilderPage() {
                         <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" /> Banner Yönetimi</CardTitle>
                         <CardDescription>Ana sayfada gösterilecek 3 adet banner görselini ve metnini yönetin.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="space-y-3 p-4 border rounded-lg bg-muted/50">
-                                <h4 className="font-semibold text-sm">Banner {i}</h4>
-                                <div className="space-y-2">
-                                    <Label htmlFor={`banner-title-${i}`}>Başlık</Label>
-                                    <Input id={`banner-title-${i}`} placeholder={`Banner ${i} Başlığı`} />
+                            <Card key={i}>
+                                <div className="flex items-center justify-between p-4">
+                                    <Label htmlFor={`banner-switch-${i}`} className="font-semibold text-base cursor-pointer">Banner {i}</Label>
+                                    <Switch
+                                        id={`banner-switch-${i}`}
+                                        checked={openBanners[i] || false}
+                                        onCheckedChange={() => handleBannerToggle(i)}
+                                    />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor={`banner-desc-${i}`}>Açıklama</Label>
-                                    <Input id={`banner-desc-${i}`} placeholder={`Banner ${i} Açıklaması`} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor={`banner-image-${i}`}>Görsel URL</Label>
-                                    <Input id={`banner-image-${i}`} placeholder="https://..." />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor={`banner-link-${i}`}>Yönlendirme Linki</Label>
-                                    <Input id={`banner-link-${i}`} placeholder="/market/urun-1" />
-                                </div>
-                            </div>
+                                {openBanners[i] && (
+                                    <CardContent className="p-4 pt-0 border-t">
+                                        <div className="space-y-4 mt-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor={`banner-title-${i}`}>Başlık</Label>
+                                                <Input id={`banner-title-${i}`} placeholder={`Banner ${i} Başlığı`} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor={`banner-desc-${i}`}>Açıklama</Label>
+                                                <Input id={`banner-desc-${i}`} placeholder={`Banner ${i} Açıklaması`} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Görsel Ekle</Label>
+                                                <div className="flex items-center gap-2">
+                                                    <Input id={`banner-image-url-${i}`} placeholder="https://..." className="flex-grow"/>
+                                                    <Button variant="outline" size="sm" type="button" onClick={() => toast({title: "Bu özellik yakında gelecek"})}>Yükle</Button>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor={`banner-link-${i}`}>Yönlendirme Linki</Label>
+                                                <Input id={`banner-link-${i}`} placeholder="/market/urun-1" />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                )}
+                            </Card>
                         ))}
                     </CardContent>
                 </Card>
