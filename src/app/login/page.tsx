@@ -102,7 +102,7 @@ export default function LoginPage() {
             <nav className="md:hidden">
               <Accordion type="single" collapsible className="w-full text-sm">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger>Sivil Toplum Kuruluşları</AccordionTrigger>
+                  <AccordionTrigger className="font-semibold text-secondary-foreground">Sivil Toplum Kuruluşları</AccordionTrigger>
                   <AccordionContent className="flex flex-col items-start gap-3 pl-2">
                     <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Dernek</Link>
                     <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Vakıf</Link>
@@ -111,7 +111,7 @@ export default function LoginPage() {
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                  <AccordionTrigger>Markalar</AccordionTrigger>
+                  <AccordionTrigger className="font-semibold text-secondary-foreground">Markalar</AccordionTrigger>
                   <AccordionContent className="flex flex-col items-start gap-3 pl-2">
                     <Link href="/market" className="text-muted-foreground hover:text-foreground">Kooperatifler</Link>
                     <Link href="/market" className="text-muted-foreground hover:text-foreground">İktisadi işletmeler</Link>
@@ -120,7 +120,7 @@ export default function LoginPage() {
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
-                  <AccordionTrigger>Gönüllülük</AccordionTrigger>
+                  <AccordionTrigger className="font-semibold text-secondary-foreground">Gönüllülük</AccordionTrigger>
                   <AccordionContent className="flex flex-col items-start gap-3 pl-2">
                     <Link href="/volunteering" className="text-muted-foreground hover:text-foreground">Gönüllülük İlanları</Link>
                     <Link href="/my-applications" className="text-muted-foreground hover:text-foreground">Başvurularım</Link>
@@ -128,14 +128,14 @@ export default function LoginPage() {
                   </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="item-4">
-                  <AccordionTrigger>Öğrenci Kulüpleri</AccordionTrigger>
+                  <AccordionTrigger className="font-semibold text-secondary-foreground">Öğrenci Kulüpleri</AccordionTrigger>
                   <AccordionContent className="flex flex-col items-start gap-3 pl-2">
                     <Link href="/admin/clubs" className="text-muted-foreground hover:text-foreground">Kulüpleri Keşfet</Link>
                     <Link href="/admin/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
                   </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="item-5">
-                  <AccordionTrigger>Kütüphane</AccordionTrigger>
+                  <AccordionTrigger className="font-semibold text-secondary-foreground">Kütüphane</AccordionTrigger>
                   <AccordionContent className="flex flex-col items-start gap-3 pl-2">
                     <Link href="/library" className="text-muted-foreground hover:text-foreground">Tüm İçerikler</Link>
                     <Link href="/library" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
@@ -146,7 +146,7 @@ export default function LoginPage() {
             </nav>
             <nav className="hidden md:grid md:grid-cols-5 gap-8 text-sm">
                 <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Sivil Toplum Kuruluşları</h5>
+                    <h5 className="font-semibold text-secondary-foreground">Sivil Toplum Kuruluşları</h5>
                     <div className="flex flex-col items-start gap-2">
                        <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Dernek</Link>
                        <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Vakıf</Link>
@@ -155,7 +155,7 @@ export default function LoginPage() {
                     </div>
                 </div>
                 <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Markalar</h5>
+                    <h5 className="font-semibold text-secondary-foreground">Markalar</h5>
                     <div className="flex flex-col items-start gap-2">
                         <Link href="/market" className="text-muted-foreground hover:text-foreground">Kooperatifler</Link>
                         <Link href="/market" className="text-muted-foreground hover:text-foreground">İktisadi işletmeler</Link>
@@ -164,7 +164,7 @@ export default function LoginPage() {
                     </div>
                 </div>
                  <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Gönüllülük</h5>
+                    <h5 className="font-semibold text-secondary-foreground">Gönüllülük</h5>
                     <div className="flex flex-col items-start gap-2">
                        <Link href="/volunteering" className="text-muted-foreground hover:text-foreground">Gönüllülük İlanları</Link>
                        <Link href="/my-applications" className="text-muted-foreground hover:text-foreground">Başvurularım</Link>
@@ -172,14 +172,14 @@ export default function LoginPage() {
                     </div>
                 </div>
                  <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Öğrenci Kulüpleri</h5>
+                    <h5 className="font-semibold text-secondary-foreground">Öğrenci Kulüpleri</h5>
                      <div className="flex flex-col items-start gap-2">
                        <Link href="/admin/clubs" className="text-muted-foreground hover:text-foreground">Kulüpleri Keşfet</Link>
                        <Link href="/admin/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
                     </div>
                 </div>
                  <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Kütüphane</h5>
+                    <h5 className="font-semibold text-secondary-foreground">Kütüphane</h5>
                     <div className="flex flex-col items-start gap-2">
                        <Link href="/library" className="text-muted-foreground hover:text-foreground">Tüm İçerikler</Link>
                        <Link href="/library" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
@@ -190,7 +190,7 @@ export default function LoginPage() {
             <div className="border-b"></div>
             <div>
                 <p>
-                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:02120000000" className="text-primary hover:underline">0212 000 00 00</Link> numaralı telefonu arayın.
+                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
             </div>
             <div className="border-b pb-4">
@@ -215,11 +215,14 @@ export default function LoginPage() {
                         <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                     </div>
                 </div>
-                <div className="flex items-center gap-4 justify-start">
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><Twitter className="h-5 w-5" /></a>
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><Instagram className="h-5 w-5" /></a>
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5" /></a>
-                    <a href="#" className="text-muted-foreground hover:text-foreground"><SpotifyIcon className="h-5 w-5" /></a>
+                <div className="flex items-center gap-x-4 text-muted-foreground">
+                    <a href="#" className="hover:text-foreground">Twitter</a>
+                    <span>|</span>
+                    <a href="#" className="hover:text-foreground">Instagram</a>
+                    <span>|</span>
+                    <a href="#" className="hover:text-foreground">LinkedIn</a>
+                    <span>|</span>
+                    <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
             </div>
         </div>
