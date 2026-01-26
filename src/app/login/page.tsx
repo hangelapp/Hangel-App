@@ -1,4 +1,3 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -109,7 +108,7 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto px-6 pt-6 pb-6 md:px-8 space-y-6">
+        <div className="container mx-auto px-6 py-6 md:px-8 space-y-6">
             <div className="flex items-center text-sm text-muted-foreground border-b pb-4">
                 <HangelLogo className="text-xl" />
                 <span className="mx-2">&gt;</span>
@@ -120,12 +119,12 @@ export default function LoginPage() {
                 <Accordion type="single" collapsible className="w-full">
                     {footerSections.map((section) => (
                     <AccordionItem key={section.title} value={section.title}>
-                        <AccordionTrigger className="text-base">{section.title}</AccordionTrigger>
+                        <AccordionTrigger className="text-sm font-semibold">{section.title}</AccordionTrigger>
                         <AccordionContent>
-                        <ul className="space-y-3 pt-2">
+                        <ul className="space-y-2 pt-2">
                             {section.links.map((link) => (
                             <li key={link.label}>
-                                <Link href={link.href} className="text-muted-foreground hover:text-foreground">
+                                <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
                                 {link.label}
                                 </Link>
                             </li>
@@ -140,11 +139,11 @@ export default function LoginPage() {
             <div className="hidden md:grid md:grid-cols-5 gap-6">
                 {footerSections.map((section) => (
                     <div key={section.title}>
-                    <h3 className="font-semibold text-foreground mb-4">{section.title}</h3>
-                    <ul className="space-y-3">
+                    <h3 className="text-xs font-semibold text-foreground mb-3">{section.title}</h3>
+                    <ul className="space-y-2">
                         {section.links.map((link) => (
                         <li key={link.label}>
-                            <Link href={link.href} className="text-muted-foreground hover:text-foreground">
+                            <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground">
                             {link.label}
                             </Link>
                         </li>
