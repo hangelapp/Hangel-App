@@ -63,6 +63,7 @@ const group4Items: SideNavItem[] = [
   { href: '/settings', label: 'Ayarlar', icon: 'settings' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
+  { href: '/ngo-onboarding', label: 'STK Başvurusu', icon: 'HeartHandshake' },
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
 

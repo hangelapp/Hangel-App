@@ -215,7 +215,7 @@ export default function LoginPage() {
                         <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                     </div>
                 </div>
-                <div className="flex items-center gap-x-4 text-muted-foreground">
+                <div className="flex items-center gap-x-2 text-muted-foreground">
                     <a href="#" className="hover:text-foreground">Twitter</a>
                     <span>|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
