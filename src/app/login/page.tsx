@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,7 @@ export default function LoginPage() {
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
         <HangelLogo className="text-3xl text-primary" />
       </header>
-      <div className="relative flex-grow flex flex-col items-center md:items-start justify-center bg-[#042654] text-white text-center md:text-left pt-16 pb-12 px-6 md:px-8 lg:px-16">
+      <div className="relative flex-grow flex flex-col items-center justify-center bg-[#042654] text-white text-center pt-16 pb-12 px-6 sm:px-8 lg:px-16">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070"
@@ -59,7 +60,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#042654] via-[#042654]/80 to-[#042654]" />
         </div>
 
-        <main className="relative z-10 flex flex-col items-center md:items-start justify-center w-full">
+        <main className="relative z-10 flex flex-col items-center justify-center w-full">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
@@ -68,7 +69,7 @@ export default function LoginPage() {
                Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz. Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün. Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı Sosyal Etki Platformudur.
               </p>
 
-              <div className="mt-12 flex flex-row items-center justify-center md:justify-start gap-4 w-full max-w-md">
+              <div className="mt-12 flex flex-row items-center justify-center gap-4 w-full max-w-md">
                 <Button size="lg" asChild className="w-full h-12 text-base">
                   <Link href="/login/selection?action=login">Giriş Yap</Link>
                 </Button>
@@ -80,7 +81,7 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="w-full p-6 md:p-8 lg:p-12 text-xs text-muted-foreground space-y-5">
+        <div className="w-full p-6 sm:px-8 lg:px-16 text-xs text-muted-foreground space-y-5">
             <div className="md:hidden">
               <Accordion type="single" collapsible className="w-full text-sm">
                 <AccordionItem value="item-1">
