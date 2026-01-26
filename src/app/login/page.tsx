@@ -46,17 +46,19 @@ export default function LoginPage() {
             </div>
 
             <nav className="relative z-10 w-full mt-8">
-                <div className="container mx-auto px-6 text-center text-white/80">
-                <div className="flex justify-center items-center gap-x-8 gap-y-4 flex-wrap">
-                    <Link href="/market" className="hover:text-white font-bold text-xl">hangel bağış</Link>
-                    <Link href="/market" className="hover:text-white font-bold text-xl">hangel imece</Link>
-                    <Link href="/timeline" className="hover:text-white font-medium">Keşfet</Link>
-                    <Link href="/market" className="hover:text-white font-medium">Markalar</Link>
-                    <Link href="/volunteering" className="hover:text-white font-medium">Gönüllülük</Link>
-                    <Link href="/ngos" className="hover:text-white font-medium">STK'lar</Link>
-                    <Link href="/admin/clubs" className="hover:text-white font-medium">Öğrenci Kulüpleri</Link>
-                    <Link href="/library" className="hover:text-white font-medium">Kütüphane</Link>
-                </div>
+                <div className="container mx-auto px-6 text-center text-white/80 space-y-4">
+                  <div className="flex justify-center items-center gap-x-8">
+                      <Link href="/market" className="hover:text-white font-bold text-xl">hangel bağış</Link>
+                      <Link href="/market" className="hover:text-white font-bold text-xl">hangel imece</Link>
+                  </div>
+                  <div className="flex justify-center items-center gap-x-8 gap-y-4 flex-wrap">
+                      <Link href="/timeline" className="hover:text-white font-medium">Keşfet</Link>
+                      <Link href="/market" className="hover:text-white font-medium">Markalar</Link>
+                      <Link href="/volunteering" className="hover:text-white font-medium">Gönüllülük</Link>
+                      <Link href="/ngos" className="hover:text-white font-medium">STK'lar</Link>
+                      <Link href="/admin/clubs" className="hover:text-white font-medium">Öğrenci Kulüpleri</Link>
+                      <Link href="/library" className="hover:text-white font-medium">Kütüphane</Link>
+                  </div>
                 </div>
             </nav>
         </main>
