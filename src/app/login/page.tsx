@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -22,7 +23,7 @@ export default function LoginPage() {
       </div>
 
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
-        <HangelLogo className="text-3xl" />
+        <HangelLogo className="text-3xl text-primary" />
       </header>
 
       <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center p-6 pt-20">
@@ -32,7 +33,7 @@ export default function LoginPage() {
             </h1>
             
             <p className="mt-8 max-w-3xl text-base text-white/80 leading-relaxed">
-              Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %20’ye varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.
+             Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz. Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün. Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı Sosyal Etki Platformudur.
             </p>
 
             <div className="mt-12 flex flex-row items-center justify-center gap-4 w-full max-w-md">
@@ -44,14 +45,11 @@ export default function LoginPage() {
               </Button>
             </div>
 
-            <div className="mt-8 flex justify-center gap-x-8">
-                <Link href="/market" className="hover:text-white font-bold text-xl">hangel bağış</Link>
-                <Link href="/market" className="hover:text-white font-bold text-xl">hangel imece</Link>
-            </div>
-
-            <nav className="relative z-10 w-full">
+            <nav className="relative z-10 w-full mt-8">
                 <div className="container mx-auto px-6 text-center text-white/80">
-                <div className="flex justify-center gap-x-8 gap-y-2 flex-wrap">
+                <div className="flex justify-center items-center gap-x-8 gap-y-4 flex-wrap">
+                    <Link href="/market" className="hover:text-white font-bold text-xl">hangel bağış</Link>
+                    <Link href="/market" className="hover:text-white font-bold text-xl">hangel imece</Link>
                     <Link href="/timeline" className="hover:text-white font-medium">Keşfet</Link>
                     <Link href="/market" className="hover:text-white font-medium">Markalar</Link>
                     <Link href="/volunteering" className="hover:text-white font-medium">Gönüllülük</Link>
