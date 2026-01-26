@@ -134,7 +134,7 @@ export default function LoginPage() {
       </section>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-5">
+        <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-4">
             <div className="md:hidden">
               <Accordion type="single" collapsible className="w-full text-sm">
                 <AccordionItem value="item-1">
@@ -243,46 +243,47 @@ export default function LoginPage() {
             </div>
             <div className="flex flex-wrap items-center gap-x-2">
                 <a href="#" className="hover:text-foreground">App Store</a>
-                <span className='mx-1'>|</span>
+                <span>|</span>
                 <a href="#" className="hover:text-foreground">Google Play</a>
-                <span className='mx-1'>|</span>
+                <span>|</span>
                 <a href="#" className="hover:text-foreground">AppGallery</a>
-                <span className='mx-1'>|</span>
+                <span>|</span>
                 <a href="#" className="hover:text-foreground">Microsoft Store</a>
-                <span className='mx-1'>|</span>
+                <span>|</span>
                 <a href="#" className="hover:text-foreground">Chrome Web Store</a>
             </div>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex flex-wrap items-center gap-x-2">
                     <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="#" className="hover:text-foreground">Kariyer</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
-                    <span className='mx-1'>|</span>
+                    <span>|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
-                <div className="flex items-center gap-x-1 text-muted-foreground">
+                <div className="flex items-center gap-x-2 text-muted-foreground">
                     <a href="#" className="hover:text-foreground">x.com</a>
-                    <span className="mx-1">|</span>
+                    <span>|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
-                    <span className="mx-1">|</span>
+                    <span>|</span>
                     <a href="#" className="hover:text-foreground">LinkedIn</a>
-                    <span className="mx-1">|</span>
+                    <span>|</span>
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
             </div>
+            <div className="border-b"></div>
             <p className="text-center pt-5">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
