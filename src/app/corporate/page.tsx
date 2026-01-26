@@ -44,4 +44,25 @@ export default function CorporatePage() {
             <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold font-headline">Kamu ve Kurumsal İlişkiler</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Hangel olarak, sürdürülebilir bir etki yaratmanın yolunun güçlü işbirliklerind
+                    Hangel olarak, sürdürülebilir bir etki yaratmanın yolunun güçlü işbirliklerinden geçtiğine inanıyoruz.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {corporateItems.map((item) => (
+                    <Link href={item.href} key={item.title} className="block">
+                        <Card className="h-full hover:border-primary transition-all hover:scale-[1.02]">
+                            <CardHeader className="flex-row items-center gap-4">
+                                <item.icon className="h-8 w-8 text-primary" />
+                                <CardTitle>{item.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">{item.description}</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                ))}
+            </div>
+        </div>
+    );
+}
