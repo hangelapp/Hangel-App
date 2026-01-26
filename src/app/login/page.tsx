@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -249,25 +250,24 @@ export default function LoginPage() {
             </div>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                <div className="flex flex-col items-start text-left gap-y-2">
-                    <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
-                    <div className="flex flex-wrap items-center gap-x-2">
-                        <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="#" className="hover:text-foreground">Kariyer</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
-                    </div>
+                <div className="flex flex-wrap items-center gap-x-2">
+                    <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="#" className="hover:text-foreground">Kariyer</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
+                    <span className='mx-1'>|</span>
+                    <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
                 <div className="flex items-center gap-x-1 text-muted-foreground">
                     <a href="#" className="hover:text-foreground">x.com</a>
@@ -279,8 +279,10 @@ export default function LoginPage() {
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
             </div>
+            <p className="text-center pt-5">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
   );
 }
+
