@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Briefcase, ArrowLeft, TrendingUp, Handshake, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 export default function CompaniesPage() {
     const router = useRouter();
@@ -19,6 +20,8 @@ export default function CompaniesPage() {
             title: "Mesajınız Gönderildi",
             description: "Ekibimiz en kısa sürede sizinle iletişime geçecektir.",
         });
+        // Optionally, redirect or clear form
+        // e.g., router.push('/thank-you');
     };
 
     return (
@@ -34,6 +37,11 @@ export default function CompaniesPage() {
                 <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
                     Kurumsal sosyal sorumluluk hedeflerinize ulaşın, marka değerinizi artırın ve çalışan bağlılığını güçlendirin.
                 </p>
+                <div className="flex justify-center">
+                    <Button asChild size="lg">
+                        <Link href="/login/selection?action=register">Hemen Başvur</Link>
+                    </Button>
+                </div>
             </div>
 
             <Card>
@@ -55,6 +63,42 @@ export default function CompaniesPage() {
                         <Users className="h-8 w-8 text-primary"/>
                         <h3 className="font-semibold">Çalışan Bağlılığını Artırın</h3>
                         <p className="text-sm text-muted-foreground">Çalışanlarınıza yönelik özel gönüllülük programları ve sosyal etki kampanyaları düzenleyin.</p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Nasıl Çalışır?</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>1</div>
+                        <div>
+                            <h4 className="font-semibold">Başvuru ve Değerlendirme</h4>
+                            <p>Platformumuza kurumsal ortak olarak katılmak için başvuru formunu doldurun. Ekibimiz, sosyal etki vizyonunuzu ve hedeflerinizi anlamak için sizinle iletişime geçsin.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>2</div>
+                        <div>
+                            <h4 className="font-semibold">Entegrasyon ve Kampanya Planı</h4>
+                            <p>Şirketinize özel bir işbirliği modeli oluşturalım. Çalışanlarınıza veya müşterilerinize yönelik bağış kampanyaları, gönüllülük günleri veya farkındalık projeleri planlayalım.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>3</div>
+                         <div>
+                            <h4 className="font-semibold">Çalışan Katılımı ve Etkileşim</h4>
+                            <p>Çalışanlarınızı Hangel platformu üzerinden organize edilen gönüllülük faaliyetlerine katılmaya teşvik edin, takım ruhunu ve şirket içi motivasyonu artırın.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>4</div>
+                        <div>
+                            <h4 className="font-semibold">Etki Raporlaması ve İletişim</h4>
+                            <p>İşbirliğinizin yarattığı somut sosyal etkiyi (desteklenen STK'lar, gönüllülük saatleri, ulaşılan kişi sayısı) size özel raporlarla takip edin ve bu başarıyı paydaşlarınızla paylaşın.</p>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

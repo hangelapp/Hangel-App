@@ -59,6 +59,42 @@ export default function MunicipalitiesPage() {
                 </CardContent>
             </Card>
 
+             <Card>
+                <CardHeader>
+                    <CardTitle>Nasıl Çalışır?</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>1</div>
+                        <div>
+                            <h4 className="font-semibold">Stratejik Ortaklık Kurulması</h4>
+                            <p>Belediyenizin sosyal hedefleri ve öncelikleri doğrultusunda bir işbirliği çerçevesi belirlemek için bir araya gelelim.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>2</div>
+                        <div>
+                            <h4 className="font-semibold">"Akıllı Şehir" Entegrasyonu</h4>
+                            <p>Belediyenizin mevcut dijital hizmetlerini (e-belediye, şehir uygulamaları vb.) Hangel platformu ile entegre ederek vatandaşlara tek bir noktadan sosyal katılım imkanı sunalım.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>3</div>
+                         <div>
+                            <h4 className="font-semibold">Vatandaş Katılımı Kampanyaları</h4>
+                            <p>Şehrinize özel gönüllülük günleri, mahalle bazlı yardım kampanyaları veya sosyal sorumluluk yarışmaları gibi etkinlikler düzenleyerek vatandaşların aktif katılımını sağlayalım.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>4</div>
+                        <div>
+                            <h4 className="font-semibold">Etki Analizi ve Raporlama</h4>
+                            <p>Gerçekleştirilen projelerin sosyal etkisini (gönüllü katılım oranları, ulaşılan kişi sayısı vb.) ölçümleyerek belediyenizin sosyal karnesini şeffaf bir şekilde kamuoyuyla paylaşmanıza yardımcı olalım.</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                     <CardTitle>İletişime Geçin</CardTitle>

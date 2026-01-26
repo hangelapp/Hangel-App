@@ -61,6 +61,42 @@ export default function UniversitiesPage() {
 
             <Card>
                 <CardHeader>
+                    <CardTitle>Nasıl Çalışır?</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>1</div>
+                        <div>
+                            <h4 className="font-semibold">Kampüs Programına Başvuru</h4>
+                            <p>Üniversitenizin Hangel Kampüs Programı'na dahil olması için bizimle iletişime geçin. Üniversitenize özel bir işbirliği modeli oluşturalım.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>2</div>
+                        <div>
+                            <h4 className="font-semibold">Kulüp ve Öğrenci Entegrasyonu</h4>
+                            <p>Öğrenci kulüplerinizi platforma davet edin ve onlara özel yönetim panelleri sağlayın. Öğrencilerinizi gönüllülük ve sosyal etki faaliyetleri için platforma katılmaya teşvik edin.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>3</div>
+                         <div>
+                            <h4 className="font-semibold">Sosyal Sorumluluk Projeleri</h4>
+                            <p>Üniversitenizin "Sosyal Sorumluluk" veya "Topluma Hizmet Uygulamaları" gibi dersleri kapsamında öğrencilerin Hangel üzerinden gönüllülük projeleri bulmalarını ve tamamlamalarını sağlayın.</p>
+                        </div>
+                    </div>
+                     <div className='flex items-start gap-4'>
+                        <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>4</div>
+                        <div>
+                            <h4 className="font-semibold">Etki Ölçümü ve Kariyer Fırsatları</h4>
+                            <p>Üniversitenizin ve öğrencilerinizin yarattığı toplam sosyal etkiyi (gönüllülük saatleri, desteklenen projeler) raporlayın. Öğrencilerinizi platformdaki şirket ve STK'larla buluşturarak kariyer olanakları yaratın.</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
                     <CardTitle>İletişime Geçin</CardTitle>
                     <CardDescription>Üniversitenize özel Hangel Kampüs çözümleri hakkında bilgi almak için formu doldurun.</CardDescription>
                 </CardHeader>
