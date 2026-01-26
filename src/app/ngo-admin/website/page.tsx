@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target, ArrowLeft, Languages } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +16,13 @@ import Link from 'next/link';
 import { ngos } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // A new component for read-only sections with an edit link
 const ReadOnlySectionCard = ({ icon: Icon, title, description, editHref }: { icon: React.ElementType, title: string, description: string, editHref: string }) => (
@@ -39,6 +46,46 @@ const ReadOnlySectionCard = ({ icon: Icon, title, description, editHref }: { ico
     </Card>
 );
 
+const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: {code: string, name: string}[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
+    return (
+        <div className="space-y-2">
+            <Label>{title}</Label>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10">
+                        {selected.length > 0 ? (
+                             <div className="flex flex-wrap gap-1">
+                                {selected.map((langCode) => (
+                                    <Badge key={langCode} variant="secondary" className="font-normal">{options.find(o => o.code === langCode)?.name}</Badge>
+                                ))}
+                            </div>
+                        ) : `${title} seçin...`}
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                    {options.map((option) => (
+                        <DropdownMenuCheckboxItem
+                            key={option.code}
+                            checked={selected.includes(option.code)}
+                            onCheckedChange={(checked) => {
+                                if (checked) {
+                                    onSelectedChange([...selected, option.code]);
+                                } else {
+                                     if (selected.length > 1) {
+                                        onSelectedChange(selected.filter((item) => item !== option.code));
+                                    }
+                                }
+                            }}
+                        >
+                            {option.name}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+    );
+};
+
 
 export default function WebsiteBuilderPage() {
     const router = useRouter();
@@ -50,6 +97,22 @@ export default function WebsiteBuilderPage() {
     const [primaryColor, setPrimaryColor] = useState('#f34723');
     const [secondaryColor, setSecondaryColor] = useState('#f1f5f9');
     const [accentColor, setAccentColor] = useState('#042654');
+
+    const allLanguages = [
+        { code: 'tr', name: 'Türkçe' },
+        { code: 'en', name: 'English' },
+        { code: 'de', name: 'Deutsch' },
+        { code: 'ar', name: 'العربية' }
+    ];
+
+    const [supportedLanguages, setSupportedLanguages] = useState<string[]>(['tr']);
+    const [defaultLanguage, setDefaultLanguage] = useState<string>('tr');
+
+    useEffect(() => {
+        if (supportedLanguages.length > 0 && !supportedLanguages.includes(defaultLanguage)) {
+            setDefaultLanguage(supportedLanguages[0]);
+        }
+    }, [supportedLanguages, defaultLanguage]);
 
     const previewLink = `/ngo-admin/website/preview?primary=${primaryColor.substring(1)}&secondary=${secondaryColor.substring(1)}&accent=${accentColor.substring(1)}`;
 
@@ -195,29 +258,28 @@ export default function WebsiteBuilderPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Languages className="h-5 w-5 text-primary" />Dil Yönetimi</CardTitle>
-                    <CardDescription>Sitenizin varsayılan dilini ve desteklenen diğer dilleri yönetin.</CardDescription>
+                    <CardDescription>Sitenizin varsayılan dilini ve yayınlanacağı dilleri yönetin.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    <MultiSelect 
+                        title="Yayın Dilleri"
+                        options={allLanguages}
+                        selected={supportedLanguages}
+                        onSelectedChange={setSupportedLanguages}
+                    />
                     <div className="space-y-2">
                         <Label htmlFor="default-lang">Varsayılan Dil</Label>
-                        <Select defaultValue="tr">
+                        <Select value={defaultLanguage} onValueChange={setDefaultLanguage} disabled={supportedLanguages.length === 0}>
                             <SelectTrigger id="default-lang">
                                 <SelectValue placeholder="Dil seçin..." />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="tr">Türkçe</SelectItem>
-                                <SelectItem value="en">English</SelectItem>
-                                <SelectItem value="de">Deutsch</SelectItem>
-                                <SelectItem value="ar">العربية</SelectItem>
+                                {supportedLanguages.map(langCode => {
+                                    const lang = allLanguages.find(l => l.code === langCode);
+                                    return lang ? <SelectItem key={lang.code} value={lang.code}>{lang.name}</SelectItem> : null;
+                                })}
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                            <Label htmlFor="multi-lang-switch">Çoklu Dil Desteği</Label>
-                            <p className="text-xs text-muted-foreground">Ziyaretçilerin site dilini değiştirmesine izin verin.</p>
-                        </div>
-                        <Switch id="multi-lang-switch" />
                     </div>
                 </CardContent>
             </Card>
