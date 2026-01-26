@@ -158,4 +158,11 @@ export default function AboutPage() {
                     <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
-                    <a href="https://wa.me/905547007007" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground transition-
+                    <a href="https://wa.me/905547007007" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
+                 </div>
+            </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
