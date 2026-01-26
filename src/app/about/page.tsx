@@ -88,10 +88,10 @@ export default function AboutPage() {
         <CardHeader>
           <CardTitle className="text-xl">Kurumsal</CardTitle>
           <CardDescription>
-            Şeffaflık ilkemiz doğrultusunda kurumsal bilgilerimize ve yatırımcı ilişkileri sayfamıza buradan ulaşabilirsiniz.
+            Şeffaflık ilkemiz doğrultusunda kurumsal bilgilerimize, yatırımcı ve kamu ilişkileri sayfalarımıza buradan ulaşabilirsiniz.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <Link href="/bilgi-toplumu-hizmetleri" className="block">
             <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
               <Building2 className="h-8 w-8 text-primary mx-auto mb-2"/>
@@ -104,17 +104,6 @@ export default function AboutPage() {
               <p className="font-semibold">Yatırımcı İlişkileri</p>
             </div>
           </Link>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-            <CardTitle className="text-xl">Kamu İlişkileri</CardTitle>
-            <CardDescription>
-                Kurumsal işbirlikleri ve ortaklıklar için bizimle iletişime geçin.
-            </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link href="/contact/companies" className="block">
                 <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
                     <Briefcase className="h-8 w-8 text-primary mx-auto mb-2"/>
@@ -140,7 +129,7 @@ export default function AboutPage() {
                 </div>
             </Link>
         </CardContent>
-    </Card>
+      </Card>
       
       <Card>
         <CardHeader>
