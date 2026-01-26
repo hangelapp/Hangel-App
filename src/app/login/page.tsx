@@ -241,11 +241,15 @@ export default function LoginPage() {
                     </Select>
                 </div>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <div className="flex flex-wrap items-center gap-x-2">
                 <a href="#" className="hover:text-foreground">App Store</a>
+                <span className='mx-1'>|</span>
                 <a href="#" className="hover:text-foreground">Google Play</a>
+                <span className='mx-1'>|</span>
                 <a href="#" className="hover:text-foreground">AppGallery</a>
+                <span className='mx-1'>|</span>
                 <a href="#" className="hover:text-foreground">Microsoft Store</a>
+                <span className='mx-1'>|</span>
                 <a href="#" className="hover:text-foreground">Chrome Web Store</a>
             </div>
             <div className="border-b"></div>
