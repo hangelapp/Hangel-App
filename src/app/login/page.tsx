@@ -48,7 +48,7 @@ export default function LoginPage() {
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
         <HangelLogo className="text-3xl text-primary" />
       </header>
-      <div className="relative flex-grow flex flex-col items-center justify-center bg-[#042654] text-white text-center pt-16 pb-12 px-6 sm:px-8 lg:px-16">
+      <main className="relative flex-grow flex flex-col items-center justify-center bg-[#042654] text-white text-center pt-16 pb-12 px-6 sm:px-8 lg:px-16">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070"
@@ -60,7 +60,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#042654] via-[#042654]/80 to-[#042654]" />
         </div>
 
-        <main className="relative z-10 flex flex-col items-center justify-center w-full">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
@@ -77,11 +77,11 @@ export default function LoginPage() {
                   <Link href="/login/selection?action=register">Kayıt Ol</Link>
                 </Button>
               </div>
-        </main>
-      </div>
+        </div>
+      </main>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="w-full p-6 sm:px-8 lg:px-16 text-xs text-muted-foreground space-y-5">
+        <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-5">
             <div className="md:hidden">
               <Accordion type="single" collapsible className="w-full text-sm">
                 <AccordionItem value="item-1">
