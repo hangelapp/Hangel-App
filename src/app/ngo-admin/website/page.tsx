@@ -102,7 +102,24 @@ export default function WebsiteBuilderPage() {
         { code: 'tr', name: 'Türkçe' },
         { code: 'en', name: 'English' },
         { code: 'de', name: 'Deutsch' },
-        { code: 'ar', name: 'العربية' }
+        { code: 'ar', name: 'العربية' },
+        { code: 'fr', name: 'Français' },
+        { code: 'es', name: 'Español' },
+        { code: 'ru', name: 'Русский' },
+        { code: 'zh', name: '中文' },
+        { code: 'ja', name: '日本語' },
+        { code: 'it', name: 'Italiano' },
+        { code: 'pt', name: 'Português' },
+        { code: 'nl', name: 'Nederlands' },
+        { code: 'sv', name: 'Svenska' },
+        { code: 'no', name: 'Norsk' },
+        { code: 'da', name: 'Dansk' },
+        { code: 'fi', name: 'Suomi' },
+        { code: 'el', name: 'Ελληνικά' },
+        { code: 'ko', name: '한국어' },
+        { code: 'hi', name: 'हिन्दी' },
+        { code: 'pl', name: 'Polski' },
+        { code: 'uk', name: 'Українська' }
     ];
 
     const [supportedLanguages, setSupportedLanguages] = useState<string[]>(['tr']);
