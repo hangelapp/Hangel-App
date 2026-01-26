@@ -240,7 +240,7 @@ export default function LoginPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex flex-col items-start text-left gap-y-2">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
-                    <div className="flex items-center gap-x-2">
+                    <div className="flex items-center gap-x-1">
                         <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
                         <span className='mx-1'>|</span>
                         <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
