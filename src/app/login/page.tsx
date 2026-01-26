@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Globe, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { volunteeringOpportunities } from '@/lib/data';
 
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
@@ -100,7 +101,7 @@ export default function LoginPage() {
                 </div>
                 </div>
                 <Button asChild variant="outline" className="w-full mt-8 border-primary text-primary hover:bg-primary/5 hover:text-primary font-bold">
-                <Link href="/volunteering">Tüm İlanları Gör</Link>
+                <Link href="/volunteering">Tüm İlanları Gör ({volunteeringOpportunities.length})</Link>
                 </Button>
             </div>
         </div>
