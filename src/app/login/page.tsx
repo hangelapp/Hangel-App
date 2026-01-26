@@ -124,7 +124,7 @@ export default function LoginPage() {
                         <ul className="space-y-2 pt-2">
                             {section.links.map((link) => (
                             <li key={link.label}>
-                                <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                                <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground">
                                 {link.label}
                                 </Link>
                             </li>
@@ -162,16 +162,16 @@ export default function LoginPage() {
             <div className="border-t pt-4 text-muted-foreground text-xs space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+                     <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        <span>Türkçe (21 dil desteklenmektedir)</span>
+                    </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
                         <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                         <span className="hidden sm:inline">|</span>
                         <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
                          <span className="hidden sm:inline">|</span>
                         <Link href="/support" className="hover:text-foreground">Destek</Link>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        <span>Türkçe (21 dil desteklenmektedir)</span>
                     </div>
                 </div>
                  <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center pt-2">
