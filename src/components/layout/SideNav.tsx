@@ -73,7 +73,7 @@ const NavList = ({ items }: { items: SideNavItem[] }) => (
 
 export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { mainItems: SideNavItem[], navItems: SideNavItem[], userItems: SideNavItem[], secondaryItems: SideNavItem[] }) {
   const pathname = usePathname();
-  const isAuthPage = pathname === '/login' || pathname === '/onboarding' || pathname === '/';
+  const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
   if (isAuthPage) {
     return null;
@@ -98,7 +98,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
                 <ul className="bg-card rounded-lg overflow-hidden border">
                     <li>
                         <Link
-                            href="/timeline"
+                            href="/login"
                             className='group flex items-center p-3 hover:bg-accent/50'
                         >
                             <div className='w-7 h-7 rounded-md flex items-center justify-center bg-red-500'>

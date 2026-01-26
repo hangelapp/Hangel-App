@@ -42,9 +42,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');
+    const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
 
-    if (isPreviewPage || isSuperAdminPage) {
+    if (isPreviewPage || isSuperAdminPage || isAuthPage) {
         return <>{children}</>;
     }
 
