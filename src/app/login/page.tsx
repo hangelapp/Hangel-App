@@ -257,17 +257,21 @@ export default function LoginPage() {
                 <div className="flex flex-col items-start text-left gap-y-2">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex items-center gap-x-1 flex-wrap">
-                        <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
-                        <span className='mx-1'>|</span>
                         <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
                         <span className='mx-1'>|</span>
-                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                        <Link href="#" className="hover:text-foreground">Kariyer</Link>
                         <span className='mx-1'>|</span>
-                        <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
+                        <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
                         <span className='mx-1'>|</span>
                         <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
                         <span className='mx-1'>|</span>
-                        <Link href="#" className="hover:text-foreground">Kariyer</Link>
+                        <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
+                        <span className='mx-1'>|</span>
+                        <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
+                        <span className='mx-1'>|</span>
+                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                        <span className='mx-1'>|</span>
+                        <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
                     </div>
                 </div>
                 <div className="flex items-center gap-x-1 text-muted-foreground">
