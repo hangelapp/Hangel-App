@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target, ArrowLeft } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target, ArrowLeft, Languages } from 'lucide-react';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -190,6 +190,36 @@ export default function WebsiteBuilderPage() {
                         Renkleri Sıfırla
                     </Button>
                 </CardFooter>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Languages className="h-5 w-5 text-primary" />Dil Yönetimi</CardTitle>
+                    <CardDescription>Sitenizin varsayılan dilini ve desteklenen diğer dilleri yönetin.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="default-lang">Varsayılan Dil</Label>
+                        <Select defaultValue="tr">
+                            <SelectTrigger id="default-lang">
+                                <SelectValue placeholder="Dil seçin..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="tr">Türkçe</SelectItem>
+                                <SelectItem value="en">English</SelectItem>
+                                <SelectItem value="de">Deutsch</SelectItem>
+                                <SelectItem value="ar">العربية</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-1">
+                            <Label htmlFor="multi-lang-switch">Çoklu Dil Desteği</Label>
+                            <p className="text-xs text-muted-foreground">Ziyaretçilerin site dilini değiştirmesine izin verin.</p>
+                        </div>
+                        <Switch id="multi-lang-switch" />
+                    </div>
+                </CardContent>
             </Card>
 
             <div className="space-y-1">
