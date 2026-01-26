@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target, ArrowLeft, Languages } from 'lucide-react';
+import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target, ArrowLeft, Languages, Image as ImageIcon, FileText } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -333,6 +333,36 @@ export default function WebsiteBuilderPage() {
                     </CardContent>
                 </Card>
 
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" /> Banner Yönetimi</CardTitle>
+                        <CardDescription>Ana sayfada gösterilecek 3 adet banner görselini ve metnini yönetin.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="space-y-3 p-4 border rounded-lg bg-muted/50">
+                                <h4 className="font-semibold text-sm">Banner {i}</h4>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`banner-title-${i}`}>Başlık</Label>
+                                    <Input id={`banner-title-${i}`} placeholder={`Banner ${i} Başlığı`} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`banner-desc-${i}`}>Açıklama</Label>
+                                    <Input id={`banner-desc-${i}`} placeholder={`Banner ${i} Açıklaması`} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`banner-image-${i}`}>Görsel URL</Label>
+                                    <Input id={`banner-image-${i}`} placeholder="https://..." />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`banner-link-${i}`}>Yönlendirme Linki</Label>
+                                    <Input id={`banner-link-${i}`} placeholder="/market/urun-1" />
+                                </div>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+
                 <ReadOnlySectionCard 
                     icon={Target}
                     title="Bağış Kampanyaları"
@@ -357,6 +387,13 @@ export default function WebsiteBuilderPage() {
                     title="Şeffaflık" 
                     description={`Mevcut puan: ${ngo?.transparencyScore}/100.`}
                     editHref="/ngo-admin/transparency"
+                />
+
+                <ReadOnlySectionCard 
+                    icon={FileText} 
+                    title="Politika ve Sözleşmeler" 
+                    description="Sitenizde gösterilecek yasal metinleri ve politikaları yönetin."
+                    editHref="/ngo-admin/contracts"
                 />
 
                 <Card>

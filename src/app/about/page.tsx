@@ -1,5 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Twitter, Instagram, Linkedin, Users, HandCoins, Hourglass, MessageSquare, Building2, Briefcase } from 'lucide-react';
+import { Mail, Phone, MapPin, Twitter, Instagram, Linkedin, Users, HandCoins, Hourglass, MessageSquare, Building2, Briefcase, Landmark, School, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AboutPage() {
@@ -105,6 +106,41 @@ export default function AboutPage() {
           </Link>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+            <CardTitle className="text-xl">Kamu İlişkileri</CardTitle>
+            <CardDescription>
+                Kurumsal işbirlikleri ve ortaklıklar için bizimle iletişime geçin.
+            </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link href="/contact/companies" className="block">
+                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
+                    <Briefcase className="h-8 w-8 text-primary mx-auto mb-2"/>
+                    <p className="font-semibold">Şirketler için</p>
+                </div>
+            </Link>
+            <Link href="/contact/municipalities" className="block">
+                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
+                    <Landmark className="h-8 w-8 text-primary mx-auto mb-2"/>
+                    <p className="font-semibold">Belediyeler için</p>
+                </div>
+            </Link>
+            <Link href="/contact/universities" className="block">
+                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
+                    <School className="h-8 w-8 text-primary mx-auto mb-2"/>
+                    <p className="font-semibold">Üniversiteler için</p>
+                </div>
+            </Link>
+            <Link href="/contact/funds" className="block">
+                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
+                    <DollarSign className="h-8 w-8 text-primary mx-auto mb-2"/>
+                    <p className="font-semibold">Uluslararası Fonlar için</p>
+                </div>
+            </Link>
+        </CardContent>
+    </Card>
       
       <Card>
         <CardHeader>

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2 } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2, CreditCard } from 'lucide-react';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -134,6 +134,9 @@ export default function NgoProfilePage() {
             <div className="flex items-center gap-2">
                 <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
                     <Store className="h-4 w-4" />
+                </Button>
+                <Button onClick={() => toast({ title: 'POS ile ödeme özelliği yakında gelecek.'})} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+                    <CreditCard className="h-4 w-4" />
                 </Button>
                 <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
                 <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">

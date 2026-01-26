@@ -21,6 +21,8 @@ import {
   UserCog,
   LifeBuoy,
   LogOut,
+  Megaphone,
+  Inbox
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -45,10 +47,32 @@ const navItems: SideNavItem[] = [
   { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy' },
   { href: '/super-admin/communications', label: 'Bildirimler ve Bülten', icon: 'Bell' },
   { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone' },
+  { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users' },
   { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings' },
   { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle' },
   { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy' },
 ];
+
+const iconColorMap: { [key: string]: string } = {
+  'FileText': 'bg-sky-500',
+  'UserCog': 'bg-purple-500',
+  'Building': 'bg-orange-500',
+  'Store': 'bg-green-500',
+  'School': 'bg-gray-500',
+  'HeartHandshake': 'bg-red-500',
+  'Newspaper': 'bg-blue-500',
+  'BarChart3': 'bg-indigo-500',
+  'Shield': 'bg-green-600',
+  'BookCopy': 'bg-amber-600',
+  'Bell': 'bg-teal-500',
+  'Settings': 'bg-gray-500',
+  'HelpCircle': 'bg-pink-500',
+  'LifeBuoy': 'bg-blue-400',
+  'Megaphone': 'bg-yellow-500',
+  'LayoutDashboard': 'bg-blue-500',
+  'Inbox': 'bg-cyan-500',
+  'Users': 'bg-blue-500',
+};
 
 const NavLink = ({ item }: { item: SideNavItem }) => {
     const pathname = usePathname();
