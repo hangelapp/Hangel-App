@@ -72,7 +72,96 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto px-6 py-6 text-xs text-muted-foreground space-y-5">
+        <div className="container mx-auto p-4 md:px-6 md:py-6 text-xs text-muted-foreground space-y-5">
+            <nav className="md:hidden">
+              <Accordion type="single" collapsible className="w-full text-sm">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>Sivil Toplum Kuruluşları</AccordionTrigger>
+                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
+                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Dernek</Link>
+                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Vakıf</Link>
+                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Spor Kulübü</Link>
+                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Özel İzinli</Link>
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2">
+                  <AccordionTrigger>Markalar</AccordionTrigger>
+                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Giyim</Link>
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Elektronik</Link>
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Ev & Yaşam</Link>
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Tüm Markalar</Link>
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-3">
+                  <AccordionTrigger>Gönüllülük</AccordionTrigger>
+                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
+                    <Link href="/volunteering" className="text-muted-foreground hover:text-foreground">Gönüllülük İlanları</Link>
+                    <Link href="/my-applications" className="text-muted-foreground hover:text-foreground">Başvurularım</Link>
+                    <Link href="/my-badges" className="text-muted-foreground hover:text-foreground">Etki Puanım</Link>
+                  </AccordionContent>
+                </AccordionItem>
+                 <AccordionItem value="item-4">
+                  <AccordionTrigger>Öğrenci Kulüpleri</AccordionTrigger>
+                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
+                    <Link href="/admin/clubs" className="text-muted-foreground hover:text-foreground">Kulüpleri Keşfet</Link>
+                    <Link href="/admin/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
+                  </AccordionContent>
+                </AccordionItem>
+                 <AccordionItem value="item-5">
+                  <AccordionTrigger>Kütüphane</AccordionTrigger>
+                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
+                    <Link href="/library" className="text-muted-foreground hover:text-foreground">Tüm İçerikler</Link>
+                    <Link href="/library" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
+                    <Link href="/library/sivil-toplum-sozlugu" className="text-muted-foreground hover:text-foreground">Sözlük</Link>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </nav>
+            <nav className="hidden md:grid md:grid-cols-5 gap-8 text-sm">
+                <div className="space-y-3">
+                    <h5 className="font-semibold text-foreground">Sivil Toplum Kuruluşları</h5>
+                    <div className="flex flex-col items-start gap-2">
+                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Dernek</Link>
+                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Vakıf</Link>
+                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Spor Kulübü</Link>
+                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Özel İzinli</Link>
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <h5 className="font-semibold text-foreground">Markalar</h5>
+                    <div className="flex flex-col items-start gap-2">
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Giyim</Link>
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Elektronik</Link>
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Ev & Yaşam</Link>
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Tüm Markalar</Link>
+                    </div>
+                </div>
+                 <div className="space-y-3">
+                    <h5 className="font-semibold text-foreground">Gönüllülük</h5>
+                    <div className="flex flex-col items-start gap-2">
+                       <Link href="/volunteering" className="text-muted-foreground hover:text-foreground">Gönüllülük İlanları</Link>
+                       <Link href="/my-applications" className="text-muted-foreground hover:text-foreground">Başvurularım</Link>
+                       <Link href="/my-badges" className="text-muted-foreground hover:text-foreground">Etki Puanım</Link>
+                    </div>
+                </div>
+                 <div className="space-y-3">
+                    <h5 className="font-semibold text-foreground">Öğrenci Kulüpleri</h5>
+                     <div className="flex flex-col items-start gap-2">
+                       <Link href="/admin/clubs" className="text-muted-foreground hover:text-foreground">Kulüpleri Keşfet</Link>
+                       <Link href="/admin/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
+                    </div>
+                </div>
+                 <div className="space-y-3">
+                    <h5 className="font-semibold text-foreground">Kütüphane</h5>
+                    <div className="flex flex-col items-start gap-2">
+                       <Link href="/library" className="text-muted-foreground hover:text-foreground">Tüm İçerikler</Link>
+                       <Link href="/library" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
+                       <Link href="/library/sivil-toplum-sozlugu" className="text-muted-foreground hover:text-foreground">Sözlük</Link>
+                    </div>
+                </div>
+            </nav>
+            <div className="border-b"></div>
             <div>
                 <p>
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:02120000000" className="text-primary hover:underline">0212 000 00 00</Link> numaralı telefonu arayın.
@@ -81,16 +170,21 @@ export default function LoginPage() {
             <div className="border-b pb-4">
                 <p>Türkiye</p>
             </div>
-            <div className="flex flex-col sm:flex-row justify-between items-center text-muted-foreground">
-                <p className="order-2 sm:order-1">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
-                <div className="order-1 sm:order-2 flex flex-wrap gap-x-3 gap-y-1 justify-center mb-2 sm:mb-0">
-                    <Link href="/settings/contracts/gizlilik-politikasi" className="hover:text-foreground">Gizlilik Politikası</Link>
-                    <span className="text-muted-foreground/50">|</span>
-                    <Link href="/settings/contracts/cerez-politikasi" className="hover:text-foreground">Çerezlerin Kullanımı</Link>
-                     <span className="text-muted-foreground/50 hidden sm:inline">|</span>
-                    <Link href="/settings/contracts" className="hover:text-foreground">Yasal Bilgiler</Link>
-                    <span className="text-muted-foreground/50 hidden sm:inline">|</span>
-                    <Link href="#" className="hover:text-foreground">Site Haritası</Link>
+            <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-row-reverse sm:justify-between">
+                <div className="flex items-center gap-4 justify-center">
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><Twitter className="h-5 w-5" /></a>
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><Instagram className="h-5 w-5" /></a>
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5" /></a>
+                    <a href="#" className="text-muted-foreground hover:text-foreground"><SpotifyIcon className="h-5 w-5" /></a>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center text-center sm:text-left gap-y-2 gap-x-4">
+                    <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center">
+                        <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
+                        <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
+                        <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
+                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                    </div>
                 </div>
             </div>
         </div>
