@@ -64,8 +64,9 @@ export default function LoginPage() {
                 yok öyle yalnız başına mücadele etmek!
               </h1>
               
-              <p className="mt-8 max-w-3xl text-base text-white/80 leading-relaxed">
-               Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz. Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün. Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı Sosyal Etki Platformudur.
+              <p className="text-lg font-semibold text-white/90 mt-8">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</p>
+              <p className="mt-4 max-w-3xl text-base text-white/80 leading-relaxed">
+               Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün. Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı Sosyal Etki Platformudur.
               </p>
 
               <div className="mt-12 flex flex-row items-center justify-center gap-4 w-full max-w-md">
@@ -239,6 +240,17 @@ export default function LoginPage() {
                     </Select>
                 </div>
             </div>
+            <div className="flex items-center justify-center gap-x-2 flex-wrap text-sm">
+                <a href="#" className="hover:text-foreground">App Store</a>
+                <span className='mx-1'>|</span>
+                <a href="#" className="hover:text-foreground">Google Play</a>
+                <span className='mx-1'>|</span>
+                <a href="#" className="hover:text-foreground">AppGallery</a>
+                <span className='mx-1'>|</span>
+                <a href="#" className="hover:text-foreground">Microsoft Store</a>
+                <span className='mx-1'>|</span>
+                <a href="#" className="hover:text-foreground">Chrome Web Store</a>
+            </div>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex flex-col items-start text-left gap-y-2">
@@ -251,6 +263,10 @@ export default function LoginPage() {
                         <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
                         <span className='mx-1'>|</span>
                         <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                        <span className='mx-1'>|</span>
+                        <Link href="#" className="hover:text-foreground">Kamu İlişkileri</Link>
+                        <span className='mx-1'>|</span>
+                        <Link href="#" className="hover:text-foreground">Kariyer</Link>
                     </div>
                 </div>
                 <div className="flex items-center gap-x-1 text-muted-foreground">
