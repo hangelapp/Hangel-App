@@ -49,7 +49,10 @@ const footerSections = [
 export default function LoginPage() {
   return (
     <div className="flex flex-col min-h-screen bg-secondary">
-      <div className="relative flex-grow flex flex-col items-center bg-[#042654] text-white text-center">
+      <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
+        <HangelLogo className="text-3xl text-primary" />
+      </header>
+      <div className="relative flex-grow flex flex-col items-center bg-[#042654] text-white text-center pt-16">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -62,11 +65,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#042654] via-[#042654]/80 to-[#042654]" />
         </div>
 
-        <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
-          <HangelLogo className="text-3xl text-primary" />
-        </header>
-
-        <div className="relative z-10 w-full flex-1 flex flex-col justify-center items-center p-6 pt-20">
+        <div className="relative z-10 w-full flex-1 flex flex-col justify-center items-center p-6">
             <main className="flex flex-col items-center justify-center flex-1 w-full">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                 yok öyle yalnız başına mücadele etmek!
@@ -98,8 +97,8 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto p-6 md:px-8 space-y-6">
-            <div className="flex items-center text-sm text-muted-foreground border-b pb-6">
+        <div className="container mx-auto px-6 pt-0 pb-6 md:px-8 space-y-4">
+            <div className="flex items-center text-sm text-muted-foreground border-b pb-4">
                 <HangelLogo className="text-xl" />
                 <span className="mx-2">&gt;</span>
                 <span>Sosyal Etki Platformu</span>
@@ -126,7 +125,7 @@ export default function LoginPage() {
                 </Accordion>
             </div>
 
-            <div className="hidden md:grid md:grid-cols-4 gap-8">
+            <div className="hidden md:grid md:grid-cols-4 gap-6">
                 {footerSections.map((section) => (
                     <div key={section.title}>
                     <h3 className="font-semibold text-foreground mb-4">{section.title}</h3>
@@ -149,7 +148,7 @@ export default function LoginPage() {
                 </p>
             </div>
 
-            <div className="border-t pt-6 text-muted-foreground text-xs space-y-4">
+            <div className="border-t pt-4 text-muted-foreground text-xs space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
