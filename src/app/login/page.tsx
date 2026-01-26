@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -60,7 +61,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto pt-16 px-6 sm:px-8 lg:px-16 text-center">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl whitespace-nowrap pt-8">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
               
@@ -240,16 +241,16 @@ export default function LoginPage() {
                     </Select>
                 </div>
             </div>
-            <div className="flex items-center justify-center gap-x-1 flex-wrap text-sm">
-                <a href="#" className="hover:text-foreground mx-1">App Store</a>
+            <div className="flex items-center justify-center gap-2">
+                <a href="#" className="hover:text-foreground">App Store</a>
                 <span className='mx-1'>|</span>
-                <a href="#" className="hover:text-foreground mx-1">Google Play</a>
+                <a href="#" className="hover:text-foreground">Google Play</a>
                 <span className='mx-1'>|</span>
-                <a href="#" className="hover:text-foreground mx-1">AppGallery</a>
+                <a href="#" className="hover:text-foreground">AppGallery</a>
                 <span className='mx-1'>|</span>
-                <a href="#" className="hover:text-foreground mx-1">Microsoft Store</a>
+                <a href="#" className="hover:text-foreground">Microsoft Store</a>
                 <span className='mx-1'>|</span>
-                <a href="#" className="hover:text-foreground mx-1">Chrome Web Store</a>
+                <a href="#" className="hover:text-foreground">Chrome Web Store</a>
             </div>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -262,9 +263,7 @@ export default function LoginPage() {
                         <span className='mx-1'>|</span>
                         <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
                         <span className='mx-1'>|</span>
-                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                        <span className='mx-1'>|</span>
-                        <Link href="#" className="hover:text-foreground">Kamu İlişkileri</Link>
+                        <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
                         <span className='mx-1'>|</span>
                         <Link href="#" className="hover:text-foreground">Kariyer</Link>
                     </div>
