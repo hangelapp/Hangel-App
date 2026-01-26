@@ -113,10 +113,10 @@ export default function LoginPage() {
                 <AccordionItem value="item-2">
                   <AccordionTrigger>Markalar</AccordionTrigger>
                   <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Giyim</Link>
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Elektronik</Link>
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Ev & Yaşam</Link>
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Tüm Markalar</Link>
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Kooperatifler</Link>
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">İktisadi işletmeler</Link>
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Sosyal Girişimler</Link>
+                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Ticari Markalar</Link>
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
@@ -157,10 +157,10 @@ export default function LoginPage() {
                 <div className="space-y-3">
                     <h5 className="font-semibold text-foreground">Markalar</h5>
                     <div className="flex flex-col items-start gap-2">
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Giyim</Link>
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Elektronik</Link>
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Ev & Yaşam</Link>
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Tüm Markalar</Link>
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Kooperatifler</Link>
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">İktisadi işletmeler</Link>
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Sosyal Girişimler</Link>
+                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Ticari Markalar</Link>
                     </div>
                 </div>
                  <div className="space-y-3">
