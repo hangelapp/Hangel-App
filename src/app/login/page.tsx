@@ -12,33 +12,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
       <title>Spotify</title>
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0z m5.839 17.334c-.198.293-.57.394-.863.197-2.435-1.48-5.488-1.822-9.065-.995-.348.08-.68-.15-.76-.497-.08-.347.15-.68.497-.76 3.863-.89 7.22-.513 9.914 1.113.294.198.395.57.198.863z m1.14-2.54a.65.65 0 0 1-.926.275c-2.716-1.72-6.81-2.212-10.01-1.21a.63.63 0 0 1-.722-.553.63.63 0 0 1 .553-.722c3.553-1.088 8.01-.553 11.08 1.334a.623.623 0 0 1 .275.926z m.23-2.733c-3.213-1.95-8.503-2.12-11.758-1.157a.78.78 0 0 1-.87-.662.78.78 0 0 1 .662-.87c3.608-1.054 9.352-.84 12.96 1.334a.78.78 0 0 1 .373 1.018.778.778 0 0 1-1.018.373z"/>
+      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.839 17.334c-.198.293-.57.394-.863.197-2.435-1.48-5.488-1.822-9.065-.995-.348.08-.68-.15-.76-.497-.08-.347.15-.68.497-.76 3.863-.89 7.22-.513 9.914 1.113.294.198.395.57.198.863zm1.14-2.54a.65.65 0 0 1-.926.275c-2.716-1.72-6.81-2.212-10.01-1.21a.63.63 0 0 1-.722-.553.63.63 0 0 1 .553-.722c3.553-1.088 8.01-.553 11.08 1.334a.623.623 0 0 1 .275.926zm.23-2.733c-3.213-1.95-8.503-2.12-11.758-1.157a.78.78 0 0 1-.87-.662.78.78 0 0 1 .662-.87c3.608-1.054 9.352-.84 12.96 1.334a.78.78 0 0 1 .373 1.018.778.778 0 0 1-1.018.373z"/>
     </svg>
 );
 
 const countries = [
     { value: 'tr', label: 'Türkiye' },
     { value: 'de', label: 'Almanya' },
+    { value: 'us', label: 'Amerika Birleşik Devletleri' },
     { value: 'fr', label: 'Fransa' },
     { value: 'nl', label: 'Hollanda' },
-    { value: 'us', label: 'Amerika Birleşik Devletleri' },
-    { value: 'at', label: 'Avusturya' },
     { value: 'gb', label: 'Birleşik Krallık' },
-    { value: 'be', label: 'Belçika' },
+    { value: 'at', label: 'Avusturya' },
     { value: 'ch', label: 'İsviçre' },
     { value: 'au', label: 'Avustralya' },
-    { value: 'se', label: 'İsveç' },
     { value: 'ca', label: 'Kanada' },
+    { value: 'be', label: 'Belçika' },
+    { value: 'se', label: 'İsveç' },
     { value: 'dk', label: 'Danimarka' },
     { value: 'no', label: 'Norveç' },
+    { value: 'it', label: 'İtalya' },
     { value: 'sa', label: 'Suudi Arabistan' },
     { value: 'ru', label: 'Rusya' },
-    { value: 'bg', label: 'Bulgaristan' },
-    { value: 'gr', label: 'Yunanistan' },
-    { value: 'it', label: 'İtalya' },
     { value: 'az', label: 'Azerbaycan' },
+    { value: 'gr', label: 'Yunanistan' },
+    { value: 'bg', label: 'Bulgaristan' },
     { value: 'kz', label: 'Kazakistan' },
-    { value: 'cy', label: 'Kıbrıs' },
 ];
 
 
@@ -61,7 +60,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl whitespace-nowrap">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
               
@@ -189,7 +188,7 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex flex-col items-start text-left gap-y-2">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -217,3 +216,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
