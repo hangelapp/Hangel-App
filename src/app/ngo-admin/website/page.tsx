@@ -1,6 +1,6 @@
 
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -173,6 +173,23 @@ export default function WebsiteBuilderPage() {
                         </div>
                     </div>
                 </CardContent>
+                <CardFooter>
+                    <Button
+                        variant="ghost"
+                        className="text-muted-foreground text-sm"
+                        onClick={() => {
+                            setPrimaryColor('#f34723');
+                            setSecondaryColor('#f1f5f9');
+                            setAccentColor('#042654');
+                            toast({
+                                title: "Renkler sıfırlandı!",
+                                description: "Tema renkleri varsayılan ayarlara döndürüldü.",
+                            });
+                        }}
+                    >
+                        Renkleri Sıfırla
+                    </Button>
+                </CardFooter>
             </Card>
 
             <div className="space-y-1">

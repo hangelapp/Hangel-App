@@ -1,10 +1,11 @@
+
 'use client';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
-    Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Twitter, Instagram, Facebook, Linkedin, 
+    Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Instagram, Facebook, Linkedin, 
     CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, Award, Calendar
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -32,6 +33,19 @@ const transparencyCriteria = [
   { name: 'Bağımsız Denetim Raporu', completed: false },
   { name: 'Etki Raporu', completed: true },
 ];
+
+const XIcon = (props: React.ComponentProps<'svg'>) => (
+      <svg
+        role="img"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+        {...props}
+      >
+        <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+      </svg>
+);
+
 
 export default function WebsitePreviewPage() {
     const searchParams = useSearchParams();
@@ -512,7 +526,7 @@ export default function WebsitePreviewPage() {
                         <div>
                             <h4 className="font-bold text-foreground mb-4">Sosyal Medya</h4>
                             <div className="flex items-center gap-4">
-                                <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Twitter /></a>
+                                <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><XIcon className="w-5 h-5" /></a>
                                 <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Instagram /></a>
                                 <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Facebook /></a>
                                 <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-full hover:bg-primary/20 text-foreground hover:text-primary"><Linkedin /></a>
@@ -537,6 +551,7 @@ export default function WebsitePreviewPage() {
                                             {ngo.memberOf.map(platform => (
                                                 <span key={platform}>{platform}</span>
                                             ))}
+                                            <a href="https://hangel.org" target="_blank" rel="noopener noreferrer" className="hover:underline">hangel</a>
                                         </div>
                                     </div>
                                 )}
