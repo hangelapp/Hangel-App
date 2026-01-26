@@ -59,7 +59,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#042654] via-[#042654]/80 to-[#042654]" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto pt-8">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl whitespace-nowrap">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
@@ -193,11 +193,11 @@ export default function LoginPage() {
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
-                        <span>|</span>
+                        <span className='mx-1'>|</span>
                         <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                        <span>|</span>
+                        <span className='mx-1'>|</span>
                         <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                        <span>|</span>
+                        <span className='mx-1'>|</span>
                         <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                     </div>
                 </div>
