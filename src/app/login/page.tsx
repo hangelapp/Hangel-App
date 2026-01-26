@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
       <title>Spotify</title>
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.839 17.334c-.198.293-.57.394-.863.197-2.435-1.48-5.488-1.822-9.065-.995-.348.08-.68-.15-.76-.497-.08-.347.15-.68.497-.76 3.863-.89 7.22-.513 9.914 1.113.294.198.395.57.198.863zm1.14-2.54a.65.65 0 0 1-.926.275c-2.716-1.72-6.81-2.212-10.01-1.21a.63.63 0 0 1-.722-.553.63.63 0 0 1 .553-.722c3.553-1.088 8.01-.553 11.08 1.334a.623.623 0 0 1 .275.926zm.23-2.733c-3.213-1.95-8.503-2.12-11.758-1.157a.78.78 0 0 1-.87-.662.78.78 0 0 1 .662-.87c3.608-1.054 9.352-.84 12.96 1.334a.78.78 0 0 1 .373 1.018.778.778 0 0 1-1.018.373z"/>
+      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0z m5.839 17.334c-.198.293-.57.394-.863.197-2.435-1.48-5.488-1.822-9.065-.995-.348.08-.68-.15-.76-.497-.08-.347.15-.68.497-.76 3.863-.89 7.22-.513 9.914 1.113.294.198.395.57.198.863z m1.14-2.54a.65.65 0 0 1-.926.275c-2.716-1.72-6.81-2.212-10.01-1.21a.63.63 0 0 1-.722-.553.63.63 0 0 1 .553-.722c3.553-1.088 8.01-.553 11.08 1.334a.623.623 0 0 1 .275.926z m.23-2.733c-3.213-1.95-8.503-2.12-11.758-1.157a.78.78 0 0 1-.87-.662.78.78 0 0 1 .662-.87c3.608-1.054 9.352-.84 12.96 1.334a.78.78 0 0 1 .373 1.018.778.778 0 0 1-1.018.373z"/>
     </svg>
 );
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#042654] via-[#042654]/80 to-[#042654]" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center w-full">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
@@ -129,7 +129,7 @@ export default function LoginPage() {
             </div>
             <div className="hidden md:grid md:grid-cols-5 gap-8 text-sm">
                 <div className="space-y-3">
-                    <h5 className="font-semibold text-secondary-foreground">Sivil Toplum Kuruluşları</h5>
+                    <h5 className="font-semibold text-foreground">Sivil Toplum Kuruluşları</h5>
                     <div className="flex flex-col items-start gap-2">
                        <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Dernek</Link>
                        <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Vakıf</Link>
@@ -138,7 +138,7 @@ export default function LoginPage() {
                     </div>
                 </div>
                 <div className="space-y-3">
-                    <h5 className="font-semibold text-secondary-foreground">Markalar</h5>
+                    <h5 className="font-semibold text-foreground">Markalar</h5>
                     <div className="flex flex-col items-start gap-2">
                         <Link href="/market" className="text-muted-foreground hover:text-foreground">Kooperatifler</Link>
                         <Link href="/market" className="text-muted-foreground hover:text-foreground">İktisadi işletmeler</Link>
@@ -147,7 +147,7 @@ export default function LoginPage() {
                     </div>
                 </div>
                  <div className="space-y-3">
-                    <h5 className="font-semibold text-secondary-foreground">Gönüllülük</h5>
+                    <h5 className="font-semibold text-foreground">Gönüllülük</h5>
                     <div className="flex flex-col items-start gap-2">
                        <Link href="/volunteering" className="text-muted-foreground hover:text-foreground">Gönüllülük İlanları</Link>
                        <Link href="/my-applications" className="text-muted-foreground hover:text-foreground">Başvurularım</Link>
@@ -155,14 +155,14 @@ export default function LoginPage() {
                     </div>
                 </div>
                  <div className="space-y-3">
-                    <h5 className="font-semibold text-secondary-foreground">Öğrenci Kulüpleri</h5>
+                    <h5 className="font-semibold text-foreground">Öğrenci Kulüpleri</h5>
                      <div className="flex flex-col items-start gap-2">
                        <Link href="/admin/clubs" className="text-muted-foreground hover:text-foreground">Kulüpleri Keşfet</Link>
                        <Link href="/admin/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
                     </div>
                 </div>
                  <div className="space-y-3">
-                    <h5 className="font-semibold text-secondary-foreground">Kütüphane</h5>
+                    <h5 className="font-semibold text-foreground">Kütüphane</h5>
                     <div className="flex flex-col items-start gap-2">
                        <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">akademik makaleler</Link>
                        <Link href="/library/sosyal-etki-raporlari" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
@@ -171,25 +171,26 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <div>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-4">
                 <p>
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
+                <div className="self-start sm:self-center">
+                    <Select defaultValue="tr">
+                        <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {countries.map(country => (
+                                <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
-            <div className="border-b pb-4">
-                <Select defaultValue="tr">
-                    <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {countries.map(country => (
-                            <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-4 sm:flex sm:flex-col sm:items-start sm:gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center text-left gap-y-2 gap-x-4">
+            <div className="border-b"></div>
+            <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-4">
+                <div className="flex flex-col items-start text-left gap-y-2">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
