@@ -5,6 +5,7 @@ import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { Globe, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
@@ -12,6 +13,31 @@ const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
       <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.839 17.334c-.198.293-.57.394-.863.197-2.435-1.48-5.488-1.822-9.065-.995-.348.08-.68-.15-.76-.497-.08-.347.15-.68.497-.76 3.863-.89 7.22- .513 9.914 1.113.294.198.395.57.198.863zm1.14-2.54a.65.65 0 0 1-.926.275c-2.716-1.72-6.81-2.212-10.01-1.21a.63.63 0 0 1-.722-.553.63.63 0 0 1 .553-.722c3.553-1.088 8.01-.553 11.08 1.334a.623.623 0 0 1 .275.926zm.23-2.733c-3.213-1.95-8.503-2.12-11.758-1.157a.78.78 0 0 1-.87-.662.78.78 0 0 1 .662-.87c3.608-1.054 9.352-.84 12.96 1.334a.78.78 0 0 1 .373 1.018.778.778 0 0 1-1.018.373z"/>
     </svg>
 );
+
+const countries = [
+    { value: 'tr', label: 'Türkiye' },
+    { value: 'de', label: 'Almanya' },
+    { value: 'fr', label: 'Fransa' },
+    { value: 'nl', label: 'Hollanda' },
+    { value: 'us', label: 'Amerika Birleşik Devletleri' },
+    { value: 'at', label: 'Avusturya' },
+    { value: 'gb', label: 'Birleşik Krallık' },
+    { value: 'be', label: 'Belçika' },
+    { value: 'ch', label: 'İsviçre' },
+    { value: 'au', label: 'Avustralya' },
+    { value: 'se', label: 'İsveç' },
+    { value: 'ca', label: 'Kanada' },
+    { value: 'dk', label: 'Danimarka' },
+    { value: 'no', label: 'Norveç' },
+    { value: 'sa', label: 'Suudi Arabistan' },
+    { value: 'ru', label: 'Rusya' },
+    { value: 'bg', label: 'Bulgaristan' },
+    { value: 'gr', label: 'Yunanistan' },
+    { value: 'it', label: 'İtalya' },
+    { value: 'az', label: 'Azerbaycan' },
+    { value: 'kz', label: 'Kazakistan' },
+    { value: 'cy', label: 'Kıbrıs' },
+];
 
 
 export default function LoginPage() {
@@ -168,7 +194,16 @@ export default function LoginPage() {
                 </p>
             </div>
             <div className="border-b pb-4">
-                <p>Türkiye</p>
+                <Select defaultValue="tr">
+                    <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {countries.map(country => (
+                            <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
             <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-row-reverse sm:justify-between">
                 <div className="flex items-center gap-4 justify-center">
@@ -177,9 +212,9 @@ export default function LoginPage() {
                     <a href="#" className="text-muted-foreground hover:text-foreground"><Linkedin className="h-5 w-5" /></a>
                     <a href="#" className="text-muted-foreground hover:text-foreground"><SpotifyIcon className="h-5 w-5" /></a>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center text-center sm:text-left gap-y-2 gap-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center text-left gap-y-2 gap-x-4">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1">
                         <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
                         <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
                         <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
