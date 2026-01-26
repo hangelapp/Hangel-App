@@ -108,7 +108,7 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto px-6 py-6 md:px-8 space-y-6">
+        <div className="container mx-auto px-6 py-6 md:px-8 space-y-4">
             <div className="flex items-center text-sm text-muted-foreground border-b pb-4">
                 <HangelLogo className="text-xl" />
                 <span className="mx-2">&gt;</span>
@@ -119,7 +119,7 @@ export default function LoginPage() {
                 <Accordion type="single" collapsible className="w-full">
                     {footerSections.map((section) => (
                     <AccordionItem key={section.title} value={section.title}>
-                        <AccordionTrigger className="text-sm font-semibold">{section.title}</AccordionTrigger>
+                        <AccordionTrigger className="text-xs font-semibold uppercase tracking-wider">{section.title}</AccordionTrigger>
                         <AccordionContent>
                         <ul className="space-y-2 pt-2">
                             {section.links.map((link) => (
@@ -139,7 +139,7 @@ export default function LoginPage() {
             <div className="hidden md:grid md:grid-cols-5 gap-6">
                 {footerSections.map((section) => (
                     <div key={section.title}>
-                    <h3 className="text-xs font-semibold text-foreground mb-3">{section.title}</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-3">{section.title}</h3>
                     <ul className="space-y-2">
                         {section.links.map((link) => (
                         <li key={link.label}>
@@ -163,9 +163,9 @@ export default function LoginPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
-                        <Link href="/settings/contracts/gizlilik-politikasi" className="hover:text-foreground">Gizlilik Politikası</Link>
+                        <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                         <span className="hidden sm:inline">|</span>
-                        <Link href="/settings/contracts" className="hover:text-foreground">Kullanım Şartları</Link>
+                        <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
                          <span className="hidden sm:inline">|</span>
                         <Link href="/support" className="hover:text-foreground">Destek</Link>
                     </div>
