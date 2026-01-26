@@ -1,5 +1,5 @@
-
 'use client';
+
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
@@ -43,11 +43,11 @@ const countries = [
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-secondary">
+    <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
         <HangelLogo className="text-3xl text-primary" />
       </header>
-      <div className="relative flex-grow flex flex-col items-center bg-[#042654] text-white text-center pt-16">
+      <div className="relative flex-grow flex flex-col items-center justify-center bg-[#042654] text-white text-center pt-16 pb-12 px-4">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070"
@@ -59,8 +59,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#042654] via-[#042654]/80 to-[#042654]" />
         </div>
 
-        <div className="relative z-10 w-full flex-1 flex flex-col justify-center items-center p-6">
-            <main className="flex flex-col items-center justify-center flex-1 w-full">
+        <main className="relative z-10 flex flex-col items-center justify-center w-full">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
@@ -78,7 +77,7 @@ export default function LoginPage() {
                 </Button>
               </div>
               
-               <nav className="relative z-10 w-full pt-4 mt-4">
+              <nav className="w-full pt-4 mt-4">
                   <div className="container mx-auto px-6 text-center text-white/80 space-y-2">
                       <div className="flex justify-center items-center gap-x-6">
                           <Link href="/market" className="hover:text-white font-bold text-lg">hangel bağış</Link>
@@ -86,8 +85,7 @@ export default function LoginPage() {
                       </div>
                   </div>
               </nav>
-          </main>
-        </div>
+        </main>
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
@@ -213,11 +211,11 @@ export default function LoginPage() {
                 </div>
                 <div className="flex items-center gap-x-1 text-muted-foreground">
                     <a href="#" className="hover:text-foreground">x.com</a>
-                    <span>|</span>
+                    <span className="mx-1">|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
-                    <span>|</span>
+                    <span className="mx-1">|</span>
                     <a href="#" className="hover:text-foreground">LinkedIn</a>
-                    <span>|</span>
+                    <span className="mx-1">|</span>
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
             </div>
