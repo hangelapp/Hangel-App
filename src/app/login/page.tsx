@@ -59,7 +59,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto pt-16">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl whitespace-nowrap">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl whitespace-nowrap pt-8">
                 yok öyle yalnız başına mücadele etmek!
               </h1>
               
@@ -78,11 +78,38 @@ export default function LoginPage() {
         </div>
       </main>
 
+      <section className="bg-secondary">
+        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col h-full max-w-xl text-center">
+                <h2 className="text-3xl font-bold mb-4 text-secondary-foreground">hangel imece</h2>
+                <p className="text-center mb-8 text-muted-foreground">
+                Yetenekleriniz ve zamanınızla topluma değer katın. İlgi alanlarınıza uygun gönüllülük fırsatlarını keşfedin.
+                </p>
+                <div className="space-y-3 flex-grow">
+                <div className="p-4 bg-background border rounded-lg text-left">
+                    <h4 className="font-semibold text-foreground">Afet Bölgesi Yardım Dağıtımı</h4>
+                    <p className="text-sm text-muted-foreground">Ahbap Derneği - Hatay</p>
+                </div>
+                <div className="p-4 bg-background border rounded-lg text-left">
+                    <h4 className="font-semibold text-foreground">Ağaç Kardeşliği Projesi - Fidan Dikimi</h4>
+                    <p className="text-sm text-muted-foreground">TEMA Vakfı - İstanbul</p>
+                </div>
+                <div className="p-4 bg-background border rounded-lg text-left">
+                    <h4 className="font-semibold text-foreground">Sosyal Medya İçerik Gönüllüsü</h4>
+                    <p className="text-sm text-muted-foreground">Tohum Otizm Vakfı - Online</p>
+                </div>
+                </div>
+                <Button asChild variant="outline" className="w-full mt-8 border-primary text-primary hover:bg-primary/5 hover:text-primary font-bold">
+                <Link href="/volunteering">Tüm İlanları Gör</Link>
+                </Button>
+            </div>
+        </div>
+      </section>
+      
       <section className="bg-primary text-primary-foreground">
-        <div className="container mx-auto grid md:grid-cols-2 gap-x-12 gap-y-16 items-start py-16 px-4 sm:px-6 lg:px-8">
-          {/* Left side: bağış */}
-          <div className="flex flex-col h-full">
-            <h2 className="text-3xl font-bold mb-4 text-center">hangel bağış</h2>
+        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col h-full max-w-xl text-center">
+            <h2 className="text-3xl font-bold mb-4">hangel bağış</h2>
             <p className="text-center mb-8 text-primary-foreground/90">
               Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
@@ -98,31 +125,6 @@ export default function LoginPage() {
             </div>
              <Button asChild variant="outline" className="w-full mt-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold">
               <Link href="/market">Tüm Markaları Keşfet</Link>
-            </Button>
-          </div>
-
-          {/* Right side: imece */}
-          <div className="flex flex-col h-full">
-            <h2 className="text-3xl font-bold mb-4 text-center">hangel imece</h2>
-            <p className="text-center mb-8 text-primary-foreground/90">
-              Yetenekleriniz ve zamanınızla topluma değer katın. İlgi alanlarınıza uygun gönüllülük fırsatlarını keşfedin.
-            </p>
-            <div className="space-y-3 flex-grow">
-              <div className="p-4 bg-primary-foreground/10 rounded-lg text-left">
-                <h4 className="font-semibold text-primary-foreground">Afet Bölgesi Yardım Dağıtımı</h4>
-                <p className="text-sm text-primary-foreground/80">Ahbap Derneği - Hatay</p>
-              </div>
-              <div className="p-4 bg-primary-foreground/10 rounded-lg text-left">
-                <h4 className="font-semibold text-primary-foreground">Ağaç Kardeşliği Projesi - Fidan Dikimi</h4>
-                <p className="text-sm text-primary-foreground/80">TEMA Vakfı - İstanbul</p>
-              </div>
-              <div className="p-4 bg-primary-foreground/10 rounded-lg text-left">
-                <h4 className="font-semibold text-primary-foreground">Sosyal Medya İçerik Gönüllüsü</h4>
-                <p className="text-sm text-primary-foreground/80">Tohum Otizm Vakfı - Online</p>
-              </div>
-            </div>
-             <Button asChild variant="outline" className="w-full mt-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold">
-              <Link href="/volunteering">Tüm İlanları Gör</Link>
             </Button>
           </div>
         </div>
@@ -240,7 +242,7 @@ export default function LoginPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex flex-col items-start text-left gap-y-2">
                     <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
-                    <div className="flex items-center gap-x-1">
+                    <div className="flex items-center gap-x-1 flex-wrap">
                         <Link href="/settings/contracts" className="hover:text-foreground">Tüm Sözleşmeler</Link>
                         <span className='mx-1'>|</span>
                         <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
@@ -261,7 +263,7 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
-    </footer>
+      </footer>
     </div>
   );
 }
