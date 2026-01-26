@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -8,43 +9,55 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const footerSections = [
     {
-      title: 'Keşfet',
+      title: 'Sivil Toplum Kuruluşları',
       links: [
-        { label: 'Markalar', href: '/market' },
-        { label: 'STK\'lar', href: '/ngos' },
-        { label: 'Gönüllülük', href: '/volunteering' },
-        { label: 'Öğrenci Kulüpleri', href: '/admin/clubs' },
-        { label: 'Kütüphane', href: '/library' },
+        { label: 'Dernek', href: '/ngos' },
+        { label: 'Vakıf', href: '/ngos' },
+        { label: 'Spor Kulübü', href: '/ngos' },
+        { label: 'Özel İzinli', href: '/ngos' },
       ],
     },
     {
-      title: 'Hesap',
+      title: 'Markalar',
       links: [
-        { label: 'Profilim', href: '/profile' },
-        { label: 'Bağışlarım', href: '/my-donations' },
+        { label: 'Giyim', href: '/market' },
+        { label: 'Elektronik', href: '/market' },
+        { label: 'Ev & Yaşam', href: '/market' },
+        { label: 'Tüm Markalar', href: '/market' },
+      ],
+    },
+    {
+      title: 'Gönüllülük',
+      links: [
+        { label: 'Gönüllülük İlanları', href: '/volunteering' },
         { label: 'Başvurularım', href: '/my-applications' },
-        { label: 'Ayarlar', href: '/settings' },
+        { label: 'Etki Puanım', href: '/my-badges' },
       ],
     },
     {
-      title: 'Hangel Hakkında',
+      title: 'Öğrenci Kulüpleri',
       links: [
-        { label: 'Hakkımızda', href: '/about' },
-        { label: 'Yatırımcı İlişkileri', href: '/yatirimci-iliskileri' },
-        { label: 'Bilgi Toplumu Hizmetleri', href: '/bilgi-toplumu-hizmetleri' },
-        { label: 'Destek', href: '/support' },
-        { label: 'İletişim', href: '/support' },
+        { label: 'Kulüpleri Keşfet', href: '/admin/clubs' },
+        { label: 'Etkinlikler', href: '/events' },
       ],
     },
     {
-      title: 'Yasal',
+      title: 'Kütüphane',
       links: [
-        { label: 'Tüm Sözleşmeler', href: '/settings/contracts' },
-        { label: 'Gizlilik Politikası', href: '/settings/contracts/gizlilik-politikasi' },
-        { label: 'Kullanıcı Sözleşmesi', href: '/settings/contracts/kullanici-sozlesmesi' },
+        { label: 'Tüm İçerikler', href: '/library' },
+        { label: 'Raporlar', href: '/library/sosyal-etki-raporlari' },
+        { label: 'Sözlük', href: '/library/sivil-toplum-sozlugu' },
       ],
     },
   ];
+
+const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
+      <title>Spotify</title>
+      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.839 17.334c-.198.293-.57.394-.863.197-2.435-1.48-5.488-1.822-9.065-.995-.348.08-.68-.15-.76-.497-.08-.347.15-.68.497-.76 3.863-.89 7.22- .513 9.914 1.113.294.198.395.57.198.863zm1.14-2.54a.65.65 0 0 1-.926.275c-2.716-1.72-6.81-2.212-10.01-1.21a.63.63 0 0 1-.722-.553.63.63 0 0 1 .553-.722c3.553-1.088 8.01-.553 11.08 1.334a.623.623 0 0 1 .275.926zm.23-2.733c-3.213-1.95-8.503-2.12-11.758-1.157a.78.78 0 0 1-.87-.662.78.78 0 0 1 .662-.87c3.608-1.054 9.352-.84 12.96 1.334a.78.78 0 0 1 .373 1.018.778.778 0 0 1-1.018.373z"/>
+    </svg>
+);
+
 
 export default function LoginPage() {
   return (
@@ -53,7 +66,6 @@ export default function LoginPage() {
         <HangelLogo className="text-3xl text-primary" />
       </header>
       <div className="relative flex-grow flex flex-col items-center bg-[#042654] text-white text-center pt-16">
-        {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070"
@@ -97,7 +109,7 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto px-6 pt-0 pb-6 md:px-8 space-y-4">
+        <div className="container mx-auto px-6 pt-6 pb-6 md:px-8 space-y-6">
             <div className="flex items-center text-sm text-muted-foreground border-b pb-4">
                 <HangelLogo className="text-xl" />
                 <span className="mx-2">&gt;</span>
@@ -125,7 +137,7 @@ export default function LoginPage() {
                 </Accordion>
             </div>
 
-            <div className="hidden md:grid md:grid-cols-4 gap-6">
+            <div className="hidden md:grid md:grid-cols-5 gap-6">
                 {footerSections.map((section) => (
                     <div key={section.title}>
                     <h3 className="font-semibold text-foreground mb-4">{section.title}</h3>
@@ -163,10 +175,18 @@ export default function LoginPage() {
                         <span>Türkçe (21 dil desteklenmektedir)</span>
                     </div>
                 </div>
+                 <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center pt-2">
+                    <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
+                    <span className="hidden sm:inline">|</span>
+                    <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
+                    <span className="hidden sm:inline">|</span>
+                    <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                </div>
                  <div className="flex justify-start gap-5 pt-4">
                     <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-5 w-5 hover:text-foreground" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-5 w-5 hover:text-foreground" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-5 w-5 hover:text-foreground" /></a>
+                    <a href="#" target="_blank" rel="noopener noreferrer"><SpotifyIcon className="h-5 w-5 hover:text-foreground" /></a>
                 </div>
             </div>
         </div>
