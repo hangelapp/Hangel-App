@@ -6,50 +6,6 @@ import Image from 'next/image';
 import { Globe, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-const footerSections = [
-    {
-      title: 'Sivil Toplum Kuruluşları',
-      links: [
-        { label: 'Dernek', href: '/ngos' },
-        { label: 'Vakıf', href: '/ngos' },
-        { label: 'Spor Kulübü', href: '/ngos' },
-        { label: 'Özel İzinli', href: '/ngos' },
-      ],
-    },
-    {
-      title: 'Markalar',
-      links: [
-        { label: 'Giyim', href: '/market' },
-        { label: 'Elektronik', href: '/market' },
-        { label: 'Ev & Yaşam', href: '/market' },
-        { label: 'Tüm Markalar', href: '/market' },
-      ],
-    },
-    {
-      title: 'Gönüllülük',
-      links: [
-        { label: 'Gönüllülük İlanları', href: '/volunteering' },
-        { label: 'Başvurularım', href: '/my-applications' },
-        { label: 'Etki Puanım', href: '/my-badges' },
-      ],
-    },
-    {
-      title: 'Öğrenci Kulüpleri',
-      links: [
-        { label: 'Kulüpleri Keşfet', href: '/admin/clubs' },
-        { label: 'Etkinlikler', href: '/events' },
-      ],
-    },
-    {
-      title: 'Kütüphane',
-      links: [
-        { label: 'Tüm İçerikler', href: '/library' },
-        { label: 'Raporlar', href: '/library/sosyal-etki-raporlari' },
-        { label: 'Sözlük', href: '/library/sivil-toplum-sozlugu' },
-      ],
-    },
-  ];
-
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
       <title>Spotify</title>
@@ -94,12 +50,20 @@ export default function LoginPage() {
                   <Link href="/login/selection?action=register">Kayıt Ol</Link>
                 </Button>
               </div>
-
-               <nav className="relative z-10 w-full mt-8">
-                  <div className="container mx-auto px-6 text-center text-white/80 space-y-4">
-                      <div className="flex justify-center items-center gap-x-8">
-                          <Link href="/market" className="hover:text-white font-bold text-xl">hangel bağış</Link>
-                          <Link href="/market" className="hover:text-white font-bold text-xl">hangel imece</Link>
+              
+               <nav className="relative z-10 w-full pt-4 mt-4">
+                  <div className="container mx-auto px-6 text-center text-white/80 space-y-2">
+                      <div className="flex justify-center items-center gap-x-6">
+                          <Link href="/market" className="hover:text-white font-bold text-lg">hangel bağış</Link>
+                          <Link href="/market" className="hover:text-white font-bold text-lg">hangel imece</Link>
+                      </div>
+                      <div className="flex justify-center items-center gap-x-4 text-sm pt-2">
+                          <Link href="/timeline" className="hover:text-white">Keşfet</Link>
+                          <Link href="/market" className="hover:text-white">Markalar</Link>
+                          <Link href="/volunteering" className="hover:text-white">Gönüllülük</Link>
+                          <Link href="/ngos" className="hover:text-white">STK'lar</Link>
+                          <Link href="/admin/clubs" className="hover:text-white">Öğrenci Kulüpleri</Link>
+                          <Link href="/library" className="hover:text-white">Kütüphane</Link>
                       </div>
                   </div>
               </nav>
@@ -108,84 +72,25 @@ export default function LoginPage() {
       </div>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto px-6 py-6 md:px-8 space-y-4">
-            <div className="flex items-center text-sm text-muted-foreground border-b pb-4">
-                <HangelLogo className="text-xl" />
-                <span className="mx-2">&gt;</span>
-                <span>Sosyal Etki Platformu</span>
-            </div>
-
-            <div className="md:hidden">
-                <Accordion type="single" collapsible className="w-full">
-                    {footerSections.map((section) => (
-                    <AccordionItem key={section.title} value={section.title}>
-                        <AccordionTrigger className="text-xs font-semibold uppercase tracking-wider">{section.title}</AccordionTrigger>
-                        <AccordionContent>
-                        <ul className="space-y-2 pt-2">
-                            {section.links.map((link) => (
-                            <li key={link.label}>
-                                <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground">
-                                {link.label}
-                                </Link>
-                            </li>
-                            ))}
-                        </ul>
-                        </AccordionContent>
-                    </AccordionItem>
-                    ))}
-                </Accordion>
-            </div>
-
-            <div className="hidden md:grid md:grid-cols-5 gap-6">
-                {footerSections.map((section) => (
-                    <div key={section.title}>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-3">{section.title}</h3>
-                    <ul className="space-y-2">
-                        {section.links.map((link) => (
-                        <li key={link.label}>
-                            <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground">
-                            {link.label}
-                            </Link>
-                        </li>
-                        ))}
-                    </ul>
-                    </div>
-                ))}
-            </div>
-
+        <div className="container mx-auto px-6 py-6 text-xs text-muted-foreground space-y-5">
             <div>
-                <p className="text-sm text-muted-foreground">
+                <p>
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:02120000000" className="text-primary hover:underline">0212 000 00 00</Link> numaralı telefonu arayın.
                 </p>
             </div>
-
-            <div className="border-t pt-4 text-muted-foreground text-xs space-y-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                    <p>&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
-                     <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        <span>Türkçe (21 dil desteklenmektedir)</span>
-                    </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
-                        <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
-                        <span className="hidden sm:inline">|</span>
-                        <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
-                         <span className="hidden sm:inline">|</span>
-                        <Link href="/support" className="hover:text-foreground">Destek</Link>
-                    </div>
-                </div>
-                 <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center pt-2">
-                    <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                    <span className="hidden sm:inline">|</span>
-                    <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                    <span className="hidden sm:inline">|</span>
-                    <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                </div>
-                 <div className="flex justify-start gap-5 pt-4">
-                    <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-5 w-5 hover:text-foreground" /></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-5 w-5 hover:text-foreground" /></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-5 w-5 hover:text-foreground" /></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer"><SpotifyIcon className="h-5 w-5 hover:text-foreground" /></a>
+            <div className="border-b pb-4">
+                <p>Türkiye</p>
+            </div>
+            <div className="flex flex-col sm:flex-row justify-between items-center text-muted-foreground">
+                <p className="order-2 sm:order-1">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+                <div className="order-1 sm:order-2 flex flex-wrap gap-x-3 gap-y-1 justify-center mb-2 sm:mb-0">
+                    <Link href="/settings/contracts/gizlilik-politikasi" className="hover:text-foreground">Gizlilik Politikası</Link>
+                    <span className="text-muted-foreground/50">|</span>
+                    <Link href="/settings/contracts/cerez-politikasi" className="hover:text-foreground">Çerezlerin Kullanımı</Link>
+                     <span className="text-muted-foreground/50 hidden sm:inline">|</span>
+                    <Link href="/settings/contracts" className="hover:text-foreground">Yasal Bilgiler</Link>
+                    <span className="text-muted-foreground/50 hidden sm:inline">|</span>
+                    <Link href="#" className="hover:text-foreground">Site Haritası</Link>
                 </div>
             </div>
         </div>
