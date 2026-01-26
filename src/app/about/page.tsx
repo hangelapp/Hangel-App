@@ -104,30 +104,12 @@ export default function AboutPage() {
               <p className="font-semibold">Yatırımcı İlişkileri</p>
             </div>
           </Link>
-            <Link href="/contact/companies" className="block">
-                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
-                    <Briefcase className="h-8 w-8 text-primary mx-auto mb-2"/>
-                    <p className="font-semibold">Şirketler için</p>
-                </div>
-            </Link>
-            <Link href="/contact/municipalities" className="block">
-                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
-                    <Landmark className="h-8 w-8 text-primary mx-auto mb-2"/>
-                    <p className="font-semibold">Belediyeler için</p>
-                </div>
-            </Link>
-            <Link href="/contact/universities" className="block">
-                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
-                    <School className="h-8 w-8 text-primary mx-auto mb-2"/>
-                    <p className="font-semibold">Üniversiteler için</p>
-                </div>
-            </Link>
-            <Link href="/contact/funds" className="block">
-                <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
-                    <DollarSign className="h-8 w-8 text-primary mx-auto mb-2"/>
-                    <p className="font-semibold">Uluslararası Fonlar için</p>
-                </div>
-            </Link>
+          <Link href="/corporate" className="block">
+            <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
+              <Users className="h-8 w-8 text-primary mx-auto mb-2"/>
+              <p className="font-semibold">Kamu İlişkileri</p>
+            </div>
+          </Link>
         </CardContent>
       </Card>
       
@@ -176,11 +158,4 @@ export default function AboutPage() {
                     <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
                     <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
-                    <a href="https://wa.me/905547007007" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
-                </div>
-            </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+                    <a href="https://wa.me/905547007007" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground transition-
