@@ -130,7 +130,7 @@ export default function WebsiteBuilderPage() {
         { code: 'tr', name: 'Türkçe' },
         { code: 'uk', name: 'Українська' },
         { code: 'zh', name: '中文' }
-    ];
+    ].sort((a, b) => a.name.localeCompare(b.name));
     
     const [supportedLanguages, setSupportedLanguages] = useState<string[]>(['tr']);
     const [defaultLanguage, setDefaultLanguage] = useState<string>('tr');
