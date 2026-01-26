@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Globe, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { volunteeringOpportunities } from '@/lib/data';
+import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
@@ -125,7 +125,7 @@ export default function LoginPage() {
               <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/mediamarkt.com.tr" alt="MediaMarkt" fill className="object-contain" /></div>
             </div>
              <Button asChild variant="outline" className="w-full mt-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold">
-              <Link href="/market">Tüm Markaları Keşfet</Link>
+              <Link href="/market">Tüm Markaları Keşfet ({allEntityLists.length})</Link>
             </Button>
           </div>
         </div>
