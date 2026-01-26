@@ -261,6 +261,8 @@ export default function LoginPage() {
                         <span className='mx-1'>|</span>
                         <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
                         <span className='mx-1'>|</span>
+                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                        <span className='mx-1'>|</span>
                         <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
                         <span className='mx-1'>|</span>
                         <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
