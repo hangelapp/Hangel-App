@@ -268,11 +268,14 @@ export default function LoginPage() {
                     </div>
                 </div>
             </div>
-            <p className="text-xs text-center sm:text-left py-4">
-                Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
-            </p>
+            <div className="py-4 space-y-2">
+                <HangelLogo className="text-xl"/>
+                <p className="text-xs text-left">
+                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
+                </p>
+            </div>
             <div className="border-b"></div>
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-y-4">
                 <div className="w-full flex flex-wrap items-center gap-x-2 gap-y-1">
                     <a href="#" className="hover:text-foreground">App Store</a>
                     <span className="text-muted-foreground">|</span>
@@ -281,10 +284,9 @@ export default function LoginPage() {
                     <a href="#" className="hover:text-foreground">AppGallery</a>
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Chrome Store</a>
-                    <a href="#" className="sm:hidden hover:text-foreground">Destek</a>
                 </div>
                 <div className="flex items-center gap-x-4">
-                    <Link href="/support" className="hidden sm:block hover:text-foreground">Destek</Link>
+                    <Link href="/support" className="hover:text-foreground">Destek</Link>
                     <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                         <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
                            <Globe className="mr-2 h-4 w-4" /> <SelectValue />
@@ -321,8 +323,8 @@ export default function LoginPage() {
                 <span className="text-muted-foreground">|</span>
                 <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
             </div>
-            <div className="border-b"></div>
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-4">
+            <div className="border-b md:hidden"></div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-4">
                  <div className="flex items-center gap-x-2">
                     <a href="#" className="hover:text-foreground">x.com</a>
                     <span className="text-muted-foreground">|</span>
@@ -339,4 +341,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
