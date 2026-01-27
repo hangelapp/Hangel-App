@@ -259,51 +259,50 @@ export default function LoginPage() {
             </div>
             <div className="flex flex-wrap items-center gap-x-2">
                 <a href="#" className="hover:text-foreground">App Store</a>
-                <span>|</span>
+                <span className="hidden sm:inline">|</span>
                 <a href="#" className="hover:text-foreground">Google Play</a>
-                <span>|</span>
+                <span className="hidden sm:inline">|</span>
                 <a href="#" className="hover:text-foreground">AppGallery</a>
-                <span>|</span>
+                <span className="hidden sm:inline">|</span>
                 <a href="#" className="hover:text-foreground">Microsoft Store</a>
-                <span>|</span>
+                <span className="hidden sm:inline">|</span>
                 <a href="#" className="hover:text-foreground">Chrome Web Store</a>
             </div>
             <div className="border-b"></div>
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                <div className="flex flex-wrap items-center gap-x-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-y-2 gap-x-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="#" className="hover:text-foreground">Kariyer</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
                 <div className="flex items-center gap-x-2 text-muted-foreground">
                     <a href="#" className="hover:text-foreground">x.com</a>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <a href="#" className="hover:text-foreground">LinkedIn</a>
-                    <span>|</span>
+                    <span className="hidden sm:inline">|</span>
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
             </div>
             <div className="border-b"></div>
-            <p className="text-center pt-5">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+            <p className="text-left pt-5">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
   );
 }
-
