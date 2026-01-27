@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -199,9 +200,10 @@ export default function LoginPage() {
                  <AccordionItem value="item-5">
                   <AccordionTrigger className="font-semibold text-secondary-foreground">Kütüphane</AccordionTrigger>
                   <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">akademik makaleler</Link>
+                    <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">Akademik Makaleler</Link>
                     <Link href="/library/sosyal-etki-raporlari" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                    <Link href="/library" className="text-muted-foreground hover:text-foreground">kitap, film ve Podcastler</Link>
+                    <Link href="/library" className="text-muted-foreground hover:text-foreground">Kitap, Film ve Podcastler</Link>
+                    <Link href="/library/sivil-toplum-sozlugu" className="text-muted-foreground hover:text-foreground">Sözlük</Link>
                   </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="item-6">
@@ -254,9 +256,10 @@ export default function LoginPage() {
                  <div className="space-y-3">
                     <h5 className="font-semibold text-foreground">Kütüphane</h5>
                     <div className="flex flex-col items-start gap-2">
-                       <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">akademik makaleler</Link>
+                       <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">Akademik Makaleler</Link>
                        <Link href="/library/sosyal-etki-raporlari" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                       <Link href="/library" className="text-muted-foreground hover:text-foreground">kitap, film ve Podcastler</Link>
+                       <Link href="/library" className="text-muted-foreground hover:text-foreground">Kitap, Film ve Podcastler</Link>
+                       <Link href="/library/sivil-toplum-sozlugu" className="text-muted-foreground hover:text-foreground">Sözlük</Link>
                     </div>
                 </div>
                  <div className="space-y-3">
@@ -324,7 +327,7 @@ export default function LoginPage() {
                     <span className="text-muted-foreground">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
-                <div className="mt-4 pt-4 border-t w-full sm:w-auto sm:border-t-0 sm:pt-0 sm:mt-0">
+                <div className="border-t sm:border-none pt-4 sm:pt-0 w-full sm:w-auto">
                     <div className="flex items-center gap-x-1 text-muted-foreground">
                         <a href="#" className="hover:text-foreground">x.com</a>
                         <span className="text-muted-foreground">|</span>
@@ -343,3 +346,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    
