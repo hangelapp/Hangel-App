@@ -184,8 +184,8 @@ export default function LoginPage() {
                     <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
                     <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
                     <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                    <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Uluslararası Sosyal İnovasyon Çalıştayları</Link>
-                    <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Sosyal Girişimcilik Yasa Teklifi</Link>
+                    <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Çalıştaylar</Link>
+                    <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Yasa Teklifi</Link>
                     <Link href="/foundation/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
                   </AccordionContent>
                 </AccordionItem>
@@ -239,8 +239,8 @@ export default function LoginPage() {
                        <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
                        <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
                        <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                       <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Uluslararası Sosyal İnovasyon Çalıştayları</Link>
-                       <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Sosyal Girişimcilik Yasa Teklifi</Link>
+                       <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Çalıştaylar</Link>
+                       <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Yasa Teklifi</Link>
                        <Link href="/foundation/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
                     </div>
                 </div>
@@ -284,7 +284,7 @@ export default function LoginPage() {
                     <span className="text-muted-foreground">|</span>
                     <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                     <span className="text-muted-foreground">|</span>
-                     <Link href="/press" className="hover:text-foreground">Basın</Link>
+                    <Link href="/press" className="hover:text-foreground">Basın</Link>
                     <span className="text-muted-foreground">|</span>
                     <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
                     <span className="text-muted-foreground">|</span>
