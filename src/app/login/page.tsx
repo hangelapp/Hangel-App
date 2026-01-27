@@ -270,17 +270,18 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-y-2">
-                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-y-4">
+                <div className="w-full flex flex-wrap items-center gap-x-2 gap-y-1">
                     <a href="#" className="hover:text-foreground">App Store</a>
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Google Play</a>
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">AppGallery</a>
                     <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">Chrome Web Store</a>
+                    <a href="#" className="hover:text-foreground">Chrome Store</a>
+                    <Link href="/support" className="sm:hidden ml-auto hover:text-foreground">Destek</Link>
                 </div>
-                <div className="hidden sm:block">
+                <div className="hidden sm:flex sm:flex-col items-end">
                      <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                         <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
                            <Globe className="mr-2 h-4 w-4" /> <SelectValue />
@@ -291,12 +292,12 @@ export default function LoginPage() {
                             ))}
                         </SelectContent>
                     </Select>
+                    <Link href="/support" className="hover:text-foreground mt-2">Destek</Link>
                 </div>
             </div>
             <div className="border-b"></div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                <Link href="/support" className="hover:text-foreground">Destek</Link>
                 <Link href="#" className="hover:text-foreground">Kariyer</Link>
                 <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                 <Link href="/press" className="hover:text-foreground">Basın</Link>
@@ -329,7 +330,7 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-             <p className="pt-2 text-center sm:text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+             <p className="pt-2 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
              <p className="text-xs text-center sm:text-left">
                 Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
             </p>
