@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -269,21 +270,17 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <a href="#" className="hover:text-foreground">App Store</a>
-                <span className="text-muted-foreground">|</span>
-                <a href="#" className="hover:text-foreground">Google Play</a>
-                <span className="text-muted-foreground">|</span>
-                <a href="#" className="hover:text-foreground">AppGallery</a>
-                <span className="text-muted-foreground">|</span>
-                <a href="#" className="hover:text-foreground">Chrome Web Store</a>
-            </div>
-            <div className="border-b"></div>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-4">
-                <p>
-                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
-                </p>
-                <div className="self-start sm:self-center">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-y-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <a href="#" className="hover:text-foreground">App Store</a>
+                    <span className="text-muted-foreground">|</span>
+                    <a href="#" className="hover:text-foreground">Google Play</a>
+                    <span className="text-muted-foreground">|</span>
+                    <a href="#" className="hover:text-foreground">AppGallery</a>
+                    <span className="text-muted-foreground">|</span>
+                    <a href="#" className="hover:text-foreground">Chrome Web Store</a>
+                </div>
+                <div className="hidden sm:block">
                     <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                         <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
                             <SelectValue />
@@ -297,9 +294,15 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
+            <p>
+                Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
+            </p>
+            <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-2">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
+                    <span className="text-muted-foreground">|</span>
+                    <Link href="/support" className="hover:text-foreground">Destek</Link>
                     <span className="text-muted-foreground">|</span>
                     <Link href="#" className="hover:text-foreground">Kariyer</Link>
                     <span className="text-muted-foreground">|</span>
@@ -320,15 +323,28 @@ export default function LoginPage() {
                     <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
                 </div>
                 <div className="border-t sm:border-none pt-4 sm:pt-0 w-full sm:w-auto">
-                    <div className="border-b md:hidden mb-4"></div>
-                    <div className="flex items-center gap-x-1 text-muted-foreground">
-                        <a href="#" className="hover:text-foreground">x.com</a>
-                        <span className="text-muted-foreground">|</span>
-                        <a href="#" className="hover:text-foreground">Instagram</a>
-                        <span className="text-muted-foreground">|</span>
-                        <a href="#" className="hover:text-foreground">LinkedIn</a>
-                        <span className="text-muted-foreground">|</span>
-                        <a href="#" className="hover:text-foreground">Spotify</a>
+                    <div className="flex items-center justify-between sm:justify-start sm:gap-x-4">
+                        <div className="flex items-center gap-x-1 text-muted-foreground">
+                            <a href="#" className="hover:text-foreground">x.com</a>
+                            <span className="text-muted-foreground">|</span>
+                            <a href="#" className="hover:text-foreground">Instagram</a>
+                            <span className="text-muted-foreground">|</span>
+                            <a href="#" className="hover:text-foreground">LinkedIn</a>
+                            <span className="text-muted-foreground">|</span>
+                            <a href="#" className="hover:text-foreground">Spotify</a>
+                        </div>
+                        <div className="sm:hidden">
+                            <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
+                                <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {languages.map(lang => (
+                                        <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
             </div>
