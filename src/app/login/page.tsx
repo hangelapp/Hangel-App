@@ -281,6 +281,7 @@ export default function LoginPage() {
                     <a href="#" className="hover:text-foreground">AppGallery</a>
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Chrome Store</a>
+                    <a href="#" className="sm:hidden hover:text-foreground">Destek</a>
                 </div>
                 <div className="flex items-center gap-x-4">
                     <Link href="/support" className="hidden sm:block hover:text-foreground">Destek</Link>
@@ -297,22 +298,32 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/support" className="hover:text-foreground">Destek</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/kariyer" className="hover:text-foreground">Kariyer</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/press" className="hover:text-foreground">Basın</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/surdurulebilirlik" className="hover:text-foreground">Sürdürülebilirlik</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
+                <span className="text-muted-foreground">|</span>
                 <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
             </div>
-            <div className="border-b sm:hidden"></div>
+            <div className="border-b"></div>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-4">
-                 <div className="flex items-center gap-x-4 text-muted-foreground">
+                 <div className="flex items-center gap-x-2">
                     <a href="#" className="hover:text-foreground">x.com</a>
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
@@ -321,13 +332,11 @@ export default function LoginPage() {
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
-                 <div className="flex items-center gap-x-4">
-                    <a href="#" className="sm:hidden hover:text-foreground">Destek</a>
-                </div>
             </div>
-             <p className="py-4 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+             <p className="pt-4 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
   );
 }
+
