@@ -17,28 +17,15 @@ const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const countries = [
-    { value: 'tr', label: 'Türkiye' },
-    { value: 'de', label: 'Almanya' },
-    { value: 'us', label: 'Amerika Birleşik Devletleri' },
-    { value: 'fr', label: 'Fransa' },
-    { value: 'nl', label: 'Hollanda' },
-    { value: 'gb', label: 'Birleşik Krallık' },
-    { value: 'at', label: 'Avusturya' },
-    { value: 'ch', label: 'İsviçre' },
-    { value: 'au', label: 'Avustralya' },
-    { value: 'ca', label: 'Kanada' },
-    { value: 'be', label: 'Belçika' },
-    { value: 'se', label: 'İsveç' },
-    { value: 'dk', label: 'Danimarka' },
-    { value: 'no', label: 'Norveç' },
-    { value: 'it', label: 'İtalya' },
-    { value: 'sa', label: 'Suudi Arabistan' },
-    { value: 'ru', label: 'Rusya' },
-    { value: 'az', label: 'Azerbaycan' },
-    { value: 'gr', label: 'Yunanistan' },
-    { value: 'bg', label: 'Bulgaristan' },
-    { value: 'kz', label: 'Kazakistan' },
+const languages = [
+    { value: 'tr', label: 'Türkçe' },
+    { value: 'en', label: 'English' },
+    { value: 'de', label: 'Deutsch' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+    { value: 'ar', label: 'العربية' },
+    { value: 'ru', label: 'Русский' },
+    { value: 'zh', label: '中文' },
 ];
 
 
@@ -184,6 +171,9 @@ export default function LoginPage() {
                     <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
                     <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
                     <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
+                    <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Uluslararası Sosyal inovasyon çalıştayları</Link>
+                    <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Sosyal Girişimcilik Yasa teklifi</Link>
+                    <Link href="/foundation/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -236,6 +226,9 @@ export default function LoginPage() {
                        <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
                        <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
                        <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
+                       <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Uluslararası Sosyal inovasyon çalıştayları</Link>
+                       <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Sosyal Girişimcilik Yasa teklifi</Link>
+                       <Link href="/foundation/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
                     </div>
                 </div>
             </div>
@@ -250,14 +243,14 @@ export default function LoginPage() {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {countries.map(country => (
-                                <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
+                            {languages.map(lang => (
+                                <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
             </div>
-            <div className="flex flex-wrap items-center gap-x-2">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <a href="#" className="hover:text-foreground">App Store</a>
                 <span className="hidden sm:inline">|</span>
                 <a href="#" className="hover:text-foreground">Google Play</a>
@@ -276,6 +269,8 @@ export default function LoginPage() {
                     <Link href="#" className="hover:text-foreground">Kariyer</Link>
                     <span className="hidden sm:inline">|</span>
                     <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                    <span className="hidden sm:inline">|</span>
+                    <Link href="/press" className="hover:text-foreground">Basın</Link>
                     <span className="hidden sm:inline">|</span>
                     <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
                     <span className="hidden sm:inline">|</span>
