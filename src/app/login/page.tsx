@@ -26,6 +26,19 @@ const languages = [
     { value: 'ar', label: 'العربية' },
     { value: 'ru', label: 'Русский' },
     { value: 'zh', label: '中文' },
+    { value: 'pt', label: 'Português' },
+    { value: 'ja', label: '日本語' },
+    { value: 'hi', label: 'हिन्दी' },
+    { value: 'id', label: 'Bahasa Indonesia' },
+    { value: 'bn', label: 'বাংলা' },
+    { value: 'it', label: 'Italiano' },
+    { value: 'nl', label: 'Nederlands' },
+    { value: 'ko', label: '한국어' },
+    { value: 'sv', label: 'Svenska' },
+    { value: 'no', label: 'Norsk' },
+    { value: 'da', label: 'Dansk' },
+    { value: 'fi', label: 'Suomi' },
+    { value: 'pl', label: 'Polski' },
 ];
 
 
@@ -253,45 +266,45 @@ export default function LoginPage() {
             <div className="border-b"></div>
              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <a href="#" className="hover:text-foreground">App Store</a>
-                <span className="hidden sm:inline">|</span>
+                <span className="text-muted-foreground">|</span>
                 <a href="#" className="hover:text-foreground">Google Play</a>
-                <span className="hidden sm:inline">|</span>
+                <span className="text-muted-foreground">|</span>
                 <a href="#" className="hover:text-foreground">AppGallery</a>
-                <span className="hidden sm:inline">|</span>
+                <span className="text-muted-foreground">|</span>
                 <a href="#" className="hover:text-foreground">Microsoft Store</a>
-                <span className="hidden sm:inline">|</span>
+                <span className="text-muted-foreground">|</span>
                 <a href="#" className="hover:text-foreground">Chrome Web Store</a>
             </div>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-y-2 gap-x-2">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="#" className="hover:text-foreground">Kariyer</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                      <Link href="/press" className="hover:text-foreground">Basın</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
                 <div className="flex items-center gap-x-2 text-muted-foreground">
                     <a href="#" className="hover:text-foreground">x.com</a>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">LinkedIn</a>
-                    <span className="hidden sm:inline">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
             </div>
