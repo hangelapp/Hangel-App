@@ -269,6 +269,16 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
+             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <a href="#" className="hover:text-foreground">App Store</a>
+                <span className="text-muted-foreground">|</span>
+                <a href="#" className="hover:text-foreground">Google Play</a>
+                <span className="text-muted-foreground">|</span>
+                <a href="#" className="hover:text-foreground">AppGallery</a>
+                <span className="text-muted-foreground">|</span>
+                <a href="#" className="hover:text-foreground">Chrome Web Store</a>
+            </div>
+            <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-4">
                 <p>
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
@@ -285,18 +295,6 @@ export default function LoginPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
-            <div className="border-b"></div>
-             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <a href="#" className="hover:text-foreground">App Store</a>
-                <span className="text-muted-foreground">|</span>
-                <a href="#" className="hover:text-foreground">Google Play</a>
-                <span className="text-muted-foreground">|</span>
-                <a href="#" className="hover:text-foreground">AppGallery</a>
-                <span className="text-muted-foreground">|</span>
-                <a href="#" className="hover:text-foreground">Microsoft Store</a>
-                <span className="text-muted-foreground">|</span>
-                <a href="#" className="hover:text-foreground">Chrome Web Store</a>
             </div>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-2">
@@ -335,7 +333,7 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <p className="text-center pt-2">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
+            <p className="text-left pt-2">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
