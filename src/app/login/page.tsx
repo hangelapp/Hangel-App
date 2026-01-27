@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -269,6 +268,9 @@ export default function LoginPage() {
                     </div>
                 </div>
             </div>
+            <p className="text-xs text-center sm:text-left py-4">
+                Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
+            </p>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-y-4">
                 <div className="w-full flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -279,10 +281,10 @@ export default function LoginPage() {
                     <a href="#" className="hover:text-foreground">AppGallery</a>
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Chrome Store</a>
-                    <Link href="/support" className="sm:hidden ml-auto hover:text-foreground">Destek</Link>
                 </div>
-                <div className="hidden sm:flex sm:flex-col items-end">
-                     <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
+                <div className="flex items-center gap-x-4">
+                    <Link href="/support" className="hidden sm:block hover:text-foreground">Destek</Link>
+                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                         <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
                            <Globe className="mr-2 h-4 w-4" /> <SelectValue />
                         </SelectTrigger>
@@ -292,65 +294,40 @@ export default function LoginPage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Link href="/support" className="hover:text-foreground mt-2">Destek</Link>
                 </div>
             </div>
             <div className="border-b"></div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
                 <Link href="/support" className="hover:text-foreground">Destek</Link>
-                <Link href="#" className="hover:text-foreground">Kariyer</Link>
+                <Link href="/kariyer" className="hover:text-foreground">Kariyer</Link>
                 <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                 <Link href="/press" className="hover:text-foreground">Basın</Link>
                 <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
                 <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
+                <Link href="/surdurulebilirlik" className="hover:text-foreground">Sürdürülebilirlik</Link>
                 <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
                 <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
             </div>
             <div className="border-b sm:hidden"></div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-4">
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-4">
                  <div className="flex items-center gap-x-4 text-muted-foreground">
-                    <a href="#" className="hover:text-foreground"><HangelLogo className="text-lg"/></a>
                     <a href="#" className="hover:text-foreground">x.com</a>
+                    <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
+                    <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">LinkedIn</a>
+                    <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
-                <div className="sm:hidden">
-                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
-                        <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
-                           <Globe className="mr-2 h-4 w-4" /> <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {languages.map(lang => (
-                                <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="hidden sm:flex items-center">
-                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
-                        <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
-                           <Globe className="mr-2 h-4 w-4" /> <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {languages.map(lang => (
-                                <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                 <div className="flex items-center gap-x-4">
+                    <a href="#" className="sm:hidden hover:text-foreground">Destek</a>
                 </div>
             </div>
-             <p className="text-xs text-center sm:text-left py-4">
-                Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
-            </p>
-            <div className="border-b"></div>
-             <p className="pt-4 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+             <p className="py-4 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
   );
 }
-
