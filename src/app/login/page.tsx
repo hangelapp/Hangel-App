@@ -24,22 +24,6 @@ const languages = [
     { value: 'de', label: 'Deutsch' },
     { value: 'fr', label: 'Français' },
     { value: 'es', label: 'Español' },
-    { value: 'ar', label: 'العربية' },
-    { value: 'ru', label: 'Русский' },
-    { value: 'zh', label: '中文' },
-    { value: 'pt', label: 'Português' },
-    { value: 'ja', label: '日本語' },
-    { value: 'hi', label: 'हिन्दी' },
-    { value: 'id', label: 'Bahasa Indonesia' },
-    { value: 'bn', label: 'বাংলা' },
-    { value: 'it', label: 'Italiano' },
-    { value: 'nl', label: 'Nederlands' },
-    { value: 'ko', label: '한국어' },
-    { value: 'sv', label: 'Svenska' },
-    { value: 'no', label: 'Norsk' },
-    { value: 'da', label: 'Dansk' },
-    { value: 'fi', label: 'Suomi' },
-    { value: 'pl', label: 'Polski' },
 ];
 
 const translations = {
@@ -93,9 +77,18 @@ export default function LoginPage() {
               </h1>
               
               <p className="text-lg font-semibold text-white/90 mt-8">{selectedTranslations.subtitle}</p>
-              <p className="mt-4 max-w-3xl text-base text-white/80 leading-relaxed">
-               Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün. Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı Sosyal Etki Platformudur.
-              </p>
+              
+              <div className="mt-4 max-w-3xl text-base text-white/80 leading-relaxed space-y-3">
+                <p>
+                Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün.
+                </p>
+                <p>
+                Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan,
+                </p>
+                <p className="font-semibold text-white">
+                bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.
+                </p>
+              </div>
 
               <div className="mt-12 flex flex-row items-center justify-center gap-4 w-full max-w-md">
                 <Button size="lg" asChild className="w-full h-12 text-base">
@@ -340,7 +333,7 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <p className="text-left pt-5">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+            <p className="text-left pt-5">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
