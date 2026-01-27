@@ -178,9 +178,17 @@ export default function LoginPage() {
                     <Link href="/library" className="text-muted-foreground hover:text-foreground">kitap, film ve Podcastler</Link>
                   </AccordionContent>
                 </AccordionItem>
+                 <AccordionItem value="item-6">
+                  <AccordionTrigger className="font-semibold text-secondary-foreground">Hangel Foundation</AccordionTrigger>
+                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
+                    <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
+                    <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
+                    <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
+                  </AccordionContent>
+                </AccordionItem>
               </Accordion>
             </div>
-            <div className="hidden md:grid md:grid-cols-5 gap-8 text-sm">
+            <div className="hidden md:grid md:grid-cols-6 gap-8 text-sm">
                 <div className="space-y-3">
                     <h5 className="font-semibold text-foreground">Sivil Toplum Kuruluşları</h5>
                     <div className="flex flex-col items-start gap-2">
@@ -220,6 +228,14 @@ export default function LoginPage() {
                        <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">akademik makaleler</Link>
                        <Link href="/library/sosyal-etki-raporlari" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
                        <Link href="/library" className="text-muted-foreground hover:text-foreground">kitap, film ve Podcastler</Link>
+                    </div>
+                </div>
+                 <div className="space-y-3">
+                    <h5 className="font-semibold text-foreground">Hangel Foundation</h5>
+                    <div className="flex flex-col items-start gap-2">
+                       <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
+                       <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
+                       <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
                     </div>
                 </div>
             </div>
