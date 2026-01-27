@@ -1,15 +1,17 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Globe, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import React, { useState } from 'react';
+import { translations } from '@/lib/translations';
+import type { Language, Translation } from '@/lib/translations';
+
 
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
@@ -18,41 +20,40 @@ const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const languages = [
+const languages: {value: Language, label: string}[] = [
     { value: 'tr', label: 'Türkçe' },
     { value: 'en', label: 'English' },
     { value: 'de', label: 'Deutsch' },
     { value: 'fr', label: 'Français' },
     { value: 'es', label: 'Español' },
+    { value: 'ar', label: 'العربية' },
+    { value: 'zh', label: '中文' },
+    { value: 'hi', label: 'हिन्दी' },
+    { value: 'pt', label: 'Português' },
+    { value: 'ru', label: 'Русский' },
+    { value: 'ja', label: '日本語' },
+    { value: 'bn', label: 'বাংলা' },
+    { value: 'pa', label: 'ਪੰਜਾਬੀ' },
+    { value: 'jv', label: 'Basa Jawa' },
+    { value: 'ko', label: '한국어' },
+    { value: 'vi', label: 'Tiếng Việt' },
+    { value: 'te', label: 'తెలుగు' },
+    { value: 'mr', label: 'मराठी' },
+    { value: 'ta', label: 'தமிழ்' },
+    { value: 'ur', label: 'اردو' },
+    { value: 'it', label: 'Italiano' },
 ];
-
-const translations = {
-  tr: {
-    title: 'yok öyle yalnız başına mücadele etmek!',
-    subtitle: 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.',
-  },
-  en: {
-    title: "There's no such thing as struggling alone!",
-    subtitle: 'We grow hope and work together for social problems.',
-  },
-  de: {
-    title: 'Es gibt kein alleiniges Kämpfen!',
-    subtitle: 'Wir lassen Hoffnung wachsen und arbeiten gemeinsam für soziale Probleme.',
-  },
-  fr: {
-    title: "Il n'y a pas de lutte en solitaire !",
-    subtitle: "Nous cultivons l'espoir et travaillons ensemble pour les problèmes sociaux.",
-  },
-  es: {
-    title: '¡No existe tal cosa como luchar solo!',
-    subtitle: 'Cultivamos la esperanza y trabajamos juntos por los problemas sociales.',
-  },
-};
 
 
 export default function LoginPage() {
-  const [language, setLanguage] = useState('tr');
-  const selectedTranslations = translations[language as keyof typeof translations] || translations.tr;
+  const [language, setLanguage] = useState<Language>('tr');
+  const [selectedTranslations, setSelectedTranslations] = useState<Translation>(translations.tr);
+
+  const handleLanguageChange = (value: Language) => {
+    setLanguage(value);
+    setSelectedTranslations(translations[value] || translations.tr);
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
@@ -273,7 +274,7 @@ export default function LoginPage() {
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
                 <div className="self-start sm:self-center">
-                    <Select value={language} onValueChange={setLanguage}>
+                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                         <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
                             <SelectValue />
                         </SelectTrigger>
@@ -321,6 +322,7 @@ export default function LoginPage() {
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
                 <div className="border-t sm:border-none pt-4 sm:pt-0 w-full sm:w-auto">
+                    <div className="border-b md:hidden mb-4"></div>
                     <div className="flex items-center gap-x-1 text-muted-foreground">
                         <a href="#" className="hover:text-foreground">x.com</a>
                         <span className="text-muted-foreground">|</span>
@@ -333,11 +335,9 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <p className="text-left pt-5">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
+            <p className="text-left pt-2">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
   );
 }
-
-    
