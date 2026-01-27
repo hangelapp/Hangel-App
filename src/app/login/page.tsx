@@ -86,9 +86,7 @@ export default function LoginPage() {
                 <p>
                 Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan,
                 </p>
-                <p className="font-semibold text-white">
-                bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.
-                </p>
+                <p className="font-semibold text-white">bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.</p>
               </div>
 
               <div className="mt-12 flex flex-row items-center justify-center gap-4 w-full max-w-md">
@@ -132,12 +130,12 @@ export default function LoginPage() {
       
       <section className="bg-primary text-primary-foreground">
         <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col h-full max-w-xl text-center">
+          <div className="flex flex-col h-full max-w-xl md:max-w-4xl lg:max-w-6xl text-center">
             <h2 className="text-3xl font-bold mb-4">hangel bağış</h2>
             <p className="text-center mb-8 text-primary-foreground/90">
               Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
-            <div className="grid grid-cols-4 gap-x-6 gap-y-8 items-center justify-items-center flex-grow">
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-6 gap-y-8 items-center justify-items-center flex-grow">
               <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/decathlon.com.tr" alt="Decathlon" fill className="object-contain" /></div>
               <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/koton.com" alt="Koton" fill className="object-contain" /></div>
               <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/boyner.com.tr" alt="Boyner" fill className="object-contain" /></div>
@@ -146,6 +144,14 @@ export default function LoginPage() {
               <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/getir.com" alt="Getir" fill className="object-contain" /></div>
               <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/dr.com.tr" alt="D&R" fill className="object-contain" /></div>
               <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/mediamarkt.com.tr" alt="MediaMarkt" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/hm.com" alt="H&M" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/shop.mango.com" alt="Mango" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/samsung.com" alt="Samsung" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/arcelik.com.tr" alt="Arçelik" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/beko.com.tr" alt="Beko" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/carrefoursa.com" alt="CarrefourSA" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/a101.com.tr" alt="A101" fill className="object-contain" /></div>
+              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/idefix.com" alt="Idefix" fill className="object-contain" /></div>
             </div>
              <Button asChild variant="outline" className="w-full mt-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold">
               <Link href="/market">Tüm Markaları Keşfet ({allEntityLists.length})</Link>
@@ -335,7 +341,7 @@ export default function LoginPage() {
                     <a href="#" className="hover:text-foreground">Spotify</a>
                 </div>
             </div>
-             <p className="pt-4 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
+             <p className="pt-4 text-center">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
