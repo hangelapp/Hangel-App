@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Globe, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
+import React, { useState } from 'react';
 
 const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
@@ -43,6 +43,7 @@ const languages = [
 
 
 export default function LoginPage() {
+  const [language, setLanguage] = useState('tr');
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
@@ -251,7 +252,7 @@ export default function LoginPage() {
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
                 <div className="self-start sm:self-center">
-                    <Select defaultValue="tr">
+                    <Select value={language} onValueChange={setLanguage}>
                         <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
                             <SelectValue />
                         </SelectTrigger>
@@ -276,8 +277,8 @@ export default function LoginPage() {
                 <a href="#" className="hover:text-foreground">Chrome Web Store</a>
             </div>
             <div className="border-b"></div>
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-y-2 gap-x-2">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-2">
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
                     <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
                     <span className="text-muted-foreground">|</span>
                     <Link href="#" className="hover:text-foreground">Kariyer</Link>
@@ -298,7 +299,7 @@ export default function LoginPage() {
                     <span className="text-muted-foreground">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
-                <div className="flex items-center gap-x-2 text-muted-foreground">
+                <div className="flex items-center gap-x-1 text-muted-foreground pt-4 mt-4 border-t sm:border-t-0 sm:pt-0 sm:mt-0">
                     <a href="#" className="hover:text-foreground">x.com</a>
                     <span className="text-muted-foreground">|</span>
                     <a href="#" className="hover:text-foreground">Instagram</a>
