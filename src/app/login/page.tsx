@@ -300,7 +300,7 @@ export default function LoginPage() {
             </div>
             <div className="border-b"></div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-y-2">
-                <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
                     <span className="text-muted-foreground">|</span>
                     <Link href="#" className="hover:text-foreground">Kariyer</Link>
@@ -308,8 +308,6 @@ export default function LoginPage() {
                     <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                     <span className="text-muted-foreground">|</span>
                     <Link href="/press" className="hover:text-foreground">Basın</Link>
-                    <span className="text-muted-foreground">|</span>
-                    <Link href="#" className="hover:text-foreground">Medya İlişkileri</Link>
                     <span className="text-muted-foreground">|</span>
                     <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
                     <span className="text-muted-foreground">|</span>
@@ -320,6 +318,8 @@ export default function LoginPage() {
                     <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
                     <span className="text-muted-foreground">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
+                    <span className="text-muted-foreground">|</span>
+                    <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
                 </div>
                 <div className="border-t sm:border-none pt-4 sm:pt-0 w-full sm:w-auto">
                     <div className="border-b md:hidden mb-4"></div>
@@ -335,7 +335,7 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="border-b"></div>
-            <p className="text-left pt-2">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
+            <p className="text-center pt-2">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
