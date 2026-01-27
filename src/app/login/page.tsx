@@ -298,6 +298,7 @@ export default function LoginPage() {
             <div className="border-b"></div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
+                <Link href="/support" className="hover:text-foreground">Destek</Link>
                 <Link href="#" className="hover:text-foreground">Kariyer</Link>
                 <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
                 <Link href="/press" className="hover:text-foreground">Basın</Link>
@@ -306,8 +307,9 @@ export default function LoginPage() {
                 <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
                 <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
                 <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
+                <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
             </div>
-             <div className="border-b sm:hidden"></div>
+            <div className="border-b sm:hidden"></div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-4">
                  <div className="flex items-center gap-x-4 text-muted-foreground">
                     <a href="#" className="hover:text-foreground"><HangelLogo className="text-lg"/></a>
@@ -328,14 +330,27 @@ export default function LoginPage() {
                         </SelectContent>
                     </Select>
                 </div>
+                <div className="hidden sm:flex items-center">
+                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
+                        <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
+                           <Globe className="mr-2 h-4 w-4" /> <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {languages.map(lang => (
+                                <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
-            <div className="border-b"></div>
-             <p className="pt-2 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
-             <p className="text-xs text-center sm:text-left">
+             <p className="text-xs text-center sm:text-left py-4">
                 Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
             </p>
+            <div className="border-b"></div>
+             <p className="pt-4 text-left">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>
   );
 }
+
