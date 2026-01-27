@@ -41,9 +41,34 @@ const languages = [
     { value: 'pl', label: 'Polski' },
 ];
 
+const translations = {
+  tr: {
+    title: 'yok öyle yalnız başına mücadele etmek!',
+    subtitle: 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.',
+  },
+  en: {
+    title: "There's no such thing as struggling alone!",
+    subtitle: 'We grow hope and work together for social problems.',
+  },
+  de: {
+    title: 'Es gibt kein alleiniges Kämpfen!',
+    subtitle: 'Wir lassen Hoffnung wachsen und arbeiten gemeinsam für soziale Probleme.',
+  },
+  fr: {
+    title: "Il n'y a pas de lutte en solitaire !",
+    subtitle: "Nous cultivons l'espoir et travaillons ensemble pour les problèmes sociaux.",
+  },
+  es: {
+    title: '¡No existe tal cosa como luchar solo!',
+    subtitle: 'Cultivamos la esperanza y trabajamos juntos por los problemas sociales.',
+  },
+};
+
 
 export default function LoginPage() {
   const [language, setLanguage] = useState('tr');
+  const selectedTranslations = translations[language as keyof typeof translations] || translations.tr;
+
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
@@ -63,10 +88,10 @@ export default function LoginPage() {
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto pt-16 px-6 sm:px-8 lg:px-16 text-center">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
-                yok öyle yalnız başına mücadele etmek!
+                {selectedTranslations.title}
               </h1>
               
-              <p className="text-lg font-semibold text-white/90 mt-8">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</p>
+              <p className="text-lg font-semibold text-white/90 mt-8">{selectedTranslations.subtitle}</p>
               <p className="mt-4 max-w-3xl text-base text-white/80 leading-relaxed">
                Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün. Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan, bağış ve gönüllük odaklı Sosyal Etki Platformudur.
               </p>
@@ -299,14 +324,16 @@ export default function LoginPage() {
                     <span className="text-muted-foreground">|</span>
                     <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
                 </div>
-                <div className="flex items-center gap-x-1 text-muted-foreground pt-4 mt-4 border-t sm:border-t-0 sm:pt-0 sm:mt-0">
-                    <a href="#" className="hover:text-foreground">x.com</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">Instagram</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">LinkedIn</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">Spotify</a>
+                <div className="mt-4 pt-4 border-t w-full sm:w-auto sm:border-t-0 sm:pt-0 sm:mt-0">
+                    <div className="flex items-center gap-x-1 text-muted-foreground">
+                        <a href="#" className="hover:text-foreground">x.com</a>
+                        <span className="text-muted-foreground">|</span>
+                        <a href="#" className="hover:text-foreground">Instagram</a>
+                        <span className="text-muted-foreground">|</span>
+                        <a href="#" className="hover:text-foreground">LinkedIn</a>
+                        <span className="text-muted-foreground">|</span>
+                        <a href="#" className="hover:text-foreground">Spotify</a>
+                    </div>
                 </div>
             </div>
             <div className="border-b"></div>
