@@ -60,7 +60,7 @@ export default function LoginPage() {
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
         <HangelLogo className="text-3xl text-primary" />
       </header>
-      <main className="relative flex-grow flex flex-col items-center justify-center bg-[#042654] text-white pt-16 pb-12">
+      <main className="relative flex-grow flex flex-col items-center justify-center bg-[#042654] text-white py-16 lg:py-24">
         <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070"
@@ -72,31 +72,46 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#042654] via-[#042654]/80 to-[#042654]" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mx-auto pt-16 px-6 sm:px-8 lg:px-16 text-center">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
-                {selectedTranslations.title}
-              </h1>
-              
-              <p className="text-lg font-semibold text-white/90 mt-8">{selectedTranslations.subtitle}</p>
-              
-              <div className="mt-4 max-w-3xl text-base text-white/80 leading-relaxed space-y-3">
-                <p>
-                Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün.
-                </p>
-                <p>
-                Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan,
-                </p>
-                <p className="font-semibold text-white">bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.</p>
-              </div>
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 gap-12">
+            <div className="w-full lg:w-1/2 flex justify-center">
+                <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl">
+                    <video
+                        className="w-full h-full object-cover"
+                        src="https://www.colendi.com/homepageVideo.mp4"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                    ></video>
+                </div>
+            </div>
+            
+            <div className="w-full lg:w-1/2 text-center lg:text-left flex flex-col items-center lg:items-start">
+                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
+                    {selectedTranslations.title}
+                  </h1>
+                  
+                  <p className="text-lg font-semibold text-white/90 mt-8">{selectedTranslations.subtitle}</p>
+                  
+                  <div className="mt-4 max-w-3xl text-base text-white/80 leading-relaxed space-y-3">
+                    <p>
+                    Günlük alışverişini iyi fiyatlarla hangel üzerinden yap, ek masraf ödemeden alışverişin bağışa dönüşsün.
+                    </p>
+                    <p>
+                    Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan, sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan,
+                    </p>
+                    <p className="font-semibold text-white">bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.</p>
+                  </div>
 
-              <div className="mt-12 flex flex-row items-center justify-center gap-4 w-full max-w-md">
-                <Button size="lg" asChild className="w-full h-12 text-base">
-                  <Link href="/login/selection?action=login">Giriş Yap</Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild className="w-full h-12 text-base bg-white/10 border-white/20 text-white hover:bg-white hover:text-[#042654]">
-                  <Link href="/login/selection?action=register">Kayıt Ol</Link>
-                </Button>
-              </div>
+                  <div className="mt-12 flex flex-row items-center justify-center lg:justify-start gap-4 w-full max-w-md">
+                    <Button size="lg" asChild className="w-full h-12 text-base">
+                      <Link href="/login/selection?action=login">Giriş Yap</Link>
+                    </Button>
+                    <Button size="lg" variant="outline" asChild className="w-full h-12 text-base bg-white/10 border-white/20 text-white hover:bg-white hover:text-[#042654]">
+                      <Link href="/login/selection?action=register">Kayıt Ol</Link>
+                    </Button>
+                  </div>
+            </div>
         </div>
       </main>
 
