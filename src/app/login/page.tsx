@@ -77,7 +77,7 @@ export default function LoginPage() {
                 <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl">
                     <video
                         className="w-full h-full object-cover"
-                        src="https://www.colendi.com/homepageVideo.mp4"
+                        src="https://videos.coverr.co/video/coverr-community-gathering-at-a-local-park-1707.mp4"
                         autoPlay
                         loop
                         muted
