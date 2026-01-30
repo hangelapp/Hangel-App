@@ -1,24 +1,17 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Globe } from 'lucide-react';
+import { Globe, Mail } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import React, { useState } from 'react';
 import { translations } from '@/lib/translations';
 import type { Language, Translation } from '@/lib/translations';
-
-
-const SpotifyIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
-      <title>Spotify</title>
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.839 17.334c-.198.293-.57.394-.863.197-2.435-1.48-5.488-1.822-9.065-.995-.348.08-.68-.15-.76-.497-.08-.347.15-.68.497-.76 3.863-.89 7.22-.513 9.914 1.113.294.198.395.57.198.863zm1.14-2.54a.65.65 0 0 1-.926.275c-2.716-1.72-6.81-2.212-10.01-1.21a.63.63 0 0 1-.722-.553.63.63 0 0 1 .553-.722c3.553-1.088 8.01-.553 11.08 1.334a.623.623 0 0 1 .275.926zm.23-2.733c-3.213-1.95-8.503-2.12-11.758-1.157a.78.78 0 0 1-.87-.662.78.78 0 0 1 .662-.87c3.608-1.054 9.352-.84 12.96 1.334a.78.78 0 0 1 .373 1.018.778.778 0 0 1-1.018.373z" />
-    </svg>
-);
 
 const languages: {value: Language, label: string}[] = [
     { value: 'tr', label: 'Türkçe' },
@@ -44,7 +37,6 @@ const languages: {value: Language, label: string}[] = [
     { value: 'it', label: 'Italiano' },
 ];
 
-
 export default function LoginPage() {
   const [language, setLanguage] = useState<Language>('tr');
   const [selectedTranslations, setSelectedTranslations] = useState<Translation>(translations.tr);
@@ -53,7 +45,6 @@ export default function LoginPage() {
     setLanguage(value);
     setSelectedTranslations(translations[value] || translations.tr);
   };
-
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
@@ -74,10 +65,10 @@ export default function LoginPage() {
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 gap-12">
             <div className="w-full lg:w-1/2 flex justify-center">
-                <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl">
+                <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl border-4 border-white/10">
                     <video
                         className="w-full h-full object-cover"
-                        src="https://videos.coverr.co/video/coverr-community-gathering-at-a-local-park-1707.mp4"
+                        src="https://videos.pexels.com/video-files/6646661/6646661-uhd_1440_2160_25fps.mp4"
                         autoPlay
                         loop
                         muted
@@ -144,31 +135,20 @@ export default function LoginPage() {
       </section>
       
       <section className="bg-primary text-primary-foreground">
-        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col h-full max-w-xl md:max-w-4xl lg:max-w-6xl text-center">
+        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8 max-w-[1400px]">
+          <div className="flex flex-col h-full w-full text-center">
             <h2 className="text-3xl font-bold mb-4">hangel bağış</h2>
             <p className="text-center mb-8 text-primary-foreground/90">
               Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-6 gap-y-8 items-center justify-items-center flex-grow">
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/decathlon.com.tr" alt="Decathlon" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/koton.com" alt="Koton" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/boyner.com.tr" alt="Boyner" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/ayakkabidunyasi.com.tr" alt="Ayakkabı Dünyası" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/teknosa.com" alt="Teknosa" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/getir.com" alt="Getir" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/dr.com.tr" alt="D&R" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/mediamarkt.com.tr" alt="MediaMarkt" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/hm.com" alt="H&M" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/shop.mango.com" alt="Mango" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/samsung.com" alt="Samsung" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/arcelik.com.tr" alt="Arçelik" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/beko.com.tr" alt="Beko" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/carrefoursa.com" alt="CarrefourSA" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/a101.com.tr" alt="A101" fill className="object-contain" /></div>
-              <div className="relative h-12 w-full"><Image src="https://logo.clearbit.com/idefix.com" alt="Idefix" fill className="object-contain" /></div>
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-x-4 gap-y-6 items-center justify-items-center flex-grow">
+              {allEntityLists.slice(0, 36).map((brand) => (
+                <div key={brand.id} className="relative h-10 w-full hover:scale-110 transition-transform">
+                  <Image src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} alt={brand.name} fill className="object-contain filter brightness-0 invert" />
+                </div>
+              ))}
             </div>
-             <Button asChild variant="outline" className="w-full mt-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold">
+             <Button asChild variant="outline" className="w-full max-w-md mx-auto mt-12 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold">
               <Link href="/market">Tüm Markaları Keşfet ({allEntityLists.length})</Link>
             </Button>
           </div>
@@ -176,187 +156,91 @@ export default function LoginPage() {
       </section>
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
-        <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-4">
-            <div className="md:hidden">
-              <Accordion type="single" collapsible className="w-full text-sm">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="font-semibold text-secondary-foreground">Sivil Toplum Kuruluşları</AccordionTrigger>
-                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Dernek</Link>
-                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Vakıf</Link>
-                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Spor Kulübü</Link>
-                    <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Özel İzinli</Link>
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2">
-                  <AccordionTrigger className="font-semibold text-secondary-foreground">Markalar</AccordionTrigger>
-                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Kooperatifler</Link>
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">İktisadi işletmeler</Link>
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Sosyal Girişimler</Link>
-                    <Link href="/market" className="text-muted-foreground hover:text-foreground">Ticari Markalar</Link>
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-3">
-                  <AccordionTrigger className="font-semibold text-secondary-foreground">Gönüllülük</AccordionTrigger>
-                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/volunteering" className="text-muted-foreground hover:text-foreground">Gönüllülük İlanları</Link>
-                    <Link href="/my-applications" className="text-muted-foreground hover:text-foreground">Başvurularım</Link>
-                    <Link href="/my-badges" className="text-muted-foreground hover:text-foreground">Etki Puanım</Link>
-                  </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="item-4">
-                  <AccordionTrigger className="font-semibold text-secondary-foreground">Öğrenci Kulüpleri</AccordionTrigger>
-                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/admin/clubs" className="text-muted-foreground hover:text-foreground">Kulüpleri Keşfet</Link>
-                    <Link href="/admin/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
-                  </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="item-5">
-                  <AccordionTrigger className="font-semibold text-secondary-foreground">Kütüphane</AccordionTrigger>
-                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">Akademik Makaleler</Link>
-                    <Link href="/library/sosyal-etki-raporlari" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                    <Link href="/library" className="text-muted-foreground hover:text-foreground">Kitap, Film ve Podcastler</Link>
-                    <Link href="/library/sivil-toplum-sozlugu" className="text-muted-foreground hover:text-foreground">Sözlük</Link>
-                  </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="item-6">
-                  <AccordionTrigger className="font-semibold text-secondary-foreground">Hangel Foundation</AccordionTrigger>
-                  <AccordionContent className="flex flex-col items-start gap-3 pl-2">
-                    <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
-                    <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
-                    <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                    <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Çalıştaylar</Link>
-                    <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Yasa Teklifi</Link>
-                    <Link href="/foundation/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-            <div className="hidden md:grid md:grid-cols-6 gap-8 text-sm">
-                <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Sivil Toplum Kuruluşları</h5>
-                    <div className="flex flex-col items-start gap-2">
-                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Dernek</Link>
-                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Vakıf</Link>
-                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Spor Kulübü</Link>
-                       <Link href="/ngos" className="text-muted-foreground hover:text-foreground">Özel İzinli</Link>
-                    </div>
-                </div>
-                <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Markalar</h5>
-                    <div className="flex flex-col items-start gap-2">
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Kooperatifler</Link>
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">İktisadi işletmeler</Link>
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Sosyal Girişimler</Link>
-                        <Link href="/market" className="text-muted-foreground hover:text-foreground">Ticari Markalar</Link>
-                    </div>
-                </div>
-                 <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Gönüllülük</h5>
-                    <div className="flex flex-col items-start gap-2">
-                       <Link href="/volunteering" className="text-muted-foreground hover:text-foreground">Gönüllülük İlanları</Link>
-                       <Link href="/my-applications" className="text-muted-foreground hover:text-foreground">Başvurularım</Link>
-                       <Link href="/my-badges" className="text-muted-foreground hover:text-foreground">Etki Puanım</Link>
-                    </div>
-                </div>
-                 <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Öğrenci Kulüpleri</h5>
-                     <div className="flex flex-col items-start gap-2">
-                       <Link href="/admin/clubs" className="text-muted-foreground hover:text-foreground">Kulüpleri Keşfet</Link>
-                       <Link href="/admin/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
-                    </div>
-                </div>
-                 <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Kütüphane</h5>
-                    <div className="flex flex-col items-start gap-2">
-                       <Link href="/library/akademik-makaleler" className="text-muted-foreground hover:text-foreground">Akademik Makaleler</Link>
-                       <Link href="/library/sosyal-etki-raporlari" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                       <Link href="/library" className="text-muted-foreground hover:text-foreground">Kitap, Film ve Podcastler</Link>
-                       <Link href="/library/sivil-toplum-sozlugu" className="text-muted-foreground hover:text-foreground">Sözlük</Link>
-                    </div>
-                </div>
-                 <div className="space-y-3">
-                    <h5 className="font-semibold text-foreground">Hangel Foundation</h5>
-                    <div className="flex flex-col items-start gap-2">
-                       <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Hakkında</Link>
-                       <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Projeler</Link>
-                       <Link href="/foundation" className="text-muted-foreground hover:text-foreground">Raporlar</Link>
-                       <Link href="/foundation/workshops" className="text-muted-foreground hover:text-foreground">Çalıştaylar</Link>
-                       <Link href="/foundation/law-proposal" className="text-muted-foreground hover:text-foreground">Yasa Teklifi</Link>
-                       <Link href="/foundation/events" className="text-muted-foreground hover:text-foreground">Etkinlikler</Link>
-                    </div>
-                </div>
-            </div>
-            <div className="py-4 space-y-2">
-                <HangelLogo className="text-xl"/>
-                <p className="text-xs text-left">
-                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
+        <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-6">
+            <div className="py-4 space-y-4">
+                <HangelLogo className="text-2xl"/>
+                <p className="text-xs text-left max-w-lg">
+                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline font-semibold">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline font-semibold">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
             </div>
-            <div className="border-b"></div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-y-4">
-                <div className="w-full flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <a href="#" className="hover:text-foreground">App Store</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">Google Play</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">AppGallery</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">Chrome Store</a>
-                </div>
-                <div className="flex items-center gap-x-4">
-                    <Link href="/support" className="hover:text-foreground">Destek</Link>
-                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
-                        <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto">
-                           <Globe className="mr-2 h-4 w-4" /> <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {languages.map(lang => (
-                                <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+
+            <div className="border-t pt-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-y-6">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <a href="#" className="hover:text-foreground font-medium">App Store</a>
+                        <span className="text-muted-foreground/30">|</span>
+                        <a href="#" className="hover:text-foreground font-medium">Google Play</a>
+                        <span className="text-muted-foreground/30">|</span>
+                        <a href="#" className="hover:text-foreground font-medium">AppGallery</a>
+                        <span className="text-muted-foreground/30">|</span>
+                        <a href="#" className="hover:text-foreground font-medium">Chrome Store</a>
+                        <div className="hidden md:flex items-center gap-x-3 ml-4">
+                            <span className="text-muted-foreground/30">|</span>
+                            <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
+                                <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto font-medium">
+                                <Globe className="mr-2 h-4 w-4" /> <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {languages.map(lang => (
+                                        <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-x-4">
+                            <a href="#" className="hover:text-foreground">x.com</a>
+                            <span className="text-muted-foreground/30">|</span>
+                            <a href="#" className="hover:text-foreground">Instagram</a>
+                            <span className="text-muted-foreground/30">|</span>
+                            <a href="#" className="hover:text-foreground">LinkedIn</a>
+                            <span className="text-muted-foreground/30">|</span>
+                            <a href="#" className="hover:text-foreground">Spotify</a>
+                            <div className="md:hidden flex items-center gap-x-3 ml-2">
+                                <span className="text-muted-foreground/30">|</span>
+                                <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
+                                    <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto font-medium">
+                                    <Globe className="mr-2 h-4 w-4" /> <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {languages.map(lang => (
+                                            <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div className="border-b"></div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+
+            <div className="border-t pt-6 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/support" className="hover:text-foreground">Destek</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/kariyer" className="hover:text-foreground">Kariyer</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/press" className="hover:text-foreground">Basın</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/surdurulebilirlik" className="hover:text-foreground">Sürdürülebilirlik</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
-                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground/30">|</span>
                 <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
-                <span className="text-muted-foreground">|</span>
-                <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
             </div>
-            <div className="border-b md:hidden"></div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-4">
-                 <div className="flex items-center gap-x-2">
-                    <a href="#" className="hover:text-foreground">x.com</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">Instagram</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">LinkedIn</a>
-                    <span className="text-muted-foreground">|</span>
-                    <a href="#" className="hover:text-foreground">Spotify</a>
-                </div>
+
+            <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-y-2">
+                <p>&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
             </div>
-             <p className="pt-4 text-center">&copy; {new Date().getFullYear()} hangel.org. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>

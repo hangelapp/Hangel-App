@@ -49,7 +49,7 @@ export const translations: Record<Language, Translation> = {
   },
   es: {
     title: '¡No existe tal cosa como luchar solo!',
-    subtitle: 'Cultivamos la esperanza y trabajamos juntos por los problemas sociales.',
+    subtitle: 'Cultivamos la esperanza y trabajamos juntos por los phroblemas sociales.',
   },
   ar: {
     title: 'لا يوجد شيء اسمه النضال وحيدًا!',
@@ -76,7 +76,7 @@ export const translations: Record<Language, Translation> = {
     subtitle: '私たちは希望を育て、社会問題のために共に働きます。',
   },
   bn: {
-    title: 'একা সংগ্রাম করার মতো কিছু নেই!',
+    title: 'एका সংগ্রাম করার মতো কিছু নেই!',
     subtitle: 'আমরা আশা বাড়াই এবং সামাজিক সমস্যার জন্য একসাথে কাজ করি।',
   },
   pa: {
@@ -93,7 +93,7 @@ export const translations: Record<Language, Translation> = {
   },
   vi: {
     title: 'Không có chuyện phải vật lộn một mình!',
-    subtitle: 'Chúng tôi vun trồng hy vọng và cùng nhau giải quyết các vấn đề xã hội.',
+    subtitle: 'Chúng tôi vun trồng hy vọng ve cùng nhau giải quyết các vấn đề xã hội.',
   },
   te: {
     title: 'ఒంటరిగా పోరాడటం అనేదేమీ లేదు!',
@@ -108,8 +108,8 @@ export const translations: Record<Language, Translation> = {
     subtitle: 'நாங்கள் நம்பிக்கையை வளர்க்கிறோம், சமூகப் பிரச்சினைகளுக்காக ஒன்றிணைந்து செயல்படுகிறோம்।',
   },
   ur: {
-    title: 'اکیلے جدوجہد کرنے جیسی کوئی چیز نہیں ہے!',
-    subtitle: 'ہم امید بڑھاتے ہیں اور سماجی مسائل کے لیے مل کر کام کرتے ہیں۔',
+    title: 'اکیلे جدوجہد کرنے جیسی کوئی چیز नहीं है!',
+    subtitle: 'ہم امید بڑھاتے ہیں اور سماجی مسائل के लिए मिल कर काम करते हैं।',
   },
   it: {
     title: 'Non esiste una cosa come lottare da soli!',
