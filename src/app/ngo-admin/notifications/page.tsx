@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import * as Icons from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const notifications = [
     { id: 1, icon: 'HeartHandshake', title: 'Yeni Gönüllü Başvurusu', description: 'Ayşe Yılmaz, "Afet Bölgesi Yardım Dağıtımı" ilanına başvurdu.', time: '20 dakika önce', read: false, link: '/ngo-admin/volunteer' },
@@ -26,9 +28,17 @@ export default function NgoNotificationsPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in-0">
-            <div>
-                <h1 className="text-2xl font-bold font-headline">Gelen Kutusu ({unreadCount})</h1>
-                <p className="text-muted-foreground text-sm">Kuruluşunuzla ilgili önemli güncellemeler ve bildirimler.</p>
+            <div className="flex justify-between items-start gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold font-headline">Gelen Kutusu ({unreadCount})</h1>
+                    <p className="text-muted-foreground text-sm">Kuruluşunuzla ilgili önemli güncellemeler ve bildirimler.</p>
+                </div>
+                <Button asChild>
+                    <Link href="/ngo-admin/notifications/new">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Yeni Mesaj
+                    </Link>
+                </Button>
             </div>
             
             <Card>
