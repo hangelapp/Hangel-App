@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "public": true,
+  "name": "hangel-app",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
