@@ -2,13 +2,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import * as Icons from 'lucide-react';
-import { PlusCircle, Send, Bell, Inbox, SendHorizontal } from 'lucide-react';
+import { PlusCircle, Send, Bell, Inbox, SendHorizontal, Search, Filter } from 'lucide-react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
 
 const notifications = [
     { id: 1, icon: 'HeartHandshake', title: 'Yeni Gönüllü Başvurusu', description: 'Ayşe Yılmaz, "Afet Bölgesi Yardım Dağıtımı" ilanına başvurdu.', time: '20 dakika önce', read: false, link: '/ngo-admin/volunteer' },
@@ -48,6 +49,16 @@ export default function NgoNotificationsPage() {
                 </Button>
             </div>
             
+            <div className="flex gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Mesajlarda veya bildirimlerde ara..." className="pl-10" />
+                </div>
+                <Button variant="outline" size="icon">
+                    <Filter className="h-4 w-4" />
+                </Button>
+            </div>
+
             <Card className="border-none shadow-none bg-transparent">
                 <CardContent className="p-0">
                     <Tabs defaultValue="all" className="w-full">

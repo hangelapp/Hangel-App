@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { Globe, Mail } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import React, { useState } from 'react';
@@ -31,7 +30,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'मराठी' },
+    { value: 'mr', label: 'มराठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -51,6 +50,7 @@ export default function LoginPage() {
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-white flex items-center justify-center shadow-sm">
         <HangelLogo className="text-3xl text-primary" />
       </header>
+      
       <main className="relative flex-grow flex flex-col items-center justify-center bg-[#042654] text-white py-16 lg:py-24">
         <div className="absolute inset-0 z-0">
           <Image
@@ -64,8 +64,9 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 gap-12">
+            {/* Sol Kısım: Video */}
             <div className="w-full lg:w-1/2 flex justify-center">
-                <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl border-4 border-white/10">
+                <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl border-4 border-white/10 bg-black">
                     <video
                         className="w-full h-full object-cover"
                         src="https://videos.pexels.com/video-files/6646661/6646661-uhd_1440_2160_25fps.mp4"
@@ -77,6 +78,7 @@ export default function LoginPage() {
                 </div>
             </div>
             
+            {/* Sağ Kısım: Metinler ve Butonlar */}
             <div className="w-full lg:w-1/2 text-center lg:text-left flex flex-col items-center lg:items-start">
                   <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                     {selectedTranslations.title}
@@ -134,17 +136,23 @@ export default function LoginPage() {
         </div>
       </section>
       
+      {/* Genişletilmiş Markalar Bölümü */}
       <section className="bg-primary text-primary-foreground">
-        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8 max-w-[1400px]">
+        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex flex-col h-full w-full text-center">
             <h2 className="text-3xl font-bold mb-4">hangel bağış</h2>
             <p className="text-center mb-8 text-primary-foreground/90">
               Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-x-4 gap-y-6 items-center justify-items-center flex-grow">
-              {allEntityLists.slice(0, 36).map((brand) => (
+              {allEntityLists.slice(0, 48).map((brand) => (
                 <div key={brand.id} className="relative h-10 w-full hover:scale-110 transition-transform">
-                  <Image src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} alt={brand.name} fill className="object-contain filter brightness-0 invert" />
+                  <Image 
+                    src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} 
+                    alt={brand.name} 
+                    fill 
+                    className="object-contain filter brightness-0 invert" 
+                  />
                 </div>
               ))}
             </div>
@@ -157,9 +165,9 @@ export default function LoginPage() {
       
       <footer className="w-full bg-secondary text-secondary-foreground border-t">
         <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-6">
-            <div className="py-4 space-y-4">
+            <div className="py-4 space-y-4 text-left">
                 <HangelLogo className="text-2xl"/>
-                <p className="text-xs text-left max-w-lg">
+                <p className="text-xs max-w-lg">
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline font-semibold">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline font-semibold">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
             </div>
@@ -174,8 +182,9 @@ export default function LoginPage() {
                         <a href="#" className="hover:text-foreground font-medium">AppGallery</a>
                         <span className="text-muted-foreground/30">|</span>
                         <a href="#" className="hover:text-foreground font-medium">Chrome Store</a>
-                        <div className="hidden md:flex items-center gap-x-3 ml-4">
-                            <span className="text-muted-foreground/30">|</span>
+                        
+                        {/* Masaüstünde App Store sağında Dil Seçimi */}
+                        <div className="hidden md:flex items-center gap-x-3 ml-4 border-l pl-4">
                             <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                                 <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto font-medium">
                                 <Globe className="mr-2 h-4 w-4" /> <SelectValue />
@@ -198,8 +207,9 @@ export default function LoginPage() {
                             <a href="#" className="hover:text-foreground">LinkedIn</a>
                             <span className="text-muted-foreground/30">|</span>
                             <a href="#" className="hover:text-foreground">Spotify</a>
-                            <div className="md:hidden flex items-center gap-x-3 ml-2">
-                                <span className="text-muted-foreground/30">|</span>
+                            
+                            {/* Mobilde Sosyal Medya sağında Dil Seçimi ve Destek */}
+                            <div className="md:hidden flex items-center gap-x-3 ml-2 border-l pl-2">
                                 <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                                     <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto font-medium">
                                     <Globe className="mr-2 h-4 w-4" /> <SelectValue />
@@ -210,6 +220,8 @@ export default function LoginPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                <span className="text-muted-foreground/30">|</span>
+                                <Link href="/support" className="hover:text-foreground font-medium">Destek</Link>
                             </div>
                         </div>
                     </div>
@@ -236,10 +248,12 @@ export default function LoginPage() {
                 <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
                 <span className="text-muted-foreground/30">|</span>
                 <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
             </div>
 
             <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-y-2">
-                <p>&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
+                <p className="text-left">&copy; 2026 hangel.org. Tüm hakları saklıdır.</p>
             </div>
         </div>
       </footer>
