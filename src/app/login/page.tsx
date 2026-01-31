@@ -33,7 +33,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'มраठी' },
+    { value: 'mr', label: 'मराठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -48,7 +48,7 @@ export default function LoginPage() {
     setSelectedTranslations(translations[value] || translations.tr);
   };
 
-  const featuredOpportunities = volunteeringOpportunities.slice(0, 4);
+  const featuredOpportunities = volunteeringOpportunities.slice(0, 6);
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
@@ -69,7 +69,6 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 gap-12">
-            {/* Sol Kısım: Video */}
             <div className="w-full lg:w-1/2 flex justify-center">
                 <div className="w-full max-w-md aspect-video rounded-lg overflow-hidden shadow-2xl border-4 border-white/10 bg-black">
                     <video
@@ -83,7 +82,6 @@ export default function LoginPage() {
                 </div>
             </div>
             
-            {/* Sağ Kısım: Metinler ve Butonlar */}
             <div className="w-full lg:w-1/2 text-center lg:text-left flex flex-col items-center lg:items-start">
                   <h1 className="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
                     {selectedTranslations.title}
@@ -122,7 +120,6 @@ export default function LoginPage() {
                 </p>
             </div>
 
-            {/* Profesyonel Filtre Çubuğu */}
             <Card className="mb-8 shadow-sm">
                 <CardContent className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -159,44 +156,37 @@ export default function LoginPage() {
                 </CardContent>
             </Card>
 
-            {/* İlan Listesi */}
-            <div className="space-y-4">
+            <div className="space-y-2">
                 {featuredOpportunities.map((opp) => (
                     <Link href={`/volunteering/${opp.id}`} key={opp.id} className="block">
-                        <Card className="hover:border-primary transition-all hover:shadow-md group overflow-hidden border-l-4 border-l-primary">
-                            <CardContent className="p-6">
-                                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                                    <div className="flex items-start gap-4 flex-1">
-                                        <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center shrink-0">
-                                            <Briefcase className="h-7 w-7 text-primary" />
+                        <Card className="hover:border-primary transition-all hover:shadow-sm group overflow-hidden border-l-4 border-l-primary">
+                            <CardContent className="p-3">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className="w-10 h-10 bg-muted rounded flex items-center justify-center shrink-0">
+                                            <Briefcase className="h-5 w-5 text-primary" />
                                         </div>
-                                        <div className="space-y-1">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{opp.title}</h3>
-                                                <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="text-base font-bold group-hover:text-primary transition-colors truncate">{opp.title}</h3>
+                                                <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 text-[10px] h-5 px-1.5 shrink-0">
                                                     {opp.socialArea}
                                                 </Badge>
                                             </div>
-                                            <p className="text-base font-semibold text-muted-foreground">{opp.organization}</p>
-                                            <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
-                                                <span className="flex items-center text-sm text-muted-foreground">
-                                                    <MapPin className="mr-1.5 h-4 w-4" /> {opp.location.city} ({opp.location.type})
-                                                </span>
-                                                <span className="flex items-center text-sm text-muted-foreground">
-                                                    <Clock className="mr-1.5 h-4 w-4" /> {opp.commitment}
-                                                </span>
-                                                <span className="flex items-center text-sm font-bold text-orange-600">
-                                                    <Award className="mr-1.5 h-4 w-4" /> {opp.points} Puan
-                                                </span>
+                                            <div className="flex items-center gap-x-3 text-xs text-muted-foreground truncate">
+                                                <span className="font-semibold text-foreground/80">{opp.organization}</span>
+                                                <span className="flex items-center"><MapPin className="mr-1 h-3 w-3" /> {opp.location.city} ({opp.location.type})</span>
+                                                <span className="flex items-center"><Clock className="mr-1 h-3 w-3" /> {opp.commitment}</span>
+                                                <span className="flex items-center font-bold text-orange-600"><Award className="mr-1 h-3 w-3" /> {opp.points} Puan</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end gap-3 shrink-0 w-full md:w-auto">
-                                        <div className="text-right hidden md:block">
-                                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Son Başvuru</p>
-                                            <p className="text-sm font-bold">{opp.dates.applicationEnd}</p>
+                                    <div className="flex items-center gap-4 shrink-0">
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-[10px] text-muted-foreground uppercase leading-none">Son Başvuru</p>
+                                            <p className="text-xs font-bold">{opp.dates.applicationEnd}</p>
                                         </div>
-                                        <Button className="w-full md:w-auto px-8">İncele</Button>
+                                        <Button size="sm" className="h-8 px-4 text-xs">İncele</Button>
                                     </div>
                                 </div>
                             </CardContent>
@@ -213,7 +203,6 @@ export default function LoginPage() {
         </div>
       </section>
       
-      {/* Genişletilmiş Markalar Bölümü */}
       <section className="bg-primary text-primary-foreground">
         <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex flex-col h-full w-full text-center">
@@ -260,7 +249,6 @@ export default function LoginPage() {
                         <span className="text-muted-foreground/30">|</span>
                         <a href="#" className="hover:text-foreground font-medium">Chrome Store</a>
                         
-                        {/* Masaüstünde App Store sağında Dil Seçimi */}
                         <div className="hidden md:flex items-center gap-x-3 ml-4 border-l pl-4">
                             <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                                 <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto font-medium">
@@ -285,7 +273,6 @@ export default function LoginPage() {
                             <span className="text-muted-foreground/30">|</span>
                             <a href="#" className="hover:text-foreground">Spotify</a>
                             
-                            {/* Mobilde Sosyal Medya sağında Dil Seçimi ve Destek */}
                             <div className="md:hidden flex items-center gap-x-3 ml-2 border-l pl-2">
                                 <Select value={language} onValueChange={(value) => handleLanguageChange(value as Language)}>
                                     <SelectTrigger className="w-auto border-none focus:ring-0 bg-transparent p-0 h-auto font-medium">
