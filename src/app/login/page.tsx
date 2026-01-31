@@ -19,7 +19,6 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { volunteeringOpportunities } from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
 
 const languages = [
     { value: 'tr', label: 'Türkçe' },
@@ -69,20 +68,22 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0">
+    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0 flex items-center justify-center">
       {children ? (
         <div className="w-full">
           {children}
         </div>
       ) : (
         image && (
-          <Image 
-            src={image} 
-            alt={title} 
-            fill 
-            className="object-contain object-bottom select-none" 
-            data-ai-hint={imageHint}
-          />
+          <div className="relative w-full h-full min-h-[300px]">
+            <Image 
+              src={image} 
+              alt={title} 
+              fill 
+              className="object-contain object-bottom select-none" 
+              data-ai-hint={imageHint}
+            />
+          </div>
         )
       )}
     </div>
