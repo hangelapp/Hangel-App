@@ -42,7 +42,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'มराठी' },
+    { value: 'mr', label: 'मराठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -176,25 +176,31 @@ export default function LoginPage() {
             </div>
 
             {/* Marketplace UI Container */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-4 sm:p-8 border border-white/10 shadow-2xl">
+            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-4 sm:p-8 border border-white/10 shadow-2xl overflow-hidden">
                 <Tabs defaultValue="all" className="w-full mb-8">
-                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white/10 text-white h-auto p-1">
-                        <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Tümü</TabsTrigger>
-                        <TabsTrigger value="cooperative" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Kooperatif</TabsTrigger>
-                        <TabsTrigger value="economic" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3 hidden sm:block">İktisadi İşl.</TabsTrigger>
-                        <TabsTrigger value="brand" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Marka</TabsTrigger>
-                        <TabsTrigger value="social" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Sosyal İşl.</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white/10 text-white h-auto p-1 rounded-2xl">
+                        <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3 rounded-xl transition-all font-bold">Tümü</TabsTrigger>
+                        <TabsTrigger value="cooperative" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3 rounded-xl transition-all font-bold">Kooperatif</TabsTrigger>
+                        <TabsTrigger value="economic" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3 rounded-xl transition-all font-bold hidden sm:block">İktisadi İşl.</TabsTrigger>
+                        <TabsTrigger value="brand" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3 rounded-xl transition-all font-bold">Marka</TabsTrigger>
+                        <TabsTrigger value="social" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3 rounded-xl transition-all font-bold">Sosyal İşl.</TabsTrigger>
                     </TabsList>
                 </Tabs>
 
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Categories - Horizontal on mobile, vertical on desktop */}
                     <div className="w-full lg:w-1/4 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto pb-4 lg:pb-0 scrollbar-hide">
-                        {marketCategories.map((cat) => (
+                        <Button 
+                            variant="ghost"
+                            className="bg-white/20 text-white hover:bg-white/30 justify-start h-11 px-4 whitespace-nowrap lg:w-full font-bold rounded-xl border border-white/10"
+                        >
+                            <Sparkles className="mr-2 h-4 w-4" /> Öne Çıkanlar
+                        </Button>
+                        {marketCategories.slice(1, 12).map((cat) => (
                             <Button 
                                 key={cat.mainCategory}
                                 variant="ghost"
-                                className="text-white/70 hover:text-white hover:bg-white/10 justify-start h-10 px-4 whitespace-nowrap lg:w-full font-semibold"
+                                className="text-white/70 hover:text-white hover:bg-white/10 justify-start h-11 px-4 whitespace-nowrap lg:w-full font-semibold rounded-xl"
                             >
                                 {cat.mainCategory}
                             </Button>
