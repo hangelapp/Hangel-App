@@ -355,7 +355,7 @@ export default function LoginPage() {
         <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-6">
             <div className="py-4 space-y-4 text-left">
                 <HangelLogo className="text-2xl"/>
-                <p className="text-sm font-semibold text-foreground max-w-lg lg:max-w-none">
+                <p className="text-sm font-medium text-muted-foreground lg:max-w-none">
                     Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
             </div>
