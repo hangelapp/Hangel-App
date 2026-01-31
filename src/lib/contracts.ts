@@ -1,3 +1,4 @@
+
 export interface Contract {
   slug: string;
   title: string;
@@ -16,7 +17,7 @@ export const contractsData: Contract[] = [
       <p><strong>Platform:</strong> Hangel adı altında işletilen web sitesi ve mobil uygulamaları.</p>
       <p><strong>Kullanıcı:</strong> Platform'a üye olan ve sunulan hizmetlerden yararlanan her gerçek veya tüzel kişi.</p>
       <p><strong>STK:</strong> Platform'da yer alan Sivil Toplum Kuruluşları (Dernekler, Vakıflar vb.).</p>
-      <p><strong>Marka:</strong> Platform üzerinden ürün veya hizmetlerini sunan ve sosyal etki yaratmayı taahhüt eden ticari işletmeler.</p>
+      <p><strong>Marka:</strong> Platform üzerinden ürün veya hizmetlerini sunan ve sosyal etki sağlamayı taahhüt eden ticari işletmeler.</p>
       <p><strong>Sosyal Etki Puanı:</strong> Kullanıcıların platform üzerindeki gönüllülük, bağış ve diğer pozitif eylemleri sonucunda kazandıkları puan.</p>
 
       <h4>3. Sözleşmenin Konusu</h4>
@@ -129,7 +130,7 @@ export const contractsData: Contract[] = [
       <p>KVKK'nın 11. maddesi uyarınca, kişisel verilerinizle ilgili olarak; veri işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde veya yurt dışında verilerin aktarıldığı üçüncü kişileri bilme, verilerin eksik veya yanlış işlenmişse düzeltilmesini isteme, silinmesini veya yok edilmesini isteme gibi haklara sahipsiniz. Bu haklarınızı kullanmak için destek@hangel.com adresi üzerinden bizimle iletişime geçebilirsiniz.</p>
       
       <h4>6. Veri Güvenliği</h4>
-      <p>Verilerinizin güvenliğini sağlamak için gerekli teknik ve idari tedbirleri (şifreleme, erişim kontrolleri, güvenlik duvarları vb.) almaktayız.</p>
+      <p>Verilerinin güvenliğini sağlamak için gerekli teknik ve idari tedbirleri (şifreleme, erişim kontrolleri, güvenlik duvarları vb.) almaktayız.</p>
     `,
   },
     {
@@ -155,7 +156,7 @@ export const contractsData: Contract[] = [
       <p><strong>Kamuoyu:</strong> Hangel'in genel ilerlemesi, ulaştığı sosyal etki ve finansal şeffaflığı ile ilgili bilgiler düzenli olarak kamuoyu ile paylaşılır.</p>
       
       <h4>4. Güncellemeler</h4>
-      <p>Bu politika dahil olmak üzere tüm politikalarımız, yasal düzenlemeler ve operasyonel ihtiyaçlar doğrultusunda güncellenebilir. Önemli değişiklikler, yürürlüğe girmeden önce ilgili paydaşlara makul bir süre öncesinde duyurulur.</p>
+      <p>Bu politika dahil olmak üzere tüm politikalarımız, yasal düzenlemeler ve operasyonel ihtiyaçlar doğrultusunda güncellenebilir. Önemli değişiklikler, yürürlüğe gmeden önce ilgili paydaşlara makul bir süre öncesinde duyurulur.</p>
     `,
   },
   {
@@ -187,7 +188,7 @@ export const contractsData: Contract[] = [
     title: 'Kâr Dağıtım Politikası',
     content: `
       <h4>1. Sosyal Girişim Modeli</h4>
-      <p>Hangel, kâr amacı güden bir şirket değil, finansal sürdürülebilirliğini sağlayarak toplumsal faydayı maksimize etmeyi hedefleyen bir sosyal girişimdir. Bu doğrultuda, ana motivasyonumuz finansal kâr elde etmek değil, yarattığımız sosyal ve çevresel etkiyi artırmaktır.</p>
+      <p>Hangel, kâr amacı güden bir şirket değil, finansal sürdürülebilirliğini sağlayarak toplumsal faydayı maksimize etmeyi hedefleyen bir sosyal girişimdir. Bu doğrultuda, ana motivasyonumuz finansal kâr elde etmek değil, sağladığımız sosyal ve çevresel etkiyi artırmaktır.</p>
 
       <h4>2. Gelirlerin Kullanımı</h4>
       <p>Platformun operasyonel faaliyetlerinden (marka işbirlikleri, işlem ücretleri vb.) elde edilen gelirler, öncelikli olarak aşağıdaki kalemler için kullanılır:</p>
@@ -213,7 +214,7 @@ export const contractsData: Contract[] = [
       <p>Hangel, bir sosyal girişim olarak, platformun sürdürülebilirliğini sağlamak ve sosyal etkisini artırmak amacıyla şeffaf bir gelir modeline sahiptir. Gelirlerimiz, kullanıcılarımızdan herhangi bir ek ücret talep etmeden, işbirlikleri ve sağlanan hizmetler üzerinden elde edilir.</p>
       
       <h4>2. Marka İşbirliği Ücretleri</h4>
-      <p>Platformda yer alan markalardan, kullanıcıların yaptığı alışverişler üzerinden oluşan bağış tutarları üzerinden bir hizmet bedeli alınır. Bu model, markaların sosyal sorumluluk bütçelerini etkili bir şekilde kullanmalarını sağlar.</p>
+      <p>Platformda yer alan markalar, kullanıcıların yaptığı alışverişler üzerinden oluşan bağış tutarları üzerinden bir hizmet bedeli öderler. Bu model, markaların sosyal sorumluluk bütçelerini etkili bir şekilde kullanmalarını sağlar.</p>
       
       <h4>3. "hangel Katkı Payı" (İşlem Ücreti)</h4>
       <p>Kullanıcıların alışverişleri yoluyla STK'lara aktarılan bağışların operasyonel ve teknik süreçlerini yönetmek için bir hizmet bedeli uygulanır. Bu bedel, "hangel Katkı Payı" olarak adlandırılır ve şu şekilde işler:</p>
@@ -229,128 +230,14 @@ export const contractsData: Contract[] = [
     `,
   },
   {
-    slug: 'bilgi-guvenligi-politikasi',
-    title: 'Bilgi Güvenliği Politikası',
-    content: `
-      <h4>1. Amaç ve Kapsam</h4>
-      <p>Bu politika, Hangel platformunda işlenen tüm verilerin gizliliğini, bütünlüğünü ve erişilebilirliğini sağlamak için uygulanan kural ve prosedürleri tanımlar. Kullanıcılarımızın, iş ortaklarımızın ve kendi kurumsal verilerimizin güvenliğini en üst düzeyde tutmayı hedefleriz.</p>
-      
-      <h4>2. Sorumluluklar</h4>
-      <p>Bilgi güvenliği, tüm Hangel çalışanlarının ortak sorumluluğundadır. Bilgi Güvenliği Yönetim Ekibi, politikaların oluşturulmasından, uygulanmasından ve denetlenmesinden sorumludur.</p>
-
-      <h4>3. Temel Güvenlik Önlemleri</h4>
-      <ul>
-          <li><strong>Veri Şifreleme:</strong> Hassas veriler, hem aktarım sırasında (SSL/TLS ile) hem de depolanırken (at-rest encryption) güçlü şifreleme algoritmaları ile korunur.</li>
-          <li><strong>Erişim Kontrolü:</strong> Verilere erişim, "bilmesi gereken" prensibine göre sınırlandırılmıştır. Tüm erişimler rol bazlı yetkilendirme ile yönetilir ve kayıt altına alınır.</li>
-          <li><strong>Ağ Güvenliği:</strong> Güvenlik duvarları (firewall), saldırı tespit ve önleme sistemleri (IDS/IPS) gibi teknolojilerle ağ altyapımız dış tehditlere karşı korunur.</li>
-          <li><strong>Yazılım Güvenliği:</strong> Yazılım geliştirme yaşam döngüsünün her aşamasında güvenlik (DevSecOps) prensipleri uygulanır. Kodlar düzenli olarak statik ve dinamik güvenlik testlerinden geçirilir.</li>
-          <li><strong>Fiziksel Güvenlik:</strong> Verilerin barındırıldığı sunucular, yüksek fiziksel güvenlik standartlarına sahip (örn: ISO 27001 sertifikalı) veri merkezlerinde bulunmaktadır.</li>
-      </ul>
-
-      <h4>4. Olay Yönetimi</h4>
-      <p>Herhangi bir bilgi güvenliği ihlali (veya şüphesi) durumunda, önceden tanımlanmış olan "Güvenlik İhlali Müdahale Prosedürü" devreye girer. Bu prosedür, olayın tespiti, analizi, sınırlandırılması, ortadan kaldırılması ve tekrarlanmasını önleyici derslerin çıkarılması adımlarını içerir.</p>
-
-      <h4>5. Farkındalık ve Eğitim</h4>
-      <p>Tüm çalışanlar, bilgi güvenliği riskleri ve en iyi uygulamalar konusunda düzenli olarak eğitim alır. Bu, insan kaynaklı hataları en aza indirmeyi hedefler.</p>
-    `,
-  },
-  {
-    slug: 'etik-ilkeler',
-    title: 'Etik İlkeler',
-    content: `
-      <h4>1. Tarafsızlık ve Bağımsızlık</h4>
-      <p>Hangel, platformda yer alan tüm STK'lara, markalara ve kullanıcılara eşit mesafede durur. Herhangi bir siyasi, ideolojik veya ticari grubun etkisi altında kalmadan, sadece sosyal fayda misyonu doğrultusunda hareket eder.</p>
-      
-      <h4>2. Şeffaflık ve Hesap Verebilirlik</h4>
-      <p>Tüm faaliyetlerimizde ve finansal süreçlerimizde paydaşlarımıza karşı açık ve dürüst olmayı taahhüt ederiz. Bağışların yolculuğu, gelir-gider dengemiz ve etki raporlarımız kamuya açık ve anlaşılır bir şekilde paylaşılır.</p>
-      
-      <h4>3. Ayrımcılık Yasağı</h4>
-      <p>Platformumuzda dil, din, ırk, cinsiyet, cinsel yönelim, yaş, engellilik veya herhangi başka bir temelde ayrımcılığa kesinlikle tolerans gösterilmez. Kapsayıcılık ve çeşitlilik, topluluğumuzun temel taşlarıdır.</p>
-      
-      <h4>4. Çıkar Çatışması</h4>
-      <p>Hangel çalışanları ve yöneticileri, kişisel çıkarlarını platformun misyonunun önüne koyamazlar. Olası çıkar çatışması durumları şeffaf bir şekilde yönetilir ve platformun bütünlüğünü tehlikeye atacak kararlardan kaçınılır.</p>
-      
-      <h4>5. Veri Sorumluluğu ve Gizlilik</h4>
-      <p>Kullanıcılarımızın ve paydaşlarımızın verilerinin gizliliğine en üst düzeyde saygı gösteririz. Verileri sadece hizmet sunumu için gerekli olan amaçlar doğrultusunda ve yasalara uygun olarak işleriz. Veri güvenliğini sağlamak en temel önceliklerimizdendir.</p>
-      
-      <h4>6. Sorumlu Davranış</h4>
-      <p>Platformumuzu kullanan herkesten (kullanıcılar, STK'lar, markalar) birbirlerine karşı saygılı, yapıcı ve nazik bir dil kullanmalarını bekleriz. Nefret söylemi, taciz, sahtekarlık ve platformun kötüye kullanılması kabul edilemez.</p>
-    `,
-  },
-  {
-    slug: 'kvkk-aydinlatma-metni',
-    title: 'KVKK Aydınlatma Metni',
-    content: `
-      <p>6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Hangel olarak, veri sorumlusu sıfatıyla, işlediğimiz kişisel verilerinizle ilgili olarak sizi bilgilendirmek isteriz. Bu metin, hangi kişisel verilerinizi, hangi amaçlarla işlediğimizi, kimlere aktardığımızı ve KVKK kapsamındaki haklarınızı açıklamaktadır.</p>
-      <h4>1. Veri Sorumlusunun Kimliği</h4>
-      <p><strong>Veri Sorumlusu:</strong> Hangel Teknoloji ve Sosyal Etki A.Ş.</p>
-      <h4>2. Kişisel Verilerin İşlenme Amaçları</h4>
-      <p>Kişisel verileriniz, platform hizmetlerinin sağlanması, üyelik işlemlerinin yürütülmesi, kullanıcı deneyiminin iyileştirilmesi, size özel gönüllülük ve içerik önerilerinin sunulması, bağış işlemlerinin gerçekleştirilmesi, yasal yükümlülüklerin yerine getirilmesi, suistimallerin önlenmesi ve hizmetlerimizin geliştirilmesi için istatistiksel analizler yapılması amaçlarıyla işlenmektedir.</p>
-      <h4>3. İşlenen Kişisel Verilerin Aktarılması</h4>
-      <p>Verileriniz, yukarıda belirtilen amaçlar doğrultusunda, gönüllülük başvurusu yaptığınız ilgili STK'lara, bağış işlemleri için ödeme hizmeti sağlayıcılarına, yasal olarak yetkili kamu kurum ve kuruluşlarına ve altyapı hizmeti aldığımız teknoloji sağlayıcılarına (yurt içi/yurt dışı) aktarılabilecektir.</p>
-      <h4>4. Kişisel Veri Toplamanın Yöntemi ve Hukuki Sebebi</h4>
-      <p>Kişisel verileriniz, platforma üye olmanız, profilinizi doldurmanız, platformu kullanmanız gibi otomatik veya otomatik olmayan yollarla toplanmakta olup; KVKK'nın 5. maddesinde belirtilen "sözleşmenin kurulması veya ifası", "veri sorumlusunun hukuki yükümlülüğü" ve "ilgili kişinin temel hak ve özgürlüklerine zarar vermemek kaydıyla veri sorumlusunun meşru menfaatleri" hukuki sebeplerine dayalı olarak işlenmektedir.</p>
-      <h4>5. KVKK'nın 11. Maddesi Kapsamındaki Haklarınız</h4>
-      <p>Kişisel veri sahibi olarak, KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse buna ilişkin bilgi talep etme, işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme, silinmesini veya yok edilmesini isteme, yapılan işlemlerin, kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme, işlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme, kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme haklarına sahipsiniz.</p>
-    `,
-  },
-  {
-    slug: 'gdpr',
-    title: 'AB Kişisel Veri Koruma Kanunu (GDPR)',
-    content: `
-      <h4>1. Genel Hükümler</h4>
-      <p>Avrupa Birliği'nde (AB) veya Avrupa Ekonomik Alanı'nda (AEA) ikamet eden kullanıcılarımız için Genel Veri Koruma Tüzüğü (GDPR) uyarınca haklarınız ve veri işleme faaliyetlerimiz hakkında bilgilendirme.</p>
-      
-      <h4>2. Veri İşlemenin Hukuki Dayanakları</h4>
-      <p>Kişisel verilerinizi, GDPR Madde 6'da belirtilen hukuki dayanaklara göre işliyoruz: (a) Rızanız, (b) Sizinle olan sözleşmemizin ifası, (c) Yasal bir yükümlülüğe uymak, (d) Hayati çıkarlarınızı korumak, (e) Kamu yararına bir görevi yerine getirmek, (f) Meşru menfaatlerimiz.</p>
-
-      <h4>3. Veri Sahiplerinin Hakları</h4>
-      <p>GDPR kapsamında aşağıdaki haklara sahipsiniz:</p>
-      <ul>
-        <li><strong>Erişim Hakkı (Madde 15):</strong> Verilerinize erişme ve bir kopyasını alma.</li>
-        <li><strong>Düzeltme Hakkı (Madde 16):</strong> Yanlış veya eksik verilerinizi düzelttirme.</li>
-        <li><strong>Silme Hakkı ('Unutulma Hakkı', Madde 17):</strong> Belirli koşullar altında verilerinizin silinmesini talep etme.</li>
-        <li><strong>İşlemeyi Kısıtlama Hakkı (Madde 18):</strong> Belirli durumlarda verilerinizin işlenmesini kısıtlama.</li>
-        <li><strong>Veri Taşınabilirliği Hakkı (Madde 20):</strong> Verilerinizi yapılandırılmış, yaygın olarak kullanılan ve makine tarafından okunabilir bir formatta alma ve başka bir veri sorumlusuna aktarma.</li>
-        <li><strong>İtiraz Hakkı (Madde 21):</strong> Doğrudan pazarlama dahil olmak üzere, verilerinizin işlenmesine itiraz etme.</li>
-        <li><strong>Otomatik Karar Vermeye Tabi Olmama Hakkı (Madde 22):</strong> Profil oluşturma dahil, yalnızca otomatik işlemeye dayalı, hakkınızda yasal veya benzer şekilde önemli bir etkiye sahip kararlara tabi olmama.</li>
-      </ul>
-
-      <h4>4. Uluslararası Veri Transferleri</h4>
-      <p>Verilerinizi AEA dışına aktarırken, AB Komisyonu'nun Standart Sözleşme Maddeleri gibi uygun güvenceleri kullanarak verilerinizin korunmasını sağlarız.</p>
-      
-      <h4>5. İletişim</h4>
-      <p>GDPR kapsamındaki haklarınızı kullanmak veya veri koruma uygulamalarımız hakkında soru sormak için dpo@hangel.com adresinden Veri Koruma Görevlimiz ile iletişime geçebilirsiniz. Ayrıca, denetleyici makama şikayette bulunma hakkınız da bulunmaktadır.</p>
-    `,
-  },
-  {
-    slug: 'cerez-politikasi',
-    title: 'Çerez Politikası',
-    content: `
-      <h4>1. Çerez Nedir?</h4>
-      <p>Çerezler, bir web sitesini ziyaret ettiğinizde bilgisayarınıza veya mobil cihazınıza kaydedilen küçük metin dosyalarıdır. Platformumuzun düzgün çalışması, kullanıcı deneyiminin kişiselleştirilmesi ve site trafiğinin analiz edilmesi gibi amaçlarla kullanılırlar.</p>
-      
-      <h4>2. Kullandığımız Çerez Türleri</h4>
-      <ul>
-          <li><strong>Zorunlu Çerezler:</strong> Platformun temel işlevlerinin (giriş yapma, güvenlik vb.) çalışması için mutlak surette gereklidir. Bu çerezler olmadan platform hizmet veremez.</li>
-          <li><strong>Performans ve Analitik Çerezler:</strong> Hangi sayfaların daha popüler olduğunu, kullanıcıların platformda nasıl gezindiğini anlamamıza yardımcı olan anonim veriler toplar. Bu çerezler, hizmetlerimizi iyileştirmemize olanak tanır. (Örn: Google Analytics).</li>
-          <li><strong>Fonksiyonel Çerezler:</strong> Dil tercihiniz veya tema seçiminiz gibi tercihlerinizi hatırlayarak size daha kişiselleştirilmiş bir deneyim sunar.</li>
-          <li><strong>Hedefleme ve Reklam Çerezleri:</strong> (Kullanılıyorsa) İlgi alanlarınıza daha uygun içerik ve reklamlar sunmak için kullanılır. Hangel, sosyal etki odaklı olduğu için bu tür çerezleri minimumda tutmayı hedefler.</li>
-      </ul>
-      
-      <h4>3. Çerez Tercihlerini Yönetme</h4>
-      <p>Tarayıcınızın ayarlarını kullanarak çerezleri kabul etme, reddetme veya çerez gönderildiğinde uyarılma gibi tercihlerinizi yönetebilirsiniz. Ancak zorunlu çerezleri engellemeniz, platformun bazı özelliklerinin çalışmamasına neden olabilir. Platformumuzun "Çerez Ayarları" bölümünden de fonksiyonel ve analitik çerezler için tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.</p>
-    `,
-  },
-  {
     slug: 'sosyal-etki-politikasi',
     title: 'Sosyal Etki Politikası',
     content: `
       <h4>1. Amaç</h4>
-      <p>Hangel'in varlık amacı, teknoloji aracılığıyla ölçülebilir ve sürdürülebilir pozitif sosyal etki yaratmaktır. Bu politika, etkimizi nasıl tanımladığımızı, ölçtüğümüzü, raporladığımızı ve sürekli olarak iyileştirmeyi hedeflediğimizi açıklamaktadır.</p>
+      <p>Hangel'in varlık amacı, teknoloji aracılığıyla ölçülebilir ve sürdürülebilir pozitif sosyal etki oluşturmaktır. Bu politika, etkimizi nasıl tanımladığımızı, ölçtüğümüzü, raporladığımızı ve sürekli olarak iyileştirmeyi hedeflediğimizi açıklamaktadır.</p>
 
       <h4>2. Etki Alanlarımız</h4>
-      <p>Yarattığımız etkiyi temel olarak üç alanda yoğunlaştırıyoruz:</p>
+      <p>Sağladığımız etkiyi temel olarak üç alanda yoğunlaştırıyoruz:</p>
       <ul>
         <li><strong>Bireysel Etki:</strong> Kullanıcıların gönüllülük ve bilinçli tüketim yoluyla topluma katkıda bulunmalarını ve kişisel tatmin elde etmelerini sağlamak.</li>
         <li><strong>Kurumsal Etki:</strong> STK'ların dijitalleşmesine, kaynak geliştirmesine ve kapasitelerini artırmasına; markaların ise sosyal sorumluluk faaliyetlerini etkili bir şekilde yürütmesine yardımcı olmak.</li>
@@ -368,7 +255,7 @@ export const contractsData: Contract[] = [
       <p>Bu veriler, yıllık olarak yayınlanan "Hangel Sosyal Etki Raporu" ile kamuoyuyla şeffaf bir şekilde paylaşılır.</p>
       
       <h4>4. Sürekli İyileştirme</h4>
-      <p>Topladığımız verileri ve geri bildirimleri, stratejilerimizi gözden geçirmek, hizmetlerimizi iyileştirmek ve yarattığımız sosyal etkiyi sürekli olarak artırmak için kullanırız.</p>
+      <p>Topladığımız verileri ve geri bildirimleri, stratejilerimizi gözden geçirmek, hizmetlerimizi iyileştirmek ve oluşturduğumuz sosyal etkiyi sürekli olarak artırmak için kullanırız.</p>
     `,
   },
   {
@@ -423,31 +310,6 @@ export const contractsData: Contract[] = [
     `,
   },
   {
-    slug: 'erisilebilirlik-politikasi',
-    title: 'Erişilebilirlik Politikası',
-    content: `
-      <h4>1. Taahhüdümüz</h4>
-      <p>Hangel olarak, platformumuzu engelli bireyler de dahil olmak üzere herkes için erişilebilir ve kullanılabilir kılmayı taahhüt ediyoruz. Web İçeriği Erişilebilirlik Yönergeleri (WCAG) 2.1 AA seviyesini hedefleyerek, teknolojinin birleştirici gücünü herkesin deneyimlemesini amaçlıyoruz.</p>
-      
-      <h4>2. Erişilebilirlik Özelliklerimiz</h4>
-      <p>Platformumuz, aşağıdaki gibi çeşitli erişilebilirlik özelliklerini desteklemektedir:</p>
-      <ul>
-          <li><strong>Ekran Okuyucu Desteği:</strong> Görme engelli kullanıcılar için ARIA etiketleri ve anlamsal HTML yapısı.</li>
-          <li><strong>Klavye Navigasyonu:</strong> Platformun tüm işlevlerine sadece klavye kullanarak erişim imkanı.</li>
-          <li><strong>Yüksek Kontrast ve Metin Boyutlandırma:</strong> Az gören kullanıcılar için daha iyi okunabilirlik sağlayan tema ve metin boyutu seçenekleri.</li>
-          <li><strong>Renk Körlüğü Filtreleri:</strong> Protanopia, Deuteranopia, Tritanopia gibi farklı renk körlüğü türlerine yönelik filtreleme seçenekleri.</li>
-          <li><strong>Disleksi Dostu Yazı Tipi:</strong> Okuma güçlüğü çeken kullanıcılar için özel olarak tasarlanmış bir yazı tipi seçeneği.</li>
-          <li><strong>Azaltılmış Hareket:</strong> Vestibüler rahatsızlıkları olan kullanıcılar için animasyonları ve geçiş efektlerini azaltma seçeneği.</li>
-      </ul>
-
-      <h4>3. Sürekli Gelişim</h4>
-      <p>Erişilebilirlik, tek seferlik bir proje değil, sürekli bir süreçtir. Platformumuza yeni özellikler ekledikçe ve teknolojiyi güncelledikçe erişilebilirlik standartlarını gözetmeye devam edeceğiz.</p>
-
-      <h4>4. Geri Bildirim</h4>
-      <p>Erişilebilirlik konusundaki çabalarımız süreklidir. Herhangi bir erişilebilirlik engeliyle karşılaşırsanız veya iyileştirme önerileriniz varsa, lütfen <a href="/support">destek merkezimiz</a> aracılığıyla bizimle iletişime geçin. Geri bildirimleriniz, platformumuzu herkes için daha iyi bir yer haline getirmemize yardımcı olacaktır.</p>
-    `,
-  },
-  {
     slug: 'gonullu-haklari-beyannamesi',
     title: 'Gönüllü Hakları ve Sorumlulukları Beyannamesi',
     content: `
@@ -475,9 +337,34 @@ export const contractsData: Contract[] = [
         <li><strong>Profesyonellik ve Temsiliyet:</strong> STK'yı temsil ettiğinin bilinciyle, faaliyetler sırasında ve dışında kurumun itibarına zarar verecek davranışlardan kaçınmakla sorumludur.</li>
         <li><strong>Ekip Çalışması:</strong> Diğer gönüllüler, çalışanlar ve faydalanıcılarla saygı ve işbirliği içinde çalışmakla sorumludur.</li>
         <li><strong>Güvenilirlik:</strong> Devamlılığını veya katılımını etkileyecek durumları (hastalık, özel işler vb.) ilgili sorumluya zamanında bildirmekle sorumludur.</li>
-        <li><strong>Kaynakları Özenli Kullanma:</strong> STK tarafından kendisine emanet edilen kaynakları (malzeme, ekipman, para vb.) özenle ve sadece faaliyetin amacı doğrultusunda kullanmakla sorumludur.</li>
+        <li><strong>Kaynakları Özenli Kullanma:</strong> STK tarafından kendisine emanet edilen kaynakları (malzeme, ekipman, para vb.) özenle ve sadece faaliyetin amacı doğrultusunda kullanmakle sorumludur.</li>
       </ol>
     `
+  },
+  {
+    slug: 'erisilebilirlik-politikasi',
+    title: 'Erişilebilirlik Politikası',
+    content: `
+      <h4>1. Taahhüdümüz</h4>
+      <p>Hangel olarak, platformumuzu engelli bireyler de dahil olmak üzere herkes için erişilebilir ve kullanılabilir kılmayı taahhüt ediyoruz. Web İçeriği Erişilebilirlik Yönergeleri (WCAG) 2.1 AA seviyesini hedefleyerek, teknolojinin birleştirici gücünü herkesin deneyimlemesini amaçlıyoruz.</p>
+      
+      <h4>2. Erişilebilirlik Özelliklerimiz</h4>
+      <p>Platformumuz, aşağıdaki gibi çeşitli erişilebilirlik özelliklerini desteklemektedir:</p>
+      <ul>
+          <li><strong>Ekran Okuyucu Desteği:</strong> Görme engelli kullanıcılar için ARIA etiketleri ve anlamsal HTML yapısı.</li>
+          <li><strong>Klavye Navigasyonu:</strong> Platformun tüm işlevlerine sadece klavye kullanarak erişim imkanı.</li>
+          <li><strong>Yüksek Kontrast ve Metin Boyutlandırma:</strong> Az gören kullanıcılar için daha iyi okunabilirlik sağlayan tema ve metin boyutu seçenekleri.</li>
+          <li><strong>Renk Körlüğü Filtreleri:</strong> Protanopia, Deuteranopia, Tritanopia gibi farklı renk körlüğü türlerine yönelik filtreleme seçenekleri.</li>
+          <li><strong>Disleksi Dostu Yazı Tipi:</strong> Okuma güçlüğü çeken kullanıcılar için özel olarak tasarlanmış bir yazı tipi seçeneği.</li>
+          <li><strong>Azaltılmış Hareket:</strong> Vestibüler rahatsızlıkları olan kullanıcılar için animasyonları ve geçiş efektlerini azaltma seçeneği.</li>
+      </ul>
+
+      <h4>3. Sürekli Gelişim</h4>
+      <p>Erişilebilirlik, tek seferlik bir proje değil, sürekli bir süreçtir. Platformumuza yeni özellikler ekledikçe ve teknolojiyi güncelledikçe erişilebilirlik standartlarını gözetmeye devam edeceğiz.</p>
+
+      <h4>4. Geri Bildirim</h4>
+      <p>Erişilebilirlik konusundaki çabalarımız süreklidir. Herhangi bir erişilebilirlik engeliyle karşılaşırsanız veya iyileştirme önerileriniz varsa, lütfen <a href="/support">destek merkezimiz</a> aracılığıyla bizimle iletişime geçin. Geri bildirimleriniz, platformumuzu herkes için daha iyi bir yer haline getirmemize yardımcı olacaktır.</p>
+    `,
   },
   {
     slug: 'bagisci-haklari-beyannamesi',
@@ -500,5 +387,3 @@ export const contractsData: Contract[] = [
     `
   }
 ];
-
-    

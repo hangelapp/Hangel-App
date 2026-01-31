@@ -214,7 +214,7 @@ export const volunteeringOpportunities: Volunteering[] = [
       providesCertificate: true,
       earnedBadges: ['İletişim Uzmanı'],
       hasPreTraining: false,
-      description: 'Otizm konusunda farkındalık yaratmak için sosyal medya hesaplarımıza içerik üretecek gönüllüler arıyoruz.',
+      description: 'Otizm konusunda farkındalık oluşturmak için sosyal medya hesaplarımıza içerik üretecek gönüllüler arıyoruz.',
       points: 1200,
       ngoTransparencyScore: 88,
       taskType: 'Sürekli'
@@ -881,7 +881,7 @@ export const ngos: NGO[] = [
         coverPhotoUrl: 'https://picsum.photos/seed/acev-cover/1200/400',
         stats: { followers: 300000, donors: 80000, volunteers: 15000, volunteerHours: 120000, projects: 200, totalDonation: 6000000, donationCount: 100000, avgDonation: 60, highestSingleDonation: 900, peopleReached: 1000000 },
         transparencyScore: 93,
-        about: "Anne Çocuk Eğitim Vakfı (AÇEV), erken çocukluk ve yetişkin eğitimi yoluyla, gelişen ve eşitlikçi bir toplum yaratmak amacıyla 1993 yılından beri çalışmaktadır. Bilimsel temelli eğitim programları geliştirir ve uygular.",
+        about: "Anne Çocuk Eğitim Vakfı (AÇEV), erken çocukluk ve yetişkin eğitimi yoluyla, gelişen ve eşitlikçi bir toplum oluşturmak amacıyla 1993 yılından beri çalışmaktadır. Bilimsel temelli eğitim programları geliştirir ve uygular.",
         joinDate: "2023-04-10",
         supportedSDGs: ['Nitelikli Eğitim', 'Toplumsal Cinsiyet Eşitliği', 'Sağlıklı ve Kaliteli Yaşam'],
         beneficiaryGroups: ['Çocuklar', 'Kadınlar', 'Aileler'],
@@ -941,7 +941,7 @@ export const ngos: NGO[] = [
         coverPhotoUrl: 'https://picsum.photos/seed/loder-cover/1200/400',
         stats: { followers: 50000, donors: 10000, volunteers: 800, volunteerHours: 20000, projects: 25, totalDonation: 900000, donationCount: 15000, avgDonation: 60, highestSingleDonation: 450, peopleReached: 10000 },
         transparencyScore: 86,
-        about: "Lösemili Çocuklar ve Kanser Hastalarına Yardım Derneği (LÖDER), lösemi ve kanser hastalarına ve ailelerine maddi-manevi destek sağlamak, tedavi süreçlerine katkıda bulunmak ve toplumda bu konularda farkındalık yaratmak için çalışır.",
+        about: "Lösemili Çocuklar ve Kanser Hastalarına Yardım Derneği (LÖDER), lösemi ve kanser hastalarına ve ailelerine maddi-manevi destek sağlamak, tedavi süreçlerine katkıda bulunmak ve toplumda bu konularda farkındalık oluşturmak için çalışır.",
         joinDate: "2023-10-01",
         supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam'],
         beneficiaryGroups: ['Çocuklar', 'Hastalar', 'Aileler'],
@@ -963,7 +963,6 @@ export const ngos: NGO[] = [
 ];
 
 export const allEntityLists: Brand[] = [
-    // Existing Brands with details
     { 
         id: '1', 
         name: 'Ayakkabı Dünyası', 
@@ -1007,7 +1006,6 @@ export const allEntityLists: Brand[] = [
     { id: '24', name: 'LÖSEV - LSV Dükkan', category: 'Pazaryeri', donationRate: 100, logoUrl: 'https://logo.clearbit.com/lsvdukkan.com', type: 'economic', followers: 25000 },
     { id: '25', name: 'Tohum Otizm Vakfı İktisadi İşletmesi', category: 'Eğitim', donationRate: 100, logoUrl: 'https://logo.clearbit.com/tohumotizm.org.tr', type: 'economic', followers: 15000 },
     
-    // New Brands from the user list
     { id: '113', name: 'Hotiç', category: 'Ayakkabı', donationRate: 7, logoUrl: 'https://logo.clearbit.com/hotic.com.tr', followers: 500000, type: 'brand' },
     { id: '114', name: 'SuperStep', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', followers: 1000000, type: 'brand' },
     { id: '115', name: 'Houseofsuperstep', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', followers: 100000, type: 'brand' },
@@ -1046,7 +1044,7 @@ export const allEntityLists: Brand[] = [
     { id: '148', name: 'Machka', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/machka.com.tr', followers: 400000, type: 'brand' },
     { id: '149', name: 'Fitmoda', category: 'Spor Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/fitmoda.com', followers: 100000, type: 'brand' },
     { id: '150', name: 'Boyner', category: 'Pazaryeri', donationRate: 4, logoUrl: 'https://logo.clearbit.com/boyner.com.tr', followers: 2500000, type: 'brand' },
-    { id: '151', name: 'Dagi', category: 'Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/dagi.com.tr', followers: 300000, type: 'brand' },
+    { id: '151', name: 'Dagi', category: 'Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/dagi.com.tr', followers: 30000, type: 'brand' },
     { id: '152', name: 'Addax.com.tr', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/addax.com.tr', followers: 500000, type: 'brand' },
     { id: '153', name: 'Marks & Spencer', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/marksandspencer.com.tr', followers: 800000, type: 'brand' },
     { id: '154', name: 'GAP', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/gap.com.tr', followers: 1200000, type: 'brand' },
@@ -1294,7 +1292,7 @@ export const helpTopics: HelpTopic[] = [
         icon: 'user', title: 'Hesap ve Profil', slug: 'account', description: 'Profil bilgileri, şifre ve hesap ayarları hakkında yardım alın.',
         subtopics: [
             { title: 'Şifremi nasıl değiştiririm?', link: '#', content: '<p>Şifrenizi değiştirmek için <strong>Ayarlar > Güvenlik ve Şifre</strong> menüsüne gidin. "Şifre Değiştir" bölümünde mevcut şifrenizi ve belirlediğiniz yeni şifreyi girerek değişikliği tamamlayabilirsiniz.</p>' },
-            { title: 'Profil bilgilerimi nasıl güncellerim?', link: '#', content: '<p>Profil bilgilerinizi güncellemek için ana menüden <strong>Ayarlar</strong>\'a tıklayın. Açılan sayfada "Kişisel Bilgileri Düzenle" ve "Gönüllülük Bilgilerini Düzenle" sekmelerinden ilgili alanları güncelleyebilirsiniz. Değişikliklerin kaydedilmesi için sayfanın altındaki "Değişiklikleri Kaydet" butonuna tıklamayı unutmayın.</p>' },
+            { title: 'Profil bilgilerimi nasıl güncellerim?', link: '#', content: '<p>Profil bilgilerini güncellemek için ana menüden <strong>Ayarlar</strong>\'a tıklayın. Açılan sayfada "Kişisel Bilgileri Düzenle" ve "Gönüllülük Bilgilerini Düzenle" sekmelerinden ilgili alanları güncelleyebilirsiniz. Değişikliklerin kaydedilmesi için sayfanın altındaki "Değişiklikleri Kaydet" butonuna tıklamayı unutmayın.</p>' },
         ]
     },
     {
@@ -1340,14 +1338,14 @@ export const helpTopics: HelpTopic[] = [
                 title: 'Yapay Zeka Destekli Etki Hikayem nedir?', 
                 link: '#', 
                 content: `
-                    <p>"Etki Hikayem", her ayın sonunda o ay boyunca platformda yarattığınız pozitif etkiyi özetleyen, yapay zeka tarafından size özel olarak oluşturulan kısa ve motive edici bir metindir. Profilinizdeki "Etki" sekmesinde bulabilirsiniz.</p>
+                    <p>"Etki Hikayem", her ayın sonunda o ay boyunca platformda oluşturduğunuz pozitif etkiyi özetleyen, yapay zeka tarafından size özel olarak oluşturulan kısa ve motive edici bir metindir. Profilinizdeki "Etki" sekmesinde bulabilirsiniz.</p>
                     <p>Hikayeniz oluşturulurken şu verileriniz analiz edilir:</p>
                     <ul>
                         <li>Yaptığınız bağışların hangi STK'lara gittiği ve hangi alanları (çevre, eğitim vb.) desteklediği.</li>
                         <li>Tamamladığınız gönüllülük faaliyetlerinin süresi ve konusu.</li>
                         <li>O ay içinde kazandığınız yeni rozetler veya ulaştığınız önemli dönüm noktaları.</li>
                     </ul>
-                    <p>Sonuçta ortaya çıkan kişisel hikayenizi, yarattığınız somut etkiyi görmek ve dilerseniz sosyal medyada paylaşarak çevrenize de ilham vermek için kullanabilirsiniz.</p>
+                    <p>Sonuçta ortaya çıkan kişisel hikayenizi, sağladığınız somut etkiyi görmek ve dilerseniz sosyal medyada paylaşarak çevrenize de ilham vermek için kullanabilirsiniz.</p>
                 ` 
             },
         ]
@@ -1495,14 +1493,3 @@ export const qrPaymentCardData = [
     cvv: '789'
   },
 ];
-  
-
-    
-
-    
-
-
-
-
-
-

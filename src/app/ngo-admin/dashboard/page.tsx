@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -94,7 +95,6 @@ export default function NgoDashboardPage() {
         </CardHeader>
         <CardContent className="p-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x">
-                {/* Toplam Bağış */}
                 {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
                     <div className="p-6">
                         <div className="flex items-center justify-between mb-2">
@@ -106,7 +106,6 @@ export default function NgoDashboardPage() {
                     </div>
                 )}
 
-                {/* Toplam Gönüllü */}
                 {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
                     <div className="p-6">
                         <div className="flex items-center justify-between mb-2">
@@ -118,7 +117,6 @@ export default function NgoDashboardPage() {
                     </div>
                 )}
 
-                {/* Yeni Başvurular */}
                 {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
                     <div className="p-6">
                         <div className="flex items-center justify-between mb-2">
@@ -130,11 +128,10 @@ export default function NgoDashboardPage() {
                     </div>
                 )}
 
-                {/* Toplam Yaratılan Etki */}
                 {userRole === 'Genel Yönetici' && (
                     <div className="p-6 bg-primary/5">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-bold text-primary uppercase tracking-wider">Toplam Yaratılan Etki</span>
+                            <span className="text-xs font-bold text-primary uppercase tracking-wider">Toplam Sağlanan Etki</span>
                             <TrendingUp className="h-4 w-4 text-primary" />
                         </div>
                         <div className="text-2xl font-bold text-primary">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>

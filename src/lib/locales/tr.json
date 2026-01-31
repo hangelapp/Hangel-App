@@ -1,3 +1,4 @@
+
 {
   "general": {
     "appName": "hangel Hub",
@@ -83,7 +84,7 @@
         "description": "İyiliğin ve sosyal etkinin buluşma noktası. Topluluğumuzun bir parçası olmaya hazır mısın?"
       },
       {
-        "title": "Gönüllü Ol, Etki Yarat",
+        "title": "Gönüllü Ol, Etki Oluştur",
         "description": "Yeteneklerine ve ilgi alanlarına uygun gönüllülük fırsatlarını keşfet, topluma değer kat."
       },
       {
@@ -104,7 +105,7 @@
       },
       {
         "title": "Şeffaflık Her Şeyimiz",
-        "description": "Yaptığın bağışların nereye gittiğini şeffaflık raporları ile anbean takip et, etkinin gücünü gör."
+        "description": "Yaptığın bağışların nereye gittiğini şeffaflık raporları ile anbean takip et, sağlanan etkinin gücünü gör."
       },
       {
         "title": "Kulübünü Harekete Geçir",
@@ -185,7 +186,7 @@
   },
   "volunteer": {
     "title": "Gönüllülük Fırsatları",
-    "description": "Topluma katkıda bulun, yeni beceriler kazan ve etki yarat.",
+    "description": "Topluma katkıda bulun, yeni beceriler kazan ve etki oluştur.",
     "searchPlaceholder": "İlan adı, STK veya şehir ara...",
     "filterOnline": "Online",
     "filterField": "Saha",
@@ -312,9 +313,9 @@
     "pageTitle": "Hakkımızda",
     "pageDescription": "İyiliğin ve sosyal etkinin buluşma noktası.",
     "welcomeTitle": "hangel Hub'a Hoş Geldiniz",
-    "welcomeText": "hangel Hub olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim yaratabileceği bir platform oluşturma hayaliyle yola çıktık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.",
+    "welcomeText": "hangel Hub olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim oluşturabileceği bir platform oluşturma hayaliyle yola başladık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.",
     "missionTitle": "Misyonumuz",
-    "missionText": "Sosyal etki yaratmak isteyen herkes için güvenilir, kolay ve ilham verici bir dijital köprü kurarak, toplumsal sorunlara sürdürülebilir çözümler bulunmasına aracılık etmek.",
+    "missionText": "Sosyal etki oluşturmak isteyen herkes için güvenilir, kolay ve ilham verici bir dijital köprü kurarak, toplumsal sorunlara sürdürülebilir çözümler bulunmasına aracılık etmek.",
     "visionTitle": "Vizyonumuz",
     "visionText": "Türkiye'de ve dünyada sosyal sorumluluk ve gönüllülük denince akla gelen ilk platform olmak; iyiliği bir yaşam biçimi haline getiren, bilinçli ve aktif bir toplumun oluşmasına liderlik etmek.",
     "valuesTitle": "Değerlerimiz",
@@ -353,7 +354,7 @@
     "pageTitle": "Arkadaşlarını Davet Et",
     "pageDescription": "İyilik zincirini büyütmek için arkadaşlarını hangel Hub'a davet et.",
     "cardTitle": "Arkadaşlarını İyiliğe Davet Et",
-    "cardDescription": "Bu linki arkadaşlarınla paylaşarak onların da hangel Hub'a katılmasını ve sosyal etki yaratmasını sağla.",
+    "cardDescription": "Bu linki arkadaşlarınla paylaşarak onların da hangel Hub'a katılmasını ve sosyal etki oluşturmasını sağla.",
     "linkCopiedToast": "Davet linkini panoya kopyaladın."
   },
   "myApplications": {
@@ -386,7 +387,7 @@
   },
   "myDonations": {
     "pageTitle": "Bağışlarım",
-    "pageDescription": "Alışverişlerinizle yarattığınız etkiyi ve desteklediğiniz STK'ları görün.",
+    "pageDescription": "Alışverişlerinizle oluşturduğunuz etkiyi ve desteklediğiniz STK'ları görün.",
     "historyTitle": "İşlem Geçmişi",
     "historyDescription": "Markalardan yaptığınız alışverişler sayesinde STK'lara aktarılan bağış geçmişiniz.",
     "searchPlaceholder": "İşlemlerde ara...",
@@ -713,7 +714,7 @@
     "volunteerTitle": "Gönüllü Raporları",
     "volunteerDescription": "Gönüllü faaliyetleriniz ve demografik yapıları hakkında raporlar.",
     "impactTitle": "Etki Raporları",
-    "impactDescription": "Projelerinizin ve faaliyetlerinizin yarattığı sosyal etki raporları."
+    "impactDescription": "Projelerinizin ve faaliyetlerinizin sağladığı sosyal etki raporları."
   },
   "ngoAdminSettings": {
     "title": "Panel Ayarları",
@@ -774,4 +775,3 @@
     "points": "{current} / {required}"
   }
 }
-    

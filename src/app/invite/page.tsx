@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -32,7 +33,6 @@ export default function InvitePage() {
   const [sortCriteria, setSortCriteria] = useState('impactScore');
 
   useEffect(() => {
-    // This check ensures window is defined, preventing SSR errors.
     if (typeof window !== 'undefined') {
       setInviteLink(`${window.location.origin}/register?ref=ismail`);
     }
@@ -130,7 +130,7 @@ export default function InvitePage() {
             <Gift className="h-10 w-10 text-primary" />
         </div>
         <h1 className="text-3xl font-bold font-headline">İyiliği Paylaş, Birlikte Büyüyelim</h1>
-        <p className="text-muted-foreground max-w-md mx-auto">Arkadaşlarını hangel'a davet et, hem sen hem de onlar kazansın. Birlikte daha büyük bir etki yaratalım.</p>
+        <p className="text-muted-foreground max-w-md mx-auto">Arkadaşlarını hangel'a davet et, hem sen hem de onlar kazansın. Birlikte daha büyük bir etki oluşturalım.</p>
       </div>
 
       <Card>

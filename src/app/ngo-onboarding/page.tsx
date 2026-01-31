@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CheckCircle, Users, TrendingUp, HeartHandshake } from 'lucide-react';
@@ -85,7 +86,7 @@ export default function NgoOnboardingPage() {
             </div>
              <div className='flex items-start gap-4'>
                 <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>4</div>
-                <p><strong>Etkinizi Paylaşın ve Büyütün:</strong> Kullanıcılar, alışverişleriyle size düzenli bağış yaparken, siz de yarattığınız etkiyi gönderilerle tüm toplulukla paylaşın.</p>
+                <p><strong>Etkinizi Paylaşın ve Büyütün:</strong> Kullanıcılar, alışverişleriyle size düzenli bağış yaparken, siz de sağladığınız etkiyi gönderilerle tüm toplulukla paylaşın.</p>
             </div>
         </CardContent>
       </Card>

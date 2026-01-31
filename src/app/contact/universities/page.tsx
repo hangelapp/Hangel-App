@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -89,7 +90,7 @@ export default function UniversitiesPage() {
                         <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>4</div>
                         <div>
                             <h4 className="font-semibold">Etki Ölçümü ve Kariyer Fırsatları</h4>
-                            <p>Üniversitenizin ve öğrencilerinizin yarattığı toplam sosyal etkiyi (gönüllülük saatleri, desteklenen projeler) raporlayın. Öğrencilerinizi platformdaki şirket ve STK'larla buluşturarak kariyer olanakları yaratın.</p>
+                            <p>Üniversitenizin ve öğrencilerinizin sağladığı toplam sosyal etkiyi (gönüllülük saatleri, desteklenen projeler) raporlayın. Öğrencilerinizi platformdaki şirket ve STK'larla buluşturarak kariyer olanakları yaratın.</p>
                         </div>
                     </div>
                 </CardContent>

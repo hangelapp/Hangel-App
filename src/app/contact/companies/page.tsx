@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,8 +21,6 @@ export default function CompaniesPage() {
             title: "Mesajınız Gönderildi",
             description: "Ekibimiz en kısa sürede sizinle iletişime geçecektir.",
         });
-        // Optionally, redirect or clear form
-        // e.g., router.push('/thank-you');
     };
 
     return (
@@ -56,7 +55,7 @@ export default function CompaniesPage() {
                     </div>
                     <div className="flex flex-col items-center text-center gap-2">
                         <Handshake className="h-8 w-8 text-primary"/>
-                        <h3 className="font-semibold">Somut Sosyal Etki Yaratın</h3>
+                        <h3 className="font-semibold">Somut Sosyal Etki Oluşturun</h3>
                         <p className="text-sm text-muted-foreground">Şirketinizin değerleriyle uyumlu STK'ları destekleyerek ölçülebilir ve şeffaf bir fayda sağlayın.</p>
                     </div>
                     <div className="flex flex-col items-center text-center gap-2">
@@ -97,7 +96,7 @@ export default function CompaniesPage() {
                         <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>4</div>
                         <div>
                             <h4 className="font-semibold">Etki Raporlaması ve İletişim</h4>
-                            <p>İşbirliğinizin yarattığı somut sosyal etkiyi (desteklenen STK'lar, gönüllülük saatleri, ulaşılan kişi sayısı) size özel raporlarla takip edin ve bu başarıyı paydaşlarınızla paylaşın.</p>
+                            <p>İşbirliğinizin oluşturduğu somut sosyal etkiyi (desteklenen STK'lar, gönüllülük saatleri, ulaşılan kişi sayısı) size özel raporlarla takip edin ve bu başarıyı paydaşlarınızla paylaşın.</p>
                         </div>
                     </div>
                 </CardContent>

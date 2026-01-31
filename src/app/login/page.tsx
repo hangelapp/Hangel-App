@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -45,12 +46,10 @@ export default function LoginPage() {
   const [language, setLanguage] = useState<Language>('tr');
   const [selectedTranslations, setSelectedTranslations] = useState<Translation>(translations.tr);
 
-  // Gönüllülük Filtreleme
   const [searchTerm, setSearchTerm] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
   const [socialAreaFilter, setSocialAreaFilter] = useState('all');
 
-  // Marka Filtreleme
   const [activeBrandCategory, setActiveBrandCategory] = useState('Tümü');
   const [activeBrandType, setActiveBrandType] = useState('all');
 
@@ -88,7 +87,7 @@ export default function LoginPage() {
       list = list.filter(brand => brand.type === activeBrandType);
     }
 
-    return list.slice(0, 30); // Daha fazla marka gösterimi için limit artırıldı
+    return list.slice(0, 30);
   }, [activeBrandCategory, activeBrandType]);
 
   const topCategories = marketCategories.slice(2, 10);
@@ -274,7 +273,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center text-center">
             <h2 className="text-4xl font-bold mb-4 text-foreground font-headline tracking-tight">hangel bağış</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-12">
-              Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
+              Alışverişlerinizle sosyal fayda oluşturun. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 mb-6">

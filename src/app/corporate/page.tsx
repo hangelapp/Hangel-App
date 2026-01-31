@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -44,7 +45,7 @@ export default function CorporatePage() {
             <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold font-headline">Kamu ve Kurumsal İlişkiler</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Hangel olarak, sürdürülebilir bir etki yaratmanın yolunun güçlü işbirliklerinden geçtiğine inanıyoruz.
+                    Hangel olarak, sürdürülebilir bir etki oluşturmanın yolunun güçlü işbirliklerinden geçtiğine inanıyoruz.
                 </p>
             </div>
 

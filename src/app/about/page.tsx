@@ -51,13 +51,13 @@ export default function AboutPage() {
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground text-sm">
           <p>
-            Hangel olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim yaratabileceği bir platform oluşturma hayaliyle yola çıktık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.
+            Hangel olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim oluşturabileceği bir platform oluşturma hayaliyle yola başladık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.
           </p>
            <p>
             Platformumuz, günlük alışverişlerinizi birer iyilik hareketine dönüştürmenize olanak tanır. Anlaşmalı markalardan yaptığınız her harcamanın bir kısmı, hiçbir ek ücret ödemeden sizin seçtiğiniz bir STK'ya bağış olarak aktarılır. Böylece, günlük ihtiyaçlarınızı karşılarken aynı zamanda topluma katkıda bulunmuş olursunuz.
           </p>
           <p>
-            Aynı zamanda Hangel, yeteneklerinizi ve zamanınızı topluma fayda sağlamak için kullanabileceğiniz bir gönüllülük merkezidir. İlgi alanlarınıza ve becerilerinize uygun gönüllülük ilanlarını keşfedebilir, başvurabilir ve yarattığınız etkiyi 'Sosyal Etki Puanı' ile ölçebilirsiniz.
+            Aynı zamanda Hangel, yeteneklerinizi ve zamanınızı topluma fayda sağlamak için kullanabileceğiniz bir gönüllülük merkezidir. İlgi alanlarınıza ve becerilerinize uygun gönüllülük ilanlarını keşfedebilir, başvurabilir ve sağladığınız etkiyi 'Sosyal Etki Puanı' ile ölçebilirsiniz.
           </p>
         </CardContent>
       </Card>
@@ -68,7 +68,7 @@ export default function AboutPage() {
         </CardHeader>
         <CardContent className="text-sm">
           <p>
-            Sosyal etki yaratmak isteyen herkes için güvenilir, kolay ve ilham verici bir dijital köprü kurarak, toplumsal sorunlara sürdürülebilir çözümler bulunmasına aracılık etmek.
+            Sosyal etki oluşturmak isteyen herkes için güvenilir, kolay ve ilham verici bir dijital köprü kurarak, toplumsal sorunlara sürdürülebilir çözümler bulunmasına aracılık etmek.
           </p>
         </CardContent>
       </Card>

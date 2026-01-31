@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -26,7 +27,7 @@ const impactStories = [
     { title: "Temiz Sahiller, Mutlu Canlılar", content: "3 farklı sahilde düzenlediğimiz temizlik etkinliğinde, gönüllülerimizle birlikte 500 kg'dan fazla atık topladık.", imageUrl: "https://picsum.photos/seed/story6/1080/1920", imageHint: "beach cleanup trash" },
     { title: "Kadın Kooperatiflerine Destek", content: "El emeği ürünler üreten 5 kadın kooperatifine pazarlama ve satış desteği sağlayarak ekonomik olarak güçlenmelerine yardımcı olduk.", imageUrl: "https://picsum.photos/seed/story7/1080/1920", imageHint: "women weaving craft" },
     { title: "LÖSEV'e Moral Ziyareti", content: "Gönüllülerimizle birlikte LÖSEV'de tedavi gören çocuklara moral ziyareti düzenleyerek onlarla oyunlar oynadık, hediyeler dağıttık.", imageUrl: "https://picsum.photos/seed/story8/1080/1920", imageHint: "child hospital playing" },
-    { title: "Barınak Güzelleştirme Projesi", content: "Hayvan barınağının duvarlarını boyadık, oyun alanları oluşturduk ve patili dostlarımız için daha yaşanabilir bir ortam yarattık.", imageUrl: "https://picsum.photos/seed/story9/1080/1920", imageHint: "painting mural colorful" },
+    { title: "Barınak Güzelleştirme Projesi", content: "Hayvan barınağının duvarlarını boyadık, oyun alanları oluşturduk ve patili dostlarımız için daha yaşanabilir bir ortam oluşturduk.", imageUrl: "https://picsum.photos/seed/story9/1080/1920", imageHint: "painting mural colorful" },
     { title: "Yaşlılara Vefa Ziyaretleri", content: "Huzurevinde kalan değerli büyüklerimizi ziyaret ederek onlarla sohbet ettik, anılarını dinledik ve yalnız olmadıklarını hissettirdik.", imageUrl: "https://picsum.photos/seed/story10/1080/1920", imageHint: "elderly person smiling" },
 ];
 
@@ -50,7 +51,7 @@ export default function ImpactStoryPage() {
     const [api, setApi] = React.useState<CarouselApi>()
     const [current, setCurrent] = React.useState(0)
     const [progress, setProgress] = React.useState(0);
-    const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği
+    const ngo = ngos.find(n => n.id === '2');
     const authorName = ngo?.name || "Kuruluş";
     const authorImage = ngo?.avatarUrl || "";
 
@@ -59,8 +60,6 @@ export default function ImpactStoryPage() {
         
         const updateProgress = () => {
             const scrollProgress = api.scrollProgress();
-            // This gives a value from 0 to 1, we multiply by 100 for percentage
-            // We need to adjust it for multiple slides
             const totalSlides = api.scrollSnapList().length;
             const progressPerSlide = 1 / (totalSlides - 1);
             const currentSlideProgress = (scrollProgress - (api.selectedScrollSnap() * progressPerSlide)) / progressPerSlide;
@@ -69,7 +68,7 @@ export default function ImpactStoryPage() {
 
         const handleSelect = () => {
             setCurrent(api.selectedScrollSnap());
-            setProgress(0); // Reset progress on slide change
+            setProgress(0);
         }
 
         api.on("select", handleSelect);

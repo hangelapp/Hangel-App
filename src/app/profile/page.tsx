@@ -261,7 +261,7 @@ export default function ProfilePage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Yapay Zeka Destekli Etki Hikayen</CardTitle>
-                                <CardDescription>Bu ayki katkılarınla yarattığın pozitif etkiyi gör ve paylaş!</CardDescription>
+                                <CardDescription>Bu ayki katkılarınla sağladığın pozitif etkiyi gör ve paylaş!</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {story ? (
@@ -282,7 +282,7 @@ export default function ProfilePage() {
                                     </Button>
                                 )}
                                 <div className="w-full flex justify-between items-center">
-                                    <p>Yapay zeka tarafından üretilmiştir.</p>
+                                    <p>Yapay zeka tarafından sağlanan verilerle oluşturulmuştur.</p>
                                     <Link href="/support/ai-assistants" className="hover:underline text-primary">Nasıl çalışır?</Link>
                                 </div>
                             </CardFooter>
