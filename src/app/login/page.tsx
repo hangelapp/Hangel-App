@@ -3,14 +3,13 @@
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Search, ShoppingBag, Menu, Heart, MapPin, Calendar, Award
+  Globe, ChevronRight, Search, ShoppingBag, Menu
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -68,14 +67,14 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0 flex flex-col items-center justify-start flex-1">
+    <div className="relative w-full flex-1 flex flex-col items-center justify-start mt-8 overflow-hidden">
       {children ? (
         <div className="w-full h-full">
           {children}
         </div>
       ) : (
         image && (
-          <div className="relative w-full h-full">
+          <div className="relative w-full flex-1 max-h-[400px] md:max-h-[600px] px-4 md:px-0">
             <Image 
               src={image} 
               alt={title} 
@@ -92,7 +91,13 @@ const AppleSection = ({
 );
 
 const VolunteeringDiscovery = () => {
+    const [mounted, setMounted] = useState(false);
     const [filter, setFilter] = useState('all');
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const categories = ['Tümü', 'Çevre', 'Eğitim', 'Afet', 'Hayvan Hakları', 'Engelli'];
     const categoryMapping: Record<string, string> = {
         'Tümü': 'all',
@@ -104,10 +109,15 @@ const VolunteeringDiscovery = () => {
     };
 
     const filteredItems = useMemo(() => {
+        if (!mounted) return [];
         const limit = 12;
         if (filter === 'all') return volunteeringOpportunities.slice(0, limit);
         return volunteeringOpportunities.filter(item => item.socialArea === filter).slice(0, limit);
-    }, [filter]);
+    }, [filter, mounted]);
+
+    if (!mounted) {
+        return <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground">Yükleniyor...</div>;
+    }
 
     return (
         <div className="w-full space-y-8 py-4">
