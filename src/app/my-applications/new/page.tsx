@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -8,95 +9,97 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Upload, Twitter, Instagram, Facebook, Linkedin, ArrowLeft } from 'lucide-react';
+import { Upload, Twitter, Instagram, Facebook, Linkedin, ArrowLeft, Plus, X } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
+// --- Shared Constants ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
-const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi'];
-const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
-const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
 
 const districts: { [key: string]: string[] } = {
-    'Adana': ['Aladağ', 'Ceyhan', 'Çukurova', 'Feke', 'İmamoğlu', 'Karaisalı', 'Karataş', 'Kozan', 'Pozantı', 'Saimbeyli', 'Sarıçam', 'Seyhan', 'Tufanbeyli', 'Yumurtalık', 'Yüreğir'],
-    'Adıyaman': ['Merkez', 'Besni', 'Çelikhan', 'Gerger', 'Gölbaşı', 'Kahta', 'Samsat', 'Sincik', 'Tut'],
-    'Afyonkarahisar': ['Merkez', 'Başmakçı', 'Bayat', 'Bolvadin', 'Çay', 'Çobanlar', 'Dazkırı', 'Dinar', 'Emirdağ', 'Evciler', 'Hocalar', 'İhsaniye', 'İscehisar', 'Kızılören', 'Sandıklı', 'Sinanpaşa', 'Sultandağı', 'Şuhut'],
-    'Ağrı': ['Merkez', 'Diyadin', 'Doğubayazıt', 'Eleşkirt', 'Hamur', 'Patnos', 'Taşlıçay', 'Tutak'],
+    'Adana': ['Aladağ', 'İmamoğlu', 'Pozantı', 'Tufanbeyli', 'CEyhan', 'Karaisalı', 'Saimbeyli', 'Yumurtalık', 'Çukurova', 'Karataş', 'Sarıçam', 'Yüreğir', 'Feke', 'Kozan', 'Seyhan'],
+    'Adıyaman': ['Besni', 'Kahta', 'Çelikhan', 'Samsat', 'Gerger', 'Sincik', 'Gölbaşı', 'Tut'],
+    'Afyonkarahisar': ['Başmakçı', 'Çobanlar', 'Evciler', 'Kızılören', 'Şuhut', 'Bayat', 'Dazkırı', 'Hocalar', 'Sandıklı', 'Bolvadin', 'Dinar', 'İhsaniye', 'Sinanpaşa', 'Çay', 'Emirdağ', 'İscehisar', 'Sultandağı'],
+    'Ağrı': ['Diyadin', 'Patnos', 'Doğubayazıt', 'Taşlıçay', 'Eleşkirt', 'Tutak', 'Hamur'],
     'Aksaray': ['Ağaçören', 'Ortaköy', 'Eskil', 'Sarıyahşi', 'Gülağaç', 'Sultanhanı', 'Güzelyurt'],
-    'Amasya': ['Merkez', 'Göynücek', 'Gümüşhacıköy', 'Hamamözü', 'Merzifon', 'Suluova', 'Taşova'],
-    'Ankara': ['Akyurt', 'Altındağ', 'Ayaş', 'Bala', 'Beypazarı', 'Çamlidere', 'Çankaya', 'Çubuk', 'Elmadağ', 'Etimesgut', 'Evren', 'Gölbaşı', 'Güdül', 'Haymana', 'Kahramankazan', 'Kalecik', 'Keçiören', 'Kızılcahamam', 'Mamak', 'Nallıhan', 'Polatlı', 'Pursaklar', 'Sincan', 'Şereflikoçhisar', 'Yenimahalle'],
-    'Antalya': ['Akseki', 'Aksu', 'Alanya', 'Demre', 'Döşemealtı', 'Elmalı', 'Finike', 'Gazipaşa', 'Gündoğmuş', 'İbradı', 'Kaş', 'Kemer', 'Kepez', 'Konyaaltı', 'Korkuteli', 'Kumluca', 'Manavgat', 'Muratpaşa', 'Serik'],
+    'Amasya': ['Göynücek', 'Suluova', 'Gümüşhacıköy', 'Taşova', 'Hamamözü', 'Merzifon'],
+    'Ankara': ['Akyurt', 'Beypazarı', 'Elmadağ', 'Güdül', 'Keçiören', 'Polatlı', 'YenimahalLE', 'Altındağ', 'Çamlidere', 'ETimesgut', 'Haymana', 'Kızılcahamam', 'Pursaklar', 'Ayaş', 'Çankaya', 'Evren', 'Kahramankazan', 'Mamak', 'Sincan', 'Bala', 'ÇUbuk', 'Gölbaşı', 'Kalecik', 'Nallıhan', 'Şereflikoçhisar'],
+    'Antalya': ['Akseki', 'Döşemealtı', 'Gündoğmuş', 'Kepez', 'Manavgat', 'Aksu', 'Elmalı', 'İbradı', 'Konyaaltı', 'Muratpaşa', 'Alanya', 'Finike', 'Kaş', 'Korkuteli', 'SerİK', 'Demre', 'Gazipaşa', 'Kemer', 'KUmluca'],
     'Ardahan': ['Çıldır', 'Posof', 'Damal', 'Göle', 'Hanak'],
-    'Artvin': ['Merkez', 'Ardanuç', 'Arhavi', 'Borçka', 'Hopa', 'Kemalpaşa', 'Murgul', 'Şavşat', 'Yusufeli'],
-    'Aydın': ['Bozdoğan', 'Buharkent', 'Çine', 'Didim', 'Efeler', 'Germencik', 'İncirliova', 'Karacasu', 'Karpuzlu', 'Koçarlı', 'Köşk', 'Kuşadası', 'Kuyucak', 'Nazilli', 'Söke', 'Sultanhisar', 'Yenipazar'],
-    'Balıkesir': ['Altıeylül', 'Ayvalık', 'Balya', 'Bandırma', 'Bigadiç', 'Burhaniye', 'Dursunbey', 'Edremit', 'Erdek', 'Gömeç', 'Gönen', 'Havran', 'İvrindi', 'Karesi', 'Kepsut', 'Manyas', 'Marmara', 'Savaştepe', 'Sındırgı', 'Susurluk'],
+    'Artvin': ['Ardanuç', 'Kemalpaşa', 'Arhavi', 'Murgul', 'Borçka', 'Şavşat', 'Hopa', 'Yusufeli'],
+    'Aydın': ['Bozdoğan', 'Efeler', 'KarpuZlu', 'Kuyucak', 'Yenipazar', 'Buharkent', 'Germencik', 'Koçarlı', 'Nazilli', 'Çine', 'İncirliova', 'Köşk', 'Söke', 'Didim', 'Karacasu', 'Kuşadası', 'Sultanhisar'],
+    'Balıkesir': ['Altıeylül', 'Bigadiç', 'Erdek', 'İvrindi', 'Marmara', 'Ayvalık', 'Burhaniye', 'Gömeç', 'Karesi', 'Savaştepe', 'Balya', 'Dursunbey', 'Gönen', 'Kepsut', 'Sındırgı', 'Bandırma', 'Edremit', 'Havran', 'Manyas', 'Susurluk'],
     'Bartın': ['Amasra', 'Kurucaşile', 'Ulus'],
     'Batman': ['Beşiri', 'Sason', 'Gercüş', 'Hasankeyf', 'Kozluk'],
-    'Bayburt': ['Aydıntepe', 'Demirözü'],
-    'Bilecik': ['Merkez', 'Bozüyük', 'Gölpazarı', 'İnhisar', 'Osmaneli', 'Pazaryeri', 'Söğüt', 'Yenipazar'],
-    'Bingöl': ['Merkez', 'Adaklı', 'Genç', 'Karlıova', 'Kiğı', 'Solhan', 'Yayledere', 'Yedisu'],
-    'Bitlis': ['Merkez', 'Adilcevaz', 'Ahlat', 'Güroymak', 'Hizan', 'Mutki', 'Tatvan'],
-    'Bolu': ['Merkez', 'Dörtdivan', 'Gerede', 'Göynük', 'Kıbrıscık', 'Mengen', 'Mudurnu', 'Seben', 'Yeniçağa'],
-    'Burdur': ['Merkez', 'Ağlasun', 'Altınyayla', 'Bucak', 'Çavdır', 'Çeltikçi', 'Gölhisar', 'Karamanlı', 'Kemer', 'Tefenni', 'Yeşilova'],
-    'Bursa': ['Büyükorhan', 'Gemlik', 'Gürsu', 'Harmancık', 'İnegöl', 'İznik', 'Karacabey', 'Keles', 'Kestel', 'Mudanya', 'Mustafakemalpaşa', 'Nilüfer', 'Orhaneli', 'Orhangazi', 'Osmangazi', 'Yenişehir', 'Yıldırım'],
-    'Çanakkale': ['Merkez', 'Ayvacık', 'Bayramiç', 'Biga', 'Bozcaada', 'Çan', 'Eceabat', 'Ezine', 'Gelibolu', 'Gökçeada', 'Lapseki', 'Yenice'],
-    'Çankırı': ['Merkez', 'Atkaracalar', 'Bayramören', 'Çerkeş', 'Eldivan', 'Ilgaz', 'Kızılırmak', 'Korgun', 'Kurşunlu', 'Orta', 'Şabanözü', 'Yapraklı'],
-    'Çorum': ['Merkez', 'Alaca', 'Bayat', 'Boğazkale', 'Dodurga', 'İskilip', 'Kargı', 'Laçin', 'Mecitözü', 'Oğuzlar', 'Ortaköy', 'Osmancık', 'Sungurlu', 'Uğurludağ'],
-    'Denizli': ['Acıpayam', 'Baklan', 'Bekilli', 'Beyağaç', 'Bozkurt', 'Buldan', 'Çal', 'Çameli', 'Çardak', 'Çivril', 'Güney', 'Honaz', 'Kale', 'Merkezefendi', 'Pamukkale', 'Sarayköy', 'Serinhisar', 'Tavas'],
-    'Diyarbakır': ['Bağlar', 'Bismil', 'Çermik', 'Çınar', 'Çüngüş', 'Dicle', 'Eğil', 'Ergani', 'Hani', 'Hazro', 'Kayapınar', 'Kocaköy', 'Kulp', 'Lice', 'Silvan', 'Sur', 'Yenişehir'],
+    'Bayburt': ['Merkez', 'Aydıntepe', 'Demirözü'],
+    'Bilecik': ['Bozüyük', 'Pazaryeri', 'Gölpazarı', 'Söğüt', 'İnhisar', 'Yenipazar', 'Osmaneli'],
+    'Bingöl': ['Adaklı', 'Solhan', 'Genç', 'Yayladere', 'Karlıova', 'Yedisu', 'Kiğı'],
+    'Bitlis': ['Adilcevaz', 'Mutki', 'Ahlat', 'Tatvan', 'Güroymak', 'Hizan'],
+    'Bolu': ['Dörtdivan', 'Mengen', 'Gerede', 'Mudurnu', 'Göynük', 'Seben', 'Kıbrıscık', 'Yeniçağa'],
+    'Burdur': ['Ağlasun', 'Çeltikçi', 'TEFEnni', 'Altınyayla', 'Gölhisar', 'Yeşilova', 'Bucak', 'Karamanlı', 'Çavdır', 'Kemer'],
+    'Bursa': ['Büyükorhan', 'İnegöl', 'Kestel', 'Orhaneli', 'Yıldırım', 'Gemlik', 'İznik', 'Mudanya', 'Orhangazi', 'Gürsu', 'Karacabey', 'Mustafakemalpaşa', 'OsmanGazi', 'Harmancık', 'Keles', 'Nilüfer', 'Yenişehir'],
+    'Çanakkale': ['Ayvacık', 'Çan', 'Gökçeada', 'Bayramiç', 'ECEabat', 'Lapseki', 'Biga', 'Ezine', 'Yenice', 'Bozcaada', 'Gelibolu'],
+    'Çankırı': ['Atkaracalar', 'Ilgaz', 'Orta', 'Bayramören', 'Kızılırmak', 'Şabanözü', 'Çerkeş', 'Korgun', 'Yapraklı', 'Eldivan', 'Kurşunlu'],
+    'Çorum': ['Alaca', 'İskilip', 'Oğuzlar', 'Uğurludağ', 'Bayat', 'Karagı', 'Ortaköy', 'Boğazkale', 'Laçin', 'Osmancık', 'Dodurga', 'Mecitözü', 'Sungurlu'],
+    'Denizli': ['Acıpayam', 'Beyağaç', 'Çameli', 'Honaz', 'Sarayköy', 'Babadağ', 'Bozkurt', 'Çardak', 'Kale', 'Serİnhisar', 'Baklan', 'Buldan', 'Çivril', 'Merkezefendi', 'Tavas', 'BEkilli', 'Çal', 'Güney', 'Pamukkale'],
+    'Diyarbakır': ['Bağlar', 'Çüngüş', 'Hani', 'Kulp', 'Yenişehir', 'Bismil', 'Dicle', 'Hazro', 'Lice', 'Çermik', 'Eğil', 'Kayapınar', 'Silvan', 'Çınar', 'Ergani', 'Kocaköy', 'Sur'],
     'Düzce': ['Akçakoca', 'Gümüşova', 'Cumayeri', 'Kaynaşlı', 'Çilimli', 'Yığılca', 'Gölyaka'],
-    'Edirne': ['Merkez', 'Enez', 'Havsa', 'İpsala', 'Keşan', 'Lalapaşa', 'Meriç', 'Süloğlu', 'Uzunköprü'],
-    'Elazığ': ['Merkez', 'Ağın', 'Alacakaya', 'Arıcak', 'Baskil', 'Karakoçan', 'Keban', 'Kovancılar', 'Maden', 'Palu', 'Sivrice'],
-    'Erzincan': ['Merkez', 'Çayırlı', 'İliç', 'Kemah', 'Kemaliye', 'Otlukbeli', 'Refahiye', 'Tercan', 'Üzümlü'],
-    'Erzurum': ['Aşkale', 'Aziziye', 'Çat', 'Hınıs', 'Horasan', 'İspir', 'Karaçoban', 'Karayazı', 'Köprüköy', 'Narman', 'Oltu', 'Olur', 'Palandöken', 'Pasinler', 'Pazaryolu', 'Şenkaya', 'Tekman', 'Tortum', 'Uzundere', 'Yakutiye'],
-    'Eskişehir': ['Alpu', 'Beylikova', 'Çifteler', 'Günyüzü', 'Han', 'İnönü', 'Mahmudiye', 'Sarıcakaya', 'Seyitgazi', 'Sivrihisar', 'Tepebaşı'],
-    'Gaziantep': ['Araban', 'İslahiye', 'Karkamış', 'Nizip', 'Nurdağı', 'Oğuzeli', 'Şahinbey', 'Şehitkamil', 'Yavuzeli'],
-    'Giresun': ['Merkez', 'Alucra', 'Bulancak', 'Çamoluk', 'Çanakçı', 'Dereli', 'Doğankent', 'Espiye', 'Eynesil', 'Görele', 'Güce', 'Keşap', 'Piraziz', 'Şebinkarahisar', 'Tirebolu', 'Yağlıdere'],
-    'Gümüşhane': ['Merkez', 'Kelkit', 'Köse', 'Kürtün', 'Şiran', 'Torul'],
-    'Hakkari': ['Merkez', 'Çukurca', 'Derecik', 'Şemdinli', 'Yüksekova'],
-    'Hatay': ['Altınözü', 'Antakya', 'Arsuz', 'Belen', 'Defne', 'Dörtyol', 'Erzin', 'Hassa', 'İskenderun', 'Kırıkhan', 'Kumlu', 'Payas', 'Reyhanlı', 'Samandağ', 'Yayladağı'],
+    'Edirne': ['Enez', 'Lalapaşa', 'Havsa', 'Meriç', 'İpsala', 'Süloğlu', 'Keşan', 'Uzunköprü'],
+    'Elazığ': ['Ağın', 'Karakoçan', 'Palu', 'Alacakaya', 'Keban', 'Sivrice', 'Aricak', 'Kovancılar', 'Baskil', 'Maden'],
+    'Erzincan': ['Çayırlı', 'Otlukbeli', 'İliç', 'Refahiye', 'Kemah', 'Tercan', 'Kemaliye', 'Üzümlü'],
+    'Erzurum': ['Aşkale', 'Horasan', 'Köprüköy', 'Palandöken', 'Tekman', 'Aziziye', 'İspir', 'Narman', 'Pasinler', 'Tortum', 'Çat', 'Karaçoban', 'Oltu', 'Pazaryolu', 'Uzundere', 'HINIS', 'Karayazı', 'Olur', 'Şenkaya', 'Yakutiye'],
+    'Eskişehir': ['Alpu', 'Han', 'Mihalıççık', 'Sivrihisar', 'Beylikova', 'İnönü', 'Odunpazarı', 'Tepebaşı', 'Çifteler', 'Mahmudiye', 'Sarıcakaya', 'Günyüzü', 'Mihalgazi', 'Seyitgazi'],
+    'Gaziantep': ['Araban', 'Nurdağı', 'Yavuzeli', 'İslahiye', 'Oğuzeli', 'Karkamış', 'Şahinbey', 'Nizip', 'Şehitkamil'],
+    'Giresun': ['Alucra', 'Dereli', 'Görele', 'Şebinkarahisar', 'Bulancak', 'Doğankent', 'Güce', 'Tirebolu', 'Çamoluk', 'Espiye', 'Keşap', 'Yağlıdere', 'Çanakçı', 'Eynesil', 'Piraziz'],
+    'Gümüşhane': ['Kelkit', 'Torul', 'Köse', 'Kürtün', 'Şiran'],
+    'Hakkari': ['Çukurca', 'Derecik', 'Şemdinli', 'Yüksekova'],
+    'Hatay': ['Altınözü', 'Defne', 'İskenderun', 'Reyhanlı', 'Antakya', 'DörTYol', 'Kırıkhan', 'Samandağ', 'Arsuz', 'Erzin', 'Kumlu', 'Yayladağı', 'Belen', 'Hassa', 'Payas'],
     'Iğdır': ['Merkez', 'Aralık', 'Karakoyunlu', 'Tuzluca'],
-    'Isparta': ['Merkez', 'Aksu', 'Atabey', 'Eğirdir', 'Gelendost', 'Gönen', 'Keçiborlu', 'Senirkent', 'Sütçüler', 'Şarkikaraağaç', 'Uluborlu', 'Yalvaç', 'Yenişarbademli'],
-    'Mersin': ['Akdeniz', 'Anamur', 'Aydıncık', 'Bozyazı', 'Çamlıyayla', 'Erdemli', 'Silifke', 'Aydıncık', 'Gülnar', 'Tarsus', 'Bozyazı', 'Mezitli', 'Toroslar', 'Yenişehir'],
-    'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
-    'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
-    'Kars': ['Merkez', 'Akyaka', 'Arpaçay', 'Digor', 'Kağızman', 'Sarıkamış', 'Selim', 'Susuz'],
-    'Kastamonu': ['Merkez', 'Abana', 'Ağlı', 'Araç', 'Azdavay', 'Bozkurt', 'Cide', 'Çatalzeytin', 'Daday', 'Devrekani', 'Doğanyurt', 'Hanönü', 'İhsangazi', 'İnebolu', 'Küre', 'Pınarbaşı', 'Seydiler', 'Şenpazar', 'Taşköprü', 'Tosya'],
-    'Kayseri': ['Akkışla', 'Bünyan', 'Develi', 'Felahiye', 'Hacılar', 'İncesu', 'Kocasinan', 'Melikgazi', 'Özvatan', 'Pınarbaşı', 'Sarıoğlan', 'Sarız', 'Talas', 'Tomarza', 'Yahyalı', 'Yeşilhisar'],
-    'Kırklareli': ['Merkez', 'Babaeski', 'Demirköy', 'Kofçaz', 'Lüleburgaz', 'Pehlivanköy', 'Pınarhisar', 'Vize'],
-    'Kırşehir': ['Merkez', 'Akçakent', 'Akpınar', 'Boztepe', 'Çiçekdağı', 'Kaman', 'Mucur'],
-    'Kocaeli': ['Başiskele', 'Çayırova', 'Darıca', 'Derince', 'Dilovası', 'Gebze', 'Gölcük', 'İzmit', 'Kandıra', 'Karamürsel', 'Kartepe', 'Körfez'],
-    'Konya': ['Ahırlı', 'Akören', 'Akşehir', 'Altınekin', 'Beyşehir', 'Bozkır', 'Cihanbeyli', 'Çeltik', 'Çumra', 'Derbent', 'Derebucak', 'Doğanhisar', 'Emirgazi', 'Ereğli', 'Güneysınır', 'Hadim', 'Halkapınar', 'Hüyük', 'Ilgın', 'Kadınhanı', 'Karapınar', 'Karatay', 'Kulu', 'Meram', 'Sarayönü', 'Selçuklu', 'Seydişehir', 'Taşkent', 'Tuzlukçu', 'Yalıhüyük', 'Yunak'],
-    'Kütahya': ['Merkez', 'Altıntaş', 'Aslanapa', 'Çavdarhisar', 'Domaniç', 'Dumlupınar', 'Emet', 'Gediz', 'Hisarcık', 'Pazarlar', 'Simav', 'Şaphane', 'Tavşanlı'],
-    'Malatya': ['Akçadağ', 'Arapgir', 'Arguvan', 'Battalgazi', 'Darende', 'Doğanşehir', 'Doğanyol', 'Hekimhan', 'Kale', 'Kuluncak', 'Pütürge', 'Yazıhan', 'Yeşilyurt'],
-    'Manisa': ['Ahmetli', 'Akhisar', 'Alaşehir', 'Demirci', 'Gölmarmara', 'Gördes', 'Kırkağaç', 'Köprübaşı', 'Kula', 'Salihli', 'Sarıgöl', 'Saruhanlı', 'Selendi', 'Soma', 'Şehzadeler', 'Turgutlu', 'Yunusemre'],
-    'Mardin': ['Artuklu', 'Dargeçit', 'Derik', 'Kızıltepe', 'Mazıdağı', 'Midyat', 'Nusaybin', 'Ömerli', 'Savur', 'Yeşilli'],
-    'Muğla': ['Bodrum', 'Dalaman', 'Datça', 'Fethiye', 'Kavaklıdere', 'Köyceğiz', 'Marmaris', 'Menteşe', 'Milas', 'Ortaca', 'Seydikemer', 'Ula', 'Yatağan'],
-    'Muş': ['Merkez', 'Bulanık', 'Hasköy', 'Korkut', 'Malazgirt', 'Varto'],
-    'Nevşehir': ['Merkez', 'Acıgöl', 'Avanos', 'Derinkuyu', 'Gülşehir', 'Hacıbektaş', 'Kozaklı', 'Ürgüp'],
-    'Niğde': ['Merkez', 'Altunhisar', 'Bor', 'Çamardı', 'Çiftlik', 'Ulukışla'],
-    'Ordu': ['Akkuş', 'Altınordu', 'Aybastı', 'Çamaş', 'Çatalpınar', 'Çaybaşı', 'Fatsa', 'Gölköy', 'Gülyalı', 'Gürgentepe', 'İkizce', 'Kabadüz', 'Kabataş', 'Korgan', 'Kumru', 'Mesudiye', 'Perşembe', 'Ulubey', 'Ünye'],
-    'Osmaniye': ['Merkez', 'Bahçe', 'Düziçi', 'Hasanbeyli', 'Kadirli', 'Sumbas', 'Toprakkale'],
-    'Rize': ['Merkez', 'Ardeşen', 'Fındıklı', 'İyidere', 'Çamlıhemşin', 'Güneysu', 'Kalkandere', 'Çayeli', 'Hemşin', 'Pazar', 'Derepazarı', 'İkizdere'],
+    'Isparta': ['Aksu', 'Gönen', 'Şarkikaraağaç', 'Atabey', 'Keçiborlu', 'Uluborlu', 'Eğirdir', 'Senİrkent', 'Yalvaç', 'Gelendost', 'Sütçüler', 'YenİŞarbademli'],
+    'İstanbul': ['Adalar', 'Bağcılar', 'Bayrampaşa', 'Beyoğlu', 'Esenler', 'Gaziosmanpaşa', 'Kartal', 'Sancaktepe', 'Sultangazi', 'Ümraniye', 'Arnavutköy', 'Bahçelievler', 'Beşiktaş', 'Büyükçekmece', 'Esenyurt', 'Güngören', 'Küçükçekmece', 'Sarıyer', 'Şile', 'Üsküdar', 'Ataşehir', 'Bakırköy', 'Beykoz', 'Çatalca', 'Eyüpsultan', 'Kadıköy', 'Kağıthane', 'Pendik', 'Sultanbeyli', 'Tuzla', 'Avcılar', 'Başakşehir', 'Beylikdüzü', 'Çekmeköy', 'Fatih', 'Zeytinburnu', 'Silivri', 'Şişli', 'Maltepe'],
+    'İzmir': ['Aliağa', 'Bergama', 'Çeşme', 'Gaziemir', 'Karşiyaka', 'Konak', 'Ödemiş', 'Torbalı', 'Balçova', 'Beydağ', 'Çiğli', 'Güzelbahçe', 'Kemalpaşa', 'Menderes', 'Seferihisar', 'Urla', 'Bayındır', 'Bornova', 'Dikili', 'Karabağlar', 'Kınık', 'Menemen', 'Selçuk', 'Bayraklı', 'Buca', 'Foça', 'Karaburun', 'Kiraz', 'Narlıdere', 'Tire'],
+    'Kahramanmaraş': ['Afşin', 'Ekinözü', 'Onikişubat', 'Andırın', 'Elbistan', 'Pazarcık', 'Çağlayancerit', 'Göksun', 'Türkoğlu', 'Dulkadiroğlu', 'Nurhak'],
+    'Karabük': ['Eflani', 'Yenice', 'Eskipazar', 'Ovacık', 'Safranbolu'],
+    'Karaman': ['Ayrancı', 'Sarıveliler', 'Başyayla', 'Ermenek', 'Kazımkarabekir'],
+    'Kars': ['Akyaka', 'Sarıkamış', 'Arpaçay', 'Selim', 'Digor', 'Susuz', 'Kağızman'],
+    'Kastamonu': ['Abana', 'Bozkurt', 'Devrekani', 'İnebolu', 'Şenpazar', 'Ağlı', 'Cide', 'Doğanyurt', 'Küre', 'Taşköprü', 'Araç', 'Çatalzeytin', 'Hanönü', 'Pınarbaşı', 'Tosya', 'Azdavay', 'Daday', 'İhsangazi', 'Seydiler'],
+    'Kayseri': ['Akkışla', 'Hacılar', 'Özvatan', 'Talas', 'Bünyan', 'İncesu', 'Pınarbaşı', 'Tomarza', 'Develi', 'Kocasinan', 'Sarıoğlan', 'Yahyalı', 'Felahiye', 'Melikgazi', 'Sarız', 'Yeşilhisar'],
+    'Kilis': ['Elbeyli', 'Musabeyli', 'Polateli'],
+    'Kırıkkale': ['Bahşılı', 'Karakeçili', 'Balışeyh', 'Keskin', 'Çelebi', 'Sulakyurt', 'Delice', 'Yahşihan'],
+    'Kırklareli': ['Babaeski', 'Pehlivanköy', 'Demirköy', 'Pınarhisar', 'Kofçaz', 'Vize', 'Lüleburgaz'],
+    'Kırşehir': ['Akçakent', 'Kaman', 'Akpınar', 'Mucur', 'Boztepe', 'Çiçekdağı'],
+    'Kocaeli': ['Başiskele', 'Dilovası', 'Kandıra', 'Çayırova', 'Gebze', 'Karamürsel', 'Darıca', 'Gölcük', 'Kartepe', 'Derince', 'İzmit', 'Körfez'],
+    'Konya': ['Ahırlı', 'Beyşehir', 'Çumra', 'Emirgazi', 'Halkapınar', 'Karapınar', 'Sarayönü', 'Tuzlukçu', 'Akören', 'Bozkır', 'Derbent', 'Ereğli', 'Hüyük', 'Karatay', 'Selçuklu', 'Yalıhüyük', 'Akşehir', 'Cihanbeyli', 'Derebucak', 'Güneysınır', 'Ilgın', 'Kulu', 'Seydişehir', 'Yunak', 'Altınekin', 'Çeltik', 'Doğanhisar', 'Hadim', 'Kadınhanı', 'Meram', 'Taşkent'],
+    'Kütahya': ['Altıntaş', 'Dumlupınar', 'PAzarlar', 'Aslanapa', 'Emet', 'Simav', 'Çavdarhisar', 'Gediz', 'Şaphane', 'Domaniç', 'Hisarcık', 'Tavşanlı'],
+    'Malatya': ['Akçadağ', 'Darende', 'Kale', 'Yeşilyurt', 'Arapgir', 'Doğanşehir', 'Kuluncak', 'Arguvan', 'Doğanyol', 'Pütürge', 'Battalgazi', 'Hekimhan', 'Yazıhan'],
+    'Manisa': ['Ahmetli', 'Gölmarmara', 'Kula', 'Selendi', 'Yunusemre', 'Akhisar', 'Gördes', 'Salihli', 'Soma', 'Alaşehir', 'Kırkağaç', 'Sarıgöl', 'Şehzadeler', 'Demirci', 'Köprübaşı', 'Saruhanlı', 'Turgutlu'],
+    'Mardin': ['Artuklu', 'Mazıdağı', 'Savur', 'Dargeçit', 'Midyat', 'Yeşilli', 'Derik', 'Nusaybin', 'Kızıltepe', 'Ömerli'],
+    'Mersin': ['Akdeniz', 'Çamlıyayla', 'Mut', 'Yenişehir', 'Anamur', 'Erdemli', 'Silifke', 'Aydıncık', 'Gülnar', 'Tarsus', 'Bozyazı', 'Mezitli', 'Toroslar'],
+    'Muğla': ['Bodrum', 'Kavaklıdere', 'Milas', 'Yatağan', 'Dalaman', 'Köyceğiz', 'Ortaca', 'Datça', 'Marmaris', 'Seydikemer', 'Fethiye', 'Menteşe', 'Ula'],
+    'Muş': ['Bulanık', 'Varto', 'HASKöy', 'Korkut', 'Malazgirt'],
+    'Nevşehir': ['Acıgöl', 'Hacıbektaş', 'Avanos', 'Kozaklı', 'Derinkuyu', 'Ürgüp', 'Gülşehir'],
+    'Niğde': ['Altunhisar', 'Ulukişla', 'Bor', 'Çamardı', 'Çiftlik'],
+    'Ordu': ['Akkuş', 'Çatalpınar', 'Gülyalı', 'Kabataş', 'Perşembe', 'Altınordu', 'Çaybaşı', 'Gürgentepe', 'Korgan', 'UlUBey', 'Aybastı', 'Fatsa', 'İKizce', 'Kumru', 'Ünye', 'Çamaş', 'Gölköy', 'Kabadüz', 'Mesudiye'],
+    'Osmaniye': ['Bahçe', 'Sumbas', 'Düziçi', 'Toprakkale', 'Hasanbeyli', 'Kadirli'],
+    'Rize': ['Ardeşen', 'Fındıklı', 'İyidere', 'Çamlıhemşin', 'Güneysu', 'Kalkandere', 'Çayeli', 'Hemşin', 'Pazar', 'Derepazarı', 'İKizdere'],
     'Sakarya': ['Adapazarı', 'Ferizli', 'Karasu', 'Sapanca', 'Akyazı', 'Geyve', 'Kaynarca', 'Serdivan', 'Arifiye', 'Hendek', 'Kocaali', 'Söğütlü', 'Erenler', 'Karapürçek', 'Pamukova', 'Taraklı'],
     'Samsun': ['19 Mayıs', 'Alaçam', 'Asarcık', 'Atakum', 'Ayvacık', 'Bafra', 'Canik', 'Çarşamba', 'Havza', 'İlkadım', 'Kavak', 'Ladik', 'Salıpazarı', 'Tekkeköy', 'Terme', 'Vezirköprü', 'Yakakent'],
-    'Şanlıurfa': ['Akçakale', 'Birecik', 'Bozova', 'Ceylanpınar', 'Eyyübiye', 'Halfeti', 'Haliliye', 'Harran', 'Hilvan', 'Karaköprü', 'Siverek', 'Suruç', 'Viranşehir'],
-    'Siirt': ['Merkez', 'Baykan', 'Eruh', 'Kurtalan', 'Pervari', 'Şirvan', 'Tillo'],
-    'Sinop': ['Merkez', 'Ayancık', 'Boyabat', 'Dikmen', 'Durağan', 'Erfelek', 'Gerze', 'Saraydüzü', 'Türkeli'],
-    'Sivas': ['Merkez', 'Akıncılar', 'Altınyayla', 'Divriği', 'Doğanşar', 'Gemerek', 'Gölova', 'Gürün', 'Hafik', 'İmranlı', 'Kangal', 'Koyulhisar', 'Suşehri', 'Şarkışla', 'Ulaş', 'Yıldızeli', 'Zara'],
-    'Şırnak': ['Merkez', 'Beytüşşebap', 'Cizre', 'Güçlükonak', 'İdil', 'Silopi', 'Uludere'],
-    'Tekirdağ': ['Çerkezköy', 'Çorlu', 'Ergene', 'Hayrabolu', 'Kapaklı', 'Malkara', 'Marmaraereğlisi', 'Muratlı', 'Saray', 'Şarköy', 'Süleymanpaşa'],
-    'Tokat': ['Merkez', 'Almus', 'Artova', 'Başçiftlik', 'Erbaa', 'Niksar', 'Pazar', 'Reşadiye', 'Sulusaray', 'Turhal', 'Yeşilyurt', 'Zile'],
-    'Trabzon': ['Akçaabat', 'Araklı', 'Arsin', 'Beşikdüzü', 'Çarşıbaşı', 'Çaykara', 'Dernekpazarı', 'Düzköy', 'Hayrat', 'Köprübaşı', 'Maçka', 'Of', 'Ortahisar', 'Sürmene', 'Şalpazarı', 'Tonya', 'Vakfıkebir', 'Yomra'],
-    'Tunceli': ['Merkez', 'Çemişgezek', 'Hozat', 'Mazgirt', 'Nazımiye', 'Ovacık', 'Pertek', 'Pülümür'],
-    'Uşak': ['Merkez', 'Banaz', 'Eşme', 'Karahallı', 'Sivaslı', 'Ulubey'],
-    'Van': ['Bahçesaray', 'Başkale', 'Çaldıran', 'Çatak', 'Edremit', 'Erciş', 'Gevaş', 'Gürpınar', 'İpekyolu', 'Muradiye', 'Özalp', 'Saray', 'Tuşba'],
-    'Yalova': ['Merkez', 'Altınova', 'Armutlu', 'Çınarcık', 'Çiftlikköy', 'Termal'],
-    'Yozgat': ['Merkez', 'Akdağmadeni', 'Aydıncık', 'Boğazlıyan', 'Çandır', 'Çayıralan', 'Çekerek', 'Kadışehri', 'Saraykent', 'Sarıkaya', 'Sorgun', 'Şefaatli', 'Yenifakılı', 'Yerköy'],
-    'Zonguldak': ['Merkez', 'Alaplı', 'Çaycuma', 'Devrek', 'Ereğli', 'Gökçebey', 'Kilimli', 'Kozlu'],
-    'Aksaray': ['Merkez', 'Ağaçören', 'Eskil', 'Gülağaç', 'Güzelyurt', 'Ortaköy', 'Sarıyahşi', 'Sultanhanı'],
+    'Şanlıurfa': ['Akçakale', 'Eyyübiye', 'Hilvan', 'Viranşehir', 'Birecik', 'Halfeti', 'Karaköprü', 'Bozova', 'Haliliye', 'Siverek', 'Ceylanpınar', 'Harran', 'Suruç'],
+    'Siirt': ['Baykan', 'Şirvan', 'Eruh', 'Tillo', 'Kurtalan', 'Pervari'],
+    'Sinop': ['Ayancık', 'Erfelek', 'Boyabat', 'Gerze', 'Dikmen', 'Saraydüzü', 'Durağan', 'Türkeli'],
+    'Şırnak': ['Beytüşşebap', 'Silopi', 'Cizre', 'Uludere', 'Güçlükonak', 'İdil'],
+    'Sivas': ['Akıncılar', 'Gemerek', 'İmranlı', 'Şarkışla', 'Altınyayla', 'Gölova', 'Kangal', 'Ulaş', 'Divriği', 'Gürün', 'Koyulhisar', 'Yıldızeli', 'Doğanşar', 'Hafik', 'Suşehri', 'Zara'],
+    'Tekirdağ': ['Çerkezköy', 'Kapaklı', 'Saray', 'Çorlu', 'Malkara', 'Süleymanpaşa', 'Ergene', 'Marmaraereğlisi', 'Şarköy', 'Hayrabolu', 'Muratlı'],
+    'Tokat': ['Almus', 'Niksar', 'Turhal', 'Artova', 'Pazar', 'Yeşilyurt', 'Başçiftlik', 'Reşadiye', 'Zile', 'Erbaa', 'Sulusaray'],
+    'Trabzon': ['Akçaabat', 'Çarşıbaşı', 'Hayrat', 'Ortahisar', 'Vakfıkebir', 'Araklı', 'Çaykara', 'Köprübaşı', 'Sürmene', 'Yomra', 'Arsin', 'Dernekpazarı', 'Maçka', 'Şalpazarı', 'Beşİkdüzü', 'Düzköy', 'Of', 'Tonya'],
+    'Tunceli': ['Çemişgezek', 'Ovacık', 'Hozat', 'Pertek', 'Mazgirt', 'Pülümür', 'Nazımiye'],
+    'Uşak': ['Banaz', 'Ulubey', 'Eşme', 'Karahallı', 'Sivaslı'],
+    'Van': ['Bahçesaray', 'Edremit', 'İpekyolu', 'Tuşba', 'Başkale', 'Erciş', 'Muradiye', 'Çaldıran', 'Gevaş', 'Özalp', 'Çatak', 'Gürpınar', 'Saray'],
+    'Yalova': ['Altınova', 'Termal', 'Armutlu', 'Çınarcık', 'Çiftlikköy'],
+    'Yozgat': ['Akdağmadeni', 'Çayıralan', 'Sarıkaya', 'Yerköy', 'Aydıncık', 'Çekerek', 'Sorgun', 'Boğazlıyan', 'Kadışehri', 'ŞeFaatli', 'Çandır', 'Saraykent', 'Yenifakılı'],
+    'Zonguldak': ['Alaplı', 'Gökçebey', 'Çaycuma', 'Kilimli', 'Devrek', 'Kozlu', 'Ereğli'],
 };
 
 const neighborhoods: { [key: string]: string[] } = {
@@ -107,6 +110,10 @@ const neighborhoods: { [key: string]: string[] } = {
     'Çankaya': ['Kızılay', 'Kavaklıdere', 'Maltepe', 'Bahçelievler', 'Ayrancı', 'Dikmen', 'Oran', 'Yıldız', 'Ümitköy', 'Çayyolu'],
     'Konak': ['Alsancak', 'Göztepe', 'Hatay', 'Basmane', 'Kahramanlar', 'Küçükyalı', 'Güzelyalı', 'Pasaport', 'Kemeraltı', 'Kadifekale'],
 };
+
+const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi'];
+const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
+const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
 
 const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => (
     <div className="space-y-2">
@@ -144,6 +151,21 @@ export default function NewApplicationPage() {
   const [officeNeighborhood, setOfficeNeighborhood] = useState('');
   const [aboutText, setAboutText] = useState("");
   const ABOUT_LIMIT = 1000;
+
+  // Brand category-based donation rates state
+  const [brandDonationRates, setBrandDonationRates] = useState([{ category: '', rate: '' }]);
+
+  const addDonationRate = () => setBrandDonationRates([...brandDonationRates, { category: '', rate: '' }]);
+  const removeDonationRate = (index: number) => {
+      if (brandDonationRates.length > 1) {
+          setBrandDonationRates(brandDonationRates.filter((_, i) => i !== index));
+      }
+  };
+  const updateDonationRate = (index: number, field: 'category' | 'rate', value: string) => {
+      const updated = [...brandDonationRates];
+      updated[index][field] = value;
+      setBrandDonationRates(updated);
+  };
 
   const renderFormFields = () => {
     switch (applicationType) {
@@ -211,7 +233,7 @@ export default function NewApplicationPage() {
                             <Label>Mahalle</Label>
                             <Select value={officeNeighborhood} onValueChange={setOfficeNeighborhood} disabled={!officeDistrict}>
                                 <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
-                                <SelectContent>{officeDistrict && neighborhoods[officeDistrict]?.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                                <SelectContent>{officeDistrict && (neighborhoods[officeDistrict] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                     </div>
@@ -262,8 +284,7 @@ export default function NewApplicationPage() {
                         <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" />
                         <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
                     </CardContent>
-                </Card>
-            </div>
+                </div>
         );
       case 'BRAND':
         return (
@@ -272,11 +293,47 @@ export default function NewApplicationPage() {
                     <CardHeader><CardTitle className="text-lg">Marka Kimliği</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2"><Label>Marka Adı</Label><Input placeholder="Markanızın adı" required /></div>
-                        <div className="space-y-2"><Label>Kategori</Label><Input placeholder="Giyim, Teknoloji vb." /></div>
                         <div className="space-y-2"><Label>Web Sitesi</Label><Input placeholder="https://marka.com" /></div>
-                        <div className="space-y-2">
-                            <Label>Bağış Oranı (%)</Label>
-                            <Input type="number" placeholder="Örn: 5" />
+                        
+                        <div className="space-y-4 border-t pt-4">
+                            <Label className="text-base font-semibold">Kategori Bazlı Bağış Oranları (%)</Label>
+                            <p className="text-xs text-muted-foreground">Markanızın farklı kategorileri için taahhüt ettiği bağış oranlarını girin.</p>
+                            <div className="space-y-3">
+                                {brandDonationRates.map((item, index) => (
+                                    <div key={index} className="flex gap-2 items-end">
+                                        <div className="flex-1 space-y-1">
+                                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Kategori</Label>
+                                            <Input 
+                                                placeholder="Giyim, Gıda vb." 
+                                                value={item.category} 
+                                                onChange={(e) => updateDonationRate(index, 'category', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="w-24 space-y-1">
+                                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Oran (%)</Label>
+                                            <Input 
+                                                type="number" 
+                                                placeholder="5" 
+                                                value={item.rate} 
+                                                onChange={(e) => updateDonationRate(index, 'rate', e.target.value)}
+                                            />
+                                        </div>
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="text-destructive h-10 w-10 hover:bg-destructive/10"
+                                            onClick={() => removeDonationRate(index)}
+                                            disabled={brandDonationRates.length === 1}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                            <Button type="button" variant="outline" size="sm" className="w-full mt-2" onClick={addDonationRate}>
+                                <Plus className="mr-2 h-4 w-4" /> Yeni Kategori Ekle
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
