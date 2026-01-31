@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { 
   Globe, ChevronRight, Sparkles, HeartHandshake, HandCoins, Award, ArrowRight, Bot, 
-  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, MessageSquare, Heart, Users, Camera, Filter, ArrowDownUp
+  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, 
+  MessageSquare, Heart, Users, Camera, Filter, ArrowDownUp, ShoppingBag, Menu,
+  Zap, Info, ShieldAlert, Star
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Accordion,
@@ -19,75 +21,94 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
 import Image from 'next/image';
-import { allEntityLists, marketCategories, categoryMapping } from '@/lib/data';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const languages = [
     { value: 'tr', label: 'Türkçe' },
     { value: 'en', label: 'English' },
 ];
 
-const XIcon = (props: React.ComponentProps<'svg'>) => (
-  <svg
-    role="img"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    {...props}
-  >
-    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-  </svg>
+const AppleSection = ({ 
+  title, 
+  subtitle, 
+  description, 
+  image, 
+  dark = false, 
+  fullWidth = true,
+  primaryCta = "Hemen Başla",
+  secondaryCta = "Daha fazla bilgi",
+  link = "/login/selection?action=register",
+  imageHint = "product image"
+}: { 
+  title: string, 
+  subtitle?: string, 
+  description?: string, 
+  image: string, 
+  dark?: boolean, 
+  fullWidth?: boolean,
+  primaryCta?: string,
+  secondaryCta?: string,
+  link?: string,
+  imageHint?: string
+}) => (
+  <section className={cn(
+    "relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16",
+    fullWidth ? "w-full h-[550px] md:h-[650px] mb-3" : "h-[500px] rounded-3xl mx-3 mb-3",
+    dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
+  )}>
+    <div className="z-10 px-6 space-y-2 max-w-2xl">
+      <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
+      {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
+      {description && <p className="text-[#86868b] text-base md:text-lg mt-2">{description}</p>}
+      <div className="pt-4 flex items-center justify-center gap-6">
+        <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
+          <Link href={link}>{primaryCta}</Link>
+        </Button>
+        <Button variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-lg group">
+          {secondaryCta} <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </Button>
+      </div>
+    </div>
+    <div className="relative w-full h-full mt-8">
+      <Image 
+        src={image} 
+        alt={title} 
+        fill 
+        className="object-contain object-bottom select-none" 
+        data-ai-hint={imageHint}
+      />
+    </div>
+  </section>
 );
 
 export default function LoginPage() {
   const [language, setLanguage] = useState('tr');
-  const [activeCategory, setActiveCategory] = useState('Tümü');
-  const [activeEntityType, setActiveEntityType] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortKey, setSortKey] = useState('name');
-  const [onlyDonating, setOnlyDonating] = useState(false);
-
-  const filteredBrands = useMemo(() => {
-    let list = allEntityLists.filter(brand => {
-      const matchesType = activeEntityType === 'all' || brand.type === activeEntityType;
-      const brandCats = categoryMapping[activeCategory as keyof typeof categoryMapping] || [];
-      const matchesCategory = activeCategory === 'Tümü' || activeCategory === 'Öne çıkanlar' || brandCats.includes(brand.category);
-      const matchesSearch = brand.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDonation = !onlyDonating || brand.donationRate > 0;
-      return matchesType && matchesCategory && matchesSearch && matchesDonation;
-    });
-
-    list.sort((a, b) => {
-      if (sortKey === 'name') return a.name.localeCompare(b.name, 'tr');
-      if (sortKey === 'donationRate') return (b.donationRate || 0) - (a.donationRate || 0);
-      if (sortKey === 'followers') return (b.followers || 0) - (a.followers || 0);
-      return 0;
-    });
-
-    return list.slice(0, 16);
-  }, [activeCategory, activeEntityType, searchTerm, sortKey, onlyDonating]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#ffffff] text-[#1d1d1f] font-sans antialiased overflow-x-hidden">
-      {/* Apple Style Global Header */}
-      <header className="sticky top-0 z-50 w-full h-12 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
-        <div className="container mx-auto h-full max-w-5xl px-6 flex items-center justify-between">
-          <HangelLogo className="text-xl tracking-tight opacity-90" />
-          <div className="flex items-center gap-6">
+    <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
+      {/* Apple Global Navigation */}
+      <header className="sticky top-0 z-50 w-full h-11 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
+        <div className="container mx-auto h-full max-w-5xl px-4 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="opacity-80 hover:opacity-100 transition-opacity">
+              <HangelLogo className="text-xl tracking-tighter" />
+            </Link>
+            <nav className="hidden md:flex items-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
+              <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
+              <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
+              <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
+              <Link href="/about" className="hover:text-[#1d1d1f] transition-colors">Hakkımızda</Link>
+              <Link href="/support" className="hover:text-[#1d1d1f] transition-colors">Destek</Link>
+            </nav>
+          </div>
+          <div className="flex items-center gap-5 opacity-80">
+            <Search className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
+            <ShoppingBag className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
+            <div className="md:hidden">
+              <Menu className="h-4 w-4 cursor-pointer" />
+            </div>
             <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto py-1 text-[12px] font-normal text-[#1d1d1f] hover:text-primary transition-colors focus:ring-0">
+                <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto p-0 text-[12px] font-normal text-[#1d1d1f] hover:text-primary transition-colors focus:ring-0">
                     <Globe className="h-3.5 w-3.5" />
                     <SelectValue />
                 </SelectTrigger>
@@ -97,206 +118,89 @@ export default function LoginPage() {
                     ))}
                 </SelectContent>
             </Select>
-            <Button variant="ghost" className="text-[12px] h-auto p-0 font-normal hover:bg-transparent hover:text-primary transition-colors" asChild>
-                <Link href="/login/selection?action=login">Giriş Yap</Link>
-            </Button>
           </div>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative pt-20 pb-32 px-6 text-center bg-gradient-to-b from-white to-[#f5f5f7]">
-            <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f] leading-[1.1]">
-                    İyiliğin ve Sosyal Etkinin <br /> <span className="text-primary">Yeni Nesil Hali.</span>
-                </h1>
-                <p className="text-xl md:text-2xl font-medium text-[#86868b] max-w-2xl mx-auto leading-relaxed">
-                    Umudu büyütüyor, toplumsal sorunlar için birlikte çalışıyoruz.
-                </p>
-                <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button size="lg" asChild className="h-14 px-10 text-lg font-semibold rounded-full shadow-2xl hover:shadow-primary/30 transition-all scale-105 active:scale-95">
-                        <Link href="/login/selection?action=register">Hemen Başla</Link>
-                    </Button>
-                    <Button variant="link" className="text-lg font-medium text-[#0066cc] flex items-center group">
-                        Nasıl Çalışır? <ChevronRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                </div>
-            </div>
+        {/* Hero Section - Sevgililer Günü Style */}
+        <section className="relative flex flex-col items-center justify-center text-center bg-white py-20 px-6 space-y-4">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">hangel Hub</h1>
+          <p className="text-xl md:text-2xl font-medium max-w-2xl mx-auto">İyiliğin ve sosyal etkinin yeni nesil hali.</p>
+          <div className="pt-4">
+            <Button asChild size="lg" className="rounded-full px-10 h-12 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-lg font-normal">
+              <Link href="/login/selection?action=login">Giriş Yap</Link>
+            </Button>
+          </div>
         </section>
 
-        {/* Feature Bento Grid */}
-        <section className="py-24 px-6 bg-[#f5f5f7]">
-            <div className="container mx-auto max-w-5xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* hangel imece Card */}
-                    <Card className="group relative overflow-hidden border-none shadow-none bg-white rounded-3xl h-[500px] transition-all hover:scale-[1.01]">
-                        <CardContent className="p-10 flex flex-col h-full justify-between">
-                            <div className="space-y-4 relative z-10">
-                                <Badge className="bg-orange-100 text-orange-600 hover:bg-orange-100 border-none font-bold px-3 py-1">hangel imece</Badge>
-                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Yetkinliklerin <br />Toplumsal Faydaya Dönüşsün.</h3>
-                                <p className="text-[#86868b] text-lg max-w-xs">Gönüllü ol, imece ruhuyla toplumsal sorunlara birlikte çözüm üret.</p>
-                            </div>
-                            <div className="relative h-48 w-full mt-auto">
-                                <HeartHandshake className="absolute -bottom-10 -right-10 h-64 w-64 text-orange-500/10 transition-transform group-hover:scale-110 duration-700" />
-                                <Image src="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop" alt="Volunteer" fill className="object-cover rounded-2xl shadow-xl" />
-                            </div>
-                        </CardContent>
-                    </Card>
+        {/* hangel imece - iPhone Style */}
+        <AppleSection 
+          title="hangel imece"
+          subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
+          description="Gönüllü ol, imece ruhuyla toplumsal sorunlara çözüm üret."
+          image="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
+          imageHint="volunteering hands together"
+        />
 
-                    {/* hangel bağışı Card */}
-                    <Card className="group relative overflow-hidden border-none shadow-none bg-[#1d1d1f] text-white rounded-3xl h-[500px] transition-all hover:scale-[1.01]">
-                        <CardContent className="p-10 flex flex-col h-full">
-                            <div className="space-y-4 relative z-10">
-                                <Badge className="bg-primary/20 text-primary border-none font-bold px-3 py-1">hangel bağışı</Badge>
-                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Alışverişin <br />İyiliğe Dönüşsün.</h3>
-                                <p className="text-[#86868b] text-lg max-w-xs">Ek bir ödeme yapmadan, seçtiğiniz STK'ya %15'e varan oranlarda bağış yap.</p>
-                            </div>
-                            <div className="flex-1 flex items-center justify-center pt-10">
-                                <div className="relative">
-                                    <HandCoins className="h-40 w-40 text-primary animate-pulse" />
-                                    <Heart className="absolute -top-4 -right-4 h-12 w-12 text-red-500" />
-                                </div>
-                            </div>
-                            <Button variant="link" className="text-white mt-auto justify-start p-0 group" asChild>
-                                <Link href="/market">Bağış Sistemini Keşfet <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        </section>
+        {/* hangel bağışı - Creator Studio Style */}
+        <AppleSection 
+          title="hangel bağışı"
+          subtitle="Alışverişin iyiliğe dönüşsün."
+          description="Ek bir ödeme yapmadan, seçtiğin STK'ya %15'e varan oranlarda bağış yap."
+          image="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop"
+          imageHint="shopping bags donation"
+          dark={true}
+          primaryCta="Bağış Sistemini Keşfet"
+        />
 
-        {/* Brand Marketplace Section - Mini Pazaryeri */}
-        <section className="py-24 px-6 bg-primary">
-            <div className="container mx-auto max-w-5xl space-y-12">
-                <div className="text-center space-y-4">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-tight">
-                        Sevdiğiniz Markalarla <br />Sessizce İyilik Yapın.
-                    </h2>
-                    <p className="text-white/80 text-xl md:text-2xl max-w-2xl mx-auto">
-                        Anlaşmalı markalardan yaptığınız her harcamanın bir kısmı, seçtiğiniz STK'ya bağış olarak aktarılır.
-                    </p>
-                </div>
+        {/* Two Column Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
+          {/* Sosyal Etki Puanı - iPad Style */}
+          <AppleSection 
+            title="Etki Puanı"
+            subtitle="İyiliğin bir karşılığı var."
+            image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
+            imageHint="abstract colorful sparks"
+            fullWidth={false}
+            primaryCta="Puanını Gör"
+          />
+          {/* Acil Durum Merkezi - Apple Watch Style */}
+          <AppleSection 
+            title="Acil Durum"
+            subtitle="Zor zamanda topluluk gücü."
+            image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop"
+            imageHint="emergency siren red"
+            fullWidth={false}
+            primaryCta="Yardım Çağır"
+            dark={true}
+          />
+        </div>
 
-                <div className="bg-white/10 backdrop-blur-xl rounded-[40px] p-4 sm:p-10 border border-white/20 shadow-2xl">
-                    <Tabs defaultValue="all" className="w-full space-y-8" onValueChange={setActiveEntityType}>
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-6">
-                            <TabsList className="bg-white/10 border-white/20 text-white">
-                                <TabsTrigger value="all">Tümü</TabsTrigger>
-                                <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                                <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
-                                <TabsTrigger value="brand">Marka</TabsTrigger>
-                                <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
-                            </TabsList>
-                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-                                {marketCategories.slice(0, 8).map((cat) => (
-                                    <Button 
-                                        key={cat.mainCategory}
-                                        variant={activeCategory === cat.mainCategory ? "secondary" : "ghost"}
-                                        size="sm"
-                                        className={cn(
-                                            "rounded-full text-xs font-bold whitespace-nowrap",
-                                            activeCategory === cat.mainCategory ? "bg-white text-primary" : "text-white hover:bg-white/10"
-                                        )}
-                                        onClick={() => setActiveCategory(cat.mainCategory)}
-                                    >
-                                        {cat.mainCategory}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Arama, Filtreleme ve Sıralama Bölümü */}
-                        <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <div className="relative flex-1 w-full">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
-                                <Input 
-                                    placeholder="Marka ara..." 
-                                    className="pl-10 bg-white/10 border-white/10 text-white placeholder:text-white/40 focus:ring-white/20 focus:border-white/20 rounded-xl h-11"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="flex-1 sm:flex-none border-white/10 bg-white/10 text-white hover:bg-white/20 h-11 rounded-xl gap-2">
-                                            <Filter className="h-4 w-4" /> Filtrele
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-56">
-                                        <DropdownMenuLabel>Seçenekler</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>
-                                            Sadece Bağış Yapanlar
-                                        </DropdownMenuCheckboxItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="flex-1 sm:flex-none border-white/10 bg-white/10 text-white hover:bg-white/20 h-11 rounded-xl gap-2">
-                                            <ArrowDownUp className="h-4 w-4" /> Sırala
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-56">
-                                        <DropdownMenuLabel>Sıralama Ölçütü</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranına Göre</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Takipçi Sayısına Göre</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
-                            {filteredBrands.length > 0 ? filteredBrands.map((brand) => (
-                                <Link href={`/market/${brand.id}`} key={brand.id} className="group flex flex-col items-center gap-3 transition-transform hover:scale-110">
-                                    <div className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center p-4 shadow-lg ring-4 ring-white/10 group-hover:ring-white/30 transition-all">
-                                        <Image src={brand.logoUrl} alt={brand.name} width={64} height={64} className="object-contain" />
-                                        {brand.donationRate > 0 && (
-                                            <div className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-black h-6 w-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                                                %{brand.donationRate}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span className="text-white text-[10px] font-bold tracking-wide opacity-80 group-hover:opacity-100 text-center uppercase">{brand.name}</span>
-                                </Link>
-                            )) : (
-                                <p className="col-span-full text-center text-white/60 py-12">Bu kriterlerde marka bulunamadı.</p>
-                            )}
-                        </div>
-                    </Tabs>
-                    
-                    <div className="mt-16 text-center">
-                        <Button variant="secondary" className="rounded-full px-10 h-14 text-lg font-bold bg-white text-primary hover:bg-white/90 shadow-xl transition-all" asChild>
-                            <Link href="/market">Tüm Markaları Keşfet ({allEntityLists.length})</Link>
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-32 px-6 bg-white text-center">
-            <div className="max-w-3xl mx-auto space-y-10">
-                <Sparkles className="h-16 w-16 text-primary mx-auto animate-bounce" />
-                <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Değişimi Başlatmaya <br />Hazır Mısın?</h2>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <Button size="lg" asChild className="h-16 px-12 text-xl font-bold rounded-full shadow-2xl hover:shadow-primary/20 transition-all">
-                        <Link href="/login/selection?action=register">Hemen Üye Ol</Link>
-                    </Button>
-                </div>
-                <p className="text-[#86868b] text-sm">Ücretsiz kayıt olun, sosyal etkinizi bugün ölçmeye başlayın.</p>
-            </div>
-        </section>
+        {/* MacBook Style Full Width Section */}
+        <AppleSection 
+          title="Şeffaflık Endeksi"
+          subtitle="Güvenle bağış yapın."
+          description="STK'ların şeffaflık raporlarını anlık olarak takip edin."
+          image="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
+          imageHint="analytics dashboard transparency"
+          primaryCta="Raporları İncele"
+        />
       </main>
 
-      {/* Apple Style Footer */}
+      {/* Official Apple-Style Footer */}
       <footer className="bg-[#f5f5f7] py-12 px-6 border-t border-[#d2d2d7] text-[#1d1d1f]">
         <div className="container mx-auto h-full max-w-5xl space-y-8">
-            <nav className="flex items-center gap-2 text-[12px] text-[#6e6e73] font-normal">
+            <div className="text-[12px] text-[#6e6e73] leading-relaxed space-y-4 max-w-4xl border-b border-[#d2d2d7] pb-6">
+                <p>
+                  * hangel bağışı kapsamında sunulan oranlar anlaşmalı markalara göre değişiklik gösterebilir. Bağış tutarları, yasal vergiler ve hangel hizmet bedeli kesildikten sonra STK'ya aktarılır. Ayrıntılı bilgi için <Link href="/support" className="text-[#1d1d1f] underline">Destek Merkezi'ni</Link> ziyaret edebilirsiniz.
+                </p>
+                <p>
+                  Sosyal Etki Puanı ve kazanılan rozetler hangel platformu içi ödüllendirme sistemidir ve nakit karşılığı bulunmamaktadır. Gönüllülük faaliyetleri, ilgili STK'ların onayına ve sorumluluğuna tabidir.
+                </p>
+            </div>
+
+            <nav className="flex items-center gap-2 text-[12px] text-[#6e6e73] font-normal py-4">
                 <Link href="/" className="hover:text-[#1d1d1f] transition-colors"><HangelLogo className="text-lg opacity-70" /></Link>
                 <ChevronRight className="h-3 w-3 opacity-50" />
                 <span>Giriş Yap</span>
