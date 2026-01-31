@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { 
   Globe, ChevronRight, Sparkles, HeartHandshake, HandCoins, Award, ArrowRight, Bot, 
-  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, MessageSquare
+  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, MessageSquare, Heart
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React, { useState, Fragment } from 'react';
+import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import {
   Accordion,
@@ -98,22 +98,22 @@ export default function LoginPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Sosyal Etki Puanı Card */}
+                    {/* hangel Bağışı Card */}
                     <Card className="group relative overflow-hidden border-none shadow-none bg-[#1d1d1f] text-white rounded-3xl h-[500px] transition-all hover:scale-[1.01]">
                         <CardContent className="p-10 flex flex-col h-full">
                             <div className="space-y-4 relative z-10">
-                                <Badge className="bg-primary/20 text-primary border-none font-bold px-3 py-1">Sosyal Etki Puanı</Badge>
-                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">İyiliğin Bir <br />Karşılığı Var.</h3>
-                                <p className="text-[#86868b] text-lg max-w-xs">Yaptığın her katkıyla puan kazan, rozetlerini sergile ve ilham ver.</p>
+                                <Badge className="bg-primary/20 text-primary border-none font-bold px-3 py-1">hangel Bağışı</Badge>
+                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Alışverişiniz <br />İyiliğe Dönüşsün.</h3>
+                                <p className="text-[#86868b] text-lg max-w-xs">Ek ödeme yapmaksızın seçtiğiniz STK'ya %15'e varan oranlarda bağış yapın.</p>
                             </div>
                             <div className="flex-1 flex items-center justify-center pt-10">
                                 <div className="relative">
-                                    <Award className="h-40 w-40 text-primary animate-pulse" />
-                                    <Sparkles className="absolute -top-4 -right-4 h-12 w-12 text-yellow-400" />
+                                    <HandCoins className="h-40 w-40 text-primary animate-pulse" />
+                                    <Heart className="absolute -top-4 -right-4 h-12 w-12 text-red-500" />
                                 </div>
                             </div>
                             <Button variant="link" className="text-white mt-auto justify-start p-0 group">
-                                Puan Sistemini Keşfet <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                Bağış Sistemini Keşfet <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                             </Button>
                         </CardContent>
                     </Card>
@@ -126,10 +126,10 @@ export default function LoginPage() {
             <div className="container mx-auto max-w-5xl text-center space-y-12">
                 <div className="space-y-4 animate-in fade-in duration-1000">
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-tight">
-                        Alışverişlerinle <br />Sessizce İyilik Yap.
+                        Sevdiğiniz Markalarla <br />Sessizce İyilik Yapın.
                     </h2>
                     <p className="text-white/80 text-xl md:text-2xl max-w-2xl mx-auto">
-                        Anlaşmalı markalardan yaptığın her harcamanın bir kısmı, seçtiğin STK'ya bağış olarak aktarılır.
+                        Anlaşmalı markalardan yaptığınız her harcamanın bir kısmı, seçtiğiniz STK'ya bağış olarak aktarılır.
                     </p>
                 </div>
 
@@ -170,7 +170,7 @@ export default function LoginPage() {
 
       {/* Apple Style Footer - Hiyerarşik ve İşlevsel */}
       <footer className="bg-[#f5f5f7] py-12 px-6 border-t border-[#d2d2d7] text-[#1d1d1f]">
-        <div className="container mx-auto max-w-5xl space-y-8">
+        <div className="container mx-auto h-full max-w-5xl space-y-8">
             {/* Apple Style Breadcrumb */}
             <nav className="flex items-center gap-2 text-[12px] text-[#6e6e73] font-normal">
                 <Link href="/" className="hover:text-[#1d1d1f] transition-colors"><HangelLogo className="text-lg opacity-70" /></Link>
