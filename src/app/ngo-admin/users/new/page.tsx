@@ -8,7 +8,31 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, UserPlus } from 'lucide-react';
+import { ArrowLeft, UserPlus, Contact, ShieldCheck, Info } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+const roles = [
+    { 
+        id: 'Genel Yönetici', 
+        label: 'Genel Yönetici', 
+        description: 'Tüm yetkilere sahiptir. Profil, finans, gönüllü ve içerik yönetimini tam yetkiyle gerçekleştirebilir.' 
+    },
+    { 
+        id: 'Finans Yöneticisi', 
+        label: 'Finans Yöneticisi', 
+        description: 'Sadece bağış takibi, finansal raporlar ve şeffaflık endeksi belgelerini yönetebilir.' 
+    },
+    { 
+        id: 'Gönüllü Yöneticisi', 
+        label: 'Gönüllü Yöneticisi', 
+        description: 'Gönüllülük ilanları oluşturabilir, başvuruları değerlendirebilir ve gönüllü istatistiklerini görebilir.' 
+    },
+    { 
+        id: 'Mini Blog Yöneticisi', 
+        label: 'Mini Blog Yöneticisi', 
+        description: 'Gönderi paylaşabilir, web sitesi ayarlarını düzenleyebilir ve içerik stratejisini yönetebilir.' 
+    },
+];
 
 export default function NewUserPage() {
     const { toast } = useToast();
@@ -17,12 +41,15 @@ export default function NewUserPage() {
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [role, setRole] = useState('Yönetici');
+    const [phone, setPhone] = useState('');
+    const [role, setRole] = useState('Genel Yönetici');
+
+    const selectedRoleInfo = roles.find(r => r.id === role);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!name || !email) {
+        if (!name || !email || !phone) {
             toast({
                 variant: "destructive",
                 title: "Eksik Bilgi",
@@ -37,7 +64,7 @@ export default function NewUserPage() {
         setTimeout(() => {
             toast({
                 title: "Davet Gönderildi",
-                description: `${name} için yetki başvurusu oluşturuldu. Onay bildirimi gönderildi.`,
+                description: `${name} için ${role} yetki başvurusu oluşturuldu. Onay bildirimi gönderildi.`,
             });
             setIsLoading(false);
             router.push('/ngo-admin/users');
@@ -75,17 +102,37 @@ export default function NewUserPage() {
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email">E-posta Adresi</Label>
-                            <Input 
-                                id="email" 
-                                type="email" 
-                                placeholder="eposta@kurum.org" 
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email">E-posta Adresi</Label>
+                                <Input 
+                                    id="email" 
+                                    type="email" 
+                                    placeholder="eposta@kurum.org" 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="phone">Telefon Numarası</Label>
+                                <div className="relative">
+                                    <Input 
+                                        id="phone" 
+                                        type="tel" 
+                                        placeholder="5XX XXX XX XX" 
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        required
+                                        className="pr-10"
+                                    />
+                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-primary">
+                                        <Contact className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
+
                         <div className="space-y-2">
                             <Label htmlFor="role">Rol</Label>
                             <Select value={role} onValueChange={setRole}>
@@ -93,17 +140,22 @@ export default function NewUserPage() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Yönetici">Yönetici</SelectItem>
-                                    <SelectItem value="Editör">Editör</SelectItem>
-                                    <SelectItem value="Gönüllü Sorumlusu">Gönüllü Sorumlusu</SelectItem>
+                                    {roles.map(r => (
+                                        <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {role === 'Yönetici' && 'Tam erişim ve yönetim yetkisi.'}
-                                {role === 'Editör' && 'İçerik paylaşma ve profil düzenleme yetkisi.'}
-                                {role === 'Gönüllü Sorumlusu' && 'Sadece gönüllü başvurularını yönetme yetkisi.'}
-                            </p>
                         </div>
+
+                        {selectedRoleInfo && (
+                            <Alert className="bg-primary/5 border-primary/20">
+                                <ShieldCheck className="h-4 w-4 text-primary" />
+                                <AlertTitle className="text-sm font-bold">Yetki Kapsamı: {selectedRoleInfo.label}</AlertTitle>
+                                <AlertDescription className="text-xs text-muted-foreground mt-1">
+                                    {selectedRoleInfo.description}
+                                </AlertDescription>
+                            </Alert>
+                        )}
                     </form>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-3 border-t pt-6 bg-muted/10">
@@ -113,6 +165,14 @@ export default function NewUserPage() {
                     </Button>
                 </CardFooter>
             </Card>
+
+            <div className="p-4 bg-muted/30 rounded-lg flex items-start gap-3">
+                <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                    Davet gönderilen kullanıcıya e-posta ve SMS yoluyla bir aktivasyon linki ulaştırılacaktır. 
+                    Kullanıcı linke tıklayıp şifresini belirlediğinde yetkisi aktif hale gelir.
+                </p>
+            </div>
         </div>
     );
 }
