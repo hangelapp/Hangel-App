@@ -104,8 +104,9 @@ const VolunteeringDiscovery = () => {
     };
 
     const filteredItems = useMemo(() => {
-        if (filter === 'all') return volunteeringOpportunities.slice(0, 6);
-        return volunteeringOpportunities.filter(item => item.socialArea === filter).slice(0, 6);
+        const limit = 12;
+        if (filter === 'all') return volunteeringOpportunities.slice(0, limit);
+        return volunteeringOpportunities.filter(item => item.socialArea === filter).slice(0, limit);
     }, [filter]);
 
     return (
@@ -127,21 +128,18 @@ const VolunteeringDiscovery = () => {
                 ))}
             </div>
 
-            <div className="flex overflow-x-auto gap-4 px-4 md:px-12 pb-12 snap-x no-scrollbar">
-                <div className="flex gap-4 mx-auto">
+            <div className="overflow-x-auto no-scrollbar pb-8">
+                <div className="grid grid-flow-col grid-rows-3 gap-x-4 gap-y-3 px-4 md:px-12 w-max mx-auto">
                     {filteredItems.map((item) => (
-                        <Link href={`/login/selection?action=register`} key={item.id} className="snap-center shrink-0">
-                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-2xl bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col w-[260px] md:w-[300px] h-[160px] md:h-[180px]">
-                                <CardHeader className="p-5 pb-0 space-y-1 text-left">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
-                                    <CardTitle className="text-sm md:text-base font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
-                                    <CardDescription className="text-xs font-medium text-[#86868b]">{item.organization}</CardDescription>
+                        <Link href={`/login/selection?action=register`} key={item.id} className="block shrink-0">
+                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[260px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
+                                <CardHeader className="p-4 pb-0 space-y-0.5 text-left">
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
+                                    <CardTitle className="text-sm font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-1">{item.title}</CardTitle>
+                                    <CardDescription className="text-[11px] font-medium text-[#86868b] line-clamp-1">{item.organization}</CardDescription>
                                 </CardHeader>
-                                <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center">
-                                    <div className="text-primary text-[10px] md:text-xs font-bold bg-primary/5 px-2.5 py-1 rounded-full">
-                                        {item.points} Puan
-                                    </div>
-                                    <div className="flex items-center text-[#0066cc] text-xs font-medium group-hover:underline">
+                                <CardFooter className="p-4 pt-1 flex justify-end items-center">
+                                    <div className="flex items-center text-[#0066cc] text-[11px] font-medium group-hover:underline">
                                         İncele <ChevronRight className="ml-0.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                                     </div>
                                 </CardFooter>
@@ -167,7 +165,7 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <nav className="hidden md:flex items-center justify-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
+          <nav className="hidden md:flex flex-1 items-center justify-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
             <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
             <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
             <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
