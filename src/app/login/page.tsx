@@ -68,7 +68,7 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0 flex items-center justify-center flex-1">
+    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0 flex flex-col items-center justify-start flex-1">
       {children ? (
         <div className="w-full h-full">
           {children}
@@ -210,24 +210,6 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <AppleSection 
-          title="hangel imece"
-          subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
-          description="Gönüllü Ol, İmece Ruhuyla Toplumsal Sorunlara Çözüm Üret."
-        >
-          <VolunteeringDiscovery />
-        </AppleSection>
-
-        <AppleSection 
-          title="hangel bağışı"
-          subtitle="Alışverişin iyiliğe dönüşsün."
-          description="Ek Bir Ödeme Yapmadan, Seçtiğin STK'ya %15'e Varan Oranlarda Bağış Yap."
-          image="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop"
-          imageHint="shopping bags donation"
-          dark={true}
-          primaryCta="Bağış Sistemini Keşfet"
-        />
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
           <AppleSection 
             title="hangel STK"
@@ -250,6 +232,24 @@ export default function LoginPage() {
             dark={false}
           />
         </div>
+
+        <AppleSection 
+          title="hangel imece"
+          subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
+          description="Gönüllü Ol, İmece Ruhuyla Toplumsal Sorunlara Çözüm Üret."
+        >
+          <VolunteeringDiscovery />
+        </AppleSection>
+
+        <AppleSection 
+          title="hangel bağışı"
+          subtitle="Alışverişin iyiliğe dönüşsün."
+          description="Ek Bir Ödeme Yapmadan, Seçtiğin STK'ya %15'e Varan Oranlarda Bağış Yap."
+          image="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop"
+          imageHint="shopping bags donation"
+          dark={true}
+          primaryCta="Bağış Sistemini Keşfet"
+        />
 
         <AppleSection 
           title="Şeffaflık Endeksi"
