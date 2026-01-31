@@ -59,7 +59,7 @@ const AppleSection = ({
     <div className="z-10 px-6 space-y-1 max-w-4xl">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
       {description && <p className={cn("text-[10px] md:text-xs font-medium mt-6 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
-      {subtitle && <p className="text-xl md:text-2xl font-medium truncate max-w-full px-2">{subtitle}</p>}
+      {subtitle && <p className="text-xl md:text-2xl font-medium md:whitespace-nowrap max-w-full px-2">{subtitle}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
           <Link href={link}>{primaryCta}</Link>
@@ -108,13 +108,13 @@ const VolunteeringDiscovery = () => {
 
     return (
         <div className="w-full space-y-8 py-4">
-            <div className="flex flex-wrap justify-center gap-2 px-4">
+            <div className="flex overflow-x-auto md:justify-center gap-2 px-4 no-scrollbar">
                 {categories.map((cat) => (
                     <button
                         key={cat}
                         onClick={() => setFilter(categoryMapping[cat])}
                         className={cn(
-                            "px-4 py-1.5 rounded-full text-xs font-medium transition-all",
+                            "px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
                             filter === categoryMapping[cat] 
                                 ? "bg-[#1d1d1f] text-white shadow-sm" 
                                 : "bg-white/80 backdrop-blur-md text-[#1d1d1f] border border-[#d2d2d7] hover:border-[#86868b]"
@@ -126,23 +126,27 @@ const VolunteeringDiscovery = () => {
             </div>
 
             <div className="flex overflow-x-auto gap-4 px-4 md:px-12 pb-12 snap-x no-scrollbar">
-                {filteredItems.map((item) => (
-                    <Link href={`/login/selection?action=register`} key={item.id} className="snap-center shrink-0">
-                        <Card className="group relative overflow-hidden rounded-2xl border-none shadow-2xl bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col w-[240px] h-[140px]">
-                            <CardHeader className="p-4 pb-0 space-y-0.5 text-left">
-                                <p className="text-[8px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
-                                <CardTitle className="text-sm font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
-                                <CardDescription className="text-[10px] font-medium text-[#86868b]">{item.organization}</CardDescription>
-                            </CardHeader>
-                            <CardFooter className="p-4 pt-0 mt-auto flex justify-between items-center">
-                                <div className="text-primary text-[9px] font-bold bg-primary/5 px-2 py-0.5 rounded-full">
-                                    {item.points} Puan
-                                </div>
-                                <ChevronRight className="h-3 w-3 text-[#0066cc] group-hover:translate-x-1 transition-transform" />
-                            </CardFooter>
-                        </Card>
-                    </Link>
-                ))}
+                <div className="flex gap-4 mx-auto">
+                    {filteredItems.map((item) => (
+                        <Link href={`/login/selection?action=register`} key={item.id} className="snap-center shrink-0">
+                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-2xl bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col w-[260px] md:w-[300px] h-[160px] md:h-[180px]">
+                                <CardHeader className="p-5 pb-0 space-y-1 text-left">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
+                                    <CardTitle className="text-sm md:text-base font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
+                                    <CardDescription className="text-xs font-medium text-[#86868b]">{item.organization}</CardDescription>
+                                </CardHeader>
+                                <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center">
+                                    <div className="text-primary text-[10px] md:text-xs font-bold bg-primary/5 px-2.5 py-1 rounded-full">
+                                        {item.points} Puan
+                                    </div>
+                                    <div className="flex items-center text-[#0066cc] text-xs font-medium group-hover:underline">
+                                        İncele <ChevronRight className="ml-0.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                </CardFooter>
+                            </Card>
+                        </Link>
+                    ))}
+                </div>
             </div>
         </div>
     );
@@ -230,7 +234,7 @@ export default function LoginPage() {
           />
           <AppleSection 
             title="hangel Brands" 
-            subtitle="markan ile hangel de ol." 
+            subtitle="Markan ile hangel de ol." 
             description="Ticari Marka, Kooperatif, İktisadi İşletme, Sosyal Girişim"
             image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
             imageHint="modern branding" 
