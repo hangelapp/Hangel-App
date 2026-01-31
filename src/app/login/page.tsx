@@ -4,10 +4,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Sparkles, HeartHandshake, HandCoins, Award, ArrowRight, Bot, 
-  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, 
-  MessageSquare, Heart, Users, Camera, Filter, ArrowDownUp, ShoppingBag, Menu,
-  Zap, Info, ShieldAlert, Star, Store
+  Globe, ChevronRight, Search, ShoppingBag, Menu
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
@@ -18,8 +15,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
 const languages = [
@@ -55,10 +50,10 @@ const AppleSection = ({
     fullWidth ? "w-full h-[550px] md:h-[650px] mb-3" : "h-[500px] rounded-3xl mx-3 mb-3",
     dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
   )}>
-    <div className="z-10 px-6 space-y-2 max-w-2xl">
+    <div className="z-10 px-6 space-y-1 max-w-2xl">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
+      {description && <p className={cn("text-[10px] md:text-xs font-semibold uppercase tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
       {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
-      {description && <p className={cn("text-base md:text-lg mt-2", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
           <Link href={link}>{primaryCta}</Link>
