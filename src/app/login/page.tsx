@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -55,7 +56,7 @@ const AppleSection = ({
     fullWidth ? "w-full min-h-[600px] md:min-h-[800px] mb-3" : "h-[500px] md:h-[600px] rounded-3xl mx-3 mb-3",
     dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
   )}>
-    <div className="z-10 px-6 space-y-1 max-w-4xl">
+    <div className="z-10 px-6 space-y-1 max-w-4xl mb-8">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
       {description && <p className={cn("text-[10px] md:text-xs font-medium mt-6 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
       {subtitle && <p className="text-xl md:text-2xl font-medium md:whitespace-nowrap max-w-full px-2">{subtitle}</p>}
@@ -68,14 +69,14 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full flex-1 flex flex-col items-center justify-start mt-8 overflow-hidden">
+    <div className="relative w-full flex-1 flex flex-col items-center justify-start overflow-hidden">
       {children ? (
         <div className="w-full h-full">
           {children}
         </div>
       ) : (
         image && (
-          <div className="relative w-full h-full max-h-[450px] md:max-h-[650px] px-4 md:px-0">
+          <div className="relative w-full h-full px-4 md:px-0">
             <Image 
               src={image} 
               alt={title} 
@@ -94,6 +95,7 @@ const AppleSection = ({
 const VolunteeringDiscovery = () => {
     const [mounted, setMounted] = useState(false);
     const [filter, setFilter] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
     
     useEffect(() => {
         setMounted(true);
@@ -111,10 +113,22 @@ const VolunteeringDiscovery = () => {
 
     const filteredItems = useMemo(() => {
         if (!mounted) return [];
-        const limit = 12;
-        if (filter === 'all') return volunteeringOpportunities.slice(0, limit);
-        return volunteeringOpportunities.filter(item => item.socialArea === filter).slice(0, limit);
-    }, [filter, mounted]);
+        let items = volunteeringOpportunities;
+        
+        if (filter !== 'all') {
+            items = items.filter(item => item.socialArea === filter);
+        }
+        
+        if (searchTerm.trim()) {
+            const lower = searchTerm.toLowerCase();
+            items = items.filter(item => 
+                item.title.toLowerCase().includes(lower) || 
+                item.organization.toLowerCase().includes(lower)
+            );
+        }
+
+        return items.slice(0, 21);
+    }, [filter, searchTerm, mounted]);
 
     if (!mounted) {
         return <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground">Yükleniyor...</div>;
@@ -128,6 +142,8 @@ const VolunteeringDiscovery = () => {
                     <Input 
                         placeholder="Gönüllülük ilanlarında ara..." 
                         className="pl-9 h-10 bg-white/80 backdrop-blur-md border-none rounded-full focus-visible:ring-1 focus-visible:ring-[#0066cc] placeholder:text-[#86868b] text-[13px] shadow-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm">
