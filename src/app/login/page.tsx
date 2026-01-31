@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Search, ShoppingBag, Menu
+  Globe, ChevronRight, Search, ShoppingBag, Menu, Filter, ArrowDownUp
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -18,6 +18,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { volunteeringOpportunities } from '@/lib/data';
+import { Input } from '@/components/ui/input';
 
 const languages = [
     { value: 'tr', label: 'Türkçe' },
@@ -120,7 +121,23 @@ const VolunteeringDiscovery = () => {
     }
 
     return (
-        <div className="w-full space-y-8 py-4">
+        <div className="w-full space-y-6 py-4">
+            <div className="flex items-center gap-2 px-4 max-w-2xl mx-auto w-full">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
+                    <Input 
+                        placeholder="Gönüllülük ilanlarında ara..." 
+                        className="pl-9 h-10 bg-white/80 backdrop-blur-md border-none rounded-full focus-visible:ring-1 focus-visible:ring-[#0066cc] placeholder:text-[#86868b] text-[13px] shadow-sm"
+                    />
+                </div>
+                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm">
+                    <Filter className="h-4 w-4 text-[#1d1d1f]" />
+                </Button>
+                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm">
+                    <ArrowDownUp className="h-4 w-4 text-[#1d1d1f]" />
+                </Button>
+            </div>
+
             <div className="flex overflow-x-auto md:justify-center gap-2 px-4 no-scrollbar">
                 {categories.map((cat) => (
                     <button
@@ -175,7 +192,7 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <nav className="hidden md:flex flex-1 items-center justify-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
+          <nav className="hidden md:flex items-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
             <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
             <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
             <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
