@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -6,11 +5,11 @@ import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { 
   Globe, ChevronRight, Sparkles, HeartHandshake, HandCoins, Award, ArrowRight, Bot, 
-  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, MessageSquare, Heart
+  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, MessageSquare, Heart, Users, Camera
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
-import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import {
   Accordion,
   AccordionContent,
@@ -20,18 +19,25 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { allEntityLists } from '@/lib/data';
+import { allEntityLists, marketCategories, categoryMapping } from '@/lib/data';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const languages = [
     { value: 'tr', label: 'Türkçe' },
     { value: 'en', label: 'English' },
-    { value: 'de', label: 'Deutsch' },
-    { value: 'fr', label: 'Français' },
-    { value: 'es', label: 'Español' },
 ];
 
 export default function LoginPage() {
   const [language, setLanguage] = useState('tr');
+  const [activeCategory, setActiveCategory] = useState('Tümü');
+  const [activeEntityType, setActiveEntityType] = useState('all');
+
+  const filteredBrands = allEntityLists.filter(brand => {
+    const matchesType = activeEntityType === 'all' || brand.type === activeEntityType;
+    const brandCats = categoryMapping[activeCategory as keyof typeof categoryMapping] || [];
+    const matchesCategory = activeCategory === 'Tümü' || activeCategory === 'Öne çıkanlar' || brandCats.includes(brand.category);
+    return matchesType && matchesCategory;
+  }).slice(0, 16);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#ffffff] text-[#1d1d1f] font-sans antialiased overflow-x-hidden">
@@ -59,7 +65,7 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero Section - Apple Identity */}
+        {/* Hero Section */}
         <section className="relative pt-20 pb-32 px-6 text-center bg-gradient-to-b from-white to-[#f5f5f7]">
             <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-10 duration-1000">
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f] leading-[1.1]">
@@ -79,17 +85,17 @@ export default function LoginPage() {
             </div>
         </section>
 
-        {/* Feature Bento Grid - Apple Style */}
+        {/* Feature Bento Grid */}
         <section className="py-24 px-6 bg-[#f5f5f7]">
             <div className="container mx-auto max-w-5xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Gönüllülük Card */}
+                    {/* hangel imece Card */}
                     <Card className="group relative overflow-hidden border-none shadow-none bg-white rounded-3xl h-[500px] transition-all hover:scale-[1.01]">
                         <CardContent className="p-10 flex flex-col h-full justify-between">
                             <div className="space-y-4 relative z-10">
-                                <Badge className="bg-orange-100 text-orange-600 hover:bg-orange-100 border-none font-bold px-3 py-1">Gönüllülük</Badge>
-                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Yetkinliklerini <br />Etkiye Dönüştür.</h3>
-                                <p className="text-[#86868b] text-lg max-w-xs">İlgi alanlarına uygun ilanları keşfet, gönüllü ol, topluma değer kat.</p>
+                                <Badge className="bg-orange-100 text-orange-600 hover:bg-orange-100 border-none font-bold px-3 py-1">hangel imece</Badge>
+                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Yetkinliklerin <br />Toplumsal Faydaya Dönüşsün.</h3>
+                                <p className="text-[#86868b] text-lg max-w-xs">Gönüllü ol, imece ruhuyla toplumsal sorunlara birlikte çözüm üret.</p>
                             </div>
                             <div className="relative h-48 w-full mt-auto">
                                 <HeartHandshake className="absolute -bottom-10 -right-10 h-64 w-64 text-orange-500/10 transition-transform group-hover:scale-110 duration-700" />
@@ -98,13 +104,13 @@ export default function LoginPage() {
                         </CardContent>
                     </Card>
 
-                    {/* hangel Bağışı Card */}
+                    {/* hangel bağışı Card */}
                     <Card className="group relative overflow-hidden border-none shadow-none bg-[#1d1d1f] text-white rounded-3xl h-[500px] transition-all hover:scale-[1.01]">
                         <CardContent className="p-10 flex flex-col h-full">
                             <div className="space-y-4 relative z-10">
-                                <Badge className="bg-primary/20 text-primary border-none font-bold px-3 py-1">hangel Bağışı</Badge>
-                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Alışverişiniz <br />İyiliğe Dönüşsün.</h3>
-                                <p className="text-[#86868b] text-lg max-w-xs">Ek ödeme yapmaksızın seçtiğiniz STK'ya %15'e varan oranlarda bağış yapın.</p>
+                                <Badge className="bg-primary/20 text-primary border-none font-bold px-3 py-1">hangel bağışı</Badge>
+                                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Alışverişin <br />İyiliğe Dönüşsün.</h3>
+                                <p className="text-[#86868b] text-lg max-w-xs">Ek bir ödeme yapmadan, seçtiğiniz STK'ya %15'e varan oranlarda bağış yap.</p>
                             </div>
                             <div className="flex-1 flex items-center justify-center pt-10">
                                 <div className="relative">
@@ -121,10 +127,10 @@ export default function LoginPage() {
             </div>
         </section>
 
-        {/* Brand Marketplace Section - Narçiçeği Apple Style */}
+        {/* Brand Marketplace Section - Mini Pazaryeri */}
         <section className="py-24 px-6 bg-primary">
-            <div className="container mx-auto max-w-5xl text-center space-y-12">
-                <div className="space-y-4 animate-in fade-in duration-1000">
+            <div className="container mx-auto max-w-5xl space-y-12">
+                <div className="text-center space-y-4">
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-tight">
                         Sevdiğiniz Markalarla <br />Sessizce İyilik Yapın.
                     </h2>
@@ -133,18 +139,54 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                <div className="bg-white/10 backdrop-blur-xl rounded-[40px] p-8 md:p-12 border border-white/20 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)]">
-                    <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-                        {allEntityLists.slice(0, 12).map((brand) => (
-                            <Link href={`/market/${brand.id}`} key={brand.id} className="group flex flex-col items-center gap-3 transition-transform hover:scale-110">
-                                <div className="w-20 h-20 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center p-4 shadow-lg ring-4 ring-white/10 group-hover:ring-white/30 transition-all">
-                                    <Image src={brand.logoUrl} alt={brand.name} width={64} height={64} className="object-contain" />
-                                </div>
-                                <span className="text-white text-xs font-bold tracking-wide opacity-80 group-hover:opacity-100">{brand.name}</span>
-                            </Link>
-                        ))}
-                    </div>
-                    <div className="mt-16">
+                <div className="bg-white/10 backdrop-blur-xl rounded-[40px] p-4 sm:p-10 border border-white/20 shadow-2xl">
+                    <Tabs defaultValue="all" className="w-full space-y-8" onValueChange={setActiveEntityType}>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-6">
+                            <TabsList className="bg-white/10 border-white/20 text-white">
+                                <TabsTrigger value="all">Tümü</TabsTrigger>
+                                <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
+                                <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                                <TabsTrigger value="brand">Marka</TabsTrigger>
+                                <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
+                            </TabsList>
+                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+                                {marketCategories.slice(0, 8).map((cat) => (
+                                    <Button 
+                                        key={cat.mainCategory}
+                                        variant={activeCategory === cat.mainCategory ? "secondary" : "ghost"}
+                                        size="sm"
+                                        className={cn(
+                                            "rounded-full text-xs font-bold whitespace-nowrap",
+                                            activeCategory === cat.mainCategory ? "bg-white text-primary" : "text-white hover:bg-white/10"
+                                        )}
+                                        onClick={() => setActiveCategory(cat.mainCategory)}
+                                    >
+                                        {cat.mainCategory}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+                            {filteredBrands.length > 0 ? filteredBrands.map((brand) => (
+                                <Link href={`/market/${brand.id}`} key={brand.id} className="group flex flex-col items-center gap-3 transition-transform hover:scale-110">
+                                    <div className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center p-4 shadow-lg ring-4 ring-white/10 group-hover:ring-white/30 transition-all">
+                                        <Image src={brand.logoUrl} alt={brand.name} width={64} height={64} className="object-contain" />
+                                        {brand.donationRate > 0 && (
+                                            <div className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-black h-6 w-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                                %{brand.donationRate}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-white text-[10px] font-bold tracking-wide opacity-80 group-hover:opacity-100 text-center uppercase">{brand.name}</span>
+                                </Link>
+                            )) : (
+                                <p className="col-span-full text-center text-white/60 py-12">Bu kriterlerde marka bulunamadı.</p>
+                            )}
+                        </div>
+                    </Tabs>
+                    
+                    <div className="mt-16 text-center">
                         <Button variant="secondary" className="rounded-full px-10 h-14 text-lg font-bold bg-white text-primary hover:bg-white/90 shadow-xl transition-all" asChild>
                             <Link href="/market">Tüm Markaları Keşfet ({allEntityLists.length})</Link>
                         </Button>
@@ -153,10 +195,10 @@ export default function LoginPage() {
             </div>
         </section>
 
-        {/* CTA Section - Apple Final Pitch */}
+        {/* CTA Section */}
         <section className="py-32 px-6 bg-white text-center">
             <div className="max-w-3xl mx-auto space-y-10">
-                <Bot className="h-16 w-16 text-primary mx-auto" />
+                <Sparkles className="h-16 w-16 text-primary mx-auto animate-bounce" />
                 <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Değişimi Başlatmaya <br />Hazır Mısın?</h2>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <Button size="lg" asChild className="h-16 px-12 text-xl font-bold rounded-full shadow-2xl hover:shadow-primary/20 transition-all">
@@ -168,17 +210,15 @@ export default function LoginPage() {
         </section>
       </main>
 
-      {/* Apple Style Footer - Hiyerarşik ve İşlevsel */}
+      {/* Apple Style Footer */}
       <footer className="bg-[#f5f5f7] py-12 px-6 border-t border-[#d2d2d7] text-[#1d1d1f]">
         <div className="container mx-auto h-full max-w-5xl space-y-8">
-            {/* Apple Style Breadcrumb */}
             <nav className="flex items-center gap-2 text-[12px] text-[#6e6e73] font-normal">
                 <Link href="/" className="hover:text-[#1d1d1f] transition-colors"><HangelLogo className="text-lg opacity-70" /></Link>
                 <ChevronRight className="h-3 w-3 opacity-50" />
                 <span>Giriş Yap</span>
             </nav>
 
-            {/* Mobile Accordion / Desktop Grid Layout */}
             <div className="block lg:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="apps" className="border-b border-[#d2d2d7]">
@@ -220,7 +260,6 @@ export default function LoginPage() {
                 </Accordion>
             </div>
 
-            {/* Desktop Link Grid */}
             <div className="hidden lg:grid grid-cols-4 gap-8">
                 <div className="space-y-4">
                     <h4 className="text-[12px] font-semibold text-[#1d1d1f]">Hangel Uygulamaları</h4>
@@ -260,12 +299,10 @@ export default function LoginPage() {
                 </div>
             </div>
 
-            {/* Bottom Global Footer Info */}
-            <div className="text-[12px] text-[#6e6e73] space-y-4 pt-4">
+            <div className="text-[12px] text-[#6e6e73] space-y-4 pt-4 border-t border-[#d2d2d7]">
                 <p className="leading-relaxed">
                     Başka bir sorunuz mu var? <Link href="/support" className="text-[#0066cc] hover:underline">Destek Merkezi'ni</Link> ziyaret edin veya <span className="whitespace-nowrap font-medium text-[#1d1d1f]">+90 554 700 70 07</span> numaralı telefonu arayın.
                 </p>
-                <Separator className="bg-[#d2d2d7]" />
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div className="order-2 lg:order-1 flex flex-col lg:flex-row gap-4">
                         <span className="font-normal">© 2026 hangel.org. Tüm hakları saklıdır.</span>
