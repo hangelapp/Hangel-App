@@ -2,11 +2,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import React, { useState } from 'react';
-import { User, Plus, Trash2 } from 'lucide-react';
+import { User, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const initialUsers = [
     { name: 'İsmail Hilmi Adıgüzel', email: 'i.adiguzel@ahbap.org', role: 'Kurucu', status: 'Onaylandı' as const },
@@ -21,6 +22,7 @@ const statusVariantMap = {
 
 export default function UsersPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [users, setUsers] = useState(initialUsers);
 
   const handleRemoveUser = (email: string) => {
@@ -34,11 +36,16 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in-0">
-      <div>
-        <h1 className="text-2xl font-bold font-headline">Yetkili Yönetimi</h1>
-        <p className="text-muted-foreground text-sm">
-          Panele erişebilecek ve kuruluşunuzu temsil edecek kullanıcıları yönetin.
-        </p>
+      <div className="flex items-center gap-2">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+            <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <div>
+            <h1 className="text-2xl font-bold font-headline">Yetkili Yönetimi</h1>
+            <p className="text-muted-foreground text-sm">
+              Panele erişebilecek ve kuruluşunuzu temsil edecek kullanıcıları yönetin.
+            </p>
+        </div>
       </div>
 
       <Card>

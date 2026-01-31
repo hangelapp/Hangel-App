@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -7,9 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Send, Inbox, SendHorizontal, MessageSquare, Building, School, Shield } from 'lucide-react';
+import { Search, Send, Inbox, SendHorizontal, MessageSquare, Building, School, Shield, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 const mockMessages = [
     { id: 'm1', sender: 'Ahbap Derneği', senderType: 'ngo', avatar: 'https://logo.clearbit.com/ahbap.org', subject: 'Başvurunuz Hakkında', excerpt: 'Merhaba, gönüllülük başvurunuzu inceledik ve...', time: '10:30', unread: true },
@@ -27,6 +27,7 @@ const senderTypeIcons = {
 export default function MessagesPage() {
     const [activeTab, setActiveTab] = useState('inbox');
     const { toast } = useToast();
+    const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredMessages = mockMessages.filter(m => 
@@ -37,7 +38,12 @@ export default function MessagesPage() {
     return (
         <div className="p-4 sm:p-6 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold font-headline">Mesajlarım</h1>
+                <div className="flex items-center gap-2">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                        <ArrowLeft className="h-6 w-6" />
+                    </Button>
+                    <h1 className="text-2xl font-bold font-headline">Mesajlarım</h1>
+                </div>
                 <Button size="sm" onClick={() => toast({ title: "Yeni Mesaj", description: "Bu özellik kurum profillerinden başlatılmaktadır." })}>
                     <MessageSquare className="mr-2 h-4 w-4" /> Yeni Mesaj
                 </Button>

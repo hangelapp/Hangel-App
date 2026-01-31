@@ -1,10 +1,21 @@
+'use client';
+
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Bell, Heart, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function NotificationsPage() {
+  const router = useRouter();
+
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
-      <h1 className="text-2xl font-bold font-headline">Bildirimler</h1>
+      <div className="flex items-center gap-2">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+            <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <h1 className="text-2xl font-bold font-headline">Bildirimler</h1>
+      </div>
       <Card>
         <CardHeader className="flex flex-row items-center gap-4 space-y-0">
             <div className='p-3 bg-primary/10 rounded-full'>
