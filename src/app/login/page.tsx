@@ -155,9 +155,9 @@ export default function LoginPage() {
 
         {/* Two Column Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
-          {/* hangel Sivil Toplum Kuruluşları */}
+          {/* STK */}
           <AppleSection 
-            title="hangel Sivil Toplum Kuruluşları"
+            title="STK"
             subtitle="İyiliğin bir karşılığı var. Sivil toplum Kuruluşun ile hangel de ol"
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
