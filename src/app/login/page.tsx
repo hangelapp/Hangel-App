@@ -88,7 +88,7 @@ export default function LoginPage() {
       list = list.filter(brand => brand.type === activeBrandType);
     }
 
-    return list.slice(0, 18);
+    return list.slice(0, 30); // Daha fazla marka gösterimi için limit artırıldı
   }, [activeBrandCategory, activeBrandType]);
 
   const topCategories = marketCategories.slice(2, 10);
@@ -312,25 +312,34 @@ export default function LoginPage() {
               </Tabs>
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-4 w-full">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-x-2 gap-y-8 w-full">
               {filteredBrandsToShow.length > 0 ? (
                 filteredBrandsToShow.map((brand) => (
                   <Link href={`/market/${brand.id}`} key={brand.id} className="group">
-                      <div className="flex flex-col items-center text-center space-y-2 p-2 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300 bg-transparent">
-                          <div className="relative w-full aspect-square max-w-[80px]">
-                              <Avatar className="w-full h-full bg-white border shadow-sm group-hover:border-primary/30 transition-colors">
-                                  <AvatarImage src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} alt={brand.name} className="object-contain p-2" />
-                                  <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
-                                      {brand.name.slice(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                              </Avatar>
+                      <div className="flex flex-col items-center text-center space-y-3 p-1 transition-all duration-300">
+                          <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                              <div className="w-full h-full rounded-full bg-[#f9f9f9] border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
+                                  {brand.logoUrl ? (
+                                      <Image 
+                                        src={brand.logoUrl} 
+                                        alt={brand.name} 
+                                        width={64} 
+                                        height={64} 
+                                        className="object-contain p-3 opacity-90 group-hover:opacity-100 transition-opacity" 
+                                      />
+                                  ) : (
+                                      <span className="text-xl sm:text-2xl font-bold text-gray-400">
+                                          {brand.name.slice(0, 2).toUpperCase()}
+                                      </span>
+                                  )}
+                              </div>
                               {brand.donationRate > 0 && (
-                                  <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-lg border-2 border-white">
+                                  <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#f34723] text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">
                                   %{brand.donationRate}
                                   </div>
                               )}
                           </div>
-                          <p className="text-[11px] font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{brand.name}</p>
+                          <p className="text-[12px] font-bold text-[#042654] leading-tight group-hover:text-primary transition-colors px-1">{brand.name}</p>
                       </div>
                   </Link>
                 ))
