@@ -284,7 +284,7 @@ export default function LoginPage() {
                     <div className="flex flex-wrap gap-x-2 gap-y-1">
                         <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
                         <span className="text-[#d2d2d7]">|</span>
-                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerez Politikası</Link>
+                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Cherez Politikası</Link>
                         <span className="text-[#d2d2d7]">|</span>
                         <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
                         <span className="text-[#d2d2d7]">|</span>
