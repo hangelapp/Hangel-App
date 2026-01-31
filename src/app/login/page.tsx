@@ -196,8 +196,8 @@ export default function LoginPage() {
 
       <main className="flex-1">
         <section className="relative flex flex-col items-center justify-center text-center bg-white py-20 px-6 space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">hangel Hub</h1>
-          <p className="text-xl md:text-2xl font-medium max-w-2xl mx-auto">İyiliğin ve sosyal etkinin yeni nesil hali.</p>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">Yok öyle yalnız başına mücadele etmek.</h1>
+          <p className="text-xl md:text-2xl font-medium max-w-2xl mx-auto">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</p>
           <div className="pt-4">
             <Button asChild size="lg" className="rounded-full px-10 h-12 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-lg font-normal">
               <Link href="/login/selection?action=login">Giriş Yap</Link>
