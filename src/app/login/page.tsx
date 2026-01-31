@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { 
   Globe, ChevronRight, Search, ShoppingBag, Menu
@@ -16,6 +15,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Image from 'next/image';
+import Link from 'next/link';
 
 const languages = [
     { value: 'tr', label: 'Türkçe' },
@@ -52,7 +52,7 @@ const AppleSection = ({
   )}>
     <div className="z-10 px-6 space-y-1 max-w-2xl">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
-      {description && <p className={cn("text-[10px] md:text-xs font-medium mt-3 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
+      {description && <p className={cn("text-[10px] md:text-xs font-medium mt-6 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
       {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
