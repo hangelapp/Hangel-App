@@ -5,12 +5,15 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Globe, Mail } from 'lucide-react';
+import { Globe, Mail, MapPin, Calendar, Briefcase, Filter, Search, Award, Clock } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import React, { useState } from 'react';
 import { translations } from '@/lib/translations';
 import type { Language, Translation } from '@/lib/translations';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 const languages: {value: Language, label: string}[] = [
     { value: 'tr', label: 'Türkçe' },
@@ -30,7 +33,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'มराठी' },
+    { value: 'mr', label: 'มраठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -44,6 +47,8 @@ export default function LoginPage() {
     setLanguage(value);
     setSelectedTranslations(translations[value] || translations.tr);
   };
+
+  const featuredOpportunities = volunteeringOpportunities.slice(0, 4);
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
@@ -108,29 +113,101 @@ export default function LoginPage() {
         </div>
       </main>
 
-      <section className="bg-secondary">
-        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col h-full max-w-xl text-center">
-                <h2 className="text-3xl font-bold mb-4 text-secondary-foreground">hangel imece</h2>
-                <p className="text-center mb-8 text-muted-foreground">
-                Yetenekleriniz ve zamanınızla topluma değer katın. İlgi alanlarınıza uygun gönüllülük fırsatlarını keşfedin.
+      <section className="bg-secondary py-16">
+        <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold mb-4 text-secondary-foreground font-headline tracking-tight">hangel imece</h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Yeteneklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Size en uygun gönüllülük ilanını hemen bulun.
                 </p>
-                <div className="space-y-3 flex-grow">
-                <div className="p-4 bg-background border rounded-lg text-left">
-                    <h4 className="font-semibold text-foreground">Afet Bölgesi Yardım Dağıtımı</h4>
-                    <p className="text-sm text-muted-foreground">Ahbap Derneği - Hatay</p>
-                </div>
-                <div className="p-4 bg-background border rounded-lg text-left">
-                    <h4 className="font-semibold text-foreground">Ağaç Kardeşliği Projesi - Fidan Dikimi</h4>
-                    <p className="text-sm text-muted-foreground">TEMA Vakfı - İstanbul</p>
-                </div>
-                <div className="p-4 bg-background border rounded-lg text-left">
-                    <h4 className="font-semibold text-foreground">Sosyal Medya İçerik Gönüllüsü</h4>
-                    <p className="text-sm text-muted-foreground">Tohum Otizm Vakfı - Online</p>
-                </div>
-                </div>
-                <Button asChild variant="outline" className="w-full mt-8 border-primary text-primary hover:bg-primary/5 hover:text-primary font-bold">
-                <Link href="/volunteering">Tüm İlanları Gör ({volunteeringOpportunities.length})</Link>
+            </div>
+
+            {/* Profesyonel Filtre Çubuğu */}
+            <Card className="mb-8 shadow-sm">
+                <CardContent className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="İlan başlığı veya yetkinlik..." className="pl-9" />
+                        </div>
+                        <Select>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Şehir Seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="istanbul">İstanbul</SelectItem>
+                                <SelectItem value="ankara">Ankara</SelectItem>
+                                <SelectItem value="izmir">İzmir</SelectItem>
+                                <SelectItem value="online">Online / Her Yer</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sosyal Alan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="afet">Afet</SelectItem>
+                                <SelectItem value="cevre">Çevre</SelectItem>
+                                <SelectItem value="egitim">Eğitim</SelectItem>
+                                <SelectItem value="hayvan">Hayvan Hakları</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button className="w-full">
+                            <Filter className="mr-2 h-4 w-4" /> İlanları Filtrele
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* İlan Listesi */}
+            <div className="space-y-4">
+                {featuredOpportunities.map((opp) => (
+                    <Link href={`/volunteering/${opp.id}`} key={opp.id} className="block">
+                        <Card className="hover:border-primary transition-all hover:shadow-md group overflow-hidden border-l-4 border-l-primary">
+                            <CardContent className="p-6">
+                                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                                    <div className="flex items-start gap-4 flex-1">
+                                        <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center shrink-0">
+                                            <Briefcase className="h-7 w-7 text-primary" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{opp.title}</h3>
+                                                <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
+                                                    {opp.socialArea}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-base font-semibold text-muted-foreground">{opp.organization}</p>
+                                            <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+                                                <span className="flex items-center text-sm text-muted-foreground">
+                                                    <MapPin className="mr-1.5 h-4 w-4" /> {opp.location.city} ({opp.location.type})
+                                                </span>
+                                                <span className="flex items-center text-sm text-muted-foreground">
+                                                    <Clock className="mr-1.5 h-4 w-4" /> {opp.commitment}
+                                                </span>
+                                                <span className="flex items-center text-sm font-bold text-orange-600">
+                                                    <Award className="mr-1.5 h-4 w-4" /> {opp.points} Puan
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-3 shrink-0 w-full md:w-auto">
+                                        <div className="text-right hidden md:block">
+                                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Son Başvuru</p>
+                                            <p className="text-sm font-bold">{opp.dates.applicationEnd}</p>
+                                        </div>
+                                        <Button className="w-full md:w-auto px-8">İncele</Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                ))}
+            </div>
+
+            <div className="text-center mt-12">
+                <Button asChild variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/5 hover:text-primary font-bold px-12 h-14">
+                    <Link href="/volunteering">Tüm Gönüllülük İlanlarını Gör ({volunteeringOpportunities.length}+)</Link>
                 </Button>
             </div>
         </div>
