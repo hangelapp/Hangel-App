@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { 
   Globe, ChevronRight, Sparkles, HeartHandshake, HandCoins, Award, ArrowRight, Bot, 
-  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, MessageSquare, Heart, Users, Camera
+  Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, MessageSquare, Heart, Users, Camera, Filter, ArrowDownUp
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Accordion,
@@ -18,6 +18,17 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import Image from 'next/image';
 import { allEntityLists, marketCategories, categoryMapping } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,13 +42,29 @@ export default function LoginPage() {
   const [language, setLanguage] = useState('tr');
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortKey, setSortKey] = useState('name');
+  const [onlyDonating, setOnlyDonating] = useState(false);
 
-  const filteredBrands = allEntityLists.filter(brand => {
-    const matchesType = activeEntityType === 'all' || brand.type === activeEntityType;
-    const brandCats = categoryMapping[activeCategory as keyof typeof categoryMapping] || [];
-    const matchesCategory = activeCategory === 'Tümü' || activeCategory === 'Öne çıkanlar' || brandCats.includes(brand.category);
-    return matchesType && matchesCategory;
-  }).slice(0, 16);
+  const filteredBrands = useMemo(() => {
+    let list = allEntityLists.filter(brand => {
+      const matchesType = activeEntityType === 'all' || brand.type === activeEntityType;
+      const brandCats = categoryMapping[activeCategory as keyof typeof categoryMapping] || [];
+      const matchesCategory = activeCategory === 'Tümü' || activeCategory === 'Öne çıkanlar' || brandCats.includes(brand.category);
+      const matchesSearch = brand.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDonation = !onlyDonating || brand.donationRate > 0;
+      return matchesType && matchesCategory && matchesSearch && matchesDonation;
+    });
+
+    list.sort((a, b) => {
+      if (sortKey === 'name') return a.name.localeCompare(b.name, 'tr');
+      if (sortKey === 'donationRate') return (b.donationRate || 0) - (a.donationRate || 0);
+      if (sortKey === 'followers') return (b.followers || 0) - (a.followers || 0);
+      return 0;
+    });
+
+    return list.slice(0, 16);
+  }, [activeCategory, activeEntityType, searchTerm, sortKey, onlyDonating]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#ffffff] text-[#1d1d1f] font-sans antialiased overflow-x-hidden">
@@ -118,8 +145,8 @@ export default function LoginPage() {
                                     <Heart className="absolute -top-4 -right-4 h-12 w-12 text-red-500" />
                                 </div>
                             </div>
-                            <Button variant="link" className="text-white mt-auto justify-start p-0 group">
-                                Bağış Sistemini Keşfet <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            <Button variant="link" className="text-white mt-auto justify-start p-0 group" asChild>
+                                <Link href="/market">Bağış Sistemini Keşfet <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Link>
                             </Button>
                         </CardContent>
                     </Card>
@@ -164,6 +191,49 @@ export default function LoginPage() {
                                         {cat.mainCategory}
                                     </Button>
                                 ))}
+                            </div>
+                        </div>
+
+                        {/* Arama, Filtreleme ve Sıralama Bölümü */}
+                        <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <div className="relative flex-1 w-full">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                                <Input 
+                                    placeholder="Marka ara..." 
+                                    className="pl-10 bg-white/10 border-white/10 text-white placeholder:text-white/40 focus:ring-white/20 focus:border-white/20 rounded-xl h-11"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="flex-1 sm:flex-none border-white/10 bg-white/10 text-white hover:bg-white/20 h-11 rounded-xl gap-2">
+                                            <Filter className="h-4 w-4" /> Filtrele
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56">
+                                        <DropdownMenuLabel>Seçenekler</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>
+                                            Sadece Bağış Yapanlar
+                                        </DropdownMenuCheckboxItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="flex-1 sm:flex-none border-white/10 bg-white/10 text-white hover:bg-white/20 h-11 rounded-xl gap-2">
+                                            <ArrowDownUp className="h-4 w-4" /> Sırala
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56">
+                                        <DropdownMenuLabel>Sıralama Ölçütü</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranına Göre</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Takipçi Sayısına Göre</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
 
