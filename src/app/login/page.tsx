@@ -155,23 +155,23 @@ export default function LoginPage() {
 
         {/* Two Column Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
-          {/* Sosyal Etki Puanı */}
+          {/* hangel Sivil Toplum Kuruluşları */}
           <AppleSection 
-            title="Etki Puanı"
-            subtitle="İyiliğin bir karşılığı var."
+            title="hangel Sivil Toplum Kuruluşları"
+            subtitle="İyiliğin bir karşılığı var. Sivil toplum Kuruluşun ile hangel de ol"
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
             fullWidth={false}
-            primaryCta="Puanını Gör"
+            primaryCta="Kayıt Ol"
           />
-          {/* Acil Durum */}
+          {/* hangel Brands */}
           <AppleSection 
-            title="Acil Durum" 
-            subtitle="Zor zamanda topluluk gücü." 
+            title="hangel Brands" 
+            subtitle="markan ile hangel de ol" 
             image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
             imageHint="emergency siren red" 
             fullWidth={false} 
-            primaryCta="Yardım Çağır" 
+            primaryCta="Kayıt Ol" 
             dark={true}
           />
         </div>
