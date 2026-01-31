@@ -75,7 +75,7 @@ const AppleSection = ({
         </div>
       ) : (
         image && (
-          <div className="relative w-full flex-1 max-h-[400px] md:max-h-[600px] px-4 md:px-0">
+          <div className="relative w-full h-full max-h-[450px] md:max-h-[650px] px-4 md:px-0">
             <Image 
               src={image} 
               alt={title} 
@@ -192,7 +192,7 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
+          <nav className="hidden md:flex flex-1 justify-center items-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
             <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
             <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
             <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
@@ -222,11 +222,11 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative flex flex-col items-center justify-center text-center bg-white py-20 px-6 space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">Yok öyle yalnız başına mücadele.</h1>
-          <p className="text-xl md:text-2xl font-medium max-w-2xl mx-auto">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</p>
-          <div className="pt-4">
-            <Button asChild size="lg" className="rounded-full px-10 h-12 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-lg font-normal">
+        <section className="relative flex flex-col items-center justify-center text-center bg-white py-28 px-6 space-y-6">
+          <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05]">Yok öyle yalnız başına mücadele.</h1>
+          <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</p>
+          <div className="pt-8">
+            <Button asChild size="lg" className="rounded-full px-12 h-14 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-xl font-normal">
               <Link href="/login/selection?action=login">Giriş Yap</Link>
             </Button>
           </div>
