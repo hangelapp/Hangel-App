@@ -153,7 +153,7 @@ export default function LoginPage() {
           {/* STK */}
           <AppleSection 
             title="hangel STK"
-            subtitle="Sivil Toplum Kuruluşun ile hangelde ol"
+            subtitle="Sivil Toplum Kuruluşu ile hangel’de Ol"
             description="Dernek, Vakıf, Spor Kulübü, Öğrenci Kulübü"
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
