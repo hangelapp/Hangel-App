@@ -8,11 +8,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Upload, Plus, X } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, X, Instagram, Facebook, Linkedin, Twitter, Youtube, Link as LinkIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { marketCategories } from '@/lib/data';
 
 // --- Shared Constants ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
@@ -28,20 +29,21 @@ const districts: { [key: string]: string[] } = {
     'Antalya': ['Akseki', 'Aksu', 'Alanya', 'Demre', 'Döşemealtı', 'Elmalı', 'Finike', 'Gazipaşa', 'Gündoğmuş', 'İbradı', 'Kaş', 'Kemer', 'Kepez', 'Konyaaltı', 'Korkuteli', 'Kumluca', 'Manavgat', 'Muratpaşa', 'Serik'],
     'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
     'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
-    // ... Diğer iller benzer şekilde eklenebilir
 };
 
 const neighborhoods: { [key: string]: string[] } = {
     'Kadıköy': ['Caferağa', 'Osmanağa', 'Rasimpaşa', 'Moda', 'Fenerbahçe', 'Eğitim', 'Göztepe', 'Merdivenköy', 'Bostancı', 'Caddebostan'],
     'Beşiktaş': ['Levent', 'Etiler', 'Bebek', 'Arnavutköy', 'Ortaköy', 'Gayrettepe', 'Dikilitaş', 'Muradiye', 'Abbasağa', 'Vişnezade'],
     'Fatih': ['Aksaray', 'Balat', 'Eminönü', 'Sultanahmet', 'Sirkeci', 'Beyazıt', 'Çapa', 'Kocamustafapaşa', 'Yedikule', 'Karagümrük'],
-    'Çankaya': ['Kızılay', 'Kavaklıdere', 'Maltepe', 'Bahçelievler', 'Ayrancı', 'Dikmen', 'Oran', 'Yıldız', 'Ümitköy', 'Çayyolu'],
-    'Konak': ['Alsancak', 'Göztepe', 'Hatay', 'Basmane', 'Kahramanlar', 'Küçükyalı', 'Güzelyalı', 'Pasaport', 'Kemeraltı', 'Kadifekale'],
 };
 
 const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi'];
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
+
+const marketCategoryLabels = marketCategories
+    .filter(c => c.mainCategory !== 'Öne çıkanlar' && c.mainCategory !== 'Tümü')
+    .map(c => c.mainCategory);
 
 const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => (
     <div className="space-y-2">
@@ -68,6 +70,85 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
             {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
         </div>
     </div>
+);
+
+const SocialMediaFields = () => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-lg">Sosyal Medya Hesapları</CardTitle>
+            <CardDescription>Kuruluşunuzun sosyal medya linklerini ekleyin.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div className="space-y-2">
+                <Label>Instagram</Label>
+                <div className="flex items-center gap-2">
+                    <Instagram className="h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="instagram.com/kullaniciadi" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label>X (Twitter)</Label>
+                <div className="flex items-center gap-2">
+                    <Twitter className="h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="x.com/kullaniciadi" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label>Facebook</Label>
+                <div className="flex items-center gap-2">
+                    <Facebook className="h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="facebook.com/sayfaadi" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label>LinkedIn</Label>
+                <div className="flex items-center gap-2">
+                    <Linkedin className="h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="linkedin.com/company/kurumadi" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label>YouTube</Label>
+                <div className="flex items-center gap-2">
+                    <Youtube className="h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="youtube.com/@kanaladi" />
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+);
+
+const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood }: any) => (
+    <Card>
+        <CardHeader><CardTitle className="text-lg">İletişim & Adres</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+            <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="iletisim@ornek.com" required /></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                    <Label>İl</Label>
+                    <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }}>
+                        <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                        <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label>İlçe</Label>
+                    <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city}>
+                        <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                        <SelectContent>{city && (districts[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label>Mahalle</Label>
+                    <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district}>
+                        <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                        <SelectContent>{district && (neighborhoods[district] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
+            </div>
+            <div className="space-y-2"><Label>Açık Adres</Label><Input placeholder="Sokak, kapı no..." /></div>
+        </CardContent>
+    </Card>
 );
 
 // --- Components ---
@@ -239,36 +320,15 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                         </Card>
                         <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
                         <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
-                        <Card>
-                            <CardHeader><CardTitle className="text-lg">İletişim & Adres</CardTitle></CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="iletisim@ornek.org" required /></div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>İl</Label>
-                                        <Select value={officeCity} onValueChange={(val) => { setOfficeCity(val); setOfficeDistrict(''); setOfficeNeighborhood(''); }}>
-                                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
-                                            <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>İlçe</Label>
-                                        <Select value={officeDistrict} onValueChange={(val) => { setOfficeDistrict(val); setOfficeNeighborhood(''); }} disabled={!officeCity}>
-                                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
-                                            <SelectContent>{officeCity && (districts[officeCity] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Mahalle</Label>
-                                        <Select value={officeNeighborhood} onValueChange={setOfficeNeighborhood} disabled={!officeDistrict}>
-                                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
-                                            <SelectContent>{officeDistrict && (neighborhoods[officeDistrict] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <div className="space-y-2"><Label>Açık Adres</Label><Input placeholder="Sokak, kapı no..." /></div>
-                            </CardContent>
-                        </Card>
+                        
+                        <AddressFields 
+                            city={officeCity} setCity={setOfficeCity}
+                            district={officeDistrict} setDistrict={setOfficeDistrict}
+                            neighborhood={officeNeighborhood} setNeighborhood={setOfficeNeighborhood}
+                        />
+
+                        <SocialMediaFields />
+
                         <Card>
                             <CardHeader><CardTitle className="text-lg">Yasal Belgeler</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
@@ -333,11 +393,19 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                                             <div key={index} className="flex gap-2 items-end">
                                                 <div className="flex-1 space-y-1">
                                                     <Label className="text-[10px] uppercase font-bold text-muted-foreground">Kategori</Label>
-                                                    <Input 
-                                                        placeholder="Giyim, Gıda vb." 
+                                                    <Select 
                                                         value={item.category} 
-                                                        onChange={(e) => updateDonationRate(index, 'category', e.target.value)}
-                                                    />
+                                                        onValueChange={(val) => updateDonationRate(index, 'category', val)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Seçiniz" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {marketCategoryLabels.map(cat => (
+                                                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                 </div>
                                                 <div className="w-24 space-y-1">
                                                     <Label className="text-[10px] uppercase font-bold text-muted-foreground">Oran (%)</Label>
@@ -367,6 +435,15 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <AddressFields 
+                            city={officeCity} setCity={setOfficeCity}
+                            district={officeDistrict} setDistrict={setOfficeDistrict}
+                            neighborhood={officeNeighborhood} setNeighborhood={setOfficeNeighborhood}
+                        />
+
+                        <SocialMediaFields />
+
                         <Card>
                             <CardHeader><CardTitle className="text-lg">Yasal & Finansal</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
