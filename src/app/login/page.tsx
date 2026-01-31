@@ -1,10 +1,13 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
-import { Globe, ArrowRight, Store, HeartHandshake, Users, Sparkles, CheckCircle2, ShieldCheck, Zap, Award, ChevronRight } from 'lucide-react';
+import { 
+  Globe, ArrowRight, HeartHandshake, CheckCircle2, ShieldCheck, Zap, Award, 
+  ChevronRight, Store, MessageSquare, Smartphone, Mail, Twitter, Instagram, 
+  Linkedin, Briefcase, Sparkles 
+} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
 import { translations } from '@/lib/translations';
@@ -13,6 +16,12 @@ import { allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const languages: {value: Language, label: string}[] = [
     { value: 'tr', label: 'Türkçe' },
@@ -32,7 +41,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'మరాठी' },
+    { value: 'mr', label: 'मराठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -96,16 +105,15 @@ export default function LoginPage() {
                 </Button>
             </div>
         </div>
-        {/* Decorative elements */}
         <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl -ml-32 opacity-50" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -mr-48 opacity-50" />
       </section>
 
-      {/* Volunteering Section - Gönüllülük Ekranı */}
-      <section className="py-24 px-6 bg-background">
+      {/* Volunteering Section */}
+      <section className="py-24 px-6 bg-background border-b">
         <div className="container mx-auto">
             <div className="grid md:grid-cols-2 gap-16 items-center">
-                <div className="space-y-8">
+                <div className="space-y-8 text-left">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary font-bold text-sm uppercase tracking-wider">
                         <HeartHandshake className="h-4 w-4" /> Gönüllülük
                     </div>
@@ -143,7 +151,7 @@ export default function LoginPage() {
                         className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#042654]/60 to-transparent" />
-                    <div className="absolute bottom-8 left-8 right-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-white">
+                    <div className="absolute bottom-8 left-8 right-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-white text-left">
                         <p className="text-sm font-medium opacity-80 uppercase tracking-widest mb-1">Bu Ay</p>
                         <p className="text-2xl font-bold">150.000+ Gönüllü</p>
                         <p className="text-sm opacity-90">Türkiye genelinde aktif olarak projelerde yer alıyor.</p>
@@ -168,7 +176,7 @@ export default function LoginPage() {
 
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
                 {brands.map((brand) => (
-                    <div key={brand.id} className="flex flex-col items-center gap-3 group cursor-pointer">
+                    <Link href={`/market/${brand.id}`} key={brand.id} className="flex flex-col items-center gap-3 group cursor-pointer">
                         <div className="relative w-full aspect-square bg-white rounded-full p-4 shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                             {brand.logoUrl ? (
                                 <Image 
@@ -191,7 +199,7 @@ export default function LoginPage() {
                         <span className="text-[12px] font-bold text-white text-center leading-tight group-hover:underline">
                             {brand.name}
                         </span>
-                    </div>
+                    </Link>
                 ))}
             </div>
 
@@ -216,7 +224,7 @@ export default function LoginPage() {
                 <p className="text-muted-foreground max-w-2xl mx-auto text-lg">Yaptığınız her olumlu katkı size puan, rozet ve toplumsal saygınlık olarak geri döner.</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-8 text-left">
                 <Card className="p-8 space-y-6 hover:shadow-2xl transition-shadow border-none rounded-3xl">
                     <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
                         <Zap className="h-8 w-8" />
@@ -248,78 +256,147 @@ export default function LoginPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t bg-[#f5f5f5] py-16 px-6">
-        <div className="container mx-auto space-y-10">
-            {/* Header: Logo and Large Prompt */}
-            <div className="space-y-4">
-                <HangelLogo className="text-4xl font-extrabold text-[#f34723]" />
-                <p className="text-sm md:text-base text-muted-foreground font-medium">
-                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline font-bold">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline font-bold">+90 554 700 70 07</Link> numaralı telefonu arayın.
+      {/* Apple Style Footer */}
+      <footer className="bg-[#f5f5f7] py-12 px-6 border-t text-[#1d1d1f]">
+        <div className="container mx-auto max-w-5xl space-y-8">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs text-[#6e6e73] font-medium">
+                <HangelLogo className="text-lg opacity-70" />
+                <ChevronRight className="h-3 w-3" />
+                <span>Yasal Bilgiler</span>
+            </div>
+
+            {/* Accordion Menus (Mobile) / Grid (Desktop) */}
+            <div className="block lg:hidden">
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="apps" className="border-b border-[#d2d2d7]">
+                        <AccordionTrigger className="text-xs font-semibold py-3 hover:no-underline">Hangel Uygulamaları</AccordionTrigger>
+                        <AccordionContent className="text-xs flex flex-col gap-3 py-2 text-[#424245]">
+                            <Link href="#">iOS Uygulaması</Link>
+                            <Link href="#">Android Uygulaması</Link>
+                            <Link href="#">AppGallery</Link>
+                            <Link href="#">Chrome Mağazası</Link>
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="account" className="border-b border-[#d2d2d7]">
+                        <AccordionTrigger className="text-xs font-semibold py-3 hover:no-underline">Hesap ve Cüzdan</AccordionTrigger>
+                        <AccordionContent className="text-xs flex flex-col gap-3 py-2 text-[#424245]">
+                            <Link href="/profile">Hangel Hesabım</Link>
+                            <Link href="/qr-payment">Cüzdanım</Link>
+                            <Link href="/my-donations">Bağışlarım</Link>
+                            <Link href="/my-applications">Başvurularım</Link>
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="support" className="border-b border-[#d2d2d7]">
+                        <AccordionTrigger className="text-xs font-semibold py-3 hover:no-underline">Destek ve Yardım</AccordionTrigger>
+                        <AccordionContent className="text-xs flex flex-col gap-3 py-2 text-[#424245]">
+                            <Link href="/support">Destek Merkezi</Link>
+                            <Link href="/support/faq">Sıkça Sorulan Sorular</Link>
+                            <Link href="/support/guides">Rehberler</Link>
+                            <Link href="/support/contact">Bize Ulaşın</Link>
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="impact" className="border-b border-[#d2d2d7]">
+                        <AccordionTrigger className="text-xs font-semibold py-3 hover:no-underline">Sosyal Etki</AccordionTrigger>
+                        <AccordionContent className="text-xs flex flex-col gap-3 py-2 text-[#424245]">
+                            <Link href="/leaderboard">Liderlik Tablosu</Link>
+                            <Link href="/my-badges">Rozetler ve Sertifikalar</Link>
+                            <Link href="/impact-story">Etki Hikayem</Link>
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="corporate" className="border-b border-[#d2d2d7]">
+                        <AccordionTrigger className="text-xs font-semibold py-3 hover:no-underline">Kurumsal</AccordionTrigger>
+                        <AccordionContent className="text-xs flex flex-col gap-3 py-2 text-[#424245]">
+                            <Link href="/about">Hakkımızda</Link>
+                            <Link href="/corporate">Kamu İlişkileri</Link>
+                            <Link href="/yatirimci-iliskileri">Yatırımcı İlişkileri</Link>
+                            <Link href="/bilgi-toplumu-hizmetleri">Bilgi Toplumu Hizmetleri</Link>
+                            <Link href="/press">Basın Odası</Link>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+
+            {/* Grid View (Desktop Only) */}
+            <div className="hidden lg:grid grid-cols-5 gap-8">
+                <div className="space-y-4">
+                    <h4 className="text-xs font-semibold">Hangel Uygulamaları</h4>
+                    <ul className="text-xs flex flex-col gap-2 text-[#424245]">
+                        <li><Link href="#" className="hover:underline">iOS Uygulaması</Link></li>
+                        <li><Link href="#" className="hover:underline">Android Uygulaması</Link></li>
+                        <li><Link href="#" className="hover:underline">AppGallery</Link></li>
+                        <li><Link href="#" className="hover:underline">Chrome Mağazası</Link></li>
+                    </ul>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="text-xs font-semibold">Hesap ve Cüzdan</h4>
+                    <ul className="text-xs flex flex-col gap-2 text-[#424245]">
+                        <li><Link href="/profile" className="hover:underline">Hangel Hesabım</Link></li>
+                        <li><Link href="/qr-payment" className="hover:underline">Cüzdanım</Link></li>
+                        <li><Link href="/my-donations" className="hover:underline">Bağışlarım</Link></li>
+                        <li><Link href="/my-applications" className="hover:underline">Başvurularım</Link></li>
+                    </ul>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="text-xs font-semibold">Destek ve Yardım</h4>
+                    <ul className="text-xs flex flex-col gap-2 text-[#424245]">
+                        <li><Link href="/support" className="hover:underline">Destek Merkezi</Link></li>
+                        <li><Link href="/support/faq" className="hover:underline">Sıkça Sorulan Sorular</Link></li>
+                        <li><Link href="/support/guides" className="hover:underline">Rehberler</Link></li>
+                        <li><Link href="/support/contact" className="hover:underline">Bize Ulaşın</Link></li>
+                    </ul>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="text-xs font-semibold">Sosyal Etki</h4>
+                    <ul className="text-xs flex flex-col gap-2 text-[#424245]">
+                        <li><Link href="/leaderboard" className="hover:underline">Liderlik Tablosu</Link></li>
+                        <li><Link href="/my-badges" className="hover:underline">Rozetler ve Sertifikalar</Link></li>
+                        <li><Link href="/impact-story" className="hover:underline">Etki Hikayem</Link></li>
+                    </ul>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="text-xs font-semibold">Kurumsal</h4>
+                    <ul className="text-xs flex flex-col gap-2 text-[#424245]">
+                        <li><Link href="/about" className="hover:underline">Hakkımızda</Link></li>
+                        <li><Link href="/corporate" className="hover:underline">Kamu İlişkileri</Link></li>
+                        <li><Link href="/yatirimci-iliskileri" className="hover:underline">Yatırımcı İlişkileri</Link></li>
+                        <li><Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link></li>
+                        <li><Link href="/press" className="hover:underline">Basın Odası</Link></li>
+                    </ul>
+                </div>
+            </div>
+
+            {/* Shopping Options */}
+            <div className="text-xs text-[#6e6e73] space-y-4 pt-4">
+                <p>
+                    Diğer alışveriş seçenekleri: Yakınınızda <Link href="/merchant" className="text-[#0066cc] hover:underline">bir Hangel Üye İşyeri</Link> veya <Link href="/contact/companies" className="text-[#0066cc] hover:underline">başka bir yetkili satıcı</Link> bulun. Veya <span className="whitespace-nowrap">00800 448 829 873</span> ya da <span className="whitespace-nowrap">0216 282 15 11</span> numaralı telefonu arayın.
                 </p>
+                <Separator className="bg-[#d2d2d7]" />
             </div>
 
-            <Separator className="bg-muted-foreground/20" />
-
-            {/* Middle: Platforms, Language and Socials */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    <Link href="#" className="hover:text-foreground">App Store</Link>
-                    <span className="text-muted-foreground/30">|</span>
-                    <Link href="#" className="hover:text-foreground">Google Play</Link>
-                    <span className="text-muted-foreground/30">|</span>
-                    <Link href="#" className="hover:text-foreground">AppGallery</Link>
-                    <span className="text-muted-foreground/30">|</span>
-                    <Link href="#" className="hover:text-foreground">Chrome Store</Link>
+            {/* Bottom Footer */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 text-xs text-[#6e6e73]">
+                <div className="order-2 lg:order-1 flex flex-col lg:flex-row gap-4">
+                    <span>Telif Hakkı © 2026 Hangel Hub Inc. Tüm hakları saklıdır.</span>
+                    <div className="flex flex-wrap gap-x-2 gap-y-1">
+                        <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerezlerin Kullanımı</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="hover:underline">Satış ve Para İadesi</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/settings/contracts" className="hover:underline">Yasal Bilgiler</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="#" className="hover:underline">Site Haritası</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
+                    </div>
                 </div>
-
-                <div className="flex items-center gap-2 px-4 border-l border-muted-foreground/30 h-6 text-xs font-bold text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-                    <Globe className="h-4 w-4" />
-                    <span>TÜRKÇE</span>
-                    <ChevronRight className="h-3 w-3 rotate-90" />
+                <div className="order-1 lg:order-2 font-semibold hover:underline cursor-pointer">
+                    Türkiye
                 </div>
-
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider md:ml-auto">
-                    <Link href="#" className="hover:text-foreground">x.com</Link>
-                    <span className="text-muted-foreground/30">|</span>
-                    <Link href="#" className="hover:text-foreground">Instagram</Link>
-                    <span className="text-muted-foreground/30">|</span>
-                    <Link href="#" className="hover:text-foreground">LinkedIn</Link>
-                    <span className="text-muted-foreground/30">|</span>
-                    <Link href="#" className="hover:text-foreground">Spotify</Link>
-                </div>
-            </div>
-
-            {/* Bottom: Main Navigation */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-3 text-xs font-medium text-muted-foreground/80">
-                <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/support" className="hover:text-foreground">Destek</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="#" className="hover:text-foreground">Kariyer</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/press" className="hover:text-foreground">Basın</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
-                <span className="text-muted-foreground/30">|</span>
-                <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
-            </div>
-
-            {/* Copyright */}
-            <div className="pt-4 text-left">
-                <p className="text-xs text-muted-foreground/60 font-semibold tracking-wide uppercase">
-                    &copy; 2026 hangel.org. Tüm hakları saklıdır.
-                </p>
             </div>
         </div>
       </footer>
