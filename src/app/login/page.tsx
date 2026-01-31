@@ -173,7 +173,7 @@ export default function LoginPage() {
             imageHint="modern branding" 
             fullWidth={false} 
             primaryCta="Kayıt Ol" 
-            dark={true}
+            dark={false}
           />
         </div>
 
