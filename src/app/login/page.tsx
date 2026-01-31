@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import {
   Globe, ChevronRight, Sparkles, HeartHandshake, HandCoins, Award, ArrowRight, Bot, 
   Search, ShieldCheck, Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook, 
   MessageSquare, Heart, Users, Camera, Filter, ArrowDownUp, ShoppingBag, Menu,
-  Zap, Info, ShieldAlert, Star
+  Zap, Info, ShieldAlert, Star, Store
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
@@ -59,7 +58,7 @@ const AppleSection = ({
     <div className="z-10 px-6 space-y-2 max-w-2xl">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
       {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
-      {description && <p className="text-[#86868b] text-base md:text-lg mt-2">{description}</p>}
+      {description && <p className={cn("text-base md:text-lg mt-2", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
           <Link href={link}>{primaryCta}</Link>
@@ -123,7 +122,7 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero Section - Sevgililer Günü Style */}
+        {/* Hero Section */}
         <section className="relative flex flex-col items-center justify-center text-center bg-white py-20 px-6 space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">hangel Hub</h1>
           <p className="text-xl md:text-2xl font-medium max-w-2xl mx-auto">İyiliğin ve sosyal etkinin yeni nesil hali.</p>
@@ -134,7 +133,7 @@ export default function LoginPage() {
           </div>
         </section>
 
-        {/* hangel imece - iPhone Style */}
+        {/* hangel imece */}
         <AppleSection 
           title="hangel imece"
           subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
@@ -143,7 +142,7 @@ export default function LoginPage() {
           imageHint="volunteering hands together"
         />
 
-        {/* hangel bağışı - Creator Studio Style */}
+        {/* hangel bağışı */}
         <AppleSection 
           title="hangel bağışı"
           subtitle="Alışverişin iyiliğe dönüşsün."
@@ -156,7 +155,7 @@ export default function LoginPage() {
 
         {/* Two Column Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
-          {/* Sosyal Etki Puanı - iPad Style */}
+          {/* Sosyal Etki Puanı */}
           <AppleSection 
             title="Etki Puanı"
             subtitle="İyiliğin bir karşılığı var."
@@ -165,19 +164,20 @@ export default function LoginPage() {
             fullWidth={false}
             primaryCta="Puanını Gör"
           />
-          {/* Acil Durum Merkezi - Apple Watch Style */}
+          {/* Marka Kayıt - Replacements for Emergency */}
           <AppleSection 
-            title="Acil Durum"
-            subtitle="Zor zamanda topluluk gücü."
-            image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop"
-            imageHint="emergency siren red"
+            title="Markalar İçin"
+            subtitle="İyilik hareketine kurumsal bir adım atın."
+            description="Sosyal sorumlu bir marka olarak topluma değer katın."
+            image="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
+            imageHint="modern retail store interior"
             fullWidth={false}
-            primaryCta="Yardım Çağır"
+            primaryCta="Hemen Başvur"
             dark={true}
           />
         </div>
 
-        {/* MacBook Style Full Width Section */}
+        {/* Şeffaflık Endeksi */}
         <AppleSection 
           title="Şeffaflık Endeksi"
           subtitle="Güvenle bağış yapın."
