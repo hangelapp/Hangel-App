@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -97,11 +98,11 @@ const VolunteeringDiscovery = () => {
     }, [filter]);
 
     return (
-        <section className="bg-[#f5f5f7] py-20 px-6">
-            <div className="container mx-auto max-w-6xl space-y-12">
-                <div className="text-center space-y-4">
-                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Gönüllülük Dünyasını Keşfedin</h2>
-                    <p className="text-xl md:text-2xl font-medium text-[#86868b]">Size en uygun fırsatı bulun.</p>
+        <section className="bg-[#f5f5f7] py-12 px-6">
+            <div className="container mx-auto max-w-6xl space-y-8">
+                <div className="text-center space-y-2">
+                    <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-[#1d1d1f]">Gönüllülük Dünyası</h2>
+                    <p className="text-lg font-medium text-[#86868b]">Size en uygun etkiyi bulun.</p>
                 </div>
 
                 {/* Filter Bar */}
@@ -111,9 +112,9 @@ const VolunteeringDiscovery = () => {
                             key={cat}
                             onClick={() => setFilter(categoryMapping[cat])}
                             className={cn(
-                                "px-5 py-2 rounded-full text-sm font-medium transition-all",
+                                "px-4 py-1.5 rounded-full text-xs font-medium transition-all",
                                 filter === categoryMapping[cat] 
-                                    ? "bg-[#1d1d1f] text-white" 
+                                    ? "bg-[#1d1d1f] text-white shadow-sm" 
                                     : "bg-white text-[#1d1d1f] border border-[#d2d2d7] hover:border-[#86868b]"
                             )}
                         >
@@ -123,32 +124,29 @@ const VolunteeringDiscovery = () => {
                 </div>
 
                 {/* Opportunities Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredItems.map((item) => (
                         <Link href={`/login/selection?action=register`} key={item.id}>
-                            <Card className="group relative overflow-hidden rounded-[2rem] border-none shadow-none bg-white hover:bg-[#fafafa] transition-all duration-500 cursor-pointer flex flex-col h-full min-h-[220px]">
-                                <CardHeader className="p-8 pb-0 space-y-1">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#86868b]">{item.socialArea}</p>
-                                    <CardTitle className="text-2xl font-bold tracking-tight text-[#1d1d1f] leading-tight line-clamp-2">{item.title}</CardTitle>
-                                    <CardDescription className="text-sm font-medium text-[#86868b]">{item.organization}</CardDescription>
+                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-none bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col h-full min-h-[140px]">
+                                <CardHeader className="p-5 pb-0 space-y-0.5">
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-[#86868b]">{item.socialArea}</p>
+                                    <CardTitle className="text-lg font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
+                                    <CardDescription className="text-xs font-medium text-[#86868b]">{item.organization}</CardDescription>
                                 </CardHeader>
-                                <CardFooter className="p-8 pt-0 mt-auto flex justify-between items-center">
-                                    <div className="flex items-center gap-1.5 text-primary text-xs font-bold bg-primary/5 px-3 py-1.5 rounded-full">
-                                        <Award className="h-3.5 w-3.5" />
+                                <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center">
+                                    <div className="text-primary text-[10px] font-bold bg-primary/5 px-2 py-1 rounded-full">
                                         {item.points} Puan
                                     </div>
-                                    <span className="text-[#0066cc] font-semibold text-sm group-hover:translate-x-1 transition-transform inline-flex items-center">
-                                        İncele <ChevronRight className="ml-0.5 h-4 w-4" />
-                                    </span>
+                                    <ChevronRight className="h-4 w-4 text-[#0066cc] group-hover:translate-x-1 transition-transform" />
                                 </CardFooter>
                             </Card>
                         </Link>
                     ))}
                 </div>
 
-                <div className="text-center pt-8">
-                    <Button asChild variant="link" className="text-[#0066cc] font-medium text-lg">
-                        <Link href="/volunteering">Tüm fırsatları gör</Link>
+                <div className="text-center pt-4">
+                    <Button asChild variant="link" className="text-[#0066cc] font-medium text-sm">
+                        <Link href="/volunteering">Tüm fırsatları keşfedin</Link>
                     </Button>
                 </div>
             </div>
