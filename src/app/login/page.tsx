@@ -43,7 +43,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'มરાठी' },
+    { value: 'mr', label: 'मરાठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
