@@ -52,7 +52,7 @@ const AppleSection = ({
 }) => (
   <section className={cn(
     "relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16",
-    fullWidth ? "w-full min-h-[600px] md:min-h-[750px] mb-3" : "h-[500px] rounded-3xl mx-3 mb-3",
+    fullWidth ? "w-full min-h-[650px] md:min-h-[850px] mb-3" : "h-[500px] md:h-[600px] rounded-3xl mx-3 mb-3",
     dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
   )}>
     <div className="z-10 px-6 space-y-1 max-w-4xl">
@@ -68,20 +68,21 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0 flex items-center justify-center">
+    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0 flex items-center justify-center flex-1">
       {children ? (
-        <div className="w-full">
+        <div className="w-full h-full">
           {children}
         </div>
       ) : (
         image && (
-          <div className="relative w-full h-full min-h-[300px]">
+          <div className="relative w-full h-full min-h-[350px] md:min-h-[550px]">
             <Image 
               src={image} 
               alt={title} 
               fill 
               className="object-contain object-bottom select-none" 
               data-ai-hint={imageHint}
+              priority
             />
           </div>
         )
