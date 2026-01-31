@@ -43,7 +43,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'มراठी' },
+    { value: 'mr', label: 'มરાठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -111,7 +111,7 @@ export default function LoginPage() {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -mr-48 opacity-50" />
       </section>
 
-      {/* Volunteering Section */}
+      {/* Gönüllülük Section */}
       <section className="py-24 px-6 bg-background border-b">
         <div className="container mx-auto">
             <div className="grid md:grid-cols-2 gap-16 items-center">
@@ -247,7 +247,7 @@ export default function LoginPage() {
         </div>
       </section>
 
-      {/* Impact Section */}
+      {/* Sosyal Etki Section */}
       <section className="py-24 px-6 bg-slate-50">
         <div className="container mx-auto">
             <div className="text-center space-y-4 mb-16">
