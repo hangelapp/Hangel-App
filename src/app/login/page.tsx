@@ -164,15 +164,14 @@ export default function LoginPage() {
             fullWidth={false}
             primaryCta="Puanını Gör"
           />
-          {/* Marka Kayıt - Replacements for Emergency */}
+          {/* Acil Durum */}
           <AppleSection 
-            title="Markalar İçin"
-            subtitle="İyilik hareketine kurumsal bir adım atın."
-            description="Sosyal sorumlu bir marka olarak topluma değer katın."
-            image="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
-            imageHint="modern retail store interior"
-            fullWidth={false}
-            primaryCta="Hemen Başvur"
+            title="Acil Durum" 
+            subtitle="Zor zamanda topluluk gücü." 
+            image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
+            imageHint="emergency siren red" 
+            fullWidth={false} 
+            primaryCta="Yardım Çağır" 
             dark={true}
           />
         </div>
