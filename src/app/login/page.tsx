@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Globe, Mail, MapPin, Calendar, Briefcase, Filter, Search, Award, Clock, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { volunteeringOpportunities, allEntityLists, marketCategories } from '@/lib/data';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { translations } from '@/lib/translations';
 import type { Language, Translation } from '@/lib/translations';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +34,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'ਮਰਾठी' },
+    { value: 'mr', label: 'मराठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -44,14 +44,41 @@ export default function LoginPage() {
   const [language, setLanguage] = useState<Language>('tr');
   const [selectedTranslations, setSelectedTranslations] = useState<Translation>(translations.tr);
 
+  // Filtering States
+  const [searchTerm, setSearchTerm] = useState('');
+  const [cityFilter, setCityFilter] = useState('all');
+  const [socialAreaFilter, setSocialAreaFilter] = useState('all');
+
   const handleLanguageChange = (value: Language) => {
     setLanguage(value);
     setSelectedTranslations(translations[value] || translations.tr);
   };
 
-  const featuredOpportunities = volunteeringOpportunities.slice(0, 6);
+  const filteredOpportunities = useMemo(() => {
+    return volunteeringOpportunities.filter(opp => {
+        const matchesSearch = !searchTerm || 
+            opp.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            opp.organization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (opp.skills && opp.skills.some(s => s.toLowerCase().includes(searchTerm.toLowerCase())));
+        
+        const matchesCity = cityFilter === 'all' || 
+            opp.location.city.toLowerCase() === cityFilter.toLowerCase();
+            
+        const matchesSocialArea = socialAreaFilter === 'all' || 
+            opp.socialArea.toLowerCase() === socialAreaFilter.toLowerCase();
+            
+        return matchesSearch && matchesCity && matchesSocialArea;
+    }).slice(0, 6);
+  }, [searchTerm, cityFilter, socialAreaFilter]);
+
   const featuredBrands = allEntityLists.slice(0, 18);
-  const topCategories = marketCategories.slice(2, 10); // Get some diverse categories
+  const topCategories = marketCategories.slice(2, 10);
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setCityFilter('all');
+    setSocialAreaFilter('all');
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
@@ -128,74 +155,91 @@ export default function LoginPage() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="İlan başlığı veya yetkinlik..." className="pl-9" />
+                            <Input 
+                                placeholder="İlan başlığı veya yetkinlik..." 
+                                className="pl-9" 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
-                        <Select>
+                        <Select value={cityFilter} onValueChange={setCityFilter}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Şehir Seçin" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="all">Tüm Şehirler</SelectItem>
                                 <SelectItem value="istanbul">İstanbul</SelectItem>
                                 <SelectItem value="ankara">Ankara</SelectItem>
                                 <SelectItem value="izmir">İzmir</SelectItem>
-                                <SelectItem value="online">Online / Her Yer</SelectItem>
+                                <SelectItem value="hatay">Hatay</SelectItem>
+                                <SelectItem value="türkiye">Online / Her Yer</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Select>
+                        <Select value={socialAreaFilter} onValueChange={setSocialAreaFilter}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sosyal Alan" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="all">Tüm Alanlar</SelectItem>
                                 <SelectItem value="afet">Afet</SelectItem>
-                                <SelectItem value="cevre">Çevre</SelectItem>
-                                <SelectItem value="egitim">Eğitim</SelectItem>
-                                <SelectItem value="hayvan">Hayvan Hakları</SelectItem>
+                                <SelectItem value="çevre">Çevre</SelectItem>
+                                <SelectItem value="eğitim">Eğitim</SelectItem>
+                                <SelectItem value="hayvan hakları">Hayvan Hakları</SelectItem>
+                                <SelectItem value="engelli">Engelli</SelectItem>
+                                <SelectItem value="dayanışma">Dayanışma</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Button className="w-full">
-                            <Filter className="mr-2 h-4 w-4" /> İlanları Filtrele
+                        <Button className="w-full" onClick={resetFilters}>
+                            <Filter className="mr-2 h-4 w-4" /> Filtreleri Temizle
                         </Button>
                     </div>
                 </CardContent>
             </Card>
 
             <div className="space-y-2">
-                {featuredOpportunities.map((opp) => (
-                    <Link href={`/volunteering/${opp.id}`} key={opp.id} className="block">
-                        <Card className="hover:border-primary transition-all hover:shadow-sm group overflow-hidden border-l-4 border-l-primary">
-                            <CardContent className="p-3">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className="w-10 h-10 bg-muted rounded flex items-center justify-center shrink-0">
-                                            <Briefcase className="h-5 w-5 text-primary" />
+                {filteredOpportunities.length > 0 ? (
+                    filteredOpportunities.map((opp) => (
+                        <Link href={`/volunteering/${opp.id}`} key={opp.id} className="block">
+                            <Card className="hover:border-primary transition-all hover:shadow-sm group overflow-hidden border-l-4 border-l-primary">
+                                <CardContent className="p-3">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className="w-10 h-10 bg-muted rounded flex items-center justify-center shrink-0">
+                                                <Briefcase className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-base font-bold group-hover:text-primary transition-colors truncate">{opp.title}</h3>
+                                                    <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 text-[10px] h-5 px-1.5 shrink-0">
+                                                        {opp.socialArea}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-x-3 text-xs text-muted-foreground truncate">
+                                                    <span className="font-semibold text-foreground/80">{opp.organization}</span>
+                                                    <span className="flex items-center"><MapPin className="mr-1 h-3 w-3" /> {opp.location.city} ({opp.location.type})</span>
+                                                    <span className="flex items-center"><Clock className="mr-1 h-3 w-3" /> {opp.commitment}</span>
+                                                    <span className="flex items-center font-bold text-orange-600"><Award className="mr-1 h-3 w-3" /> {opp.points} Puan</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="text-base font-bold group-hover:text-primary transition-colors truncate">{opp.title}</h3>
-                                                <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 text-[10px] h-5 px-1.5 shrink-0">
-                                                    {opp.socialArea}
-                                                </Badge>
+                                        <div className="flex items-center gap-4 shrink-0">
+                                            <div className="text-right hidden sm:block">
+                                                <p className="text-[10px] text-muted-foreground uppercase leading-none">Son Başvuru</p>
+                                                <p className="text-xs font-bold">{opp.dates.applicationEnd}</p>
                                             </div>
-                                            <div className="flex items-center gap-x-3 text-xs text-muted-foreground truncate">
-                                                <span className="font-semibold text-foreground/80">{opp.organization}</span>
-                                                <span className="flex items-center"><MapPin className="mr-1 h-3 w-3" /> {opp.location.city} ({opp.location.type})</span>
-                                                <span className="flex items-center"><Clock className="mr-1 h-3 w-3" /> {opp.commitment}</span>
-                                                <span className="flex items-center font-bold text-orange-600"><Award className="mr-1 h-3 w-3" /> {opp.points} Puan</span>
-                                            </div>
+                                            <Button size="sm" className="h-8 px-4 text-xs">İncele</Button>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 shrink-0">
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-[10px] text-muted-foreground uppercase leading-none">Son Başvuru</p>
-                                            <p className="text-xs font-bold">{opp.dates.applicationEnd}</p>
-                                        </div>
-                                        <Button size="sm" className="h-8 px-4 text-xs">İncele</Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))
+                ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                        <p>Aramanızla eşleşen bir ilan bulunamadı.</p>
+                        <Button variant="link" onClick={resetFilters}>Tüm ilanları göster</Button>
+                    </div>
+                )}
             </div>
 
             <div className="text-center mt-12">
@@ -214,7 +258,6 @@ export default function LoginPage() {
               Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
 
-            {/* Category summary like market sidebar */}
             <div className="flex flex-wrap justify-center gap-2 mb-10">
                 <Button variant="default" size="sm" className="rounded-full">Tümü</Button>
                 {topCategories.map(cat => (
@@ -225,7 +268,6 @@ export default function LoginPage() {
                 <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground">...</Button>
             </div>
 
-            {/* Brand grid mirroring market cards */}
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-4 w-full">
               {featuredBrands.map((brand, index) => (
                 <Link href={`/market/${brand.id}`} key={brand.id} className="group">
