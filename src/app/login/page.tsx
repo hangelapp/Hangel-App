@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -32,6 +31,7 @@ const AppleSection = ({
   subtitle, 
   description, 
   image, 
+  children,
   dark = false, 
   fullWidth = true,
   primaryCta = "Hemen Başla",
@@ -42,7 +42,8 @@ const AppleSection = ({
   title: string, 
   subtitle?: string, 
   description?: string, 
-  image: string, 
+  image?: string, 
+  children?: React.ReactNode,
   dark?: boolean, 
   fullWidth?: boolean,
   primaryCta?: string,
@@ -52,7 +53,7 @@ const AppleSection = ({
 }) => (
   <section className={cn(
     "relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16",
-    fullWidth ? "w-full h-[550px] md:h-[650px] mb-3" : "h-[500px] rounded-3xl mx-3 mb-3",
+    fullWidth ? "w-full min-h-[600px] md:min-h-[750px] mb-3" : "h-[500px] rounded-3xl mx-3 mb-3",
     dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
   )}>
     <div className="z-10 px-6 space-y-1 max-w-4xl">
@@ -68,14 +69,22 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full h-full mt-8">
-      <Image 
-        src={image} 
-        alt={title} 
-        fill 
-        className="object-contain object-bottom select-none" 
-        data-ai-hint={imageHint}
-      />
+    <div className="relative w-full h-full mt-8 overflow-hidden px-4 md:px-0">
+      {children ? (
+        <div className="w-full">
+          {children}
+        </div>
+      ) : (
+        image && (
+          <Image 
+            src={image} 
+            alt={title} 
+            fill 
+            className="object-contain object-bottom select-none" 
+            data-ai-hint={imageHint}
+          />
+        )
+      )}
     </div>
   </section>
 );
@@ -98,59 +107,46 @@ const VolunteeringDiscovery = () => {
     }, [filter]);
 
     return (
-        <section className="bg-[#f5f5f7] py-12 px-6">
-            <div className="container mx-auto max-w-6xl space-y-8">
-                <div className="text-center space-y-2">
-                    <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-[#1d1d1f]">Gönüllülük Dünyası</h2>
-                    <p className="text-lg font-medium text-[#86868b]">Size en uygun etkiyi bulun.</p>
-                </div>
-
-                {/* Filter Bar */}
-                <div className="flex flex-wrap justify-center gap-2">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setFilter(categoryMapping[cat])}
-                            className={cn(
-                                "px-4 py-1.5 rounded-full text-xs font-medium transition-all",
-                                filter === categoryMapping[cat] 
-                                    ? "bg-[#1d1d1f] text-white shadow-sm" 
-                                    : "bg-white text-[#1d1d1f] border border-[#d2d2d7] hover:border-[#86868b]"
-                            )}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Opportunities Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredItems.map((item) => (
-                        <Link href={`/login/selection?action=register`} key={item.id}>
-                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-none bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col h-full min-h-[140px]">
-                                <CardHeader className="p-5 pb-0 space-y-0.5">
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-[#86868b]">{item.socialArea}</p>
-                                    <CardTitle className="text-lg font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
-                                    <CardDescription className="text-xs font-medium text-[#86868b]">{item.organization}</CardDescription>
-                                </CardHeader>
-                                <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center">
-                                    <div className="text-primary text-[10px] font-bold bg-primary/5 px-2 py-1 rounded-full">
-                                        {item.points} Puan
-                                    </div>
-                                    <ChevronRight className="h-4 w-4 text-[#0066cc] group-hover:translate-x-1 transition-transform" />
-                                </CardFooter>
-                            </Card>
-                        </Link>
-                    ))}
-                </div>
-
-                <div className="text-center pt-4">
-                    <Button asChild variant="link" className="text-[#0066cc] font-medium text-sm">
-                        <Link href="/volunteering">Tüm fırsatları keşfedin</Link>
-                    </Button>
-                </div>
+        <div className="w-full space-y-8 py-4">
+            {/* Filter Bar */}
+            <div className="flex flex-wrap justify-center gap-2">
+                {categories.map((cat) => (
+                    <button
+                        key={cat}
+                        onClick={() => setFilter(categoryMapping[cat])}
+                        className={cn(
+                            "px-4 py-1.5 rounded-full text-xs font-medium transition-all",
+                            filter === categoryMapping[cat] 
+                                ? "bg-[#1d1d1f] text-white shadow-sm" 
+                                : "bg-white/80 backdrop-blur-md text-[#1d1d1f] border border-[#d2d2d7] hover:border-[#86868b]"
+                        )}
+                    >
+                        {cat}
+                    </button>
+                ))}
             </div>
-        </section>
+
+            {/* Opportunities Shelf */}
+            <div className="flex overflow-x-auto gap-4 px-4 md:px-12 pb-12 snap-x no-scrollbar">
+                {filteredItems.map((item) => (
+                    <Link href={`/login/selection?action=register`} key={item.id} className="snap-center shrink-0">
+                        <Card className="group relative overflow-hidden rounded-2xl border-none shadow-2xl bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col w-[280px] h-[160px]">
+                            <CardHeader className="p-5 pb-0 space-y-0.5 text-left">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-[#86868b]">{item.socialArea}</p>
+                                <CardTitle className="text-lg font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
+                                <CardDescription className="text-xs font-medium text-[#86868b]">{item.organization}</CardDescription>
+                            </CardHeader>
+                            <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center">
+                                <div className="text-primary text-[10px] font-bold bg-primary/5 px-2 py-1 rounded-full">
+                                    {item.points} Puan
+                                </div>
+                                <ChevronRight className="h-4 w-4 text-[#0066cc] group-hover:translate-x-1 transition-transform" />
+                            </CardFooter>
+                        </Card>
+                    </Link>
+                ))}
+            </div>
+        </div>
     );
 };
 
@@ -207,14 +203,14 @@ export default function LoginPage() {
           </div>
         </section>
 
-        {/* hangel imece */}
+        {/* hangel imece - Canlı Keşif Paneli Burada */}
         <AppleSection 
           title="hangel imece"
           subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
           description="Gönüllü Ol, İmece Ruhuyla Toplumsal Sorunlara Çözüm Üret."
-          image="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
-          imageHint="volunteering hands together"
-        />
+        >
+          <VolunteeringDiscovery />
+        </AppleSection>
 
         {/* hangel bağışı */}
         <AppleSection 
@@ -252,9 +248,6 @@ export default function LoginPage() {
             dark={false}
           />
         </div>
-
-        {/* Gönüllülük Keşif Paneli */}
-        <VolunteeringDiscovery />
 
         {/* Şeffaflık Endeksi */}
         <AppleSection 
