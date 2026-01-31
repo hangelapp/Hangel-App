@@ -158,17 +158,17 @@ export default function LoginPage() {
           {/* STK */}
           <AppleSection 
             title="STK"
-            subtitle="Kuruluşun ile iyiliğin bir parçası ol."
+            subtitle="Kuruluşun ile hangel de ol."
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
             fullWidth={false}
             primaryCta="Kayıt Ol"
-            dark={true}
+            dark={false}
           />
           {/* hangel Brands */}
           <AppleSection 
             title="hangel Brands" 
-            subtitle="Markan ile toplumsal faydaya ortak ol." 
+            subtitle="markan ile hangel de ol." 
             image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
             imageHint="modern branding" 
             fullWidth={false} 
