@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -159,14 +158,16 @@ export default function WebsiteBuilderPage() {
 
     return (
         <div className="space-y-6">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
-                <ArrowLeft className="h-6 w-6" />
-            </Button>
-            <div>
-                <h1 className="text-2xl font-bold">Web Sitesi Yönetimi</h1>
-                <p className="text-muted-foreground">
-                    Hangel'deki profil bilgilerinizle otomatik olarak bir web sitesi oluşturun ve yönetin.
-                </p>
+            <div className="flex items-center gap-2">
+                <Button onClick={() => router.push('/ngo-admin/dashboard')} variant="ghost" size="icon" className="-ml-2">
+                    <ArrowLeft className="h-6 w-6" />
+                </Button>
+                <div>
+                    <h1 className="text-2xl font-bold font-headline">Web Sitesi Yönetimi</h1>
+                    <p className="text-muted-foreground text-sm">
+                        Hangel'deki profil bilgilerinizle otomatik olarak bir web sitesi oluşturun ve yönetin.
+                    </p>
+                </div>
             </div>
 
             <Card>
