@@ -161,19 +161,24 @@ export default function LoginPage() {
     <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
       <header className="sticky top-0 z-50 w-full h-11 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
         <div className="container mx-auto h-full max-w-5xl px-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
+          {/* Left Side: Logo */}
+          <div className="flex-1 flex justify-start items-center">
             <Link href="/" className="opacity-80 hover:opacity-100 transition-opacity">
               <HangelLogo className="text-xl tracking-tighter" />
             </Link>
-            <nav className="hidden md:flex items-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
-              <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
-              <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
-              <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
-              <Link href="/about" className="hover:text-[#1d1d1f] transition-colors">Hakkımızda</Link>
-              <Link href="/support" className="hover:text-[#1d1d1f] transition-colors">Destek</Link>
-            </nav>
           </div>
-          <div className="flex items-center gap-5 opacity-80">
+
+          {/* Center Side: Navigation */}
+          <nav className="hidden md:flex items-center justify-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
+            <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
+            <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
+            <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
+            <Link href="/about" className="hover:text-[#1d1d1f] transition-colors">Hakkımızda</Link>
+            <Link href="/support" className="hover:text-[#1d1d1f] transition-colors">Destek</Link>
+          </nav>
+
+          {/* Right Side: Search, Bag, Language */}
+          <div className="flex-1 flex justify-end items-center gap-5 opacity-80">
             <Search className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
             <ShoppingBag className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
             <div className="md:hidden">
