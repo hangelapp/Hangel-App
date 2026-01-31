@@ -1,29 +1,12 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import React, { useState } from 'react';
 import { User, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Link from 'next/link';
 
 const initialUsers = [
     { name: 'İsmail Hilmi Adıgüzel', email: 'i.adiguzel@ahbap.org', role: 'Kurucu', status: 'Onaylandı' as const },
@@ -39,44 +22,6 @@ const statusVariantMap = {
 export default function UsersPage() {
   const { toast } = useToast();
   const [users, setUsers] = useState(initialUsers);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  
-  // New user form state
-  const [newUserName, setNewUserName] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState('Yönetici');
-
-  const handleAddUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUserName || !newUserEmail) {
-        toast({
-            variant: "destructive",
-            title: "Eksik Bilgi",
-            description: "Lütfen ad soyad ve e-posta adresini girin.",
-        });
-        return;
-    }
-
-    const newUser = {
-        name: newUserName,
-        email: newUserEmail,
-        role: newUserRole,
-        status: 'Beklemede' as const
-    };
-
-    setUsers(prev => [...prev, newUser]);
-    setIsAddDialogOpen(false);
-    
-    // Reset form
-    setNewUserName('');
-    setNewUserEmail('');
-    setNewUserRole('Yönetici');
-
-    toast({
-        title: "Yetkili Eklendi",
-        description: `${newUserName} için yetki başvurusu oluşturuldu.`,
-    });
-  };
 
   const handleRemoveUser = (email: string) => {
     setUsers(prev => prev.filter(u => u.email !== email));
@@ -102,59 +47,11 @@ export default function UsersPage() {
             <CardTitle>Yetkili Listesi</CardTitle>
             <CardDescription>Aktif ve onay bekleyen yetkililer.</CardDescription>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-                <Button size="sm">
-                    <Plus className="mr-2 h-4 w-4"/> Yeni Yetkili Ekle
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Yeni Yetkili Davet Et</DialogTitle>
-                    <DialogDescription>
-                        Kuruluşunuza yeni bir yönetici veya editör ekleyin. Davet edilen kişiye onay bildirimi gidecektir.
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleAddUser} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="new-user-name">Ad Soyad</Label>
-                        <Input 
-                            id="new-user-name" 
-                            placeholder="Örn: Can Demir" 
-                            value={newUserName}
-                            onChange={(e) => setNewUserName(e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="new-user-email">E-posta Adresi</Label>
-                        <Input 
-                            id="new-user-email" 
-                            type="email" 
-                            placeholder="eposta@kurum.org" 
-                            value={newUserEmail}
-                            onChange={(e) => setNewUserEmail(e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="new-user-role">Rol</Label>
-                        <Select value={newUserRole} onValueChange={setNewUserRole}>
-                            <SelectTrigger id="new-user-role">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Yönetici">Yönetici</SelectItem>
-                                <SelectItem value="Editör">Editör</SelectItem>
-                                <SelectItem value="Gönüllü Sorumlusu">Gönüllü Sorumlusu</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter className="pt-4">
-                        <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>İptal</Button>
-                        <Button type="submit">Davet Gönder</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-          </Dialog>
+          <Button asChild size="sm">
+            <Link href="/ngo-admin/users/new">
+                <Plus className="mr-2 h-4 w-4"/> Yeni Yetkili Ekle
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
             <div className="space-y-3">
