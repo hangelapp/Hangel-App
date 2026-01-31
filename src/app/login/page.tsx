@@ -169,6 +169,7 @@ export default function LoginPage() {
           <AppleSection 
             title="hangel Brands" 
             subtitle="markan ile hangel de ol." 
+            description="Ticari Marka, Kooperatif, İktisadi işletme, Sosyal girişim"
             image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
             imageHint="modern branding" 
             fullWidth={false} 
@@ -304,7 +305,7 @@ export default function LoginPage() {
                         Türkiye
                     </div>
                 </div>
-                <div className="pt-2 border-t border-[#d2d2d7]/50">
+                <div className="pt-2 border-t border-[#d2d2d7]/50 text-center">
                     <span className="font-normal">© 2026 hangel.org. Tüm hakları saklıdır.</span>
                 </div>
             </div>
