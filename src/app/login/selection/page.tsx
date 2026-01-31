@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense } from 'react';
@@ -18,10 +17,8 @@ import { Switch } from '@/components/ui/switch';
 // --- Shared Constants & Helpers for Detailed Form ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
 const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi'];
-const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel'];
-const allActivityAreas = ['Çevre', 'Hayvanlar', 'Hukuk, İnsan Hakları ve Politika Geliştirme', 'Kültür, Sanat ve Spor', 'Sağlık', 'Eğitim', 'Dini Hizmetler', 'Ekonomik, Sosyal ve Toplumsal Gelişim', 'Sosyal Hizmetler', 'Uluslararası', 'Bilim ve Teknoloji'];
+const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
-const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
 
 const districts: { [key: string]: string[] } = {
     'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
@@ -50,14 +47,15 @@ const CheckboxGroup = ({ title, options }: { title: string, options: string[] })
     </div>
 );
 
-const FileUpload = ({label}: {label: string}) => (
+const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint?: string}) => (
     <div className="space-y-2">
         <Label>{label}</Label>
         <div className="flex items-center gap-4">
-            <Input id={`${label}-upload`} type="file" className="hidden" />
+            <Input id={`${label}-upload`} type="file" className="hidden" accept={accept} />
             <Button asChild variant="outline" size="sm">
                 <label htmlFor={`${label}-upload`} className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
             </Button>
+            {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
         </div>
     </div>
 );
@@ -127,7 +125,7 @@ function IndividualRegister({ onRegister }: { onRegister: (e: React.FormEvent) =
         <div className="flex items-start space-x-3">
           <Checkbox id="terms-register" required />
           <Label htmlFor="terms-register" className="text-xs font-normal text-muted-foreground">
-            <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link> ve <Link href="#" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı okudum, anladım.
+            <Link href="/settings/contracts/kullanici-sozlesmesi" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link> ve <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı okudum, anladım.
           </Label>
         </div>
         <Button type="submit" className="w-full">Kayıt Ol ve Devam Et</Button>
@@ -168,14 +166,11 @@ function CorporateLogin({ onLogin }: { onLogin: (e: React.FormEvent) => void }) 
 function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) => void }) {
     const [applicationType, setApplicationType] = useState<string>('');
     const [clubSchoolType, setClubSchoolType] = useState<string>('');
-    const [repSchoolType, setRepSchoolType] = useState<string>('');
     const [officeCity, setOfficeCity] = useState('');
     const [officeDistrict, setOfficeDistrict] = useState('');
-    const [sameAsOffice, setSameAsOffice] = useState(false);
-    const [mailCity, setMailCity] = useState('');
-    const [mailDistrict, setMailDistrict] = useState('');
-    const [clubCity, setClubCity] = useState('');
+    const [officeNeighborhood, setOfficeNeighborhood] = useState('');
     const [aboutText, setAboutText] = useState("");
+    const ABOUT_LIMIT = 1000;
 
     const renderFormFields = () => {
         switch (applicationType) {
@@ -202,8 +197,19 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Hakkında</Label>
-                                    <Textarea value={aboutText} onChange={(e) => setAboutText(e.target.value)} maxLength={1000} placeholder="Kuruluşunuzu anlatan kısa bir metin." />
+                                    <div className="flex justify-between">
+                                        <Label>Hakkında</Label>
+                                        <span className={cn("text-[10px]", aboutText.length > ABOUT_LIMIT ? "text-destructive" : "text-muted-foreground")}>
+                                            {aboutText.length} / {ABOUT_LIMIT} (Kalan: {ABOUT_LIMIT - aboutText.length})
+                                        </span>
+                                    </div>
+                                    <Textarea 
+                                        value={aboutText} 
+                                        onChange={(e) => setAboutText(e.target.value)} 
+                                        maxLength={ABOUT_LIMIT} 
+                                        placeholder="Kuruluşunuzu anlatan kısa bir metin." 
+                                        className="min-h-[120px]"
+                                    />
                                 </div>
                             </CardContent>
                         </Card>
@@ -213,17 +219,26 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                             <CardHeader><CardTitle className="text-lg">İletişim & Adres</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="iletisim@ornek.org" required /></div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-2">
                                         <Label>İl</Label>
-                                        <Select onValueChange={setOfficeCity}><SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                                        <Select onValueChange={(val) => { setOfficeCity(val); setOfficeDistrict(''); setOfficeNeighborhood(''); }}>
+                                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>İlçe</Label>
-                                        <Select onValueChange={setOfficeDistrict} disabled={!officeCity}><SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                                        <Select onValueChange={(val) => { setOfficeDistrict(val); setOfficeNeighborhood(''); }} disabled={!officeCity}>
+                                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                                             <SelectContent>{officeCity && districts[officeCity]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Mahalle</Label>
+                                        <Select onValueChange={setOfficeNeighborhood} disabled={!officeDistrict}>
+                                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                                            <SelectContent>{officeDistrict && neighborhoods[officeDistrict]?.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
                                 </div>
@@ -233,9 +248,9 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                         <Card>
                             <CardHeader><CardTitle className="text-lg">Yasal Belgeler</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
-                                <FileUpload label="Logo" />
-                                <FileUpload label="Faaliyet Belgesi" />
-                                <FileUpload label="Tüzük" />
+                                <FileUpload label="Logo" accept=".jpg,.jpeg" hint="Desteklenen format: .jpg" />
+                                <FileUpload label="Faaliyet Belgesi" accept=".pdf" hint="Desteklenen format: .pdf" />
+                                <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
                             </CardContent>
                         </Card>
                     </div>
@@ -271,8 +286,8 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                         <Card>
                             <CardHeader><CardTitle className="text-lg">Görseller</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
-                                <FileUpload label="Kulüp Logosu" />
-                                <FileUpload label="Kapak Fotoğrafı" />
+                                <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" />
+                                <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
                             </CardContent>
                         </Card>
                     </div>
@@ -297,7 +312,7 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2"><Label>Yasal Unvan</Label><Input placeholder="Şirket tam adı" /></div>
                                 <div className="space-y-2"><Label>IBAN</Label><Input placeholder="TR..." /></div>
-                                <FileUpload label="Vergi Levhası" />
+                                <FileUpload label="Vergi Levhası" accept=".pdf" />
                             </CardContent>
                         </Card>
                     </div>
@@ -332,9 +347,17 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                                 <div className="flex items-start space-x-3">
                                     <Checkbox id="terms-corp" required />
                                     <Label htmlFor="terms-corp" className="text-xs font-normal text-muted-foreground">
-                                        <Link href="#" className="font-medium text-primary hover:underline">Kurumsal Kullanıcı Sözleşmesi</Link> ve <Link href="#" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link>'nı okudum, anladım.
+                                        <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>, <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link>'nı okudum, anladım ve onaylıyorum.
                                     </Label>
                                 </div>
+                                {applicationType === 'BRAND' && (
+                                    <div className="flex items-start space-x-3">
+                                        <Checkbox id="terms-fee" required />
+                                        <Label htmlFor="terms-fee" className="text-xs font-normal text-muted-foreground">
+                                            Hangel <Link href="/settings/contracts/ucret-politikasi" className="font-medium text-primary hover:underline">Ücret Politikası</Link>'nı okudum ve kabul ediyorum.
+                                        </Label>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                         <Button type="submit" className="w-full">Başvuruyu Tamamla</Button>
