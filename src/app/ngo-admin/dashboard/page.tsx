@@ -79,7 +79,7 @@ export default function NgoDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
             <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
-            <p className="text-muted-foreground">Yönetim Paneline hoş geldin, {userName}.</p>
+            <p className="text-muted-foreground text-sm">Yönetim Paneline hoş geldin, {userName}.</p>
         </div>
         <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 self-start md:self-center">
             <ShieldAlert className="h-4 w-4 text-primary" />
@@ -87,72 +87,87 @@ export default function NgoDashboardPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold">Kurumsal Performans Özeti</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
-                <Card className="flex flex-col justify-between p-6 aspect-square sm:aspect-auto md:aspect-square bg-card hover:border-primary/50 transition-colors shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Toplam Bağış</span>
-                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                            <DollarSign className="h-5 w-5 text-green-600" />
+      <Card className="shadow-sm overflow-hidden">
+        <CardHeader className="border-b bg-muted/30">
+            <CardTitle className="text-lg">Kurumsal Performans Özeti</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+            <div className="divide-y">
+                {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
+                    <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                                <DollarSign className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Toplam Bağış</p>
+                                <p className="text-xl font-bold tracking-tight">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs text-green-600 font-bold flex items-center justify-end gap-1">
+                                <TrendingUp className="h-3 w-3" /> +%20.1
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">geçen aydan</p>
                         </div>
                     </div>
-                    <div className="mt-4">
-                        <div className="text-2xl font-bold tracking-tight">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-                        <p className="text-xs text-green-600 font-semibold mt-1 flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3" /> +%20.1 geçen aydan
-                        </p>
-                    </div>
-                </Card>
-            )}
+                )}
 
-            {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                <Card className="flex flex-col justify-between p-6 aspect-square sm:aspect-auto md:aspect-square bg-card hover:border-primary/50 transition-colors shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Toplam Gönüllü</span>
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                            <Users className="h-5 w-5 text-blue-600" />
+                {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
+                    <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                                <Users className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Toplam Gönüllü</p>
+                                <p className="text-xl font-bold tracking-tight">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs text-muted-foreground font-semibold">Bu ay +180 yeni</p>
+                            <p className="text-[10px] text-muted-foreground">kayıt gerçekleşti</p>
                         </div>
                     </div>
-                    <div className="mt-4">
-                        <div className="text-2xl font-bold tracking-tight">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</div>
-                        <p className="text-xs text-muted-foreground font-medium mt-1">Bu ay +180 yeni gönüllü</p>
-                    </div>
-                </Card>
-            )}
+                )}
 
-            {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                <Card className="flex flex-col justify-between p-6 aspect-square sm:aspect-auto md:aspect-square bg-card hover:border-primary/50 transition-colors shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Yeni Başvurular</span>
-                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                            <Heart className="h-5 w-5 text-red-600" />
+                {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
+                    <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                                <Heart className="h-5 w-5 text-red-600" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Yeni Başvurular</p>
+                                <p className="text-xl font-bold tracking-tight">12</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs text-amber-600 font-bold">Onay Bekliyor</p>
+                            <p className="text-[10px] text-muted-foreground">aktif incelemede</p>
                         </div>
                     </div>
-                    <div className="mt-4">
-                        <div className="text-3xl font-bold tracking-tight">12</div>
-                        <p className="text-xs text-amber-600 font-semibold mt-1">Onay bekleyen başvuru</p>
-                    </div>
-                </Card>
-            )}
+                )}
 
-            {userRole === 'Genel Yönetici' && (
-                <Card className="flex flex-col justify-between p-6 aspect-square sm:aspect-auto md:aspect-square bg-primary/5 border-primary/20 hover:border-primary/40 transition-colors shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Toplam Sosyal Etki mali değeri</span>
-                        <div className="p-2 bg-primary/10 rounded-xl">
-                            <TrendingUp className="h-5 w-5 text-primary" />
+                {userRole === 'Genel Yönetici' && (
+                    <div className="flex items-center justify-between p-4 bg-primary/5 transition-colors hover:bg-primary/10">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-primary/10 rounded-xl">
+                                <TrendingUp className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-0.5">Toplam Sosyal Etki mali değeri</p>
+                                <p className="text-xl font-bold text-primary tracking-tight">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-70">Bağış + Gönüllülük Değeri</p>
                         </div>
                     </div>
-                    <div className="mt-4">
-                        <div className="text-2xl font-bold text-primary tracking-tight">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-                        <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tight">Bağış + Gönüllülük Değeri</p>
-                    </div>
-                </Card>
-            )}
-        </div>
-      </div>
+                )}
+            </div>
+        </CardContent>
+      </Card>
 
         <Card className="shadow-sm">
             <CardHeader>
