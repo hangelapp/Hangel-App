@@ -59,7 +59,7 @@ const AppleSection = ({
     <div className="z-10 px-6 space-y-1 max-w-4xl">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
       {description && <p className={cn("text-[10px] md:text-xs font-medium mt-6 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
-      {subtitle && <p className="text-xl md:text-2xl font-medium whitespace-nowrap">{subtitle}</p>}
+      {subtitle && <p className="text-xl md:text-2xl font-medium truncate max-w-full px-2">{subtitle}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
           <Link href={link}>{primaryCta}</Link>
@@ -108,8 +108,7 @@ const VolunteeringDiscovery = () => {
 
     return (
         <div className="w-full space-y-8 py-4">
-            {/* Filter Bar */}
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2 px-4">
                 {categories.map((cat) => (
                     <button
                         key={cat}
@@ -126,21 +125,20 @@ const VolunteeringDiscovery = () => {
                 ))}
             </div>
 
-            {/* Opportunities Shelf */}
             <div className="flex overflow-x-auto gap-4 px-4 md:px-12 pb-12 snap-x no-scrollbar">
                 {filteredItems.map((item) => (
                     <Link href={`/login/selection?action=register`} key={item.id} className="snap-center shrink-0">
-                        <Card className="group relative overflow-hidden rounded-2xl border-none shadow-2xl bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col w-[280px] h-[160px]">
-                            <CardHeader className="p-5 pb-0 space-y-0.5 text-left">
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-[#86868b]">{item.socialArea}</p>
-                                <CardTitle className="text-lg font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
-                                <CardDescription className="text-xs font-medium text-[#86868b]">{item.organization}</CardDescription>
+                        <Card className="group relative overflow-hidden rounded-2xl border-none shadow-2xl bg-white hover:bg-[#fafafa] transition-all duration-300 cursor-pointer flex flex-col w-[240px] h-[140px]">
+                            <CardHeader className="p-4 pb-0 space-y-0.5 text-left">
+                                <p className="text-[8px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
+                                <CardTitle className="text-sm font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-2">{item.title}</CardTitle>
+                                <CardDescription className="text-[10px] font-medium text-[#86868b]">{item.organization}</CardDescription>
                             </CardHeader>
-                            <CardFooter className="p-5 pt-0 mt-auto flex justify-between items-center">
-                                <div className="text-primary text-[10px] font-bold bg-primary/5 px-2 py-1 rounded-full">
+                            <CardFooter className="p-4 pt-0 mt-auto flex justify-between items-center">
+                                <div className="text-primary text-[9px] font-bold bg-primary/5 px-2 py-0.5 rounded-full">
                                     {item.points} Puan
                                 </div>
-                                <ChevronRight className="h-4 w-4 text-[#0066cc] group-hover:translate-x-1 transition-transform" />
+                                <ChevronRight className="h-3 w-3 text-[#0066cc] group-hover:translate-x-1 transition-transform" />
                             </CardFooter>
                         </Card>
                     </Link>
@@ -155,7 +153,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
-      {/* Apple Global Navigation */}
       <header className="sticky top-0 z-50 w-full h-11 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
         <div className="container mx-auto h-full max-w-5xl px-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
@@ -192,7 +189,6 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
         <section className="relative flex flex-col items-center justify-center text-center bg-white py-20 px-6 space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">hangel Hub</h1>
           <p className="text-xl md:text-2xl font-medium max-w-2xl mx-auto">İyiliğin ve sosyal etkinin yeni nesil hali.</p>
@@ -203,7 +199,6 @@ export default function LoginPage() {
           </div>
         </section>
 
-        {/* hangel imece - Canlı Keşif Paneli Burada */}
         <AppleSection 
           title="hangel imece"
           subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
@@ -212,7 +207,6 @@ export default function LoginPage() {
           <VolunteeringDiscovery />
         </AppleSection>
 
-        {/* hangel bağışı */}
         <AppleSection 
           title="hangel bağışı"
           subtitle="Alışverişin iyiliğe dönüşsün."
@@ -223,9 +217,7 @@ export default function LoginPage() {
           primaryCta="Bağış Sistemini Keşfet"
         />
 
-        {/* Two Column Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
-          {/* hangel STK */}
           <AppleSection 
             title="hangel STK"
             subtitle="Sivil Toplum Kuruluşu ile hangel’de Ol"
@@ -236,7 +228,6 @@ export default function LoginPage() {
             primaryCta="Kayıt Ol"
             dark={false}
           />
-          {/* hangel Brands */}
           <AppleSection 
             title="hangel Brands" 
             subtitle="markan ile hangel de ol." 
@@ -249,7 +240,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Şeffaflık Endeksi */}
         <AppleSection 
           title="Şeffaflık Endeksi"
           subtitle="Güvenle bağış yapın."
@@ -260,7 +250,6 @@ export default function LoginPage() {
         />
       </main>
 
-      {/* Official Apple-Style Footer */}
       <footer className="bg-[#f5f5f7] py-12 px-6 border-t border-[#d2d2d7] text-[#1d1d1f]">
         <div className="container mx-auto h-full max-w-5xl space-y-8">
             <div className="text-[12px] text-[#6e6e73] leading-relaxed space-y-4 max-w-4xl border-b border-[#d2d2d7] pb-6">
