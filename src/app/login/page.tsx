@@ -3,10 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Search, ShoppingBag, Menu
+  Globe, ChevronRight, Search, ShoppingBag, Menu, Heart, MapPin, Calendar, Award
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Accordion,
@@ -14,8 +14,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Image from 'next/image';
 import Link from 'next/link';
+import { volunteeringOpportunities } from '@/lib/data';
+import { Badge } from '@/components/ui/badge';
 
 const languages = [
     { value: 'tr', label: 'Türkçe' },
@@ -50,10 +60,10 @@ const AppleSection = ({
     fullWidth ? "w-full h-[550px] md:h-[650px] mb-3" : "h-[500px] rounded-3xl mx-3 mb-3",
     dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
   )}>
-    <div className="z-10 px-6 space-y-1 max-w-2xl">
+    <div className="z-10 px-6 space-y-1 max-w-4xl">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
       {description && <p className={cn("text-[10px] md:text-xs font-medium mt-6 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
-      {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
+      {subtitle && <p className="text-xl md:text-2xl font-medium whitespace-nowrap">{subtitle}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
           <Link href={link}>{primaryCta}</Link>
@@ -74,6 +84,100 @@ const AppleSection = ({
     </div>
   </section>
 );
+
+const VolunteeringDiscovery = () => {
+    const [filter, setFilter] = useState('all');
+    const categories = ['Tümü', 'Çevre', 'Eğitim', 'Afet', 'Hayvan Hakları', 'Engelli'];
+    const categoryMapping: Record<string, string> = {
+        'Tümü': 'all',
+        'Çevre': 'Çevre',
+        'Eğitim': 'Eğitim',
+        'Afet': 'Afet',
+        'Hayvan Hakları': 'Hayvan Hakları',
+        'Engelli': 'Engelli'
+    };
+
+    const filteredItems = useMemo(() => {
+        if (filter === 'all') return volunteeringOpportunities.slice(0, 6);
+        return volunteeringOpportunities.filter(item => item.socialArea === filter).slice(0, 6);
+    }, [filter]);
+
+    return (
+        <section className="bg-[#f5f5f7] py-20 px-6">
+            <div className="container mx-auto max-w-6xl space-y-12">
+                <div className="text-center space-y-4">
+                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Gönüllülük Dünyasını Keşfedin</h2>
+                    <p className="text-xl md:text-2xl font-medium text-[#86868b]">Size en uygun fırsatı bulun.</p>
+                </div>
+
+                {/* Filter Bar */}
+                <div className="flex flex-wrap justify-center gap-2">
+                    {categories.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setFilter(categoryMapping[cat])}
+                            className={cn(
+                                "px-5 py-2 rounded-full text-sm font-medium transition-all",
+                                filter === categoryMapping[cat] 
+                                    ? "bg-[#1d1d1f] text-white" 
+                                    : "bg-white text-[#1d1d1f] border border-[#d2d2d7] hover:border-[#86868b]"
+                            )}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Opportunities Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredItems.map((item) => (
+                        <Card key={item.id} className="group relative overflow-hidden rounded-3xl border-none shadow-none bg-white hover:shadow-2xl transition-all duration-500 cursor-pointer flex flex-col">
+                            <CardHeader className="p-6 pb-0">
+                                <div className="flex items-center justify-between mb-4">
+                                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none rounded-full px-3">{item.socialArea}</Badge>
+                                    <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                                        <Award className="h-3.5 w-3.5" />
+                                        {item.points} Puan
+                                    </div>
+                                </div>
+                                <CardTitle className="text-xl font-bold tracking-tight mb-1 group-hover:text-primary transition-colors">{item.title}</CardTitle>
+                                <CardDescription className="font-medium text-[#1d1d1f]/70">{item.organization}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-4 flex-1">
+                                <div className="space-y-2 text-sm text-[#86868b]">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4" />
+                                        {item.location.city} ({item.location.type})
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4" />
+                                        {item.commitment}
+                                    </div>
+                                </div>
+                                <p className="text-sm text-[#1d1d1f]/80 line-clamp-3 leading-relaxed">
+                                    {item.description}
+                                </p>
+                            </CardContent>
+                            <CardFooter className="p-6 pt-0 mt-auto">
+                                <Button asChild variant="link" className="text-[#0066cc] p-0 h-auto font-semibold text-base group/btn">
+                                    <Link href={`/login/selection?action=register`}>
+                                        İncele ve Başvur <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                                    </Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+
+                <div className="text-center pt-8">
+                    <Button asChild variant="link" className="text-[#0066cc] font-medium text-lg">
+                        <Link href="/volunteering">Tüm fırsatları gör</Link>
+                    </Button>
+                </div>
+            </div>
+        </section>
+    );
+};
 
 export default function LoginPage() {
   const [language, setLanguage] = useState('tr');
@@ -150,7 +254,7 @@ export default function LoginPage() {
 
         {/* Two Column Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
-          {/* STK */}
+          {/* hangel STK */}
           <AppleSection 
             title="hangel STK"
             subtitle="Sivil Toplum Kuruluşu ile hangel’de Ol"
@@ -173,6 +277,9 @@ export default function LoginPage() {
             dark={false}
           />
         </div>
+
+        {/* Gönüllülük Keşif Paneli */}
+        <VolunteeringDiscovery />
 
         {/* Şeffaflık Endeksi */}
         <AppleSection 
@@ -197,93 +304,7 @@ export default function LoginPage() {
                 </p>
             </div>
 
-            <nav className="flex items-center gap-2 text-[12px] text-[#6e6e73] font-normal py-4">
-                <Link href="/" className="hover:text-[#1d1d1f] transition-colors"><HangelLogo className="text-lg opacity-70" /></Link>
-                <ChevronRight className="h-3 w-3 opacity-50" />
-                <span>Giriş Yap</span>
-            </nav>
-
-            <div className="block lg:hidden">
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="apps" className="border-b border-[#d2d2d7]">
-                        <AccordionTrigger className="text-[12px] font-semibold py-3 hover:no-underline">Hangel Uygulamaları</AccordionTrigger>
-                        <AccordionContent className="text-[12px] flex flex-col gap-3 py-2 text-[#424245]">
-                            <Link href="#" className="hover:underline">iOS Uygulaması</Link>
-                            <Link href="#" className="hover:underline">Android Uygulaması</Link>
-                            <Link href="#" className="hover:underline">AppGallery</Link>
-                            <Link href="#" className="hover:underline">Chrome Mağazası</Link>
-                        </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="account" className="border-b border-[#d2d2d7]">
-                        <AccordionTrigger className="text-[12px] font-semibold py-3 hover:no-underline">Hesap ve Cüzdan</AccordionTrigger>
-                        <AccordionContent className="text-[12px] flex flex-col gap-3 py-2 text-[#424245]">
-                            <Link href="/profile" className="hover:underline">Hangel Hesabım</Link>
-                            <Link href="/qr-payment" className="hover:underline">Cüzdanım</Link>
-                            <Link href="/my-donations" className="hover:underline">Bağışlarım</Link>
-                            <Link href="/my-applications" className="hover:underline">Başvurularım</Link>
-                        </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="support" className="border-b border-[#d2d2d7]">
-                        <AccordionTrigger className="text-[12px] font-semibold py-3 hover:no-underline">Destek ve Yardım</AccordionTrigger>
-                        <AccordionContent className="text-[12px] flex flex-col gap-3 py-2 text-[#424245]">
-                            <Link href="/support" className="hover:underline">Destek Merkezi</Link>
-                            <Link href="/support/faq" className="hover:underline">Sıkça Sorulan Sorular</Link>
-                            <Link href="/support/guides" className="hover:underline">Rehberler</Link>
-                            <Link href="/support/contact" className="hover:underline">Bize Ulaşın</Link>
-                        </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="corporate" className="border-b border-[#d2d2d7]">
-                        <AccordionTrigger className="text-[12px] font-semibold py-3 hover:no-underline">Kurumsal</AccordionTrigger>
-                        <AccordionContent className="text-[12px] flex flex-col gap-3 py-2 text-[#424245]">
-                            <Link href="/about" className="hover:underline">Hakkımızda</Link>
-                            <Link href="/corporate" className="hover:underline">Kamu İlişkileri</Link>
-                            <Link href="/yatirimci-iliskileri" className="hover:underline">Yatırımcı İlişkileri</Link>
-                            <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-            </div>
-
-            <div className="hidden lg:grid grid-cols-4 gap-8">
-                <div className="space-y-4">
-                    <h4 className="text-[12px] font-semibold text-[#1d1d1f]">Hangel Uygulamaları</h4>
-                    <ul className="text-[12px] flex flex-col gap-2 text-[#424245]">
-                        <li><Link href="#" className="hover:underline">iOS Uygulaması</Link></li>
-                        <li><Link href="#" className="hover:underline">Android Uygulaması</Link></li>
-                        <li><Link href="#" className="hover:underline">AppGallery</Link></li>
-                        <li><Link href="#" className="hover:underline">Chrome Mağazası</Link></li>
-                    </ul>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="text-[12px] font-semibold text-[#1d1d1f]">Hesap ve Cüzdan</h4>
-                    <ul className="text-[12px] flex flex-col gap-2 text-[#424245]">
-                        <li><Link href="/profile" className="hover:underline">Hangel Hesabım</Link></li>
-                        <li><Link href="/qr-payment" className="hover:underline">Cüzdanım</Link></li>
-                        <li><Link href="/my-donations" className="hover:underline">Bağışlarım</Link></li>
-                        <li><Link href="/my-applications" className="hover:underline">Başvurularım</Link></li>
-                    </ul>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="text-[12px] font-semibold text-[#1d1d1f]">Destek ve Yardım</h4>
-                    <ul className="text-[12px] flex flex-col gap-2 text-[#424245]">
-                        <li><Link href="/support" className="hover:underline">Destek Merkezi</Link></li>
-                        <li><Link href="/support/faq" className="hover:underline">Sıkça Sorulan Sorular</Link></li>
-                        <li><Link href="/support/guides" className="hover:underline">Rehberler</Link></li>
-                        <li><Link href="/support/contact" className="hover:underline">Bize Ulaşın</Link></li>
-                    </ul>
-                </div>
-                <div className="space-y-4">
-                    <h4 className="text-[12px] font-semibold text-[#1d1d1f]">Kurumsal</h4>
-                    <ul className="text-[12px] flex flex-col gap-2 text-[#424245]">
-                        <li><Link href="/about" className="hover:underline">Hakkımızda</Link></li>
-                        <li><Link href="/corporate" className="hover:underline">Kamu İlişkileri</Link></li>
-                        <li><Link href="/yatirimci-iliskileri" className="hover:underline">Yatırımcı İlişkileri</Link></li>
-                        <li><Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div className="text-[12px] text-[#6e6e73] space-y-4 pt-4 border-t border-[#d2d2d7]">
+            <div className="text-[12px] text-[#6e6e73] space-y-4 pt-4">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div className="flex flex-wrap gap-x-2 gap-y-1">
                         <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
