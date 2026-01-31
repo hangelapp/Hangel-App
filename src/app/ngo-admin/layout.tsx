@@ -13,8 +13,8 @@ export default function NgoAdminLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Show back button only on sub-pages
-  const showBackButton = pathname !== '/ngo-admin/dashboard';
+  // Show back button on all ngo admin pages, including the dashboard
+  const showBackButton = true;
 
   return (
     <div className="min-h-screen">
