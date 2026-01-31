@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -69,19 +68,19 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full flex-1 flex flex-col items-center justify-start overflow-hidden">
+    <div className="relative w-full flex-1 flex flex-col items-center justify-start overflow-hidden px-4 md:px-0">
       {children ? (
         <div className="w-full h-full">
           {children}
         </div>
       ) : (
         image && (
-          <div className="relative w-full h-full px-4 md:px-0">
+          <div className="relative w-full h-full max-w-5xl mx-auto">
             <Image 
               src={image} 
               alt={title} 
               fill 
-              className="object-contain object-bottom select-none" 
+              className="object-contain object-top select-none" 
               data-ai-hint={imageHint}
               priority
             />
