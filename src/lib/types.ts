@@ -13,6 +13,26 @@ export type SideNavItem = {
     label: string;
 };
 
+export type Message = {
+  id: string;
+  sender: {
+    id: string;
+    name: string;
+    type: 'user' | 'ngo' | 'club' | 'admin';
+    avatarUrl?: string;
+  };
+  recipient: {
+    id: string;
+    name: string;
+    type: 'user' | 'ngo' | 'club' | 'admin' | 'group';
+  };
+  subject: string;
+  content: string;
+  timestamp: string;
+  status: 'sent' | 'read';
+  isFlagged?: boolean;
+};
+
 export type Post = {
   id: string;
   author: {

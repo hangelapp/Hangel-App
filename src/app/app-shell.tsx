@@ -19,6 +19,7 @@ const group2Items: SideNavItem[] = [
     { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
     { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
     { href: '/my-badges', label: 'Rozetler ve Sertifikalar', icon: 'award' },
+    { href: '/messages', label: 'Mesajlarım', icon: 'message-square' },
 ];
 
 const group3Items: SideNavItem[] = [

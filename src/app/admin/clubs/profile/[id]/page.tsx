@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users, MessageSquare } from 'lucide-react';
 import { studentClubs, schoolRepresentatives } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -86,6 +86,9 @@ export default function ClubProfilePage() {
             </div>
             <div className="flex gap-2">
                 <Button className="flex-1" onClick={() => toast({ title: 'Başvurunuz alındı!', description: 'Kulüp yönetimi başvurunuzu inceleyecektir.'})}>Kulübe Katıl</Button>
+                <Button variant="outline" className="flex-1" onClick={() => toast({ title: "Mesaj Gönder", description: "Mesajlaşma paneline yönlendiriliyorsunuz..." })}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Mesaj Gönder
+                </Button>
             </div>
         </div>
       </div>
