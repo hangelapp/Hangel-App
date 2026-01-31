@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
@@ -380,8 +379,8 @@ export default function MarketPage() {
                 </DropdownMenu>
             </div>
             
-            <Tabs defaultValue="all" className="w-full flex justify-center" onValueChange={(value) => setActiveEntityType(value as any)}>
-                <TabsList className="grid-cols-none">
+            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all">Tümü</TabsTrigger>
                     <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
                     <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
