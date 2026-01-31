@@ -1,19 +1,20 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Globe, Mail, MapPin, Calendar, Briefcase, Filter, Search, Award, Clock } from 'lucide-react';
+import { Globe, Mail, MapPin, Calendar, Briefcase, Filter, Search, Award, Clock, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
+import { volunteeringOpportunities, allEntityLists, marketCategories } from '@/lib/data';
 import React, { useState } from 'react';
 import { translations } from '@/lib/translations';
 import type { Language, Translation } from '@/lib/translations';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 const languages: {value: Language, label: string}[] = [
     { value: 'tr', label: 'Türkçe' },
@@ -33,7 +34,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'मराठी' },
+    { value: 'mr', label: 'ਮਰਾठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -49,6 +50,8 @@ export default function LoginPage() {
   };
 
   const featuredOpportunities = volunteeringOpportunities.slice(0, 6);
+  const featuredBrands = allEntityLists.slice(0, 18);
+  const topCategories = marketCategories.slice(2, 10); // Get some diverse categories
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary overflow-x-hidden">
@@ -203,27 +206,54 @@ export default function LoginPage() {
         </div>
       </section>
       
-      <section className="bg-primary text-primary-foreground">
-        <div className="container mx-auto flex justify-center py-16 px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <div className="flex flex-col h-full w-full text-center">
-            <h2 className="text-3xl font-bold mb-4">hangel bağış</h2>
-            <p className="text-center mb-8 text-primary-foreground/90">
+      <section className="bg-slate-50 py-16 border-y">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="flex flex-col items-center text-center">
+            <h2 className="text-4xl font-bold mb-4 text-foreground font-headline tracking-tight">hangel bağış</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-12">
               Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-x-4 gap-y-6 items-center justify-items-center flex-grow">
-              {allEntityLists.slice(0, 48).map((brand) => (
-                <div key={brand.id} className="relative h-10 w-full hover:scale-110 transition-transform">
-                  <Image 
-                    src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} 
-                    alt={brand.name} 
-                    fill 
-                    className="object-contain filter brightness-0 invert" 
-                  />
-                </div>
+
+            {/* Category summary like market sidebar */}
+            <div className="flex flex-wrap justify-center gap-2 mb-10">
+                <Button variant="default" size="sm" className="rounded-full">Tümü</Button>
+                {topCategories.map(cat => (
+                    <Button key={cat.mainCategory} variant="outline" size="sm" className="rounded-full bg-white hover:bg-primary/5 hover:text-primary hover:border-primary transition-all">
+                        {cat.mainCategory}
+                    </Button>
+                ))}
+                <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground">...</Button>
+            </div>
+
+            {/* Brand grid mirroring market cards */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-4 w-full">
+              {featuredBrands.map((brand, index) => (
+                <Link href={`/market/${brand.id}`} key={brand.id} className="group">
+                    <div className="flex flex-col items-center text-center space-y-2 p-2 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300 bg-transparent">
+                        <div className="relative w-full aspect-square max-w-[80px]">
+                            <Avatar className="w-full h-full bg-white border shadow-sm group-hover:border-primary/30 transition-colors">
+                                <AvatarImage src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} alt={brand.name} className="object-contain p-2" />
+                                <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
+                                    {brand.name.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            {brand.donationRate > 0 && (
+                                <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-lg border-2 border-white">
+                                %{brand.donationRate}
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-[11px] font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{brand.name}</p>
+                    </div>
+                </Link>
               ))}
             </div>
-             <Button asChild variant="outline" className="w-full max-w-md mx-auto mt-12 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold">
-              <Link href="/market">Tüm Markaları Keşfet ({allEntityLists.length})</Link>
+
+             <Button asChild variant="outline" size="lg" className="mt-12 border-primary text-primary hover:bg-primary hover:text-white font-bold px-12 h-14">
+              <Link href="/market">
+                Tüm Markaları Keşfet ({allEntityLists.length})
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </Button>
           </div>
         </div>
