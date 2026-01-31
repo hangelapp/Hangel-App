@@ -157,7 +157,7 @@ export default function LoginPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
           {/* STK */}
           <AppleSection 
-            title="STK"
+            title="hangel STK"
             subtitle="Kuruluşun ile hangel de ol."
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
