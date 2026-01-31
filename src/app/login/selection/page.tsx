@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Upload, Twitter, Instagram, Facebook, Linkedin } from 'lucide-react';
+import { ArrowLeft, Upload, Twitter, Instagram, Facebook, Linkedin, FileText, CheckCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,12 +27,12 @@ const districts: { [key: string]: string[] } = {
 };
 
 const neighborhoods: { [key: string]: string[] } = {
-    'Kadıköy': ['Caferağa', 'Osmanağa', 'Rasimpaşa', 'Moda', 'Fenerbahçe'],
-    'Çankaya': ['Kızılay', 'Kavaklıdere', 'Maltepe', 'Bahçelievler'],
-    'Konak': ['Alsancak', 'Göztepe', 'Hatay', 'Basmane'],
-    'Beşiktaş': ['Levent', 'Etiler', 'Bebek', 'Arnavutköy'],
-    'Sarıyer': ['Tarabya', 'İstinye', 'Yeniköy', 'Maslak'],
-    'Fatih': ['Aksaray', 'Balat', 'Eminönü', 'Sultanahmet'],
+    'Kadıköy': ['Caferağa', 'Osmanağa', 'Rasimpaşa', 'Moda', 'Fenerbahçe', 'Eğitim', 'Göztepe', 'Merdivenköy', 'Bostancı', 'Caddebostan'],
+    'Beşiktaş': ['Levent', 'Etiler', 'Bebek', 'Arnavutköy', 'Ortaköy', 'Gayrettepe', 'Dikilitaş', 'Muradiye', 'Abbasağa', 'Vişnezade'],
+    'Fatih': ['Aksaray', 'Balat', 'Eminönü', 'Sultanahmet', 'Sirkeci', 'Beyazıt', 'Çapa', 'Kocamustafapaşa', 'Yedikule', 'Karagümrük'],
+    'Sarıyer': ['Tarabya', 'İstinye', 'Yeniköy', 'Maslak', 'Zekeriyaköy', 'Reşitpaşa', 'Ayazağa', 'Bahçeköy', 'Kireçburnu', 'Emirgan'],
+    'Çankaya': ['Kızılay', 'Kavaklıdere', 'Maltepe', 'Bahçelievler', 'Ayrancı', 'Dikmen', 'Oran', 'Yıldız', 'Ümitköy', 'Çayyolu'],
+    'Konak': ['Alsancak', 'Göztepe', 'Hatay', 'Basmane', 'Kahramanlar', 'Küçükyalı', 'Güzelyalı', 'Pasaport', 'Kemeraltı', 'Kadifekale'],
 };
 
 const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => (
