@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,6 @@ import { ArrowLeft, Upload, Twitter, Instagram, Facebook, Linkedin } from 'lucid
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
 // --- Shared Constants & Helpers for Detailed Form ---
@@ -32,6 +31,8 @@ const neighborhoods: { [key: string]: string[] } = {
     'Çankaya': ['Kızılay', 'Kavaklıdere', 'Maltepe', 'Bahçelievler'],
     'Konak': ['Alsancak', 'Göztepe', 'Hatay', 'Basmane'],
     'Beşiktaş': ['Levent', 'Etiler', 'Bebek', 'Arnavutköy'],
+    'Sarıyer': ['Tarabya', 'İstinye', 'Yeniköy', 'Maslak'],
+    'Fatih': ['Aksaray', 'Balat', 'Eminönü', 'Sultanahmet'],
 };
 
 const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => (
@@ -223,21 +224,21 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-2">
                                         <Label>İl</Label>
-                                        <Select onValueChange={(val) => { setOfficeCity(val); setOfficeDistrict(''); setOfficeNeighborhood(''); }}>
+                                        <Select value={officeCity} onValueChange={(val) => { setOfficeCity(val); setOfficeDistrict(''); setOfficeNeighborhood(''); }}>
                                             <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>İlçe</Label>
-                                        <Select onValueChange={(val) => { setOfficeDistrict(val); setOfficeNeighborhood(''); }} disabled={!officeCity}>
+                                        <Select value={officeDistrict} onValueChange={(val) => { setOfficeDistrict(val); setOfficeNeighborhood(''); }} disabled={!officeCity}>
                                             <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                                             <SelectContent>{officeCity && districts[officeCity]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Mahalle</Label>
-                                        <Select onValueChange={setOfficeNeighborhood} disabled={!officeDistrict}>
+                                        <Select value={officeNeighborhood} onValueChange={setOfficeNeighborhood} disabled={!officeDistrict}>
                                             <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                                             <SelectContent>{officeDistrict && neighborhoods[officeDistrict]?.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                                         </Select>
