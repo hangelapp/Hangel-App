@@ -6,7 +6,7 @@ import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { Globe, Mail, MapPin, Calendar, Briefcase, Filter, Search, Award, Clock, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { volunteeringOpportunities, allEntityLists, marketCategories } from '@/lib/data';
+import { volunteeringOpportunities, allEntityLists, marketCategories, categoryMapping } from '@/lib/data';
 import React, { useState, useMemo } from 'react';
 import { translations } from '@/lib/translations';
 import type { Language, Translation } from '@/lib/translations';
@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const languages: {value: Language, label: string}[] = [
     { value: 'tr', label: 'Türkçe' },
@@ -44,10 +45,14 @@ export default function LoginPage() {
   const [language, setLanguage] = useState<Language>('tr');
   const [selectedTranslations, setSelectedTranslations] = useState<Translation>(translations.tr);
 
-  // Filtering States
+  // Gönüllülük Filtreleme
   const [searchTerm, setSearchTerm] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
   const [socialAreaFilter, setSocialAreaFilter] = useState('all');
+
+  // Marka Filtreleme
+  const [activeBrandCategory, setActiveBrandCategory] = useState('Tümü');
+  const [activeBrandType, setActiveBrandType] = useState('all');
 
   const handleLanguageChange = (value: Language) => {
     setLanguage(value);
@@ -71,7 +76,21 @@ export default function LoginPage() {
     }).slice(0, 6);
   }, [searchTerm, cityFilter, socialAreaFilter]);
 
-  const featuredBrands = allEntityLists.slice(0, 18);
+  const filteredBrandsToShow = useMemo(() => {
+    let list = [...allEntityLists];
+
+    if (activeBrandCategory !== 'Tümü') {
+      const categories = categoryMapping[activeBrandCategory as keyof typeof categoryMapping] || [];
+      list = list.filter(brand => categories.includes(brand.category));
+    }
+
+    if (activeBrandType !== 'all') {
+      list = list.filter(brand => brand.type === activeBrandType);
+    }
+
+    return list.slice(0, 18);
+  }, [activeBrandCategory, activeBrandType]);
+
   const topCategories = marketCategories.slice(2, 10);
 
   const resetFilters = () => {
@@ -258,37 +277,68 @@ export default function LoginPage() {
               Alışverişlerinizle sosyal fayda yaratın. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-10">
-                <Button variant="default" size="sm" className="rounded-full">Tümü</Button>
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+                <Button 
+                  variant={activeBrandCategory === 'Tümü' ? 'default' : 'outline'} 
+                  size="sm" 
+                  className="rounded-full"
+                  onClick={() => setActiveBrandCategory('Tümü')}
+                >
+                  Tümü
+                </Button>
                 {topCategories.map(cat => (
-                    <Button key={cat.mainCategory} variant="outline" size="sm" className="rounded-full bg-white hover:bg-primary/5 hover:text-primary hover:border-primary transition-all">
+                    <Button 
+                      key={cat.mainCategory} 
+                      variant={activeBrandCategory === cat.mainCategory ? 'default' : 'outline'} 
+                      size="sm" 
+                      className="rounded-full bg-white hover:bg-primary/5 hover:text-primary hover:border-primary transition-all"
+                      onClick={() => setActiveBrandCategory(cat.mainCategory)}
+                    >
                         {cat.mainCategory}
                     </Button>
                 ))}
                 <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground">...</Button>
             </div>
 
+            <div className="w-full max-w-md mb-10">
+              <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveBrandType(value)}>
+                  <TabsList className="grid w-full grid-cols-5 h-10">
+                      <TabsTrigger value="all" className="text-[10px] sm:text-xs">Tümü</TabsTrigger>
+                      <TabsTrigger value="cooperative" className="text-[10px] sm:text-xs">Kooperatif</TabsTrigger>
+                      <TabsTrigger value="economic" className="text-[10px] sm:text-xs">İktisadi</TabsTrigger>
+                      <TabsTrigger value="brand" className="text-[10px] sm:text-xs">Marka</TabsTrigger>
+                      <TabsTrigger value="social" className="text-[10px] sm:text-xs">Sosyal</TabsTrigger>
+                  </TabsList>
+              </Tabs>
+            </div>
+
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-4 w-full">
-              {featuredBrands.map((brand, index) => (
-                <Link href={`/market/${brand.id}`} key={brand.id} className="group">
-                    <div className="flex flex-col items-center text-center space-y-2 p-2 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300 bg-transparent">
-                        <div className="relative w-full aspect-square max-w-[80px]">
-                            <Avatar className="w-full h-full bg-white border shadow-sm group-hover:border-primary/30 transition-colors">
-                                <AvatarImage src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} alt={brand.name} className="object-contain p-2" />
-                                <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
-                                    {brand.name.slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
-                            {brand.donationRate > 0 && (
-                                <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-lg border-2 border-white">
-                                %{brand.donationRate}
-                                </div>
-                            )}
-                        </div>
-                        <p className="text-[11px] font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{brand.name}</p>
-                    </div>
-                </Link>
-              ))}
+              {filteredBrandsToShow.length > 0 ? (
+                filteredBrandsToShow.map((brand) => (
+                  <Link href={`/market/${brand.id}`} key={brand.id} className="group">
+                      <div className="flex flex-col items-center text-center space-y-2 p-2 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300 bg-transparent">
+                          <div className="relative w-full aspect-square max-w-[80px]">
+                              <Avatar className="w-full h-full bg-white border shadow-sm group-hover:border-primary/30 transition-colors">
+                                  <AvatarImage src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} alt={brand.name} className="object-contain p-2" />
+                                  <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
+                                      {brand.name.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                              </Avatar>
+                              {brand.donationRate > 0 && (
+                                  <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-lg border-2 border-white">
+                                  %{brand.donationRate}
+                                  </div>
+                              )}
+                          </div>
+                          <p className="text-[11px] font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{brand.name}</p>
+                      </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-muted-foreground italic text-sm">
+                  Bu filtreye uygun marka bulunamadı.
+                </div>
+              )}
             </div>
 
              <Button asChild variant="outline" size="lg" className="mt-12 border-primary text-primary hover:bg-primary hover:text-white font-bold px-12 h-14">
@@ -305,8 +355,8 @@ export default function LoginPage() {
         <div className="container mx-auto p-6 text-xs text-muted-foreground space-y-6">
             <div className="py-4 space-y-4 text-left">
                 <HangelLogo className="text-2xl"/>
-                <p className="text-xs max-w-lg">
-                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline font-semibold">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline font-semibold">+90 554 700 70 07</Link> numaralı telefonu arayın.
+                <p className="text-sm font-semibold text-foreground max-w-lg">
+                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
             </div>
 
