@@ -6,13 +6,13 @@ import { HangelLogo } from '@/components/icons';
 import { 
   Globe, ArrowRight, HeartHandshake, CheckCircle2, ShieldCheck, Zap, Award, 
   ChevronRight, Store, MessageSquare, Smartphone, Mail, Twitter, Instagram, 
-  Linkedin, Briefcase, Sparkles 
+  Linkedin, Briefcase, Sparkles, Search, Filter, ArrowDownUp
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
 import { translations } from '@/lib/translations';
 import type { Language, Translation } from '@/lib/translations';
-import { allEntityLists } from '@/lib/data';
+import { allEntityLists, marketCategories } from '@/lib/data';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -22,6 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const languages: {value: Language, label: string}[] = [
     { value: 'tr', label: 'Türkçe' },
@@ -36,12 +37,12 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ru', label: 'Русский' },
     { value: 'ja', label: '日本語' },
     { value: 'bn', label: 'বাংলা' },
-    { value: 'pa', label: 'ਪੰਜਾਬِي' },
+    { value: 'pa', label: 'ਪੰਜਾਬੀ' },
     { value: 'jv', label: 'Basa Jawa' },
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'मराठी' },
+    { value: 'mr', label: 'มराठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -56,7 +57,7 @@ export default function LoginPage() {
     setSelectedTranslations(translations[value] || translations.tr);
   };
 
-  const brands = allEntityLists.slice(0, 24);
+  const brands = allEntityLists.slice(0, 16);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -161,50 +162,81 @@ export default function LoginPage() {
         </div>
       </section>
 
-      {/* Narçiçeği Brands Section */}
-      <section className="bg-primary py-24 px-6 border-y border-primary/20">
-        <div className="container mx-auto space-y-16">
+      {/* Mini Marketplace Section (Narçiçeği) */}
+      <section className="bg-primary py-24 px-4 sm:px-6 border-y border-primary/20">
+        <div className="container mx-auto space-y-12">
             <div className="text-center space-y-4 text-white">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-white font-bold text-sm uppercase tracking-wider mb-2">
                     <Store className="h-4 w-4" /> hangel bağış
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold font-headline">Alışverişiniz İyiliğe Dönüşsün</h2>
-                <p className="text-white/80 max-w-2xl mx-auto text-lg md:text-xl">
+                <p className="text-white/80 max-w-2xl mx-auto text-lg">
                     Ek ödeme yapmaksızın seçtiğiniz STK'ya %15'e varan oranlarda bağış yapın.
                 </p>
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
-                {brands.map((brand) => (
-                    <Link href={`/market/${brand.id}`} key={brand.id} className="flex flex-col items-center gap-3 group cursor-pointer">
-                        <div className="relative w-full aspect-square bg-white rounded-full p-4 shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                            {brand.logoUrl ? (
-                                <Image 
-                                    src={brand.logoUrl} 
-                                    alt={brand.name} 
-                                    fill 
-                                    className="object-contain p-3"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center font-bold text-primary text-xl">
-                                    {brand.name[0]}
-                                </div>
-                            )}
-                            {brand.donationRate > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-[#042654] text-white text-[11px] font-black px-2 py-1 rounded-full shadow-lg border-2 border-primary">
-                                    %{brand.donationRate}
-                                </div>
-                            )}
+            {/* Marketplace UI Container */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-4 sm:p-8 border border-white/10 shadow-2xl">
+                <Tabs defaultValue="all" className="w-full mb-8">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 bg-white/10 text-white h-auto p-1">
+                        <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Tümü</TabsTrigger>
+                        <TabsTrigger value="cooperative" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Kooperatif</TabsTrigger>
+                        <TabsTrigger value="economic" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3 hidden sm:block">İktisadi İşl.</TabsTrigger>
+                        <TabsTrigger value="brand" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Marka</TabsTrigger>
+                        <TabsTrigger value="social" className="data-[state=active]:bg-white data-[state=active]:text-primary py-3">Sosyal İşl.</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Categories - Horizontal on mobile, vertical on desktop */}
+                    <div className="w-full lg:w-1/4 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto pb-4 lg:pb-0 scrollbar-hide">
+                        {marketCategories.map((cat) => (
+                            <Button 
+                                key={cat.mainCategory}
+                                variant="ghost"
+                                className="text-white/70 hover:text-white hover:bg-white/10 justify-start h-10 px-4 whitespace-nowrap lg:w-full font-semibold"
+                            >
+                                {cat.mainCategory}
+                            </Button>
+                        ))}
+                    </div>
+
+                    {/* Brands Grid */}
+                    <div className="flex-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                            {brands.map((brand) => (
+                                <Link href={`/market/${brand.id}`} key={brand.id} className="group flex flex-col items-center gap-3">
+                                    <div className="relative w-full aspect-square bg-white rounded-full p-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
+                                        {brand.logoUrl ? (
+                                            <Image 
+                                                src={brand.logoUrl} 
+                                                alt={brand.name} 
+                                                fill 
+                                                className="object-contain p-3"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center font-bold text-primary text-xl">
+                                                {brand.name[0]}
+                                            </div>
+                                        )}
+                                        {brand.donationRate > 0 && (
+                                            <div className="absolute -top-1 -right-1 bg-[#042654] text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg border-2 border-primary">
+                                                %{brand.donationRate}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-[11px] font-bold text-white text-center leading-tight group-hover:underline">
+                                        {brand.name}
+                                    </span>
+                                </Link>
+                            ))}
                         </div>
-                        <span className="text-[12px] font-bold text-white text-center leading-tight group-hover:underline">
-                            {brand.name}
-                        </span>
-                    </Link>
-                ))}
+                    </div>
+                </div>
             </div>
 
-            <div className="text-center pt-8">
-                <Button size="lg" variant="outline" asChild className="h-14 px-8 bg-white/10 text-white border-white/30 hover:bg-white hover:text-primary rounded-xl font-bold transition-all">
+            <div className="text-center pt-4">
+                <Button size="lg" variant="outline" asChild className="h-14 px-8 bg-white text-primary border-white hover:bg-white/90 rounded-xl font-bold transition-all shadow-xl">
                     <Link href="/market" className="flex items-center gap-3">
                         Tüm Markaları Keşfet (154) <ArrowRight className="h-5 w-5" />
                     </Link>
@@ -369,7 +401,7 @@ export default function LoginPage() {
             {/* Shopping Options */}
             <div className="text-xs text-[#6e6e73] space-y-4 pt-4">
                 <p>
-                    Diğer alışveriş seçenekleri: Yakınınızda <Link href="/merchant" className="text-[#0066cc] hover:underline">bir Hangel Üye İşyeri</Link> veya <Link href="/contact/companies" className="text-[#0066cc] hover:underline">başka bir yetkili satıcı</Link> bulun. Veya <span className="whitespace-nowrap">00800 448 829 873</span> ya da <span className="whitespace-nowrap">0216 282 15 11</span> numaralı telefonu arayın.
+                    Başka bir sorunuz mu var? <Link href="/support" className="text-[#0066cc] hover:underline">Destek Merkezi'ni</Link> ziyaret edin veya <span className="whitespace-nowrap">+90 554 700 70 07</span> numaralı telefonu arayın.
                 </p>
                 <Separator className="bg-[#d2d2d7]" />
             </div>
