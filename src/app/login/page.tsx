@@ -9,12 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -131,41 +125,24 @@ const VolunteeringDiscovery = () => {
                 {/* Opportunities Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredItems.map((item) => (
-                        <Card key={item.id} className="group relative overflow-hidden rounded-3xl border-none shadow-none bg-white hover:shadow-2xl transition-all duration-500 cursor-pointer flex flex-col">
-                            <CardHeader className="p-6 pb-0">
-                                <div className="flex items-center justify-between mb-4">
-                                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none rounded-full px-3">{item.socialArea}</Badge>
-                                    <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                        <Link href={`/login/selection?action=register`} key={item.id}>
+                            <Card className="group relative overflow-hidden rounded-[2rem] border-none shadow-none bg-white hover:bg-[#fafafa] transition-all duration-500 cursor-pointer flex flex-col h-full min-h-[220px]">
+                                <CardHeader className="p-8 pb-0 space-y-1">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#86868b]">{item.socialArea}</p>
+                                    <CardTitle className="text-2xl font-bold tracking-tight text-[#1d1d1f] leading-tight line-clamp-2">{item.title}</CardTitle>
+                                    <CardDescription className="text-sm font-medium text-[#86868b]">{item.organization}</CardDescription>
+                                </CardHeader>
+                                <CardFooter className="p-8 pt-0 mt-auto flex justify-between items-center">
+                                    <div className="flex items-center gap-1.5 text-primary text-xs font-bold bg-primary/5 px-3 py-1.5 rounded-full">
                                         <Award className="h-3.5 w-3.5" />
                                         {item.points} Puan
                                     </div>
-                                </div>
-                                <CardTitle className="text-xl font-bold tracking-tight mb-1 group-hover:text-primary transition-colors">{item.title}</CardTitle>
-                                <CardDescription className="font-medium text-[#1d1d1f]/70">{item.organization}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-6 space-y-4 flex-1">
-                                <div className="space-y-2 text-sm text-[#86868b]">
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="h-4 w-4" />
-                                        {item.location.city} ({item.location.type})
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="h-4 w-4" />
-                                        {item.commitment}
-                                    </div>
-                                </div>
-                                <p className="text-sm text-[#1d1d1f]/80 line-clamp-3 leading-relaxed">
-                                    {item.description}
-                                </p>
-                            </CardContent>
-                            <CardFooter className="p-6 pt-0 mt-auto">
-                                <Button asChild variant="link" className="text-[#0066cc] p-0 h-auto font-semibold text-base group/btn">
-                                    <Link href={`/login/selection?action=register`}>
-                                        İncele ve Başvur <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                                    </Link>
-                                </Button>
-                            </CardFooter>
-                        </Card>
+                                    <span className="text-[#0066cc] font-semibold text-sm group-hover:translate-x-1 transition-transform inline-flex items-center">
+                                        İncele <ChevronRight className="ml-0.5 h-4 w-4" />
+                                    </span>
+                                </CardFooter>
+                            </Card>
+                        </Link>
                     ))}
                 </div>
 
