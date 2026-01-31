@@ -220,6 +220,403 @@ export const volunteeringOpportunities: Volunteering[] = [
       taskType: 'Sürekli'
     },
     {
+      id: '4',
+      title: 'Hastane Ziyareti ve Oyun Arkadaşlığı',
+      organization: 'LÖSEV',
+      ngoId: '4',
+      location: { city: 'Ankara', district: 'Çankaya', type: 'Saha' },
+      commitment: 'Dönemsel (Haftada 2 Gün)',
+      volunteerCount: { needed: 10, applications: 45 },
+      dates: { applicationStart: "2024-08-01", applicationEnd: "2024-08-20", eventStart: "2024-09-01", eventEnd: "2024-12-31" },
+      hours: { start: '14:00', end: '17:00', total: 128 },
+      socialArea: 'Sağlık',
+      skills: ['Çocuk Gelişimi', 'İletişim'],
+      dailySkills: ['Çocuk Bakımı'],
+      requirements: ['Adli Sicil Kaydı'],
+      amenities: { transport: false, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Gülümseme Elçisi'],
+      hasPreTraining: true,
+      description: 'Lösemili çocuklarımıza moral vermek ve onlarla eğitici oyunlar oynamak için gönüllü ablalar ve ağabeyler arıyoruz.',
+      points: 600,
+      ngoTransparencyScore: 94,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '5',
+      title: 'İlköğretim Öğrencileri için Fen Bilgisi Eğitmeni',
+      organization: 'TEGV',
+      ngoId: '5',
+      location: { city: 'İstanbul', district: 'Bakırköy', type: 'Saha' },
+      commitment: 'Dönemsel (Haftada 1 Gün)',
+      volunteerCount: { needed: 5, applications: 22 },
+      dates: { applicationStart: "2024-08-15", applicationEnd: "2024-09-15", eventStart: "2024-10-01", eventEnd: "2025-01-31" },
+      hours: { start: '10:00', end: '12:00', total: 32 },
+      socialArea: 'Eğitim',
+      skills: ['Eğitmenlik'],
+      education: 'Lisans',
+      amenities: { transport: true, food: false, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Eğitim Gönüllüsü'],
+      hasPreTraining: true,
+      description: 'TEGV öğrenim birimimizde ilköğretim çağındaki çocuklara fen bilimlerini sevdirecek gönüllü eğitmenler arıyoruz.',
+      points: 400,
+      ngoTransparencyScore: 93,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '6',
+      title: 'Lojistik ve Operasyonel Destek',
+      organization: 'AKUT',
+      ngoId: '6',
+      location: { city: 'İstanbul', district: 'Şişli', type: 'Saha' },
+      commitment: 'Sürekli',
+      volunteerCount: { needed: 15, applications: 60 },
+      dates: { applicationStart: "2024-07-01", applicationEnd: "2024-12-31", eventStart: "2024-07-01", eventEnd: "2025-07-01" },
+      hours: { start: '09:00', end: '18:00', total: 500 },
+      socialArea: 'Arama Kurtarma',
+      skills: ['Organizasyon'],
+      dailySkills: ['El Becerileri'],
+      amenities: { transport: false, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['AKUT Gönüllüsü'],
+      hasPreTraining: true,
+      description: 'AKUT operasyon merkezinde depo yönetimi, malzeme bakımı ve lojistik süreçlerde bize destek olacak gönüllüler arıyoruz.',
+      points: 1000,
+      ngoTransparencyScore: 91,
+      taskType: 'Sürekli'
+    },
+    {
+      id: '7',
+      title: 'Tür Koruma Farkındalık Gönüllüsü',
+      organization: 'WWF-Türkiye',
+      ngoId: '7',
+      location: { city: 'Türkiye', district: '', type: 'Online' },
+      commitment: 'Haftada 4 Saat',
+      volunteerCount: { needed: 20, applications: 85 },
+      dates: { applicationStart: "2024-08-01", applicationEnd: "2024-08-31", eventStart: "2024-09-01", eventEnd: "2024-11-30" },
+      hours: { start: 'Esnek', end: 'Esnek', total: 48 },
+      socialArea: 'Çevre',
+      skills: ['İletişim'],
+      dailySkills: [],
+      amenities: { transport: false, food: false, accommodation: false },
+      providesCertificate: false,
+      earnedBadges: ['Doğa Dostu'],
+      hasPreTraining: true,
+      description: 'Nesli tehlike altındaki türler için hazırladığımız dijital kampanyalara destek verecek ve farkındalık oluşturacak gönüllüler arıyoruz.',
+      points: 300,
+      ngoTransparencyScore: 90,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '8',
+      title: 'Kan Bağışı Organizasyon Destekçisi',
+      organization: 'Türk Kızılay',
+      ngoId: '8',
+      location: { city: 'İzmir', district: 'Konak', type: 'Saha' },
+      commitment: 'Tek Günlük',
+      volunteerCount: { needed: 30, applications: 110 },
+      dates: { applicationStart: "2024-08-10", applicationEnd: "2024-08-25", eventStart: "2024-08-30", eventEnd: "2024-08-30" },
+      hours: { start: '09:00', end: '17:00', total: 8 },
+      socialArea: 'İnsani Yardım',
+      skills: ['İletişim'],
+      dailySkills: ['Organizasyon'],
+      amenities: { transport: false, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Kızılay Gönüllüsü'],
+      hasPreTraining: false,
+      description: 'Konak Meydanı\'nda kurulacak kan bağışı çadırında bağışçıları bilgilendirecek ve süreci koordine edecek gönüllüler arıyoruz.',
+      points: 200,
+      ngoTransparencyScore: 85,
+      taskType: 'Tek Gün'
+    },
+    {
+      id: '9',
+      title: 'Mağaza ve Üretim Desteği',
+      organization: 'Mor Çatı',
+      ngoId: '9',
+      location: { city: 'İstanbul', district: 'Beyoğlu', type: 'Saha' },
+      commitment: 'Haftalık Esnek',
+      volunteerCount: { needed: 5, applications: 12 },
+      dates: { applicationStart: "2024-07-20", applicationEnd: "2024-08-20", eventStart: "2024-09-01", eventEnd: "2024-12-31" },
+      hours: { start: '11:00', end: '18:00', total: 60 },
+      socialArea: 'Kadın Hakları',
+      skills: [],
+      dailySkills: ['El Becerileri', 'İletişim'],
+      amenities: { transport: false, food: false, accommodation: false },
+      providesCertificate: false,
+      earnedBadges: ['Dayanışma Elçisi'],
+      hasPreTraining: false,
+      description: 'Mor Çatı dostluk mağazamızda ürünlerin düzenlenmesi ve kadın emeği ürünlerin üretimine destek verecek kadın gönüllüler arıyoruz.',
+      points: 450,
+      ngoTransparencyScore: 89,
+      taskType: 'Sürekli'
+    },
+    {
+      id: '10',
+      title: 'Tekerlekli Sandalye Bakım Atölyesi',
+      organization: 'TOFD',
+      ngoId: '10',
+      location: { city: 'İstanbul', district: 'Bakırköy', type: 'Saha' },
+      commitment: 'Haftada 1 Gün',
+      volunteerCount: { needed: 3, applications: 8 },
+      dates: { applicationStart: "2024-08-01", applicationEnd: "2024-08-31", eventStart: "2024-09-05", eventEnd: "2024-11-30" },
+      hours: { start: '10:00', end: '16:00', total: 72 },
+      socialArea: 'Engelli Hakları',
+      skills: [],
+      dailySkills: ['Tamirat', 'El Becerileri'],
+      amenities: { transport: false, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Teknik Destekçi'],
+      hasPreTraining: true,
+      description: 'Engelli dostlarımızın tekerlekli sandalyelerinin periyodik bakımı ve basit onarımları için atölyemizde bize destek olacak gönüllüler arıyoruz.',
+      points: 700,
+      ngoTransparencyScore: 87,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '11',
+      title: 'Sınava Hazırlık Etüt Gönüllüsü',
+      organization: 'Darüşşafaka',
+      ngoId: '11',
+      location: { city: 'İstanbul', district: 'Sarıyer', type: 'Saha' },
+      commitment: 'Akşam Etütleri',
+      volunteerCount: { needed: 8, applications: 30 },
+      dates: { applicationStart: "2024-09-01", applicationEnd: "2024-09-25", eventStart: "2024-10-01", eventEnd: "2025-06-15" },
+      hours: { start: '18:00', end: '20:00', total: 120 },
+      socialArea: 'Eğitim',
+      skills: ['Eğitmenlik'],
+      education: 'Lisans',
+      amenities: { transport: false, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Bilgi Meşalesi'],
+      hasPreTraining: true,
+      description: 'Darüşşafaka Eğitim Kurumları\'nda yatılı okuyan öğrencilerimizin akşam etütlerinde derslerine yardımcı olacak gönüllüler arıyoruz.',
+      points: 900,
+      ngoTransparencyScore: 96,
+      taskType: 'Sürekli'
+    },
+    {
+      id: '12',
+      title: 'Veri Girişi ve Haritalama Gönüllüsü',
+      organization: 'İhtiyaç Haritası',
+      ngoId: '12',
+      location: { city: 'Türkiye', district: '', type: 'Online' },
+      commitment: 'Esnek Çalışma',
+      volunteerCount: { needed: 10, applications: 55 },
+      dates: { applicationStart: "2024-07-15", applicationEnd: "2024-08-15", eventStart: "2024-08-20", eventEnd: "2024-12-20" },
+      hours: { start: 'Esnek', end: 'Esnek', total: 100 },
+      socialArea: 'Dayanışma',
+      skills: [],
+      programs: ['Google Workspace'],
+      amenities: { transport: false, food: false, accommodation: false },
+      providesCertificate: false,
+      earnedBadges: ['Harita Kaşifi'],
+      hasPreTraining: false,
+      description: 'Platformumuza gelen ihtiyaç ve destek ilanlarının doğrulanması ve harita üzerinde güncellenmesi için online gönüllüler arıyoruz.',
+      points: 550,
+      ngoTransparencyScore: 92,
+      taskType: 'Sürekli'
+    },
+    {
+      id: '13',
+      title: 'Gençlik Projesi Koordinatörü',
+      organization: 'TOG',
+      ngoId: '13',
+      location: { city: 'Bursa', district: 'Nilüfer', type: 'Saha' },
+      commitment: 'Proje Bazlı',
+      volunteerCount: { needed: 4, applications: 25 },
+      dates: { applicationStart: "2024-08-10", applicationEnd: "2024-09-10", eventStart: "2024-09-20", eventEnd: "2024-12-20" },
+      hours: { start: 'Esnek', end: 'Esnek', total: 150 },
+      socialArea: 'Gençlik',
+      skills: ['Proje Yönetimi', 'Liderlik'],
+      dailySkills: ['Organizasyon'],
+      amenities: { transport: true, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Genç Lider'],
+      hasPreTraining: true,
+      description: 'Üniversite gençlerinin yerel topluluklar için geliştirdiği sosyal sorumluluk projelerini koordine edecek gönüllüler arıyoruz.',
+      points: 1100,
+      ngoTransparencyScore: 91,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '14',
+      title: 'Barınak Güzelleştirme ve Boyama',
+      organization: 'HAYTAP',
+      ngoId: '14',
+      location: { city: 'Kocaeli', district: 'Gebze', type: 'Saha' },
+      commitment: 'Hafta Sonu',
+      volunteerCount: { needed: 25, applications: 90 },
+      dates: { applicationStart: "2024-09-01", applicationEnd: "2024-09-20", eventStart: "2024-09-28", eventEnd: "2024-09-29" },
+      hours: { start: '09:00', end: '17:00', total: 16 },
+      socialArea: 'Hayvan Hakları',
+      skills: [],
+      dailySkills: ['El Becerileri', 'Temizlik'],
+      amenities: { transport: true, food: true, accommodation: false },
+      providesCertificate: false,
+      earnedBadges: ['Patili Dost'],
+      hasPreTraining: false,
+      description: 'Gebze\'deki anlaşmalı barınağımızın kulübelerini boyamak ve çevre düzenlemesini yapmak için enerjik gönüllüler arıyoruz.',
+      points: 350,
+      ngoTransparencyScore: 89,
+      taskType: 'Tek Gün'
+    },
+    {
+      id: '15',
+      title: 'Kadın Kooperatifleri için Pazarlama Desteği',
+      organization: 'KEDV',
+      ngoId: '15',
+      location: { city: 'Türkiye', district: '', type: 'Online' },
+      commitment: 'Dönemsel',
+      volunteerCount: { needed: 3, applications: 18 },
+      dates: { applicationStart: "2024-08-01", applicationEnd: "2024-08-25", eventStart: "2024-09-01", eventEnd: "2024-11-30" },
+      hours: { start: 'Esnek', end: 'Esnek', total: 60 },
+      socialArea: 'Kadın Hakları',
+      skills: ['Pazarlama', 'Sosyal Medya Yönetimi'],
+      dailySkills: [],
+      amenities: { transport: false, food: false, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Kadın Gücü Destekçisi'],
+      hasPreTraining: false,
+      description: 'Yerel kadın kooperatiflerimizin ürünlerini daha geniş kitlelere ulaştırmak için dijital pazarlama stratejileri geliştirecek gönüllüler arıyoruz.',
+      points: 850,
+      ngoTransparencyScore: 90,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '16',
+      title: 'Bursiyer Öğrenciler için Mentorluk',
+      organization: 'ÇYDD',
+      ngoId: '16',
+      location: { city: 'Türkiye', district: '', type: 'Online' },
+      commitment: 'Haftada 1 Saat',
+      volunteerCount: { needed: 50, applications: 150 },
+      dates: { applicationStart: "2024-09-01", applicationEnd: "2024-10-15", eventStart: "2024-11-01", eventEnd: "2025-06-30" },
+      hours: { start: 'Esnek', end: 'Esnek', total: 32 },
+      socialArea: 'Eğitim',
+      skills: ['Liderlik', 'İletişim'],
+      education: 'Lisans',
+      profession: 'Yazılım Geliştirici',
+      amenities: { transport: false, food: false, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Yol Arkadaşı'],
+      hasPreTraining: true,
+      description: 'Üniversite öğrencilerimizin kariyer yolculuklarında onlara rehberlik edecek deneyimli profesyonel mentorlar arıyoruz.',
+      points: 1500,
+      ngoTransparencyScore: 92,
+      taskType: 'Sürekli'
+    },
+    {
+      id: '17',
+      title: 'Özel Eğitim Sınıfı Yardımcısı',
+      organization: 'TSÇV',
+      ngoId: '17',
+      location: { city: 'İstanbul', district: 'Ataşehir', type: 'Saha' },
+      commitment: 'Haftada 2 Gün',
+      volunteerCount: { needed: 4, applications: 10 },
+      dates: { applicationStart: "2024-08-15", applicationEnd: "2024-09-15", eventStart: "2024-10-01", eventEnd: "2025-01-31" },
+      hours: { start: '09:00', end: '13:00', total: 128 },
+      socialArea: 'Engelli Hakları',
+      skills: ['Çocuk Gelişimi'],
+      dailySkills: ['Çocuk Bakımı'],
+      amenities: { transport: false, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Özel Eğitim Destekçisi'],
+      hasPreTraining: true,
+      description: 'Metin Sabancı Merkezimizde Cerebral Palsy\'li çocuklarımızın eğitim seanslarında öğretmenlerimize asiste edecek gönüllüler arıyoruz.',
+      points: 950,
+      ngoTransparencyScore: 88,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '18',
+      title: 'Burs Fonu Kaynak Geliştirme',
+      organization: 'TEV',
+      ngoId: '18',
+      location: { city: 'Türkiye', district: '', type: 'Online' },
+      commitment: 'Esnek',
+      volunteerCount: { needed: 10, applications: 40 },
+      dates: { applicationStart: "2024-07-01", applicationEnd: "2024-08-31", eventStart: "2024-09-01", eventEnd: "2024-12-31" },
+      hours: { start: 'Esnek', end: 'Esnek', total: 80 },
+      socialArea: 'Eğitim',
+      skills: ['Kaynak Geliştirme', 'İletişim'],
+      amenities: { transport: false, food: false, accommodation: false },
+      providesCertificate: false,
+      earnedBadges: ['Gelecek İnşacısı'],
+      hasPreTraining: true,
+      description: 'Eğitim burslarımız için fon yaratacak yaratıcı bağış kampanyaları tasarlayacak ve yürütecek gönüllüler arıyoruz.',
+      points: 750,
+      ngoTransparencyScore: 95,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '19',
+      title: 'Okuma Yazma Seferberliği Tanıtımı',
+      organization: 'AÇEV',
+      ngoId: '19',
+      location: { city: 'İstanbul', district: 'Kadıköy', type: 'Saha' },
+      commitment: 'Tek Günlük',
+      volunteerCount: { needed: 20, applications: 65 },
+      dates: { applicationStart: "2024-08-20", applicationEnd: "2024-09-05", eventStart: "2024-09-08", eventEnd: "2024-09-08" },
+      hours: { start: '10:00', end: '18:00', total: 8 },
+      socialArea: 'Eğitim',
+      skills: ['İletişim'],
+      dailySkills: ['Organizasyon'],
+      amenities: { transport: false, food: true, accommodation: false },
+      providesCertificate: false,
+      earnedBadges: ['Okur Yazar Dostu'],
+      hasPreTraining: false,
+      description: 'Kadıköy sahilinde kuracağımız standımızda yetişkin okuma yazma kurslarımızı tanıtacak gönüllüler arıyoruz.',
+      points: 250,
+      ngoTransparencyScore: 93,
+      taskType: 'Tek Gün'
+    },
+    {
+      id: '20',
+      title: 'Koruncukköy Etkinlik Gönüllüsü',
+      organization: 'Koruncuk Vakfı',
+      ngoId: '20',
+      location: { city: 'İstanbul', district: 'Arnavutköy', type: 'Saha' },
+      commitment: 'Dönemsel (Hafta Sonu)',
+      volunteerCount: { needed: 6, applications: 35 },
+      dates: { applicationStart: "2024-08-01", applicationEnd: "2024-08-31", eventStart: "2024-09-07", eventEnd: "2024-10-27" },
+      hours: { start: '11:00', end: '16:00', total: 64 },
+      socialArea: 'Çocuk',
+      skills: ['Organizasyon', 'Sanat ve Kültür'],
+      dailySkills: ['Çocuk Bakımı'],
+      amenities: { transport: true, food: true, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Çocuk Dostu'],
+      hasPreTraining: true,
+      description: 'Koruncukköy Bolluca\'da yaşayan çocuklarımız için hafta sonları atölye ve spor etkinlikleri düzenleyecek gönüllüler arıyoruz.',
+      points: 800,
+      ngoTransparencyScore: 90,
+      taskType: 'Dönemsel'
+    },
+    {
+      id: '21',
+      title: 'Hasta Yakınları Konukevi Gönüllüsü',
+      organization: 'LÖDER',
+      ngoId: '21',
+      location: { city: 'İzmir', district: 'Konak', type: 'Saha' },
+      commitment: 'Haftada 1 Gün',
+      volunteerCount: { needed: 4, applications: 12 },
+      dates: { applicationStart: "2024-07-15", applicationEnd: "2024-08-15", eventStart: "2024-09-01", eventEnd: "2024-12-31" },
+      hours: { start: '13:00', end: '17:00', total: 64 },
+      socialArea: 'Sağlık',
+      skills: ['İletişim'],
+      dailySkills: ['Temizlik', 'Organizasyon'],
+      amenities: { transport: false, food: false, accommodation: false },
+      providesCertificate: true,
+      earnedBadges: ['Vefa Gönüllüsü'],
+      hasPreTraining: false,
+      description: 'Onkoloji tedavisi gören çocuklarımızın ailelerinin kaldığı konukevimizde düzenin sağlanması ve ailelere destek olunması için gönüllüler arıyoruz.',
+      points: 650,
+      ngoTransparencyScore: 86,
+      taskType: 'Sürekli'
+    },
+    {
         id: '22',
         title: 'Gıda Bankası Yardım Gönüllüsü',
         organization: 'Ahbap Derneği',
@@ -443,12 +840,12 @@ export const ngos: NGO[] = [
             address: {
                 fullAddress: 'Turgutlu Sk. No:30, Ümitköy',
                 city: 'Ankara',
-                district: 'Çankaya',
+                district: 'Chankaya',
             }
         },
         economicEnterpriseUrl: '/market/24',
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '4')
     },
     {
         id: '5',
@@ -478,7 +875,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '5')
     },
     {
         id: '6',
@@ -508,7 +905,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '6')
     },
     {
         id: '7',
@@ -538,7 +935,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '7')
     },
     {
         id: '8',
@@ -568,7 +965,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '8')
     },
     {
         id: '9',
@@ -598,7 +995,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '9')
     },
     {
         id: '10',
@@ -628,7 +1025,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '10')
     },
     {
         id: '11',
@@ -658,7 +1055,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '11')
     },
     {
         id: '12',
@@ -688,7 +1085,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '12')
     },
     {
         id: '13',
@@ -718,7 +1115,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '13')
     },
     {
         id: '14',
@@ -731,7 +1128,7 @@ export const ngos: NGO[] = [
         coverPhotoUrl: 'https://picsum.photos/seed/haytap-cover/1200/400',
         stats: { followers: 450000, donors: 110000, volunteers: 30000, volunteerHours: 200000, projects: 300, totalDonation: 3500000, donationCount: 130000, avgDonation: 26.92, highestSingleDonation: 550, peopleReached: 400000 },
         transparencyScore: 89,
-        about: "Hayvan Hakları Federasyonu (HAYTAP), Türkiye'deki hayvan hakları ihlallerine karşı mücadele eden, sahipsiz hayvanlar için bakım, tedavi ve sahiplendirme çalışmaları yürüten bir çatı kuruluştur.",
+        about: "Hayvan Hakları Federasyonu (HAYTAP), Türkiye'deki hayvan hakları ihlallerine karşı mücadele eden, sahipsiz hayvanlar için bakım, tedavi ve sahiplendirme çalışmaları yürüten bir chati kuruluşudur.",
         joinDate: "2023-04-04",
         supportedSDGs: ['Karasal Yaşam'],
         beneficiaryGroups: ['Hayvanlar'],
@@ -748,7 +1145,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '14')
     },
     {
         id: '15',
@@ -778,7 +1175,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '15')
     },
     {
         id: '16',
@@ -808,7 +1205,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '16')
     },
     {
         id: '17',
@@ -838,7 +1235,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '17')
     },
     {
         id: '18',
@@ -868,7 +1265,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '18')
     },
     {
         id: '19',
@@ -898,7 +1295,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '19')
     },
     {
         id: '20',
@@ -928,7 +1325,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '20')
     },
      {
         id: '21',
@@ -958,7 +1355,7 @@ export const ngos: NGO[] = [
             }
         },
         posts: [],
-        opportunities: []
+        opportunities: volunteeringOpportunities.filter(o => o.ngoId === '21')
     }
 ];
 
@@ -1063,7 +1460,7 @@ export const allEntityLists: Brand[] = [
     { id: '167', name: 'Yargıcı', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/yargici.com', followers: 500000, type: 'brand' },
     { id: '168', name: 'Nautica', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/nautica-tr.com', followers: 300000, type: 'brand' },
     { id: '169', name: 'Wrangler', category: 'Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/wrangler.com.tr', followers: 200000, type: 'brand' },
-    { id: '170', name: 'Gant', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/gant.com.tr', followers: 400000, type: 'brand' },
+    { id: '170', name: 'Gant', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/gant.com.tr', followers: 40000, type: 'brand' },
     { id: '171', name: 'Pierre Cardin', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/pierrecardin.com.tr', followers: 800000, type: 'brand' },
     { id: '172', name: 'Avva', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/avva.com.tr', followers: 500000, type: 'brand' },
     { id: '173', name: 'Ramsey', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/ramsey.com.tr', followers: 300000, type: 'brand' },
@@ -1241,7 +1638,7 @@ export const studentClubs: StudentClub[] = [
   { id: '18', name: 'Akdeniz Üniversitesi Sualtı Topluluğu', university: 'Akdeniz Üniversitesi', type: 'university', avatarUrl: 'https://logo.clearbit.com/akdeniz.edu.tr', coverPhotoUrl: 'https://picsum.photos/seed/au-sualti/1200/400', members: 220, points: 5800, description: 'Dalış eğitimleri ve sualtı temizlik etkinlikleri düzenler.', vision: 'Sualtı dünyasını korumak ve keşfetmek.', joinDate: '2023-08-20', contact: {email: 'sualti@akdeniz.edu.tr', phone: 'N/A', website: '#'}, projects: 11, volunteerHours: 1600, activeMemberRate: 74 },
   { id: '19', name: 'Kabataş Erkek Lisesi Robotik Kulübü', university: 'Kabataş Erkek Lisesi', type: 'high-school', avatarUrl: 'https://logo.clearbit.com/kel.meb.k12.tr', coverPhotoUrl: 'https://picsum.photos/seed/kel-robotik/1200/400', members: 80, points: 4900, description: 'FIRST Robotics Competition gibi uluslararası yarışmalara katılır.', vision: 'Mühendislik ve takım çalışması becerilerini geliştirmek.', joinDate: '2024-01-25', contact: {email: 'robotik@kel.k12.tr', phone: 'N/A', website: '#'}, projects: 7, volunteerHours: 700, activeMemberRate: 94 },
   { id: '20', name: 'Çukurova Üniversitesi Tarım ve Doğa Kulübü', university: 'Çukurova Üniversitesi', type: 'university', avatarUrl: 'https://logo.clearbit.com/cu.edu.tr', coverPhotoUrl: 'https://picsum.photos/seed/cu-tarim/1200/400', members: 190, points: 5300, description: 'Sürdürülebilir tarım ve ekoloji üzerine çalışmalar yapar.', vision: 'Tarım ve doğa bilincini artırmak.', joinDate: '2023-11-05', contact: {email: 'tarim@cu.edu.tr', phone: 'N/A', website: '#'}, projects: 10, volunteerHours: 1100, activeMemberRate: 71 },
-  { id: '21', name: 'Uludağ Üniversitesi Otomotiv Topluluğu', university: 'Uludağ Üniversitesi', type: 'university', avatarUrl: 'https://logo.clearbit.com/uludag.edu.tr', coverPhotoUrl: 'https://picsum.photos/seed/uu-otomotiv/1200/400', members: 320, points: 6700, description: 'Otomotiv sektöründeki gelişmeleri takip eder ve teknik projeler üretir.', vision: 'Geleceğin otomotiv mühendislerini yetiştirmek.', joinDate: '2023-10-22', contact: {email: 'uot@uludag.edu.tr', phone: 'N/A', website: '#'}, projects: 13, volunteerHours: 1900, activeMemberRate: 76 }
+  { id: '21', name: 'Uludağ Üniversitesi Otomotiv Topluluğu', university: 'Uludağ Üniversitesi', type: 'university', avatarUrl: 'https://logo.clearbit.com/uludag.edu.tr', coverPhotoUrl: 'https://picsum.photos/seed/uu-otomotiv/1200/400', members: 320, points: 6700, description: 'Otomotiv sektöründeki gelişmeleri takip eder ve teknik projeler üretir.', vision: 'Geleceğen otomotiv mühendislerini yetiştirmek.', joinDate: '2023-10-22', contact: {email: 'uot@uludag.edu.tr', phone: 'N/A', website: '#'}, projects: 13, volunteerHours: 1900, activeMemberRate: 76 }
 ];
 
 export const schoolRepresentatives: SchoolRepresentative[] = Array.from({ length: 10 }, (_, i) => ({
@@ -1259,7 +1656,7 @@ export const pastVolunteering: Volunteering[] = [
       id: 'past-1',
       title: 'Barınak Hayvanları Besleme Günü',
       organization: 'HAYTAP',
-      ngoId: '4',
+      ngoId: '14',
       location: { city: 'İstanbul', district: 'Ataşehir', type: 'Saha' },
       commitment: 'Tek Günlük (4 Saat)',
       volunteerCount: { needed: 0, applications: 0 },
