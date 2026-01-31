@@ -158,7 +158,7 @@ export default function LoginPage() {
           {/* STK */}
           <AppleSection 
             title="hangel STK"
-            subtitle="Kuruluşun ile hangel de ol."
+            subtitle="Sivil Toplum Kuruluşun ile hangelde ol"
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
             fullWidth={false}
@@ -291,21 +291,21 @@ export default function LoginPage() {
                     Başka bir sorunuz mu var? <Link href="/support" className="text-[#0066cc] hover:underline">Destek Merkezi'ni</Link> ziyaret edin veya <span className="whitespace-nowrap font-medium text-[#1d1d1f]">+90 554 700 70 07</span> numaralı telefonu arayın.
                 </p>
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                    <div className="order-2 lg:order-1 flex flex-col lg:flex-row gap-4">
-                        <span className="font-normal">© 2026 hangel.org. Tüm hakları saklıdır.</span>
-                        <div className="flex flex-wrap gap-x-2 gap-y-1">
-                            <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
-                            <span className="text-[#d2d2d7]">|</span>
-                            <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerez Politikası</Link>
-                            <span className="text-[#d2d2d7]">|</span>
-                            <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
-                            <span className="text-[#d2d2d7]">|</span>
-                            <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
-                        </div>
+                    <div className="flex flex-wrap gap-x-2 gap-y-1">
+                        <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerez Politikası</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
+                        <span className="text-[#d2d2d7]">|</span>
+                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
                     </div>
-                    <div className="order-1 lg:order-2 font-semibold text-[#1d1d1f] hover:underline cursor-pointer transition-colors">
+                    <div className="font-semibold text-[#1d1d1f] hover:underline cursor-pointer transition-colors">
                         Türkiye
                     </div>
+                </div>
+                <div className="pt-2 border-t border-[#d2d2d7]/50">
+                    <span className="font-normal">© 2026 hangel.org. Tüm hakları saklıdır.</span>
                 </div>
             </div>
         </div>
