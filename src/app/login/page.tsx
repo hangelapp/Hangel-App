@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -268,19 +267,19 @@ export default function LoginPage() {
         </div>
       </section>
       
-      <section className="bg-slate-50 py-16 border-y">
+      <section className="bg-primary py-16 border-y text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex flex-col items-center text-center">
-            <h2 className="text-4xl font-bold mb-4 text-foreground font-headline tracking-tight">hangel bağış</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-12">
+            <h2 className="text-4xl font-bold mb-4 text-white font-headline tracking-tight">hangel bağış</h2>
+            <p className="text-lg text-white/90 max-w-2xl mx-auto mb-12">
               Alışverişlerinizle sosyal fayda oluşturun. Anlaşmalı markalardan yapacağınız her harcama, seçtiğiniz STK'ya bağışa dönüşsün.
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 mb-6">
                 <Button 
-                  variant={activeBrandCategory === 'Tümü' ? 'default' : 'outline'} 
+                  variant={activeBrandCategory === 'Tümü' ? 'secondary' : 'outline'} 
                   size="sm" 
-                  className="rounded-full"
+                  className={cn("rounded-full", activeBrandCategory === 'Tümü' ? "bg-white text-primary" : "text-white border-white hover:bg-white/10")}
                   onClick={() => setActiveBrandCategory('Tümü')}
                 >
                   Tümü
@@ -288,25 +287,25 @@ export default function LoginPage() {
                 {topCategories.map(cat => (
                     <Button 
                       key={cat.mainCategory} 
-                      variant={activeBrandCategory === cat.mainCategory ? 'default' : 'outline'} 
+                      variant={activeBrandCategory === cat.mainCategory ? 'secondary' : 'outline'} 
                       size="sm" 
-                      className="rounded-full bg-white hover:bg-primary/5 hover:text-primary hover:border-primary transition-all"
+                      className={cn("rounded-full transition-all", activeBrandCategory === cat.mainCategory ? "bg-white text-primary" : "text-white border-white hover:bg-white/10")}
                       onClick={() => setActiveBrandCategory(cat.mainCategory)}
                     >
                         {cat.mainCategory}
                     </Button>
                 ))}
-                <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground">...</Button>
+                <Button variant="ghost" size="sm" className="rounded-full text-white/70">...</Button>
             </div>
 
             <div className="w-full max-w-md mb-10">
               <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveBrandType(value)}>
-                  <TabsList className="grid w-full grid-cols-5 h-10">
-                      <TabsTrigger value="all" className="text-[10px] sm:text-xs">Tümü</TabsTrigger>
-                      <TabsTrigger value="cooperative" className="text-[10px] sm:text-xs">Kooperatif</TabsTrigger>
-                      <TabsTrigger value="economic" className="text-[10px] sm:text-xs">İktisadi</TabsTrigger>
-                      <TabsTrigger value="brand" className="text-[10px] sm:text-xs">Marka</TabsTrigger>
-                      <TabsTrigger value="social" className="text-[10px] sm:text-xs">Sosyal</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-5 h-10 bg-white/10 text-white">
+                      <TabsTrigger value="all" className="text-[10px] sm:text-xs data-[state=active]:bg-white data-[state=active]:text-primary">Tümü</TabsTrigger>
+                      <TabsTrigger value="cooperative" className="text-[10px] sm:text-xs data-[state=active]:bg-white data-[state=active]:text-primary">Kooperatif</TabsTrigger>
+                      <TabsTrigger value="economic" className="text-[10px] sm:text-xs data-[state=active]:bg-white data-[state=active]:text-primary">İktisadi</TabsTrigger>
+                      <TabsTrigger value="brand" className="text-[10px] sm:text-xs data-[state=active]:bg-white data-[state=active]:text-primary">Marka</TabsTrigger>
+                      <TabsTrigger value="social" className="text-[10px] sm:text-xs data-[state=active]:bg-white data-[state=active]:text-primary">Sosyal</TabsTrigger>
                   </TabsList>
               </Tabs>
             </div>
@@ -317,7 +316,7 @@ export default function LoginPage() {
                   <Link href={`/market/${brand.id}`} key={brand.id} className="group">
                       <div className="flex flex-col items-center text-center space-y-3 p-1 transition-all duration-300">
                           <div className="relative w-20 h-20 sm:w-24 sm:h-24">
-                              <div className="w-full h-full rounded-full bg-[#f9f9f9] border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
+                              <div className="w-full h-full rounded-full bg-white border border-white/20 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-lg transition-all">
                                   {brand.logoUrl ? (
                                       <Image 
                                         src={brand.logoUrl} 
@@ -333,23 +332,23 @@ export default function LoginPage() {
                                   )}
                               </div>
                               {brand.donationRate > 0 && (
-                                  <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#f34723] text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">
+                                  <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#042654] text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">
                                   %{brand.donationRate}
                                   </div>
                               )}
                           </div>
-                          <p className="text-[12px] font-bold text-[#042654] leading-tight group-hover:text-primary transition-colors px-1">{brand.name}</p>
+                          <p className="text-[12px] font-bold text-white leading-tight group-hover:text-white/80 transition-colors px-1">{brand.name}</p>
                       </div>
                   </Link>
                 ))
               ) : (
-                <div className="col-span-full py-12 text-muted-foreground italic text-sm">
+                <div className="col-span-full py-12 text-white/70 italic text-sm">
                   Bu filtreye uygun marka bulunamadı.
                 </div>
               )}
             </div>
 
-             <Button asChild variant="outline" size="lg" className="mt-12 border-primary text-primary hover:bg-primary hover:text-white font-bold px-12 h-14">
+             <Button asChild variant="outline" size="lg" className="mt-12 bg-white text-primary border-none hover:bg-white/90 font-bold px-12 h-14 shadow-lg">
               <Link href="/market">
                 Tüm Markaları Keşfet ({allEntityLists.length})
                 <ArrowRight className="ml-2 h-5 w-5" />
