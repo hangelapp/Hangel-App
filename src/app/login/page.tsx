@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
-import { Globe, ArrowRight, Store, HeartHandshake, Users, Sparkles, CheckCircle2, ShieldCheck, Zap, Award } from 'lucide-react';
+import { Globe, ArrowRight, Store, HeartHandshake, Users, Sparkles, CheckCircle2, ShieldCheck, Zap, Award, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
 import { translations } from '@/lib/translations';
@@ -27,7 +27,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ru', label: 'Русский' },
     { value: 'ja', label: '日本語' },
     { value: 'bn', label: 'বাংলা' },
-    { value: 'pa', label: 'ਪੰਜਾਬੀ' },
+    { value: 'pa', label: 'ਪੰਜਾਬِي' },
     { value: 'jv', label: 'Basa Jawa' },
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
@@ -249,22 +249,75 @@ export default function LoginPage() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto border-t bg-white py-16 px-6">
-        <div className="container mx-auto text-center space-y-8">
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-bold text-[#042654]/70 uppercase tracking-widest">
-                <Link href="/about" className="hover:text-primary transition-colors">Hakkımızda</Link>
-                <Link href="/support" className="hover:text-primary transition-colors">Yardım Merkezi</Link>
-                <Link href="/corporate" className="hover:text-primary transition-colors">Kurumsal</Link>
-                <Link href="/settings/contracts" className="hover:text-primary transition-colors">Yasal Belgeler</Link>
-            </div>
-            
-            <Separator className="max-w-xs mx-auto" />
-
+      <footer className="mt-auto border-t bg-[#f5f5f5] py-16 px-6">
+        <div className="container mx-auto space-y-10">
+            {/* Header: Logo and Large Prompt */}
             <div className="space-y-4">
-                <p className="text-base md:text-lg text-muted-foreground font-medium max-w-2xl mx-auto">
-                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline font-extrabold">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline font-extrabold">+90 554 700 70 07</Link> numaralı telefonu arayın.
+                <HangelLogo className="text-4xl font-extrabold text-[#f34723]" />
+                <p className="text-sm md:text-base text-muted-foreground font-medium">
+                    Başka bir sorunuz mu var? <Link href="/support" className="text-primary hover:underline font-bold">Destek Merkezi'ni ziyaret edin</Link> veya <Link href="tel:+905547007007" className="text-primary hover:underline font-bold">+90 554 700 70 07</Link> numaralı telefonu arayın.
                 </p>
-                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest opacity-40">
+            </div>
+
+            <Separator className="bg-muted-foreground/20" />
+
+            {/* Middle: Platforms, Language and Socials */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Link href="#" className="hover:text-foreground">App Store</Link>
+                    <span className="text-muted-foreground/30">|</span>
+                    <Link href="#" className="hover:text-foreground">Google Play</Link>
+                    <span className="text-muted-foreground/30">|</span>
+                    <Link href="#" className="hover:text-foreground">AppGallery</Link>
+                    <span className="text-muted-foreground/30">|</span>
+                    <Link href="#" className="hover:text-foreground">Chrome Store</Link>
+                </div>
+
+                <div className="flex items-center gap-2 px-4 border-l border-muted-foreground/30 h-6 text-xs font-bold text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                    <Globe className="h-4 w-4" />
+                    <span>TÜRKÇE</span>
+                    <ChevronRight className="h-3 w-3 rotate-90" />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider md:ml-auto">
+                    <Link href="#" className="hover:text-foreground">x.com</Link>
+                    <span className="text-muted-foreground/30">|</span>
+                    <Link href="#" className="hover:text-foreground">Instagram</Link>
+                    <span className="text-muted-foreground/30">|</span>
+                    <Link href="#" className="hover:text-foreground">LinkedIn</Link>
+                    <span className="text-muted-foreground/30">|</span>
+                    <Link href="#" className="hover:text-foreground">Spotify</Link>
+                </div>
+            </div>
+
+            {/* Bottom: Main Navigation */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-3 text-xs font-medium text-muted-foreground/80">
+                <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/support" className="hover:text-foreground">Destek</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="#" className="hover:text-foreground">Kariyer</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-foreground">Bilgi Toplumu Hizmetleri</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/press" className="hover:text-foreground">Basın</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/corporate" className="hover:text-foreground">Kamu İlişkileri</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/yatirimci-iliskileri" className="hover:text-foreground">Yatırımcı İlişkileri</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="#" className="hover:text-foreground">Sürdürülebilirlik</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/settings/contracts" className="hover:text-foreground">Sözleşmeler</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/settings/contracts" className="hover:text-foreground">Politikalar</Link>
+                <span className="text-muted-foreground/30">|</span>
+                <Link href="/press" className="hover:text-foreground">Logo Kullanımı</Link>
+            </div>
+
+            {/* Copyright */}
+            <div className="pt-4 text-left">
+                <p className="text-xs text-muted-foreground/60 font-semibold tracking-wide uppercase">
                     &copy; 2026 hangel.org. Tüm hakları saklıdır.
                 </p>
             </div>
