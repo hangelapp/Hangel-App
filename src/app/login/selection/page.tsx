@@ -26,13 +26,19 @@ function IndividualLogin({ onLogin }: { onLogin: (e: React.FormEvent) => void })
 
   if (loginStep === 1) {
     return (
-      <form className="space-y-6" onSubmit={handleSendCode}>
-        <div className="space-y-2">
-          <Label htmlFor="phone-login">Telefon Numarası</Label>
-          <Input id="phone-login" type="tel" required placeholder="5XX XXX XX XX" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+      <div className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSendCode}>
+          <div className="space-y-2">
+            <Label htmlFor="phone-login">Telefon Numarası</Label>
+            <Input id="phone-login" type="tel" required placeholder="5XX XXX XX XX" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+          </div>
+          <Button type="submit" className="w-full">Doğrulama Kodu Gönder</Button>
+        </form>
+        <div className="text-center text-sm pt-2">
+          <span className="text-muted-foreground">Hesabınız yok mu? </span>
+          <Link href="/login/selection?action=register" className="font-medium text-primary hover:underline">Kayıt Ol</Link>
         </div>
-        <Button type="submit" className="w-full">Doğrulama Kodu Gönder</Button>
-      </form>
+      </div>
     );
   }
 
@@ -54,87 +60,105 @@ function IndividualLogin({ onLogin }: { onLogin: (e: React.FormEvent) => void })
 
 function IndividualRegister({ onRegister }: { onRegister: (e: React.FormEvent) => void }) {
   return (
-    <form className="space-y-6" onSubmit={onRegister}>
-      <div className="space-y-2">
-        <Label htmlFor="name-register">Ad Soyad</Label>
-        <Input id="name-register" type="text" required placeholder="Adınız Soyadınız" />
+    <div className="space-y-6">
+      <form className="space-y-6" onSubmit={onRegister}>
+        <div className="space-y-2">
+          <Label htmlFor="name-register">Ad Soyad</Label>
+          <Input id="name-register" type="text" required placeholder="Adınız Soyadınız" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phone-register">Telefon Numarası</Label>
+          <Input id="phone-register" type="tel" required placeholder="5XX XXX XX XX" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email-register">E-posta Adresi (İsteğe Bağlı)</Label>
+          <Input id="email-register" type="email" placeholder="ornek@eposta.com" />
+        </div>
+        <div className="flex items-start space-x-3">
+          <Checkbox id="terms-register" required />
+          <Label htmlFor="terms-register" className="text-xs font-normal text-muted-foreground">
+            <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link> ve <Link href="#" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı okudum, anladım.
+          </Label>
+        </div>
+        <Button type="submit" className="w-full">Kayıt Ol ve Devam Et</Button>
+      </form>
+      <div className="text-center text-sm pt-2">
+        <span className="text-muted-foreground">Zaten hesabınız var mı? </span>
+        <Link href="/login/selection?action=login" className="font-medium text-primary hover:underline">Giriş Yap</Link>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="phone-register">Telefon Numarası</Label>
-        <Input id="phone-register" type="tel" required placeholder="5XX XXX XX XX" />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="email-register">E-posta Adresi (İsteğe Bağlı)</Label>
-        <Input id="email-register" type="email" placeholder="ornek@eposta.com" />
-      </div>
-      <div className="flex items-start space-x-3">
-        <Checkbox id="terms-register" required />
-        <Label htmlFor="terms-register" className="text-xs font-normal text-muted-foreground">
-          <Link href="#" className="font-medium text-primary hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="#" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link> ve <Link href="#" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı okudum, anladım.
-        </Label>
-      </div>
-      <Button type="submit" className="w-full">Kayıt Ol ve Devam Et</Button>
-    </form>
+    </div>
   );
 }
 
 // --- Components from corporate page ---
 function CorporateLogin({ onLogin }: { onLogin: (e: React.FormEvent) => void }) {
     return (
-        <form className="space-y-6" onSubmit={onLogin}>
-            <div className="space-y-2">
-                <Label htmlFor="email-login">E-posta Adresi</Label>
-                <Input id="email-login" type="email" required placeholder="kurumsal@eposta.com" />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="password-login">Şifre</Label>
-                <Input id="password-login" type="password" required />
-            </div>
-            <div className="flex items-center justify-end text-sm">
-                <Button variant="link" className="p-0 text-primary">Şifremi Unuttum</Button>
-            </div>
-            <Button type="submit" className="w-full">Giriş Yap</Button>
-        </form>
+        <div className="space-y-6">
+          <form className="space-y-6" onSubmit={onLogin}>
+              <div className="space-y-2">
+                  <Label htmlFor="email-login">E-posta Adresi</Label>
+                  <Input id="email-login" type="email" required placeholder="kurumsal@eposta.com" />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="password-login">Şifre</Label>
+                  <Input id="password-login" type="password" required />
+              </div>
+              <div className="flex items-center justify-end text-sm">
+                  <Button variant="link" className="p-0 text-primary">Şifremi Unuttum</Button>
+              </div>
+              <Button type="submit" className="w-full">Giriş Yap</Button>
+          </form>
+          <div className="text-center text-sm pt-2">
+            <span className="text-muted-foreground">Kuruluşunuz kayıtlı değil mi? </span>
+            <Link href="/login/selection?action=register" className="font-medium text-primary hover:underline">Başvur</Link>
+          </div>
+        </div>
     );
 }
 
 function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) => void }) {
     return (
-        <form className="space-y-6" onSubmit={onRegister}>
-            <div className="space-y-2">
-                <Label htmlFor="org-type">Kuruluş Türü</Label>
-                <Select required>
-                    <SelectTrigger id="org-type"><SelectValue placeholder="Kuruluş türünü seçin..." /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="ngo">Sivil Toplum Kuruluşu (STK)</SelectItem>
-                        <SelectItem value="brand">Marka / Sosyal İşletme</SelectItem>
-                        <SelectItem value="club">Öğrenci Kulübü</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="org-name">Kuruluş Adı</Label>
-                <Input id="org-name" type="text" required placeholder="Kuruluşunuzun tam adı" />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="email-register">Yetkili E-posta Adresi</Label>
-                <Input id="email-register" type="email" required placeholder="kurumsal@eposta.com" />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="password-register">Şifre Oluştur</Label>
-                <Input id="password-register" type="password" required />
-            </div>
-            <div className="flex items-start space-x-3">
-                <Checkbox id="terms-register-corp" required />
-                <Label htmlFor="terms-register-corp" className="text-xs font-normal text-muted-foreground">
-                    <Link href="#" className="font-medium text-primary hover:underline">Kurumsal Kullanıcı Sözleşmesi</Link> ve <Link href="#" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link>'nı okudum, anladım.
-                </Label>
-            </div>
-            <Button type="submit" className="w-full">Başvuruyu Tamamla</Button>
-            <p className="text-xs text-center text-muted-foreground">
-                Başvurunuz incelendikten sonra hesabınız aktifleştirilecektir.
-            </p>
-        </form>
+        <div className="space-y-6">
+          <form className="space-y-6" onSubmit={onRegister}>
+              <div className="space-y-2">
+                  <Label htmlFor="org-type">Kuruluş Türü</Label>
+                  <Select required>
+                      <SelectTrigger id="org-type"><SelectValue placeholder="Kuruluş türünü seçin..." /></SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="ngo">Sivil Toplum Kuruluşu (STK)</SelectItem>
+                          <SelectItem value="brand">Marka / Sosyal İşletme</SelectItem>
+                          <SelectItem value="club">Öğrenci Kulübü</SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="org-name">Kuruluş Adı</Label>
+                  <Input id="org-name" type="text" required placeholder="Kuruluşunuzun tam adı" />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="email-register">Yetkili E-posta Adresi</Label>
+                  <Input id="email-register" type="email" required placeholder="kurumsal@eposta.com" />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="password-register">Şifre Oluştur</Label>
+                  <Input id="password-register" type="password" required />
+              </div>
+              <div className="flex items-start space-x-3">
+                  <Checkbox id="terms-register-corp" required />
+                  <Label htmlFor="terms-register-corp" className="text-xs font-normal text-muted-foreground">
+                      <Link href="#" className="font-medium text-primary hover:underline">Kurumsal Kullanıcı Sözleşmesi</Link> ve <Link href="#" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link>'nı okudum, anladım.
+                  </Label>
+              </div>
+              <Button type="submit" className="w-full">Başvuruyu Tamamla</Button>
+              <p className="text-xs text-center text-muted-foreground">
+                  Başvurunuz incelendikten sonra hesabınız aktifleştirilecektir.
+              </p>
+          </form>
+          <div className="text-center text-sm pt-2">
+            <span className="text-muted-foreground">Zaten hesabınız var mı? </span>
+            <Link href="/login/selection?action=login" className="font-medium text-primary hover:underline">Giriş Yap</Link>
+          </div>
+        </div>
     );
 }
 
