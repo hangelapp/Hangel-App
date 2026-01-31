@@ -52,7 +52,7 @@ const AppleSection = ({
   )}>
     <div className="z-10 px-6 space-y-1 max-w-2xl">
       <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
-      {description && <p className={cn("text-[10px] md:text-xs font-semibold uppercase tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
+      {description && <p className={cn("text-[10px] md:text-xs font-medium mt-3 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
       {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
@@ -132,7 +132,7 @@ export default function LoginPage() {
         <AppleSection 
           title="hangel imece"
           subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
-          description="Gönüllü ol, imece ruhuyla toplumsal sorunlara çözüm üret."
+          description="Gönüllü Ol, İmece Ruhuyla Toplumsal Sorunlara Çözüm Üret."
           image="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
           imageHint="volunteering hands together"
         />
@@ -141,7 +141,7 @@ export default function LoginPage() {
         <AppleSection 
           title="hangel bağışı"
           subtitle="Alışverişin iyiliğe dönüşsün."
-          description="Ek bir ödeme yapmadan, seçtiğin STK'ya %15'e varan oranlarda bağış yap."
+          description="Ek Bir Ödeme Yapmadan, Seçtiğin STK'ya %15'e Varan Oranlarda Bağış Yap."
           image="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop"
           imageHint="shopping bags donation"
           dark={true}
@@ -154,6 +154,7 @@ export default function LoginPage() {
           <AppleSection 
             title="hangel STK"
             subtitle="Sivil Toplum Kuruluşun ile hangelde ol"
+            description="Dernek, Vakıf, Spor Kulübü, Öğrenci Kulübü"
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
             fullWidth={false}
@@ -164,7 +165,7 @@ export default function LoginPage() {
           <AppleSection 
             title="hangel Brands" 
             subtitle="markan ile hangel de ol." 
-            description="Ticari Marka, Kooperatif, İktisadi işletme, Sosyal girişim"
+            description="Ticari Marka, Kooperatif, İktisadi İşletme, Sosyal Girişim"
             image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
             imageHint="modern branding" 
             fullWidth={false} 
@@ -177,7 +178,7 @@ export default function LoginPage() {
         <AppleSection 
           title="Şeffaflık Endeksi"
           subtitle="Güvenle bağış yapın."
-          description="STK'ların şeffaflık raporlarını anlık olarak takip edin."
+          description="STK'ların Şeffaflık Raporlarını Anlık Olarak Takip Edin."
           image="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
           imageHint="analytics dashboard transparency"
           primaryCta="Raporları İncele"
@@ -283,9 +284,6 @@ export default function LoginPage() {
             </div>
 
             <div className="text-[12px] text-[#6e6e73] space-y-4 pt-4 border-t border-[#d2d2d7]">
-                <p className="leading-relaxed">
-                    Başka bir sorunuz mu var? <Link href="/support" className="text-[#0066cc] hover:underline">Destek Merkezi'ni</Link> ziyaret edin veya <span className="whitespace-nowrap font-medium text-[#1d1d1f]">+90 554 700 70 07</span> numaralı telefonu arayın.
-                </p>
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div className="flex flex-wrap gap-x-2 gap-y-1">
                         <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
