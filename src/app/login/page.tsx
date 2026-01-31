@@ -52,7 +52,7 @@ const AppleSection = ({
 }) => (
   <section className={cn(
     "relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16",
-    fullWidth ? "w-full min-h-[650px] md:min-h-[850px] mb-3" : "h-[500px] md:h-[600px] rounded-3xl mx-3 mb-3",
+    fullWidth ? "w-full min-h-[600px] md:min-h-[800px] mb-3" : "h-[500px] md:h-[600px] rounded-3xl mx-3 mb-3",
     dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
   )}>
     <div className="z-10 px-6 space-y-1 max-w-4xl">
@@ -75,7 +75,7 @@ const AppleSection = ({
         </div>
       ) : (
         image && (
-          <div className="relative w-full h-full min-h-[350px] md:min-h-[550px]">
+          <div className="relative w-full h-full">
             <Image 
               src={image} 
               alt={title} 
@@ -161,14 +161,12 @@ export default function LoginPage() {
     <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
       <header className="sticky top-0 z-50 w-full h-11 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
         <div className="container mx-auto h-full max-w-5xl px-4 flex items-center justify-between">
-          {/* Left Side: Logo */}
           <div className="flex-1 flex justify-start items-center">
             <Link href="/" className="opacity-80 hover:opacity-100 transition-opacity">
               <HangelLogo className="text-xl tracking-tighter" />
             </Link>
           </div>
 
-          {/* Center Side: Navigation */}
           <nav className="hidden md:flex items-center justify-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
             <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
             <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
@@ -177,7 +175,6 @@ export default function LoginPage() {
             <Link href="/support" className="hover:text-[#1d1d1f] transition-colors">Destek</Link>
           </nav>
 
-          {/* Right Side: Search, Bag, Language */}
           <div className="flex-1 flex justify-end items-center gap-5 opacity-80">
             <Search className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
             <ShoppingBag className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
@@ -277,7 +274,7 @@ export default function LoginPage() {
                     <div className="flex flex-wrap gap-x-2 gap-y-1">
                         <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
                         <span className="text-[#d2d2d7]">|</span>
-                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Cherez Politikası</Link>
+                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerez Politikası</Link>
                         <span className="text-[#d2d2d7]">|</span>
                         <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
                         <span className="text-[#d2d2d7]">|</span>
