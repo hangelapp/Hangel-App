@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -88,59 +87,70 @@ export default function NgoDashboardPage() {
         </div>
       </div>
 
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b">
-            <CardTitle className="text-lg">Kurumsal Performans Özeti</CardTitle>
-            <CardDescription>Kuruluşunuzun güncel etki ve bağış verileri.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x">
-                {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="p-6">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Toplam Bağış</span>
-                            <DollarSign className="h-4 w-4 text-primary" />
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold">Kurumsal Performans Özeti</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
+                <Card className="aspect-square flex flex-col justify-between p-6">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Toplam Bağış</span>
+                        <div className="p-2 bg-green-100 rounded-lg">
+                            <DollarSign className="h-4 w-4 text-green-600" />
                         </div>
-                        <div className="text-2xl font-bold">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-                        <p className="text-xs text-green-600 font-medium mt-1">+%20.1 geçen aydan</p>
                     </div>
-                )}
+                    <div>
+                        <div className="text-xl font-bold">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+                        <p className="text-[10px] text-green-600 font-medium mt-1">+%20.1 geçen aydan</p>
+                    </div>
+                </Card>
+            )}
 
-                {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="p-6">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Toplam Gönüllü</span>
-                            <Users className="h-4 w-4 text-blue-500" />
+            {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
+                <Card className="aspect-square flex flex-col justify-between p-6">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Toplam Gönüllü</span>
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                            <Users className="h-4 w-4 text-blue-600" />
                         </div>
-                        <div className="text-2xl font-bold">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Bu ay +180 yeni gönüllü</p>
                     </div>
-                )}
+                    <div>
+                        <div className="text-xl font-bold">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</div>
+                        <p className="text-[10px] text-muted-foreground mt-1">Bu ay +180 yeni gönüllü</p>
+                    </div>
+                </Card>
+            )}
 
-                {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="p-6">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Yeni Başvurular</span>
-                            <Heart className="h-4 w-4 text-red-500" />
+            {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
+                <Card className="aspect-square flex flex-col justify-between p-6">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Yeni Başvurular</span>
+                        <div className="p-2 bg-red-100 rounded-lg">
+                            <Heart className="h-4 w-4 text-red-600" />
                         </div>
-                        <div className="text-2xl font-bold">+12</div>
-                        <p className="text-xs text-amber-600 font-medium mt-1">Onay bekleyen başvurular</p>
                     </div>
-                )}
+                    <div>
+                        <div className="text-xl font-bold">+12</div>
+                        <p className="text-[10px] text-amber-600 font-medium mt-1">Onay bekleyen başvurular</p>
+                    </div>
+                </Card>
+            )}
 
-                {userRole === 'Genel Yönetici' && (
-                    <div className="p-6 bg-primary/5">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-bold text-primary uppercase tracking-wider">Toplam Sağlanan Etki</span>
+            {userRole === 'Genel Yönetici' && (
+                <Card className="aspect-square flex flex-col justify-between p-6 bg-primary/5 border-primary/20">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Toplam Sosyal Etki mali değeri</span>
+                        <div className="p-2 bg-primary/10 rounded-lg">
                             <TrendingUp className="h-4 w-4 text-primary" />
                         </div>
-                        <div className="text-2xl font-bold text-primary">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-                        <p className="text-[10px] text-muted-foreground mt-1 uppercase">Bağış + Gönüllülük Değeri</p>
                     </div>
-                )}
-            </div>
-        </CardContent>
-      </Card>
+                    <div>
+                        <div className="text-xl font-bold text-primary">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+                        <p className="text-[9px] text-muted-foreground mt-1 uppercase">Bağış + Gönüllülük Değeri</p>
+                    </div>
+                </Card>
+            )}
+        </div>
+      </div>
 
         <Card>
             <CardHeader>
