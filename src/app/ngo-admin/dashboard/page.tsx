@@ -59,8 +59,8 @@ const allNavItems = [
 
 export default function NgoDashboardPage() {
     const userName = user.name;
-    const userRole = (user as any).currentNgoRole || 'Genel Yönetici'; // Simulating a role for the prototype
-    const ngo = ngos.find(n => n.id === '2'); // Ahbap
+    const userRole = (user as any).currentNgoRole || 'Genel Yönetici'; 
+    const ngo = ngos.find(n => n.id === '2'); 
 
     const filteredNavItems = useMemo(() => {
         return allNavItems.filter(item => item.roles.includes(userRole));
@@ -87,58 +87,63 @@ export default function NgoDashboardPage() {
         </div>
       </div>
 
-       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici' ? (
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Toplam Bağış</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-                    <p className="text-xs text-muted-foreground">+%20.1 geçen aydan</p>
-                </CardContent>
-            </Card>
-        ) : null}
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="text-lg">Kurumsal Performans Özeti</CardTitle>
+            <CardDescription>Kuruluşunuzun güncel etki ve bağış verileri.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x">
+                {/* Toplam Bağış */}
+                {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
+                    <div className="p-6">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Toplam Bağış</span>
+                            <DollarSign className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="text-2xl font-bold">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+                        <p className="text-xs text-green-600 font-medium mt-1">+%20.1 geçen aydan</p>
+                    </div>
+                )}
 
-        {userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici' ? (
-            <>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Toplam Gönüllü</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
+                {/* Toplam Gönüllü */}
+                {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
+                    <div className="p-6">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Toplam Gönüllü</span>
+                            <Users className="h-4 w-4 text-blue-500" />
+                        </div>
                         <div className="text-2xl font-bold">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</div>
-                        <p className="text-xs text-muted-foreground">Bu ay +180 yeni gönüllü</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Yeni Başvurular</CardTitle>
-                        <Heart className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">+12</div>
-                        <p className="text-xs text-muted-foreground">Onay bekleyen başvurular</p>
-                    </CardContent>
-                </Card>
-            </>
-        ) : null}
+                        <p className="text-xs text-muted-foreground mt-1">Bu ay +180 yeni gönüllü</p>
+                    </div>
+                )}
 
-        {userRole === 'Genel Yönetici' ? (
-            <Card className="sm:col-span-2 lg:col-span-1">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Toplam Yaratılan Etki</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-                    <p className="text-xs text-muted-foreground">Bağış + Gönüllülük Değeri</p>
-                </CardContent>
-            </Card>
-        ) : null}
-      </div>
+                {/* Yeni Başvurular */}
+                {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
+                    <div className="p-6">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Yeni Başvurular</span>
+                            <Heart className="h-4 w-4 text-red-500" />
+                        </div>
+                        <div className="text-2xl font-bold">+12</div>
+                        <p className="text-xs text-amber-600 font-medium mt-1">Onay bekleyen başvurular</p>
+                    </div>
+                )}
+
+                {/* Toplam Yaratılan Etki */}
+                {userRole === 'Genel Yönetici' && (
+                    <div className="p-6 bg-primary/5">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-primary uppercase tracking-wider">Toplam Yaratılan Etki</span>
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="text-2xl font-bold text-primary">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+                        <p className="text-[10px] text-muted-foreground mt-1 uppercase">Bağış + Gönüllülük Değeri</p>
+                    </div>
+                )}
+            </div>
+        </CardContent>
+      </Card>
 
         <Card>
             <CardHeader>
