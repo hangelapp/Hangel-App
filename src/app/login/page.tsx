@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { HangelLogo } from '@/components/icons';
 import { 
   Globe, ArrowRight, HeartHandshake, CheckCircle2, ShieldCheck, Zap, Award, 
   ChevronRight, Store, MessageSquare, Smartphone, Mail, Twitter, Instagram, 
-  Linkedin, Briefcase, Sparkles, Search, Filter, ArrowDownUp
+  Linkedin, Briefcase, Sparkles, Search, Filter, ArrowDownUp, Bot
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
@@ -42,7 +43,7 @@ const languages: {value: Language, label: string}[] = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'मराठी' },
+    { value: 'mr', label: 'มراठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -57,7 +58,7 @@ export default function LoginPage() {
     setSelectedTranslations(translations[value] || translations.tr);
   };
 
-  const brands = allEntityLists.slice(0, 16);
+  const brands = allEntityLists.slice(0, 24);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -209,29 +210,24 @@ export default function LoginPage() {
 
                     {/* Brands Grid */}
                     <div className="flex-1">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                             {brands.map((brand) => (
                                 <Link href={`/market/${brand.id}`} key={brand.id} className="group flex flex-col items-center gap-3">
-                                    <div className="relative w-full aspect-square bg-white rounded-full p-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
-                                        {brand.logoUrl ? (
-                                            <Image 
-                                                src={brand.logoUrl} 
-                                                alt={brand.name} 
-                                                fill 
-                                                className="object-contain p-3"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center font-bold text-primary text-xl">
-                                                {brand.name[0]}
-                                            </div>
-                                        )}
+                                    <div className="relative w-full aspect-square bg-white rounded-full p-2 shadow-xl group-hover:scale-105 transition-transform duration-300 overflow-hidden flex items-center justify-center">
+                                        <Image 
+                                            src={brand.logoUrl || `https://logo.clearbit.com/${brand.name.toLowerCase().replace(/\s/g, '')}.com`} 
+                                            alt={brand.name} 
+                                            fill 
+                                            className="object-contain p-4"
+                                            unoptimized
+                                        />
                                         {brand.donationRate > 0 && (
-                                            <div className="absolute -top-1 -right-1 bg-[#042654] text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg border-2 border-primary">
+                                            <div className="absolute top-0 right-0 bg-[#042654] text-white text-[9px] font-black px-1.5 py-0.5 rounded-bl-lg shadow-lg border-l border-b border-primary/20">
                                                 %{brand.donationRate}
                                             </div>
                                         )}
                                     </div>
-                                    <span className="text-[11px] font-bold text-white text-center leading-tight group-hover:underline">
+                                    <span className="text-[10px] font-bold text-white text-center leading-tight group-hover:underline">
                                         {brand.name}
                                     </span>
                                 </Link>
