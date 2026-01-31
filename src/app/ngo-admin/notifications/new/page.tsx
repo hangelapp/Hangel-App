@@ -1,6 +1,7 @@
+'use server';
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,15 +10,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Sparkles, Target, Users, ShieldAlert, Search } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, Target, Users, ShieldAlert, Search, Building, School } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { ngos, studentClubs } from '@/lib/data';
 
-// Mock users for selection
+// Mock users with phone numbers
 const mockUsers = [
-    { id: 'u1', name: 'Ahmet Yılmaz', username: '@ahmtylmz', avatarUrl: 'https://i.pravatar.cc/150?u=u1' },
-    { id: 'u2', name: 'Zeynep Kaya', username: '@zeynepk', avatarUrl: 'https://i.pravatar.cc/150?u=u2' },
-    { id: 'u3', name: 'Mustafa Demir', username: '@mdemir', avatarUrl: 'https://i.pravatar.cc/150?u=u3' },
+    { id: 'u1', name: 'Ahmet Yılmaz', username: '@ahmtylmz', phone: '5551234567', avatarUrl: 'https://i.pravatar.cc/150?u=u1' },
+    { id: 'u2', name: 'Zeynep Kaya', username: '@zeynepk', phone: '5559876543', avatarUrl: 'https://i.pravatar.cc/150?u=u2' },
+    { id: 'u3', name: 'Mustafa Demir', username: '@mdemir', phone: '5550001122', avatarUrl: 'https://i.pravatar.cc/150?u=u3' },
 ];
 
 export default function NewMessagePage() {
@@ -25,13 +27,36 @@ export default function NewMessagePage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [recipientType, setRecipientType] = useState<string>('');
-    const [selectedUser, setSelectedUser] = useState<string | null>(null);
-    const [userSearch, setUserSearch] = useState('');
+    const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredUsers = mockUsers.filter(u => 
-        u.name.toLowerCase().includes(userSearch.toLowerCase()) || 
-        u.username.toLowerCase().includes(userSearch.toLowerCase())
-    );
+    const filteredEntities = useMemo(() => {
+        const lowercased = searchTerm.toLowerCase();
+        
+        if (recipientType === 'individual-user') {
+            return mockUsers.filter(u => 
+                u.name.toLowerCase().includes(lowercased) || 
+                u.username.toLowerCase().includes(lowercased) ||
+                u.phone.includes(searchTerm)
+            ).map(u => ({ id: u.id, name: u.name, sub: u.username, phone: u.phone, avatar: u.avatarUrl }));
+        }
+        
+        if (recipientType === 'individual-ngo') {
+            return ngos.filter(n => 
+                n.name.toLowerCase().includes(lowercased) ||
+                (n.shortName && n.shortName.toLowerCase().includes(lowercased))
+            ).map(n => ({ id: n.id, name: n.name, sub: n.category, avatar: n.avatarUrl }));
+        }
+
+        if (recipientType === 'individual-club') {
+            return studentClubs.filter(c => 
+                c.name.toLowerCase().includes(lowercased) ||
+                c.university.toLowerCase().includes(lowercased)
+            ).map(c => ({ id: c.id, name: c.name, sub: c.university, avatar: c.avatarUrl }));
+        }
+
+        return [];
+    }, [recipientType, searchTerm]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -61,13 +86,13 @@ export default function NewMessagePage() {
                     <Card className="shadow-sm">
                         <CardHeader>
                             <CardTitle>Mesaj İçeriği</CardTitle>
-                            <CardDescription>Topluluğunuza veya yöneticilere iletmek istediğiniz mesajı buraya yazın.</CardDescription>
+                            <CardDescription>Topluluğunuza veya diğer kurumlara iletmek istediğiniz mesajı buraya yazın.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form id="message-form" onSubmit={handleSubmit} className="space-y-6">
                                 <div className="space-y-2">
                                     <Label htmlFor="recipient-type">Hedef Kitle / Alıcı Türü</Label>
-                                    <Select required onValueChange={setRecipientType}>
+                                    <Select required onValueChange={(val) => { setRecipientType(val); setSelectedEntityId(null); setSearchTerm(''); }}>
                                         <SelectTrigger id="recipient-type">
                                             <SelectValue placeholder="Alıcı grubunu seçin..." />
                                         </SelectTrigger>
@@ -75,52 +100,57 @@ export default function NewMessagePage() {
                                             <SelectItem value="group-volunteers">Aktif Gönüllülerim (Grup)</SelectItem>
                                             <SelectItem value="group-donors">Düzenli Bağışçılarım (Grup)</SelectItem>
                                             <SelectItem value="individual-user">Bireysel Kullanıcı</SelectItem>
+                                            <SelectItem value="individual-ngo">Sivil Toplum Kuruluşu (STK)</SelectItem>
                                             <SelectItem value="individual-club">Öğrenci Kulübü</SelectItem>
                                             <SelectItem value="admin">Hangel Sistem Yöneticisi</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
-                                {recipientType === 'individual-user' && (
+                                {['individual-user', 'individual-ngo', 'individual-club'].includes(recipientType) && (
                                     <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-                                        <Label>Kullanıcı Seçin</Label>
+                                        <Label>
+                                            {recipientType === 'individual-user' ? 'Kullanıcı Seçin' : recipientType === 'individual-ngo' ? 'STK Seçin' : 'Kulüp Seçin'}
+                                        </Label>
                                         <div className="relative">
                                             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input 
-                                                placeholder="İsim veya kullanıcı adı ile ara..." 
+                                                placeholder={recipientType === 'individual-user' ? "İsim, @kullanıcıadı veya telefon ile ara..." : "İsim ile ara..."}
                                                 className="pl-8"
-                                                value={userSearch}
-                                                onChange={(e) => setUserSearch(e.target.value)}
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
                                             />
                                         </div>
-                                        <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-                                            {filteredUsers.map(user => (
+                                        <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                                            {filteredEntities.length > 0 ? filteredEntities.map(entity => (
                                                 <div 
-                                                    key={user.id} 
-                                                    onClick={() => setSelectedUser(user.id)}
+                                                    key={entity.id} 
+                                                    onClick={() => setSelectedEntityId(entity.id)}
                                                     className={cn(
                                                         "flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors border",
-                                                        selectedUser === user.id ? "bg-primary/10 border-primary" : "hover:bg-accent border-transparent"
+                                                        selectedEntityId === entity.id ? "bg-primary/10 border-primary" : "hover:bg-accent border-transparent"
                                                     )}
                                                 >
                                                     <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={user.avatarUrl} />
-                                                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                                                        <AvatarImage src={entity.avatar} />
+                                                        <AvatarFallback>{entity.name[0]}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1">
-                                                        <p className="text-sm font-medium">{user.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{user.username}</p>
+                                                        <p className="text-sm font-medium">{entity.name}</p>
+                                                        <p className="text-xs text-muted-foreground">{entity.sub} {entity.phone && `• ${entity.phone}`}</p>
                                                     </div>
-                                                    {selectedUser === user.id && <div className="w-2 h-2 rounded-full bg-primary" />}
+                                                    {selectedEntityId === entity.id && <div className="w-2 h-2 rounded-full bg-primary" />}
                                                 </div>
-                                            ))}
+                                            )) : (
+                                                <p className="text-center py-4 text-xs text-muted-foreground">Eşleşen sonuç bulunamadı.</p>
+                                            )}
                                         </div>
                                     </div>
                                 )}
 
                                 <div className="space-y-2">
                                     <Label htmlFor="subject">Konu Başlığı</Label>
-                                    <Input id="subject" placeholder="Örn: Etkinlik Bilgilendirmesi" required />
+                                    <Input id="subject" placeholder="Örn: İşbirliği Hakkında" required />
                                 </div>
 
                                 <div className="space-y-2">
@@ -141,7 +171,7 @@ export default function NewMessagePage() {
                         </CardContent>
                         <CardFooter className="flex justify-end gap-3 border-t pt-6 bg-muted/10">
                             <Button type="button" variant="outline" onClick={() => router.back()}>İptal</Button>
-                            <Button type="submit" form="message-form" disabled={isLoading || (recipientType === 'individual-user' && !selectedUser)} className="px-8">
+                            <Button type="submit" form="message-form" disabled={isLoading || (['individual-user', 'individual-ngo', 'individual-club'].includes(recipientType) && !selectedEntityId)} className="px-8">
                                 {isLoading ? (
                                     "Gönderiliyor..."
                                 ) : (
@@ -163,8 +193,8 @@ export default function NewMessagePage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-xs space-y-4 text-muted-foreground leading-relaxed">
-                            <p><strong>Bireysel Mesajlaşma:</strong> Gönüllülerinizle özel durumları görüşmek için bireysel mesaj özelliğini kullanabilirsiniz.</p>
-                            <p><strong>Kurumsal Dil:</strong> Mesajlarınızda kuruluşunuzun kimliğini yansıtan nazik ve açıklayıcı bir dil kullanmaya özen gösterin.</p>
+                            <p><strong>Kurumsal İşbirliği:</strong> Diğer STK veya kulüplerle ortak projeler geliştirmek için bireysel mesajlaşmayı kullanın.</p>
+                            <p><strong>Gönüllü Desteği:</strong> Gönüllülerinize telefon numaraları üzerinden ulaşarak daha hızlı koordinasyon sağlayabilirsiniz.</p>
                         </CardContent>
                     </Card>
 
@@ -180,8 +210,8 @@ export default function NewMessagePage() {
                                 <span className="font-bold">150 Kişi</span>
                             </div>
                             <div className="flex justify-between text-xs">
-                                <span className="text-muted-foreground">Takipçiler:</span>
-                                <span className="font-bold">12.4k Kişi</span>
+                                <span className="text-muted-foreground">Destekçi Markalar:</span>
+                                <span className="font-bold">12 Marka</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -189,7 +219,7 @@ export default function NewMessagePage() {
                     <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-3">
                         <ShieldAlert className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
                         <p className="text-[10px] text-amber-800 leading-tight">
-                            Bireysel mesajlar da platform güvenlik kurallarına tabidir. Taciz veya reklam amaçlı kullanım hesap kısıtlamasına yol açabilir.
+                            Platform içi mesajlar kurumsal etik kurallara tabidir. Tüm yazışmalar platform güvenliği için sistem tarafından loglanmaktadır.
                         </p>
                     </div>
                 </div>
