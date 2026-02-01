@@ -242,7 +242,7 @@ const VolunteeringDiscovery = () => {
             </div>
 
             <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
-                <div className="grid grid-flow-col grid-rows-2 md:grid-rows-3 gap-x-4 gap-y-3 px-6 md:px-12 w-max">
+                <div className="grid grid-flow-col grid-rows-2 gap-x-4 gap-y-3 px-6 md:px-12 w-max">
                     {filteredItems.map((item) => (
                         <Link href={`/login/selection?action=register&type=individual`} key={item.id} className="block shrink-0 snap-start">
                             <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[280px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
