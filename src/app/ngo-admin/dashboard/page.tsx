@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -43,21 +42,41 @@ const NavLink = ({ href, icon, label }: { href: string, icon: string, label: str
   )
 }
 
-const allNavItems = [
-    { id: 'profile', href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-    { id: 'volunteer', href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-    { id: 'donations', href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: 'dollar-sign', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
-    { id: 'posts', href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-    { id: 'demographics', href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart-3', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-    { id: 'transparency', href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
-    { id: 'impact-story', href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-    { id: 'qr', href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-    { id: 'website', href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-    { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'] },
-    { id: 'users', href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users', roles: ['Genel Yönetici'] },
-    { id: 'notifications', href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
-    { id: 'settings', href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings', roles: ['Genel Yönetici'] },
-    { id: 'support', href: '/ngo-admin/support', label: 'Destek', icon: 'help-circle', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
+const navGroups = [
+    {
+        title: "Görünürlük & Profil",
+        items: [
+            { id: 'profile', href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+            { id: 'qr', href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+            { id: 'website', href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+        ]
+    },
+    {
+        title: "İletişim & Topluluk",
+        items: [
+            { id: 'notifications', href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
+            { id: 'posts', href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+            { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'] },
+            { id: 'volunteer', href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+        ]
+    },
+    {
+        title: "Finans & Sosyal Etki",
+        items: [
+            { id: 'donations', href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: 'dollar-sign', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
+            { id: 'demographics', href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart-3', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+            { id: 'transparency', href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
+            { id: 'impact-story', href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+        ]
+    },
+    {
+        title: "Sistem & Destek",
+        items: [
+            { id: 'users', href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users', roles: ['Genel Yönetici'] },
+            { id: 'settings', href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings', roles: ['Genel Yönetici'] },
+            { id: 'support', href: '/ngo-admin/support', label: 'Destek', icon: 'help-circle', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
+        ]
+    }
 ];
 
 export default function NgoDashboardPage() {
@@ -65,8 +84,11 @@ export default function NgoDashboardPage() {
     const userRole = (user as any).currentNgoRole || 'Genel Yönetici'; 
     const ngo = ngos.find(n => n.id === '2'); 
 
-    const filteredNavItems = useMemo(() => {
-        return allNavItems.filter(item => item.roles.includes(userRole));
+    const filteredGroups = useMemo(() => {
+        return navGroups.map(group => ({
+            ...group,
+            items: group.items.filter(item => item.roles.includes(userRole))
+        })).filter(group => group.items.length > 0);
     }, [userRole]);
 
     if (!ngo) return null;
@@ -172,19 +194,23 @@ export default function NgoDashboardPage() {
         </CardContent>
       </Card>
 
-        <Card className="shadow-sm">
-            <CardHeader>
-                <CardTitle>Yönetim Araçları</CardTitle>
-                <CardDescription>Yetkileriniz dahilindeki yönetim araçları aşağıda listelenmiştir.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-                <div className="flex flex-col">
-                    {filteredNavItems.map(item => (
-                        <NavLink key={item.id} {...item} />
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
+        <div className="space-y-6">
+            <h2 className="text-xl font-bold font-headline px-1">Yönetim Araçları</h2>
+            {filteredGroups.map(group => (
+                <Card key={group.title} className="shadow-sm overflow-hidden">
+                    <CardHeader className="bg-muted/20 py-3">
+                        <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{group.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="flex flex-col">
+                            {group.items.map(item => (
+                                <NavLink key={item.id} {...item} />
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
     </div>
   );
 }
