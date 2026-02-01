@@ -32,7 +32,7 @@ export default function EmergencyPage() {
     };
 
     const ReportTabContent = () => (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='flex flex-col gap-4'>
             <Card className="flex flex-col">
                 <CardHeader className="pb-2">
                     <CardTitle className='text-base flex items-center gap-2 text-destructive'><Siren className='h-5 w-5' /> Afet Bildirimi</CardTitle>
