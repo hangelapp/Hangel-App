@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -439,7 +440,7 @@ export default function LoginPage() {
 
             {/* Secondary Action Text */}
             <div className="text-[12px] text-[#6e6e73] border-b border-[#d2d2d7] pb-4 mb-4">
-                Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/merchant" className="text-[#0066cc] hover:underline">hangel Üye İşyeri</Link> bulun veya <span className="text-[#0066cc]">0850 000 00 00</span> numaralı telefonu arayın.
+                Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/merchant" className="text-[#0066cc] hover:underline">hangel Üye İşyeri</Link> bulun veya <span className="text-[#0066cc]">0554 700 70 07</span> numaralı telefonu arayın.
             </div>
 
             {/* Bottom Footer Area */}

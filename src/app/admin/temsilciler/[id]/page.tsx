@@ -1,3 +1,4 @@
+
 'use client';
 
 import { schoolRepresentatives } from '@/lib/data';
@@ -77,8 +78,8 @@ const RepresentativeProfilePage = () => {
           <CardTitle>İletişim Bilgileri</CardTitle>
         </CardHeader>
         <CardContent className="text-sm space-y-2">
-          <p><strong>E-posta:</strong> {representative.name.toLowerCase().replace(' ', '.')}@hangel.com</p>
-          <p><strong>Telefon:</strong> +90 554 700 7007 (Gizli)</p>
+          <p><strong>E-posta:</strong> {representative.name.toLowerCase().replace(' ', '.')}@hangel.org</p>
+          <p><strong>Telefon:</strong> 0554 700 70 07 (Gizli)</p>
         </CardContent>
       </Card>
     </div>

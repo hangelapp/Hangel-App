@@ -217,9 +217,11 @@ export default function SupportPage() {
                     </form>
                 </DialogContent>
             </Dialog>
-           <Button size="lg" variant="outline">
-            <Mail className="mr-2 h-5 w-5" />
-            Bize E-posta Gönder
+           <Button size="lg" variant="outline" asChild>
+            <a href="mailto:turkiye@hangel.org">
+              <Mail className="mr-2 h-5 w-5" />
+              Bize E-posta Gönder
+            </a>
           </Button>
         </div>
       </div>

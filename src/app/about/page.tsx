@@ -121,11 +121,11 @@ export default function AboutPage() {
             <div className="space-y-4">
                 <div className="flex items-center gap-4">
                     <Mail className="h-5 w-5 text-muted-foreground" />
-                    <span>destek@hangel.com</span>
+                    <span>turkiye@hangel.org</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>+90 554 700 7007</span>
+                    <span>0554 700 70 07</span>
                 </div>
                  <div className="flex items-start gap-4">
                     <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
