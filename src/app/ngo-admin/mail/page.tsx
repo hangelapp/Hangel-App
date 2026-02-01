@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Send, Mail, Users, Sparkles, Layout, History, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Send, Mail, Users, Sparkles, Layout, History, Settings2, Globe, MailCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
@@ -22,7 +22,7 @@ export default function MailManagementPage() {
         e.preventDefault();
         setIsLoading(true);
         setTimeout(() => {
-            toast({ title: "Kampanya Başlatıldı", description: "Mailleriniz gönderim kuyruğuna alındı." });
+            toast({ title: "Kampanya Başlatıldı", description: "Mailler gönderim kuyruğuna alındı." });
             setIsLoading(false);
         }, 2000);
     };
@@ -34,78 +34,93 @@ export default function MailManagementPage() {
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold font-headline">Mail Gönderimi</h1>
-                    <p className="text-muted-foreground text-sm">Topluluğunuza profesyonel bültenler ve duyurular gönderin.</p>
+                    <h1 className="text-2xl font-bold font-headline">E-Bülten & Mail Yönetimi</h1>
+                    <p className="text-muted-foreground text-sm">Topluluğunuza profesyonel e-postalar gönderin.</p>
                 </div>
             </div>
 
             <Tabs defaultValue="new-mail">
-                <TabsList className="grid w-full grid-cols-2 max-w-md">
-                    <TabsTrigger value="new-mail"><Mail className="mr-2 h-4 w-4" /> Yeni Kampanya</TabsTrigger>
-                    <TabsTrigger value="history"><History className="mr-2 h-4 w-4" /> Gönderim Geçmişi</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                    <TabsTrigger value="new-mail"><Mail className="mr-2 h-4 w-4" /> Yeni Bülten</TabsTrigger>
+                    <TabsTrigger value="history"><History className="mr-2 h-4 w-4" /> Gönderimler</TabsTrigger>
+                    <TabsTrigger value="integration"><Settings2 className="mr-2 h-4 w-4" /> Entegrasyon</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="new-mail" className="mt-6">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 space-y-6">
                             <Card>
-                                <CardHeader>
-                                    <CardTitle>E-Posta Hazırla</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <form id="mail-form" onSubmit={handleSend} className="space-y-6">
-                                        <div className="space-y-2">
-                                            <Label>Alıcı Grubu</Label>
-                                            <Select required>
-                                                <SelectTrigger><SelectValue placeholder="Grup seçin..." /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="all">Tüm Kayıtlı Kullanıcılar</SelectItem>
-                                                    <SelectItem value="volunteers">Aktif Gönüllüler</SelectItem>
-                                                    <SelectItem value="donors">Düzenli Bağışçılar</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Konu Başlığı (Subject)</Label>
-                                            <Input placeholder="Örn: Temmuz Ayı Bültenimiz Yayında!" required />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Mesaj İçeriği</Label>
-                                            <Textarea rows={12} placeholder="Mail içeriğini buraya HTML veya metin olarak yazın..." required />
-                                        </div>
-                                    </form>
+                                <CardHeader><CardTitle>İçerik Hazırla</CardTitle></CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Konu Başlığı</Label>
+                                        <Input placeholder="Ayın Sosyal Etki Özeti" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Mesaj (HTML Destekli)</Label>
+                                        <Textarea rows={10} placeholder="E-posta içeriğinizi buraya yazın..." />
+                                    </div>
+                                    <Button className="w-full" onClick={handleSend} disabled={isLoading}>Gönderimi Başlat</Button>
                                 </CardContent>
-                                <CardFooter className="justify-end gap-3 border-t pt-6">
-                                    <Button variant="outline">Taslağı Kaydet</Button>
-                                    <Button type="submit" form="mail-form" disabled={isLoading}>
-                                        {isLoading ? "Gönderiliyor..." : <><Send className="mr-2 h-4 w-4" /> Gönderimi Başlat</>}
-                                    </Button>
-                                </CardFooter>
                             </Card>
                         </div>
                         <div className="space-y-6">
                             <Card className="bg-primary/5">
-                                <CardHeader><CardTitle className="text-sm font-bold flex items-center gap-2"><Layout className="h-4 w-4" /> Şablonlar</CardTitle></CardHeader>
+                                <CardHeader><CardTitle className="text-sm">Hızlı Şablonlar</CardTitle></CardHeader>
                                 <CardContent className="space-y-2">
-                                    <Button variant="outline" className="w-full text-xs justify-start">Aylık Bülten Şablonu</Button>
-                                    <Button variant="outline" className="w-full text-xs justify-start">Acil Yardım Çağrısı</Button>
-                                    <Button variant="outline" className="w-full text-xs justify-start">Etkinlik Davetiyesi</Button>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader><CardTitle className="text-sm font-bold flex items-center gap-2"><Sparkles className="h-4 w-4" /> AI Asistan</CardTitle></CardHeader>
-                                <CardContent>
-                                    <p className="text-xs text-muted-foreground">Mail içeriğinizi optimize etmek veya başlık önerileri almak için AI asistanı kullanın.</p>
-                                    <Button variant="secondary" size="sm" className="w-full mt-4">AI ile İçerik Üret</Button>
+                                    <Button variant="outline" className="w-full text-xs justify-start">Gönüllü Çağrısı</Button>
+                                    <Button variant="outline" className="w-full text-xs justify-start">Bağış Teşekkür</Button>
                                 </CardContent>
                             </Card>
                         </div>
                     </div>
                 </TabsContent>
 
+                <TabsContent value="integration" className="mt-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>E-Posta Servis Sağlayıcı Ayarları</CardTitle>
+                            <CardDescription>Toplu mail gönderimi için kullandığınız servisi bağlayın.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Label>Servis Seçin</Label>
+                                <Select defaultValue="sendgrid">
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="sendgrid">SendGrid</SelectItem>
+                                        <SelectItem value="mailchimp">Mailchimp</SelectItem>
+                                        <SelectItem value="aws-ses">Amazon SES</SelectItem>
+                                        <SelectItem value="smtp">Özel SMTP</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>API Key / Bağlantı Kodu</Label>
+                                <Input type="password" placeholder="SG.xxxxxxxxxxxx" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Gönderen Adı</Label>
+                                    <Input placeholder="Ahbap Bilgilendirme" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Gönderen E-Posta</Label>
+                                    <Input placeholder="bulten@kurum.org" />
+                                </div>
+                            </div>
+                            <div className="p-4 border rounded-lg bg-green-50 text-green-800 text-xs flex items-center gap-3">
+                                <MailCheck className="h-5 w-5" />
+                                <p>Kurumsal e-posta adresinizin (SPF/DKIM) doğrulanmış olması, maillerin spam kutusuna düşmesini engeller.</p>
+                            </div>
+                            <Button onClick={() => toast({title: "Mail Ayarları Kaydedildi"})}>Entegrasyonu Kaydet</Button>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
                 <TabsContent value="history" className="mt-6">
                     <Card>
-                        <CardHeader><CardTitle>Geçmiş Kampanyalar</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>Gönderim Kayıtları</CardTitle></CardHeader>
                         <CardContent className="p-0">
                             <div className="divide-y">
                                 {[
@@ -115,11 +130,9 @@ export default function MailManagementPage() {
                                     <div key={i} className="p-4 flex items-center justify-between">
                                         <div>
                                             <p className="font-bold text-sm">{mail.title}</p>
-                                            <p className="text-xs text-muted-foreground">{mail.date} • {mail.recipients} Alıcı</p>
+                                            <p className="text-[10px] text-muted-foreground">{mail.date} • {mail.recipients} Alıcı</p>
                                         </div>
-                                        <div className="text-right">
-                                            <Badge variant="outline" className="bg-green-50 text-green-700">Açılma: {mail.open}</Badge>
-                                        </div>
+                                        <Badge variant="outline" className="bg-green-50 text-green-700">Açılma: {mail.open}</Badge>
                                     </div>
                                 ))}
                             </div>
