@@ -141,7 +141,7 @@ export default function EmergencyPage() {
 
   return (
     <div className="h-[calc(100vh-144px)] overflow-hidden bg-secondary/30 animate-in fade-in-0 flex flex-col">
-        <div className="px-6 pt-12 pb-3 space-y-1 shrink-0">
+        <div className="px-6 pt-6 pb-3 space-y-1 shrink-0">
             <h1 className="text-4xl font-black font-headline tracking-tighter">Acil Durum</h1>
             <p className="text-muted-foreground text-sm font-medium">Topluluğun gücüyle hayat kurtar.</p>
         </div>
