@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 
 const socialIntegrations = [
     { id: 'whatsapp', name: 'WhatsApp Business', icon: Smartphone, color: 'bg-green-500', status: 'Bağlı' },
@@ -76,7 +77,7 @@ export default function DmManagementPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> API & Webhook Bilgileri</CardTitle>
-                            <CardDescription>Meta veya WhatsApp API bilgilerinizi buraya girerek tüm mesajları tek bir panelden yönetin.</CardDescription>
+                            <CardDescription>Meta veya WhatsApp API bilgilerinizi buraya girin ve tüm mesajları tek bir panelden yönetin.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
