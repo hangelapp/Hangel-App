@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { askLibraryAssistant } from '@/ai/flows/library-ai-assistant';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 export default function LibraryPage() {
   const { toast } = useToast();
@@ -180,7 +181,7 @@ export default function LibraryPage() {
       <div className="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 z-50">
         <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
             <DialogTrigger asChild>
-                <Button size="icon" className="h-14 w-14 rounded-full shadow-2xl animate-bounce hover:animate-none">
+                <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl animate-bounce hover:animate-none">
                     <Bot className="h-7 w-7" />
                 </Button>
             </DialogTrigger>
