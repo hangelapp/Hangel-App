@@ -126,28 +126,32 @@ const MarketplaceDiscovery = () => {
         { name: 'Nike', rate: 5, logo: 'https://logo.clearbit.com/nike.com' },
         { name: 'Adidas', rate: 5, logo: 'https://logo.clearbit.com/adidas.com' },
         { name: 'Puma', rate: 5, logo: 'https://logo.clearbit.com/puma.com' },
+        { name: 'Gratis', rate: 3, logo: 'https://logo.clearbit.com/gratis.com' },
+        { name: 'Boyner', rate: 4, logo: 'https://logo.clearbit.com/boyner.com.tr' },
     ];
 
     return (
         <div className="w-full py-4 md:py-8 overflow-hidden">
-            <div className="flex overflow-x-auto gap-4 md:gap-6 px-6 md:px-12 no-scrollbar snap-x snap-mandatory justify-start md:justify-center">
-                {brands.map((brand, idx) => (
-                    <div key={idx} className="flex flex-col items-center gap-3 shrink-0 snap-center">
-                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white p-4 shadow-2xl flex items-center justify-center border-4 border-white/10 group hover:scale-105 transition-transform cursor-pointer">
-                            <div className="relative w-full h-full">
-                                <Image src={brand.logo} alt={brand.name} fill className="object-contain" />
+            <div className="overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory">
+                <div className="grid grid-flow-col grid-rows-2 gap-x-4 gap-y-6 px-6 md:px-12 w-max">
+                    {brands.map((brand, idx) => (
+                        <div key={idx} className="flex flex-col items-center gap-2 shrink-0 snap-start w-[88px] md:w-32">
+                            <div className="relative w-20 h-20 md:w-32 md:h-32 rounded-2xl bg-white p-3 md:p-4 shadow-xl flex items-center justify-center border border-white/10 group hover:scale-105 transition-transform cursor-pointer">
+                                <div className="relative w-full h-full">
+                                    <Image src={brand.logo} alt={brand.name} fill className="object-contain" />
+                                </div>
+                                <div className="absolute -top-1 -right-1 bg-[#f34723] text-white text-[9px] md:text-xs font-black rounded-full w-7 h-7 md:w-10 md:h-10 flex items-center justify-center border-2 border-white shadow-lg">
+                                    %{brand.rate}
+                                </div>
                             </div>
-                            <div className="absolute -top-1 -right-1 bg-[#f34723] text-white text-[10px] md:text-xs font-black rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border-2 border-white shadow-lg">
-                                %{brand.rate}
-                            </div>
+                            <p className="text-white/80 text-[10px] md:text-sm font-bold tracking-tight truncate w-full text-center">{brand.name}</p>
                         </div>
-                        <p className="text-white/80 text-xs md:text-sm font-bold tracking-tight">{brand.name}</p>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
-            <div className="mt-6 md:mt-8 flex justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar px-6 md:px-4">
+            <div className="mt-2 md:mt-8 flex justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar px-6">
                 {['Elektronik', 'Giyim', 'Ayakkabı', 'Ev & Yaşam', 'Spor'].map(cat => (
-                    <span key={cat} className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/60 text-[10px] md:text-xs font-medium backdrop-blur-md whitespace-nowrap">
+                    <span key={cat} className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/60 text-[9px] md:text-xs font-medium backdrop-blur-md whitespace-nowrap">
                         {cat}
                     </span>
                 ))}
