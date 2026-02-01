@@ -35,7 +35,7 @@ export default function EmergencyPage() {
     const EmergencyTile = ({ icon: Icon, label, onClick }: { icon: any, label: string, onClick: () => void }) => (
         <button 
             onClick={onClick}
-            className="flex flex-col items-center justify-center gap-3 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group"
+            className="flex flex-col items-center justify-center gap-3 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group shrink-0 min-w-[100px] snap-center"
         >
             <div className="p-4 bg-destructive text-white rounded-2xl shadow-lg shadow-destructive/20 group-hover:scale-110 transition-transform">
                 <Icon className="h-7 w-7" />
@@ -53,25 +53,12 @@ export default function EmergencyPage() {
                     <Badge variant="outline" className="rounded-full bg-destructive/10 text-destructive border-destructive/20 text-[10px] font-bold">ACİL</Badge>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory px-1">
                     <EmergencyTile icon={Zap} label="Deprem" onClick={() => handleReportClick('disaster', 'Deprem')} />
                     <EmergencyTile icon={CloudRain} label="Sel" onClick={() => handleReportClick('disaster', 'Sel')} />
                     <EmergencyTile icon={Flame} label="Yangın" onClick={() => handleReportClick('disaster', 'Yangın')} />
                     <EmergencyTile icon={Ambulance} label="Kaza" onClick={() => handleReportClick('disaster', 'Kaza')} />
-                    <div className="col-span-2">
-                        <button 
-                            onClick={() => handleReportClick('disaster', 'Kayıp')}
-                            className="w-full flex items-center justify-between p-5 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-[0.98] transition-all group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-destructive text-white rounded-xl shadow-md">
-                                    <UserSearch className="h-6 w-6" />
-                                </div>
-                                <span className="text-base font-bold tracking-tight">Kayıp Şahıs Bildir</span>
-                            </div>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </button>
-                    </div>
+                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('disaster', 'Kayıp')} />
                 </div>
 
                 <div className="p-4 bg-muted/50 rounded-2xl border border-dashed flex items-start gap-3">
