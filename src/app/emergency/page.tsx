@@ -70,26 +70,6 @@ export default function EmergencyPage() {
                     </p>
                 </div>
             </div>
-
-            {/* Special Calls Shortcut */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                    <h2 className="text-lg font-bold flex items-center gap-2"><Droplets className="h-5 w-5 text-destructive" /> Kan İhtiyacı</h2>
-                </div>
-                
-                <button 
-                    onClick={() => handleReportClick('blood', 'Acil Kan Çağrısı')}
-                    className="w-full relative overflow-hidden p-6 bg-gradient-to-br from-destructive to-red-700 text-white rounded-[2rem] active:scale-[0.98] transition-all shadow-xl shadow-destructive/20"
-                >
-                    <div className="relative z-10 flex flex-col items-center gap-2">
-                        <Droplets className="h-10 w-10 animate-pulse" />
-                        <span className="text-xl font-black tracking-tight uppercase">DETAYLI KAN ÇAĞRISI</span>
-                        <p className="text-white/80 text-xs font-medium">Konumunuzdaki potansiyel bağışçılara ulaşın</p>
-                    </div>
-                    <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-3xl" />
-                    <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-black/10 rounded-full blur-3xl" />
-                </button>
-            </div>
         </div>
     );
 
