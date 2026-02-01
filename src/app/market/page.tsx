@@ -300,7 +300,7 @@ export default function MarketPage() {
                         </Dialog>
                     </div>
                 </div>
-                <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
+                <Dialog open={isAssistantOpen} onOpenChange={setAssistantOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                             <Bot className="h-5 w-5" />
@@ -423,7 +423,7 @@ export default function MarketPage() {
                         <Link href={`/market/${brand.id}`} className="group">
                             <div className="flex flex-col items-center text-center space-y-3 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
-                                    <div className="w-full h-full rounded-full bg-[#f9f9f9] border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
+                                    <div className="w-full h-full rounded-2xl bg-[#f9f9f9] border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
                                         {brand.logoUrl ? (
                                             <div className="relative w-full h-full p-3">
                                                 <Image 

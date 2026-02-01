@@ -133,7 +133,7 @@ const MarketplaceDiscovery = () => {
             <div className="flex overflow-x-auto gap-6 px-12 no-scrollbar snap-x snap-mandatory justify-start md:justify-center">
                 {brands.map((brand, idx) => (
                     <div key={idx} className="flex flex-col items-center gap-3 shrink-0 snap-center">
-                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full bg-white p-4 shadow-2xl flex items-center justify-center border-4 border-white/10 group hover:scale-105 transition-transform cursor-pointer">
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white p-4 shadow-2xl flex items-center justify-center border-4 border-white/10 group hover:scale-105 transition-transform cursor-pointer">
                             <div className="relative w-full h-full">
                                 <Image src={brand.logo} alt={brand.name} fill className="object-contain" />
                             </div>
