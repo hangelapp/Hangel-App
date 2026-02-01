@@ -382,8 +382,6 @@ export default function LoginPage() {
             <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
             <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
             <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
-            <Link href="/about" className="hover:text-[#1d1d1f] transition-colors">Hakkımızda</Link>
-            <Link href="/support" className="hover:text-[#1d1d1f] transition-colors">Destek</Link>
           </nav>
 
           <div className="flex-1 flex justify-end items-center gap-5 opacity-80">
