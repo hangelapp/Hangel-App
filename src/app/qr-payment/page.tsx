@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -219,18 +220,7 @@ export default function QrPaymentPage() {
   };
 
   const getActiveBorderColor = () => {
-    switch (activeCardId) {
-        case 'bireysel': return 'border-orange-500';
-        case 'ogrenci': return 'border-cyan-500';
-        case 'ticari': return 'border-blue-700';
-        default: return 'border-primary';
-    }
-  };
-
-  const getActiveTabColor = (cardId: string) => {
-    const card = cards.find(c => c.id === cardId);
-    if (!card) return 'bg-muted';
-    return card.bgColor;
+    return 'border-primary';
   };
 
 
@@ -252,7 +242,7 @@ export default function QrPaymentPage() {
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "rounded-t-xl p-2 text-xs font-bold text-white transition-all",
+                            "rounded-t-xl p-2 text-xs font-bold text-white transition-all border-b-0",
                             "data-[state=active]:opacity-100 data-[state=active]:scale-105 data-[state=active]:z-10",
                             "data-[state=inactive]:opacity-40 data-[state=inactive]:bg-muted data-[state=inactive]:text-muted-foreground",
                             activeCardId === card.id ? card.bgColor : ""
@@ -401,9 +391,9 @@ export default function QrPaymentPage() {
       </Card>
 
       {activeCardId === 'ticari' && (
-        <Card className="mt-6 border-blue-700/30 bg-blue-50/10 shadow-sm">
+        <Card className="mt-6 border-primary/30 bg-primary/5 shadow-sm">
             <CardHeader>
-                <CardTitle className="text-blue-800 dark:text-blue-400">Üye İşyeri Materyalleri</CardTitle>
+                <CardTitle className="text-primary">Üye İşyeri Materyalleri</CardTitle>
                 <CardDescription>İşletmenizde kullanabileceğiniz dijital ve basılabilir materyaller.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -412,9 +402,9 @@ export default function QrPaymentPage() {
                     { title: 'hangel İle Öde Sticker', desc: 'Ödeme kabul ettiğinizi gösteren tabela görseli.', icon: Store },
                     { title: '"hangel Üye İşyeri" Dönkartı', desc: 'Girişlerde kullanılabilecek çift taraflı kart.', icon: Landmark }
                 ].map((item, i) => (
-                    <div key={i} className="p-4 border bg-background rounded-xl flex items-center justify-between shadow-sm hover:border-blue-500/50 transition-colors group">
+                    <div key={i} className="p-4 border bg-background rounded-xl flex items-center justify-between shadow-sm hover:border-primary/50 transition-colors group">
                         <div className="flex items-center gap-4">
-                            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
                                 <item.icon className="h-5 w-5" />
                             </div>
                             <div>
@@ -423,8 +413,8 @@ export default function QrPaymentPage() {
                             </div>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
                         </div>
                     </div>
                 ))}

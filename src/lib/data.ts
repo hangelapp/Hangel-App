@@ -727,7 +727,7 @@ export const ngos: NGO[] = [
         coverPhotoUrl: 'https://picsum.photos/seed/tema-cover/1200/400',
         stats: { followers: 120000, donors: 50000, volunteers: 80000, volunteerHours: 250000, projects: 150, totalDonation: 1500000, donationCount: 65000, avgDonation: 23.07, highestSingleDonation: 500, peopleReached: 500000, },
         transparencyScore: 92,
-        about: "Türkiye Çöl Olmasın! TEMA Vakfı, 1992 yılından bu yana erozyon ve çölleşme tehlikesine karşı mücadele etmekte, doğal varlıklarımızı korumak için çalışmaktadır. Ağaçlandırma projeleri, eğitim programları ve savunuculuk faaliyetleri ile daha yeşil bir Türkiye için umut oluyoruz.",
+        about: "Türkiye Çöl Olmasın! TEMA Vakfı, 1992 yılından bu yana erozyon ve chölleşme tehlikesine karşı mücadele etmekte, doğal varlıklarımızı korumak için çalışmaktadır. Ağaçlandırma projeleri, eğitim programları ve savunuculuk faaliyetleri ile daha yeşil bir Türkiye için umut oluyoruz.",
         joinDate: "2023-01-10",
         supportedSDGs: ['İklim Eylemi', 'Karasal Yaşam', 'Temiz Su ve Sanitasyon'],
         beneficiaryGroups: ['Tüm Canlılar', 'Gelecek Nesiller', 'Çevre'],
@@ -825,7 +825,7 @@ export const ngos: NGO[] = [
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/losev.org.tr',
         coverPhotoUrl: 'https://picsum.photos/seed/losev-cover/1200/400',
-        stats: { followers: 750000, donors: 180000, volunteers: 50000, volunteerHours: 300000, projects: 400, totalDonation: 9800000, donationCount: 250000, avgDonation: 39.2, highestSingleDonation: 800, peopleReached: 1500000 },
+        stats: { followers: 750000, donors: 180000, volunteers: 5000, volunteerHours: 300000, projects: 400, totalDonation: 9800000, donationCount: 250000, avgDonation: 39.2, highestSingleDonation: 800, peopleReached: 1500000 },
         transparencyScore: 94,
         about: "LÖSEV, lösemili ve kan hastası çocukların, sağlık ve eğitim başta olmak üzere her türlü ihtiyaçlarının sağlanmasına yardımcı olmak, bunun yanı sıra, kalıtsal ve edinsel kan hastalıkları konusunda ulusal düzeyde tedavi, eğitim ve araştırma kurumları kurmak ve işletmektir.",
         joinDate: "2023-03-01",
@@ -1496,7 +1496,7 @@ export const allEntityLists: Brand[] = [
     { id: '203', name: 'Getir', category: 'Süpermarket', donationRate: 2, logoUrl: 'https://logo.clearbit.com/getir.com', followers: 5000000, type: 'brand' },
     { id: '204', name: 'CarrefourSA', category: 'Süpermarket', donationRate: 1, logoUrl: 'https://logo.clearbit.com/carrefoursa.com', followers: 2000000, type: 'brand' },
     { id: '205', name: 'Letgo', category: 'Pazaryeri', donationRate: 0, logoUrl: 'https://logo.clearbit.com/letgo.com', followers: 1000000, type: 'brand' },
-    { id: '206', name: 'Pazarama', category: 'Pazaryeri', donationRate: 3, logoUrl: 'https://logo.clearbit.com/pazarama.com', followers: 800000, type: 'brand' },
+    { id: '206', name: 'Pazarama', category: 'Pazaryeri', donationRate: 3, logoUrl: 'https://logo.clearbit.com/pazarama.com', followers: 80000, type: 'brand' },
     { id: '207', name: 'n11', category: 'Pazaryeri', donationRate: 2, logoUrl: 'https://logo.clearbit.com/n11.com', followers: 6000000, type: 'brand' },
     { id: '208', name: 'Occasion', category: 'Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/koton.com', followers: 150000, type: 'brand' },
     { id: '209', name: 'Samsung', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/samsung.com', followers: 8000000, type: 'brand' },
@@ -1562,7 +1562,7 @@ export const events: Event[] = [
       tags: ['Çevre', 'Gönüllülük', 'Sürdürülebilirlik'],
       imageUrl: 'https://picsum.photos/seed/event2/800/400',
       imageHint: 'beach cleanup volunteering',
-      description: 'Daha temiz bir çevre için el ele veriyoruz. "Temiz Deniz, Sağlıklı Gelecek" projemiz kapsamında bu hafta sonu Caddebostan sahilini temizliyoruz. Eldiven ve çöp poşetleri bizden, enerjiniz sizden!',
+      description: 'Daha temiz bir çevre için el ele veriyoruz. "Temiz Deniz, Sağlıklı Gelecek" projemiz kapsamında bu hafta sonu Caddebostan sahilini temizliyoruz. Eldiven ve chöp poşetleri bizden, enerjiniz sizden!',
       providesCertificate: false
     },
 ];
@@ -1859,7 +1859,7 @@ export const qrPaymentCardData = [
   {
     id: 'bireysel',
     type: 'Bireysel',
-    bgColor: 'bg-gradient-to-br from-orange-700 via-orange-500 to-orange-800',
+    bgColor: 'bg-gradient-to-br from-[#f34723] via-[#ff5a3c] to-[#d63a1a]',
     number: '5549601000001234',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '12/28',
@@ -1870,7 +1870,7 @@ export const qrPaymentCardData = [
   {
     id: 'ogrenci',
     type: 'Öğrenci',
-    bgColor: 'bg-gradient-to-br from-cyan-700 via-cyan-500 to-cyan-800',
+    bgColor: 'bg-gradient-to-br from-[#f34723] via-[#f87158] to-[#c43015]',
     number: '5549601000005678',
     owner: 'İsmail Hilmi ADIGÜZEL',
     expiry: '10/27',
@@ -1881,7 +1881,7 @@ export const qrPaymentCardData = [
   {
     id: 'ticari',
     type: 'Ticari',
-    bgColor: 'bg-gradient-to-br from-blue-900 via-blue-700 to-blue-950',
+    bgColor: 'bg-gradient-to-br from-[#d63a1a] via-[#f34723] to-[#9e2a10]',
     number: '5549601000009012',
     owner: 'Hangel Ticari Hesap',
     expiry: '08/29',
