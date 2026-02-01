@@ -19,6 +19,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { volunteeringOpportunities } from '@/lib/data';
 import { Input } from '@/components/ui/input';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const languages = [
     { value: 'tr', label: 'Türkçe' },
@@ -60,10 +66,10 @@ const AppleSection = ({
       {description && <p className={cn("text-[10px] md:text-xs font-medium mt-6 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
       {subtitle && <p className="text-xl md:text-2xl font-medium md:whitespace-nowrap max-w-full px-2">{subtitle}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
-        <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal">
+        <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal text-sm md:text-base">
           <Link href={link}>{primaryCta}</Link>
         </Button>
-        <Button variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-lg group">
+        <Button variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-sm md:text-lg group">
           {secondaryCta} <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Button>
       </div>
@@ -194,6 +200,110 @@ const VolunteeringDiscovery = () => {
     );
 };
 
+const FooterNav = () => {
+  const sections = [
+    {
+      title: "Keşfet ve Sosyal Etki",
+      links: [
+        { label: "Markalar", href: "/market" },
+        { label: "Gönüllülük", href: "/volunteering" },
+        { label: "STK'lar", href: "/ngos" },
+        { label: "Öğrenci Kulüpleri", href: "/admin/clubs" },
+        { label: "Liderlik Tablosu", href: "/leaderboard" },
+        { label: "Etki Hikayem", href: "/impact-story" },
+      ]
+    },
+    {
+      title: "Hesap ve Ödemeler",
+      links: [
+        { label: "Giriş Yap", href: "/login/selection?action=login" },
+        { label: "Bireysel Kayıt", href: "/login/selection?action=register&type=individual" },
+        { label: "Kurumsal Başvuru", href: "/login/selection?action=register&type=corporate" },
+        { label: "QR Ödeme", href: "/qr-payment" },
+        { label: "Bağışlarım", href: "/my-donations" },
+        { label: "Rozetlerim", href: "/my-badges" },
+      ]
+    },
+    {
+      title: "Kurumsal",
+      links: [
+        { label: "Hakkımızda", href: "/about" },
+        { label: "Kamu İlişkileri", href: "/corporate" },
+        { label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri" },
+        { label: "Basın Odası", href: "/press" },
+        { label: "Kütüphane", href: "/library" },
+        { label: "İletişim", href: "/about" },
+      ]
+    },
+    {
+      title: "İş Ortaklığı ve Destek",
+      links: [
+        { label: "Üye İşyeri Ol", href: "/merchant" },
+        { label: "STK Başvurusu", href: "/ngo-onboarding" },
+        { label: "Destek Merkezi", href: "/support" },
+        { label: "Arkadaşını Davet Et", href: "/invite" },
+        { label: "Güvenlik", href: "/settings/security" },
+      ]
+    },
+    {
+      title: "Değerler ve Politika",
+      links: [
+        { label: "Şeffaflık Endeksi", href: "/ngos" },
+        { label: "Sosyal Etki Politikası", href: "/settings/contracts/sosyal-etki-politikasi" },
+        { label: "Etik İlkeler", href: "/settings/contracts/etik-ilkeler" },
+        { label: "Sürdürülebilirlik", href: "/about" },
+        { label: "Erişilebilirlik", href: "/settings/contracts/erisilebilirlik-politikasi" },
+      ]
+    }
+  ];
+
+  return (
+    <>
+      {/* Desktop Grid */}
+      <div className="hidden md:grid grid-cols-5 gap-4 mb-10">
+        {sections.map((section) => (
+          <div key={section.title} className="space-y-3">
+            <h4 className="text-[12px] font-bold text-[#1d1d1f]">{section.title}</h4>
+            <ul className="text-[12px] text-[#6e6e73] space-y-2">
+              {section.links.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="hover:text-[#1d1d1f] hover:underline">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* Mobile Accordion */}
+      <div className="md:hidden mb-8 border-b border-[#d2d2d7]">
+        <Accordion type="single" collapsible className="w-full">
+          {sections.map((section, idx) => (
+            <AccordionItem key={section.title} value={`item-${idx}`} className="border-t border-[#d2d2d7] border-b-0">
+              <AccordionTrigger className="text-[12px] font-normal py-3 text-[#1d1d1f] hover:no-underline">
+                {section.title}
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <ul className="text-[12px] text-[#6e6e73] space-y-3 pl-2">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      <Link href={link.href} className="hover:text-[#1d1d1f]">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+    </>
+  );
+};
+
 export default function LoginPage() {
   const [language, setLanguage] = useState('tr');
 
@@ -305,9 +415,10 @@ export default function LoginPage() {
         />
       </main>
 
-      <footer className="bg-[#f5f5f7] py-12 px-6 border-t border-[#d2d2d7] text-[#1d1d1f]">
-        <div className="container mx-auto h-full max-w-5xl space-y-8">
-            <div className="text-[12px] text-[#6e6e73] leading-relaxed space-y-4 max-w-4xl border-b border-[#d2d2d7] pb-6">
+      <footer className="bg-[#f5f5f7] pt-12 pb-16 px-6 border-t border-[#d2d2d7] text-[#1d1d1f]">
+        <div className="container mx-auto h-full max-w-5xl">
+            {/* Footnotes */}
+            <div className="text-[12px] text-[#6e6e73] leading-relaxed space-y-4 border-b border-[#d2d2d7] pb-6 mb-8">
                 <p>
                   * hangel bağışı kapsamında sunulan oranlar anlaşmalı markalara göre değişiklik gösterebilir. Bağış tutarları, yasal vergiler ve hangel hizmet bedeli kesildikten sonra STK'ya aktarılır. Ayrıntılı bilgi için <Link href="/support" className="text-[#1d1d1f] underline">Destek Merkezi'ni</Link> ziyaret edebilirsiniz.
                 </p>
@@ -316,23 +427,35 @@ export default function LoginPage() {
                 </p>
             </div>
 
-            <div className="text-[12px] text-[#6e6e73] space-y-4 pt-4">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            {/* Apple-style Breadcrumb */}
+            <div className="flex items-center gap-2 text-[12px] text-[#6e6e73] mb-8">
+                <HangelLogo className="h-3 w-auto opacity-60" />
+                <ChevronRight className="h-3 w-3" />
+                <span className="hover:text-[#1d1d1f] cursor-pointer">Yasal Bilgiler</span>
+            </div>
+
+            {/* Navigation Sections */}
+            <FooterNav />
+
+            {/* Secondary Action Text */}
+            <div className="text-[12px] text-[#6e6e73] border-b border-[#d2d2d7] pb-4 mb-4">
+                Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/merchant" className="text-[#0066cc] hover:underline">hangel Üye İşyeri</Link> bulun veya <span className="text-[#0066cc]">0850 000 00 00</span> numaralı telefonu arayın.
+            </div>
+
+            {/* Bottom Footer Area */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-[12px] text-[#6e6e73]">
+                <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2">
+                    <p>Telif Hakkı © 2026 hangel.org. Tüm hakları saklıdır.</p>
                     <div className="flex flex-wrap gap-x-2 gap-y-1">
-                        <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
-                        <span className="text-[#d2d2d7]">|</span>
-                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerez Politikası</Link>
-                        <span className="text-[#d2d2d7]">|</span>
-                        <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
-                        <span className="text-[#d2d2d7]">|</span>
-                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
-                    </div>
-                    <div className="font-semibold text-[#1d1d1f] hover:underline cursor-pointer transition-colors">
-                        Türkiye
+                        <Link href="/settings/contracts/gizlilik-politikasi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Gizlilik Politikası</Link>
+                        <Link href="/settings/contracts/cerez-politikasi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Çerez Politikası</Link>
+                        <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Kullanım Şartları</Link>
+                        <Link href="/settings/contracts/sosyal-etki-politikasi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Sosyal Etki Politikası</Link>
+                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-[#1d1d1f] hover:underline">Bilgi Toplumu Hizmetleri</Link>
                     </div>
                 </div>
-                <div className="pt-2 border-t border-[#d2d2d7]/50 text-center">
-                    <span className="font-normal">© 2026 hangel.org. Tüm hakları saklıdır.</span>
+                <div className="font-semibold text-[#1d1d1f] hover:underline cursor-pointer transition-colors shrink-0">
+                    Türkiye
                 </div>
             </div>
         </div>
