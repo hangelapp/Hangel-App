@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, ChevronRight } from 'lucide-react';
+import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, ChevronRight, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
