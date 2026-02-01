@@ -10,6 +10,7 @@ import { ArrowLeft, Calendar, Plus, Users, MapPin, Clock, Edit, Trash2, Ticket, 
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 export default function EventManagementPage() {
     const { toast } = useToast();
