@@ -22,26 +22,9 @@ import {
 
 const initialActiveCalls = [
     { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '5 dk önce' },
-    { id: 2, type: 'Deprem', details: 'Enkaz Kaldırma Gönüllüsü', location: 'Hatay Antakya', time: '12 dk önce' },
-    { id: 3, type: 'Kan İhtiyacı', details: '0 Rh- (Kritik)', location: 'İstanbul Çapa Tıp Fakültesi', time: '18 dk önce' },
-    { id: 4, type: 'Yangın', details: 'Söndürme Destek Ekibi', location: 'Muğla Marmaris', time: '25 dk önce' },
-    { id: 5, type: 'Kan İhtiyacı', details: 'B Rh+', location: 'Antalya Akdeniz Üniv. Hastanesi', time: '32 dk önce' },
-    { id: 6, type: 'Sel', details: 'Tahliye Operasyonu', location: 'Giresun Dereli', time: '40 dk önce' },
-    { id: 7, type: 'Kaza', details: 'Çoklu Trafik Kazası Destek', location: 'Bursa TEM Otoyolu', time: '45 dk önce' },
-    { id: 8, type: 'Kayıp', details: 'Arama Kurtarma Ekibi', location: 'Bolu Kartalkaya', time: '52 dk önce' },
-    { id: 9, type: 'Kan İhtiyacı', details: 'AB Rh-', location: 'İzmir Ege Üniv. Hastanesi', time: '1 saat önce' },
-    { id: 10, type: 'Yangın', details: 'Lojistik Destek', location: 'Çanakkale Ayvacık', time: '1 saat önce' },
-    { id: 11, type: 'Deprem', details: 'Çadır Kent Kurulumu', location: 'Adıyaman Merkez', time: '1 saat önce' },
-    { id: 12, type: 'Kan İhtiyacı', details: 'A Rh-', location: 'Gaziantep Şehir Hastanesi', time: '2 saat önce' },
-    { id: 13, type: 'Sel', details: 'Gıda ve İhtiyaç Dağıtımı', location: 'Sinop Ayancık', time: '2 saat önce' },
-    { id: 14, type: 'Kaza', details: 'Tünel Kazası Müdahale', location: 'Kocaeli Bolu Dağı', time: '2 saat önce' },
-    { id: 15, type: 'Kayıp', details: 'Şehir Merkezi Arama', location: 'İstanbul Beyoğlu', time: '3 saat önce' },
-    { id: 16, type: 'Kan İhtiyacı', details: '0 Rh+', location: 'Konya Şehir Hastanesi', time: '3 saat önce' },
-    { id: 17, type: 'Yangın', details: 'Rehabilitasyon Çalışması', location: 'Antalya Manavgat', time: '4 saat önce' },
-    { id: 18, type: 'Deprem', details: 'Saha Koordinasyon Gönüllüsü', location: 'Malatya Doğanşehir', time: '4 saat önce' },
-    { id: 19, type: 'Kan İhtiyacı', details: 'B Rh-', location: 'Adana Şehir Hastanesi', time: '5 saat önce' },
-    { id: 20, type: 'Kaza', details: 'Zincirleme Kaza Yardım', location: 'Eskişehir Yolu', time: '5 saat önce' },
-    { id: 21, type: 'Kayıp', details: 'Doğa Araması', location: 'Rize Kaçkar Dağları', time: '6 saat önce' },
+    { id: 2, type: 'Kan İhtiyacı', details: '0 Rh- (Kritik)', location: 'İstanbul Çapa Tıp Fakültesi', time: '18 dk önce' },
+    { id: 3, type: 'Kan İhtiyacı', details: 'B Rh+', location: 'Antalya Akdeniz Üniv. Hastanesi', time: '32 dk önce' },
+    { id: 4, type: 'Kan İhtiyacı', details: 'AB Rh-', location: 'İzmir Ege Üniv. Hastanesi', time: '1 saat önce' },
 ];
 
 const initialPastApplications = [
@@ -98,9 +81,9 @@ export default function EmergencyPage() {
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
                     <div className="text-sm text-muted-foreground">
-                        <p className="text-foreground/80 mb-4">
+                        <div className="text-foreground/80 mb-4">
                             <strong>{label}</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
-                        </p>
+                        </div>
                     </div>
                 </AlertDialogHeader>
                 <div className="py-2">
