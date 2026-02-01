@@ -520,9 +520,6 @@ export default function LoginPage() {
                         <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-[#1d1d1f] hover:underline">Bilgi Toplumu Hizmetleri</Link>
                     </div>
                 </div>
-                <div className="font-semibold text-[#1d1d1f] hover:underline cursor-pointer transition-colors shrink-0">
-                    Türkiye
-                </div>
             </div>
         </div>
       </footer>
