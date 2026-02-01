@@ -160,9 +160,9 @@ const VolunteeringDiscovery = () => {
     }
 
     return (
-        <div className="w-full space-y-6 py-4">
-            <div className="flex items-center gap-2 px-4 max-w-2xl mx-auto w-full">
-                <div className="relative flex-1">
+        <div className="w-full space-y-4 md:space-y-6 py-4">
+            <div className="flex flex-col md:flex-row items-center gap-2 px-4 max-w-2xl mx-auto w-full">
+                <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
                     <Input 
                         placeholder="Gönüllülük ilanlarında ara..." 
@@ -171,12 +171,14 @@ const VolunteeringDiscovery = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
-                    <Filter className="h-4 w-4 text-[#1d1d1f]" />
-                </Button>
-                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
-                    <ArrowDownUp className="h-4 w-4 text-[#1d1d1f]" />
-                </Button>
+                <div className="flex gap-2 w-full md:w-auto justify-end">
+                    <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
+                        <Filter className="h-4 w-4 text-[#1d1d1f]" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
+                        <ArrowDownUp className="h-4 w-4 text-[#1d1d1f]" />
+                    </Button>
+                </div>
             </div>
 
             <div className="flex overflow-x-auto md:justify-center gap-2 px-4 no-scrollbar">
@@ -197,10 +199,10 @@ const VolunteeringDiscovery = () => {
             </div>
 
             <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
-                <div className="grid grid-flow-col grid-rows-3 gap-x-4 gap-y-3 px-4 md:px-12 w-max">
+                <div className="grid grid-flow-col grid-rows-2 md:grid-rows-3 gap-x-4 gap-y-3 px-4 md:px-12 w-max">
                     {filteredItems.map((item) => (
                         <Link href={`/login/selection?action=register&type=individual`} key={item.id} className="block shrink-0 snap-start">
-                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[260px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
+                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[280px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
                                 <CardHeader className="p-4 pb-0 space-y-0.5 text-left">
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
                                     <CardTitle className="text-sm font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-1">{item.title}</CardTitle>
