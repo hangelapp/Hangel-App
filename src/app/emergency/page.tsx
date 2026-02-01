@@ -1,6 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -13,7 +13,6 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -109,7 +108,7 @@ export default function EmergencyPage() {
     );
 
     const ReportTabContent = () => (
-        <div className='flex flex-col gap-6'>
+        <div className="flex flex-col gap-6">
             <div className="space-y-4">
                 <div className="flex items-center justify-between px-1">
                     <h2 className="text-lg font-bold flex items-center gap-2"><Siren className="h-5 w-5 text-destructive" /> Acil Bildirimler</h2>
@@ -141,7 +140,7 @@ export default function EmergencyPage() {
     );
 
   return (
-    <div className="h-[calc(100vh-4rem)] overflow-hidden bg-secondary/30 animate-in fade-in-0 flex flex-col">
+    <div className="h-[calc(100vh-144px)] overflow-hidden bg-secondary/30 animate-in fade-in-0 flex flex-col">
         <div className="px-6 pt-12 pb-3 space-y-1 shrink-0">
             <h1 className="text-4xl font-black font-headline tracking-tighter">Acil Durum</h1>
             <p className="text-muted-foreground text-sm font-medium">Topluluğun gücüyle hayat kurtar.</p>
@@ -158,11 +157,11 @@ export default function EmergencyPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="report" className="mt-8 overflow-y-auto no-scrollbar">
+                <TabsContent value="report" className="mt-8 flex-1 overflow-y-auto no-scrollbar">
                     <ReportTabContent />
                 </TabsContent>
 
-                <TabsContent value="calls" className="mt-8 space-y-6 overflow-y-auto no-scrollbar pb-32">
+                <TabsContent value="calls" className="mt-8 flex-1 overflow-y-auto no-scrollbar space-y-6 pb-20">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-base font-bold">Aktif Acil Çağrılar</h3>
