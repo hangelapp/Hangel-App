@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -116,6 +115,46 @@ const AppleSection = ({
     </div>
   </section>
 );
+
+const MarketplaceDiscovery = () => {
+    const brands = [
+        { name: 'Skechers', rate: 6, logo: 'https://logo.clearbit.com/skechers.com.tr' },
+        { name: 'Beymen', rate: 4, logo: 'https://logo.clearbit.com/beymen.com' },
+        { name: 'MediaMarkt', rate: 2, logo: 'https://logo.clearbit.com/mediamarkt.com.tr' },
+        { name: 'Karaca', rate: 10, logo: 'https://logo.clearbit.com/karaca.com' },
+        { name: 'Columbia', rate: 7, logo: 'https://logo.clearbit.com/columbia.com' },
+        { name: 'Nike', rate: 5, logo: 'https://logo.clearbit.com/nike.com' },
+        { name: 'Adidas', rate: 5, logo: 'https://logo.clearbit.com/adidas.com' },
+        { name: 'Puma', rate: 5, logo: 'https://logo.clearbit.com/puma.com' },
+    ];
+
+    return (
+        <div className="w-full py-8 overflow-hidden">
+            <div className="flex overflow-x-auto gap-6 px-12 no-scrollbar snap-x snap-mandatory justify-start md:justify-center">
+                {brands.map((brand, idx) => (
+                    <div key={idx} className="flex flex-col items-center gap-3 shrink-0 snap-center">
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full bg-white p-4 shadow-2xl flex items-center justify-center border-4 border-white/10 group hover:scale-105 transition-transform cursor-pointer">
+                            <div className="relative w-full h-full">
+                                <Image src={brand.logo} alt={brand.name} fill className="object-contain" />
+                            </div>
+                            <div className="absolute -top-1 -right-1 bg-[#f34723] text-white text-[10px] md:text-xs font-black rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border-2 border-white shadow-lg">
+                                %{brand.rate}
+                            </div>
+                        </div>
+                        <p className="text-white/80 text-xs md:text-sm font-bold tracking-tight">{brand.name}</p>
+                    </div>
+                ))}
+            </div>
+            <div className="mt-8 flex justify-center gap-2 flex-wrap px-4">
+                {['Elektronik', 'Giyim', 'Ayakkabı', 'Ev & Yaşam', 'Spor'].map(cat => (
+                    <span key={cat} className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/60 text-[10px] md:text-xs font-medium backdrop-blur-md">
+                        {cat}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const VolunteeringDiscovery = () => {
     const [mounted, setMounted] = useState(false);
@@ -425,12 +464,12 @@ export default function LoginPage() {
           title="hangel bağışı"
           subtitle="Alışverişin iyiliğe dönüşsün."
           description="Ek Bir Ödeme Yapmadan, Seçtiğin STK'ya %15'e Varan Oranlarda Bağış Yap."
-          image="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop"
-          imageHint="shopping bags donation"
           link="/login/selection?action=register&type=individual"
           dark={true}
           primaryCta="Bağış Sistemini Keşfet"
-        />
+        >
+          <MarketplaceDiscovery />
+        </AppleSection>
 
         <AppleSection 
           title="Şeffaflık Endeksi"
