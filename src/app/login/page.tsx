@@ -129,8 +129,8 @@ const MarketplaceDiscovery = () => {
     ];
 
     return (
-        <div className="w-full py-8 overflow-hidden">
-            <div className="flex overflow-x-auto gap-6 px-12 no-scrollbar snap-x snap-mandatory justify-start md:justify-center">
+        <div className="w-full py-4 md:py-8 overflow-hidden">
+            <div className="flex overflow-x-auto gap-4 md:gap-6 px-6 md:px-12 no-scrollbar snap-x snap-mandatory justify-start md:justify-center">
                 {brands.map((brand, idx) => (
                     <div key={idx} className="flex flex-col items-center gap-3 shrink-0 snap-center">
                         <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white p-4 shadow-2xl flex items-center justify-center border-4 border-white/10 group hover:scale-105 transition-transform cursor-pointer">
@@ -145,9 +145,9 @@ const MarketplaceDiscovery = () => {
                     </div>
                 ))}
             </div>
-            <div className="mt-8 flex justify-center gap-2 flex-wrap px-4">
+            <div className="mt-6 md:mt-8 flex justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar px-6 md:px-4">
                 {['Elektronik', 'Giyim', 'Ayakkabı', 'Ev & Yaşam', 'Spor'].map(cat => (
-                    <span key={cat} className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/60 text-[10px] md:text-xs font-medium backdrop-blur-md">
+                    <span key={cat} className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/60 text-[10px] md:text-xs font-medium backdrop-blur-md whitespace-nowrap">
                         {cat}
                     </span>
                 ))}
@@ -200,7 +200,7 @@ const VolunteeringDiscovery = () => {
 
     return (
         <div className="w-full space-y-4 md:space-y-6 py-4">
-            <div className="flex flex-col md:flex-row items-center gap-2 px-4 max-w-2xl mx-auto w-full">
+            <div className="flex flex-col md:flex-row items-center gap-2 px-6 md:px-4 max-w-2xl mx-auto w-full">
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
                     <Input 
@@ -220,7 +220,7 @@ const VolunteeringDiscovery = () => {
                 </div>
             </div>
 
-            <div className="flex overflow-x-auto md:justify-center gap-2 px-4 no-scrollbar">
+            <div className="flex overflow-x-auto md:justify-center gap-2 px-6 md:px-4 no-scrollbar">
                 {categories.map((cat) => (
                     <button
                         key={cat}
@@ -238,7 +238,7 @@ const VolunteeringDiscovery = () => {
             </div>
 
             <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
-                <div className="grid grid-flow-col grid-rows-2 md:grid-rows-3 gap-x-4 gap-y-3 px-4 md:px-12 w-max">
+                <div className="grid grid-flow-col grid-rows-2 md:grid-rows-3 gap-x-4 gap-y-3 px-6 md:px-12 w-max">
                     {filteredItems.map((item) => (
                         <Link href={`/login/selection?action=register&type=individual`} key={item.id} className="block shrink-0 snap-start">
                             <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[280px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
