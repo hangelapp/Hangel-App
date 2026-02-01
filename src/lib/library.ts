@@ -15,6 +15,39 @@ export interface LibrarySection {
 
 export const librarySections: LibrarySection[] = [
     {
+        slug: 'veri-kutuphanesi',
+        title: "Veri Kütüphanesi",
+        description: "Kamu, belediye ve STK'lar tarafından paylaşılan resmi veriler ve açık veri setleri.",
+        icon: "Database",
+        items: [
+            {
+                slug: 'icisleri-bakanligi-dernek-verileri-2023',
+                title: "T.C. İçişleri Bakanlığı - Derneklerin Sosyal Etki Verileri (2023)",
+                content: `<h4>Veri Seti Özeti</h4><p>Bu veri seti, Türkiye genelinde faaliyet gösteren derneklerin 2023 yılı içerisindeki sosyal etki kapasitelerini, üye sayılarını ve gerçekleştirdikleri yardım faaliyetlerinin sektörel dağılımını içermektedir.</p><h4>Temel İstatistikler</h4><ul><li>Aktif Dernek Sayısı: <strong>122.450</strong></li><li>Toplam Gönüllü Sayısı: <strong>2.1M</strong></li><li>En Çok Faaliyet Gösterilen Alan: <strong>Sosyal Dayanışma (%34)</strong></li></ul><p>Bu veriler, yeni projelerin hangi bölgelerde ve alanlarda yoğunlaşması gerektiğini belirlemek için stratejik bir kaynaktır.</p>`
+            },
+            {
+                slug: 'ibb-sosyal-yardim-istatistikleri',
+                title: "İstanbul Büyükşehir Belediyesi - Sosyal Yardım İstatistikleri",
+                content: `<h4>Açıklama</h4><p>İstanbul genelinde mahalle bazlı sosyal yardım talepleri ve karşılanma oranlarını gösteren anonimleştirilmiş veri setidir.</p><h4>Kullanım Alanı</h4><p>Sosyal sorunların yoğunlaştığı bölgeleri tespit ederek, yerel odaklı sosyal girişimler ve gönüllülük projeleri tasarlamak için kullanılabilir.</p>`
+            },
+            {
+                slug: 'tuik-toplumsal-yasam-arastirmasi',
+                title: "TÜİK - Toplumsal Yaşamda Zaman Kullanım Araştırması",
+                content: `<h4>Araştırma Kapsamı</h4><p>Bireylerin gün içerisindeki faaliyetlere (iş, eğitim, gönüllülük, boş zaman) ayırdıkları süreyi demografik kırılımlarla sunan resmi istatistiktir.</p><h4>Sosyal Proje Notu</h4><p>Gönüllülük faaliyetlerine ayrılan sürenin düşüklüğü, bu alandaki farkındalık projelerinin önemini vurgulamaktadır.</p>`
+            },
+            {
+                slug: 'afad-afet-gonulluleri-haritasi',
+                title: "AFAD - Afet Gönüllüleri Yerleşim ve Yetkinlik Haritası",
+                content: `<h4>Veri Özeti</h4><p>Afet durumlarında müdahale kapasitesini ölçmek amacıyla hazırlanan, gönüllülerin yetkinlik bazlı (ilk yardım, lojistik, arama kurtarma) dağılım verisidir.</p><h4>Proje Geliştirme</h4><p>Eksik yetkinlik alanlarında düzenlenecek eğitim programları için temel teşkil eder.</p>`
+            },
+            {
+                slug: 'stk-kapasite-analizi-2024',
+                title: "STK Kapasite ve İhtiyaç Analizi Raporu (Hangel Data)",
+                content: `<h4>Rapor Hakkında</h4><p>Hangel platformu üzerindeki STK'ların dijitalleşme oranları, kaynak geliştirme ihtiyaçları ve insan kaynağı açıklarını içeren güncel analiz raporudur.</p><h4>Bulgular</h4><ul><li>Dijital Dönüşüm İhtiyacı: <strong>%68</strong></li><li>Sürdürülebilir Fon Erişimi Sorunu: <strong>%72</strong></li></ul>`
+            }
+        ]
+    },
+    {
         slug: 'sosyal-etki-raporlari',
         title: "Sosyal Etki Raporları",
         description: "Hangel'in ve paydaşlarının sağladığı etkiyi inceleyin.",
@@ -73,7 +106,7 @@ export const librarySections: LibrarySection[] = [
             const contents = [
                 '<h5>Yuval Noah Harari</h5><p>İnsan türünün tarihini ve gelişimini, büyük resmi görerek anlatan, toplumların nasıl organize olduğu ve inanç sistemlerinin nasıl çalıştığı üzerine ufuk açıcı bir eser.</p>',
                 '<h5>Stephen R. Covey</h5><p>Kişisel ve profesyonel etkinlik için temel prensipleri sunan bu klasik, sosyal etki oluşturmak isteyen bireyler için proaktif olma ve sinerji oluşturma gibi konularda değerli dersler içerir.</p>',
-                '<h5>Richard H. Thaler & Cass R. Sunstein</h5><p>İnsanların daha iyi kararlar almalarını sağlamak için "dürtme" kavramını tanıtan bu kitap, sosyal programlar ve kampanyalar tasarlarken davranışsal ekonomiden nasıl yararlanılabileceğini gösteriyor.</p>'
+                '<h5>Richard H. Thaler & Cass R. Sunstein</h5><p>İnsanların daha iyi kararlar almalarını sağlamak için "dürtme" kavramını tanıtan bu kitap, sosyal programlar ve kampanyalar tasarlarken davranışmal ekonomiden nasıl yararlanılabileceğini gösteriyor.</p>'
             ];
             return {
                 slug: `kitap-${i+1}`,
