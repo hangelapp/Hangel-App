@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, ChevronRight, MapPin, Loader2 } from 'lucide-react';
+import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -97,9 +97,11 @@ export default function EmergencyPage() {
             <AlertDialogContent className="rounded-3xl">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-foreground/80">
-                        <strong>{label}</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
-                    </AlertDialogDescription>
+                    <div className="text-sm text-muted-foreground">
+                        <p className="text-foreground/80 mb-4">
+                            <strong>{label}</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
+                        </p>
+                    </div>
                 </AlertDialogHeader>
                 <div className="py-2">
                     <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
@@ -139,7 +141,7 @@ export default function EmergencyPage() {
                     <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('missing', 'Kayıp')} />
                     <EmergencyTile 
                         icon={Droplets} 
-                        label="Kan" 
+                        label="Kan İhtiyacı" 
                         color="bg-red-600"
                         onClick={() => handleReportClick('blood', 'Kan İhtiyacı')} 
                     />
@@ -244,7 +246,7 @@ export default function EmergencyPage() {
         <div className="fixed bottom-24 left-4 right-4 z-10">
             <div className="p-4 bg-slate-900/90 backdrop-blur-lg text-white rounded-2xl shadow-2xl flex items-center gap-4 border border-white/10">
                 <div className="p-2 bg-white/10 rounded-lg">
-                    <Info className="h-5 w-5 text-destructive" />
+                    <Siren className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="text-[10px] font-medium leading-snug">
                     <span className="font-bold text-red-400 uppercase tracking-widest mr-1">YASAL UYARI:</span> 
