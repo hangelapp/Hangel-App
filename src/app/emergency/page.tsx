@@ -8,6 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const initialActiveCalls = [
     { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '5 dk önce' },
@@ -35,7 +46,6 @@ const initialActiveCalls = [
 
 const initialPastApplications = [
     { id: 100, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
-    { id: 101, type: 'Deprem', details: 'Arama Kurtarma', location: 'Maraş Bölgesi', status: 'Kaçırıldı' as const },
 ];
 
 export default function EmergencyPage() {
@@ -72,16 +82,45 @@ export default function EmergencyPage() {
     };
 
     const EmergencyTile = ({ icon: Icon, label, color = "bg-destructive", onClick }: { icon: any, label: string, color?: string, onClick: () => void }) => (
-        <button 
-            onClick={onClick}
-            disabled={!!isReporting}
-            className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group disabled:opacity-50"
-        >
-            <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110 flex items-center justify-center", color)}>
-                {isReporting === label ? <Loader2 className="h-7 w-7 animate-spin" /> : <Icon className="h-7 w-7" />}
-            </div>
-            <span className="text-[13px] font-bold tracking-tight text-center leading-tight">{label}</span>
-        </button>
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <button 
+                    disabled={!!isReporting}
+                    className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group disabled:opacity-50"
+                >
+                    <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110 flex items-center justify-center", color)}>
+                        {isReporting === label ? <Loader2 className="h-7 w-7 animate-spin" /> : <Icon className="h-7 w-7" />}
+                    </div>
+                    <span className="text-[13px] font-bold tracking-tight text-center leading-tight">{label}</span>
+                </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="rounded-3xl">
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-4">
+                        <p className="text-foreground/80">
+                            <strong>{label}</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
+                        </p>
+                        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
+                            <Siren className="h-4 w-4" />
+                            <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
+                            <AlertDescription className="text-xs font-bold leading-tight">
+                                Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
+                            </AlertDescription>
+                        </Alert>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="gap-2">
+                    <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
+                    <AlertDialogAction 
+                        onClick={onClick}
+                        className="rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white border-none"
+                    >
+                        Bildirimi Gönder
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 
     const ReportTabContent = () => (
