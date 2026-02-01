@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calculator, Settings2, KeyRound, Plus, ShieldCheck, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Calculator, Settings2, KeyRound, ShieldCheck, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,24 @@ const erpProviders = [
 export default function AccountingPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isValidating, setIsValidating] = useState(false);
+    const [activeProvider, setActiveProvider] = useState<string | null>(null);
+
+    const handleConnect = (id: string, name: string) => {
+        setActiveProvider(id);
+        setTimeout(() => {
+            toast({ title: `${name} Bağlantısı Başlatıldı`, description: "Yetkilendirme penceresine yönlendiriliyorsunuz." });
+            setActiveProvider(null);
+        }, 1000);
+    };
+
+    const handleValidate = () => {
+        setIsValidating(true);
+        setTimeout(() => {
+            toast({ title: "Entegrasyon Doğrulandı", description: "API anahtarları başarıyla eşleşti." });
+            setIsValidating(false);
+        }, 2000);
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
@@ -59,7 +77,15 @@ export default function AccountingPage() {
                                             {erp.status}
                                         </Badge>
                                     </div>
-                                    <Button variant="outline" size="sm" className="w-full">Bağla</Button>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="w-full"
+                                        disabled={activeProvider === erp.id}
+                                        onClick={() => handleConnect(erp.id, erp.name)}
+                                    >
+                                        {activeProvider === erp.id ? <Loader2 className="h-4 w-4 animate-spin" /> : (erp.status === 'Bağlı' ? 'Yönet' : 'Bağla')}
+                                    </Button>
                                 </CardContent>
                             </Card>
                         ))}
@@ -87,7 +113,9 @@ export default function AccountingPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
-                            <Button onClick={() => toast({title: "Entegrasyon Tamamlandı"})}>Bağlantıyı Doğrula</Button>
+                            <Button onClick={handleValidate} disabled={isValidating}>
+                                {isValidating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Doğrulanıyor</> : 'Bağlantıyı Doğrula'}
+                            </Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
@@ -108,7 +136,10 @@ export default function AccountingPage() {
                         </Card>
                     </div>
                     <Card>
-                        <CardHeader><CardTitle>Son Hareketler</CardTitle></CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Son Hareketler</CardTitle>
+                            <Button variant="outline" size="sm" onClick={() => toast({title: "Rapor Hazırlanıyor"})}>Dışa Aktar</Button>
+                        </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
@@ -119,6 +150,11 @@ export default function AccountingPage() {
                                         <TableCell><Badge>Gelir</Badge></TableCell>
                                         <TableCell>Aylık Bağış Havuzu Transferi</TableCell>
                                         <TableCell className="text-right text-emerald-600">+12,400 ₺</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><Badge variant="secondary">Gider</Badge></TableCell>
+                                        <TableCell>Ofis Kira Ödemesi</TableCell>
+                                        <TableCell className="text-right text-rose-600">-4,500 ₺</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>

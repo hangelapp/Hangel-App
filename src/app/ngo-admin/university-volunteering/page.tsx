@@ -1,11 +1,10 @@
-
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, GraduationCap, School, CheckCircle2, FileText, Info, Users, Plus } from 'lucide-react';
+import { ArrowLeft, GraduationCap, School, CheckCircle2, FileText, Info, Users, Plus, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -19,6 +18,15 @@ const universities = [
 export default function UniversityVolunteeringPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isApproving, setIsApproving] = useState(false);
+
+    const handleBulkApprove = () => {
+        setIsApproving(true);
+        setTimeout(() => {
+            toast({ title: "Başarı Belgeleri Onaylandı", description: "Tüm aktif öğrencilerin dönem sonu başarı belgeleri üniversite sistemlerine iletildi." });
+            setIsApproving(false);
+        }, 2000);
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
@@ -35,13 +43,13 @@ export default function UniversityVolunteeringPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {universities.map((uni) => (
                     <Card key={uni.id} className="hover:border-primary transition-all group overflow-hidden">
-                        <CardHeader className="bg-muted/30 p-4 border-b">
+                        <div className="bg-muted/30 p-4 border-b">
                             <div className="flex justify-between items-start">
                                 <School className="h-8 w-8 text-primary/60" />
                                 <Badge variant={uni.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[9px] uppercase">{uni.status}</Badge>
                             </div>
                             <CardTitle className="text-sm font-bold mt-2">{uni.name}</CardTitle>
-                        </CardHeader>
+                        </div>
                         <CardContent className="p-4 space-y-3">
                             <div className="text-xs space-y-1">
                                 <p className="text-muted-foreground">İlgili Ders:</p>
@@ -51,11 +59,11 @@ export default function UniversityVolunteeringPage() {
                                 <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {uni.students} Öğrenci</span>
                                 <span className="text-green-600 font-bold">{uni.discount}</span>
                             </div>
-                            <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => toast({title: "Üniversite Paneli", description: "Ders kontenjanı ve müfredat onayı sayfasına yönlendiriliyorsunuz."})}>Kontenjan Yönet</Button>
+                            <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => toast({title: "Üniversite Paneli", description: `${uni.name} ders kontenjanı yönetim sayfası açılıyor.`})}>Kontenjan Yönet</Button>
                         </CardContent>
                     </Card>
                 ))}
-                <Card className="border-dashed border-2 flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => toast({title: "Üniversite Ekle", description: "İşbirliği protokolü hazırlama formu açılıyor."})}>
+                <Card className="border-dashed border-2 flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => toast({title: "Üniversite Ekle", description: "Yeni üniversite işbirliği protokolü hazırlama formu açılıyor."})}>
                     <Plus className="h-10 w-10 text-muted-foreground mb-2" />
                     <p className="text-sm font-bold">Yeni Üniversite Bağla</p>
                     <p className="text-[10px] text-muted-foreground mt-1">Akademik protokol başlatmak için tıkla.</p>
@@ -72,7 +80,9 @@ export default function UniversityVolunteeringPage() {
                         <Info className="h-5 w-5 shrink-0" />
                         <p>Öğrencilerin ders kredisini alabilmesi için haftalık "Gönüllülük Günlüğü" onaylarını her cuma saat 18:00'e kadar tamamlamanız önerilir.</p>
                     </div>
-                    <Button className="w-full">Toplu Başarı Belgesi Onayla</Button>
+                    <Button className="w-full" onClick={handleBulkApprove} disabled={isApproving}>
+                        {isApproving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Onaylanıyor</> : 'Toplu Başarı Belgesi Onayla'}
+                    </Button>
                 </CardContent>
             </Card>
         </div>

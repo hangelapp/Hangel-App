@@ -1,11 +1,10 @@
-
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, MapPin, Users, Navigation, Radio, ShieldCheck, ClipboardCheck, Phone } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, Navigation, Radio, ShieldCheck, ClipboardCheck, Phone, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -19,6 +18,15 @@ const teams = [
 export default function FieldTeamManagementPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isMapLoading, setIsMapLoading] = useState(false);
+
+    const handleOpenMap = () => {
+        setIsMapLoading(true);
+        setTimeout(() => {
+            toast({ title: "Harita Yükleniyor", description: "Canlı takip modülü yeni sekmede açılıyor." });
+            setIsMapLoading(false);
+        }, 1500);
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
@@ -56,8 +64,8 @@ export default function FieldTeamManagementPage() {
                                 <Users className="h-3 w-3" /> {team.members} Personel
                             </div>
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => toast({title: "Telsiz Bağlantısı", description: "Sesli kanal açılıyor..."})}><Radio className="h-3 w-3 mr-1" /> Telsiz</Button>
-                                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => toast({title: "Ekip Takibi", description: "Canlı harita modülü yükleniyor..."})}><Navigation className="h-3 w-3 mr-1" /> İzle</Button>
+                                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => toast({title: "Telsiz Bağlantısı", description: `${team.name} sesli kanalı açılıyor...`})}><Radio className="h-3 w-3 mr-1" /> Telsiz</Button>
+                                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => toast({title: "Ekip Takibi", description: `${team.leader} konum verisi güncellendi.`})}><Navigation className="h-3 w-3 mr-1" /> İzle</Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -75,10 +83,17 @@ export default function FieldTeamManagementPage() {
                         <MapPin className="h-16 w-16 text-primary relative z-10" />
                     </div>
                     <div>
-                        <p className="text-xl font-black">CANLI TAKİP MODÜLÜ</p>
-                        <p className="text-xs text-slate-400 mt-2 max-w-xs">Ekiplerinizin mobil uygulama üzerindeki konumlarını ve görev ilerlemelerini buradan izleyebilirsiniz.</p>
+                        <p className="text-xl font-black uppercase tracking-tighter">CANLI TAKİP MODÜLÜ</p>
+                        <p className="text-xs text-slate-400 mt-2 max-w-xs mx-auto">Ekiplerinizin mobil uygulama üzerindeki konumlarını ve görev ilerlemelerini buradan izleyebilirsiniz.</p>
                     </div>
-                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-bold">Haritayı Tam Ekran Aç</Button>
+                    <Button 
+                        size="lg" 
+                        className="bg-primary hover:bg-primary/90 text-white font-bold px-12"
+                        onClick={handleOpenMap}
+                        disabled={isMapLoading}
+                    >
+                        {isMapLoading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Yükleniyor</> : 'Haritayı Tam Ekran Aç'}
+                    </Button>
                 </CardContent>
             </Card>
         </div>

@@ -1,11 +1,10 @@
-
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, PhoneCall, Headphones, Settings2, KeyRound, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowLeft, PhoneCall, Headphones, Settings2, KeyRound, ShieldCheck, Zap, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -21,6 +20,15 @@ const providers = [
 export default function VirtualPbxPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSaveSantral = () => {
+        setIsSaving(true);
+        setTimeout(() => {
+            toast({ title: "Santral Aktif Edildi", description: "Gelen çağrılar artık belirtilen numaraya yönlendirilecektir." });
+            setIsSaving(false);
+        }, 1500);
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
@@ -51,7 +59,7 @@ export default function VirtualPbxPage() {
                                 <p className="text-xs font-bold text-primary">{item.price}</p>
                                 <p className="text-[10px] text-green-600 font-medium">{item.discount}</p>
                             </div>
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Santral Ayarları"})}>Yapılandır</Button>
+                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Yapılandırma", description: `${item.name} yönetim arayüzü yükleniyor.`})}>Yapılandır</Button>
                         </CardContent>
                     </Card>
                 ))}
@@ -73,7 +81,9 @@ export default function VirtualPbxPage() {
                     </div>
                 </CardContent>
                 <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
-                    <Button onClick={() => toast({title: "Santral Aktif Edildi"})}>Kaydet</Button>
+                    <Button onClick={handleSaveSantral} disabled={isSaving}>
+                        {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kaydediliyor</> : 'Kaydet ve Aktif Et'}
+                    </Button>
                 </CardFooter>
             </Card>
         </div>

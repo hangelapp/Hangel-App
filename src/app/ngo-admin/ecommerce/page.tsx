@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ShoppingCart, Plus, Package, Globe, Copy, KeyRound, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Plus, Package, Globe, Copy, KeyRound, ShieldCheck, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -23,11 +23,20 @@ const marketplaceProviders = [
 export default function EcommerceManagementPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isSaving, setIsSaving] = useState(false);
     const xmlFeedUrl = "https://hangel.org/api/v1/xml/ahbap-isletme-feed";
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast({ title: "Kopyalandı!", description: "Link panoya kaydedildi." });
+    };
+
+    const handleSaveIntegration = () => {
+        setIsSaving(true);
+        setTimeout(() => {
+            toast({ title: "Pazar Yeri Bağlandı", description: "Ürünleriniz senkronize edilmeye başlandı." });
+            setIsSaving(false);
+        }, 1500);
     };
 
     return (
@@ -65,7 +74,7 @@ export default function EcommerceManagementPage() {
                                             {mp.status}
                                         </Badge>
                                     </div>
-                                    <Button variant="outline" size="sm" className="w-full">Bağla</Button>
+                                    <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Yönlendiriliyor", description: `${mp.name} mağaza paneline gidiliyor.`})}>Bağla</Button>
                                 </CardContent>
                             </Card>
                         ))}
@@ -97,18 +106,31 @@ export default function EcommerceManagementPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
-                            <Button onClick={() => toast({title: "Pazar Yeri Bağlandı"})}>Bağlantıyı Kaydet</Button>
+                            <Button onClick={handleSaveIntegration} disabled={isSaving}>
+                                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kaydediliyor</> : 'Bağlantıyı Kaydet'}
+                            </Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
 
                 <TabsContent value="products" className="mt-6 space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h3 className="font-bold">Aktif Ürünler (12)</h3>
+                        <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Yeni Ürün Ekle</Button>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[
-                            { id: '1', name: 'Logolu Tişört', price: '250 ₺', stock: 120, img: 'https://picsum.photos/seed/t1/200/200' }
+                            { id: '1', name: 'Logolu Tişört', price: '250 ₺', stock: 120, img: 'https://picsum.photos/seed/t1/200/200' },
+                            { id: '2', name: 'Bez Çanta', price: '85 ₺', stock: 450, img: 'https://picsum.photos/seed/t2/200/200' },
+                            { id: '3', name: 'Kupa Bardak', price: '120 ₺', stock: 85, img: 'https://picsum.photos/seed/t3/200/200' }
                         ].map(product => (
-                            <Card key={product.id} className="overflow-hidden">
-                                <div className="relative aspect-square w-full"><Image src={product.img} alt={product.name} fill className="object-cover" /></div>
+                            <Card key={product.id} className="overflow-hidden group hover:border-primary transition-colors">
+                                <div className="relative aspect-square w-full">
+                                    <Image src={product.img} alt={product.name} fill className="object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <Button variant="secondary" size="sm">Düzenle</Button>
+                                    </div>
+                                </div>
                                 <CardContent className="p-4">
                                     <h4 className="font-bold text-sm truncate">{product.name}</h4>
                                     <p className="text-lg font-black text-primary">{product.price}</p>
@@ -123,10 +145,14 @@ export default function EcommerceManagementPage() {
                     <Card>
                         <CardHeader><CardTitle>Otomatik Veri Akışı (XML Feed)</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground">Bu linki kullanarak ürünlerinizi herhangi bir sisteme otomatik olarak aktarabilirsiniz.</p>
+                            <p className="text-sm text-muted-foreground">Bu linki kullanarak ürünlerinizi Google Merchant, Facebook Catalog veya diğer pazar yerlerine otomatik olarak aktarabilirsiniz.</p>
                             <div className="flex gap-2">
-                                <Input readOnly value={xmlFeedUrl} className="font-mono text-xs" />
+                                <Input readOnly value={xmlFeedUrl} className="font-mono text-xs bg-muted" />
                                 <Button variant="outline" size="icon" onClick={() => copyToClipboard(xmlFeedUrl)}><Copy className="h-4 w-4" /></Button>
+                            </div>
+                            <div className="flex items-center gap-2 pt-4">
+                                <Button variant="outline" className="flex-1" onClick={() => toast({title: "Feed Yenilendi"})}>Akışı Güncelle</Button>
+                                <Button variant="outline" className="flex-1" onClick={() => window.open(xmlFeedUrl, '_blank')}>Önizle</Button>
                             </div>
                         </CardContent>
                     </Card>

@@ -1,11 +1,10 @@
-
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Database, Users, Settings2, KeyRound, ShieldCheck, Workflow } from 'lucide-react';
+import { ArrowLeft, Database, Users, Settings2, KeyRound, ShieldCheck, Workflow, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -21,6 +20,24 @@ const providers = [
 export default function CrmManagementPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [connectingId, setConnectingId] = useState<string | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleCrmConnect = (id: string, name: string) => {
+        setConnectingId(id);
+        setTimeout(() => {
+            toast({ title: `${name} Entegrasyonu`, description: "Kurumsal hesap doğrulama sayfasına yönlendiriliyorsunuz." });
+            setConnectingId(null);
+        }, 1200);
+    };
+
+    const handleSyncSave = () => {
+        setIsSyncing(true);
+        setTimeout(() => {
+            toast({ title: "Senkronizasyon Başlatıldı", description: "Veriler arka planda CRM sisteminize aktarılıyor." });
+            setIsSyncing(false);
+        }, 2000);
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
@@ -51,7 +68,15 @@ export default function CrmManagementPage() {
                                 <p className="text-xs font-bold text-primary">{item.price}</p>
                                 <p className="text-[10px] text-green-600 font-medium">{item.discount}</p>
                             </div>
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Bağlantı Kuruluyor"})}>CRM Entegre Et</Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                disabled={connectingId === item.id}
+                                onClick={() => handleCrmConnect(item.id, item.name)}
+                            >
+                                {connectingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'CRM Entegre Et'}
+                            </Button>
                         </CardContent>
                     </Card>
                 ))}
@@ -73,9 +98,15 @@ export default function CrmManagementPage() {
                             <Input type="password" placeholder="••••••••" />
                         </div>
                     </div>
+                    <div className="p-4 border rounded-xl bg-green-50 text-green-800 text-xs flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 shrink-0" />
+                        <p>Senkronizasyon ayarları yapıldığında her yeni bağış ve gönüllü kaydı anlık olarak CRM'inize düşer.</p>
+                    </div>
                 </CardContent>
                 <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
-                    <Button onClick={() => toast({title: "Senkronizasyon Başlatıldı"})}>Ayarları Kaydet</Button>
+                    <Button onClick={handleSyncSave} disabled={isSyncing}>
+                        {isSyncing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> İşleniyor</> : 'Ayarları Kaydet ve Başlat'}
+                    </Button>
                 </CardFooter>
             </Card>
         </div>

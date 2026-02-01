@@ -1,11 +1,10 @@
-
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Building2, MapPin, Coffee, Users, Calendar, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Coffee, Users, Calendar, ShieldCheck, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -19,6 +18,15 @@ const providers = [
 export default function VirtualOfficePage() {
     const { toast } = useToast();
     const router = useRouter();
+    const [bookingId, setBookingId] = useState<string | null>(null);
+
+    const handleReserve = (id: string, name: string) => {
+        setBookingId(id);
+        setTimeout(() => {
+            toast({ title: "Randevu Talebi Alındı", description: `${name} için indirimli kullanım onay kodu üretildi.` });
+            setBookingId(null);
+        }, 1000);
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
@@ -53,7 +61,15 @@ export default function VirtualOfficePage() {
                                 <Users className="h-4 w-4" title="Toplantı Odası" />
                                 <Calendar className="h-4 w-4" title="7/24 Erişim" />
                             </div>
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Randevu Talebi", description: "İndirimli kullanım için onay kodu üretildi."})}>Alan Rezerve Et</Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                disabled={bookingId === item.id}
+                                onClick={() => handleReserve(item.id, item.name)}
+                            >
+                                {bookingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Alan Rezerve Et'}
+                            </Button>
                         </CardContent>
                     </Card>
                 ))}
@@ -70,7 +86,7 @@ export default function VirtualOfficePage() {
                             <p className="font-bold text-sm">Mevcut Adresiniz:</p>
                             <p className="text-xs text-muted-foreground">Levent, Büyükdere Cad. No: 199 (Kolektif House)</p>
                         </div>
-                        <Button variant="ghost" size="sm">Adresi Değiştir</Button>
+                        <Button variant="ghost" size="sm" onClick={() => toast({title: "Adres Değişikliği", description: "Resmi evrak hazırlama süreci başlatılıyor."})}>Adresi Değiştir</Button>
                     </div>
                     <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl text-blue-800">
                         <ShieldCheck className="h-5 w-5 shrink-0" />

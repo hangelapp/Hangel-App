@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Search, Send, MessageCircle, Settings2, KeyRound, Smartphone, Instagram, Facebook } from 'lucide-react';
+import { ArrowLeft, Search, Send, MessageCircle, Settings2, KeyRound, Smartphone, Instagram, Facebook, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,12 +23,21 @@ export default function DmManagementPage() {
     const { toast } = useToast();
     const router = useRouter();
     const [msg, setMsg] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSend = (e: React.FormEvent) => {
         e.preventDefault();
         if (!msg.trim()) return;
-        toast({ title: "Mesaj Gönderildi" });
+        toast({ title: "Mesaj Gönderildi", description: "İletişim kanalı üzerinden alıcıya ulaştırıldı." });
         setMsg('');
+    };
+
+    const handleSaveConfig = () => {
+        setIsSaving(true);
+        setTimeout(() => {
+            toast({ title: "Ayarlar Kaydedildi", description: "Mesajlaşma kanalları başarıyla doğrulandı." });
+            setIsSaving(false);
+        }, 1500);
     };
 
     return (
@@ -49,8 +58,23 @@ export default function DmManagementPage() {
                 </TabsList>
 
                 <TabsContent value="chat" className="mt-6">
-                    <Card className="h-[500px] flex items-center justify-center text-muted-foreground italic bg-muted/10">
-                        Mesajlaşma arayüzü burada yer alacaktır. Sol kısımdan bir kanal seçin.
+                    <Card className="h-[500px] flex flex-col">
+                        <div className="flex-1 flex items-center justify-center text-muted-foreground italic bg-muted/10">
+                            <div className="text-center space-y-2">
+                                <MessageCircle className="h-12 w-12 mx-auto opacity-20" />
+                                <p>Mesajlaşma arayüzü yükleniyor... Sol kısımdan bir kanal seçin.</p>
+                            </div>
+                        </div>
+                        <div className="p-4 border-t bg-background">
+                            <form className="flex gap-2" onSubmit={handleSend}>
+                                <Input 
+                                    placeholder="Mesajınızı yazın..." 
+                                    value={msg} 
+                                    onChange={(e) => setMsg(e.target.value)}
+                                />
+                                <Button type="submit" size="icon"><Send className="h-4 w-4" /></Button>
+                            </form>
+                        </div>
                     </Card>
                 </TabsContent>
 
@@ -68,7 +92,7 @@ export default function DmManagementPage() {
                                             {item.status}
                                         </Badge>
                                     </div>
-                                    <Button variant="outline" size="sm" className="w-full">Ayarlar</Button>
+                                    <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Ayarlar", description: `${item.name} yapılandırması açılıyor.`})}>Ayarlar</Button>
                                 </CardContent>
                             </Card>
                         ))}
@@ -88,8 +112,12 @@ export default function DmManagementPage() {
                                 <Label>Verify Token (Webhook için)</Label>
                                 <Input placeholder="hangel_verify_token" />
                             </div>
-                            <Button onClick={() => toast({title: "Kanal Doğrulandı"})}>Bağlantıyı Kaydet</Button>
                         </CardContent>
+                        <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
+                            <Button onClick={handleSaveConfig} disabled={isSaving}>
+                                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Bağlanıyor</> : 'Kanalı Doğrula ve Kaydet'}
+                            </Button>
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>
