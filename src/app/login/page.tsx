@@ -130,15 +130,47 @@ const MarketplaceDiscovery = () => {
         { name: 'Boyner', rate: 4, logo: 'https://logo.clearbit.com/boyner.com.tr' },
     ];
 
+    const entityTabs = ['Tümü', 'Kooperatif', 'İktisadi İşl.', 'Marka', 'Sosyal İşl.'];
+
     return (
         <div className="w-full space-y-4 md:space-y-6 py-4">
-            {/* Market Entrance - Search Bar Mock */}
-            <div className="px-6 md:px-4 max-w-2xl mx-auto w-full">
-                <div className="relative group">
+            {/* Market Entrance - Search Bar + Icons */}
+            <div className="flex items-center gap-2 px-6 md:px-4 max-w-2xl mx-auto w-full">
+                <div className="relative flex-grow group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-hover:text-white/60 transition-colors" />
-                    <div className="w-full h-12 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center pl-12 pr-4 text-white/40 text-[14px] cursor-pointer hover:bg-white/10 transition-all shadow-2xl">
+                    <div className="w-full h-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center pl-12 pr-4 text-white/40 text-[13px] cursor-pointer hover:bg-white/10 transition-all shadow-xl">
                         Marka, ürün veya kategori ara...
                     </div>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white">
+                        <Menu className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white">
+                        <Filter className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white">
+                        <ArrowDownUp className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
+            {/* Simulated Tabs (Entity Types) */}
+            <div className="flex justify-center border-b border-white/10 px-6">
+                <div className="flex w-full max-w-xl overflow-x-auto no-scrollbar -mb-px">
+                    {entityTabs.map((tab, idx) => (
+                        <div 
+                            key={tab} 
+                            className={cn(
+                                "px-4 py-3 text-[11px] md:text-xs font-bold whitespace-nowrap cursor-pointer transition-all border-b-2",
+                                idx === 0 
+                                    ? "border-white text-white" 
+                                    : "border-transparent text-white/40 hover:text-white/60"
+                            )}
+                        >
+                            {tab}
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -150,7 +182,7 @@ const MarketplaceDiscovery = () => {
                         className={cn(
                             "px-4 py-2 rounded-full border text-[11px] md:text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
                             idx === 0 
-                                ? "bg-white text-black border-white" 
+                                ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
                                 : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white"
                         )}
                     >
