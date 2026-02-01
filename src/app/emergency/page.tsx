@@ -10,13 +10,32 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const initialActiveCalls = [
-    { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '15 dakika önce' },
-    { id: 2, type: 'Afet Gönüllüsü', details: 'Lojistik Destek', location: 'İzmir Deprem Bölgesi', time: '1 saat önce' },
+    { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '5 dk önce' },
+    { id: 2, type: 'Afet Gönüllüsü', details: 'Lojistik Destek', location: 'İzmir Deprem Bölgesi', time: '12 dk önce' },
+    { id: 3, type: 'Kan İhtiyacı', details: '0 Rh- (Kritik)', location: 'İstanbul Çapa Tıp Fakültesi', time: '18 dk önce' },
+    { id: 4, type: 'Gıda Dağıtımı', details: 'Mobil Mutfak Desteği', location: 'Hatay Belen', time: '25 dk önce' },
+    { id: 5, type: 'Kan İhtiyacı', details: 'B Rh+', location: 'Antalya Akdeniz Üniv. Hastanesi', time: '32 dk önce' },
+    { id: 6, type: 'Arama Kurtarma', details: 'Saha Personeli', location: 'Adıyaman Merkez', time: '40 dk önce' },
+    { id: 7, type: 'Kan İhtiyacı', details: 'AB Rh-', location: 'Bursa Şehir Hastanesi', time: '45 dk önce' },
+    { id: 8, type: 'Psikososyal Destek', details: 'Çocuk Etkinlikleri', location: 'Kahramanmaraş Çadır Kent', time: '52 dk önce' },
+    { id: 9, type: 'Lojistik Destek', details: 'Depo Tasnifi', location: 'Kocaeli AFAD Merkezi', time: '1 saat önce' },
+    { id: 10, type: 'Kan İhtiyacı', details: 'A Rh-', location: 'Gaziantep Üniv. Hastanesi', time: '1 saat önce' },
+    { id: 11, type: 'Veteriner Desteği', details: 'Sahipsiz Hayvanlar Bakımı', location: 'Malatya Hayvan Barınağı', time: '1 saat önce' },
+    { id: 12, type: 'Kan İhtiyacı', details: 'B Rh-', location: 'Adana Şehir Hastanesi', time: '2 saat önce' },
+    { id: 13, type: 'Çeviri Desteği', details: 'İngilizce/Arapça Çevirmen', location: 'Mersin Göç İdaresi', time: '2 saat önce' },
+    { id: 14, type: 'Kan İhtiyacı', details: '0 Rh+', location: 'Kayseri Erciyes Üniv. Hastanesi', time: '2 saat önce' },
+    { id: 15, type: 'İlk Yardım', details: 'Gezici Sağlık Ekibi', location: 'Elazığ Konteyner Kent', time: '3 saat önce' },
+    { id: 16, type: 'Teknik Destek', details: 'Jeneratör Tamiri', location: 'Osmaniye Operasyon Merkezi', time: '3 saat önce' },
+    { id: 17, type: 'Kan İhtiyacı', details: 'AB Rh+', location: 'Samsun 19 Mayıs Üniv. Hastanesi', time: '4 saat önce' },
+    { id: 18, type: 'Sıcak Yemek', details: 'Akşam Servisi Desteği', location: 'Diyarbakır Aşevi', time: '4 saat önce' },
+    { id: 19, type: 'Kan İhtiyacı', details: 'A Rh+', location: 'Eskişehir Osmangazi Üniv. Hastanesi', time: '5 saat önce' },
+    { id: 20, type: 'Hijyen Kiti', details: 'Paketleme ve Dağıtım', location: 'Şanlıurfa Lojistik Merkezi', time: '5 saat önce' },
+    { id: 21, type: 'Kan İhtiyacı', details: 'B Rh+', location: 'Trabzon KTÜ Farabi Hastanesi', time: '6 saat önce' },
 ];
 
 const initialPastApplications = [
-    { id: 3, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
-    { id: 4, type: 'Afet Gönüllüsü', details: 'Arama Kurtarma', location: 'Van Deprem Bölgesi', status: 'Kaçırıldı' as const },
+    { id: 100, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
+    { id: 101, type: 'Afet Gönüllüsü', details: 'Arama Kurtarma', location: 'Van Deprem Bölgesi', status: 'Kaçırıldı' as const },
 ];
 
 export default function EmergencyPage() {
@@ -28,7 +47,6 @@ export default function EmergencyPage() {
     const handleReportClick = (type: string, details: string) => {
         setIsReporting(details);
         
-        // Simulate a network request
         setTimeout(() => {
             toast({
                 title: 'İhbar İletildi',
@@ -39,10 +57,8 @@ export default function EmergencyPage() {
     };
 
     const handleHelpClick = (call: typeof initialActiveCalls[0]) => {
-        // Remove from active calls
         setActiveCalls(prev => prev.filter(c => c.id !== call.id));
         
-        // Add to past applications with status 'Başvuruldu'
         const newApp = {
             ...call,
             status: 'Başvuruldu' as const,
