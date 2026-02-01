@@ -157,11 +157,11 @@ export default function EmergencyPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="report" className="mt-8 flex-1 overflow-y-auto no-scrollbar">
+                <TabsContent value="report" className="mt-4 flex-1 overflow-y-auto no-scrollbar">
                     <ReportTabContent />
                 </TabsContent>
 
-                <TabsContent value="calls" className="mt-8 flex-1 overflow-y-auto no-scrollbar space-y-6 pb-20">
+                <TabsContent value="calls" className="mt-4 flex-1 overflow-y-auto no-scrollbar space-y-6 pb-20">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-base font-bold">Aktif Acil Çağrılar</h3>
