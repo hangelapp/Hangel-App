@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, ExternalLink, Heart, Info, Percent, Rss, Star } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
 import { allEntityLists } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -19,7 +20,6 @@ const StatRow = ({ label, value }: { label: string, value: string | number }) =>
         <p className="font-semibold text-foreground">{value}</p>
     </div>
 );
-
 
 export default function BrandProfilePage() {
   const router = useRouter();
@@ -29,7 +29,9 @@ export default function BrandProfilePage() {
   const [profileUrl, setProfileUrl] = useState('');
 
   useEffect(() => {
-    setProfileUrl(window.location.href);
+    if (typeof window !== 'undefined') {
+      setProfileUrl(window.location.href);
+    }
   }, []);
 
   if (!brand) {
@@ -84,6 +86,91 @@ export default function BrandProfilePage() {
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
         </TabsList>
         <TabsContent value="about" className="p-4 space-y-4">
+            {/* Bağış Koşulları Bölümü */}
+            <Card className="border-primary/20 bg-primary/5">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2 text-primary">
+                        <ShieldAlert className="h-5 w-5" /> Mağaza Özel Bağış Koşulları
+                    </CardTitle>
+                    <CardDescription>Bağışınızın sorunsuz yansıması için lütfen okuyunuz.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                    <div className="grid gap-3">
+                        <div className="flex gap-3">
+                            <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                            <p>Aldığınız ürünleri mağaza üzerinden onaylamanızı öneririz. Onay işlemi bağış değerlendirme sürecini hızlandıracaktır.</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                            <p>Alışveriş sırasında itiraz (dispute) açılması durumunda mağaza bağış aktarımı yapmamaktadır.</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                            <p>Satın alımların tek bir oturumda tamamlanması tavsiye edilir; tarayıcı kapatıldığında çerez takibi sıfırlanabilir.</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Percent className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <p>Bağış tutarı ödediğiniz net tutar üzerinden hesaplanır; hediye çekleri ve puan kullanımları bağış kapsamı dışındadır.</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                            <p>Bağışların değerlendirme ve onay süreci ürüne göre 4 ile 6 ay arasında değişiklik gösterebilir.</p>
+                        </div>
+                    </div>
+
+                    <Accordion type="single" collapsible className="w-full mt-4 bg-background rounded-lg border">
+                        <AccordionItem value="general-conditions" className="border-none">
+                            <AccordionTrigger className="px-4 py-3 hover:no-underline text-sm font-bold text-foreground">
+                                <div className="flex items-center gap-2">
+                                    <HelpCircle className="h-4 w-4 text-primary" />
+                                    Genel Bağış Koşulları (Önemli)
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-4 pb-4 space-y-4 text-xs leading-relaxed text-muted-foreground">
+                                <div className="space-y-3 border-t pt-4">
+                                    <p className="font-bold text-foreground text-sm">Bağış kazanacağınızdan emin olmak için:</p>
+                                    
+                                    <div className="space-y-2">
+                                        <p className="font-semibold text-foreground">● Adblock ve eklentileri devre dışı bırakın</p>
+                                        <p>Reklam engelleyici programlar çerezleri sildiği için bağış takibi yapılamaz.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="font-semibold text-foreground">● Çerezlere izin verin ve gizli sekme kullanmayın</p>
+                                        <p>Mağazalar sizi tanımlamak için çerez kullanır. Gizli sekmede bu takip yapılamaz.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="font-semibold text-foreground">● Başka ödül programı kullanmayın</p>
+                                        <p>Alışveriş sırasında sadece hangel'in açık olduğundan emin olun; diğer programlar takibi bozabilir.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="font-semibold text-foreground">● Sadece hangel kuponlarını kullanın</p>
+                                        <p>Harici sitelerden alınan kuponlar bağış hakkınızı iptal edebilir.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="font-semibold text-foreground">● Mobil uygulama yerine tarayıcı kullanın</p>
+                                        <p>Aksi belirtilmedikçe, mobil uygulamalar üzerinden yapılan alışverişlerde teknik kısıtlar nedeniyle bağış yansıtılamamaktadır.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="font-semibold text-foreground">● Sepeti sonradan doldurun</p>
+                                        <p>Ürünleri sepetinize hangel üzerinden mağazaya gittikten sonra eklemeniz önerilir.</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="font-semibold text-foreground">● Telefonla sipariş vermeyin</p>
+                                        <p>Sadece online ve hangel üzerinden gerçekleştirilen işlemler bağış kapsamındadır.</p>
+                                    </div>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Marka Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4">
