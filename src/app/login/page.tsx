@@ -174,23 +174,6 @@ const MarketplaceDiscovery = () => {
                 </div>
             </div>
 
-            {/* Quick Categories */}
-            <div className="flex overflow-x-auto md:justify-center gap-2 px-6 md:px-4 no-scrollbar">
-                {['Öne Çıkanlar', 'Giyim', 'Elektronik', 'Spor', 'Ev & Yaşam', 'Kozmetik', 'Bebek'].map((cat, idx) => (
-                    <span 
-                        key={cat} 
-                        className={cn(
-                            "px-4 py-2 rounded-full border text-[11px] md:text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
-                            idx === 0 
-                                ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
-                                : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white"
-                        )}
-                    >
-                        {cat}
-                    </span>
-                ))}
-            </div>
-
             {/* Brand Storefront Grid */}
             <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
                 <div className="grid grid-flow-col grid-rows-2 gap-x-4 gap-y-6 px-6 md:px-12 w-max">
