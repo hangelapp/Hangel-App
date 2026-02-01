@@ -300,7 +300,7 @@ export default function MarketPage() {
                         </Dialog>
                     </div>
                 </div>
-                <Dialog open={isAssistantOpen} onOpenChange={setAssistantOpen}>
+                <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                             <Bot className="h-5 w-5" />
