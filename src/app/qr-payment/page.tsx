@@ -119,7 +119,7 @@ export default function QrPaymentPage() {
   const { toast } = useToast();
   const [cards, setCards] = useState(qrPaymentCardData);
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
-  const [activeCardId, setActiveCardId] = useState(cards.length > 0 ? cards[0].id : '');
+  const [activeCardId, setActiveCardId] = useState(cards.length > 0 ? cards[0].id : 'bireysel');
   const [frozenCards, setFrozenCards] = useState<Record<string, boolean>>({});
   const [showCardNumber, setShowCardNumber] = useState<Record<string, boolean>>({});
   const [activatedCards, setActivatedCards] = useState<Record<string, boolean>>({ bireysel: true });
@@ -218,6 +218,21 @@ export default function QrPaymentPage() {
     );
   };
 
+  const getActiveBorderColor = () => {
+    switch (activeCardId) {
+        case 'bireysel': return 'border-orange-500';
+        case 'ogrenci': return 'border-cyan-500';
+        case 'ticari': return 'border-blue-700';
+        default: return 'border-primary';
+    }
+  };
+
+  const getActiveTabColor = (cardId: string) => {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return 'bg-muted';
+    return card.bgColor;
+  };
+
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
@@ -231,16 +246,16 @@ export default function QrPaymentPage() {
         </div>
         
         <Tabs value={activeCardId} onValueChange={setActiveCardId} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-0 rounded-none h-auto">
+            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-1 rounded-none h-auto">
                 {cards.map((card) => (
                     <TabsTrigger
                         key={card.id}
                         value={card.id}
                         className={cn(
-                            "rounded-none rounded-t-lg p-1 text-xs font-semibold text-white shadow-none",
-                            "focus-visible:ring-0 focus-visible:ring-offset-0",
-                            "data-[state=active]:z-10 data-[state=inactive]:opacity-70 data-[state=active]:shadow-lg",
-                            card.bgColor
+                            "rounded-t-xl p-2 text-xs font-bold text-white transition-all",
+                            "data-[state=active]:opacity-100 data-[state=active]:scale-105 data-[state=active]:z-10",
+                            "data-[state=inactive]:opacity-40 data-[state=inactive]:bg-muted data-[state=inactive]:text-muted-foreground",
+                            activeCardId === card.id ? card.bgColor : ""
                         )}
                     >
                         {card.type}
@@ -251,36 +266,44 @@ export default function QrPaymentPage() {
             {cards.map((card) => (
                 <TabsContent key={card.id} value={card.id} className="mt-0">
                     <div className="h-56 [perspective:1000px] text-primary-foreground">
-                        <div className={cn("relative h-full w-full rounded-b-2xl transition-transform duration-700 [transform-style:preserve-3d]", flippedCardId === card.id && "[transform:rotateY(180deg)]")}>
+                        <div className={cn("relative h-full w-full rounded-b-2xl shadow-xl transition-transform duration-700 [transform-style:preserve-3d]", flippedCardId === card.id && "[transform:rotateY(180deg)]")}>
                             {/* FRONT */}
-                            <div className={cn("absolute flex h-full w-full flex-col justify-between rounded-b-2xl p-4 [backface-visibility:hidden]", card.bgColor)}>
+                            <div className={cn("absolute flex h-full w-full flex-col justify-between rounded-b-2xl p-6 [backface-visibility:hidden]", card.bgColor)}>
                                 <div className="flex justify-between items-start">
-                                    <span className="font-bold text-lg">hangel</span>
-                                    <Button onClick={() => handleFlip(card.id)} variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:bg-white/20 hover:text-white"><RotateCw className="h-4 w-4" /></Button>
+                                    <span className="font-bold text-2xl tracking-tighter">hangel</span>
+                                    <Button onClick={() => handleFlip(card.id)} variant="ghost" size="icon" className="h-9 w-9 text-white/80 hover:bg-white/20 hover:text-white rounded-full bg-black/10"><RotateCw className="h-5 w-5" /></Button>
                                 </div>
                                 <div className="space-y-1 text-left">
-                                    <p className="text-2xl font-bold tracking-wider">{card.balance}</p>
-                                    <div className="font-mono text-base tracking-widest pt-2">
+                                    <p className="text-[10px] uppercase font-bold text-white/60 tracking-widest">Bakiye</p>
+                                    <p className="text-3xl font-bold tracking-tight">{card.balance}</p>
+                                    <div className="font-mono text-lg tracking-widest pt-4 drop-shadow-sm">
                                         {showCardNumber[card.id] ? card.number.replace(/(.{4})/g, '$1 ').trim() : `**** **** **** ${card.number.slice(-4)}`}
                                     </div>
-                                    <div className="flex justify-between items-end text-sm">
-                                        <p className="uppercase">{card.owner}</p>
-                                        <p>SKT: {card.expiry}</p>
+                                    <div className="flex justify-between items-end text-xs pt-2">
+                                        <div className="space-y-0.5">
+                                            <p className="text-[8px] uppercase font-bold text-white/60">Kart Sahibi</p>
+                                            <p className="uppercase font-semibold">{card.owner}</p>
+                                        </div>
+                                        <div className="text-right space-y-0.5">
+                                            <p className="text-[8px] uppercase font-bold text-white/60">SKT</p>
+                                            <p className="font-semibold">{card.expiry}</p>
+                                        </div>
                                     </div>
                                 </div>
-                                 {frozenCards[card.id] && <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-b-2xl"><p className="text-2xl font-bold tracking-widest">DONDURULDU</p></div>}
+                                 {frozenCards[card.id] && <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-b-2xl backdrop-blur-[2px]"><p className="text-2xl font-bold tracking-widest border-2 border-white px-4 py-1">DONDURULDU</p></div>}
                             </div>
                             {/* BACK */}
                             <div className={cn("absolute h-full w-full rounded-b-2xl p-2 [transform:rotateY(180deg)] [backface-visibility:hidden]", card.bgColor)}>
                                 {activatedCards[card.id] ? (
                                     <CardBack card={card} />
                                 ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
-                                        <p className="text-lg font-semibold">Kartınız henüz aktif değil.</p>
-                                        <Button onClick={() => setShowActivationDialog(card.id)} variant="secondary">Şimdi Aktive Et</Button>
+                                    <div className="w-full h-full flex flex-col items-center justify-center space-y-4 text-center p-4">
+                                        <p className="text-lg font-bold">Kartınız henüz aktif değil.</p>
+                                        <p className="text-xs text-white/70">Güvenlik önlemi olarak kartınızın ilk kullanımı öncesi kimlik doğrulaması gerekmektedir.</p>
+                                        <Button onClick={() => setShowActivationDialog(card.id)} variant="secondary" className="w-full font-bold">Şimdi Aktive Et</Button>
                                     </div>
                                 )}
-                                 <Button onClick={() => handleFlip(card.id)} variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-white/80 hover:bg-white/20 hover:text-white"><RotateCw className="h-4 w-4" /></Button>
+                                 <Button onClick={() => handleFlip(card.id)} variant="ghost" size="icon" className="absolute top-4 right-4 h-9 w-9 text-white/80 hover:bg-white/20 hover:text-white rounded-full bg-black/10"><RotateCw className="h-5 w-5" /></Button>
                             </div>
                         </div>
                     </div>
@@ -288,11 +311,7 @@ export default function QrPaymentPage() {
             ))}
         </Tabs>
       
-      <Card className={cn('transition-colors border-2', 
-        activeCardId === 'bireysel' && 'border-orange-500',
-        activeCardId === 'ogrenci' && 'border-cyan-500',
-        activeCardId === 'ticari' && 'border-blue-700'
-      )}>
+      <Card className={cn('transition-all duration-500 border-2 shadow-md', getActiveBorderColor())}>
         <CardHeader>
             <CardTitle>Ödeme Yönetimi</CardTitle>
         </CardHeader>
@@ -307,28 +326,31 @@ export default function QrPaymentPage() {
 
                 <TabsContent value="my-qr" className="mt-4 text-center">
                     <div className="flex flex-col items-center gap-4">
-                        <div className="bg-white p-2 rounded-lg">
+                        <div className="bg-white p-4 rounded-2xl shadow-inner border">
                             <Image src={qrCodeUrl} alt="QR Code" width={150} height={150} />
                         </div>
-                         <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted w-full">
-                            <p className="text-base font-mono font-semibold tracking-wider">h-123456</p>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                         <div className="flex items-center justify-center gap-2 p-3 rounded-xl bg-muted w-full border border-dashed">
+                            <p className="text-lg font-mono font-bold tracking-widest text-foreground">h-123456</p>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/10" onClick={() => {
                                 navigator.clipboard.writeText('h-123456');
                                 toast({ title: 'Hangel kodu kopyalandı!' });
                             }}>
-                                <Copy className="h-4 w-4" />
+                                <Copy className="h-5 w-5" />
                             </Button>
-                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <Share2 className="h-4 w-4" />
+                             <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/10">
+                                <Share2 className="h-5 w-5" />
                             </Button>
                         </div>
                     </div>
                 </TabsContent>
                 <TabsContent value="scan-qr" className="mt-4">
-                     <div className="flex flex-col items-center justify-center space-y-4 p-4 text-center">
-                        <ScanLine className="h-20 w-20 text-primary" />
-                        <p className="text-muted-foreground text-sm">Ödeme yapmak için başka bir Hangel kullanıcısının QR kodunu veya bir işyeri QR kodunu okutun.</p>
-                        <Button size="lg" className="w-full" onClick={() => toast({ title: "Kamera Açılıyor..." })}>
+                     <div className="flex flex-col items-center justify-center space-y-4 p-6 text-center border-2 border-dashed rounded-2xl bg-muted/30">
+                        <ScanLine className="h-20 w-20 text-primary animate-pulse" />
+                        <div>
+                            <p className="font-bold text-foreground">Ödemek İçin Okut</p>
+                            <p className="text-muted-foreground text-xs">Diğer Hangel QR kodlarını veya işyeri ödeme noktalarını tarayın.</p>
+                        </div>
+                        <Button size="lg" className="w-full rounded-xl h-12 text-base font-bold shadow-lg shadow-primary/20" onClick={() => toast({ title: "Kamera Açılıyor..." })}>
                             <QrCode className="mr-2 h-5 w-5" /> QR Kodu Tara
                         </Button>
                     </div>
@@ -336,34 +358,40 @@ export default function QrPaymentPage() {
                 <TabsContent value="by-phone" className="mt-4">
                     <form className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="phone-number">Telefon Numarası</Label>
+                            <Label htmlFor="phone-number" className="font-bold">Telefon Numarası</Label>
                             <div className="relative flex items-center">
-                                <Input id="phone-number" type="tel" placeholder="5XX XXX XX XX" className="pr-10" />
-                                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8">
-                                    <Contact className="h-5 w-5 text-muted-foreground" />
+                                <Input id="phone-number" type="tel" placeholder="5XX XXX XX XX" className="pr-12 h-12 rounded-xl border-2" />
+                                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-primary">
+                                    <Contact className="h-6 w-6" />
                                 </Button>
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="amount-phone">Tutar</Label>
-                            <Input id="amount-phone" type="number" placeholder="0.00" />
+                            <Label htmlFor="amount-phone" className="font-bold">Tutar</Label>
+                            <div className="relative">
+                                <Input id="amount-phone" type="number" placeholder="0.00" className="h-12 rounded-xl border-2 pl-4 pr-10 text-xl font-bold" />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₺</span>
+                            </div>
                         </div>
-                        <Button className="w-full" onClick={(e) => { e.preventDefault(); toast({ title: 'Ödeme Yapılıyor...' }) }}>
-                            <ArrowRightLeft className="mr-2 h-4 w-4" /> Ödeme Yap
+                        <Button className="w-full h-12 rounded-xl text-base font-bold" onClick={(e) => { e.preventDefault(); toast({ title: 'Ödeme Yapılıyor...' }) }}>
+                            <ArrowRightLeft className="mr-2 h-5 w-5" /> Ödeme Yap
                         </Button>
                     </form>
                 </TabsContent>
                 <TabsContent value="by-code" className="mt-4">
                     <form className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="payment-code">6 Haneli Ödeme Kodu</Label>
-                            <Input id="payment-code" type="text" maxLength={6} placeholder="------" className="text-center tracking-[0.5em]" />
+                            <Label htmlFor="payment-code" className="font-bold">6 Haneli Ödeme Kodu</Label>
+                            <Input id="payment-code" type="text" maxLength={6} placeholder="------" className="text-center tracking-[0.5em] h-14 text-2xl font-black rounded-xl border-2" />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="amount-code">Tutar</Label>
-                            <Input id="amount-code" type="number" placeholder="0.00" />
+                            <Label htmlFor="amount-code" className="font-bold">Tutar</Label>
+                            <div className="relative">
+                                <Input id="amount-code" type="number" placeholder="0.00" className="h-12 rounded-xl border-2 pl-4 pr-10 text-xl font-bold" />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₺</span>
+                            </div>
                         </div>
-                        <Button className="w-full" onClick={(e) => { e.preventDefault(); toast({ title: 'Ödeme Yapılıyor...' }) }}>
+                        <Button className="w-full h-12 rounded-xl text-base font-bold" onClick={(e) => { e.preventDefault(); toast({ title: 'Ödeme Yapılıyor...' }) }}>
                             Ödeme Yap
                         </Button>
                     </form>
@@ -373,67 +401,51 @@ export default function QrPaymentPage() {
       </Card>
 
       {activeCardId === 'ticari' && (
-        <Card className="mt-6">
+        <Card className="mt-6 border-blue-700/30 bg-blue-50/10 shadow-sm">
             <CardHeader>
-                <CardTitle>Üye İşyeri Materyalleri</CardTitle>
+                <CardTitle className="text-blue-800 dark:text-blue-400">Üye İşyeri Materyalleri</CardTitle>
                 <CardDescription>İşletmenizde kullanabileceğiniz dijital ve basılabilir materyaller.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="p-3 border rounded-lg flex items-center justify-between">
-                    <div>
-                        <h4 className="font-semibold">QR Kodlu Sticker</h4>
-                        <p className="text-xs text-muted-foreground">Müşterilerinizin telefonlarıyla okutarak ödeme yapabileceği sticker.</p>
+                {[
+                    { title: 'QR Kodlu Sticker', desc: 'Müşterilerinizin ödeme yapabileceği sticker.', icon: QrCode },
+                    { title: 'hangel İle Öde Sticker', desc: 'Ödeme kabul ettiğinizi gösteren tabela görseli.', icon: Store },
+                    { title: '"hangel Üye İşyeri" Dönkartı', desc: 'Girişlerde kullanılabilecek çift taraflı kart.', icon: Landmark }
+                ].map((item, i) => (
+                    <div key={i} className="p-4 border bg-background rounded-xl flex items-center justify-between shadow-sm hover:border-blue-500/50 transition-colors group">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                                <item.icon className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-sm">{item.title}</h4>
+                                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
+                        </div>
                     </div>
-                    <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('paylaşma')}><Share2 className="h-4 w-4" /></Button>
-                    </div>
-                </div>
-                <div className="p-3 border rounded-lg flex items-center justify-between">
-                    <div>
-                        <h4 className="font-semibold">hangel İle Öde Sticker</h4>
-                        <p className="text-xs text-muted-foreground">hangel ile ödeme kabul ettiğinizi gösteren sticker.</p>
-                    </div>
-                    <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('paylaşma')}><Share2 className="h-4 w-4" /></Button>
-                    </div>
-                </div>
-                <div className="p-3 border rounded-lg flex items-center justify-between">
-                    <div>
-                        <h4 className="font-semibold">"hangel Üye İşyeri" Dönkartı</h4>
-                        <p className="text-xs text-muted-foreground">İşyeri girişinde kullanabileceğiniz çift taraflı dönkart.</p>
-                    </div>
-                    <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleMaterialClick('paylaşma')}><Share2 className="h-4 w-4" /></Button>
-                    </div>
-                </div>
+                ))}
             </CardContent>
         </Card>
     )}
 
 
-      <Card className={cn('transition-colors border-2', 
-        activeCardId === 'bireysel' && 'border-orange-500',
-        activeCardId === 'ogrenci' && 'border-cyan-500',
-        activeCardId === 'ticari' && 'border-blue-700'
-      )}>
+      <Card className={cn('transition-all duration-500 border-2 shadow-md', getActiveBorderColor())}>
         <CardHeader>
            <CardTitle>Son İşlemler</CardTitle>
            <div className="flex justify-between items-center gap-2 pt-2">
                 <div className="relative w-full">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Ara..." className="pl-8 text-sm h-9 w-full" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="İşlemlerde ara..." className="pl-9 text-sm h-10 w-full rounded-xl" />
                 </div>
-                <div className='flex'>
-                    <Button variant="ghost" size="icon" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!' })}>
+                <div className='flex gap-1'>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!' })}>
                         <Filter className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
                         <ArrowDownUp className="h-4 w-4" />
                     </Button>
                 </div>
@@ -449,64 +461,55 @@ export default function QrPaymentPage() {
                 const hangelShare = ngoShare * 0.10;
 
                 return (
-                    <AccordionItem key={donation.id} value={`item-${donation.id}`} className="border-b last:border-b-0">
-                        <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                    <AccordionItem key={donation.id} value={`item-${donation.id}`} className="border-b last:border-b-0 px-2">
+                        <AccordionTrigger className="px-2 py-4 hover:no-underline">
                             <div className="flex items-center gap-4 flex-1">
-                            <div className="flex-1 text-left">
-                                <p>{donation.brand}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    {format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}
-                                </p>
-                            </div>
-                            <div className="text-right">
-                                <p className={`${donation.type === 'income' ? 'text-green-600' : ''}`}>{donation.purchaseAmount} ₺</p>
-                                {donation.type === 'expense' && <p className="text-xs text-primary">Bağış: {donation.donationAmount} ₺</p>}
-                            </div>
+                                <div className={cn("p-2.5 rounded-xl shadow-sm", donation.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground')}>
+                                    {donation.type === 'income' ? <Plus className="h-5 w-5" /> : <ShoppingBag className="h-5 w-5" />}
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <p className="font-bold text-sm text-foreground">{donation.brand}</p>
+                                    <p className="text-[10px] text-muted-foreground font-medium uppercase">
+                                        {format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} • {donation.time}
+                                    </p>
+                                </div>
+                                <div className="text-right pr-2">
+                                    <p className={cn("font-bold text-base", donation.type === 'income' ? 'text-green-600' : 'text-foreground')}>
+                                        {donation.type === 'income' ? '+' : ''}{donation.purchaseAmount} ₺
+                                    </p>
+                                    {donation.type === 'expense' && <p className="text-[10px] font-bold text-primary">Bağış: {donation.donationAmount} ₺</p>}
+                                </div>
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="px-4 pb-4 bg-muted/50">
-                            <div className="space-y-2 text-sm mt-2 pt-4 border-t">
-                                <div className='flex justify-between'>
+                        <AccordionContent className="px-4 pb-6 bg-muted/30 rounded-xl mb-2 mx-2">
+                            <div className="space-y-3 text-sm mt-2 pt-4 border-t border-dashed">
+                                <div className='flex justify-between font-medium'>
                                     <span className='text-muted-foreground'>Alışveriş Tutarı</span>
                                     <span>{donation.purchaseAmount} ₺</span>
                                 </div>
-                                <div className='flex justify-between'>
+                                <div className='flex justify-between font-bold'>
                                     <span className='text-muted-foreground'>Toplam Bağış</span>
                                     <span className='text-primary'>{donation.donationAmount} ₺</span>
                                 </div>
-                                <Separator />
-                                <div className='flex justify-between text-xs'>
-                                    <span className='text-muted-foreground'>Desteklenen STK Payı</span>
-                                    <span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                                <Separator className="bg-border/50" />
+                                <div className='space-y-1.5'>
+                                    <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Desteklenen STK Payı</span><span className="font-medium text-foreground">{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                                    <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Gelir Vergisi (%20)</span><span className="font-medium text-foreground">{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                                    <div className='flex justify-between text-xs'><span className='text-muted-foreground'>hangel Katkı Payı (%10)</span><span className="font-medium text-foreground">{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                                 </div>
-                                <div className='flex justify-between text-xs'>
-                                    <span className='text-muted-foreground'>Gelir Vergisi (%20)</span>
-                                    <span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
-                                </div>
-                                <div className='flex justify-between text-xs'>
-                                    <span className='text-muted-foreground'>KDV (%20)</span>
-                                    <span>{(0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
-                                </div>
-                                <div className='flex justify-between text-xs'>
-                                    <span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span>
-                                    <span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
-                                </div>
-                                {donation.ngo.length > 0 && <Separator />}
+                                <Separator className="bg-border/50" />
                                 {donation.ngo.length > 0 && (
-                                    <div className='flex justify-between text-xs mt-2'>
-                                        <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
-                                        <span className="text-right">{donation.ngo.join(', ')}</span>
+                                    <div className='flex justify-between items-start gap-4 py-1'>
+                                        <span className='text-[10px] uppercase font-bold text-muted-foreground shrink-0 mt-1'>Desteklenenler:</span>
+                                        <span className="text-right text-xs font-semibold text-foreground leading-tight">{donation.ngo.join(', ')}</span>
                                     </div>
                                 )}
-                                <div className='flex justify-between items-center text-xs pt-2'>
-                                    <div>
-                                        <span className='text-muted-foreground'>İşlem Tarihi: </span>
-                                        <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}</span>
-                                    </div>
-                                    <div className="flex">
-                                        <Button size="icon" variant="ghost" onClick={() => handleActionClick('görüntüleme')}><Eye className="h-4 w-4"/></Button>
-                                        <Button size="icon" variant="ghost" onClick={() => handleActionClick('indirme')}><Download className="h-4 w-4"/></Button>
-                                        <Button size="icon" variant="ghost" onClick={() => handleActionClick('paylaşma')}><Share2 className="h-4 w-4"/></Button>
+                                <div className='flex justify-between items-center pt-2 border-t border-dashed'>
+                                    <p className='text-[10px] text-muted-foreground font-mono'>ID: #{donation.id}000{donation.id}</p>
+                                    <div className="flex gap-1">
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleActionClick('görüntüleme')}><Eye className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleActionClick('indirme')}><Download className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleActionClick('paylaşma')}><Share2 className="h-4 w-4"/></Button>
                                     </div>
                                 </div>
                             </div>
