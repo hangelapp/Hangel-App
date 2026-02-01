@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,16 +75,16 @@ export default function EmergencyPage() {
     );
 
   return (
-    <div className="min-h-screen bg-secondary/30 pb-20 animate-in fade-in-0">
+    <div className="h-[calc(100vh-4rem)] overflow-hidden bg-secondary/30 animate-in fade-in-0 flex flex-col">
         {/* iOS Style Header */}
-        <div className="px-6 pt-12 pb-6 space-y-1">
+        <div className="px-6 pt-12 pb-6 space-y-1 shrink-0">
             <h1 className="text-4xl font-black font-headline tracking-tighter">Acil Durum</h1>
             <p className="text-muted-foreground text-sm font-medium">Topluluğun gücüyle hayat kurtar.</p>
         </div>
         
-        <div className="px-4">
-            <Tabs defaultValue="report" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1.5 h-14 rounded-3xl backdrop-blur-xl">
+        <div className="px-4 flex-1 overflow-hidden flex flex-col">
+            <Tabs defaultValue="report" className="w-full h-full flex flex-col">
+                <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1.5 h-14 rounded-3xl backdrop-blur-xl shrink-0">
                     <TabsTrigger value="report" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
                         Bildirimde Bulun
                     </TabsTrigger>
@@ -92,11 +93,11 @@ export default function EmergencyPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="report" className="mt-8">
+                <TabsContent value="report" className="mt-8 overflow-y-auto no-scrollbar">
                     <ReportTabContent />
                 </TabsContent>
 
-                <TabsContent value="calls" className="mt-8 space-y-6">
+                <TabsContent value="calls" className="mt-8 space-y-6 overflow-y-auto no-scrollbar pb-32">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-base font-bold">Aktif Acil Çağrılar</h3>
