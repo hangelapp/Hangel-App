@@ -131,30 +131,51 @@ const MarketplaceDiscovery = () => {
     ];
 
     return (
-        <div className="w-full py-4 md:py-8 overflow-hidden">
-            <div className="overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory">
-                <div className="grid grid-flow-col grid-rows-2 gap-x-4 gap-y-6 px-6 md:px-12 w-max">
-                    {brands.map((brand, idx) => (
-                        <div key={idx} className="flex flex-col items-center gap-2 shrink-0 snap-start w-[88px] md:w-32">
-                            <div className="relative w-20 h-20 md:w-32 md:h-32 rounded-2xl bg-white p-3 md:p-4 shadow-xl flex items-center justify-center border border-white/10 group hover:scale-105 transition-transform cursor-pointer">
-                                <div className="relative w-full h-full">
-                                    <Image src={brand.logo} alt={brand.name} fill className="object-contain" />
-                                </div>
-                                <div className="absolute -top-1 -right-1 bg-[#f34723] text-white text-[9px] md:text-xs font-black rounded-full w-7 h-7 md:w-10 md:h-10 flex items-center justify-center border-2 border-white shadow-lg">
-                                    %{brand.rate}
-                                </div>
-                            </div>
-                            <p className="text-white/80 text-[10px] md:text-sm font-bold tracking-tight truncate w-full text-center">{brand.name}</p>
-                        </div>
-                    ))}
+        <div className="w-full space-y-4 md:space-y-6 py-4">
+            {/* Market Entrance - Search Bar Mock */}
+            <div className="px-6 md:px-4 max-w-2xl mx-auto w-full">
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-hover:text-white/60 transition-colors" />
+                    <div className="w-full h-12 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center pl-12 pr-4 text-white/40 text-[14px] cursor-pointer hover:bg-white/10 transition-all shadow-2xl">
+                        Marka, ürün veya kategori ara...
+                    </div>
                 </div>
             </div>
-            <div className="mt-2 md:mt-8 flex justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar px-6">
-                {['Elektronik', 'Giyim', 'Ayakkabı', 'Ev & Yaşam', 'Spor'].map(cat => (
-                    <span key={cat} className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/60 text-[9px] md:text-xs font-medium backdrop-blur-md whitespace-nowrap">
+
+            {/* Quick Categories */}
+            <div className="flex overflow-x-auto md:justify-center gap-2 px-6 md:px-4 no-scrollbar">
+                {['Öne Çıkanlar', 'Giyim', 'Elektronik', 'Spor', 'Ev & Yaşam', 'Kozmetik', 'Bebek'].map((cat, idx) => (
+                    <span 
+                        key={cat} 
+                        className={cn(
+                            "px-4 py-2 rounded-full border text-[11px] md:text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
+                            idx === 0 
+                                ? "bg-white text-black border-white" 
+                                : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white"
+                        )}
+                    >
                         {cat}
                     </span>
                 ))}
+            </div>
+
+            {/* Brand Storefront Grid */}
+            <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
+                <div className="grid grid-flow-col grid-rows-2 gap-x-4 gap-y-6 px-6 md:px-12 w-max">
+                    {brands.map((brand, idx) => (
+                        <div key={idx} className="flex flex-col items-center gap-2 shrink-0 snap-start w-[100px] md:w-36">
+                            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white p-4 md:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-center border border-white/10 group hover:scale-105 transition-all duration-300 cursor-pointer">
+                                <div className="relative w-full h-full">
+                                    <Image src={brand.logo} alt={brand.name} fill className="object-contain filter grayscale group-hover:grayscale-0 transition-all" />
+                                </div>
+                                <div className="absolute -top-2 -right-2 bg-[#f34723] text-white text-[10px] md:text-xs font-black rounded-full w-8 h-8 md:w-11 md:h-11 flex items-center justify-center border-2 border-black shadow-xl group-hover:rotate-12 transition-transform">
+                                    %{brand.rate}
+                                </div>
+                            </div>
+                            <p className="text-white/60 text-[10px] md:text-[13px] font-bold tracking-tight truncate w-full text-center group-hover:text-white transition-colors">{brand.name}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
