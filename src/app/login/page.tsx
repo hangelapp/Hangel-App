@@ -173,7 +173,7 @@ const VolunteeringDiscovery = () => {
             <div className="overflow-x-auto no-scrollbar pb-8">
                 <div className="grid grid-flow-col grid-rows-3 gap-x-4 gap-y-3 px-4 md:px-12 w-max mx-auto">
                     {filteredItems.map((item) => (
-                        <Link href={`/login/selection?action=register`} key={item.id} className="block shrink-0">
+                        <Link href={`/login/selection?action=register&type=individual`} key={item.id} className="block shrink-0">
                             <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[260px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
                                 <CardHeader className="p-4 pb-0 space-y-0.5 text-left">
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
@@ -240,9 +240,12 @@ export default function LoginPage() {
         <section className="relative flex flex-col items-center justify-center text-center bg-white py-28 px-6 space-y-6">
           <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05]">Yok öyle yalnız başına mücadele.</h1>
           <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</p>
-          <div className="pt-8">
-            <Button asChild size="lg" className="rounded-full px-12 h-14 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-xl font-normal">
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild size="lg" className="rounded-full px-12 h-14 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-xl font-normal w-full sm:w-auto">
               <Link href="/login/selection?action=login">Giriş Yap</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="rounded-full px-12 h-14 border-2 border-[#0066cc] text-[#0066cc] hover:bg-[#0066cc]/5 text-xl font-normal w-full sm:w-auto">
+              <Link href="/login/selection?action=register&type=individual">Kayıt Ol</Link>
             </Button>
           </div>
         </section>
@@ -256,6 +259,7 @@ export default function LoginPage() {
             imageHint="abstract colorful sparks"
             fullWidth={false}
             primaryCta="Kayıt Ol"
+            link="/login/selection?action=register&type=corporate"
             dark={false}
           />
           <AppleSection 
@@ -266,6 +270,7 @@ export default function LoginPage() {
             imageHint="modern branding" 
             fullWidth={false} 
             primaryCta="Kayıt Ol" 
+            link="/login/selection?action=register&type=corporate"
             dark={false}
           />
         </div>
@@ -274,6 +279,7 @@ export default function LoginPage() {
           title="hangel imece"
           subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
           description="Gönüllü Ol, İmece Ruhuyla Toplumsal Sorunlara Çözüm Üret."
+          link="/login/selection?action=register&type=individual"
         >
           <VolunteeringDiscovery />
         </AppleSection>
@@ -284,6 +290,7 @@ export default function LoginPage() {
           description="Ek Bir Ödeme Yapmadan, Seçtiğin STK'ya %15'e Varan Oranlarda Bağış Yap."
           image="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop"
           imageHint="shopping bags donation"
+          link="/login/selection?action=register&type=individual"
           dark={true}
           primaryCta="Bağış Sistemini Keşfet"
         />

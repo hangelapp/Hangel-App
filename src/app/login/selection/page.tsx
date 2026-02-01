@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Upload, Plus, X, Instagram, Facebook, Linkedin, Twitter, Youtube, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, X, Instagram, Facebook, Linkedin, Twitter, Youtube, Link as LinkIcon, Search } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,7 +37,7 @@ const districts: { [key: string]: string[] } = {
     'Burdur': ['Merkez', 'Ağlasun', 'Altınyayla', 'Bucak', 'Çavdır', 'Çeltikçi', 'Gölhisar', 'Karamanlı', 'Kemer', 'Tefenni', 'Yeşilova'],
     'Bursa': ['Büyükorhan', 'Gemlik', 'Gürsu', 'Harmancık', 'İnegöl', 'İznik', 'Karacabey', 'Keles', 'Kestel', 'Mudanya', 'Mustafakemalpaşa', 'Nilüfer', 'Orhaneli', 'Orhangazi', 'Osmangazi', 'Yenişehir', 'Yıldırım'],
     'Çanakkale': ['Merkez', 'Ayvacık', 'Bayramiç', 'Biga', 'Bozcaada', 'Çan', 'Eceabat', 'Ezine', 'Gelibolu', 'Gökçeada', 'Lapseki', 'Yenice'],
-    'Çankırı': ['Merkez', 'Atkaracalar', 'Bayramören', 'Çerkeş', 'Eldivan', 'Ilgaz', 'Kızılırmak', 'Korgun', 'Kurşunlu', 'Orta', 'Şabanözü', 'Yapraklı'],
+    'ÇANKIRI': ['Merkez', 'Atkaracalar', 'Bayramören', 'Çerkeş', 'Eldivan', 'Ilgaz', 'Kızılırmak', 'Korgun', 'Kurşunlu', 'Orta', 'Şabanözü', 'Yapraklı'],
     'Çorum': ['Merkez', 'Alaca', 'Bayat', 'Boğazkale', 'Dodurga', 'İskilip', 'Kargı', 'Laçin', 'Mecitözü', 'Oğuzlar', 'Ortaköy', 'Osmancık', 'Sungurlu', 'Uğurludağ'],
     'Denizli': ['Merkezefendi', 'Acıpayam', 'Babadağ', 'Baklan', 'Bekilli', 'Beyağaç', 'Bozkurt', 'Buldan', 'Çal', 'Çameli', 'Çardak', 'Çivril', 'Güney', 'Honaz', 'Kale', 'Pamukkale', 'Sarayköy', 'Serinhisar', 'Tavas'],
     'Diyarbakır': ['Bağlar', 'Bismil', 'Çermik', 'Çınar', 'Çüngüş', 'Dicle', 'Eğil', 'Ergani', 'Hani', 'Hazro', 'Kayapınar', 'Kocaköy', 'Kulp', 'Lice', 'Silvan', 'Sur', 'Yenişehir'],
@@ -64,7 +64,7 @@ const districts: { [key: string]: string[] } = {
     'Konya': ['Ahırlı', 'Akören', 'Akşehir', 'Altınekin', 'Beyşehir', 'Bozkır', 'Cihanbeyli', 'Çeltik', 'Çumra', 'Derbent', 'Derebucak', 'Doğanhisar', 'Emirgazi', 'Ereğli', 'Güneysınır', 'Hadim', 'Halkapınar', 'Hüyük', 'Kadınhanı', 'Karapınar', 'Karatay', 'Kulu', 'Meram', 'Sarayönü', 'Selçuklu', 'Seydişehir', 'Taşkent', 'Tuzlukçu', 'Yalıhüyük', 'Yunak'],
     'Kütahya': ['Merkez', 'Altıntaş', 'Aslanapa', 'Çavdarhisar', 'Domaniç', 'Dumlupınar', 'Emet', 'Gediz', 'Hisarcık', 'Pazarlar', 'Simav', 'Şaphane', 'Tavşanlı'],
     'Malatya': ['Akçadağ', 'Arapgir', 'Arguvan', 'Battalgazi', 'Darende', 'Doğanşehir', 'Doğanyol', 'Hekimhan', 'Kale', 'Kuluncak', 'Pütürge', 'Yazıhan', 'Yeşilyurt'],
-    'Manisa': ['Ahmetli', 'Akhisar', 'Alaşehir', 'Demirci', 'Gölmarmara', 'Gördes', 'Kırkağaç', 'Köprübaşı', 'Kula', 'Salihli', 'Sarıgöl', 'Saruhanlı', 'Selendi', 'Soma', 'Şehzadeler', 'Turgutlu', 'Yunusemre'],
+    'Manisa': ['Ahmetli', 'Akhisar', 'Alaşehir', 'Demirci', 'Gölmarmara', 'Gördes', 'Salihli', 'Soma', 'Şehzadeler', 'Turgutlu', 'Yunusemre'],
     'Kahramanmaraş': ['Afşin', 'Andırın', 'Çağlayancerit', 'Dulkadiroğlu', 'Ekinözü', 'Elbistan', 'Göksun', 'Nurhak', 'Onikişubat', 'Pazarcık', 'Türkoğlu'],
     'Mardin': ['Artuklu', 'Dargeçit', 'Derik', 'Kızıltepe', 'Mazıdağı', 'Midyat', 'Nusaybin', 'Ömerli', 'Savur', 'Yeşilli'],
     'Muğla': ['Bodrum', 'Dalaman', 'Datça', 'Fethiye', 'Kavaklıdere', 'Köyceğiz', 'Marmaris', 'Menteşe', 'Milas', 'Ortaca', 'Seydikemer', 'Ula', 'Yatağan'],
@@ -252,7 +252,7 @@ function IndividualLogin({ onLogin }: { onLogin: (e: React.FormEvent) => void })
         </form>
         <div className="text-center text-sm pt-2">
           <span className="text-muted-foreground">Hesabınız yok mu? </span>
-          <Link href="/login/selection?action=register" className="font-medium text-primary hover:underline">Kayıt Ol</Link>
+          <Link href="/login/selection?action=register&type=individual" className="font-medium text-primary hover:underline">Kayıt Ol</Link>
         </div>
       </div>
     );
@@ -300,7 +300,7 @@ function IndividualRegister({ onRegister }: { onRegister: (e: React.FormEvent) =
       </form>
       <div className="text-center text-sm pt-2">
         <span className="text-muted-foreground">Zaten hesabınız var mı? </span>
-        <Link href="/login/selection?action=login" className="font-medium text-primary hover:underline">Giriş Yap</Link>
+        <Link href="/login/selection?action=login&type=individual" className="font-medium text-primary hover:underline">Giriş Yap</Link>
       </div>
     </div>
   );
@@ -325,7 +325,7 @@ function CorporateLogin({ onLogin }: { onLogin: (e: React.FormEvent) => void }) 
           </form>
           <div className="text-center text-sm pt-2">
             <span className="text-muted-foreground">Kuruluşunuz kayıtlı değil mi? </span>
-            <Link href="/login/selection?action=register" className="font-medium text-primary hover:underline">Başvur</Link>
+            <Link href="/login/selection?action=register&type=corporate" className="font-medium text-primary hover:underline">Başvur</Link>
           </div>
         </div>
     );
@@ -444,6 +444,15 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
                                 <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="kulup@okul.edu.tr" required /></div>
                             </CardContent>
                         </Card>
+                        
+                        <AddressFields 
+                            city={officeCity} setCity={setOfficeCity}
+                            district={officeDistrict} setDistrict={setOfficeDistrict}
+                            neighborhood={officeNeighborhood} setNeighborhood={setOfficeNeighborhood}
+                        />
+
+                        <SocialMediaFields />
+
                         <Card>
                             <CardHeader><CardTitle className="text-lg">Görseller</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
@@ -583,7 +592,7 @@ function CorporateRegister({ onRegister }: { onRegister: (e: React.FormEvent) =>
             </form>
             <div className="text-center text-sm pt-2">
                 <span className="text-muted-foreground">Zaten hesabınız var mı? </span>
-                <Link href="/login/selection?action=login" className="font-medium text-primary hover:underline">Giriş Yap</Link>
+                <Link href="/login/selection?action=login&type=corporate" className="font-medium text-primary hover:underline">Giriş Yap</Link>
             </div>
         </div>
     );
@@ -593,6 +602,7 @@ function SelectionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const action = searchParams.get('action') || 'login';
+  const initialType = searchParams.get('type') || 'individual';
 
   const title = action === 'register' ? 'Kayıt Ol' : 'Giriş Yap';
   const description = 'Hangel\'e devam etmek için hesap türünü seçin.';
@@ -628,7 +638,7 @@ function SelectionContent() {
           <p className="text-muted-foreground mt-2">{description}</p>
         </div>
 
-        <Tabs defaultValue="individual" className="w-full">
+        <Tabs defaultValue={initialType} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="individual">Bireysel Hesap</TabsTrigger>
             <TabsTrigger value="corporate">Kurumsal Hesap</TabsTrigger>
