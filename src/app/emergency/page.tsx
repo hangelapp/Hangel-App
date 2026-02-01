@@ -97,20 +97,20 @@ export default function EmergencyPage() {
             <AlertDialogContent className="rounded-3xl">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-4">
-                        <p className="text-foreground/80">
-                            <strong>{label}</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
-                        </p>
-                        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
-                            <Siren className="h-4 w-4" />
-                            <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
-                            <AlertDescription className="text-xs font-bold leading-tight">
-                                Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
-                            </AlertDescription>
-                        </Alert>
+                    <AlertDialogDescription className="text-foreground/80">
+                        <strong>{label}</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter className="gap-2">
+                <div className="py-2">
+                    <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
+                        <Siren className="h-4 w-4" />
+                        <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
+                        <AlertDescription className="text-xs font-bold leading-tight">
+                            Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+                <AlertDialogFooter className="gap-2 mt-4">
                     <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
                     <AlertDialogAction 
                         onClick={onClick}
@@ -147,9 +147,9 @@ export default function EmergencyPage() {
 
                 <div className="p-4 bg-muted/50 rounded-2xl border border-dashed flex items-start gap-3">
                     <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
+                    <div className="text-[11px] leading-relaxed text-muted-foreground font-medium">
                         Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur. Konum ve iletişim bilgileriniz paylaşılacaktır.
-                    </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -246,10 +246,10 @@ export default function EmergencyPage() {
                 <div className="p-2 bg-white/10 rounded-lg">
                     <Info className="h-5 w-5 text-destructive" />
                 </div>
-                <p className="text-[10px] font-medium leading-snug">
+                <div className="text-[10px] font-medium leading-snug">
                     <span className="font-bold text-red-400 uppercase tracking-widest mr-1">YASAL UYARI:</span> 
                     Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur. Konum ve iletişim bilgileriniz paylaşılacaktır.
-                </p>
+                </div>
             </div>
         </div>
     </div>
