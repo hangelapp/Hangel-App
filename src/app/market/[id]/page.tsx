@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar } from 'lucide-react';
@@ -85,7 +85,45 @@ export default function BrandProfilePage() {
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
         </TabsList>
         <TabsContent value="about" className="p-4 space-y-4">
-            {/* Bağış Koşulları Bölümü */}
+            <Card>
+                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Marka Hakkında</CardTitle></CardHeader>
+                <CardContent className="text-sm text-muted-foreground space-y-4">
+                    {brand.about?.split('\n\n').map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p>
+                    ))}
+                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
+                        <Badge variant="secondary">{brand.type}</Badge>
+                        <Badge variant="secondary">{brand.category}</Badge>
+                        {brand.joinDate && <Badge variant="outline" className='text-xs'>Katılım: {brand.joinDate}</Badge>}
+                    </div>
+                </CardContent>
+            </Card>
+            {brand.donationRate > 0 && (
+                 <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Percent className="h-5 w-5 text-primary"/> Bağış Oranları</CardTitle></CardHeader>
+                    <CardContent className='space-y-3'>
+                        <div>
+                            <p className="text-2xl font-bold text-primary">%{brand.donationRate}</p>
+                            <p className="text-sm text-muted-foreground">Bu markadan yapacağınız her alışverişin ortalama %{brand.donationRate}'i seçtiğiniz STK'ya bağışlanır.</p>
+                        </div>
+                        {brand.donationByCategory && brand.donationByCategory.length > 0 && (
+                            <div className="pt-4 border-t">
+                                <h4 className="font-semibold text-sm mb-2 text-foreground">Kategori Bazlı Oranlar</h4>
+                                <div className="space-y-2">
+                                    {brand.donationByCategory.map(item => (
+                                        <div key={item.category} className="flex justify-between text-xs">
+                                            <span className="text-muted-foreground">{item.category}</span>
+                                            <span className="font-medium text-foreground">% {item.rate}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Bağış Koşulları Bölümü - Sırası Alta Alındı */}
             <Card className="border-primary/20 bg-primary/5">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2 text-primary">
@@ -169,44 +207,6 @@ export default function BrandProfilePage() {
                     </Accordion>
                 </CardContent>
             </Card>
-
-            <Card>
-                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Marka Hakkında</CardTitle></CardHeader>
-                <CardContent className="text-sm text-muted-foreground space-y-4">
-                    {brand.about?.split('\n\n').map((paragraph, index) => (
-                        <p key={index}>{paragraph}</p>
-                    ))}
-                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
-                        <Badge variant="secondary">{brand.type}</Badge>
-                        <Badge variant="secondary">{brand.category}</Badge>
-                        {brand.joinDate && <Badge variant="outline" className='text-xs'>Katılım: {brand.joinDate}</Badge>}
-                    </div>
-                </CardContent>
-            </Card>
-            {brand.donationRate > 0 && (
-                 <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Percent className="h-5 w-5 text-primary"/> Bağış Oranları</CardTitle></CardHeader>
-                    <CardContent className='space-y-3'>
-                        <div>
-                            <p className="text-2xl font-bold text-primary">%{brand.donationRate}</p>
-                            <p className="text-sm text-muted-foreground">Bu markadan yapacağınız her alışverişin ortalama %{brand.donationRate}'i seçtiğiniz STK'ya bağışlanır.</p>
-                        </div>
-                        {brand.donationByCategory && brand.donationByCategory.length > 0 && (
-                            <div className="pt-4 border-t">
-                                <h4 className="font-semibold text-sm mb-2 text-foreground">Kategori Bazlı Oranlar</h4>
-                                <div className="space-y-2">
-                                    {brand.donationByCategory.map(item => (
-                                        <div key={item.category} className="flex justify-between text-xs">
-                                            <span className="text-muted-foreground">{item.category}</span>
-                                            <span className="font-medium text-foreground">% {item.rate}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
         </TabsContent>
         <TabsContent value="stats" className="p-4 space-y-4">
              <Card>
