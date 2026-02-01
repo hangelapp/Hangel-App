@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Search, ShoppingBag, Menu, Filter, ArrowDownUp
+  Globe, ChevronRight, Search, ShoppingBag, Menu, Filter, ArrowDownUp, HandHeart
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -328,7 +328,12 @@ export default function LoginPage() {
 
           <div className="flex-1 flex justify-end items-center gap-5 opacity-80">
             <Search className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
-            <ShoppingBag className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
+            <Link href="/market" className="hover:text-primary transition-colors">
+              <ShoppingBag className="h-4 w-4 cursor-pointer" />
+            </Link>
+            <Link href="/volunteering" className="hover:text-primary transition-colors">
+              <HandHeart className="h-4 w-4 cursor-pointer" />
+            </Link>
             <div className="md:hidden">
               <Menu className="h-4 w-4 cursor-pointer" />
             </div>
