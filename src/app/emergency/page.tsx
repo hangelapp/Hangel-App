@@ -11,31 +11,31 @@ import { useState } from 'react';
 
 const initialActiveCalls = [
     { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '5 dk önce' },
-    { id: 2, type: 'Afet Gönüllüsü', details: 'Lojistik Destek', location: 'İzmir Deprem Bölgesi', time: '12 dk önce' },
+    { id: 2, type: 'Deprem', details: 'Enkaz Kaldırma Gönüllüsü', location: 'Hatay Antakya', time: '12 dk önce' },
     { id: 3, type: 'Kan İhtiyacı', details: '0 Rh- (Kritik)', location: 'İstanbul Çapa Tıp Fakültesi', time: '18 dk önce' },
-    { id: 4, type: 'Gıda Dağıtımı', details: 'Mobil Mutfak Desteği', location: 'Hatay Belen', time: '25 dk önce' },
+    { id: 4, type: 'Yangın', details: 'Söndürme Destek Ekibi', location: 'Muğla Marmaris', time: '25 dk önce' },
     { id: 5, type: 'Kan İhtiyacı', details: 'B Rh+', location: 'Antalya Akdeniz Üniv. Hastanesi', time: '32 dk önce' },
-    { id: 6, type: 'Arama Kurtarma', details: 'Saha Personeli', location: 'Adıyaman Merkez', time: '40 dk önce' },
-    { id: 7, type: 'Kan İhtiyacı', details: 'AB Rh-', location: 'Bursa Şehir Hastanesi', time: '45 dk önce' },
-    { id: 8, type: 'Psikososyal Destek', details: 'Çocuk Etkinlikleri', location: 'Kahramanmaraş Çadır Kent', time: '52 dk önce' },
-    { id: 9, type: 'Lojistik Destek', details: 'Depo Tasnifi', location: 'Kocaeli AFAD Merkezi', time: '1 saat önce' },
-    { id: 10, type: 'Kan İhtiyacı', details: 'A Rh-', location: 'Gaziantep Üniv. Hastanesi', time: '1 saat önce' },
-    { id: 11, type: 'Veteriner Desteği', details: 'Sahipsiz Hayvanlar Bakımı', location: 'Malatya Hayvan Barınağı', time: '1 saat önce' },
-    { id: 12, type: 'Kan İhtiyacı', details: 'B Rh-', location: 'Adana Şehir Hastanesi', time: '2 saat önce' },
-    { id: 13, type: 'Çeviri Desteği', details: 'İngilizce/Arapça Çevirmen', location: 'Mersin Göç İdaresi', time: '2 saat önce' },
-    { id: 14, type: 'Kan İhtiyacı', details: '0 Rh+', location: 'Kayseri Erciyes Üniv. Hastanesi', time: '2 saat önce' },
-    { id: 15, type: 'İlk Yardım', details: 'Gezici Sağlık Ekibi', location: 'Elazığ Konteyner Kent', time: '3 saat önce' },
-    { id: 16, type: 'Teknik Destek', details: 'Jeneratör Tamiri', location: 'Osmaniye Operasyon Merkezi', time: '3 saat önce' },
-    { id: 17, type: 'Kan İhtiyacı', details: 'AB Rh+', location: 'Samsun 19 Mayıs Üniv. Hastanesi', time: '4 saat önce' },
-    { id: 18, type: 'Sıcak Yemek', details: 'Akşam Servisi Desteği', location: 'Diyarbakır Aşevi', time: '4 saat önce' },
-    { id: 19, type: 'Kan İhtiyacı', details: 'A Rh+', location: 'Eskişehir Osmangazi Üniv. Hastanesi', time: '5 saat önce' },
-    { id: 20, type: 'Hijyen Kiti', details: 'Paketleme ve Dağıtım', location: 'Şanlıurfa Lojistik Merkezi', time: '5 saat önce' },
-    { id: 21, type: 'Kan İhtiyacı', details: 'B Rh+', location: 'Trabzon KTÜ Farabi Hastanesi', time: '6 saat önce' },
+    { id: 6, type: 'Sel', details: 'Tahliye Operasyonu', location: 'Giresun Dereli', time: '40 dk önce' },
+    { id: 7, type: 'Kaza', details: 'Çoklu Trafik Kazası Destek', location: 'Bursa TEM Otoyolu', time: '45 dk önce' },
+    { id: 8, type: 'Kayıp', details: 'Arama Kurtarma Ekibi', location: 'Bolu Kartalkaya', time: '52 dk önce' },
+    { id: 9, type: 'Kan İhtiyacı', details: 'AB Rh-', location: 'İzmir Ege Üniv. Hastanesi', time: '1 saat önce' },
+    { id: 10, type: 'Yangın', details: 'Lojistik Destek', location: 'Çanakkale Ayvacık', time: '1 saat önce' },
+    { id: 11, type: 'Deprem', details: 'Çadır Kent Kurulumu', location: 'Adıyaman Merkez', time: '1 saat önce' },
+    { id: 12, type: 'Kan İhtiyacı', details: 'A Rh-', location: 'Gaziantep Şehir Hastanesi', time: '2 saat önce' },
+    { id: 13, type: 'Sel', details: 'Gıda ve İhtiyaç Dağıtımı', location: 'Sinop Ayancık', time: '2 saat önce' },
+    { id: 14, type: 'Kaza', details: 'Tünel Kazası Müdahale', location: 'Kocaeli Bolu Dağı', time: '2 saat önce' },
+    { id: 15, type: 'Kayıp', details: 'Şehir Merkezi Arama', location: 'İstanbul Beyoğlu', time: '3 saat önce' },
+    { id: 16, type: 'Kan İhtiyacı', details: '0 Rh+', location: 'Konya Şehir Hastanesi', time: '3 saat önce' },
+    { id: 17, type: 'Yangın', details: 'Rehabilitasyon Çalışması', location: 'Antalya Manavgat', time: '4 saat önce' },
+    { id: 18, type: 'Deprem', details: 'Saha Koordinasyon Gönüllüsü', location: 'Malatya Doğanşehir', time: '4 saat önce' },
+    { id: 19, type: 'Kan İhtiyacı', details: 'B Rh-', location: 'Adana Şehir Hastanesi', time: '5 saat önce' },
+    { id: 20, type: 'Kaza', details: 'Zincirleme Kaza Yardım', location: 'Eskişehir Yolu', time: '5 saat önce' },
+    { id: 21, type: 'Kayıp', details: 'Doğa Araması', location: 'Rize Kaçkar Dağları', time: '6 saat önce' },
 ];
 
 const initialPastApplications = [
     { id: 100, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
-    { id: 101, type: 'Afet Gönüllüsü', details: 'Arama Kurtarma', location: 'Van Deprem Bölgesi', status: 'Kaçırıldı' as const },
+    { id: 101, type: 'Deprem', details: 'Arama Kurtarma', location: 'Maraş Bölgesi', status: 'Kaçırıldı' as const },
 ];
 
 export default function EmergencyPage() {
@@ -93,16 +93,16 @@ export default function EmergencyPage() {
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3 px-1">
-                    <EmergencyTile icon={Zap} label="Deprem" onClick={() => handleReportClick('disaster', 'Deprem')} />
-                    <EmergencyTile icon={CloudRain} label="Sel" onClick={() => handleReportClick('disaster', 'Sel')} />
-                    <EmergencyTile icon={Flame} label="Yangın" onClick={() => handleReportClick('disaster', 'Yangın')} />
-                    <EmergencyTile icon={Ambulance} label="Kaza" onClick={() => handleReportClick('disaster', 'Kaza')} />
-                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('disaster', 'Kayıp')} />
+                    <EmergencyTile icon={Zap} label="Deprem" onClick={() => handleReportClick('earthquake', 'Deprem')} />
+                    <EmergencyTile icon={CloudRain} label="Sel" onClick={() => handleReportClick('flood', 'Sel')} />
+                    <EmergencyTile icon={Flame} label="Yangın" onClick={() => handleReportClick('fire', 'Yangın')} />
+                    <EmergencyTile icon={Ambulance} label="Kaza" onClick={() => handleReportClick('accident', 'Kaza')} />
+                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('missing', 'Kayıp')} />
                     <EmergencyTile 
                         icon={Droplets} 
                         label="Kan" 
                         color="bg-red-600"
-                        onClick={() => handleReportClick('blood', 'Kan')} 
+                        onClick={() => handleReportClick('blood', 'Kan İhtiyacı')} 
                     />
                 </div>
 
