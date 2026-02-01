@@ -21,70 +21,71 @@ const pastApplications = [
 export default function EmergencyPage() {
     const { toast } = useToast();
     
-    const handleReportClick = (type: 'disaster' | 'blood', details?: string) => {
-        let description = type === 'blood'
-            ? 'Kan ihtiyacı çağrısı oluşturuluyor.'
-            : `${details} durumu ilgili birimlere iletiliyor.`;
-
+    const handleReportClick = (type: string, details: string) => {
         toast({
             title: 'Bildirim Gönderiliyor...',
-            description: description,
+            description: `${details} durumu ilgili birimlere iletiliyor.`,
         });
     };
 
-    const EmergencyTile = ({ icon: Icon, label, onClick }: { icon: any, label: string, onClick: () => void }) => (
+    const EmergencyTile = ({ icon: Icon, label, color = "bg-destructive", onClick }: { icon: any, label: string, color?: string, onClick: () => void }) => (
         <button 
             onClick={onClick}
-            className="flex flex-col items-center justify-center gap-3 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group shrink-0 min-w-[100px] snap-center"
+            className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group"
         >
-            <div className="p-4 bg-destructive text-white rounded-2xl shadow-lg shadow-destructive/20 group-hover:scale-110 transition-transform">
+            <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110", color)}>
                 <Icon className="h-7 w-7" />
             </div>
-            <span className="text-sm font-bold tracking-tight">{label}</span>
+            <span className="text-[13px] font-bold tracking-tight text-center leading-tight">{label}</span>
         </button>
     );
 
     const ReportTabContent = () => (
         <div className='flex flex-col gap-6'>
-            {/* Disaster Section */}
+            {/* Action Grid Section */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between px-1">
-                    <h2 className="text-lg font-bold flex items-center gap-2"><Siren className="h-5 w-5 text-destructive" /> Afet Bildirimi</h2>
-                    <Badge variant="outline" className="rounded-full bg-destructive/10 text-destructive border-destructive/20 text-[10px] font-bold">ACİL</Badge>
+                    <h2 className="text-lg font-bold flex items-center gap-2"><Siren className="h-5 w-5 text-destructive" /> Acil Bildirimler</h2>
+                    <Badge variant="outline" className="rounded-full bg-destructive/10 text-destructive border-destructive/20 text-[10px] font-bold uppercase tracking-widest">Canlı</Badge>
                 </div>
                 
-                <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory px-1">
+                <div className="grid grid-cols-3 gap-3 px-1">
                     <EmergencyTile icon={Zap} label="Deprem" onClick={() => handleReportClick('disaster', 'Deprem')} />
                     <EmergencyTile icon={CloudRain} label="Sel" onClick={() => handleReportClick('disaster', 'Sel')} />
                     <EmergencyTile icon={Flame} label="Yangın" onClick={() => handleReportClick('disaster', 'Yangın')} />
                     <EmergencyTile icon={Ambulance} label="Kaza" onClick={() => handleReportClick('disaster', 'Kaza')} />
-                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('disaster', 'Kayıp')} />
+                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('disaster', 'Kayıp Şahıs')} />
+                    <EmergencyTile 
+                        icon={Droplets} 
+                        label="Kan" 
+                        color="bg-red-600"
+                        onClick={() => handleReportClick('blood', 'Acil Kan İhtiyacı')} 
+                    />
                 </div>
 
                 <div className="p-4 bg-muted/50 rounded-2xl border border-dashed flex items-start gap-3">
                     <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                        Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ile otomatik olarak paylaşılacaktır.
+                        Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ve onaylı yardım birimleri ile otomatik olarak paylaşılacaktır.
                     </p>
                 </div>
             </div>
 
-            {/* Blood Section */}
+            {/* Special Calls Shortcut */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between px-1">
                     <h2 className="text-lg font-bold flex items-center gap-2"><Droplets className="h-5 w-5 text-destructive" /> Kan İhtiyacı</h2>
                 </div>
                 
                 <button 
-                    onClick={() => handleReportClick('blood')}
+                    onClick={() => handleReportClick('blood', 'Acil Kan Çağrısı')}
                     className="w-full relative overflow-hidden p-6 bg-gradient-to-br from-destructive to-red-700 text-white rounded-[2rem] active:scale-[0.98] transition-all shadow-xl shadow-destructive/20"
                 >
                     <div className="relative z-10 flex flex-col items-center gap-2">
                         <Droplets className="h-10 w-10 animate-pulse" />
-                        <span className="text-xl font-black tracking-tight uppercase">ACİL KAN ÇAĞRISI</span>
+                        <span className="text-xl font-black tracking-tight uppercase">DETAYLI KAN ÇAĞRISI</span>
                         <p className="text-white/80 text-xs font-medium">Konumunuzdaki potansiyel bağışçılara ulaşın</p>
                     </div>
-                    {/* Abstract blood background decoration */}
                     <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-3xl" />
                     <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-black/10 rounded-full blur-3xl" />
                 </button>
@@ -119,7 +120,7 @@ export default function EmergencyPage() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-base font-bold">Aktif Acil Çağrılar</h3>
-                            <Badge variant="outline" className="rounded-full bg-blue-100 text-blue-700 border-blue-200 text-[10px] font-bold">CANLI</Badge>
+                            <Badge variant="outline" className="rounded-full bg-blue-100 text-blue-700 border-blue-200 text-[10px] font-bold uppercase">Canlı</Badge>
                         </div>
                         <div className="space-y-3">
                             {activeCalls.map(call => (
