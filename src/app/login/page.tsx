@@ -75,14 +75,14 @@ const AppleSection = ({
         </Button>
       </div>
     </div>
-    <div className="relative w-full flex-1 flex flex-col items-center justify-start overflow-hidden px-4 md:px-0">
+    <div className="relative w-full flex-1 flex flex-col items-center justify-start overflow-hidden px-0 md:px-0">
       {children ? (
         <div className="w-full h-full">
           {children}
         </div>
       ) : (
         image && (
-          <div className="relative w-full h-full max-w-5xl mx-auto">
+          <div className="relative w-full h-full max-w-5xl mx-auto px-4">
             <Image 
               src={image} 
               alt={title} 
@@ -152,10 +152,10 @@ const VolunteeringDiscovery = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm">
+                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
                     <Filter className="h-4 w-4 text-[#1d1d1f]" />
                 </Button>
-                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm">
+                <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
                     <ArrowDownUp className="h-4 w-4 text-[#1d1d1f]" />
                 </Button>
             </div>
@@ -177,10 +177,10 @@ const VolunteeringDiscovery = () => {
                 ))}
             </div>
 
-            <div className="overflow-x-auto no-scrollbar pb-8">
-                <div className="grid grid-flow-col grid-rows-3 gap-x-4 gap-y-3 px-4 md:px-12 w-max mx-auto">
+            <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
+                <div className="grid grid-flow-col grid-rows-3 gap-x-4 gap-y-3 px-4 md:px-12 w-max">
                     {filteredItems.map((item) => (
-                        <Link href={`/login/selection?action=register&type=individual`} key={item.id} className="block shrink-0">
+                        <Link href={`/login/selection?action=register&type=individual`} key={item.id} className="block shrink-0 snap-start">
                             <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[260px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
                                 <CardHeader className="p-4 pb-0 space-y-0.5 text-left">
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
