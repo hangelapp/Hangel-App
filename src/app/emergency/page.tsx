@@ -1,41 +1,68 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, ChevronRight, MapPin } from 'lucide-react';
+import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, ChevronRight, MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
-const activeCalls = [
+const initialActiveCalls = [
     { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '15 dakika önce' },
     { id: 2, type: 'Afet Gönüllüsü', details: 'Lojistik Destek', location: 'İzmir Deprem Bölgesi', time: '1 saat önce' },
 ];
 
-const pastApplications = [
-    { id: 1, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
-    { id: 2, type: 'Afet Gönüllüsü', details: 'Arama Kurtarma', location: 'Van Deprem Bölgesi', status: 'Kaçırıldı' as const },
+const initialPastApplications = [
+    { id: 3, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
+    { id: 4, type: 'Afet Gönüllüsü', details: 'Arama Kurtarma', location: 'Van Deprem Bölgesi', status: 'Kaçırıldı' as const },
 ];
 
 export default function EmergencyPage() {
     const { toast } = useToast();
+    const [activeCalls, setActiveCalls] = useState(initialActiveCalls);
+    const [pastApplications, setPastApplications] = useState(initialPastApplications);
+    const [isReporting, setIsReporting] = useState<string | null>(null);
     
     const handleReportClick = (type: string, details: string) => {
+        setIsReporting(details);
+        
+        // Simulate a network request
+        setTimeout(() => {
+            toast({
+                title: 'İhbar İletildi',
+                description: `${details} durumu konumuzla birlikte ilgili birimlere başarıyla ulaştırıldı.`,
+            });
+            setIsReporting(null);
+        }, 2000);
+    };
+
+    const handleHelpClick = (call: typeof initialActiveCalls[0]) => {
+        // Remove from active calls
+        setActiveCalls(prev => prev.filter(c => c.id !== call.id));
+        
+        // Add to past applications with status 'Başvuruldu'
+        const newApp = {
+            ...call,
+            status: 'Başvuruldu' as const,
+        };
+        setPastApplications(prev => [newApp, ...prev]);
+
         toast({
-            title: 'Bildirim Gönderiliyor...',
-            description: `${details} durumu ilgili birimlere iletiliyor.`,
+            title: 'Yardım Talebi Alındı',
+            description: `"${call.details}" için yardım talebiniz onaylandı. Koordinasyon ekibi sizinle iletişime geçecek.`,
         });
     };
 
     const EmergencyTile = ({ icon: Icon, label, color = "bg-destructive", onClick }: { icon: any, label: string, color?: string, onClick: () => void }) => (
         <button 
             onClick={onClick}
-            className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group"
+            disabled={!!isReporting}
+            className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group disabled:opacity-50"
         >
-            <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110", color)}>
-                <Icon className="h-7 w-7" />
+            <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110 flex items-center justify-center", color)}>
+                {isReporting === label ? <Loader2 className="h-7 w-7 animate-spin" /> : <Icon className="h-7 w-7" />}
             </div>
             <span className="text-[13px] font-bold tracking-tight text-center leading-tight">{label}</span>
         </button>
@@ -43,7 +70,6 @@ export default function EmergencyPage() {
 
     const ReportTabContent = () => (
         <div className='flex flex-col gap-6'>
-            {/* Action Grid Section */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between px-1">
                     <h2 className="text-lg font-bold flex items-center gap-2"><Siren className="h-5 w-5 text-destructive" /> Acil Bildirimler</h2>
@@ -55,12 +81,12 @@ export default function EmergencyPage() {
                     <EmergencyTile icon={CloudRain} label="Sel" onClick={() => handleReportClick('disaster', 'Sel')} />
                     <EmergencyTile icon={Flame} label="Yangın" onClick={() => handleReportClick('disaster', 'Yangın')} />
                     <EmergencyTile icon={Ambulance} label="Kaza" onClick={() => handleReportClick('disaster', 'Kaza')} />
-                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('disaster', 'Kayıp Şahıs')} />
+                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('disaster', 'Kayıp')} />
                     <EmergencyTile 
                         icon={Droplets} 
                         label="Kan" 
                         color="bg-red-600"
-                        onClick={() => handleReportClick('blood', 'Acil Kan İhtiyacı')} 
+                        onClick={() => handleReportClick('blood', 'Kan')} 
                     />
                 </div>
 
@@ -76,7 +102,6 @@ export default function EmergencyPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] overflow-hidden bg-secondary/30 animate-in fade-in-0 flex flex-col">
-        {/* iOS Style Header */}
         <div className="px-6 pt-12 pb-6 space-y-1 shrink-0">
             <h1 className="text-4xl font-black font-headline tracking-tighter">Acil Durum</h1>
             <p className="text-muted-foreground text-sm font-medium">Topluluğun gücüyle hayat kurtar.</p>
@@ -118,7 +143,11 @@ export default function EmergencyPage() {
                                         <p className="text-[10px] font-bold text-muted-foreground uppercase">{call.time}</p>
                                     </div>
                                     <div className="p-3 bg-background border-t border-dashed">
-                                        <Button variant="outline" className="w-full rounded-xl font-bold group-hover:bg-destructive group-hover:text-white transition-colors">
+                                        <Button 
+                                            variant="outline" 
+                                            className="w-full rounded-xl font-bold group-hover:bg-destructive group-hover:text-white transition-colors"
+                                            onClick={() => handleHelpClick(call)}
+                                        >
                                             Yardım Et
                                         </Button>
                                     </div>
@@ -157,7 +186,6 @@ export default function EmergencyPage() {
             </Tabs>
         </div>
 
-        {/* Warning Banner */}
         <div className="fixed bottom-24 left-4 right-4 z-10">
             <div className="p-4 bg-slate-900/90 backdrop-blur-lg text-white rounded-2xl shadow-2xl flex items-center gap-4 border border-white/10">
                 <div className="p-2 bg-white/10 rounded-lg">
