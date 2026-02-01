@@ -32,7 +32,7 @@ export default function EmergencyPage() {
         setTimeout(() => {
             toast({
                 title: 'İhbar İletildi',
-                description: `${details} durumu konumuzla birlikte ilgili birimlere başarıyla ulaştırıldı.`,
+                description: `${details} durumu konumunuzla birlikte ilgili birimlere başarıyla ulaştırıldı.`,
             });
             setIsReporting(null);
         }, 2000);
@@ -93,7 +93,7 @@ export default function EmergencyPage() {
                 <div className="p-4 bg-muted/50 rounded-2xl border border-dashed flex items-start gap-3">
                     <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                        Konum, iletişim ve kan grubu bilgileriniz ilgili kamu kuruluşları ve onaylı yardım birimleri ile otomatik olarak paylaşılacaktır.
+                        Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur. Konum ve iletişim bilgileriniz paylaşılacaktır.
                     </p>
                 </div>
             </div>
@@ -193,7 +193,7 @@ export default function EmergencyPage() {
                 </div>
                 <p className="text-[10px] font-medium leading-snug">
                     <span className="font-bold text-red-400 uppercase tracking-widest mr-1">YASAL UYARI:</span> 
-                    Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
+                    Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur. Konum ve iletişim bilgileriniz paylaşılacaktır.
                 </p>
             </div>
         </div>
