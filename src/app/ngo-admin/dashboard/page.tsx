@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, HandCoins, ShieldAlert } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert } from 'lucide-react';
 import { user, ngos } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,12 @@ const iconColorMap: { [key: string]: string } = {
   'help-circle': 'bg-teal-500',
   sparkles: 'bg-purple-500',
   'trending-up': 'bg-pink-500',
-  'hand-coins': 'bg-yellow-500',
+  'mail': 'bg-amber-500',
+  'megaphone': 'bg-yellow-500',
+  'calendar': 'bg-rose-500',
+  'calculator': 'bg-emerald-500',
+  'message-circle': 'bg-sky-500',
+  'shopping-cart': 'bg-violet-500',
 };
 
 const NavLink = ({ href, icon, label }: { href: string, icon: string, label: string }) => {
@@ -44,11 +49,23 @@ const NavLink = ({ href, icon, label }: { href: string, icon: string, label: str
 
 const navGroups = [
     {
-        title: "Görünürlük & Profil",
+        title: "Görünürlük & Kurumsal Kimlik",
         items: [
             { id: 'profile', href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
             { id: 'qr', href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+        ]
+    },
+    {
+        title: "Entegrasyon ve Yönetim",
+        items: [
             { id: 'website', href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+            { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'] },
+            { id: 'mail', href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: 'mail', roles: ['Genel Yönetici'] },
+            { id: 'ads', href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+            { id: 'events', href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: 'calendar', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+            { id: 'accounting', href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
+            { id: 'dm', href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+            { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
         ]
     },
     {
@@ -56,7 +73,6 @@ const navGroups = [
         items: [
             { id: 'notifications', href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
             { id: 'posts', href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'] },
             { id: 'volunteer', href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
         ]
     },
