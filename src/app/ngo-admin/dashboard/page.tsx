@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,6 +17,7 @@ const iconColorMap: { [key: string]: string } = {
   'shield-check': 'bg-green-500',
   'qr-code': 'bg-slate-500',
   'globe': 'bg-cyan-500',
+  'message-square': 'bg-blue-400',
   users: 'bg-blue-500',
   bell: 'bg-purple-500',
   settings: 'bg-gray-500',
@@ -51,6 +53,7 @@ const allNavItems = [
     { id: 'impact-story', href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
     { id: 'qr', href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
     { id: 'website', href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+    { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'] },
     { id: 'users', href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users', roles: ['Genel Yönetici'] },
     { id: 'notifications', href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
     { id: 'settings', href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings', roles: ['Genel Yönetici'] },
@@ -116,7 +119,7 @@ export default function NgoDashboardPage() {
                 {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
                     <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
                         <div className="flex items-center gap-4">
-                            <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                            <div className="p-2.5 bg-blue-100 dark:bg-green-900/30 rounded-xl">
                                 <Users className="h-5 w-5 text-blue-600" />
                             </div>
                             <div>
@@ -134,7 +137,7 @@ export default function NgoDashboardPage() {
                 {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
                     <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
                         <div className="flex items-center gap-4">
-                            <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                            <div className="p-2.5 bg-red-100 dark:bg-green-900/30 rounded-xl">
                                 <Heart className="h-5 w-5 text-red-600" />
                             </div>
                             <div>
