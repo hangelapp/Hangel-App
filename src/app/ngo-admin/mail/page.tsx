@@ -8,10 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Send, Mail, Users, Sparkles, Layout, History, Settings2, Globe, MailCheck } from 'lucide-react';
+import { ArrowLeft, Send, Mail, History, Settings2, ShieldCheck, MailCheck, KeyRound } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+
+const mailProviders = [
+    { id: 'sendgrid', name: 'SendGrid', logo: 'S', color: 'bg-blue-500', status: 'Bağlı' },
+    { id: 'mailchimp', name: 'Mailchimp', logo: 'M', color: 'bg-yellow-500', status: 'Bağlanabilir' },
+    { id: 'aws-ses', name: 'Amazon SES', logo: 'A', color: 'bg-orange-600', status: 'Bağlanabilir' },
+    { id: 'smtp', name: 'Özel SMTP', logo: 'P', color: 'bg-slate-600', status: 'Bağlanabilir' },
+];
 
 export default function MailManagementPage() {
     const { toast } = useToast();
@@ -39,81 +47,77 @@ export default function MailManagementPage() {
                 </div>
             </div>
 
-            <Tabs defaultValue="new-mail">
+            <Tabs defaultValue="integration">
                 <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                    <TabsTrigger value="integration"><Settings2 className="mr-2 h-4 w-4" /> Servis Bağla</TabsTrigger>
                     <TabsTrigger value="new-mail"><Mail className="mr-2 h-4 w-4" /> Yeni Bülten</TabsTrigger>
                     <TabsTrigger value="history"><History className="mr-2 h-4 w-4" /> Gönderimler</TabsTrigger>
-                    <TabsTrigger value="integration"><Settings2 className="mr-2 h-4 w-4" /> Entegrasyon</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="new-mail" className="mt-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 space-y-6">
-                            <Card>
-                                <CardHeader><CardTitle>İçerik Hazırla</CardTitle></CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>Konu Başlığı</Label>
-                                        <Input placeholder="Ayın Sosyal Etki Özeti" />
+                <TabsContent value="integration" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {mailProviders.map((provider) => (
+                            <Card key={provider.id} className="hover:border-primary transition-colors cursor-pointer group">
+                                <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+                                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", provider.color)}>
+                                        {provider.logo}
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>Mesaj (HTML Destekli)</Label>
-                                        <Textarea rows={10} placeholder="E-posta içeriğinizi buraya yazın..." />
+                                    <div>
+                                        <p className="font-bold text-sm">{provider.name}</p>
+                                        <Badge variant={provider.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                            {provider.status}
+                                        </Badge>
                                     </div>
-                                    <Button className="w-full" onClick={handleSend} disabled={isLoading}>Gönderimi Başlat</Button>
+                                    <Button variant="outline" size="sm" className="w-full">Ayarlar</Button>
                                 </CardContent>
                             </Card>
-                        </div>
-                        <div className="space-y-6">
-                            <Card className="bg-primary/5">
-                                <CardHeader><CardTitle className="text-sm">Hızlı Şablonlar</CardTitle></CardHeader>
-                                <CardContent className="space-y-2">
-                                    <Button variant="outline" className="w-full text-xs justify-start">Gönüllü Çağrısı</Button>
-                                    <Button variant="outline" className="w-full text-xs justify-start">Bağış Teşekkür</Button>
-                                </CardContent>
-                            </Card>
-                        </div>
+                        ))}
                     </div>
-                </TabsContent>
 
-                <TabsContent value="integration" className="mt-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>E-Posta Servis Sağlayıcı Ayarları</CardTitle>
-                            <CardDescription>Toplu mail gönderimi için kullandığınız servisi bağlayın.</CardDescription>
+                            <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> API & SMTP Ayarları</CardTitle>
+                            <CardDescription>Toplu mail gönderimi için kullandığınız servisin bilgilerini girin.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label>Servis Seçin</Label>
-                                <Select defaultValue="sendgrid">
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="sendgrid">SendGrid</SelectItem>
-                                        <SelectItem value="mailchimp">Mailchimp</SelectItem>
-                                        <SelectItem value="aws-ses">Amazon SES</SelectItem>
-                                        <SelectItem value="smtp">Özel SMTP</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>API Key / Bağlantı Kodu</Label>
-                                <Input type="password" placeholder="SG.xxxxxxxxxxxx" />
-                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>API Key / Kullanıcı Adı</Label>
+                                    <Input placeholder="SG.xxxxxxxxxxxx" />
+                                </div>
                                 <div className="space-y-2">
                                     <Label>Gönderen Adı</Label>
                                     <Input placeholder="Ahbap Bilgilendirme" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Gönderen E-Posta</Label>
-                                    <Input placeholder="bulten@kurum.org" />
-                                </div>
                             </div>
-                            <div className="p-4 border rounded-lg bg-green-50 text-green-800 text-xs flex items-center gap-3">
-                                <MailCheck className="h-5 w-5" />
-                                <p>Kurumsal e-posta adresinizin (SPF/DKIM) doğrulanmış olması, maillerin spam kutusuna düşmesini engeller.</p>
+                            <div className="space-y-2">
+                                <Label>Gönderen E-Posta Adresi</Label>
+                                <Input placeholder="bulten@kurum.org" />
                             </div>
+                            <div className="p-4 border rounded-xl bg-green-50 text-green-800 text-xs flex items-center gap-3">
+                                <MailCheck className="h-5 w-5 shrink-0" />
+                                <p>SPF ve DKIM kayıtlarınızın doğrulanmış olması, gönderilerinizin spam klasörüne düşmesini engeller.</p>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
                             <Button onClick={() => toast({title: "Mail Ayarları Kaydedildi"})}>Entegrasyonu Kaydet</Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="new-mail" className="mt-6">
+                    <Card>
+                        <CardHeader><CardTitle>İçerik Hazırla</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Konu Başlığı</Label>
+                                <Input placeholder="Ayın Sosyal Etki Özeti" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>E-posta İçeriği (HTML Destekli)</Label>
+                                <Textarea rows={10} placeholder="E-posta içeriğinizi buraya yazın veya bir şablon seçin..." />
+                            </div>
+                            <Button className="w-full" onClick={handleSend} disabled={isLoading}>Gönderimi Başlat</Button>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -125,7 +129,7 @@ export default function MailManagementPage() {
                             <div className="divide-y">
                                 {[
                                     { title: 'Haziran Bülteni', recipients: '12,450', date: '15.06.2024', open: '45%' },
-                                    { title: 'Deprem Yardımı Bilgilendirme', recipients: '45,000', date: '10.06.2024', open: '68%' }
+                                    { title: 'Acil Yardım Bilgilendirme', recipients: '45,000', date: '10.06.2024', open: '68%' }
                                 ].map((mail, i) => (
                                     <div key={i} className="p-4 flex items-center justify-between">
                                         <div>

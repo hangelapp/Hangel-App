@@ -3,521 +3,111 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Eye, Palette, Newspaper, Handshake, Mail, CheckCircle, Server, ShieldCheck, BarChart3, Copy, CreditCard, MessageSquare, QrCode, Link as LinkIcon, Menu, Edit, Store, Landmark, Target, ArrowLeft, Languages, Image as ImageIcon, FileText } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
+import { Globe, Palette, BarChart3, Settings2, Code, ShieldCheck, ArrowLeft, Languages } from 'lucide-react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import Link from 'next/link';
-import { ngos } from '@/lib/data';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { cn } from '@/lib/utils';
 
-// A new component for read-only sections with an edit link
-const ReadOnlySectionCard = ({ icon: Icon, title, description, editHref }: { icon: React.ElementType, title: string, description: string, editHref: string }) => (
-    <Card>
-        <CardHeader className="flex flex-row items-start justify-between">
-            <div>
-                <CardTitle className="flex items-center gap-3 text-lg"><Icon className="h-5 w-5 text-primary" /> {title}</CardTitle>
-                <CardDescription className="pt-1 line-clamp-2">{description}</CardDescription>
-            </div>
-            <div className="flex items-center gap-2 pl-4">
-                <Switch id={`publish-${title.toLowerCase().replace(' ', '-')}`} defaultChecked />
-            </div>
-        </CardHeader>
-        <CardContent>
-            <Button asChild variant="secondary" className="w-full">
-                <Link href={editHref}>
-                    <Edit className="mr-2 h-4 w-4" /> İçeriği Düzenle
-                </Link>
-            </Button>
-        </CardContent>
-    </Card>
-);
-
-const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: {code: string, name: string}[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
-    return (
-        <div className="space-y-2">
-            <Label>{title}</Label>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal h-auto min-h-10">
-                        {selected.length > 0 ? (
-                             <div className="flex flex-wrap gap-1">
-                                {selected.map((langCode) => (
-                                    <Badge key={langCode} variant="secondary" className="font-normal">{options.find(o => o.code === langCode)?.name}</Badge>
-                                ))}
-                            </div>
-                        ) : `${title} seçin...`}
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                    {options.map((option) => (
-                        <DropdownMenuCheckboxItem
-                            key={option.code}
-                            checked={selected.includes(option.code)}
-                            onCheckedChange={(checked) => {
-                                if (checked) {
-                                    onSelectedChange([...selected, option.code]);
-                                } else {
-                                     if (selected.length > 1) {
-                                        onSelectedChange(selected.filter((item) => item !== option.code));
-                                    }
-                                }
-                            }}
-                        >
-                            {option.name}
-                        </DropdownMenuCheckboxItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-    );
-};
-
+const analyticsProviders = [
+    { id: 'google-analytics', name: 'Google Analytics', logo: 'GA', color: 'bg-[#f9ab00]', status: 'Bağlı' },
+    { id: 'meta-pixel', name: 'Meta Pixel', logo: 'MP', color: 'bg-[#0668E1]', status: 'Bağlanabilir' },
+    { id: 'hotjar', name: 'Hotjar', logo: 'HJ', color: 'bg-[#ff1c1c]', status: 'Bağlanabilir' },
+    { id: 'yandex-metrica', name: 'Yandex Metrica', logo: 'YM', color: 'bg-[#ff0000]', status: 'Bağlanabilir' },
+];
 
 export default function WebsiteBuilderPage() {
     const router = useRouter();
-    const [isPublished, setIsPublished] = useState(false);
     const { toast } = useToast();
-    const [customDomain, setCustomDomain] = useState('');
-    const [domainProvider, setDomainProvider] = useState('');
-    const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği for preview data
     const [primaryColor, setPrimaryColor] = useState('#f34723');
-    const [secondaryColor, setSecondaryColor] = useState('#f1f5f9');
-    const [accentColor, setAccentColor] = useState('#042654');
-    const [openBanners, setOpenBanners] = useState<{ [key: number]: boolean }>({ 1: true, 2: false, 3: false });
-
-    const handleBannerToggle = (bannerIndex: number) => {
-        setOpenBanners(prev => ({...prev, [bannerIndex]: !prev[bannerIndex]}));
-    };
-
-    const allLanguages = [
-        { code: 'ar', name: 'العربية' },
-        { code: 'az', name: 'Azərbaycanca' },
-        { code: 'da', name: 'Dansk' },
-        { code: 'de', name: 'Deutsch' },
-        { code: 'en', name: 'English' },
-        { code: 'es', name: 'Español' },
-        { code: 'fi', name: 'Suomi' },
-        { code: 'fr', name: 'Français' },
-        { code: 'el', name: 'Ελληνικά' },
-        { code: 'hi', name: 'हिन्दी' },
-        { code: 'it', name: 'Italiano' },
-        { code: 'ja', name: '日本語' },
-        { code: 'kk', name: 'Қазақша' },
-        { code: 'ko', name: '한국어' },
-        { code: 'ky', name: 'Кыргызча' },
-        { code: 'nl', name: 'Nederlands' },
-        { code: 'no', name: 'Norsk' },
-        { code: 'uz', name: 'Oʻzbekcha' },
-        { code: 'pl', name: 'Polski' },
-        { code: 'pt', name: 'Português' },
-        { code: 'ru', name: 'Русский' },
-        { code: 'sv', name: 'Svenska' },
-        { code: 'tk', name: 'Türkmençe' },
-        { code: 'tr', name: 'Türkçe' },
-        { code: 'uk', name: 'Українська' },
-        { code: 'zh', name: '中文' }
-    ].sort((a, b) => a.name.localeCompare(b.name));
-    
-    const [supportedLanguages, setSupportedLanguages] = useState<string[]>(['tr']);
-    const [defaultLanguage, setDefaultLanguage] = useState<string>('tr');
-
-    useEffect(() => {
-        if (supportedLanguages.length > 0 && !supportedLanguages.includes(defaultLanguage)) {
-            setDefaultLanguage(supportedLanguages[0]);
-        }
-    }, [supportedLanguages, defaultLanguage]);
-
-    const previewLink = `/ngo-admin/website/preview?primary=${primaryColor.substring(1)}&secondary=${secondaryColor.substring(1)}&accent=${accentColor.substring(1)}`;
-
-
-    const handleSave = () => {
-        toast({
-            title: "Kaydedildi!",
-            description: "Web sitesi ayarlarınız başarıyla güncellendi.",
-        });
-        if(customDomain) {
-            toast({
-                title: "Domain Kaydedildi!",
-                description: `Lütfen ${customDomain} için DNS kayıtlarınızı güncelleyin. Siteniz 24 saat içinde aktif olacaktır.`,
-            });
-        }
-    };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.push('/ngo-admin/dashboard')} variant="ghost" size="icon" className="-ml-2">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
                     <h1 className="text-2xl font-bold font-headline">Web Sitesi Yönetimi</h1>
-                    <p className="text-muted-foreground text-sm">
-                        Hangel'deki profil bilgilerinizle otomatik olarak bir web sitesi oluşturun ve yönetin.
-                    </p>
+                    <p className="text-muted-foreground text-sm">Kurumsal kimliğinizi ve harici scriptlerinizi yönetin.</p>
                 </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Server className="h-5 w-5 text-primary" />Alan Adı (Domain) ve DNS</CardTitle>
-                    <CardDescription>Sitenizi kendi alan adınızda yayınlayın.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="custom-domain">Kendi Alan Adınız</Label>
-                        <Input 
-                            id="custom-domain" 
-                            placeholder="ornek-stk.org.tr" 
-                            value={customDomain} 
-                            onChange={(e) => setCustomDomain(e.target.value)} 
-                        />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="domain-provider">Domain Hizmet Sağlayıcınız</Label>
-                        <Select onValueChange={setDomainProvider}>
-                            <SelectTrigger id="domain-provider"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="natro">Natro</SelectItem>
-                                <SelectItem value="turhost">Turhost</SelectItem>
-                                <SelectItem value="isimtescil">İsimtescil</SelectItem>
-                                <SelectItem value="godaddy">GoDaddy</SelectItem>
-                                <SelectItem value="other">Diğer</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {domainProvider === 'other' && (
-                            <div className="space-y-2 pt-2">
-                                <Label htmlFor="other-domain-provider">Diğer Sağlayıcı</Label>
-                                <Input id="other-domain-provider" placeholder="Alan adı sağlayıcınızı yazın..." />
-                            </div>
-                        )}
-                    </div>
-                    <Alert>
-                        <Server className="h-4 w-4" />
-                        <AlertTitle>DNS Kayıtlarını Güncelleyin</AlertTitle>
-                        <AlertDescription>
-                            Alan adınızı kaydettikten sonra, alan adı sağlayıcınızın DNS paneline giderek aşağıdaki kayıtları oluşturun. Değişikliklerin internete yayılması 24 saati bulabilir.
-                            <div className="mt-2 space-y-2 p-2 bg-muted rounded font-mono text-xs">
-                                <div>
-                                    <p><strong>Tür:</strong> CNAME</p>
-                                    <p><strong>İsim/Host:</strong> www</p>
-                                    <p><strong>Değer/Yönlendirilen:</strong> host.hangel.org</p>
-                                </div>
-                                <div className="pt-2 border-t border-muted-foreground/20">
-                                     <p>Ayrıca, alan adınızın isim sunucularını (NS) aşağıdaki gibi güncelleyin:</p>
-                                     <div className="flex items-center justify-between">
-                                        <p><strong>NS1:</strong> ns1.hangel.org</p>
-                                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText('ns1.hangel.org'); toast({ title: 'Kopyalandı!' }); }}>
-                                            <Copy className="h-4 w-4"/>
-                                        </Button>
+            <Tabs defaultValue="integration">
+                <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                    <TabsTrigger value="integration"><Code className="mr-2 h-4 w-4" /> Script & Analiz</TabsTrigger>
+                    <TabsTrigger value="design"><Palette className="mr-2 h-4 w-4" /> Tasarım</TabsTrigger>
+                    <TabsTrigger value="domain"><Globe className="mr-2 h-4 w-4" /> Domain</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="integration" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {analyticsProviders.map((ap) => (
+                            <Card key={ap.id} className="hover:border-primary transition-colors cursor-pointer group">
+                                <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+                                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", ap.color)}>
+                                        {ap.logo}
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <p><strong>NS2:</strong> ns2.hangel.org</p>
-                                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText('ns2.hangel.org'); toast({ title: 'Kopyalandı!' }); }}>
-                                            <Copy className="h-4 w-4"/>
-                                        </Button>
+                                    <div>
+                                        <p className="font-bold text-sm">{ap.name}</p>
+                                        <Badge variant={ap.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                            {ap.status}
+                                        </Badge>
                                     </div>
-                                </div>
-                            </div>
-                        </AlertDescription>
-                    </Alert>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary" />Tema Renkleri</CardTitle>
-                    <CardDescription>Sitenizin ana renklerini belirleyin. Logonuzla uyumlu renkler seçmeniz önerilir.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="primary-color-text">Ana Renk</Label>
-                        <div className="flex items-center gap-2">
-                            <Input type="color" id="primary-color-picker" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="p-1 h-12 w-16" />
-                            <Input id="primary-color-text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono"/>
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="secondary-color-text">İkinci Renk (Arka Plan)</Label>
-                        <div className="flex items-center gap-2">
-                            <Input type="color" id="secondary-color-picker" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="p-1 h-12 w-16" />
-                            <Input id="secondary-color-text" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono"/>
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="accent-color-text">Vurgu Rengi (Metin)</Label>
-                         <div className="flex items-center gap-2">
-                            <Input type="color" id="accent-color-picker" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="p-1 h-12 w-16" />
-                            <Input id="accent-color-text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="font-mono"/>
-                        </div>
-                    </div>
-                </CardContent>
-                <CardFooter>
-                    <Button
-                        variant="ghost"
-                        className="text-muted-foreground text-sm"
-                        onClick={() => {
-                            setPrimaryColor('#f34723');
-                            setSecondaryColor('#f1f5f9');
-                            setAccentColor('#042654');
-                            toast({
-                                title: "Renkler sıfırlandı!",
-                                description: "Tema renkleri varsayılan ayarlara döndürüldü.",
-                            });
-                        }}
-                    >
-                        Renkleri Sıfırla
-                    </Button>
-                </CardFooter>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Languages className="h-5 w-5 text-primary" />Dil Yönetimi</CardTitle>
-                    <CardDescription>Sitenizin varsayılan dilini ve yayınlanacağı dilleri yönetin.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <MultiSelect 
-                        title="Yayın Dilleri"
-                        options={allLanguages}
-                        selected={supportedLanguages}
-                        onSelectedChange={setSupportedLanguages}
-                    />
-                    <div className="space-y-2">
-                        <Label htmlFor="default-lang">Varsayılan Dil</Label>
-                        <Select value={defaultLanguage} onValueChange={setDefaultLanguage} disabled={supportedLanguages.length === 0}>
-                            <SelectTrigger id="default-lang">
-                                <SelectValue placeholder="Dil seçin..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {supportedLanguages.map(langCode => {
-                                    const lang = allLanguages.find(l => l.code === langCode);
-                                    return lang ? <SelectItem key={lang.code} value={lang.code}>{lang.name}</SelectItem> : null;
-                                })}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="space-y-1">
-                <h2 className="text-xl font-semibold">İçerik Yönetimi</h2>
-                <p className="text-sm text-muted-foreground">
-                    Sitenizde hangi bölümlerin gösterileceğini seçin.
-                </p>
-            </div>
-
-            <div className="space-y-4">
-                <ReadOnlySectionCard 
-                    icon={Globe} 
-                    title="Hakkımızda ve İletişim" 
-                    description={ngo?.about ?? "Kuruluş açıklaması, odak alanları ve iletişim bilgileri."}
-                    editHref="/ngo-admin/manage-profile"
-                />
-
-                <Card>
-                    <CardHeader className="flex flex-row items-start justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-3 text-lg"><BarChart3 className="h-5 w-5 text-primary" /> Sayaç İstatistikleri</CardTitle>
-                            <CardDescription className="pt-1">Sitenizin ana sayfasında gösterilecek önemli rakamlar.</CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2 pl-4">
-                            <Switch id="publish-counter" defaultChecked />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="counter-year">Kuruluş Yılı</Label>
-                                <Input id="counter-year" placeholder="Örn: 1992" defaultValue={ngo?.foundationYear || ''}/>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="counter-volunteers">Toplam Gönüllü</Label>
-                                <Input id="counter-volunteers" placeholder="Örn: 80000" type="number" defaultValue={ngo?.stats.volunteers || ''} />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="counter-projects">Tamamlanan Proje</Label>
-                                <Input id="counter-projects" placeholder="Örn: 150" type="number" defaultValue={ngo?.stats.projects || ''} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="counter-reached">Ulaşılan İnsan</Label>
-                                <Input id="counter-reached" placeholder="Örn: 500000" type="number" defaultValue={ngo?.stats.peopleReached || ''} />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" /> Banner Yönetimi</CardTitle>
-                        <CardDescription>Ana sayfada gösterilecek 3 adet banner görselini ve metnini yönetin.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {[1, 2, 3].map(i => (
-                            <Card key={i}>
-                                <div className="flex items-center justify-between p-4">
-                                    <Label htmlFor={`banner-switch-${i}`} className="font-semibold text-base cursor-pointer">Banner {i}</Label>
-                                    <Switch
-                                        id={`banner-switch-${i}`}
-                                        checked={openBanners[i] || false}
-                                        onCheckedChange={() => handleBannerToggle(i)}
-                                    />
-                                </div>
-                                {openBanners[i] && (
-                                    <CardContent className="p-4 pt-0 border-t">
-                                        <div className="space-y-4 mt-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor={`banner-title-${i}`}>Başlık</Label>
-                                                <Input id={`banner-title-${i}`} placeholder={`Banner ${i} Başlığı`} />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor={`banner-desc-${i}`}>Açıklama</Label>
-                                                <Input id={`banner-desc-${i}`} placeholder={`Banner ${i} Açıklaması`} />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Görsel Ekle</Label>
-                                                <div className="flex items-center gap-2">
-                                                    <Input id={`banner-image-url-${i}`} placeholder="https://..." className="flex-grow"/>
-                                                    <Button variant="outline" size="sm" type="button" onClick={() => toast({title: "Bu özellik yakında gelecek"})}>Yükle</Button>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor={`banner-link-${i}`}>Yönlendirme Linki</Label>
-                                                <Input id={`banner-link-${i}`} placeholder="/market/urun-1" />
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                )}
+                                    <Button variant="outline" size="sm" className="w-full">Bağla</Button>
+                                </CardContent>
                             </Card>
                         ))}
-                    </CardContent>
-                </Card>
-
-                <ReadOnlySectionCard 
-                    icon={Target}
-                    title="Bağış Kampanyaları"
-                    description="Devam eden veya tamamlanmış bağış kampanyalarınız."
-                    editHref="/ngo-admin/campaigns"
-                />
-
-                <ReadOnlySectionCard 
-                    icon={Handshake} 
-                    title="Gönüllülük İlanları" 
-                    description={`${ngo?.opportunities.length || 0} aktif ilan bulunuyor.`}
-                    editHref="/ngo-admin/volunteer"
-                />
-                 <ReadOnlySectionCard 
-                    icon={Newspaper} 
-                    title="Haberler (Gönderiler)" 
-                    description={`${ngo?.posts.length || 0} gönderi mevcut.`}
-                    editHref="/ngo-admin/posts"
-                />
-                <ReadOnlySectionCard 
-                    icon={ShieldCheck} 
-                    title="Şeffaflık" 
-                    description={`Mevcut puan: ${ngo?.transparencyScore}/100.`}
-                    editHref="/ngo-admin/transparency"
-                />
-
-                <ReadOnlySectionCard 
-                    icon={FileText} 
-                    title="Politika ve Sözleşmeler" 
-                    description="Sitenizde gösterilecek yasal metinleri ve politikaları yönetin."
-                    editHref="/ngo-admin/contracts"
-                />
-
-                <Card>
-                    <CardHeader className="flex flex-row items-start justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-3 text-lg"><Store className="h-5 w-5 text-primary" /> İktisadi İşletme</CardTitle>
-                            <CardDescription className="pt-1">İktisadi işletmenize ait ürünleri sergileyin.</CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2 pl-4">
-                            <Switch id="publish-ecommerce" />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                         <div className="space-y-2">
-                            <Label htmlFor="xml-feed">XML Ürün Feed Linki</Label>
-                            <Input id="xml-feed" placeholder="https://ornek.com/urunler.xml" />
-                            <p className="text-xs text-muted-foreground">Ürünlerinizi otomatik olarak çekmek için XML linkini girin.</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                
-                 <ReadOnlySectionCard 
-                    icon={CreditCard}
-                    title="Banka ve Ödeme Bilgileri"
-                    description="Doğrudan bağışlar için IBAN ve Sanal POS bilgileri."
-                    editHref="/ngo-admin/manage-profile"
-                />
-                
-                 <Card>
-                    <CardHeader className="flex flex-row items-start justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-3 text-lg"><MessageSquare className="h-5 w-5 text-primary" /> SMS Kampanyası</CardTitle>
-                            <CardDescription className="pt-1">SMS ile bağış kampanyası bilgilerinizi girin.</CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2 pl-4">
-                            <Switch id="publish-sms" />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                       <div className="space-y-2">
-                            <Label htmlFor="sms-keyword">Anahtar Kelime (Keyword)</Label>
-                            <Input id="sms-keyword" placeholder="DESTEK" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="sms-number">Numara</Label>
-                            <Input id="sms-number" placeholder="3406" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="sms-description">Açıklama (Örn: Bir SMS 20 TL değerindedir.)</Label>
-                            <Input id="sms-description" placeholder="Bir SMS 20 TL değerindedir." />
-                        </div>
-                    </CardContent>
-                </Card>
-
-            </div>
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle>Genel Durum</CardTitle>
-                    <CardDescription>Web sitenizin yayın durumunu ve adresini yönetin.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                            <Label htmlFor="publish-switch">Web Sitesini Yayınla</Label>
-                            <p className="text-xs text-muted-foreground">Siteniz <a href="https://ahbap.hangel.org" target="_blank" rel="noopener noreferrer" className="underline font-semibold">ahbap.hangel.org</a> adresinde yayınlanacak.</p>
-                        </div>
-                        <Switch id="publish-switch" checked={isPublished} onCheckedChange={setIsPublished} />
                     </div>
-                     <Button asChild className="w-full" disabled={!isPublished}>
-                        <Link href={previewLink} target="_blank">
-                            <Eye className="mr-2 h-4 w-4" /> Siteyi Önizle
-                        </Link>
-                    </Button>
-                </CardContent>
-            </Card>
 
-            <div className="flex justify-end">
-                <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
-            </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Özel Script Entegrasyonu (GTM, Pixel, vb.)</CardTitle>
+                            <CardDescription>Sitenizin &lt;head&gt; bölümüne eklenecek kodları buraya girin.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Tracking ID / Tag ID</Label>
+                                <Input placeholder="G-XXXXXXXXXX" />
+                            </div>
+                            <div className="p-4 border rounded-xl bg-muted/20">
+                                <Label className="text-xs uppercase font-bold text-muted-foreground mb-2 block">Özel HTML / Script</Label>
+                                <textarea className="w-full h-32 bg-background font-mono text-xs p-3 border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="<!-- Script buraya gelecek -->"></textarea>
+                            </div>
+                            <Button onClick={() => toast({title: "Scriptler Kaydedildi"})}>Sitede Aktifleştir</Button>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="design" className="mt-6 space-y-6">
+                    <Card>
+                        <CardHeader><CardTitle>Görsel Kimlik</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Ana Renk</Label>
+                                <div className="flex gap-2">
+                                    <Input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="w-16 h-10 p-1" />
+                                    <Input value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="font-mono" />
+                                </div>
+                            </div>
+                            <Button onClick={() => toast({title: "Tasarım Kaydedildi"})}>Kaydet</Button>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="domain" className="mt-6">
+                    <Card>
+                        <CardHeader><CardTitle>Özel Domain Bağla</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2"><Label>Domain Adınız</Label><Input placeholder="kurumunuz.org" /></div>
+                            <Button onClick={() => toast({title: "Domain Kaydedildi"})}>DNS Kontrol Et</Button>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

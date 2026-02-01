@@ -6,11 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calculator, Receipt, TrendingUp, TrendingDown, FileText, Download, Filter, Plus, Settings2, Link as LinkIcon, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Calculator, Settings2, KeyRound, Plus, ShieldCheck, Link as LinkIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+
+const erpProviders = [
+    { id: 'parasut', name: 'Paraşüt', logo: 'P', color: 'bg-orange-600', status: 'Bağlı' },
+    { id: 'logo', name: 'Logo İşbaşı', logo: 'L', color: 'bg-red-600', status: 'Bağlanabilir' },
+    { id: 'kolaybi', name: 'KolayBi', logo: 'K', color: 'bg-blue-500', status: 'Bağlanabilir' },
+    { id: 'bizimhesap', name: 'Bizim Hesap', logo: 'B', color: 'bg-emerald-600', status: 'Bağlanabilir' },
+];
 
 export default function AccountingPage() {
     const { toast } = useToast();
@@ -28,16 +36,61 @@ export default function AccountingPage() {
                         <p className="text-muted-foreground text-sm">Finansal süreçler ve ERP entegrasyonları.</p>
                     </div>
                 </div>
-                <Button onClick={() => toast({title: "Yeni İşlem"})}>
-                    <Plus className="mr-2 h-4 w-4" /> Yeni Kayıt
-                </Button>
             </div>
 
-            <Tabs defaultValue="overview">
-                <TabsList className="grid w-full grid-cols-2 max-w-md">
-                    <TabsTrigger value="overview"><Calculator className="mr-2 h-4 w-4" /> Genel Bakış</TabsTrigger>
-                    <TabsTrigger value="integration"><Settings2 className="mr-2 h-4 w-4" /> ERP Bağlantısı</TabsTrigger>
+            <Tabs defaultValue="integration">
+                <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                    <TabsTrigger value="integration"><Settings2 className="mr-2 h-4 w-4" /> Yazılım Bağla</TabsTrigger>
+                    <TabsTrigger value="overview"><Calculator className="mr-2 h-4 w-4" /> Kasa Takibi</TabsTrigger>
+                    <TabsTrigger value="api"><LinkIcon className="mr-2 h-4 w-4" /> API Ayarları</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="integration" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {erpProviders.map((erp) => (
+                            <Card key={erp.id} className="hover:border-primary transition-colors cursor-pointer group">
+                                <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+                                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", erp.color)}>
+                                        {erp.logo}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-sm">{erp.name}</p>
+                                        <Badge variant={erp.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                            {erp.status}
+                                        </Badge>
+                                    </div>
+                                    <Button variant="outline" size="sm" className="w-full">Bağla</Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> ERP Bağlantı Kodları</CardTitle>
+                            <CardDescription>Mevcut ön muhasebe yazılımınızdan aldığınız API bilgilerini buraya girin.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>API Username / Client ID</Label>
+                                    <Input placeholder="Client ID girin" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>API Password / Client Secret</Label>
+                                    <Input type="password" placeholder="••••••••" />
+                                </div>
+                            </div>
+                            <div className="p-4 border rounded-xl bg-blue-50 text-blue-800 text-xs flex items-center gap-3">
+                                <ShieldCheck className="h-5 w-5 shrink-0" />
+                                <p>Entegrasyon aktif olduğunda, Hangel üzerinden gelen bağışlar otomatik olarak muhasebe sisteminize "Bağış Geliri" olarak işlenir.</p>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
+                            <Button onClick={() => toast({title: "Entegrasyon Tamamlandı"})}>Bağlantıyı Doğrula</Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
 
                 <TabsContent value="overview" className="mt-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -54,20 +107,17 @@ export default function AccountingPage() {
                             <CardContent><p className="text-2xl font-bold text-sky-800">32,450 ₺</p></CardContent>
                         </Card>
                     </div>
-
                     <Card>
                         <CardHeader><CardTitle>Son Hareketler</CardTitle></CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Tür</TableHead><TableHead>Açıklama</TableHead><TableHead className="text-right">Tutar</TableHead>
-                                    </TableRow>
+                                    <TableRow><TableHead>Tür</TableHead><TableHead>Açıklama</TableHead><TableHead className="text-right">Tutar</TableHead></TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow>
                                         <TableCell><Badge>Gelir</Badge></TableCell>
-                                        <TableCell>Aylık Bağış Havuzu</TableCell>
+                                        <TableCell>Aylık Bağış Havuzu Transferi</TableCell>
                                         <TableCell className="text-right text-emerald-600">+12,400 ₺</TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -76,42 +126,13 @@ export default function AccountingPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="integration" className="mt-6">
+                <TabsContent value="api" className="mt-6">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Dış Sistem Entegrasyonları</CardTitle>
-                            <CardDescription>Mevcut muhasebe yazılımınızı Hangel ile senkronize edin.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {[
-                                    { name: 'Paraşüt', status: 'Bağlı Değil' },
-                                    { name: 'Logo İşbaşı', status: 'Bağlı Değil' },
-                                    { name: 'KolayBi', status: 'Bağlı Değil' },
-                                    { name: 'Bizim Hesap', status: 'Bağlı Değil' }
-                                ].map((erp, i) => (
-                                    <div key={i} className="p-4 border rounded-xl space-y-3 hover:bg-accent transition-colors cursor-pointer group">
-                                        <div className="flex justify-between items-start">
-                                            <div className="w-10 h-10 rounded bg-muted flex items-center justify-center font-bold text-xs">{erp.name[0]}</div>
-                                            <Badge variant="secondary" className="text-[10px]">{erp.status}</Badge>
-                                        </div>
-                                        <p className="font-bold text-sm">{erp.name}</p>
-                                        <Button variant="outline" size="sm" className="w-full text-xs">Şimdi Bağla</Button>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="space-y-4 pt-6 border-t">
-                                <h4 className="font-bold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Özel API Entegrasyonu</h4>
-                                <div className="space-y-2">
-                                    <Label>API Webhook URL</Label>
-                                    <Input placeholder="https://sizin-sisteminiz.com/api/hangel-webhook" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>API Auth Token</Label>
-                                    <Input type="password" placeholder="••••••••••••••••" />
-                                </div>
-                                <Button onClick={() => toast({title: "API Kaydedildi"})}>API Bağlantısını Test Et</Button>
-                            </div>
+                        <CardHeader><CardTitle>Özel API Webhook Ayarları</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2"><Label>Webhook URL</Label><Input placeholder="https://..." /></div>
+                            <div className="space-y-2"><Label>Auth Token</Label><Input type="password" placeholder="••••" /></div>
+                            <Button onClick={() => toast({title: "API Ayarları Kaydedildi"})}>Kaydet</Button>
                         </CardContent>
                     </Card>
                 </TabsContent>

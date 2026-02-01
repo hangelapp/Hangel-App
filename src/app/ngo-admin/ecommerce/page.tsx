@@ -6,16 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ShoppingCart, Plus, Package, Truck, BarChart3, Edit, Trash2, Search, Filter, Share2, Globe, CheckCircle2, Copy } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Plus, Package, Globe, Copy, KeyRound, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
+
+const marketplaceProviders = [
+    { id: 'trendyol', name: 'Trendyol', logo: 'T', color: 'bg-[#f27a1a]', status: 'Bağlanabilir' },
+    { id: 'hepsiburada', name: 'Hepsiburada', logo: 'H', color: 'bg-[#ff6000]', status: 'Bağlı' },
+    { id: 'amazon', name: 'Amazon', logo: 'A', color: 'bg-[#232f3e]', status: 'Bağlanabilir' },
+    { id: 'n11', name: 'n11', logo: 'n', color: 'bg-[#5d1ed4]', status: 'Bağlanabilir' },
+];
 
 export default function EcommerceManagementPage() {
     const { toast } = useToast();
     const router = useRouter();
-
     const xmlFeedUrl = "https://hangel.org/api/v1/xml/ahbap-isletme-feed";
 
     const copyToClipboard = (text: string) => {
@@ -35,17 +42,65 @@ export default function EcommerceManagementPage() {
                         <p className="text-muted-foreground text-sm">Ürün yönetimi ve pazar yeri entegrasyonları.</p>
                     </div>
                 </div>
-                <Button onClick={() => toast({title: "Yeni Ürün"})}>
-                    <Plus className="mr-2 h-4 w-4" /> Yeni Ürün Ekle
-                </Button>
             </div>
 
-            <Tabs defaultValue="products">
-                <TabsList className="grid w-full grid-cols-3 max-w-md">
-                    <TabsTrigger value="products"><Package className="mr-2 h-4 w-4" /> Ürünler</TabsTrigger>
-                    <TabsTrigger value="orders"><Truck className="mr-2 h-4 w-4" /> Siparişler</TabsTrigger>
-                    <TabsTrigger value="sync"><Globe className="mr-2 h-4 w-4" /> Entegrasyon</TabsTrigger>
+            <Tabs defaultValue="integration">
+                <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                    <TabsTrigger value="integration"><Globe className="mr-2 h-4 w-4" /> Pazar Yeri Bağla</TabsTrigger>
+                    <TabsTrigger value="products"><Package className="mr-2 h-4 w-4" /> Ürünlerim</TabsTrigger>
+                    <TabsTrigger value="xml"><Copy className="mr-2 h-4 w-4" /> XML Feed</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="integration" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {marketplaceProviders.map((mp) => (
+                            <Card key={mp.id} className="hover:border-primary transition-colors cursor-pointer group">
+                                <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+                                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", mp.color)}>
+                                        {mp.logo}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-sm">{mp.name}</p>
+                                        <Badge variant={mp.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                            {mp.status}
+                                        </Badge>
+                                    </div>
+                                    <Button variant="outline" size="sm" className="w-full">Bağla</Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> API Entegrasyon Bilgileri</CardTitle>
+                            <CardDescription>Pazar yerlerinden aldığınız Mağaza ID ve API kodlarını buraya girin.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Mağaza ID</Label>
+                                <Input placeholder="Seller ID / Mağaza Kodunuz" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>API Key</Label>
+                                    <Input placeholder="API Anahtarı" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>API Secret</Label>
+                                    <Input type="password" placeholder="••••••••" />
+                                </div>
+                            </div>
+                            <div className="p-4 border rounded-xl bg-orange-50 text-orange-800 text-xs flex items-center gap-3">
+                                <ShieldCheck className="h-5 w-5 shrink-0" />
+                                <p>Entegrasyon sayesinde stoklarınız tüm pazar yerlerinde Hangel ile senkronize çalışacaktır.</p>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
+                            <Button onClick={() => toast({title: "Pazar Yeri Bağlandı"})}>Bağlantıyı Kaydet</Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
 
                 <TabsContent value="products" className="mt-6 space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -64,46 +119,17 @@ export default function EcommerceManagementPage() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="sync" className="mt-6 space-y-6">
+                <TabsContent value="xml" className="mt-6">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>XML & Pazar Yeri Entegrasyonu</CardTitle>
-                            <CardDescription>Ürünlerinizi Trendyol, Hepsiburada ve Hangel Market'e otomatik olarak aktarın.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-4">
-                                <div className="p-4 border rounded-xl space-y-3 bg-muted/20">
-                                    <div className="flex justify-between items-center">
-                                        <Label className="font-bold text-sm">Hangel Market XML Feed URL</Label>
-                                        <Badge className="bg-green-100 text-green-700">Aktif</Badge>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Input readOnly value={xmlFeedUrl} className="bg-background font-mono text-xs" />
-                                        <Button variant="outline" size="icon" onClick={() => copyToClipboard(xmlFeedUrl)}><Copy className="h-4 w-4" /></Button>
-                                    </div>
-                                    <p className="text-[10px] text-muted-foreground">Bu linki pazar yerlerindeki XML içe aktarma bölümüne ekleyerek stoklarınızı otomatik senkronize edebilirsiniz.</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 pt-6 border-t">
-                                <h4 className="font-bold text-sm">Pazar Yeri API Bağlantıları</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-4 border rounded-xl flex items-center justify-between group hover:border-primary/50 cursor-pointer">
-                                        <span className="font-semibold text-sm">Trendyol Entegrasyonu</span>
-                                        <Button variant="ghost" size="sm" className="text-xs">Bağla</Button>
-                                    </div>
-                                    <div className="p-4 border rounded-xl flex items-center justify-between group hover:border-primary/50 cursor-pointer">
-                                        <span className="font-semibold text-sm">Hepsiburada Entegrasyonu</span>
-                                        <Button variant="ghost" size="sm" className="text-xs">Bağla</Button>
-                                    </div>
-                                </div>
+                        <CardHeader><CardTitle>Otomatik Veri Akışı (XML Feed)</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">Bu linki kullanarak ürünlerinizi herhangi bir sisteme otomatik olarak aktarabilirsiniz.</p>
+                            <div className="flex gap-2">
+                                <Input readOnly value={xmlFeedUrl} className="font-mono text-xs" />
+                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(xmlFeedUrl)}><Copy className="h-4 w-4" /></Button>
                             </div>
                         </CardContent>
                     </Card>
-                </TabsContent>
-
-                <TabsContent value="orders" className="mt-6">
-                    <Card><CardHeader><CardTitle>Aktif Siparişler</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Bekleyen sipariş bulunmuyor.</p></CardContent></Card>
                 </TabsContent>
             </Tabs>
         </div>
