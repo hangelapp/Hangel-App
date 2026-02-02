@@ -4,16 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Store, QrCode, UserCircle, HeartHandshake, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/providers/language-provider";
 
 const navItems = [
-  { href: "/volunteering", icon: HeartHandshake, label: "Gönüllülük" },
-  { href: "/qr-payment", icon: QrCode, label: "QR Öde" },
-  { href: "/market", icon: Store, label: "Market" },
-  { href: "/timeline", icon: LayoutGrid, label: "Akış" },
-  { href: "/profile", icon: UserCircle, label: "Profil" },
+  { href: "/volunteering", icon: HeartHandshake, label: "nav.volunteering" },
+  { href: "/qr-payment", icon: QrCode, label: "nav.wallet" },
+  { href: "/market", icon: Store, label: "nav.market" },
+  { href: "/timeline", icon: LayoutGrid, label: "nav.timeline" },
+  { href: "/profile", icon: UserCircle, label: "nav.profile" },
 ];
 
 export default function AppBottomNav() {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
@@ -47,7 +49,7 @@ export default function AppBottomNav() {
               )}
             >
               <Icon className="h-6 w-6" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium truncate w-full">{t(item.label)}</span>
             </Link>
           );
         })}

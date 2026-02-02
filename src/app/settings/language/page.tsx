@@ -4,21 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { languages, useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
-
-const languages = [
-    { code: 'tr', name: 'Türkçe', country: 'Türkiye' },
-    { code: 'en', name: 'English', country: 'United States' },
-];
 
 export default function LanguageSettingsPage() {
     const router = useRouter();
-    const [selectedLanguage, setSelectedLanguage] = useState('tr');
+    const { language, changeLanguage } = useTranslation();
     const { toast } = useToast();
 
     const handleSave = () => {
-        const langName = languages.find(l => l.code === selectedLanguage)?.name;
+        const langName = languages.find(l => l.value === language)?.label;
         toast({
             title: "Dil Ayarları Kaydedildi",
             description: `Uygulama dili "${langName}" olarak ayarlandı.`,
@@ -40,15 +35,15 @@ export default function LanguageSettingsPage() {
               <div className="divide-y">
                 {languages.map((lang) => (
                     <div 
-                        key={lang.code} 
+                        key={lang.value} 
                         className="flex items-center justify-between p-4 hover:bg-accent cursor-pointer"
-                        onClick={() => setSelectedLanguage(lang.code)}
+                        onClick={() => changeLanguage(lang.value)}
                     >
                         <div>
-                            <p className="font-medium">{lang.name}</p>
-                            <p className="text-sm text-muted-foreground">{lang.country}</p>
+                            <p className="font-medium">{lang.label}</p>
+                            <p className="text-xs text-muted-foreground uppercase">{lang.value}</p>
                         </div>
-                        {selectedLanguage === lang.code && <Check className="h-5 w-5 text-primary" />}
+                        {language === lang.value && <Check className="h-5 w-5 text-primary" />}
                     </div>
                 ))}
               </div>

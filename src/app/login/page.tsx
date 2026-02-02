@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -33,17 +32,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { translations, type Language } from '@/lib/translations';
+import { languages, useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
-
-const languagesList = [
-    { value: 'tr', label: 'Türkçe' },
-    { value: 'ru', label: 'Русский' },
-    { value: 'ar', label: 'العربية' },
-    { value: 'fa', label: 'فارسی' },
-    { value: 'es', label: 'Español' },
-    { value: 'ha', label: 'Nigeria (Hausa)' },
-];
 
 // Custom Volunteering Icon (Hand with Heart in palm)
 const HandWithHeartIcon = ({ className }: { className?: string }) => (
@@ -171,7 +161,7 @@ const MarketplaceDiscovery = () => {
 
             {/* Simulated Tabs (Entity Types) */}
             <div className="flex justify-center border-b border-white/10 px-6">
-                <div className="flex w-full max-w-xl overflow-x-auto no-scrollbar -mb-px">
+                <div className="flex w-full max-wxl overflow-x-auto no-scrollbar -mb-px">
                     {entityTabs.map((tab, idx) => (
                         <div 
                             key={tab} 
@@ -316,47 +306,48 @@ const VolunteeringDiscovery = () => {
 };
 
 const FooterNav = () => {
+  const { t } = useTranslation();
   const sections = [
     {
-      title: "Keşfet ve Sosyal Etki",
+      title: t('nav.search'),
       links: [
-        { label: "Markalar", href: "/market" },
-        { label: "Gönüllülük", href: "/volunteering" },
-        { label: "STK'lar", href: "/ngos" },
-        { label: "Öğrenci Kulüpleri", href: "/admin/clubs" },
-        { label: "Liderlik Tablosu", href: "/leaderboard" },
-        { label: "Etki Hikayem", href: "/impact-story" },
+        { label: t('nav.market'), href: "/market" },
+        { label: t('nav.volunteering'), href: "/volunteering" },
+        { label: t('nav.ngos'), href: "/ngos" },
+        { label: t('nav.clubs'), href: "/admin/clubs" },
+        { label: t('nav.leaderboard'), href: "/leaderboard" },
+        { label: t('nav.impactStory'), href: "/impact-story" },
       ]
     },
     {
       title: "Hesap ve Ödemeler",
       links: [
-        { label: "Giriş Yap", href: "/login/selection?action=login" },
+        { label: t('nav.login'), href: "/login/selection?action=login" },
         { label: "Bireysel Kayıt", href: "/login/selection?action=register&type=individual" },
         { label: "Kurumsal Başvuru", href: "/login/selection?action=register&type=corporate" },
         { label: "QR Ödeme", href: "/qr-payment" },
-        { label: "Bağışlarım", href: "/my-donations" },
+        { label: t('nav.donations'), href: "/my-donations" },
         { label: "Rozetlerim", href: "/my-badges" },
       ]
     },
     {
       title: "Kurumsal",
       links: [
-        { label: "Hakkımızda", href: "/about" },
+        { label: t('nav.about'), href: "/about" },
         { label: "Kamu İlişkileri", href: "/corporate" },
         { label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri" },
         { label: "Basın Odası", href: "/press" },
-        { label: "Kütüphane", href: "/library" },
+        { label: t('nav.library'), href: "/library" },
         { label: "İletişim", href: "/about" },
       ]
     },
     {
       title: "İş Ortaklığı ve Destek",
       links: [
-        { label: "Üye İşyeri Ol", href: "/merchant" },
-        { label: "STK Başvurusu", href: "/ngo-onboarding" },
+        { label: t('nav.merchant'), href: "/merchant" },
+        { label: t('nav.ngoOnboarding'), href: "/ngo-onboarding" },
         { label: "Destek Merkezi", href: "/support" },
-        { label: "Arkadaşını Davet Et", href: "/invite" },
+        { label: t('nav.invite'), href: "/invite" },
         { label: "Güvenlik", href: "/settings/security" },
       ]
     },
@@ -374,7 +365,6 @@ const FooterNav = () => {
 
   return (
     <>
-      {/* Desktop Grid */}
       <div className="hidden md:grid grid-cols-5 gap-4 mb-10">
         {sections.map((section) => (
           <div key={section.title} className="space-y-3">
@@ -392,7 +382,6 @@ const FooterNav = () => {
         ))}
       </div>
 
-      {/* Mobile Accordion */}
       <div className="md:hidden mb-8 border-b border-[#d2d2d7]">
         <Accordion type="single" collapsible className="w-full">
           {sections.map((section, idx) => (
@@ -420,12 +409,14 @@ const FooterNav = () => {
 };
 
 export default function LoginPage() {
-  const [language, setLanguage] = useState('tr');
+  const { language, changeLanguage, t } = useTranslation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
-  const t = translations[language as Language] || translations['tr'];
+  const handleLanguageChange = (lang: string) => {
+    changeLanguage(lang);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
@@ -438,9 +429,9 @@ export default function LoginPage() {
           </div>
 
           <nav className="hidden md:flex flex-1 justify-center items-center gap-6 text-[12px] font-normal text-[#1d1d1f]/80">
-            <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">Market</Link>
-            <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">Gönüllülük</Link>
-            <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">STK'lar</Link>
+            <Link href="/market" className="hover:text-[#1d1d1f] transition-colors">{t('nav.market')}</Link>
+            <Link href="/volunteering" className="hover:text-[#1d1d1f] transition-colors">{t('nav.volunteering')}</Link>
+            <Link href="/ngos" className="hover:text-[#1d1d1f] transition-colors">{t('nav.ngos')}</Link>
           </nav>
 
           <div className="flex-1 flex justify-end items-center gap-5 opacity-80">
@@ -450,7 +441,7 @@ export default function LoginPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md top-[20%]">
                     <DialogHeader>
-                        <DialogTitle>Platformda Ara</DialogTitle>
+                        <DialogTitle>{t('nav.search')}</DialogTitle>
                     </DialogHeader>
                     <div className="flex items-center space-x-2 pt-4">
                         <Input 
@@ -485,13 +476,13 @@ export default function LoginPage() {
             <div className="md:hidden">
               <Menu className="h-4 w-4 cursor-pointer" />
             </div>
-            <Select value={language} onValueChange={setLanguage}>
+            <Select value={language} onValueChange={handleLanguageChange}>
                 <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto p-0 text-[12px] font-normal text-[#1d1d1f] hover:text-primary transition-colors focus:ring-0">
                     <Globe className="h-3.5 w-3.5" />
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end">
-                    {languagesList.map(lang => (
+                    {languages.map(lang => (
                         <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
                     ))}
                 </SelectContent>
@@ -502,14 +493,14 @@ export default function LoginPage() {
 
       <main className="flex-1">
         <section className="relative flex flex-col items-center justify-center text-center bg-white py-28 px-6 space-y-6">
-          <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05] capitalize">{t.title}</h1>
-          <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">{t.subtitle}</p>
+          <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05] capitalize">{t('title')}</h1>
+          <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">{t('subtitle')}</p>
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="rounded-full px-12 h-14 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-xl font-normal w-full sm:w-auto">
-              <Link href="/login/selection?action=login">Giriş Yap</Link>
+              <Link href="/login/selection?action=login">{t('nav.login')}</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full px-12 h-14 border-2 border-[#0066cc] text-[#0066cc] hover:bg-[#0066cc]/5 text-xl font-normal w-full sm:w-auto">
-              <Link href="/login/selection?action=register&type=individual">Kayıt Ol</Link>
+              <Link href="/login/selection?action=register&type=individual">{t('nav.register')}</Link>
             </Button>
           </div>
         </section>
@@ -522,7 +513,7 @@ export default function LoginPage() {
             image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
             imageHint="abstract colorful sparks"
             fullWidth={false}
-            primaryCta="Kayıt Ol"
+            primaryCta={t('nav.register')}
             link="/login/selection?action=register&type=corporate"
             dark={false}
           />
@@ -533,7 +524,7 @@ export default function LoginPage() {
             image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
             imageHint="modern branding" 
             fullWidth={false} 
-            primaryCta="Kayıt Ol" 
+            primaryCta={t('nav.register')}
             link="/login/selection?action=register&type=corporate"
             dark={false}
           />

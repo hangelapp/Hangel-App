@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -7,6 +6,7 @@ import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
 import { HangelLogo } from '../icons';
 import type { SideNavItem } from '@/lib/types';
+import { useTranslation } from '@/components/providers/language-provider';
 
 // iOS-style icon background colors
 const iconColorMap: { [key: string]: string } = {
@@ -37,11 +37,37 @@ const iconColorMap: { [key: string]: string } = {
   calendar: 'bg-red-400',
 };
 
+const navKeyMap: Record<string, string> = {
+  'Markalar': 'market',
+  'STK\'lar': 'ngos',
+  'Öğrenci Kulüpleri': 'clubs',
+  'Bağışlarım': 'donations',
+  'Başvurularım': 'applications',
+  'Rozetler ve Sertifikalar': 'badges',
+  'Mesajlarım': 'messages',
+  'Liderlik Tablosu': 'leaderboard',
+  'Arkadaş Davet Et': 'invite',
+  'Etki Story': 'impactStory',
+  'Etki Hikayem': 'impactStory',
+  'Kütüphane': 'library',
+  'Yönetim Paneli': 'admin',
+  'Süper Admin': 'superAdmin',
+  'Admin Paneli': 'superAdmin',
+  'Ayarlar': 'settings',
+  'Hakkımızda': 'about',
+  'Üye İşyeri': 'merchant',
+  'STK Başvurusu': 'ngoOnboarding',
+  'Destek': 'support',
+  'Gönüllülük': 'volunteering',
+};
+
 const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
+    const { t } = useTranslation();
     // @ts-ignore
     const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
     
     const color = iconColorMap[item.icon] || 'bg-gray-500';
+    const translationKey = navKeyMap[item.label] || item.label;
 
     return (
         <li className={cn(!isLast && 'border-b')}>
@@ -54,7 +80,7 @@ const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
                         <Icon className="h-4 w-4 text-white" aria-hidden="true" />
                     </div>
                     <span className={'text-base font-medium text-foreground'}>
-                        {item.label}
+                        {t(`nav.${translationKey}`)}
                     </span>
                 </div>
                 <Icons.ChevronRight className="h-5 w-5 text-muted-foreground/50" />
@@ -72,6 +98,7 @@ const NavList = ({ items }: { items: SideNavItem[] }) => (
 );
 
 export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { mainItems: SideNavItem[], navItems: SideNavItem[], userItems: SideNavItem[], secondaryItems: SideNavItem[] }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
@@ -104,7 +131,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
                             <div className='w-7 h-7 rounded-md flex items-center justify-center bg-red-500'>
                                 <Icons.LogOut className='h-4 w-4 text-white' aria-hidden="true" />
                             </div>
-                            <span className='ml-4 text-base font-medium text-destructive'>Çıkış Yap</span>
+                            <span className='ml-4 text-base font-medium text-destructive'>{t('nav.logout')}</span>
                         </Link>
                     </li>
                 </ul>

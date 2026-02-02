@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren, LogOut, ChevronRight, Megaphone, Search
+  Menu, Bell, Siren, LogOut, ChevronRight, Megaphone, Search, Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -12,7 +12,8 @@ import { user } from '@/lib/data';
 import { SideNavItem } from '@/lib/types';
 import * as Icons from 'lucide-react';
 import { cn } from '@/lib/utils';
-
+import { languages, useTranslation } from '@/components/providers/language-provider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // iOS-style icon background colors
 const iconColorMap: { [key: string]: string } = {
@@ -34,7 +35,6 @@ const iconColorMap: { [key: string]: string } = {
   'shield': 'bg-red-600',
   'zap': 'bg-yellow-500',
 };
-
 
 const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
@@ -66,11 +66,34 @@ const group4Items: SideNavItem[] = [
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
 
+const navKeyMap: Record<string, string> = {
+  'Markalar': 'market',
+  'STK\'lar': 'ngos',
+  'Öğrenci Kulüpleri': 'clubs',
+  'Bağışlarım': 'donations',
+  'Başvurularım': 'applications',
+  'Rozetler ve Sertifikalar': 'badges',
+  'Mesajlarım': 'messages',
+  'Liderlik Tablosu': 'leaderboard',
+  'Arkadaş Davet Et': 'invite',
+  'Etki Story': 'impactStory',
+  'Etki Hikayem': 'impactStory',
+  'Kütüphane': 'library',
+  'Yönetim Paneli': 'admin',
+  'Süper Admin': 'superAdmin',
+  'Ayarlar': 'settings',
+  'Hakkımızda': 'about',
+  'Üye İşyeri': 'merchant',
+  'STK Başvurusu': 'ngoOnboarding',
+  'Destek': 'support',
+  'Gönüllülük': 'volunteering',
+};
+
 const MobileNavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
-    // @ts-ignore
-    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
-    
+    const { t } = useTranslation();
+    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('') as keyof typeof Icons] || Icons.HelpCircle;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
+    const translationKey = navKeyMap[item.label] || item.label;
 
     return (
         <li className={cn(!isLast && 'border-b')}>
@@ -84,7 +107,7 @@ const MobileNavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean })
                             <Icon className="h-4 w-4 text-white" aria-hidden="true" />
                         </div>
                         <span className={'text-base font-medium text-foreground'}>
-                            {item.label}
+                            {t(`nav.${translationKey}`)}
                         </span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
@@ -102,8 +125,8 @@ const MobileNavList = ({ items }: { items: SideNavItem[] }) => (
     </ul>
 );
 
-
 function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) {
+  const { t } = useTranslation();
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-[300px] p-0 flex flex-col bg-secondary">
@@ -137,7 +160,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
                             <div className='w-7 h-7 rounded-md flex items-center justify-center bg-red-500'>
                                 <Icons.LogOut className='h-4 w-4 text-white' aria-hidden="true" />
                             </div>
-                            <span className='ml-4 text-base font-medium text-destructive'>Çıkış Yap</span>
+                            <span className='ml-4 text-base font-medium text-destructive'>{t('nav.logout')}</span>
                         </Link>
                     </SheetClose>
                 </li>
@@ -149,6 +172,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
 }
 
 export default function AppHeader() {
+  const { language, changeLanguage, t } = useTranslation();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
@@ -193,6 +217,19 @@ export default function AppHeader() {
           </div>
 
           <div className="flex items-center gap-1">
+            <div className="hidden md:flex items-center mr-4">
+                <Select value={language} onValueChange={changeLanguage}>
+                    <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto p-0 text-[12px] font-normal text-[#1d1d1f] hover:text-primary transition-colors focus:ring-0">
+                        <Globe className="h-3.5 w-3.5" />
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                        {languages.map(lang => (
+                            <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             <Button asChild variant="ghost" size="icon">
               <Link href="/stories">
                 <Megaphone className="h-5 w-5 text-foreground" />
