@@ -6,6 +6,8 @@ export const languages = [
     { value: 'fr', label: 'Français' },
     { value: 'es', label: 'Español' },
     { value: 'ar', label: 'العربية' },
+    { value: 'fa', label: 'فارسی' },
+    { value: 'ha', label: 'Nigerian (Hausa)' },
     { value: 'zh', label: '中文' },
     { value: 'hi', label: 'हिन्दी' },
     { value: 'pt', label: 'Português' },
@@ -17,7 +19,7 @@ export const languages = [
     { value: 'ko', label: '한국어' },
     { value: 'vi', label: 'Tiếng Việt' },
     { value: 'te', label: 'తెలుగు' },
-    { value: 'mr', label: 'मराठी' },
+    { value: 'mr', label: 'مراठी' },
     { value: 'ta', label: 'தமிழ்' },
     { value: 'ur', label: 'اردو' },
     { value: 'it', label: 'Italiano' },
@@ -49,19 +51,27 @@ export const translations: Record<Language, Translation> = {
   },
   es: {
     title: '¡No existe tal cosa como luchar solo!',
-    subtitle: 'Cultivamos la esperanza y trabajamos juntos por los phroblemas sociales.',
+    subtitle: 'Cultivamos la esperanza y trabajamos juntos por los problemas sociales.',
   },
   ar: {
     title: 'لا يوجد شيء اسمه النضال وحيدًا!',
     subtitle: 'نحن ننمي الأمل ونعمل معًا من أجل المشاكل الاجتماعية.',
+  },
+  fa: {
+    title: 'مبارزه به تنهایی وجود ندارد!',
+    subtitle: 'ما امید را پرورش می‌دهیم و برای مشکلات اجتماعی با هم کار می‌کنیم.',
+  },
+  ha: {
+    title: 'Babu abin da ya yi kama da gwagwarmaya shi kadai!',
+    subtitle: 'Muna raya fata kuma muna aiki tare don matsalolin zamantakewa.',
   },
   zh: {
     title: '没有所谓的独自奋斗！',
     subtitle: '我们增长希望，共同为社会问题而努力。',
   },
   hi: {
-    title: 'अकेले संघर्ष करने जैसी कोई चीज़ नहीं है!',
-    subtitle: 'हम आशा बढ़ाते हैं और सामाजिक समस्याओं के लिए मिलकर काम करते हैं।',
+    title: 'अकेله संघर्ष करने जैसी कोई चीज़ नहीं है!',
+    subtitle: 'हम आशा बढ़ाते हैं और सामाजिक समस्याओं के लिए मिलकर काम करते हैं.',
   },
   pt: {
     title: 'Não existe tal coisa como lutar sozinho!',
@@ -73,15 +83,15 @@ export const translations: Record<Language, Translation> = {
   },
   ja: {
     title: '一人で奮闘するなんてことはない！',
-    subtitle: '私たちは希望を育て、社会問題のために共に働きます。',
+    subtitle: '私たちは希望を育て、社会問題のために共に働きます.',
   },
   bn: {
-    title: 'एका সংগ্রাম করার মতো কিছু নেই!',
-    subtitle: 'আমরা আশা বাড়াই এবং সামাজিক সমস্যার জন্য একসাথে কাজ করি।',
+    title: 'একা সংগ্রাম করার মতো কিছু নেই!',
+    subtitle: 'আমরা আশা বাড়াই এবং সামাজিক সমস্যার জন্য একসাথে কাজ করি.',
   },
   pa: {
     title: 'ਇਕੱਲੇ ਸੰਘਰਸ਼ ਕਰਨ ਵਰਗੀ ਕੋਈ ਚੀਜ਼ ਨਹੀਂ ਹੈ!',
-    subtitle: 'ਅਸੀਂ ਉਮੀਦ ਵਧਾਉਂਦੇ ਹਾਂ ਅਤੇ ਸਮਾਜਿਕ ਸਮੱਸਿਆਵਾਂ ਲਈ ਮਿਲ ਕੇ ਕੰਮ ਕਰਦੇ ਹਾਂ।',
+    subtitle: 'ਅਸੀਂ ਉਮੀਦ ਵਧਾਉਂਦੇ ਹਾਂ ਅਤੇ ਸਮਾਜਿਕ ਸਮੱਸਿਆਵਾਂ ਲਈ ਮਿਲ ਕੇ ਕੰਮ ਕਰਦੇ ਹਾਂ.',
   },
   jv: {
     title: 'Ora ana sing jenenge berjuang dhewe!',
@@ -93,23 +103,23 @@ export const translations: Record<Language, Translation> = {
   },
   vi: {
     title: 'Không có chuyện phải vật lộn một mình!',
-    subtitle: 'Chúng tôi vun trồng hy vọng ve cùng nhau giải quyết các vấn đề xã hội.',
+    subtitle: 'Chúng tôi vun trồng hy vọng và cùng nhau giải quyết các vấn đề xã hội.',
   },
   te: {
     title: 'ఒంటరిగా పోరాడటం అనేదేమీ లేదు!',
-    subtitle: 'మేము ఆశను పెంచుతాము మరియు సామాజిక సమస్యల కోసం కలిసి పనిచేస్తాము।',
+    subtitle: 'మేము ఆశను పెంచుతాము మరియు సాماజిక సమస్యల కోసం కలిసి పనిచేస్తాము.',
   },
   mr: {
     title: 'एकट्याने संघर्ष करणे असे काहीही नाही!',
-    subtitle: 'आम्ही आशा वाढवतो आणि सामाजिक समस्यांसाठी एकत्र काम करतो।',
+    subtitle: 'आम्ही आशा वाढवतो आणि सामाजिक समस्यांसाठी एकत्र काम करतो.',
   },
   ta: {
     title: 'தனியாக போராடுவது என்பது எதுவும் இல்லை!',
-    subtitle: 'நாங்கள் நம்பிக்கையை வளர்க்கிறோம், சமூகப் பிரச்சினைகளுக்காக ஒன்றிணைந்து செயல்படுகிறோம்।',
+    subtitle: 'நாங்கள் நம்பிக்கையை வளர்க்கிறோம், சமூகப் பிரச்சினைகளுக்காக ஒன்றிணைந்து செயல்படுகிறோம்.',
   },
   ur: {
-    title: 'اکیلे جدوجہد کرنے جیسی کوئی چیز नहीं है!',
-    subtitle: 'ہم امید بڑھاتے ہیں اور سماجی مسائل के लिए मिल कर काम करते हैं।',
+    title: 'اکیلے جدوجہد کرنے جیسی کوئی چیز نہیں ہے!',
+    subtitle: 'ہم امید بڑھاتے ہیں اور سماجی مسائل کے لیے مل کر کام کرتے ہیں۔',
   },
   it: {
     title: 'Non esiste una cosa come lottare da soli!',

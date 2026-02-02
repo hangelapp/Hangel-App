@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -139,6 +140,10 @@ export default function ImpactStoryPage() {
     }
   }, [currentIndex]);
 
+  const handleClose = useCallback(() => {
+    router.back();
+  }, [router]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress(prev => {
@@ -186,7 +191,7 @@ export default function ImpactStoryPage() {
               <p className="text-black/40 text-[10px] font-bold">ETKİ RAPORU 2024</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="text-black hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/20" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" className="text-black hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/20" onClick={handleClose}>
             <X className="h-6 w-6" />
           </Button>
         </div>

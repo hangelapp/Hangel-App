@@ -1,9 +1,10 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Search, ShoppingBag, Menu, Filter, ArrowDownUp, Megaphone
+  Globe, ChevronRight, Search, ShoppingBag, Menu, Filter, ArrowDownUp, Megaphone, X
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -25,10 +26,23 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { translations, type Language } from '@/lib/translations';
+import { useToast } from '@/hooks/use-toast';
 
-const languages = [
+const languagesList = [
     { value: 'tr', label: 'Türkçe' },
-    { value: 'en', label: 'English' },
+    { value: 'ru', label: 'Русский' },
+    { value: 'ar', label: 'العربية' },
+    { value: 'fa', label: 'فارسی' },
+    { value: 'es', label: 'Español' },
+    { value: 'ha', label: 'Nigeria (Hausa)' },
 ];
 
 // Custom Volunteering Icon (Hand with Heart in palm)
@@ -407,6 +421,11 @@ const FooterNav = () => {
 
 export default function LoginPage() {
   const [language, setLanguage] = useState('tr');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { toast } = useToast();
+
+  const t = translations[language as Language] || translations['tr'];
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
@@ -425,7 +444,35 @@ export default function LoginPage() {
           </nav>
 
           <div className="flex-1 flex justify-end items-center gap-5 opacity-80">
-            <Search className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
+            <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                <DialogTrigger asChild>
+                    <Search className="h-4 w-4 cursor-pointer hover:text-primary transition-colors" />
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md top-[20%]">
+                    <DialogHeader>
+                        <DialogTitle>Platformda Ara</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex items-center space-x-2 pt-4">
+                        <Input 
+                            placeholder="STK, Marka veya Gönüllülük ara..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && searchQuery.trim()) {
+                                    setIsSearchOpen(false);
+                                    toast({ title: "Arama Yapılıyor", description: `"${searchQuery}" için sonuçlar hazırlanıyor.` });
+                                }
+                            }}
+                        />
+                        <Button onClick={() => {
+                            if (searchQuery.trim()) {
+                                setIsSearchOpen(false);
+                                toast({ title: "Arama Yapılıyor", description: `"${searchQuery}" için sonuçlar hazırlanıyor.` });
+                            }
+                        }}>Ara</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
             <Link href="/stories" className="hover:text-primary transition-colors">
               <Megaphone className="h-4 w-4 cursor-pointer" />
             </Link>
@@ -444,7 +491,7 @@ export default function LoginPage() {
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end">
-                    {languages.map(lang => (
+                    {languagesList.map(lang => (
                         <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
                     ))}
                 </SelectContent>
@@ -455,8 +502,8 @@ export default function LoginPage() {
 
       <main className="flex-1">
         <section className="relative flex flex-col items-center justify-center text-center bg-white py-28 px-6 space-y-6">
-          <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05]">Yok öyle yalnız başına mücadele.</h1>
-          <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</p>
+          <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05] capitalize">{t.title}</h1>
+          <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">{t.subtitle}</p>
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="rounded-full px-12 h-14 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-xl font-normal w-full sm:w-auto">
               <Link href="/login/selection?action=login">Giriş Yap</Link>
