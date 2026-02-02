@@ -1,9 +1,8 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, ChevronLeft, ChevronRight, Share2, TrendingUp, Users, Award, ShieldCheck, Store, Globe, Heart, Rocket } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Share2, TrendingUp, Users, Award, ShieldCheck, Store, Globe, Heart, Rocket, MapPin, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { HangelLogo } from '@/components/icons';
