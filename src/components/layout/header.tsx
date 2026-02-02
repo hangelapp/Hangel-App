@@ -1,9 +1,8 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren, LogOut, ChevronRight
+  Menu, Bell, Siren, LogOut, ChevronRight, Megaphone, Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -194,6 +193,11 @@ export default function AppHeader() {
           </div>
 
           <div className="flex items-center gap-1">
+            <Button asChild variant="ghost" size="icon">
+              <Link href="/stories">
+                <Megaphone className="h-5 w-5 text-foreground" />
+              </Link>
+            </Button>
             <Button asChild variant="ghost" size="icon">
               <Link href="/emergency">
                 <Siren className="h-5 w-5 text-destructive" />
