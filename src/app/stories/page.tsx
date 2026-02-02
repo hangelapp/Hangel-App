@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, ChevronLeft, ChevronRight, Share2, Info } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Share2, Info, Megaphone, Users, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { HangelLogo } from '@/components/icons';
 
@@ -58,7 +57,6 @@ export default function StoriesPage() {
 
   const currentStory = stories[currentStoryIndex];
 
-  // Safety check to prevent "Cannot read properties of undefined (reading 'type')"
   if (!currentStory) {
     return null;
   }
