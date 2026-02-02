@@ -58,6 +58,11 @@ export default function StoriesPage() {
 
   const currentStory = stories[currentStoryIndex];
 
+  // Safety check to prevent "Cannot read properties of undefined (reading 'type')"
+  if (!currentStory) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden touch-none">
       <div className="relative w-full max-w-[450px] h-full max-h-[850px] bg-card md:rounded-2xl overflow-hidden shadow-2xl flex flex-col">

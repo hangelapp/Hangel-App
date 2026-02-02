@@ -157,7 +157,7 @@ export default function EmergencyPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="report" className="mt-4 flex-1 overflow-y-auto no-scrollbar">
+                <TabsContent value="report" className="mt-0 flex-1 overflow-y-auto no-scrollbar">
                     <ReportTabContent />
                 </TabsContent>
 
