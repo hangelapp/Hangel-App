@@ -52,7 +52,7 @@ const AppleHeroSection = ({
   image, 
   dark = false, 
   primaryCta = "Daha fazla bilgi",
-  secondaryCta = "Satın alın",
+  secondaryCta = "Hemen Katıl",
   link = "/login/selection?action=register",
   imageHint = "product image",
   className
@@ -334,7 +334,7 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero Section - Valentines/Sevgililer Günü Style */}
+        {/* Hero Section - Main Banner */}
         <section className="bg-white py-20 text-center space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Hangel Hub</h1>
           <p className="text-xl md:text-2xl font-medium">İyilik paylaştıkça büyür.</p>
@@ -376,7 +376,6 @@ export default function LoginPage() {
             </div>
           </div>
           <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden pb-12">
-             {/* Simulating the colorful grid from the screenshot */}
              <div className="grid grid-cols-3 md:grid-cols-5 gap-4 px-6">
                 {[1,2,3,4,5,6,7,8,9,10].map(i => (
                   <div key={i} className="w-20 h-20 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center border border-white/10 shadow-2xl">
@@ -482,7 +481,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-2 text-[12px] text-[#6e6e73] mb-8">
                 <HangelLogo className="h-3 w-auto opacity-60" />
                 <ChevronRight className="h-3 w-3" />
-                <span className="hover:text-[#1d1d1f] cursor-pointer">Yasal Bilgiler</span>
+                <span className="hover:text-[#1d1d1f] cursor-pointer">Kurumsal</span>
             </div>
 
             {/* Navigation Sections */}
