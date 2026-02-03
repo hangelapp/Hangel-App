@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ export default function NgoOnboardingPage() {
                 </p>
                 <div className="flex justify-center gap-4">
                     <Button asChild size="lg">
-                        <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
+                        <Link href="/login">Şimdi Başvur</Link>
                     </Button>
                 </div>
             </div>
