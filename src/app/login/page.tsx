@@ -3,22 +3,13 @@
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Search, ShoppingBag, Menu, Filter, ArrowDownUp, Megaphone, X
+  Globe, ChevronRight, Search, ShoppingBag, Menu, Megaphone
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Image from 'next/image';
 import Link from 'next/link';
-import { volunteeringOpportunities } from '@/lib/data';
-import { Input } from '@/components/ui/input';
 import {
   Accordion,
   AccordionContent,
@@ -32,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -54,260 +46,115 @@ const HandWithHeartIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const AppleSection = ({ 
+const AppleHeroSection = ({ 
   title, 
   subtitle, 
-  description, 
   image, 
-  children,
   dark = false, 
-  fullWidth = true,
-  primaryCta = "Hemen Başla",
-  secondaryCta = "Daha fazla bilgi",
+  primaryCta = "Daha fazla bilgi",
+  secondaryCta = "Satın alın",
   link = "/login/selection?action=register",
-  secondaryLink = "#",
-  imageHint = "product image"
+  imageHint = "product image",
+  className
 }: { 
   title: string, 
   subtitle?: string, 
-  description?: string, 
   image?: string, 
-  children?: React.ReactNode,
   dark?: boolean, 
-  fullWidth?: boolean,
   primaryCta?: string,
   secondaryCta?: string,
   link?: string,
-  secondaryLink?: string,
-  imageHint?: string
+  imageHint?: string,
+  className?: string
 }) => (
   <section className={cn(
-    "relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16",
-    fullWidth ? "w-full min-h-[600px] md:min-h-[800px] mb-3" : "h-[500px] md:h-[600px] rounded-3xl mx-3 mb-3",
-    dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
+    "relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16 mb-3",
+    dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]",
+    className
   )}>
     <div className="z-10 px-6 space-y-1 max-w-4xl mb-8">
-      <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
-      {description && <p className={cn("text-[10px] md:text-xs font-medium mt-6 tracking-tight", dark ? "text-[#a1a1a6]" : "text-[#86868b]")}>{description}</p>}
-      {subtitle && <p className="text-xl md:text-2xl font-medium md:whitespace-nowrap max-w-full px-2">{subtitle}</p>}
+      <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+      {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
       <div className="pt-4 flex items-center justify-center gap-6">
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal text-sm md:text-base">
           <Link href={link}>{primaryCta}</Link>
         </Button>
         <Button asChild variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-sm md:text-lg group">
-          <Link href={secondaryLink}>
+          <Link href={link}>
             {secondaryCta} <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </Button>
       </div>
     </div>
-    <div className="relative w-full flex-1 flex flex-col items-center justify-start overflow-hidden px-0 md:px-0">
-      {children ? (
-        <div className="w-full h-full">
-          {children}
-        </div>
-      ) : (
-        image && (
-          <div className="relative w-full h-full max-w-5xl mx-auto px-4">
-            <Image 
-              src={image} 
-              alt={title} 
-              fill 
-              className="object-contain object-top select-none" 
-              data-ai-hint={imageHint}
-              priority
-            />
-          </div>
-        )
-      )}
-    </div>
+    {image && (
+      <div className="relative w-full h-[400px] md:h-[500px] max-w-5xl mx-auto">
+        <Image 
+          src={image} 
+          alt={title} 
+          fill 
+          className="object-contain object-top select-none" 
+          data-ai-hint={imageHint}
+        />
+      </div>
+    )}
   </section>
 );
 
-const MarketplaceDiscovery = () => {
-    const brands = [
-        { name: 'Skechers', rate: 6, logo: 'https://logo.clearbit.com/skechers.com.tr' },
-        { name: 'Beymen', rate: 4, logo: 'https://logo.clearbit.com/beymen.com' },
-        { name: 'MediaMarkt', rate: 2, logo: 'https://logo.clearbit.com/mediamarkt.com.tr' },
-        { name: 'Karaca', rate: 10, logo: 'https://logo.clearbit.com/karaca.com' },
-        { name: 'Columbia', rate: 7, logo: 'https://logo.clearbit.com/columbia.com' },
-        { name: 'Nike', rate: 5, logo: 'https://logo.clearbit.com/nike.com' },
-        { name: 'Adidas', rate: 5, logo: 'https://logo.clearbit.com/adidas.com' },
-        { name: 'Puma', rate: 5, logo: 'https://logo.clearbit.com/puma.com' },
-        { name: 'Gratis', rate: 3, logo: 'https://logo.clearbit.com/gratis.com' },
-        { name: 'Boyner', rate: 4, logo: 'https://logo.clearbit.com/boyner.com.tr' },
-    ];
-
-    const entityTabs = ['Tümü', 'Kooperatif', 'İktisadi İşl.', 'Marka', 'Sosyal İşl.'];
-
-    return (
-        <div className="w-full space-y-4 md:space-y-6 py-4">
-            {/* Market Entrance - Search Bar + Icons */}
-            <div className="flex items-center gap-2 px-6 md:px-4 max-w-2xl mx-auto w-full">
-                <div className="relative flex-grow group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-hover:text-white/60 transition-colors" />
-                    <div className="w-full h-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center pl-12 pr-4 text-white/40 text-[13px] cursor-pointer hover:bg-white/10 transition-all shadow-xl">
-                        Marka, ürün veya kategori ara...
-                    </div>
-                </div>
-                <div className="flex gap-1.5 shrink-0">
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white">
-                        <Menu className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white">
-                        <Filter className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white">
-                        <ArrowDownUp className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-
-            {/* Simulated Tabs (Entity Types) */}
-            <div className="flex justify-center border-b border-white/10 px-6">
-                <div className="flex w-full max-w-xl overflow-x-auto no-scrollbar -mb-px">
-                    {entityTabs.map((tab, idx) => (
-                        <div 
-                            key={tab} 
-                            className={cn(
-                                "px-4 py-3 text-[11px] md:text-xs font-bold whitespace-nowrap cursor-pointer transition-all border-b-2",
-                                idx === 0 
-                                    ? "border-white text-white" 
-                                    : "border-transparent text-white/40 hover:text-white/60"
-                            )}
-                        >
-                            {tab}
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Brand Storefront Grid */}
-            <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
-                <div className="grid grid-flow-col grid-rows-2 gap-x-4 gap-y-6 px-6 md:px-12 w-max">
-                    {brands.map((brand, idx) => (
-                        <div key={idx} className="flex flex-col items-center gap-2 shrink-0 snap-start w-[100px] md:w-36">
-                            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white p-4 md:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-center border border-white/10 group hover:scale-105 transition-all duration-300 cursor-pointer">
-                                <div className="relative w-full h-full">
-                                    <Image src={brand.logo} alt={brand.name} fill className="object-contain filter grayscale group-hover:grayscale-0 transition-all" />
-                                </div>
-                                <div className="absolute -top-2 -right-2 bg-[#f34723] text-white text-[10px] md:text-xs font-black rounded-full w-8 h-8 md:w-11 md:h-11 flex items-center justify-center border-2 border-black shadow-xl group-hover:rotate-12 transition-transform">
-                                    %{brand.rate}
-                                </div>
-                            </div>
-                            <p className="text-white/60 text-[10px] md:text-[13px] font-bold tracking-tight truncate w-full text-center group-hover:text-white transition-colors">{brand.name}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const VolunteeringDiscovery = () => {
-    const [mounted, setMounted] = useState(false);
-    const [filter, setFilter] = useState('all');
-    const [searchTerm, setSearchTerm] = useState('');
-    
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    const categories = ['Tümü', 'Çevre', 'Eğitim', 'Afet', 'Hayvan Hakları', 'Engelli'];
-    const categoryMapping: Record<string, string> = {
-        'Tümü': 'all',
-        'Çevre': 'Çevre',
-        'Eğitim': 'Eğitim',
-        'Afet': 'Afet',
-        'Hayvan Hakları': 'Hayvan Hakları',
-        'Engelli': 'Engelli'
-    };
-
-    const filteredItems = useMemo(() => {
-        if (!mounted) return [];
-        let items = volunteeringOpportunities;
-        
-        if (filter !== 'all') {
-            items = items.filter(item => item.socialArea === filter);
-        }
-        
-        if (searchTerm.trim()) {
-            const lower = searchTerm.toLowerCase();
-            items = items.filter(item => 
-                item.title.toLowerCase().includes(lower) || 
-                item.organization.toLowerCase().includes(lower)
-            );
-        }
-
-        return items.slice(0, 21);
-    }, [filter, searchTerm, mounted]);
-
-    if (!mounted) {
-        return <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground">Yükleniyor...</div>;
-    }
-
-    return (
-        <div className="w-full space-y-4 md:space-y-6 py-4">
-            <div className="flex flex-col md:flex-row items-center gap-2 px-6 md:px-4 max-w-2xl mx-auto w-full">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
-                    <Input 
-                        placeholder="Gönüllülük ilanlarında ara..." 
-                        className="pl-9 h-10 bg-white/80 backdrop-blur-md border-none rounded-full focus-visible:ring-1 focus-visible:ring-[#0066cc] placeholder:text-[#86868b] text-[13px] shadow-sm"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="flex gap-2 w-full md:w-auto justify-end">
-                    <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
-                        <Filter className="h-4 w-4 text-[#1d1d1f]" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md h-10 w-10 border border-[#d2d2d7]/50 hover:bg-white transition-colors shadow-sm shrink-0">
-                        <ArrowDownUp className="h-4 w-4 text-[#1d1d1f]" />
-                    </Button>
-                </div>
-            </div>
-
-            <div className="flex overflow-x-auto md:justify-center gap-2 px-6 md:px-4 no-scrollbar">
-                {categories.map((cat) => (
-                    <button
-                        key={cat}
-                        onClick={() => setFilter(categoryMapping[cat])}
-                        className={cn(
-                            "px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
-                            filter === categoryMapping[cat] 
-                                ? "bg-[#1d1d1f] text-white shadow-sm" 
-                                : "bg-white/80 backdrop-blur-md text-[#1d1d1f] border border-[#d2d2d7] hover:border-[#86868b]"
-                        )}
-                    >
-                        {cat}
-                    </button>
-                ))}
-            </div>
-
-            <div className="overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory">
-                <div className="grid grid-flow-col grid-rows-2 gap-x-4 gap-y-3 px-6 md:px-12 w-max">
-                    {filteredItems.map((item) => (
-                        <Link href={`/login/selection?action=register&type=individual`} key={item.id} className="block shrink-0 snap-start">
-                            <Card className="group relative overflow-hidden rounded-2xl border-none shadow-sm bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 cursor-pointer flex flex-col w-[280px] md:w-[320px] h-[90px] md:h-[100px] justify-center">
-                                <CardHeader className="p-4 pb-0 space-y-0.5 text-left">
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-primary">{item.socialArea}</p>
-                                    <CardTitle className="text-sm font-bold tracking-tight text-[#1d1d1f] leading-snug line-clamp-1">{item.title}</CardTitle>
-                                    <CardDescription className="text-[11px] font-medium text-[#86868b] line-clamp-1">{item.organization}</CardDescription>
-                                </CardHeader>
-                                <CardFooter className="p-4 pt-1 flex justify-end items-center">
-                                    <div className="flex items-center text-[#0066cc] text-[11px] font-medium group-hover:underline">
-                                        İncele <ChevronRight className="ml-0.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                                    </div>
-                                </CardFooter>
-                            </Card>
-                        </Link>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
+const AppleGridSection = ({ 
+  title, 
+  subtitle, 
+  image, 
+  dark = false, 
+  primaryCta = "Daha fazla bilgi",
+  secondaryCta = "İnceleyin",
+  link = "/login/selection?action=register",
+  imageHint = "product image",
+  className
+}: { 
+  title: string, 
+  subtitle?: string, 
+  image?: string, 
+  dark?: boolean, 
+  primaryCta?: string,
+  secondaryCta?: string,
+  link?: string,
+  imageHint?: string,
+  className?: string
+}) => (
+  <div className={cn(
+    "relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 rounded-3xl h-[500px] md:h-[600px]",
+    dark ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]",
+    className
+  )}>
+    <div className="z-10 px-6 space-y-1 mb-6">
+      <h3 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h3>
+      {subtitle && <p className="text-lg md:text-xl font-medium">{subtitle}</p>}
+      <div className="pt-2 flex items-center justify-center gap-4">
+        <Button asChild variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-sm md:text-base group">
+          <Link href={link}>
+            {primaryCta} <ChevronRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </Button>
+        <Button asChild variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-sm md:text-base group">
+          <Link href={link}>
+            {secondaryCta} <ChevronRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </Button>
+      </div>
+    </div>
+    {image && (
+      <div className="relative w-full flex-1">
+        <Image 
+          src={image} 
+          alt={title} 
+          fill 
+          className="object-contain object-bottom select-none p-4" 
+          data-ai-hint={imageHint}
+        />
+      </div>
+    )}
+  </div>
+);
 
 const FooterNav = () => {
   const { t } = useTranslation();
@@ -418,12 +265,8 @@ export default function LoginPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
-  const handleLanguageChange = (lang: string) => {
-    changeLanguage(lang);
-  };
-
   return (
-    <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
+    <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased overflow-x-hidden">
       {/* Apple-style Navigation Bar */}
       <header className="sticky top-0 z-50 w-full h-11 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
         <div className="container mx-auto h-full max-w-5xl px-4 flex items-center justify-between">
@@ -453,12 +296,6 @@ export default function LoginPage() {
                             placeholder="STK, Marka veya Gönüllülük ara..." 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && searchQuery.trim()) {
-                                    setIsSearchOpen(false);
-                                    toast({ title: "Arama Yapılıyor", description: `"${searchQuery}" için sonuçlar hazırlanıyor.` });
-                                }
-                            }}
                         />
                         <Button onClick={() => {
                             if (searchQuery.trim()) {
@@ -481,7 +318,7 @@ export default function LoginPage() {
             <div className="md:hidden">
               <Menu className="h-4 w-4 cursor-pointer" />
             </div>
-            <Select value={language} onValueChange={handleLanguageChange}>
+            <Select value={language} onValueChange={changeLanguage}>
                 <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto p-0 text-[12px] font-normal text-[#1d1d1f] hover:text-primary transition-colors focus:ring-0">
                     <Globe className="h-3.5 w-3.5" />
                     <SelectValue />
@@ -497,78 +334,135 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative flex flex-col items-center justify-center text-center bg-white py-28 px-6 space-y-6">
-          <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05] capitalize">{t('title')}</h1>
-          <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">{t('subtitle')}</p>
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="rounded-full px-12 h-14 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none text-xl font-normal w-full sm:w-auto">
-              <Link href="/login/selection?action=login">{t('nav.login')}</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full px-12 h-14 border-2 border-[#0066cc] text-[#0066cc] hover:bg-[#0066cc]/5 text-xl font-normal w-full sm:w-auto">
-              <Link href="/login/selection?action=register&type=individual">{t('nav.register')}</Link>
+        {/* Hero Section - Valentines/Sevgililer Günü Style */}
+        <section className="bg-white py-20 text-center space-y-4">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Hangel Hub</h1>
+          <p className="text-xl md:text-2xl font-medium">İyilik paylaştıkça büyür.</p>
+          <div className="pt-4">
+            <Button asChild className="rounded-full px-8 h-12 bg-[#0066cc] hover:bg-[#0071e3] text-white font-normal text-lg">
+              <Link href="/login/selection?action=register">Hemen Başlayın</Link>
             </Button>
           </div>
         </section>
 
-        {/* Feature Grid - Side by Side */}
+        {/* Section 1 - iPhone Style (hangel imece) */}
+        <AppleHeroSection 
+          title="hangel imece"
+          subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
+          image="https://images.unsplash.com/photo-1521119989659-a83eee488004?w=1080&q=80"
+          imageHint="smiling person portrait"
+          primaryCta="Gönüllü Ol"
+          secondaryCta="İncele"
+        />
+
+        {/* Section 2 - CreatorStudio style (hangel STK) */}
+        <section className="relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16 mb-3 bg-black text-white min-h-[600px]">
+          <div className="z-10 px-6 space-y-1 mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <HangelLogo className="text-white text-3xl" />
+              <span className="text-3xl font-bold">STK</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Dijital Dönüşüm</h2>
+            <p className="text-xl md:text-2xl font-medium text-white/80">Kuruluşunu büyüt, etkiyi ölç.</p>
+            <div className="pt-4 flex items-center justify-center gap-6">
+              <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal text-sm md:text-base">
+                <Link href="/ngo-onboarding">Daha fazla bilgi</Link>
+              </Button>
+              <Button asChild variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-sm md:text-lg group">
+                <Link href="/login/selection?action=register&type=corporate">
+                  Hemen Başvur <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+          <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden pb-12">
+             {/* Simulating the colorful grid from the screenshot */}
+             <div className="grid grid-cols-3 md:grid-cols-5 gap-4 px-6">
+                {[1,2,3,4,5,6,7,8,9,10].map(i => (
+                  <div key={i} className="w-20 h-20 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center border border-white/10 shadow-2xl">
+                    <HangelLogo className="text-white/20 scale-150" />
+                  </div>
+                ))}
+             </div>
+          </div>
+        </section>
+
+        {/* Section 3 - iPad Air style (hangel bağışı) */}
+        <AppleHeroSection 
+          title="hangel bağışı"
+          subtitle="Alışverişin iyiliğe dönüşsün."
+          className="bg-[#eef4f9]"
+          image="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1080&q=80"
+          imageHint="modern analytics dashboard"
+          primaryCta="Market'i Keşfet"
+          secondaryCta="Nasıl çalışır?"
+        />
+
+        {/* Section 4 - Grid style (Watch & Others) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
-          <AppleSection 
-            title="hangel STK"
-            subtitle="Sivil Toplum Kuruluşu ile hangel’de Ol"
-            description="Dernek, Vakıf, Spor Kulübü, Öğrenci Kulübü"
-            image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop"
-            imageHint="abstract colorful sparks"
-            fullWidth={false}
-            primaryCta={t('nav.register')}
-            link="/login/selection?action=register&type=corporate"
-            secondaryLink="/ngo-onboarding"
-            dark={false}
+          <AppleGridSection 
+            title="Etki Story"
+            subtitle="Başarılarını hikayene taşı."
+            image="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?w=800&q=80"
+            imageHint="volunteers celebrating"
+            dark={true}
           />
-          <AppleSection 
-            title="hangel Brands" 
-            subtitle="Markan ile hangel de ol." 
-            description="Ticari Marka, Kooperatif, İktisadi İşletme, Sosyal Girişim"
-            image="https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=2070&auto=format&fit=crop" 
-            imageHint="modern branding" 
-            fullWidth={false} 
-            primaryCta={t('nav.register')}
-            link="/login/selection?action=register&type=corporate"
-            dark={false}
+          <AppleGridSection 
+            title="Rozetler"
+            subtitle="Katkılarınla seviye atla."
+            image="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&q=80"
+            imageHint="golden award medal"
           />
         </div>
 
-        {/* Volunteering Section - Full Width */}
-        <AppleSection 
-          title="hangel imece"
-          subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
-          description="Gönüllü Ol, İmece Ruhuyla Toplumsal Sorunlara Çözüm Üret."
-          link="/login/selection?action=register&type=individual"
-        >
-          <VolunteeringDiscovery />
-        </AppleSection>
-
-        {/* Marketplace Section - Full Width Dark */}
-        <AppleSection 
-          title="hangel bağışı"
-          subtitle="Alışverişin iyiliğe dönüşsün."
-          description="Ek Bir Ödeme Yapmadan, Seçtiğin STK'ya %15'e Varan Oranlarda Bağış Yap."
-          link="/login/selection?action=register&type=individual"
-          dark={true}
-          primaryCta="Bağış Sistemini Keşfet"
-        >
-          <MarketplaceDiscovery />
-        </AppleSection>
-
-        {/* Transparency Section - Full Width */}
-        <AppleSection 
+        {/* Section 5 - MacBook Pro style (Transparency) */}
+        <AppleHeroSection 
           title="Şeffaflık Endeksi"
           subtitle="Güvenle bağış yapın."
-          description="STK'ların Şeffaflık Raporlarını Anlık Olarak Takip Edin."
-          image="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
-          imageHint="analytics dashboard transparency"
-          primaryCta="Raporları İncele"
+          dark={true}
+          image="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80"
+          imageHint="modern office building"
+          primaryCta="Raporları Gör"
+          secondaryCta="İncele"
         />
+
+        {/* Section 6 - MacBook Air style (Campus) */}
+        <AppleHeroSection 
+          title="hangel Kampüs"
+          subtitle="Geleceğin liderleri burada."
+          className="bg-white"
+          image="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?w=1080&q=80"
+          imageHint="university students"
+          primaryCta="Temsilci Ol"
+          secondaryCta="Detaylar"
+        />
+
+        {/* Section 7 - Watch Ultra style (Üye İşyeri) */}
+        <section className="relative flex flex-col items-center justify-start text-center overflow-hidden pt-12 md:pt-16 mb-3 bg-black text-white min-h-[700px]">
+          <div className="z-10 px-6 space-y-1 mb-8">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Üye İşyeri</h2>
+            <p className="text-xl md:text-2xl font-medium text-white/80">QR Kod ile iyiliği her yere taşı.</p>
+            <div className="pt-4 flex items-center justify-center gap-6">
+              <Button asChild className="rounded-full px-6 h-10 bg-white hover:bg-white/90 text-black border-none font-normal text-sm md:text-base">
+                <Link href="/merchant">Hemen Başvur</Link>
+              </Button>
+              <Button asChild variant="link" className="text-white hover:text-white/80 p-0 h-auto font-normal text-sm md:text-lg group">
+                <Link href="/support">
+                  Destek Al <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+          <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
+             <div className="relative w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-gradient-to-br from-primary to-orange-600 rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(243,71,35,0.3)] animate-pulse">
+                <div className="w-48 h-48 md:w-80 md:h-80 bg-white rounded-3xl p-4 md:p-8 flex items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=hangel" alt="QR Payment" fill className="object-contain" />
+                  </div>
+                </div>
+             </div>
+          </div>
+        </section>
       </main>
 
       {/* Apple-style Comprehensive Footer */}
@@ -577,10 +471,10 @@ export default function LoginPage() {
             {/* Footnotes */}
             <div className="text-[12px] text-[#6e6e73] leading-relaxed space-y-4 border-b border-[#d2d2d7] pb-6 mb-8">
                 <p>
-                  * hangel bağışı kapsamında sunulan oranlar anlaşmalı markalara göre değişiklik gösterebilir. Bağış tutarları, yasal vergiler ve hangel hizmet bedeli kesildikten sonra STK'ya aktarılır. Ayrıntılı bilgi için <Link href="/support" className="text-[#1d1d1f] underline">Destek Merkezi'ni</Link> ziyaret edebilirsiniz.
+                  * hangel bağışı kapsamında sunulan oranlar anlaşmalı markalara göre değişiklik gösterebilir. Bağış tutarları, yasal vergiler ve hangel hizmet bedeli kesildikten sonra STK'ya aktarılır.
                 </p>
                 <p>
-                  Sosyal Etki Puanı ve kazanılan rozetler hangel platformu içi ödüllendirme sistemidir ve nakit karşılığı bulunmamaktadır. Gönüllülük faaliyetleri, ilgili STK'ların onayına ve sorumluluğuna tabidir.
+                  Sosyal Etki Puanı ve kazanılan rozetler hangel platformu içi ödüllendirme sistemidir ve nakit karşılığı bulunmamaktadır. Gönüllülük faaliyetleri, ilgili STK'ların onayına tabidir.
                 </p>
             </div>
 
@@ -594,11 +488,6 @@ export default function LoginPage() {
             {/* Navigation Sections */}
             <FooterNav />
 
-            {/* Secondary Action Text */}
-            <div className="text-[12px] text-[#6e6e73] border-b border-[#d2d2d7] pb-4 mb-4">
-                Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/merchant" className="text-[#0066cc] hover:underline">hangel Üye İşyeri</Link> bulun veya <span className="text-[#0066cc]">0554 700 70 07</span> numaralı telefonu arayın.
-            </div>
-
             {/* Bottom Footer Area */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-[12px] text-[#6e6e73]">
                 <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2">
@@ -607,9 +496,11 @@ export default function LoginPage() {
                         <Link href="/settings/contracts/gizlilik-politikasi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Gizlilik Politikası</Link>
                         <Link href="/settings/contracts/cerez-politikasi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Çerez Politikası</Link>
                         <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Kullanım Şartları</Link>
-                        <Link href="/settings/contracts/sosyal-etki-politikasi" className="hover:text-[#1d1d1f] hover:underline border-r border-[#d2d2d7] pr-2 last:border-0">Sosyal Etki Politikası</Link>
                         <Link href="/bilgi-toplumu-hizmetleri" className="hover:text-[#1d1d1f] hover:underline">Bilgi Toplumu Hizmetleri</Link>
                     </div>
+                </div>
+                <div className="flex items-center gap-1 hover:text-[#1d1d1f] cursor-pointer">
+                  Türkiye
                 </div>
             </div>
         </div>
