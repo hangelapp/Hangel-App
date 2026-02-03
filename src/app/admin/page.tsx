@@ -3,19 +3,19 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Globe, MessageSquare, Mail, Megaphone, Calendar, Calculator, MessageCircle, ShoppingCart, Settings2, Database, PhoneCall, GraduationCap, MapPin, Palette, Video, CreditCard, Target, Sparkles } from 'lucide-react';
+import { ChevronRight, Globe, MessageSquare, Mail, Megaphone, Calendar, Calculator, MessageCircle, ShoppingCart, Settings2, Database, PhoneCall, GraduationCap, MapPin, Palette, Video, CreditCard, Target, Sparkles, Building } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { managedItems } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 const iconColorMap: { [key: string]: string } = {
-  store: 'bg-green-500',
+  'store': 'bg-green-500',
   'file-text': 'bg-sky-500',
   'heart-handshake': 'bg-red-500',
-  users: 'bg-blue-500',
+  'users': 'bg-blue-500',
   'layout-grid': 'bg-slate-500',
-  calendar: 'bg-red-400',
+  'calendar': 'bg-red-400',
 };
 
 const statusVariantMap = {
