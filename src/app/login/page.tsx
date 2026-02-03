@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import { 
-  Globe, ChevronRight, Search, ShoppingBag, Menu, Megaphone, HeartHandshake, Building, Users, Star, Sparkles, HelpCircle, ArrowRight, Calendar, Info
+  Globe, ChevronRight, Search, ShoppingBag, Menu, Megaphone
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useState } from 'react';
@@ -38,7 +38,8 @@ const AppleSection = ({
   imageHint = "product",
   fullHeight = true,
   ctaText = "Hemen Başla",
-  secondaryCta = "Daha fazla bilgi"
+  secondaryCta = "Daha fazla bilgi",
+  secondaryLink = "/ngo-onboarding"
 }: { 
   title: string, 
   subtitle?: string, 
@@ -49,7 +50,8 @@ const AppleSection = ({
   imageHint?: string,
   fullHeight?: boolean,
   ctaText?: string,
-  secondaryCta?: string
+  secondaryCta?: string,
+  secondaryLink?: string
 }) => (
   <section className={cn(
     "relative w-full overflow-hidden flex flex-col items-center text-center",
@@ -65,7 +67,7 @@ const AppleSection = ({
         <Link href={link} className="bg-[#0066cc] hover:bg-[#0071e3] text-white px-6 py-2.5 rounded-full font-semibold transition-colors">
           {ctaText}
         </Link>
-        <Link href="/ngo-onboarding" className="text-[#0066cc] hover:underline flex items-center font-medium group">
+        <Link href={secondaryLink} className="text-[#0066cc] hover:underline flex items-center font-medium group">
           {secondaryCta} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
         </Link>
       </div>
@@ -176,7 +178,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased overflow-x-hidden">
-      {/* Global Apple Style Nav */}
       <header className="sticky top-0 z-[100] w-full h-12 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
         <div className="container mx-auto h-full max-w-6xl px-4 flex items-center justify-between">
           <Link href="/" className="opacity-80 hover:opacity-100 transition-opacity">
@@ -230,7 +231,6 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
-        {/* Section 1: Hangel Hub Hero */}
         <AppleSection 
           title="hangel Hub"
           subtitle="İyilik her anında seninle."
@@ -240,7 +240,6 @@ export default function LoginPage() {
           ctaText="Hemen Katıl"
         />
 
-        {/* Section 2: hangel imece */}
         <AppleSection 
           title="hangel imece"
           subtitle="Yeteneklerini faydaya dönüştür."
@@ -251,7 +250,6 @@ export default function LoginPage() {
           ctaText="Gönüllü Ol"
         />
 
-        {/* Section 3: hangel bağışı */}
         <AppleSection 
           title="hangel bağışı"
           subtitle="Alışverişin en anlamlı hali."
@@ -261,7 +259,6 @@ export default function LoginPage() {
           ctaText="Markaları Keşfet"
         />
 
-        {/* Grid Sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-white">
           <AppleGridHalf 
             title="hangel STK"
@@ -296,10 +293,8 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {/* Apple-style Footer */}
       <footer className="bg-[#f5f5f7] pt-12 pb-16 px-6 text-[#1d1d1f]">
         <div className="container mx-auto max-w-6xl">
-            {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-[12px] text-[#6e6e73] mb-8 border-b border-[#d2d2d7] pb-4">
                 <HangelLogo className="h-3 w-auto opacity-60" />
                 <ChevronRight className="h-3 w-3" />
@@ -308,7 +303,6 @@ export default function LoginPage() {
                 <span className="text-[#1d1d1f]">Ana Sayfa</span>
             </div>
 
-            {/* Links Grid */}
             <div className="hidden md:grid grid-cols-4 gap-8 mb-12">
               {footerSections.map((section) => (
                 <div key={section.title} className="space-y-4">
@@ -326,7 +320,6 @@ export default function LoginPage() {
               ))}
             </div>
 
-            {/* Mobile Accordion Links */}
             <div className="md:hidden space-y-4 mb-12">
               <Accordion type="single" collapsible className="w-full">
                 {footerSections.map((section, idx) => (
@@ -350,7 +343,6 @@ export default function LoginPage() {
               </Accordion>
             </div>
 
-            {/* Legal Area */}
             <div className="pt-8 space-y-4">
               <p className="text-[12px] text-[#6e6e73]">
                 Diğer alışveriş seçenekleri: Bir <Link href="/market" className="text-[#0066cc] underline">hangel Markası</Link> bulun veya <Link href="/support" className="text-[#0066cc] underline">destek merkezimizle</Link> iletişime geçin.
