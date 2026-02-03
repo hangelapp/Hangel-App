@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { HangelLogo } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -11,27 +10,17 @@ import {
     Search, 
     ShoppingBag, 
     Menu, 
-    X, 
     ChevronRight, 
-    PlayCircle, 
-    ArrowUpRight, 
-    Globe, 
-    ShieldCheck, 
-    HeartHandshake, 
-    Users, 
-    Zap,
-    Calendar,
-    Plus,
-    Minus
+    Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const AppleNav = () => {
-    const [isScrolled, setIsMounted] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     
     useEffect(() => {
-        const handleScroll = () => setIsMounted(window.scrollY > 50);
+        const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -39,22 +28,22 @@ const AppleNav = () => {
     return (
         <nav className={cn(
             "fixed top-0 inset-x-0 z-[100] transition-all duration-300 border-b border-transparent",
-            isScrolled ? "bg-background/80 backdrop-blur-xl border-border" : "bg-transparent"
+            isScrolled ? "bg-white/80 backdrop-blur-xl border-border" : "bg-transparent"
         )}>
             <div className="container mx-auto px-4 h-12 flex items-center justify-between">
                 <Link href="/" className="hover:opacity-70 transition-opacity">
                     <HangelLogo className="text-xl" />
                 </Link>
                 <div className="hidden md:flex items-center gap-8 text-[12px] font-medium text-foreground/80">
-                    <Link href="/market" className="hover:text-foreground">Market</Link>
-                    <Link href="/volunteering" className="hover:text-foreground">Gönüllülük</Link>
-                    <Link href="/ngos" className="hover:text-foreground">STK'lar</Link>
-                    <Link href="/about" className="hover:text-foreground">Hakkımızda</Link>
-                    <Link href="/support" className="hover:text-foreground">Destek</Link>
+                    <Link href="/market" className="hover:text-foreground transition-colors">Market</Link>
+                    <Link href="/volunteering" className="hover:text-foreground transition-colors">Gönüllülük</Link>
+                    <Link href="/ngos" className="hover:text-foreground transition-colors">STK'lar</Link>
+                    <Link href="/about" className="hover:text-foreground transition-colors">Hakkımızda</Link>
+                    <Link href="/support" className="hover:text-foreground transition-colors">Destek</Link>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Search className="h-4 w-4 text-foreground/60 cursor-pointer hover:text-foreground" />
-                    <ShoppingBag className="h-4 w-4 text-foreground/60 cursor-pointer hover:text-foreground" />
+                    <Search className="h-4 w-4 text-foreground/60 cursor-pointer hover:text-foreground transition-colors" />
+                    <ShoppingBag className="h-4 w-4 text-foreground/60 cursor-pointer hover:text-foreground transition-colors" />
                     <Menu className="h-4 w-4 md:hidden text-foreground/60" />
                 </div>
             </div>
@@ -98,7 +87,7 @@ const Section = ({
                         className={cn(
                             "text-lg font-medium flex items-center group",
                             link.primary 
-                                ? "bg-[#0071e3] text-white px-6 py-2 rounded-full hover:bg-[#0077ed]" 
+                                ? "bg-[#0071e3] text-white px-6 py-2 rounded-full hover:bg-[#0077ed] transition-colors" 
                                 : "text-[#0066cc] hover:underline"
                         )}
                     >
@@ -225,7 +214,10 @@ const Footer = () => {
                             <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
                             <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Yasal Bilgiler</Link>
                         </div>
-                        <p>Türkiye</p>
+                        <div className="flex items-center gap-1">
+                            <Globe className="h-3 w-3" />
+                            <span>Türkiye</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -234,8 +226,6 @@ const Footer = () => {
 };
 
 export default function LoginPage() {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen bg-white">
         <AppleNav />
