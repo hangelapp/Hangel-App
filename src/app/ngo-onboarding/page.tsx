@@ -55,7 +55,7 @@ const features = [
     { name: 'CRM Yönetimi', desc: 'Bağışçı ve gönüllü ilişkilerinizi profesyonel bir altyapıyla yönetin.', icon: Database },
     { name: 'Sanal Santral Yönetimi', desc: '0850\'li numara ile kurumsal bir çağrı merkezi yapısı kurun.', icon: PhoneCall },
     { name: 'Sanal ve Fiziki Ofis', desc: 'Belediye ve iş ortağı destekli ofis ve yerleşke imkanlarından faydalanın.', icon: Building2 },
-    { name: 'Üniversite Gönüllülük Dersi', desc: 'Akademik kredi kapsamında üniversite öğrencilerinden gönüllü desteği alın.', icon: GraduationCap },
+    { name: 'Üniversite Gönüllük Dersi', desc: 'Akademik kredi kapsamında üniversite öğrencilerinden gönüllü desteği alın.', icon: GraduationCap },
     { name: 'Saha Ekip Yönetimi', desc: 'Operasyonel ekiplerin konum takibini ve görev atamasını yapın.', icon: MapPin },
     { name: 'DM Mesajlaşma Merkezi', desc: 'Sosyal medya kanallarından gelen tüm mesajları tek bir panelden yanıtlayın.', icon: MessageCircle },
     { name: 'İktisadi İşletme Yönetimi', desc: 'Kendi ürünlerinizi satın, stok ve sipariş süreçlerini yönetin.', icon: ShoppingCart },

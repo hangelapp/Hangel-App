@@ -1,3 +1,4 @@
+
 export const languages = [
     { value: 'tr', label: 'Türkçe' },
     { value: 'en', label: 'English' },
@@ -186,7 +187,7 @@ export const translations: Record<Language, any> = {
       invite: 'دعوت از دوستان',
       impactStory: 'داستان تاثیر',
       library: 'کتابخانه',
-      admin: 'پنل مدیریت',
+      admin: 'پنl مدیریت',
       superAdmin: 'مدیر کل',
       settings: 'تنظیمات',
       about: 'درباره ما',

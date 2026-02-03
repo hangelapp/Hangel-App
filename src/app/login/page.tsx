@@ -350,7 +350,7 @@ export default function LoginPage() {
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-4 text-[12px] text-[#6e6e73] border-t border-[#d2d2d7]">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-x-6 gap-y-2">
                   <p>Copyright © 2026 Hangel Hub Inc. Tüm hakları saklıdır.</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <div className="flex wrap gap-x-4 gap-y-1">
                     <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
                     <Link href="/settings/contracts/cerez-politikasi" className="hover:underline border-l pl-4 border-[#d2d2d7]">Çerezlerin Kullanımı</Link>
                     <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline border-l pl-4 border-[#d2d2d7]">Kullanım Şartları</Link>
