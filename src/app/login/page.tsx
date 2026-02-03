@@ -65,6 +65,7 @@ const AppleSection = ({
   primaryCta = "Hemen Başla",
   secondaryCta = "Daha fazla bilgi",
   link = "/login/selection?action=register",
+  secondaryLink = "#",
   imageHint = "product image"
 }: { 
   title: string, 
@@ -77,6 +78,7 @@ const AppleSection = ({
   primaryCta?: string,
   secondaryCta?: string,
   link?: string,
+  secondaryLink?: string,
   imageHint?: string
 }) => (
   <section className={cn(
@@ -92,8 +94,10 @@ const AppleSection = ({
         <Button asChild className="rounded-full px-6 h-10 bg-[#0066cc] hover:bg-[#0071e3] text-white border-none font-normal text-sm md:text-base">
           <Link href={link}>{primaryCta}</Link>
         </Button>
-        <Button variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-sm md:text-lg group">
-          {secondaryCta} <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+        <Button asChild variant="link" className="text-[#0066cc] hover:text-[#0066cc] p-0 h-auto font-normal text-sm md:text-lg group">
+          <Link href={secondaryLink}>
+            {secondaryCta} <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </Button>
       </div>
     </div>
@@ -515,6 +519,7 @@ export default function LoginPage() {
             fullWidth={false}
             primaryCta={t('nav.register')}
             link="/login/selection?action=register&type=corporate"
+            secondaryLink="/ngo-onboarding"
             dark={false}
           />
           <AppleSection 
