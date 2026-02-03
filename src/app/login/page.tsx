@@ -165,7 +165,7 @@ const MarketplaceDiscovery = () => {
 
             {/* Simulated Tabs (Entity Types) */}
             <div className="flex justify-center border-b border-white/10 px-6">
-                <div className="flex w-full max-wxl overflow-x-auto no-scrollbar -mb-px">
+                <div className="flex w-full max-w-xl overflow-x-auto no-scrollbar -mb-px">
                     {entityTabs.map((tab, idx) => (
                         <div 
                             key={tab} 
@@ -424,6 +424,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#1d1d1f] font-sans antialiased">
+      {/* Apple-style Navigation Bar */}
       <header className="sticky top-0 z-50 w-full h-11 bg-white/80 backdrop-blur-md border-b border-[#d2d2d7]/50">
         <div className="container mx-auto h-full max-w-5xl px-4 flex items-center justify-between">
           <div className="flex-1 flex justify-start items-center">
@@ -496,6 +497,7 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1">
+        {/* Hero Section */}
         <section className="relative flex flex-col items-center justify-center text-center bg-white py-28 px-6 space-y-6">
           <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[1.05] capitalize">{t('title')}</h1>
           <p className="text-2xl md:text-3xl font-medium max-w-3xl mx-auto">{t('subtitle')}</p>
@@ -509,6 +511,7 @@ export default function LoginPage() {
           </div>
         </section>
 
+        {/* Feature Grid - Side by Side */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 px-3">
           <AppleSection 
             title="hangel STK"
@@ -535,6 +538,7 @@ export default function LoginPage() {
           />
         </div>
 
+        {/* Volunteering Section - Full Width */}
         <AppleSection 
           title="hangel imece"
           subtitle="Yetkinliklerin toplumsal faydaya dönüşsün."
@@ -544,6 +548,7 @@ export default function LoginPage() {
           <VolunteeringDiscovery />
         </AppleSection>
 
+        {/* Marketplace Section - Full Width Dark */}
         <AppleSection 
           title="hangel bağışı"
           subtitle="Alışverişin iyiliğe dönüşsün."
@@ -555,6 +560,7 @@ export default function LoginPage() {
           <MarketplaceDiscovery />
         </AppleSection>
 
+        {/* Transparency Section - Full Width */}
         <AppleSection 
           title="Şeffaflık Endeksi"
           subtitle="Güvenle bağış yapın."
@@ -565,6 +571,7 @@ export default function LoginPage() {
         />
       </main>
 
+      {/* Apple-style Comprehensive Footer */}
       <footer className="bg-[#f5f5f7] pt-12 pb-16 px-6 border-t border-[#d2d2d7] text-[#1d1d1f]">
         <div className="container mx-auto h-full max-w-5xl">
             {/* Footnotes */}
