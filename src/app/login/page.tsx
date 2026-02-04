@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -94,7 +93,7 @@ const ProductSection = ({
 }) => (
     <section className={cn(
         "relative h-[80vh] min-h-[600px] w-full flex flex-col items-center pt-20 text-center overflow-hidden",
-        theme === 'dark' ? "bg-black text-white" : "bg-[#fafafa] text-[#1d1d1f]"
+        theme === 'dark' ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]"
     )}>
         <div className="relative z-10 space-y-2 px-4 max-w-2xl">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
@@ -119,19 +118,19 @@ const ProductSection = ({
                 className="object-cover object-center opacity-90 transition-transform duration-1000 ease-out"
                 data-ai-hint={imageHint}
             />
-            {overlay && <div className={cn("absolute inset-0", theme === 'dark' ? "bg-black/20" : "bg-white/10")} />}
+            {overlay && <div className={cn("absolute inset-0", theme === 'dark' ? "bg-black/20" : "bg-white/5")} />}
         </div>
     </section>
 );
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen bg-white selection:bg-primary/30 font-sans">
+        <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
             <Header />
             
             <main className="pt-12">
                 {/* Hero Section */}
-                <section className="bg-white py-20 text-center space-y-4 px-4">
+                <section className="bg-[#f5f5f7] py-20 text-center space-y-4 px-4">
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-[#1d1d1f]">Yok öyle yalnız başına mücadele etmek.</h1>
                     <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80 max-w-3xl mx-auto">
                         Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
@@ -167,7 +166,7 @@ export default function LoginPage() {
                     />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <section className="relative h-[600px] bg-[#fafafa] rounded-3xl overflow-hidden flex flex-col items-center pt-16 text-center group">
+                        <section className="relative h-[600px] bg-white rounded-3xl overflow-hidden flex flex-col items-center pt-16 text-center group">
                             <div className="relative z-10 space-y-2 px-6">
                                 <h3 className="text-3xl md:text-4xl font-bold text-[#1d1d1f]">hangel bağışı</h3>
                                 <p className="text-lg text-[#1d1d1f]/60">Alışverişlerinizi iyiliğe dönüştürün.</p>

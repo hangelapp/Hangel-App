@@ -4,43 +4,43 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #042654;
+    --background: #f5f5f7;
+    --foreground: #1d1d1f;
 
     --card: #ffffff;
-    --card-foreground: #042654;
+    --card-foreground: #1d1d1f;
 
     --popover: #ffffff;
-    --popover-foreground: #042654;
+    --popover-foreground: #1d1d1f;
 
     --primary: #f34723;
     --primary-foreground: #fafafa;
     
     --secondary: #f2f2f2;
-    --secondary-foreground: #171717;
+    --secondary-foreground: #1d1d1f;
 
-    --muted: #f5f5f5;
-    --muted-foreground: #737373;
+    --muted: #f5f5f7;
+    --muted-foreground: #86868b;
 
-    --accent: #f0f0f0;
-    --accent-foreground: #171717;
+    --accent: #f5f5f7;
+    --accent-foreground: #1d1d1f;
 
     --destructive: #f83131;
     --destructive-foreground: #fafafa;
 
-    --border: #e5e5e5;
-    --input: #e5e5e5;
-    --ring: #f34723;
+    --border: #d2d2d7;
+    --input: #d2d2d7;
+    --ring: #0066cc;
 
     --radius: 1rem;
   }
 
   .dark {
     --background: #000000;
-    --foreground: #b1c9f0;
+    --foreground: #f5f5f7;
 
-    --card: #121212;
-    --card-foreground: #b1c9f0;
+    --card: #1d1d1f;
+    --card-foreground: #f5f5f7;
 
     --popover: #0a0a0a;
     --popover-foreground: #fafafa;
@@ -71,7 +71,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-secondary text-foreground;
+    @apply bg-background text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
