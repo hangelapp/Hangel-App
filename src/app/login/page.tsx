@@ -261,7 +261,7 @@ const Footer = () => (
 
             {/* Bottom Row with Store and Social Links */}
             <div className="pt-6 space-y-4">
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-[#1d1d1f]/60 font-medium uppercase tracking-tight">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
                     <span>App Store</span>
                     <span>Google Play</span>
                     <span>Huawei Store</span>
@@ -271,12 +271,12 @@ const Footer = () => (
                 
                 <div className="h-px bg-black/10 w-full" />
 
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-primary font-bold uppercase tracking-widest">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
                     <span>Instagram</span>
                     <span>Facebook</span>
                     <span>X (Twitter)</span>
                     <span>LinkedIn</span>
-                    <span>YouTube</span>
+                    <span>Youtube</span>
                 </div>
 
                 <p className="text-[12px] text-[#1d1d1f]/50 leading-relaxed">
