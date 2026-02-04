@@ -228,6 +228,7 @@ export default function LoginPage() {
                         subtitle="Üniversiteler için sosyal etki ağı."
                         cta1="Temsilci Ol"
                         cta2="Okulunu Kaydet"
+                        theme="dark"
                         imageUrl="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
                         imageHint="university graduation cap"
                     />
