@@ -1,6 +1,7 @@
+
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
@@ -15,7 +16,17 @@ import {
     Linkedin,
     Youtube,
     MapPin,
-    ArrowRight
+    ArrowRight,
+    X,
+    Calendar,
+    Megaphone,
+    Users,
+    Award,
+    ShieldCheck,
+    Heart,
+    Zap,
+    Store,
+    Rocket
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -68,7 +79,8 @@ const ProductSection = ({
     cta2, 
     theme = 'light',
     imageUrl,
-    imageHint
+    imageHint,
+    overlay = true
 }: { 
     title: string, 
     subtitle?: string, 
@@ -77,7 +89,8 @@ const ProductSection = ({
     cta2?: string, 
     theme?: 'light' | 'dark',
     imageUrl: string,
-    imageHint: string
+    imageHint: string,
+    overlay?: boolean
 }) => (
     <section className={cn(
         "relative h-[80vh] min-h-[600px] w-full flex flex-col items-center pt-20 text-center overflow-hidden",
@@ -86,7 +99,7 @@ const ProductSection = ({
         <div className="relative z-10 space-y-2 px-4 max-w-2xl">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium">{subtitle}</p>}
-            {description && <p className="text-lg text-muted-foreground mt-4">{description}</p>}
+            {description && <p className="text-lg opacity-70 mt-4">{description}</p>}
             <div className="flex items-center justify-center gap-6 pt-4">
                 <Link href="/login/selection?action=register" className="text-[#0066cc] hover:underline flex items-center font-medium text-lg">
                     {cta1} <ChevronRight className="h-5 w-5" />
@@ -103,16 +116,17 @@ const ProductSection = ({
                 src={imageUrl} 
                 alt={title} 
                 fill 
-                className="object-cover object-bottom opacity-90"
+                className="object-cover object-center opacity-90 transition-transform duration-1000 ease-out"
                 data-ai-hint={imageHint}
             />
+            {overlay && <div className={cn("absolute inset-0", theme === 'dark' ? "bg-black/20" : "bg-white/10")} />}
         </div>
     </section>
 );
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen bg-white selection:bg-primary/30">
+        <div className="min-h-screen bg-white selection:bg-primary/30 font-sans">
             <Header />
             
             <main className="pt-12">
@@ -129,7 +143,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* Feature Sections - Apple Style */}
+                {/* Feature Sections */}
                 <div className="space-y-3 px-3 pb-3">
                     <ProductSection 
                         title="hangel imece"
@@ -155,8 +169,8 @@ export default function LoginPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <section className="relative h-[600px] bg-[#fafafa] rounded-3xl overflow-hidden flex flex-col items-center pt-16 text-center group">
                             <div className="relative z-10 space-y-2 px-6">
-                                <h3 className="text-3xl md:text-4xl font-bold">hangel bağışı</h3>
-                                <p className="text-lg text-muted-foreground">Alışverişlerinizi iyiliğe dönüştürün.</p>
+                                <h3 className="text-3xl md:text-4xl font-bold text-[#1d1d1f]">hangel bağışı</h3>
+                                <p className="text-lg text-[#1d1d1f]/60">Alışverişlerinizi iyiliğe dönüştürün.</p>
                                 <Link href="/market" className="text-[#0066cc] hover:underline flex items-center justify-center font-medium mt-2">
                                     Markaları Gör <ChevronRight className="h-4 w-4" />
                                 </Link>
@@ -166,7 +180,8 @@ export default function LoginPage() {
                                     src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop" 
                                     alt="Market" 
                                     fill 
-                                    className="object-cover group-hover:scale-105 transition-transform duration-1000" 
+                                    className="object-cover group-hover:scale-105 transition-transform" 
+                                    style={{ transitionDuration: '1000ms' }}
                                     data-ai-hint="luxury retail store"
                                 />
                             </div>
@@ -185,7 +200,8 @@ export default function LoginPage() {
                                     src="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop" 
                                     alt="Campus" 
                                     fill 
-                                    className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" 
+                                    className="object-cover opacity-60 group-hover:scale-105 transition-transform" 
+                                    style={{ transitionDuration: '1000ms' }}
                                     data-ai-hint="university students"
                                 />
                             </div>
@@ -194,7 +210,6 @@ export default function LoginPage() {
                 </div>
             </main>
 
-            {/* Apple Style Footer */}
             <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-12 pb-8">
                 <div className="container mx-auto px-4 max-w-5xl">
                     <div className="text-[12px] text-[#1d1d1f]/60 space-y-4 pb-8 border-b border-[#d2d2d7]">

@@ -205,8 +205,11 @@ export default function ImpactStoryPage() {
               src={currentSlide.image} 
               alt={currentSlide.title} 
               fill 
-              className="object-cover transition-transform duration-[5000ms] ease-linear scale-110" 
-              style={{ transform: `scale(${1 + (progress / 1000)})` }}
+              className="object-cover transition-transform ease-linear scale-110" 
+              style={{ 
+                transform: `scale(${1 + (progress / 1000)})`,
+                transitionDuration: '5000ms'
+              }}
               data-ai-hint={currentSlide.imageHint}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-white/90" />
@@ -214,7 +217,7 @@ export default function ImpactStoryPage() {
 
           {/* Touch Zones */}
           <div className="absolute inset-0 z-30 flex">
-            <div className="w-1/3 h-full cursor-pointer" onClick={prevSlide} />
+            <div className="w-1/3 h-full cursor-pointer" onClick={prevStory} />
             <div className="w-2/3 h-full cursor-pointer" onClick={nextSlide} />
           </div>
 
