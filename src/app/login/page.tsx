@@ -36,7 +36,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
-import { volunteeringOpportunities } from '@/lib/data';
+import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
@@ -121,60 +121,6 @@ const Header = () => {
         </header>
     );
 };
-
-const FullWidthSection = ({ 
-    title, 
-    subtitle, 
-    cta1, 
-    cta1Href = "/login/selection?action=register",
-    cta2, 
-    cta2Href = "/about",
-    theme = 'light',
-    imageUrl,
-    imageHint,
-    className
-}: { 
-    title: string, 
-    subtitle?: string, 
-    cta1: string, 
-    cta1Href?: string,
-    cta2?: string, 
-    cta2Href?: string,
-    theme?: 'light' | 'dark',
-    imageUrl: string,
-    imageHint: string,
-    className?: string
-}) => (
-    <section className={cn(
-        "relative h-[600px] md:h-[700px] w-full flex flex-col items-center pt-16 text-center overflow-hidden border-b-[12px] border-[#f5f5f7]",
-        theme === 'dark' ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]",
-        className
-    )}>
-        <div className="relative z-10 space-y-2 px-4 max-w-3xl mb-12">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
-            {subtitle && <p className="text-xl md:text-2xl font-medium mt-1">{subtitle}</p>}
-            <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href={cta1Href} className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
-                    {cta1}
-                </Link>
-                {cta2 && (
-                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-lg font-medium">
-                        {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
-                    </Link>
-                )}
-            </div>
-        </div>
-        <div className="relative w-full flex-1 min-h-0">
-            <Image 
-                src={imageUrl} 
-                alt={title} 
-                fill 
-                className="object-contain object-bottom"
-                data-ai-hint={imageHint}
-            />
-        </div>
-    </section>
-);
 
 const GridItem = ({ 
     title, 
@@ -416,17 +362,50 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* hangel bağışı - Moved to Full Width Section 3 */}
-                <FullWidthSection 
-                    title="hangel bağışı"
-                    subtitle="Alışverişi iyiliğe dönüştürün."
-                    cta1="Markaları Gör"
-                    cta1Href="/market"
-                    cta2="Nasıl Çalışır?"
-                    cta2Href="/about"
-                    imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="lifestyle product shopping"
-                />
+                {/* hangel bağışı - Showcase Section */}
+                <section className="bg-[#f5f5f7] pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
+                    <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağışı</h2>
+                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Alışverişi iyiliğe dönüştürün.</p>
+                        <div className="flex items-center justify-center gap-6 pt-4">
+                            <Link href="/market" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
+                                Markaları Gör
+                            </Link>
+                            <Link href="/about" className="text-primary hover:underline flex items-center text-lg font-medium">
+                                Nasıl Çalışır? <ChevronRight className="h-5 w-5 ml-0.5" />
+                            </Link>
+                        </div>
+                    </div>
+                    
+                    {/* Horizontal Scroll of Brands */}
+                    <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
+                        <div className="flex gap-6 px-8 md:justify-center min-w-max">
+                            {allEntityLists.slice(0, 6).map((brand) => (
+                                <Link href={`/market/${brand.id}`} key={brand.id} className="bg-white rounded-[2rem] p-8 flex flex-col items-center text-center w-64 h-80 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
+                                    <div className="relative w-24 h-24 mb-6">
+                                        <Image 
+                                            src={brand.logoUrl} 
+                                            alt={brand.name} 
+                                            fill 
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <div className="space-y-1 mb-4">
+                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f]">{brand.name}</h4>
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{brand.category}</p>
+                                    </div>
+                                    
+                                    <div className="mt-auto pt-4 border-t border-black/5 w-full">
+                                        <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest block mb-1">Bağış Oranı</span>
+                                        <div className="text-2xl font-black text-primary tracking-tighter">
+                                            %{brand.donationRate}
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
 
                 {/* Grid Sections */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
