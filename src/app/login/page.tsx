@@ -20,9 +20,9 @@ import {
 import { cn } from '@/lib/utils';
 import {
     Accordion,
-    AccordionContent,
     AccordionItem,
     AccordionTrigger,
+    AccordionContent,
 } from "@/components/ui/accordion";
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -60,7 +60,7 @@ const Header = () => (
     </header>
 );
 
-const ProductSection = ({ 
+const FullWidthSection = ({ 
     title, 
     subtitle, 
     cta1, 
@@ -68,7 +68,6 @@ const ProductSection = ({
     theme = 'light',
     imageUrl,
     imageHint,
-    fullImage = false,
     className
 }: { 
     title: string, 
@@ -78,34 +77,83 @@ const ProductSection = ({
     theme?: 'light' | 'dark',
     imageUrl: string,
     imageHint: string,
-    fullImage?: boolean,
     className?: string
 }) => (
     <section className={cn(
-        "relative min-h-[600px] w-full flex flex-col items-center pt-16 text-center overflow-hidden border-b-[12px] border-[#f5f5f7]",
+        "relative h-[600px] md:h-[700px] w-full flex flex-col items-center pt-16 text-center overflow-hidden border-b-[12px] border-[#f5f5f7]",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
-        <div className="relative z-10 space-y-2 px-4 max-w-3xl mb-8">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{title}</h2>
+        <div className="relative z-10 space-y-2 px-4 max-w-3xl mb-12">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium mt-1">{subtitle}</p>}
             <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href="/login/selection?action=register" className="bg-[#0071e3] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#0077ed] transition-colors">
+                <Link href="/login/selection?action=register" className="bg-[#0071e3] text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-[#0077ed] transition-colors">
                     {cta1}
                 </Link>
                 {cta2 && (
-                    <Link href="/about" className="text-[#0066cc] hover:underline flex items-center text-sm font-medium">
+                    <Link href="/about" className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
+                        {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
+                    </Link>
+                )}
+            </div>
+        </div>
+        <div className="relative w-full flex-1 min-h-0">
+            <Image 
+                src={imageUrl} 
+                alt={title} 
+                fill 
+                className="object-contain object-bottom"
+                data-ai-hint={imageHint}
+            />
+        </div>
+    </section>
+);
+
+const GridItem = ({ 
+    title, 
+    subtitle, 
+    cta1, 
+    cta2, 
+    theme = 'light',
+    imageUrl,
+    imageHint,
+    className
+}: { 
+    title: string, 
+    subtitle?: string, 
+    cta1: string, 
+    cta2?: string, 
+    theme?: 'light' | 'dark',
+    imageUrl: string,
+    imageHint: string,
+    className?: string
+}) => (
+    <section className={cn(
+        "relative h-[580px] rounded-3xl overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
+        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+        className
+    )}>
+        <div className="relative z-10 space-y-1 px-6 mb-8">
+            <h3 className="text-3xl font-bold tracking-tight">{title}</h3>
+            {subtitle && <p className="text-lg font-medium opacity-90">{subtitle}</p>}
+            <div className="flex items-center justify-center gap-4 pt-3">
+                <Link href="/login/selection?action=register" className="text-[#0066cc] hover:underline flex items-center text-sm font-bold">
+                    {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
+                </Link>
+                {cta2 && (
+                    <Link href="/about" className="text-[#0066cc] hover:underline flex items-center text-sm font-bold">
                         {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
                     </Link>
                 )}
             </div>
         </div>
-        <div className={cn("relative w-full flex-1 min-h-[400px]", fullImage ? "mt-0" : "mt-4")}>
+        <div className="relative w-full flex-1">
             <Image 
                 src={imageUrl} 
                 alt={title} 
                 fill 
-                className={cn("object-contain object-bottom", fullImage && "object-cover")}
+                className="object-contain object-bottom px-12"
                 data-ai-hint={imageHint}
             />
         </div>
@@ -118,13 +166,13 @@ export default function LoginPage() {
             <Header />
             
             <main className="pt-12">
-                {/* Hero Section - Matching Sevgililer Günü style in image */}
-                <section className="bg-white py-24 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
+                {/* Hero 1 - Valentine Style */}
+                <section className="bg-white pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
                     <div className="space-y-2">
-                        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-[#1d1d1f]">
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
                             Yok öyle yalnız başına mücadele etmek.
                         </h1>
-                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80 max-w-4xl mx-auto">
+                        <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80 max-w-4xl mx-auto">
                             Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
                         </p>
                     </div>
@@ -133,91 +181,76 @@ export default function LoginPage() {
                             <Link href="/login/selection?action=register">Şimdi Katıl</Link>
                         </Button>
                     </div>
+                    <div className="relative w-full h-[400px] mt-12">
+                        <Image 
+                            src="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop" 
+                            alt="Social Impact" 
+                            fill 
+                            className="object-contain object-bottom" 
+                            data-ai-hint="connecting hands single object"
+                        />
+                    </div>
                 </section>
 
-                {/* Section 2 - iPhone style */}
-                <ProductSection 
+                {/* Section 2 - iPhone style (Full Width) */}
+                <FullWidthSection 
                     title="hangel imece"
                     subtitle="Gönüllülükte teknoloji devrimi."
                     cta1="Gönüllü Ol"
                     cta2="Daha fazla bilgi"
-                    imageUrl="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
-                    imageHint="hands connecting community"
+                    imageUrl="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
+                    imageHint="group together portrait"
                 />
 
-                {/* Section 3 - Watch style */}
-                <ProductSection 
+                {/* Section 3 - Dark Theme (Watch style) */}
+                <FullWidthSection 
                     title="hangel STK"
                     subtitle="Dijitalleşen sivil toplum araçları."
                     theme="dark"
                     cta1="Kuruluşunu Kaydet"
                     cta2="Özellikleri İncele"
                     imageUrl="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="modern minimal office tech"
-                    fullImage
+                    imageHint="modern office building glass"
                 />
 
-                {/* Section 4 - iPad style */}
-                <ProductSection 
-                    title="hangel bağışı"
-                    subtitle="Alışverişi iyiliğe dönüştürün."
-                    cta1="Markaları Gör"
-                    cta2="Nasıl Çalışır?"
-                    imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="aesthetic lifestyle products"
-                />
-
-                {/* Grid Sections - Lower part of the image */}
+                {/* Grid Sections (Bottom Grid) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
-                    <section className="relative h-[580px] bg-white rounded-3xl overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5">
-                        <div className="relative z-10 space-y-1 px-6">
-                            <h3 className="text-3xl font-bold text-[#1d1d1f]">hangel Kampüs</h3>
-                            <p className="text-lg text-[#1d1d1f]/80 font-medium">Üniversiteler için sosyal etki ağı.</p>
-                            <div className="flex gap-4 justify-center mt-2">
-                                <Link href="/contact/universities" className="text-[#0066cc] hover:underline flex items-center text-sm font-medium">
-                                    Başvur <ChevronRight className="h-4 w-4 ml-0.5" />
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="absolute inset-0 z-0 mt-32 px-12">
-                            <div className="relative w-full h-full">
-                                <Image 
-                                    src="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop" 
-                                    alt="Campus" 
-                                    fill 
-                                    className="object-contain object-bottom" 
-                                    data-ai-hint="university students campus"
-                                />
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="relative h-[580px] bg-white rounded-3xl overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5">
-                        <div className="relative z-10 space-y-1 px-6">
-                            <h3 className="text-3xl font-bold text-[#1d1d1f]">hangel Üye İşyeri</h3>
-                            <p className="text-lg text-[#1d1d1f]/80 font-medium">İşletmenizde QR ile ödeme alın.</p>
-                            <div className="flex gap-4 justify-center mt-2">
-                                <Link href="/merchant" className="text-[#0066cc] hover:underline flex items-center text-sm font-medium">
-                                    Detaylı Bilgi <ChevronRight className="h-4 w-4 ml-0.5" />
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="absolute inset-0 z-0 mt-32 px-12">
-                            <div className="relative w-full h-full">
-                                <Image 
-                                    src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop" 
-                                    alt="Merchant" 
-                                    fill 
-                                    className="object-contain object-bottom" 
-                                    data-ai-hint="business payment qr"
-                                />
-                            </div>
-                        </div>
-                    </section>
+                    <GridItem 
+                        title="hangel bağışı"
+                        subtitle="Alışverişi iyiliğe dönüştürün."
+                        cta1="Markaları Gör"
+                        cta2="Nasıl Çalışır?"
+                        imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
+                        imageHint="lifestyle product shopping"
+                    />
+                    <GridItem 
+                        title="hangel Kampüs"
+                        subtitle="Üniversiteler için sosyal etki ağı."
+                        cta1="Temsilci Ol"
+                        cta2="Okulunu Kaydet"
+                        imageUrl="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
+                        imageHint="university graduation cap"
+                    />
+                    <GridItem 
+                        title="hangel Üye İşyeri"
+                        subtitle="İşletmenizde QR ile ödeme alın."
+                        cta1="Başvur"
+                        cta2="Avantajları Gör"
+                        imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
+                        imageHint="qr code terminal object"
+                        theme="dark"
+                    />
+                    <GridItem 
+                        title="Kütüphane"
+                        subtitle="Bilgi paylaştıkça çoğalır."
+                        cta1="Kaynakları Gör"
+                        imageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
+                        imageHint="minimal books stack"
+                    />
                 </div>
             </main>
 
-            {/* Apple Style Footer */}
+            {/* Comprehensive Apple Footer */}
             <footer className="bg-black text-white pt-16 pb-12 px-4 sm:px-6">
                 <div className="container mx-auto max-w-5xl">
                     <div className="text-[12px] text-white/50 space-y-4 pb-10 border-b border-white/10">
@@ -306,7 +339,7 @@ export default function LoginPage() {
                     <div className="pt-10 border-t border-white/10 space-y-8 text-[12px] text-white/50">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                <span>Telif Hakkı © 2024 Hangel Teknoloji A.Ş. Tüm hakları saklıdır.</span>
+                                <span>Telif Hakkı © 2024 Hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
                                 <div className="flex gap-4">
                                     <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
                                     <span className="text-white/10">|</span>
