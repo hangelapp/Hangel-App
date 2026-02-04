@@ -19,7 +19,8 @@ import {
     HeartHandshake,
     Bell,
     Check,
-    Siren
+    Siren,
+    Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -35,6 +36,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
+import { volunteeringOpportunities } from '@/lib/data';
 
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
@@ -72,19 +74,20 @@ const Header = () => {
                         <Search className="h-4 w-4" />
                     </Button>
                     
-                    <Link href="/volunteering">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
-                            <HeartHandshake className="h-4 w-4" />
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-0">
+                        <Link href="/volunteering">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                                <HeartHandshake className="h-4 w-4" />
+                            </Button>
+                        </Link>
 
-                    <Link href="/market">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
-                            <ShoppingBag className="h-4 w-4" />
-                        </Button>
-                    </Link>
+                        <Link href="/market">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                                <ShoppingBag className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                    </div>
                     
-                    {/* Emergency and Language (Swapped Order) */}
                     <div className="flex items-center gap-1">
                         <Link href="/emergency">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
@@ -228,7 +231,7 @@ const Footer = () => (
                     <HangelLogo className="text-base scale-90 grayscale opacity-70" />
                 </Link>
                 <ChevronRight className="h-3 w-3" />
-                <span className="text-[#1d1d1f]/80">Politikalar</span>
+                <span className="text-[#1d1d1f]/80">Anasayfa</span>
             </div>
 
             {/* Accordion Sections (Mobile) */}
@@ -357,15 +360,53 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* Full Width Section */}
-                <FullWidthSection 
-                    title="hangel imece"
-                    subtitle="Gönüllülükte teknoloji devrimi."
-                    cta1="Gönüllü Ol"
-                    cta2="Daha fazla bilgi"
-                    imageUrl="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
-                    imageHint="group together portrait"
-                />
+                {/* Volunteering Showcase Section - hangel imece */}
+                <section className="bg-white pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
+                    <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel imece</h2>
+                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Gönüllülükte teknoloji devrimi.</p>
+                        <div className="flex items-center justify-center gap-6 pt-4">
+                            <Link href="/login/selection?action=register" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
+                                Gönüllü Ol
+                            </Link>
+                            <Link href="/volunteering" className="text-primary hover:underline flex items-center text-lg font-medium">
+                                İlanları Gör <ChevronRight className="h-5 w-5 ml-0.5" />
+                            </Link>
+                        </div>
+                    </div>
+                    
+                    {/* Horizontal Scroll of Opportunities */}
+                    <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
+                        <div className="flex gap-6 px-8 md:justify-center min-w-max">
+                            {volunteeringOpportunities.slice(0, 4).map((opp) => (
+                                <div key={opp.id} className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-80 h-96 transition-all hover:shadow-2xl hover:scale-[1.02] group">
+                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <HeartHandshake className="h-6 w-6" />
+                                    </div>
+                                    <div className="space-y-1 mb-4">
+                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f] line-clamp-2">{opp.title}</h4>
+                                        <p className="text-xs font-black text-primary uppercase tracking-widest">{opp.organization}</p>
+                                    </div>
+                                    <p className="text-sm text-[#1d1d1f]/60 font-medium line-clamp-4 leading-relaxed">{opp.description}</p>
+                                    
+                                    <div className="mt-auto flex items-center justify-between w-full pt-6 border-t border-black/5">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest mb-1">Kazanılacak Etki</span>
+                                            <div className="flex items-center gap-1.5 text-primary">
+                                                <Star className="h-4 w-4 fill-current" />
+                                                <span className="text-lg font-black tracking-tighter">{opp.points} Puan</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest block mb-1">Konum</span>
+                                            <span className="text-xs font-bold text-[#1d1d1f]">{opp.location.city}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
 
                 {/* Dark Theme Section */}
                 <FullWidthSection 
