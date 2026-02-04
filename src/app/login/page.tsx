@@ -84,8 +84,14 @@ const Header = () => {
                         </Button>
                     </Link>
                     
-                    {/* Language and Emergency */}
+                    {/* Emergency and Language (Swapped Order) */}
                     <div className="flex items-center gap-1">
+                        <Link href="/emergency">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                                <Siren className="h-4 w-4" />
+                            </Button>
+                        </Link>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
@@ -102,12 +108,6 @@ const Header = () => {
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
-
-                        <Link href="/emergency">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                                <Siren className="h-4 w-4" />
-                            </Button>
-                        </Link>
                     </div>
 
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
@@ -235,9 +235,9 @@ const Footer = () => (
             <div className="md:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     {[
-                        { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Liderlik"] },
+                        { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Kütüphane"] },
                         { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
-                        { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
+                        { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Kulüpler"] },
                         { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
                         { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
                     ].map((group) => (
@@ -258,9 +258,9 @@ const Footer = () => (
             {/* Columns (Desktop) */}
             <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
                 {[
-                    { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Liderlik"] },
+                    { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Kütüphane"] },
                     { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
-                    { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
+                    { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Kulüpler"] },
                     { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
                     { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
                 ].map((group) => (
