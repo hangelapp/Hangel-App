@@ -15,11 +15,11 @@ import {
     Linkedin,
     Youtube,
     ShoppingBag,
-    Plus,
     Calendar,
     HeartHandshake,
     Bell,
-    Check
+    Check,
+    Siren
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -35,12 +35,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const XIcon = (props: React.ComponentProps<'svg'>) => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
-        <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-    </svg>
-);
-
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
     "Modern Standard Arabic", "Bengali", "Portuguese", "Russian", "Urdu", 
@@ -53,16 +47,19 @@ const Header = () => {
 
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
-            <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-                <nav className="flex items-center gap-8">
-                    <Link href="/" className="hover:opacity-70 transition-opacity">
-                        <HangelLogo className="text-xl text-primary" />
-                    </Link>
-                    <div className="hidden md:flex items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
-                        <Link href="/market" className="hover:text-primary transition-colors">Bağış</Link>
-                        <Link href="/volunteering" className="hover:text-primary transition-colors">Gönüllülük</Link>
-                    </div>
-                </nav>
+            <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
+                {/* Logo - Left */}
+                <Link href="/" className="hover:opacity-70 transition-opacity shrink-0">
+                    <HangelLogo className="text-xl text-primary" />
+                </Link>
+
+                {/* Centered Menu */}
+                <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
+                    <Link href="/market" className="hover:text-primary transition-colors">Bağış</Link>
+                    <Link href="/volunteering" className="hover:text-primary transition-colors">Gönüllülük</Link>
+                </div>
+
+                {/* Right Actions */}
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
@@ -71,29 +68,32 @@ const Header = () => {
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
                             <HeartHandshake className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
-                            <Bell className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                            <Siren className="h-4 w-4" />
                         </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
-                                    <Globe className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{currentLang}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
-                                {languages.map(lang => (
-                                    <DropdownMenuItem key={lang} onClick={() => setCurrentLang(lang)}>
-                                        {lang}
-                                        {currentLang === lang && <Check className="ml-auto h-3 w-3 text-primary" />}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
                     </div>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
                         <ShoppingBag className="h-4 w-4" />
                     </Button>
+                    
+                    {/* Language - Far Right */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
+                                <Globe className="h-4 w-4" />
+                                <span className="hidden sm:inline">{currentLang}</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+                            {languages.map(lang => (
+                                <DropdownMenuItem key={lang} onClick={() => setCurrentLang(lang)}>
+                                    {lang}
+                                    {currentLang === lang && <Check className="ml-auto h-3 w-3 text-primary" />}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
                         <Menu className="h-5 w-5" />
                     </Button>
@@ -206,7 +206,7 @@ const GridItem = ({
 const Footer = () => (
     <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-8 pb-12 px-4 sm:px-6 border-t border-black/5 font-sans">
         <div className="container mx-auto max-w-5xl">
-            {/* Apple-style Breadcrumb */}
+            {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-6 px-1">
                 <Link href="/" className="hover:text-[#1d1d1f] transition-colors">
                     <HangelLogo className="text-base scale-90 grayscale opacity-70" />
@@ -215,7 +215,7 @@ const Footer = () => (
                 <span className="text-[#1d1d1f]/80">Yasal Bilgiler</span>
             </div>
 
-            {/* Apple-style Accordion Sections (Mobile) */}
+            {/* Accordion Sections (Mobile) */}
             <div className="md:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     {[
@@ -239,7 +239,7 @@ const Footer = () => (
                 </Accordion>
             </div>
 
-            {/* Apple-style Columns (Desktop) */}
+            {/* Columns (Desktop) */}
             <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
                 {[
                     { title: "Keşfedin", links: ["Market", "Gönüllülük", "STK'lar", "Kulüpler", "Liderlik"] },
@@ -259,7 +259,7 @@ const Footer = () => (
                 ))}
             </div>
 
-            {/* Apple-style Bottom Row */}
+            {/* Bottom Row with Store and Social Links */}
             <div className="pt-6 space-y-4">
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-[#1d1d1f]/60 font-medium uppercase tracking-tight">
                     <span>App Store</span>
@@ -269,6 +269,8 @@ const Footer = () => (
                     <span>Opera Store</span>
                 </div>
                 
+                <div className="h-px bg-black/10 w-full" />
+
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-primary font-bold uppercase tracking-widest">
                     <span>Instagram</span>
                     <span>Facebook</span>
@@ -339,7 +341,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* iPhone style Full Width Section */}
+                {/* Full Width Section */}
                 <FullWidthSection 
                     title="hangel imece"
                     subtitle="Gönüllülükte teknoloji devrimi."
