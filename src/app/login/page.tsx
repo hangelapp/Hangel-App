@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
@@ -16,7 +16,10 @@ import {
     Youtube,
     ShoppingBag,
     Plus,
-    Calendar
+    Calendar,
+    HeartHandshake,
+    Bell,
+    Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -25,6 +28,12 @@ import {
     AccordionTrigger,
     AccordionContent,
 } from "@/components/ui/accordion";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
@@ -32,34 +41,67 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
     </svg>
 );
 
-const Header = () => (
-    <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
-        <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-            <nav className="flex items-center gap-8">
-                <Link href="/" className="hover:opacity-70 transition-opacity">
-                    <HangelLogo className="text-xl text-[#1d1d1f]" />
-                </Link>
-                <div className="hidden md:flex items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
-                    <Link href="/market" className="hover:text-primary transition-colors">Market</Link>
-                    <Link href="/volunteering" className="hover:text-primary transition-colors">Gönüllülük</Link>
-                    <Link href="/ngos" className="hover:text-primary transition-colors">STK'lar</Link>
-                    <Link href="/about" className="hover:text-primary transition-colors">Hakkımızda</Link>
+const languages = [
+    "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
+    "Modern Standard Arabic", "Bengali", "Portuguese", "Russian", "Urdu", 
+    "Indonesian", "Deutsch", "Japanese", "Nigerian Pidgin", "Marathi", 
+    "Telugu", "Tamil", "Yue Chinese", "Vietnamese", "Farsça"
+];
+
+const Header = () => {
+    const [currentLang, setCurrentLang] = useState("Türkçe");
+
+    return (
+        <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
+            <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
+                <nav className="flex items-center gap-8">
+                    <Link href="/" className="hover:opacity-70 transition-opacity">
+                        <HangelLogo className="text-xl text-primary" />
+                    </Link>
+                    <div className="hidden md:flex items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
+                        <Link href="/market" className="hover:text-primary transition-colors">Bağış</Link>
+                        <Link href="/volunteering" className="hover:text-primary transition-colors">Gönüllülük</Link>
+                    </div>
+                </nav>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                            <Search className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                            <HeartHandshake className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                            <Bell className="h-4 w-4" />
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
+                                    <Globe className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{currentLang}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+                                {languages.map(lang => (
+                                    <DropdownMenuItem key={lang} onClick={() => setCurrentLang(lang)}>
+                                        {lang}
+                                        {currentLang === lang && <Check className="ml-auto h-3 w-3 text-primary" />}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                        <ShoppingBag className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
+                        <Menu className="h-5 w-5" />
+                    </Button>
                 </div>
-            </nav>
-            <div className="flex items-center gap-6">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
-                    <Search className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
-                    <ShoppingBag className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
-                    <Menu className="h-5 w-5" />
-                </Button>
             </div>
-        </div>
-    </header>
-);
+        </header>
+    );
+};
 
 const FullWidthSection = ({ 
     title, 
@@ -89,11 +131,11 @@ const FullWidthSection = ({
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium mt-1">{subtitle}</p>}
             <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href="/login/selection?action=register" className="bg-[#0071e3] text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-[#0077ed] transition-colors">
+                <Link href="/login/selection?action=register" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
                     {cta1}
                 </Link>
                 {cta2 && (
-                    <Link href="/about" className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
+                    <Link href="/about" className="text-primary hover:underline flex items-center text-lg font-medium">
                         {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
                     </Link>
                 )}
@@ -139,11 +181,11 @@ const GridItem = ({
             <h3 className="text-3xl font-bold tracking-tight">{title}</h3>
             {subtitle && <p className="text-lg font-medium opacity-90">{subtitle}</p>}
             <div className="flex items-center justify-center gap-4 pt-3">
-                <Link href="/login/selection?action=register" className="text-[#0066cc] hover:underline flex items-center text-sm font-bold">
+                <Link href="/login/selection?action=register" className="text-primary hover:underline flex items-center text-sm font-bold">
                     {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
                 </Link>
                 {cta2 && (
-                    <Link href="/about" className="text-[#0066cc] hover:underline flex items-center text-sm font-bold">
+                    <Link href="/about" className="text-primary hover:underline flex items-center text-sm font-bold">
                         {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
                     </Link>
                 )}
@@ -219,19 +261,35 @@ const Footer = () => (
 
             {/* Apple-style Bottom Row */}
             <div className="pt-6 space-y-4">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-[#1d1d1f]/60 font-medium uppercase tracking-tight">
+                    <span>App Store</span>
+                    <span>Google Play</span>
+                    <span>Huawei Store</span>
+                    <span>Chrome Store</span>
+                    <span>Opera Store</span>
+                </div>
+                
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-primary font-bold uppercase tracking-widest">
+                    <span>Instagram</span>
+                    <span>Facebook</span>
+                    <span>X (Twitter)</span>
+                    <span>LinkedIn</span>
+                    <span>YouTube</span>
+                </div>
+
                 <p className="text-[12px] text-[#1d1d1f]/50 leading-relaxed">
-                    Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/market" className="text-[#0066cc] hover:underline font-medium">hangel noktası</Link> bulun veya <span className="whitespace-nowrap">0554 700 70 07</span> numaralı telefonu arayın.
+                    Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/market" className="text-primary hover:underline font-medium">hangel noktası</Link> bulun veya <span className="whitespace-nowrap">0554 700 70 07</span> numaralı telefonu arayın.
                 </p>
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-black/10 pt-4">
                     <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
                         <span className="whitespace-nowrap">Telif Hakkı © 2024 hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
                         <div className="flex flex-wrap gap-x-4 gap-y-1">
-                            <Link href="#" className="hover:underline">Gizlilik Politikası</Link>
+                            <Link href="#" className="hover:underline">Politikalar</Link>
                             <span className="text-black/10">|</span>
                             <Link href="#" className="hover:underline">Çerezlerin Kullanımı</Link>
                             <span className="text-black/10">|</span>
-                            <Link href="#" className="hover:underline">Kullanım Şartları</Link>
+                            <Link href="#" className="hover:underline">Sözleşmeler</Link>
                             <span className="text-black/10">|</span>
                             <Link href="#" className="hover:underline">Yasal Bilgiler</Link>
                             <span className="text-black/10">|</span>
@@ -266,7 +324,7 @@ export default function LoginPage() {
                         </p>
                     </div>
                     <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Button asChild size="lg" className="rounded-full px-10 h-12 text-base font-bold bg-[#0071e3] hover:bg-[#0077ed]">
+                        <Button asChild size="lg" className="rounded-full px-10 h-12 text-base font-bold bg-primary hover:bg-primary/90">
                             <Link href="/login/selection?action=register">Şimdi Katıl</Link>
                         </Button>
                     </div>
