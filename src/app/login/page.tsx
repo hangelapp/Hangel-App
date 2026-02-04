@@ -279,6 +279,8 @@ const Footer = () => (
                     <span>Youtube</span>
                 </div>
 
+                <div className="h-px bg-black/10 w-full" />
+
                 <p className="text-[12px] text-[#1d1d1f]/50 leading-relaxed">
                     Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/market" className="text-primary hover:underline font-medium">hangel noktası</Link> bulun veya <span className="whitespace-nowrap">0554 700 70 07</span> numaralı telefonu arayın.
                 </p>
