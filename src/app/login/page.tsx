@@ -192,9 +192,9 @@ const Footer = () => (
             <div className="md:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     {[
-                        { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "Stk'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
+                        { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
-                        { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "Stk Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
+                        { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
                         { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
@@ -215,9 +215,9 @@ const Footer = () => (
             {/* Columns (Desktop) */}
             <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
                 {[
-                    { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "Stk'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
+                    { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
                     { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
-                    { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "Stk Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
+                    { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
                     { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
                     { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                 ].map((group) => (
@@ -360,6 +360,12 @@ export default function LoginPage() {
                             ))}
                         </div>
                     </div>
+
+                    <div className="flex justify-center mt-8">
+                        <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
+                            <Link href="/volunteering">Tümünü Gör</Link>
+                        </Button>
+                    </div>
                 </section>
 
                 {/* hangel bağışı - Showcase Section */}
@@ -405,11 +411,17 @@ export default function LoginPage() {
                             ))}
                         </div>
                     </div>
+
+                    <div className="flex justify-center mt-8">
+                        <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
+                            <Link href="/market">Tümünü Gör</Link>
+                        </Button>
+                    </div>
                 </section>
 
                 {/* Grid Sections */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
-                    {/* hangel STK - Moved to Grid Item 1 */}
+                    {/* hangel STK */}
                     <GridItem 
                         title="hangel STK"
                         subtitle="Dijitalleşen sivil toplum araçları."
