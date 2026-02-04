@@ -34,6 +34,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from '@/hooks/use-toast';
 
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
@@ -44,6 +45,7 @@ const languages = [
 
 const Header = () => {
     const [currentLang, setCurrentLang] = useState("Türkçe");
+    const { toast } = useToast();
 
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
@@ -60,39 +62,53 @@ const Header = () => {
                 </div>
 
                 {/* Right Actions */}
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
-                            <Search className="h-4 w-4" />
-                        </Button>
+                <div className="flex items-center gap-2">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-[#1d1d1f]/80"
+                        onClick={() => toast({ title: "Arama", description: "Arama özelliği yakında eklenecek!" })}
+                    >
+                        <Search className="h-4 w-4" />
+                    </Button>
+                    
+                    <Link href="/volunteering">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
                             <HeartHandshake className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                            <Siren className="h-4 w-4" />
+                    </Link>
+
+                    <Link href="/market">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                            <ShoppingBag className="h-4 w-4" />
                         </Button>
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
-                        <ShoppingBag className="h-4 w-4" />
-                    </Button>
+                    </Link>
                     
-                    {/* Language - Far Right */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
-                                <Globe className="h-4 w-4" />
-                                <span className="hidden sm:inline">{currentLang}</span>
+                    {/* Language and Emergency */}
+                    <div className="flex items-center gap-1">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
+                                    <Globe className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{currentLang}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+                                {languages.map(lang => (
+                                    <DropdownMenuItem key={lang} onClick={() => setCurrentLang(lang)}>
+                                        {lang}
+                                        {currentLang === lang && <Check className="ml-auto h-3 w-3 text-primary" />}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Link href="/emergency">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                                <Siren className="h-4 w-4" />
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
-                            {languages.map(lang => (
-                                <DropdownMenuItem key={lang} onClick={() => setCurrentLang(lang)}>
-                                    {lang}
-                                    {currentLang === lang && <Check className="ml-auto h-3 w-3 text-primary" />}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                        </Link>
+                    </div>
 
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
                         <Menu className="h-5 w-5" />
@@ -219,9 +235,9 @@ const Footer = () => (
             <div className="md:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     {[
-                        { title: "Keşfedin", links: ["Market", "Gönüllülük", "STK'lar", "Kulüpler", "Liderlik"] },
+                        { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Liderlik"] },
                         { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
-                        { title: "İşbirlikleri", links: ["Üye İşyeri", "STK Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
+                        { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
                         { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
                         { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
                     ].map((group) => (
@@ -242,9 +258,9 @@ const Footer = () => (
             {/* Columns (Desktop) */}
             <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
                 {[
-                    { title: "Keşfedin", links: ["Market", "Gönüllülük", "STK'lar", "Kulüpler", "Liderlik"] },
+                    { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Liderlik"] },
                     { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
-                    { title: "İşbirlikleri", links: ["Üye İşyeri", "STK Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
+                    { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
                     { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
                     { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
                 ].map((group) => (
