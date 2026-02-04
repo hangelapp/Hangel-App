@@ -15,7 +15,8 @@ import {
     Linkedin,
     Youtube,
     ShoppingBag,
-    Plus
+    Plus,
+    Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -81,7 +82,7 @@ const FullWidthSection = ({
 }) => (
     <section className={cn(
         "relative h-[600px] md:h-[700px] w-full flex flex-col items-center pt-16 text-center overflow-hidden border-b-[12px] border-[#f5f5f7]",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+        theme === 'dark' ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]",
         className
     )}>
         <div className="relative z-10 space-y-2 px-4 max-w-3xl mb-12">
@@ -160,14 +161,102 @@ const GridItem = ({
     </section>
 );
 
+const Footer = () => (
+    <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-8 pb-12 px-4 sm:px-6 border-t border-black/5 font-sans">
+        <div className="container mx-auto max-w-5xl">
+            {/* Apple-style Breadcrumb */}
+            <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-6 px-1">
+                <Link href="/" className="hover:text-[#1d1d1f] transition-colors">
+                    <HangelLogo className="text-base scale-90 grayscale opacity-70" />
+                </Link>
+                <ChevronRight className="h-3 w-3" />
+                <span className="text-[#1d1d1f]/80">Yasal Bilgiler</span>
+            </div>
+
+            {/* Apple-style Accordion Sections (Mobile) */}
+            <div className="md:hidden">
+                <Accordion type="single" collapsible className="w-full">
+                    {[
+                        { title: "Keşfedin", links: ["Market", "Gönüllülük", "STK'lar", "Kulüpler", "Liderlik"] },
+                        { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
+                        { title: "İşbirlikleri", links: ["Üye İşyeri", "STK Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
+                        { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
+                        { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
+                    ].map((group) => (
+                        <AccordionItem key={group.title} value={group.title} className="border-b border-black/10">
+                            <AccordionTrigger className="text-[12px] font-bold py-3 hover:no-underline uppercase tracking-tight text-[#1d1d1f]/80">
+                                {group.title}
+                            </AccordionTrigger>
+                            <AccordionContent className="flex flex-col gap-2.5 pb-4 pt-1">
+                                {group.links.map(link => (
+                                    <Link key={link} href="#" className="text-[12px] text-[#1d1d1f]/70 hover:underline">{link}</Link>
+                                ))}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+
+            {/* Apple-style Columns (Desktop) */}
+            <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
+                {[
+                    { title: "Keşfedin", links: ["Market", "Gönüllülük", "STK'lar", "Kulüpler", "Liderlik"] },
+                    { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
+                    { title: "İşbirlikleri", links: ["Üye İşyeri", "STK Kaydı", "Kampüs Elçiliği", "Belediyeler", "Fonlar"] },
+                    { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
+                    { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
+                ].map((group) => (
+                    <div key={group.title} className="space-y-3">
+                        <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]/80">{group.title}</h4>
+                        <div className="flex flex-col gap-2">
+                            {group.links.map(link => (
+                                <Link key={link} href="#" className="text-[12px] text-[#1d1d1f]/70 hover:underline">{link}</Link>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Apple-style Bottom Row */}
+            <div className="pt-6 space-y-4">
+                <p className="text-[12px] text-[#1d1d1f]/50 leading-relaxed">
+                    Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/market" className="text-[#0066cc] hover:underline font-medium">hangel noktası</Link> bulun veya <span className="whitespace-nowrap">0554 700 70 07</span> numaralı telefonu arayın.
+                </p>
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-black/10 pt-4">
+                    <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
+                        <span className="whitespace-nowrap">Telif Hakkı © 2024 hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            <Link href="#" className="hover:underline">Gizlilik Politikası</Link>
+                            <span className="text-black/10">|</span>
+                            <Link href="#" className="hover:underline">Çerezlerin Kullanımı</Link>
+                            <span className="text-black/10">|</span>
+                            <Link href="#" className="hover:underline">Kullanım Şartları</Link>
+                            <span className="text-black/10">|</span>
+                            <Link href="#" className="hover:underline">Yasal Bilgiler</Link>
+                            <span className="text-black/10">|</span>
+                            <Link href="#" className="hover:underline">Site Haritası</Link>
+                            <span className="text-black/10">|</span>
+                            <Link href="#" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
+                        </div>
+                    </div>
+                    <div className="text-[12px] font-medium text-[#1d1d1f]/70 hover:text-[#1d1d1f] cursor-pointer transition-colors shrink-0">
+                        Türkiye
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+);
+
 export default function LoginPage() {
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
             <Header />
             
             <main className="pt-12">
-                {/* Hero 1 - Apple Style */}
-                <section className="bg-white pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
+                {/* Hero Section */}
+                <section className="bg-[#f5f5f7] pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
                     <div className="space-y-2">
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
                             Yok öyle yalnız başına mücadele etmek.
@@ -192,7 +281,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* Section 2 - iPhone style (Full Width) */}
+                {/* iPhone style Full Width Section */}
                 <FullWidthSection 
                     title="hangel imece"
                     subtitle="Gönüllülükte teknoloji devrimi."
@@ -202,7 +291,7 @@ export default function LoginPage() {
                     imageHint="group together portrait"
                 />
 
-                {/* Section 3 - Dark Theme (Watch style) */}
+                {/* Dark Theme Section */}
                 <FullWidthSection 
                     title="hangel STK"
                     subtitle="Dijitalleşen sivil toplum araçları."
@@ -213,7 +302,7 @@ export default function LoginPage() {
                     imageHint="modern office building glass"
                 />
 
-                {/* Grid Sections (Bottom Grid) */}
+                {/* Grid Sections */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
                     <GridItem 
                         title="hangel bağışı"
@@ -251,119 +340,7 @@ export default function LoginPage() {
                 </div>
             </main>
 
-            {/* Light Apple Footer */}
-            <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-16 pb-12 px-4 sm:px-6 border-t border-black/5">
-                <div className="container mx-auto max-w-5xl">
-                    <div className="text-[12px] text-[#1d1d1f]/50 space-y-4 pb-10 border-b border-black/10">
-                        <p>1. hangel Sosyal Etki Puanı sistemi, platform içi aktivitelerle kazanılan puanları temsil eder ve nakdi değeri yoktur.</p>
-                        <p>2. Marka bağış oranları, her markanın kendi taahhüdü doğrultusunda değişiklik gösterebilir.</p>
-                        <p>3. Üyelik tamamen ücretsizdir ve kullanıcılardan hiçbir ek işlem bedeli talep edilmez.</p>
-                    </div>
-
-                    <div className="py-12 grid grid-cols-1 md:grid-cols-5 gap-10">
-                        {[
-                            {
-                                title: "Keşfedin",
-                                links: [
-                                    { name: "Market", href: "/market" },
-                                    { name: "Gönüllülük", href: "/volunteering" },
-                                    { name: "STK'lar", href: "/ngos" },
-                                    { name: "Kulüpler", href: "/admin/clubs" },
-                                    { name: "Liderlik", href: "/leaderboard" }
-                                ]
-                            },
-                            {
-                                title: "Kurumsal",
-                                links: [
-                                    { name: "Biz Kimiz?", href: "/about" },
-                                    { name: "Sosyal Etkimiz", href: "/impact-story" },
-                                    { name: "Basın Odası", href: "/press" },
-                                    { name: "Yatırımcılar", href: "/yatirimci-iliskileri" },
-                                    { name: "İş Fırsatları", href: "#" }
-                                ]
-                            },
-                            {
-                                title: "İşbirlikleri",
-                                links: [
-                                    { name: "Üye İşyeri", href: "/merchant" },
-                                    { name: "STK Kaydı", href: "/ngo-onboarding" },
-                                    { name: "Kampüs Elçiliği", href: "/contact/universities" },
-                                    { name: "Belediyeler", href: "/contact/municipalities" },
-                                    { name: "Fonlar", href: "/contact/funds" }
-                                ]
-                            },
-                            {
-                                title: "Destek",
-                                links: [
-                                    { name: "Destek Merkezi", href: "/support" },
-                                    { name: "S.S.S", href: "/support/faq" },
-                                    { name: "İletişim", href: "/contact" },
-                                    { name: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri" },
-                                    { name: "Erişilebilirlik", href: "/settings/accessibility" }
-                                ]
-                            },
-                            {
-                                title: "Hesabım",
-                                links: [
-                                    { name: "Giriş Yap", href: "/login/selection?action=login" },
-                                    { name: "Kayıt Ol", href: "/login/selection?action=register" },
-                                    { name: "Bağışlarım", href: "/my-donations" },
-                                    { name: "Başvurularım", href: "/my-applications" }
-                                ]
-                            }
-                        ].map((group) => (
-                            <div key={group.title} className="space-y-4">
-                                <Accordion type="single" collapsible className="w-full md:hidden">
-                                    <AccordionItem value="item-1" className="border-none">
-                                        <AccordionTrigger className="text-[12px] font-bold py-2 hover:no-underline uppercase tracking-wider text-[#1d1d1f]">
-                                            {group.title}
-                                        </AccordionTrigger>
-                                        <AccordionContent className="flex flex-col gap-3 text-[12px] text-[#1d1d1f]/70">
-                                            {group.links.map(link => (
-                                                <Link key={link.name} href={link.href}>{link.name}</Link>
-                                            ))}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </Accordion>
-                                <div className="hidden md:flex flex-col gap-3">
-                                    <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#1d1d1f]">{group.title}</h4>
-                                    <div className="flex flex-col gap-2 text-[12px] text-[#1d1d1f]/70">
-                                        {group.links.map(link => (
-                                            <Link key={link.name} href={link.href} className="hover:underline">{link.name}</Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="pt-10 border-t border-black/10 space-y-8 text-[12px] text-[#1d1d1f]/50">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                            <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                <span>Telif Hakkı © 2024 Hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
-                                <div className="flex gap-4">
-                                    <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
-                                    <span className="text-black/10">|</span>
-                                    <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
-                                    <span className="text-black/10">|</span>
-                                    <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Yasal Bilgiler</Link>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 font-medium hover:text-[#1d1d1f] cursor-pointer transition-colors">
-                                <Globe className="h-3 w-3" /> Türkiye
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-8 items-center justify-center md:justify-start">
-                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><XIcon className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Instagram className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Facebook className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Linkedin className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Youtube className="h-5 w-5" /></Link>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
