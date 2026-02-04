@@ -126,7 +126,9 @@ const FullWidthSection = ({
     title, 
     subtitle, 
     cta1, 
+    cta1Href = "/login/selection?action=register",
     cta2, 
+    cta2Href = "/about",
     theme = 'light',
     imageUrl,
     imageHint,
@@ -135,7 +137,9 @@ const FullWidthSection = ({
     title: string, 
     subtitle?: string, 
     cta1: string, 
+    cta1Href?: string,
     cta2?: string, 
+    cta2Href?: string,
     theme?: 'light' | 'dark',
     imageUrl: string,
     imageHint: string,
@@ -150,11 +154,11 @@ const FullWidthSection = ({
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium mt-1">{subtitle}</p>}
             <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href="/login/selection?action=register" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
+                <Link href={cta1Href} className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
                     {cta1}
                 </Link>
                 {cta2 && (
-                    <Link href="/about" className="text-primary hover:underline flex items-center text-lg font-medium">
+                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-lg font-medium">
                         {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
                     </Link>
                 )}
@@ -176,7 +180,9 @@ const GridItem = ({
     title, 
     subtitle, 
     cta1, 
+    cta1Href = "/login/selection?action=register",
     cta2, 
+    cta2Href = "/about",
     theme = 'light',
     imageUrl,
     imageHint,
@@ -185,7 +191,9 @@ const GridItem = ({
     title: string, 
     subtitle?: string, 
     cta1: string, 
+    cta1Href?: string,
     cta2?: string, 
+    cta2Href?: string,
     theme?: 'light' | 'dark',
     imageUrl: string,
     imageHint: string,
@@ -200,11 +208,11 @@ const GridItem = ({
             <h3 className="text-3xl font-bold tracking-tight">{title}</h3>
             {subtitle && <p className="text-lg font-medium opacity-90">{subtitle}</p>}
             <div className="flex items-center justify-center gap-4 pt-3">
-                <Link href="/login/selection?action=register" className="text-primary hover:underline flex items-center text-sm font-bold">
+                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm font-bold">
                     {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
                 </Link>
                 {cta2 && (
-                    <Link href="/about" className="text-primary hover:underline flex items-center text-sm font-bold">
+                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm font-bold">
                         {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
                     </Link>
                 )}
@@ -215,7 +223,7 @@ const GridItem = ({
                 src={imageUrl} 
                 alt={title} 
                 fill 
-                className="object-contain object-bottom px-12"
+                className="object-contain object-bottom px-12 pb-8"
                 data-ai-hint={imageHint}
             />
         </div>
@@ -238,11 +246,11 @@ const Footer = () => (
             <div className="md:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     {[
-                        { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Kütüphane"] },
-                        { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
-                        { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Kulüpler"] },
-                        { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
-                        { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
+                        { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "Stk'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
+                        { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
+                        { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "Stk Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
+                        { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
+                        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
                         <AccordionItem key={group.title} value={group.title} className="border-b border-black/10">
                             <AccordionTrigger className="text-[12px] font-bold py-3 hover:no-underline uppercase tracking-tight text-[#1d1d1f]/80">
@@ -250,7 +258,7 @@ const Footer = () => (
                             </AccordionTrigger>
                             <AccordionContent className="flex flex-col gap-2.5 pb-4 pt-1">
                                 {group.links.map(link => (
-                                    <Link key={link} href="#" className="text-[12px] text-[#1d1d1f]/70 hover:underline">{link}</Link>
+                                    <Link key={link.label} href={link.href} className="text-[12px] text-[#1d1d1f]/70 hover:underline">{link.label}</Link>
                                 ))}
                             </AccordionContent>
                         </AccordionItem>
@@ -261,17 +269,17 @@ const Footer = () => (
             {/* Columns (Desktop) */}
             <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
                 {[
-                    { title: "Keşfedin", links: ["Market", "Gönüllülük", "Stk'lar", "Kulüpler", "Kütüphane"] },
-                    { title: "Kurumsal", links: ["Biz Kimiz?", "Sosyal Etkimiz", "Basın Odası", "Yatırımcılar", "İş Fırsatları"] },
-                    { title: "İşbirlikleri", links: ["Üye İşyeri", "Stk Kaydı", "Kampüs Elçiliği", "Kulüpler"] },
-                    { title: "Destek", links: ["Destek Merkezi", "S.S.S", "İletişim", "Bilgi Toplumu", "Erişilebilirlik"] },
-                    { title: "Hesabım", links: ["Giriş Yap", "Kayıt Ol", "Bağışlarım", "Başvurularım"] },
+                    { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "Stk'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
+                    { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
+                    { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "Stk Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
+                    { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
+                    { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                 ].map((group) => (
                     <div key={group.title} className="space-y-3">
                         <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]/80">{group.title}</h4>
                         <div className="flex flex-col gap-2">
                             {group.links.map(link => (
-                                <Link key={link} href="#" className="text-[12px] text-[#1d1d1f]/70 hover:underline">{link}</Link>
+                                <Link key={link.label} href={link.href} className="text-[12px] text-[#1d1d1f]/70 hover:underline">{link.label}</Link>
                             ))}
                         </div>
                     </div>
@@ -281,21 +289,21 @@ const Footer = () => (
             {/* Bottom Row with Store and Social Links */}
             <div className="pt-6 space-y-4">
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
-                    <span>App Store</span>
-                    <span>Google Play</span>
-                    <span>Huawei Store</span>
-                    <span>Chrome Store</span>
-                    <span>Opera Store</span>
+                    <Link href="#" className="hover:underline">App Store</Link>
+                    <Link href="#" className="hover:underline">Google Play</Link>
+                    <Link href="#" className="hover:underline">Huawei Store</Link>
+                    <Link href="#" className="hover:underline">Chrome Store</Link>
+                    <Link href="#" className="hover:underline">Opera Store</Link>
                 </div>
                 
                 <div className="h-px bg-black/10 w-full" />
 
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
-                    <span>Instagram</span>
-                    <span>Facebook</span>
-                    <span>X (Twitter)</span>
-                    <span>LinkedIn</span>
-                    <span>Youtube</span>
+                    <Link href="#" className="hover:underline">Instagram</Link>
+                    <Link href="#" className="hover:underline">Facebook</Link>
+                    <Link href="#" className="hover:underline">X (Twitter)</Link>
+                    <Link href="#" className="hover:underline">LinkedIn</Link>
+                    <Link href="#" className="hover:underline">Youtube</Link>
                 </div>
 
                 <div className="h-px bg-black/10 w-full" />
@@ -308,15 +316,15 @@ const Footer = () => (
                     <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
                         <span className="whitespace-nowrap">Telif Hakkı © 2024 Hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
                         <div className="flex flex-wrap gap-x-4 gap-y-1">
-                            <Link href="#" className="hover:underline">Politikalar</Link>
+                            <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
                             <span className="text-black/10">|</span>
-                            <Link href="#" className="hover:underline">Çerezlerin Kullanımı</Link>
+                            <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerezlerin Kullanımı</Link>
                             <span className="text-black/10">|</span>
-                            <Link href="#" className="hover:underline">Sözleşmeler</Link>
+                            <Link href="/settings/contracts" className="hover:underline">Sözleşmeler</Link>
                             <span className="text-black/10">|</span>
                             <Link href="#" className="hover:underline">Site Haritası</Link>
                             <span className="text-black/10">|</span>
-                            <Link href="#" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
+                            <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
                         </div>
                     </div>
                     <div className="text-[12px] font-medium text-[#1d1d1f]/70 hover:text-[#1d1d1f] cursor-pointer transition-colors shrink-0">
@@ -379,7 +387,7 @@ export default function LoginPage() {
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-center min-w-max">
                             {volunteeringOpportunities.slice(0, 4).map((opp) => (
-                                <div key={opp.id} className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-80 h-96 transition-all hover:shadow-2xl hover:scale-[1.02] group">
+                                <Link href={`/volunteering/${opp.id}`} key={opp.id} className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-80 h-96 transition-all hover:shadow-2xl hover:scale-[1.02] group">
                                     <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <HeartHandshake className="h-6 w-6" />
                                     </div>
@@ -402,38 +410,45 @@ export default function LoginPage() {
                                             <span className="text-xs font-bold text-[#1d1d1f]">{opp.location.city}</span>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     </div>
                 </section>
 
-                {/* Dark Theme Section */}
+                {/* hangel bağışı - Moved to Full Width Section 3 */}
                 <FullWidthSection 
-                    title="hangel STK"
-                    subtitle="Dijitalleşen sivil toplum araçları."
-                    theme="dark"
-                    cta1="Kuruluşunu Kaydet"
-                    cta2="Özellikleri İncele"
-                    imageUrl="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="modern office building glass"
+                    title="hangel bağışı"
+                    subtitle="Alışverişi iyiliğe dönüştürün."
+                    cta1="Markaları Gör"
+                    cta1Href="/market"
+                    cta2="Nasıl Çalışır?"
+                    cta2Href="/about"
+                    imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
+                    imageHint="lifestyle product shopping"
                 />
 
                 {/* Grid Sections */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
+                    {/* hangel STK - Moved to Grid Item 1 */}
                     <GridItem 
-                        title="hangel bağışı"
-                        subtitle="Alışverişi iyiliğe dönüştürün."
-                        cta1="Markaları Gör"
-                        cta2="Nasıl Çalışır?"
-                        imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
-                        imageHint="lifestyle product shopping"
+                        title="hangel STK"
+                        subtitle="Dijitalleşen sivil toplum araçları."
+                        theme="dark"
+                        cta1="Kuruluşunu Kaydet"
+                        cta1Href="/login/selection?action=register&type=corporate"
+                        cta2="Özellikleri İncele"
+                        cta2Href="/ngo-onboarding"
+                        imageUrl="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop"
+                        imageHint="modern office building glass"
                     />
                     <GridItem 
                         title="hangel Kampüs"
                         subtitle="Üniversiteler için sosyal etki ağı."
                         cta1="Temsilci Ol"
+                        cta1Href="/contact/universities"
                         cta2="Okulunu Kaydet"
+                        cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
                         imageUrl="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
                         imageHint="university graduation cap"
@@ -442,7 +457,9 @@ export default function LoginPage() {
                         title="hangel Üye İşyeri"
                         subtitle="İşletmenizde QR ile ödeme alın."
                         cta1="Başvur"
+                        cta1Href="/merchant"
                         cta2="Avantajları Gör"
+                        cta2Href="/merchant"
                         imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
                         imageHint="qr code terminal object"
                         theme="dark"
@@ -451,6 +468,7 @@ export default function LoginPage() {
                         title="Kütüphane"
                         subtitle="Bilgi paylaştıkça çoğalır."
                         cta1="Kaynakları Gör"
+                        cta1Href="/library"
                         imageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
                         imageHint="minimal books stack"
                     />
