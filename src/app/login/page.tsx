@@ -166,7 +166,7 @@ export default function LoginPage() {
             <Header />
             
             <main className="pt-12">
-                {/* Hero 1 - Valentine Style */}
+                {/* Hero 1 - Apple Style */}
                 <section className="bg-white pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
                     <div className="space-y-2">
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
@@ -251,10 +251,10 @@ export default function LoginPage() {
                 </div>
             </main>
 
-            {/* Comprehensive Apple Footer */}
-            <footer className="bg-black text-white pt-16 pb-12 px-4 sm:px-6">
+            {/* Light Apple Footer */}
+            <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-16 pb-12 px-4 sm:px-6 border-t border-black/5">
                 <div className="container mx-auto max-w-5xl">
-                    <div className="text-[12px] text-white/50 space-y-4 pb-10 border-b border-white/10">
+                    <div className="text-[12px] text-[#1d1d1f]/50 space-y-4 pb-10 border-b border-black/10">
                         <p>1. hangel Sosyal Etki Puanı sistemi, platform içi aktivitelerle kazanılan puanları temsil eder ve nakdi değeri yoktur.</p>
                         <p>2. Marka bağış oranları, her markanın kendi taahhüdü doğrultusunda değişiklik gösterebilir.</p>
                         <p>3. Üyelik tamamen ücretsizdir ve kullanıcılardan hiçbir ek işlem bedeli talep edilmez.</p>
@@ -315,10 +315,10 @@ export default function LoginPage() {
                             <div key={group.title} className="space-y-4">
                                 <Accordion type="single" collapsible className="w-full md:hidden">
                                     <AccordionItem value="item-1" className="border-none">
-                                        <AccordionTrigger className="text-[12px] font-bold py-2 hover:no-underline uppercase tracking-wider text-white">
+                                        <AccordionTrigger className="text-[12px] font-bold py-2 hover:no-underline uppercase tracking-wider text-[#1d1d1f]">
                                             {group.title}
                                         </AccordionTrigger>
-                                        <AccordionContent className="flex flex-col gap-3 text-[12px] text-white/70">
+                                        <AccordionContent className="flex flex-col gap-3 text-[12px] text-[#1d1d1f]/70">
                                             {group.links.map(link => (
                                                 <Link key={link.name} href={link.href}>{link.name}</Link>
                                             ))}
@@ -326,8 +326,8 @@ export default function LoginPage() {
                                     </AccordionItem>
                                 </Accordion>
                                 <div className="hidden md:flex flex-col gap-3">
-                                    <h4 className="text-[12px] font-bold uppercase tracking-wider text-white">{group.title}</h4>
-                                    <div className="flex flex-col gap-2 text-[12px] text-white/70">
+                                    <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#1d1d1f]">{group.title}</h4>
+                                    <div className="flex flex-col gap-2 text-[12px] text-[#1d1d1f]/70">
                                         {group.links.map(link => (
                                             <Link key={link.name} href={link.href} className="hover:underline">{link.name}</Link>
                                         ))}
@@ -337,29 +337,29 @@ export default function LoginPage() {
                         ))}
                     </div>
 
-                    <div className="pt-10 border-t border-white/10 space-y-8 text-[12px] text-white/50">
+                    <div className="pt-10 border-t border-black/10 space-y-8 text-[12px] text-[#1d1d1f]/50">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div className="flex flex-wrap gap-x-6 gap-y-2">
                                 <span>Telif Hakkı © 2024 Hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
                                 <div className="flex gap-4">
                                     <Link href="/settings/contracts/gizlilik-politikasi" className="hover:underline">Gizlilik Politikası</Link>
-                                    <span className="text-white/10">|</span>
+                                    <span className="text-black/10">|</span>
                                     <Link href="/settings/contracts/kullanici-sozlesmesi" className="hover:underline">Kullanım Şartları</Link>
-                                    <span className="text-white/10">|</span>
+                                    <span className="text-black/10">|</span>
                                     <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Yasal Bilgiler</Link>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 font-medium hover:text-white cursor-pointer transition-colors">
+                            <div className="flex items-center gap-2 font-medium hover:text-[#1d1d1f] cursor-pointer transition-colors">
                                 <Globe className="h-3 w-3" /> Türkiye
                             </div>
                         </div>
                         
                         <div className="flex gap-8 items-center justify-center md:justify-start">
-                            <Link href="#" className="hover:text-white transition-colors"><XIcon className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-white transition-colors"><Instagram className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-white transition-colors"><Facebook className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-white transition-colors"><Linkedin className="h-5 w-5" /></Link>
-                            <Link href="#" className="hover:text-white transition-colors"><Youtube className="h-5 w-5" /></Link>
+                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><XIcon className="h-5 w-5" /></Link>
+                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Instagram className="h-5 w-5" /></Link>
+                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Facebook className="h-5 w-5" /></Link>
+                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Linkedin className="h-5 w-5" /></Link>
+                            <Link href="#" className="hover:text-[#1d1d1f] transition-colors"><Youtube className="h-5 w-5" /></Link>
                         </div>
                     </div>
                 </div>
