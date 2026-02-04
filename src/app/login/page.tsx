@@ -212,7 +212,7 @@ const Footer = () => (
                     <HangelLogo className="text-base scale-90 grayscale opacity-70" />
                 </Link>
                 <ChevronRight className="h-3 w-3" />
-                <span className="text-[#1d1d1f]/80">Yasal Bilgiler</span>
+                <span className="text-[#1d1d1f]/80">Politikalar</span>
             </div>
 
             {/* Accordion Sections (Mobile) */}
@@ -287,15 +287,13 @@ const Footer = () => (
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-black/10 pt-4">
                     <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
-                        <span className="whitespace-nowrap">Telif Hakkı © 2024 hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
+                        <span className="whitespace-nowrap">Telif Hakkı © 2024 Hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
                         <div className="flex flex-wrap gap-x-4 gap-y-1">
                             <Link href="#" className="hover:underline">Politikalar</Link>
                             <span className="text-black/10">|</span>
                             <Link href="#" className="hover:underline">Çerezlerin Kullanımı</Link>
                             <span className="text-black/10">|</span>
                             <Link href="#" className="hover:underline">Sözleşmeler</Link>
-                            <span className="text-black/10">|</span>
-                            <Link href="#" className="hover:underline">Yasal Bilgiler</Link>
                             <span className="text-black/10">|</span>
                             <Link href="#" className="hover:underline">Site Haritası</Link>
                             <span className="text-black/10">|</span>
