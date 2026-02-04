@@ -68,7 +68,8 @@ const ProductSection = ({
     theme = 'light',
     imageUrl,
     imageHint,
-    fullImage = false
+    fullImage = false,
+    className
 }: { 
     title: string, 
     subtitle?: string, 
@@ -77,11 +78,13 @@ const ProductSection = ({
     theme?: 'light' | 'dark',
     imageUrl: string,
     imageHint: string,
-    fullImage?: boolean
+    fullImage?: boolean,
+    className?: string
 }) => (
     <section className={cn(
         "relative min-h-[600px] w-full flex flex-col items-center pt-16 text-center overflow-hidden border-b-[12px] border-[#f5f5f7]",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]"
+        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+        className
     )}>
         <div className="relative z-10 space-y-2 px-4 max-w-3xl mb-8">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{title}</h2>
@@ -115,14 +118,16 @@ export default function LoginPage() {
             <Header />
             
             <main className="pt-12">
-                {/* Hero Section */}
+                {/* Hero Section - Matching Sevgililer Günü style in image */}
                 <section className="bg-white py-24 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-[#1d1d1f]">
-                        Yok öyle yalnız başına mücadele etmek.
-                    </h1>
-                    <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80 max-w-4xl mx-auto">
-                        Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
-                    </p>
+                    <div className="space-y-2">
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-[#1d1d1f]">
+                            Yok öyle yalnız başına mücadele etmek.
+                        </h1>
+                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80 max-w-4xl mx-auto">
+                            Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
+                        </p>
+                    </div>
                     <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Button asChild size="lg" className="rounded-full px-10 h-12 text-base font-bold bg-[#0071e3] hover:bg-[#0077ed]">
                             <Link href="/login/selection?action=register">Şimdi Katıl</Link>
@@ -130,20 +135,20 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* iPhone style - imece */}
+                {/* Section 2 - iPhone style */}
                 <ProductSection 
                     title="hangel imece"
-                    subtitle="Gönüllülükte yeni bir boyut."
+                    subtitle="Gönüllülükte teknoloji devrimi."
                     cta1="Gönüllü Ol"
                     cta2="Daha fazla bilgi"
                     imageUrl="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
                     imageHint="hands connecting community"
                 />
 
-                {/* Watch style - STK */}
+                {/* Section 3 - Watch style */}
                 <ProductSection 
                     title="hangel STK"
-                    subtitle="Dijitalleşen sivil toplum."
+                    subtitle="Dijitalleşen sivil toplum araçları."
                     theme="dark"
                     cta1="Kuruluşunu Kaydet"
                     cta2="Özellikleri İncele"
@@ -152,17 +157,17 @@ export default function LoginPage() {
                     fullImage
                 />
 
-                {/* iPad style - bağış */}
+                {/* Section 4 - iPad style */}
                 <ProductSection 
                     title="hangel bağışı"
-                    subtitle="Alışverişlerinizi iyiliğe dönüştürün."
+                    subtitle="Alışverişi iyiliğe dönüştürün."
                     cta1="Markaları Gör"
                     cta2="Nasıl Çalışır?"
                     imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
                     imageHint="aesthetic lifestyle products"
                 />
 
-                {/* Grid Sections */}
+                {/* Grid Sections - Lower part of the image */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
                     <section className="relative h-[580px] bg-white rounded-3xl overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5">
                         <div className="relative z-10 space-y-1 px-6">
@@ -212,6 +217,7 @@ export default function LoginPage() {
                 </div>
             </main>
 
+            {/* Apple Style Footer */}
             <footer className="bg-black text-white pt-16 pb-12 px-4 sm:px-6">
                 <div className="container mx-auto max-w-5xl">
                     <div className="text-[12px] text-white/50 space-y-4 pb-10 border-b border-white/10">
