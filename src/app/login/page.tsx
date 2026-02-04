@@ -53,7 +53,7 @@ const Header = () => {
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
                 {/* Logo - Left */}
-                <Link href="/" className="hover:opacity-70 transition-opacity shrink-0">
+                <Link href="/login" className="hover:opacity-70 transition-opacity shrink-0">
                     <HangelLogo className="text-xl text-primary" />
                 </Link>
 
@@ -181,7 +181,7 @@ const Footer = () => (
         <div className="container mx-auto max-w-5xl">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-6 px-1">
-                <Link href="/" className="hover:text-[#1d1d1f] transition-colors">
+                <Link href="/login" className="hover:text-[#1d1d1f] transition-colors">
                     <HangelLogo className="text-base scale-90 grayscale opacity-70" />
                 </Link>
                 <ChevronRight className="h-3 w-3" />
