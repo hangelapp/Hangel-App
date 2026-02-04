@@ -132,9 +132,9 @@ export default function LoginPage() {
             <main className="pt-12">
                 {/* Hero Section */}
                 <section className="bg-white py-20 text-center space-y-4 px-4">
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-[#1d1d1f]">hangel Hub</h1>
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-[#1d1d1f]">Yok öyle yalnız başına mücadele etmek.</h1>
                     <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80 max-w-3xl mx-auto">
-                        İyiliğin ve sosyal etkinin yeni adresi. Birlikte daha güçlüyüz.
+                        Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
                     </p>
                     <div className="pt-6">
                         <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-[#0071e3] hover:bg-[#0077ed]">
