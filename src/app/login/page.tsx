@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
@@ -20,7 +20,14 @@ import {
     BookOpen,
     ChevronDown,
     Twitter,
-    HandCoins
+    HandCoins,
+    Inbox,
+    SendHorizontal,
+    Smartphone,
+    Instagram,
+    Facebook,
+    Linkedin,
+    Youtube
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -38,6 +45,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
@@ -129,7 +137,8 @@ const GridItem = ({
     cta2, 
     cta2Href = "/about",
     theme = 'light',
-    icon: Icon,
+    imageUrl,
+    imageHint,
     className
 }: { 
     title: string, 
@@ -139,7 +148,8 @@ const GridItem = ({
     cta2?: string, 
     cta2Href?: string,
     theme?: 'light' | 'dark',
-    icon: any,
+    imageUrl: string,
+    imageHint: string,
     className?: string
 }) => (
     <section className={cn(
@@ -163,10 +173,16 @@ const GridItem = ({
         </div>
         <div className="relative w-full flex-1 flex items-center justify-center pb-12">
             <div className={cn(
-                "w-48 h-48 rounded-[2.5rem] flex items-center justify-center shadow-2xl transition-transform duration-500 hover:scale-110",
-                theme === 'dark' ? "bg-white/5 border border-white/10" : "bg-[#f5f5f7] border border-black/5"
+                "w-64 h-64 relative rounded-[2.5rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-105",
+                theme === 'dark' ? "border border-white/10" : "border border-black/5"
             )}>
-                <Icon className={cn("w-24 h-24 text-primary")} />
+                <Image 
+                    src={imageUrl} 
+                    alt={title} 
+                    fill 
+                    className="object-cover" 
+                    data-ai-hint={imageHint}
+                />
             </div>
         </div>
     </section>
@@ -285,6 +301,21 @@ const Footer = () => (
 );
 
 export default function LoginPage() {
+    const typeOrder = ['cooperative', 'economic', 'brand', 'social'];
+    
+    const sortedBrands = useMemo(() => {
+        return [...allEntityLists].sort((a, b) => {
+            const indexA = typeOrder.indexOf(a.type);
+            const indexB = typeOrder.indexOf(b.type);
+            return indexA - indexB;
+        }).slice(0, 21);
+    }, []);
+
+    const stkIllustration = PlaceHolderImages.find(img => img.id === 'stk-illustration')?.imageUrl || '';
+    const campusIllustration = PlaceHolderImages.find(img => img.id === 'campus-illustration')?.imageUrl || '';
+    const merchantIllustration = PlaceHolderImages.find(img => img.id === 'merchant-illustration')?.imageUrl || '';
+    const libraryIllustration = PlaceHolderImages.find(img => img.id === 'library-illustration')?.imageUrl || '';
+
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
             <Header />
@@ -326,8 +357,8 @@ export default function LoginPage() {
                     </div>
                     
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
-                        <div className="flex gap-6 px-8 md:justify-center min-w-max">
-                            {allEntityLists.slice(0, 6).map((brand) => (
+                        <div className="flex gap-6 px-8 md:justify-start min-w-max">
+                            {sortedBrands.map((brand) => (
                                 <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
                                     <div className="absolute top-6 right-6">
                                         <span className="text-[9px] font-black text-[#1d1d1f]/40 uppercase tracking-widest bg-white/50 backdrop-blur-sm px-2 py-0.5 rounded-full border border-black/5">
@@ -429,7 +460,8 @@ export default function LoginPage() {
                         cta1Href="/login/selection?action=register&type=corporate"
                         cta2="Özellikleri İncele"
                         cta2Href="/ngo-onboarding"
-                        icon={Building2}
+                        imageUrl={stkIllustration}
+                        imageHint="charity illustration"
                     />
                     <GridItem 
                         title="hangel Kampüs"
@@ -439,7 +471,8 @@ export default function LoginPage() {
                         cta2="Okulunu Kaydet"
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
-                        icon={GraduationCap}
+                        imageUrl={campusIllustration}
+                        imageHint="campus illustration"
                     />
                     <GridItem 
                         title="hangel Üye İşyeri ol"
@@ -448,7 +481,8 @@ export default function LoginPage() {
                         cta1Href="/merchant"
                         cta2="Avantajları Gör"
                         cta2Href="/merchant"
-                        icon={Zap}
+                        imageUrl={merchantIllustration}
+                        imageHint="store illustration"
                         theme="dark"
                     />
                     <GridItem 
@@ -456,7 +490,8 @@ export default function LoginPage() {
                         subtitle="Bilgi paylaştıkça çoğalır."
                         cta1="Kaynakları Gör"
                         cta1Href="/library"
-                        icon={BookOpen}
+                        imageUrl={libraryIllustration}
+                        imageHint="library illustration"
                     />
                 </div>
             </main>

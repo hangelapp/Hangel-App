@@ -57,7 +57,7 @@
     {
       "id": "timeline-post-2",
       "description": "Timeline post image of a food donation drive",
-      "imageUrl": "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmb29kJTIwZG9uYXRpb258ZW58MHx8fHwxNzY4MDg1MzUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmb29kJTIwZG9uYXRpb258ZW58MHx8fHwxNzY4MDg1MzUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "food donation"
     },
     {
@@ -77,6 +77,30 @@
       "description": "Campaign banner for travel donations",
       "imageUrl": "https://images.unsplash.com/photo-1503220317375-aa068c833b36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0cmF2ZWx8ZW58MHx8fHwxNzY4MTYyNDU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "travel"
+    },
+    {
+      "id": "stk-illustration",
+      "description": "NGO and charity illustration",
+      "imageUrl": "https://images.unsplash.com/photo-1751730739594-9d016ed468b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjaGFyaXR5JTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc3MDI2MjY3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "charity illustration"
+    },
+    {
+      "id": "campus-illustration",
+      "description": "University campus and student life illustration",
+      "imageUrl": "https://picsum.photos/seed/campus-draw/600/600",
+      "imageHint": "campus illustration"
+    },
+    {
+      "id": "merchant-illustration",
+      "description": "Merchant and payment illustration",
+      "imageUrl": "https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzdG9yZSUyMGlsbHVzdHJhdGlvbnxlbnwwfHx8fDE3NzAyNjI2NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "store illustration"
+    },
+    {
+      "id": "library-illustration",
+      "description": "Library and books illustration",
+      "imageUrl": "https://images.unsplash.com/photo-1755194993560-88d303a893b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsaWJyYXJ5JTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc3MDI2MjY3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "library illustration"
     }
   ]
 }
