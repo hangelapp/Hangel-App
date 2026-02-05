@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
-import Image from 'next/image';
 import { 
     Menu, 
     Search,
@@ -15,12 +14,16 @@ import {
     Linkedin,
     Youtube,
     ShoppingBag,
-    Calendar,
     HeartHandshake,
-    Bell,
     Check,
     Siren,
-    Star
+    Star,
+    Building2,
+    GraduationCap,
+    Zap,
+    QrCode,
+    BookOpen,
+    Heart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -37,6 +40,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
+import Image from 'next/image';
 
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
@@ -52,18 +56,15 @@ const Header = () => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
-                {/* Logo - Left */}
                 <Link href="/login" className="hover:opacity-70 transition-opacity shrink-0">
                     <HangelLogo className="text-xl text-primary" />
                 </Link>
 
-                {/* Centered Menu */}
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
-                    <Link href="/market" className="hover:text-primary transition-colors">Bağış</Link>
-                    <Link href="/volunteering" className="hover:text-primary transition-colors">Gönüllülük</Link>
+                    <Link href="/market" className="hover:text-primary transition-colors uppercase tracking-tight">Bağış</Link>
+                    <Link href="/volunteering" className="hover:text-primary transition-colors uppercase tracking-tight">Gönüllülük</Link>
                 </div>
 
-                {/* Right Actions */}
                 <div className="flex items-center gap-2">
                     <Button 
                         variant="ghost" 
@@ -130,8 +131,7 @@ const GridItem = ({
     cta2, 
     cta2Href = "/about",
     theme = 'light',
-    imageUrl,
-    imageHint,
+    icon: Icon,
     className
 }: { 
     title: string, 
@@ -141,8 +141,7 @@ const GridItem = ({
     cta2?: string, 
     cta2Href?: string,
     theme?: 'light' | 'dark',
-    imageUrl: string,
-    imageHint: string,
+    icon: any,
     className?: string
 }) => (
     <section className={cn(
@@ -164,14 +163,13 @@ const GridItem = ({
                 )}
             </div>
         </div>
-        <div className="relative w-full flex-1">
-            <Image 
-                src={imageUrl} 
-                alt={title} 
-                fill 
-                className="object-contain object-bottom px-12 pb-8"
-                data-ai-hint={imageHint}
-            />
+        <div className="relative w-full flex-1 flex items-center justify-center pb-12">
+            <div className={cn(
+                "w-48 h-48 rounded-[2.5rem] flex items-center justify-center shadow-2xl transition-transform duration-500 hover:scale-110",
+                theme === 'dark' ? "bg-white/5 border border-white/10" : "bg-[#f5f5f7] border border-black/5"
+            )}>
+                <Icon className={cn("w-24 h-24", theme === 'dark' ? "text-primary" : "text-primary")} />
+            </div>
         </div>
     </section>
 );
@@ -179,7 +177,6 @@ const GridItem = ({
 const Footer = () => (
     <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-8 pb-12 px-4 sm:px-6 border-t border-black/5 font-sans">
         <div className="container mx-auto max-w-5xl">
-            {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-6 px-1">
                 <Link href="/login" className="hover:text-[#1d1d1f] transition-colors">
                     <HangelLogo className="text-base scale-90 grayscale opacity-70" />
@@ -188,7 +185,6 @@ const Footer = () => (
                 <span className="text-[#1d1d1f]/80">Anasayfa</span>
             </div>
 
-            {/* Accordion Sections (Mobile) */}
             <div className="md:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     {[
@@ -196,7 +192,7 @@ const Footer = () => (
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
                         { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
-                        { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
+                        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
                         <AccordionItem key={group.title} value={group.title} className="border-b border-black/10">
                             <AccordionTrigger className="text-[12px] font-bold py-3 hover:no-underline uppercase tracking-tight text-[#1d1d1f]/80">
@@ -212,14 +208,13 @@ const Footer = () => (
                 </Accordion>
             </div>
 
-            {/* Columns (Desktop) */}
             <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
                 {[
                     { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
                     { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
                     { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
                     { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
-                    { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
+                    { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                 ].map((group) => (
                     <div key={group.title} className="space-y-3">
                         <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]/80">{group.title}</h4>
@@ -232,7 +227,6 @@ const Footer = () => (
                 ))}
             </div>
 
-            {/* Bottom Row with Store and Social Links */}
             <div className="pt-6 space-y-4">
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
                     <Link href="#" className="hover:underline">App Store</Link>
@@ -288,7 +282,6 @@ export default function LoginPage() {
             <Header />
             
             <main className="pt-12">
-                {/* Hero Section - Abstract Visual */}
                 <section className="bg-[#f5f5f7] pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
                     <div className="space-y-2">
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
@@ -303,19 +296,17 @@ export default function LoginPage() {
                             <Link href="/login/selection?action=register">Şimdi Katıl</Link>
                         </Button>
                     </div>
-                    <div className="relative w-full h-[400px] mt-12">
-                        {/* Replaced photograph with abstract visual render */}
-                        <Image 
-                            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2000" 
-                            alt="Social Impact Abstract" 
-                            fill 
-                            className="object-contain object-bottom" 
-                            data-ai-hint="abstract 3d connection graphic"
-                        />
+                    <div className="relative w-full h-[400px] mt-12 flex items-center justify-center">
+                        <div className="relative w-64 h-64">
+                            <div className="absolute inset-0 bg-primary/20 rounded-full animate-pulse blur-3xl" />
+                            <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-4">
+                                <Heart className="w-32 h-32 text-primary" fill="currentColor" />
+                                <Globe className="w-16 h-16 text-[#042654] absolute -bottom-4 -right-4" />
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                {/* hangel bağışı - Showcase Section (Now First) */}
                 <section className="bg-white pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağışı</h2>
@@ -330,7 +321,6 @@ export default function LoginPage() {
                         </div>
                     </div>
                     
-                    {/* Horizontal Scroll of Brands */}
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-center min-w-max">
                             {allEntityLists.slice(0, 6).map((brand) => (
@@ -366,7 +356,6 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* hangel imece - Showcase Section */}
                 <section className="bg-[#f5f5f7] pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel imece</h2>
@@ -381,7 +370,6 @@ export default function LoginPage() {
                         </div>
                     </div>
                     
-                    {/* Horizontal Scroll of Opportunities */}
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-center min-w-max">
                             {volunteeringOpportunities.slice(0, 4).map((opp) => (
@@ -420,9 +408,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* Grid Sections */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
-                    {/* hangel STK */}
                     <GridItem 
                         title="hangel STK"
                         subtitle="Dijitalleşen sivil toplum araçları."
@@ -431,8 +417,7 @@ export default function LoginPage() {
                         cta1Href="/login/selection?action=register&type=corporate"
                         cta2="Özellikleri İncele"
                         cta2Href="/ngo-onboarding"
-                        imageUrl="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop"
-                        imageHint="modern office building glass"
+                        icon={Building2}
                     />
                     <GridItem 
                         title="hangel Kampüs"
@@ -442,8 +427,7 @@ export default function LoginPage() {
                         cta2="Okulunu Kaydet"
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
-                        imageUrl="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
-                        imageHint="university graduation cap"
+                        icon={GraduationCap}
                     />
                     <GridItem 
                         title="hangel Üye İşyeri"
@@ -452,8 +436,7 @@ export default function LoginPage() {
                         cta1Href="/merchant"
                         cta2="Avantajları Gör"
                         cta2Href="/merchant"
-                        imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
-                        imageHint="qr code terminal object"
+                        icon={Zap}
                         theme="dark"
                     />
                     <GridItem 
@@ -461,8 +444,7 @@ export default function LoginPage() {
                         subtitle="Bilgi paylaştıkça çoğalır."
                         cta1="Kaynakları Gör"
                         cta1Href="/library"
-                        imageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
-                        imageHint="minimal books stack"
+                        icon={BookOpen}
                     />
                 </div>
             </main>
