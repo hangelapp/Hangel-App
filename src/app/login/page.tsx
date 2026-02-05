@@ -171,7 +171,7 @@ const GridItem = ({
                 "w-48 h-48 rounded-[2.5rem] flex items-center justify-center shadow-2xl transition-transform duration-500 hover:scale-110",
                 theme === 'dark' ? "bg-white/5 border border-white/10" : "bg-[#f5f5f7] border border-black/5"
             )}>
-                <Icon className={cn("w-24 h-24", theme === 'dark' ? "text-primary" : "text-primary")} />
+                <Icon className={cn("w-24 h-24 text-primary")} />
             </div>
         </div>
     </section>
@@ -193,7 +193,7 @@ const Footer = () => (
                     {[
                         { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "hangel club ol", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
-                        { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "hangel club ol", href: "/admin/clubs"}] },
+                        { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
                         { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
@@ -215,7 +215,7 @@ const Footer = () => (
                 {[
                     { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "hangel club ol", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
                     { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
-                    { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "hangel club ol", href: "/admin/clubs"}] },
+                    { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}] },
                     { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
                     { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                 ].map((group) => (
@@ -297,7 +297,7 @@ export default function LoginPage() {
                             <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80">
                                 Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
                             </p>
-                            <p className="text-sm md:text-lg text-[#1d1d1f]/60 font-normal pt-12">
+                            <p className="text-sm md:text-lg text-[#1d1d1f]/70 font-normal leading-relaxed pt-12">
                                 Merhaba; günlük alışverişini iyi fiyatlarla yaparken ek masraf ödemeden bağışa dönüştürmeni ve profesyonel yetkinliklerin ile sosyal hassasiyetlerin doğrultusunda gönüllülük yapmanı sağlayan bir sosyal etki platformuna hoş geldin.
                             </p>
                         </div>
