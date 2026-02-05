@@ -98,9 +98,9 @@
     },
     {
       "id": "library-illustration",
-      "description": "Library and books illustration",
+      "description": "Digital and traditional library blend illustration",
       "imageUrl": "https://images.unsplash.com/photo-1755194993560-88d303a893b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsaWJyYXJ5JTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc3MDI2MjY3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "library illustration"
+      "imageHint": "digital library"
     }
   ]
 }

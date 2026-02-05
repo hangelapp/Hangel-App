@@ -417,7 +417,7 @@ export default function LoginPage() {
                         <div className="flex gap-6 px-8 md:justify-center min-w-max">
                             {volunteeringOpportunities.slice(0, 4).map((opp) => (
                                 <Link href={`/volunteering/${opp.id}`} key={opp.id} className="bg-white rounded-[2rem] p-8 flex flex-col items-start text-left w-80 h-96 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#f5f5f7] shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <div className="w-12 h-12 rounded-xl bg-[#f5f5f7] shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <HeartHandshake className="h-6 w-6" />
                                     </div>
                                     <div className="space-y-1 mb-4">
@@ -491,7 +491,7 @@ export default function LoginPage() {
                         cta1="Kaynakları Gör"
                         cta1Href="/library"
                         imageUrl={libraryIllustration}
-                        imageHint="library illustration"
+                        imageHint="digital library"
                     />
                 </div>
             </main>
