@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, BarChart3, Settings2, Code, ShieldCheck, ArrowLeft, Languages } from 'lucide-react';
+import { Globe, Palette, BarChart3, Settings2, Code, ShieldCheck, ArrowLeft, Languages, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -98,13 +98,71 @@ export default function WebsiteBuilderPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="domain" className="mt-6">
+                <TabsContent value="domain" className="mt-6 space-y-6">
                     <Card>
-                        <CardHeader><CardTitle>Özel Domain Bağla</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle>Özel Domain Bağla</CardTitle>
+                            <CardDescription>Kendi alan adınızı STK web sitenize bağlayın.</CardDescription>
+                        </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-2"><Label>Domain Adınız</Label><Input placeholder="kurumunuz.org" /></div>
-                            <Button onClick={() => toast({title: "Domain Kaydedildi"})}>DNS Kontrol Et</Button>
+                            <div className="space-y-2">
+                                <Label>Domain Adınız</Label>
+                                <Input placeholder="kurumunuz.org" />
+                            </div>
+                            <Button variant="outline" onClick={() => toast({title: "DNS Kontrol Ediliyor", description: "Alan adınızın DNS kayıtları sorgulanıyor."})}>DNS Kayıtlarını Doğrula</Button>
                         </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">DNS Kayıt Bilgileri</CardTitle>
+                            <CardDescription>Alan adı yönetim panelinizde (GoDaddy, Namecheap, vb.) aşağıdaki kayıtları oluşturmanız gerekmektedir.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="rounded-lg border overflow-hidden">
+                                <table className="w-full text-xs text-left">
+                                    <thead className="bg-muted">
+                                        <tr>
+                                            <th className="p-2 border-b">Tür</th>
+                                            <th className="p-2 border-b">İsim (Host)</th>
+                                            <th className="p-2 border-b">Değer (Value)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                        <tr>
+                                            <td className="p-2 font-mono">A</td>
+                                            <td className="p-2 font-mono">@</td>
+                                            <td className="p-2 font-mono text-primary">34.102.136.180</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="p-2 font-mono">CNAME</td>
+                                            <td className="p-2 font-mono">www</td>
+                                            <td className="p-2 font-mono text-primary">sites.hangel.org</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="p-4 border rounded-xl bg-blue-50 text-blue-800 text-[10px] flex items-center gap-3">
+                                <ShieldCheck className="h-5 w-5 shrink-0" />
+                                <p>DNS değişikliklerinin yayılması 24-48 saat sürebilir. Kayıtlar doğrulandıktan sonra SSL sertifikanız otomatik olarak aktif edilecektir.</p>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="bg-muted/20 border-t p-6 flex flex-col gap-4">
+                            <div className="w-full text-center space-y-4">
+                                <h3 className="font-bold text-foreground">Web Siteniz Yayınlanmaya Hazır</h3>
+                                <p className="text-xs text-muted-foreground">Profil bilgileriniz, güncel gönderileriniz ve gönüllülük ilanlarınız otomatik olarak senkronize edilir.</p>
+                                <Button 
+                                    size="lg"
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold shadow-lg shadow-green-600/20"
+                                    onClick={() => {
+                                        toast({ title: "Siteniz Yayınlandı!", description: "Yönlendiriliyorsunuz..." });
+                                        window.open('/ngo-admin/website/preview', '_blank');
+                                    }}
+                                >
+                                    Siteyi Yayınla ve Görüntüle
+                                </Button>
+                            </div>
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>
