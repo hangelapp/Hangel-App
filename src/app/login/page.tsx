@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
@@ -14,20 +14,7 @@ import {
     Check,
     Siren,
     Star,
-    Building2,
-    GraduationCap,
-    Zap,
-    BookOpen,
     ChevronDown,
-    Twitter,
-    HandCoins,
-    Inbox,
-    SendHorizontal,
-    Smartphone,
-    Instagram,
-    Facebook,
-    Linkedin,
-    Youtube
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -47,6 +34,12 @@ import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Brand } from '@/lib/types';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
@@ -139,6 +132,7 @@ const GridItem = ({
     cta2Href = "/about",
     theme = 'light',
     imageUrl,
+    images,
     imageHint,
     className
 }: { 
@@ -149,45 +143,74 @@ const GridItem = ({
     cta2?: string, 
     cta2Href?: string,
     theme?: 'light' | 'dark',
-    imageUrl: string,
-    imageHint: string,
+    imageUrl?: string,
+    images?: { url: string, hint: string }[],
+    imageHint?: string,
     className?: string
-}) => (
-    <section className={cn(
-        "relative h-[620px] rounded-[2.5rem] overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
-        className
-    )}>
-        <div className="relative z-10 space-y-1 px-6 mb-8">
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h3>
-            {subtitle && <p className="text-lg md:text-xl font-medium opacity-90">{subtitle}</p>}
-            <div className="flex items-center justify-center gap-4 pt-4">
-                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
-                    {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
-                </Link>
-                {cta2 && (
-                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
-                        {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
+}) => {
+    const plugin = useRef(
+        Autoplay({ delay: 3000, stopOnInteraction: false })
+    );
+
+    return (
+        <section className={cn(
+            "relative h-[620px] rounded-[2.5rem] overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
+            theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+            className
+        )}>
+            <div className="relative z-10 space-y-1 px-6 mb-8">
+                <h3 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h3>
+                {subtitle && <p className="text-lg md:text-xl font-medium opacity-90">{subtitle}</p>}
+                <div className="flex items-center justify-center gap-4 pt-4">
+                    <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
+                        {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
                     </Link>
-                )}
+                    {cta2 && (
+                        <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
+                            {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
+                        </Link>
+                    )}
+                </div>
             </div>
-        </div>
-        <div className="relative w-full flex-1 flex items-center justify-center pb-12">
-            <div className={cn(
-                "w-full max-w-[380px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
-                theme === 'dark' ? "border border-white/10" : "border border-black/5"
-            )}>
-                <Image 
-                    src={imageUrl} 
-                    alt={title} 
-                    fill 
-                    className="object-cover" 
-                    data-ai-hint={imageHint}
-                />
+            <div className="relative w-full flex-1 flex items-center justify-center pb-12 px-6">
+                <div className={cn(
+                    "w-full max-w-[380px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
+                    theme === 'dark' ? "border border-white/10" : "border border-black/5"
+                )}>
+                    {images && images.length > 0 ? (
+                        <Carousel 
+                            plugins={[plugin.current]}
+                            className="w-full h-full"
+                            opts={{ loop: true }}
+                        >
+                            <CarouselContent className="h-full ml-0">
+                                {images.map((img, idx) => (
+                                    <CarouselItem key={idx} className="h-full pl-0 relative">
+                                        <Image 
+                                            src={img.url} 
+                                            alt={`${title} ${idx + 1}`} 
+                                            fill 
+                                            className="object-cover" 
+                                            data-ai-hint={img.hint}
+                                        />
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                        </Carousel>
+                    ) : imageUrl && (
+                        <Image 
+                            src={imageUrl} 
+                            alt={title} 
+                            fill 
+                            className="object-cover" 
+                            data-ai-hint={imageHint}
+                        />
+                    )}
+                </div>
             </div>
-        </div>
-    </section>
-);
+        </section>
+    );
+};
 
 const typeLabels: Record<string, string> = {
     brand: 'Marka',
@@ -313,9 +336,16 @@ export default function LoginPage() {
     }, []);
 
     const stkImg = PlaceHolderImages.find(img => img.id === 'stk-illustration');
-    const campusImg = PlaceHolderImages.find(img => img.id === 'campus-illustration');
     const merchantImg = PlaceHolderImages.find(img => img.id === 'merchant-illustration');
     const libraryImg = PlaceHolderImages.find(img => img.id === 'library-illustration');
+
+    const campusImages = [
+        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration')?.imageUrl || '', hint: 'charcoal university' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-2')?.imageUrl || '', hint: 'charcoal university' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-3')?.imageUrl || '', hint: 'charcoal university' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-4')?.imageUrl || '', hint: 'charcoal university' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-5')?.imageUrl || '', hint: 'charcoal university' },
+    ];
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
@@ -476,11 +506,10 @@ export default function LoginPage() {
                         cta2="Avantajları Gör"
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
-                        imageUrl={campusImg?.imageUrl || ''}
-                        imageHint={campusImg?.imageHint || 'charcoal university'}
+                        images={campusImages}
                     />
                     <GridItem 
-                        title="hangel Üye İşyeri ol"
+                        title="hangel üye işyeri"
                         subtitle="İşletmenizde QR ile ödeme alın."
                         cta1="Başvur"
                         cta1Href="/login/selection?action=register&type=corporate"
