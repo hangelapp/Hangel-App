@@ -301,7 +301,6 @@ export default function LoginPage() {
                             <div className="absolute inset-0 bg-primary/20 rounded-full animate-pulse blur-3xl" />
                             <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-4">
                                 <Heart className="w-32 h-32 text-primary" fill="currentColor" />
-                                <Globe className="w-16 h-16 text-[#042654] absolute -bottom-4 -right-4" />
                             </div>
                         </div>
                     </div>
