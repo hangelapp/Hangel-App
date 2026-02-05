@@ -323,6 +323,7 @@ export default function LoginPage() {
             <Header />
             
             <main className="pt-12">
+                {/* HERO SECTION */}
                 <section className="bg-[#f5f5f7] pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
                     <div className="space-y-4">
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
@@ -344,6 +345,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
+                {/* BRANDS SECTION */}
                 <section className="bg-white pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağışı</h2>
@@ -401,6 +403,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
+                {/* VOLUNTEERING SECTION */}
                 <section className="bg-[#f5f5f7] pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel imece</h2>
@@ -453,6 +456,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
+                {/* GRID ITEMS - Apple Lower Sections Style */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
                     <GridItem 
                         title="hangel STK"
@@ -463,7 +467,7 @@ export default function LoginPage() {
                         cta2="Özellikleri İncele"
                         cta2Href="/ngo-onboarding"
                         imageUrl={stkImg?.imageUrl || ''}
-                        imageHint={stkImg?.imageHint || 'charity illustration'}
+                        imageHint={stkImg?.imageHint || 'charcoal charity'}
                     />
                     <GridItem 
                         title="hangel Kampüs"
@@ -474,7 +478,7 @@ export default function LoginPage() {
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
                         imageUrl={campusImg?.imageUrl || ''}
-                        imageHint={campusImg?.imageHint || 'university drawing'}
+                        imageHint={campusImg?.imageHint || 'charcoal university'}
                     />
                     <GridItem 
                         title="hangel Üye İşyeri ol"
@@ -484,7 +488,7 @@ export default function LoginPage() {
                         cta2="Avantajları Gör"
                         cta2Href="/merchant"
                         imageUrl={merchantImg?.imageUrl || ''}
-                        imageHint={merchantImg?.imageHint || 'store drawing'}
+                        imageHint={merchantImg?.imageHint || 'charcoal merchant'}
                         theme="dark"
                     />
                     <GridItem 
@@ -502,3 +506,5 @@ export default function LoginPage() {
         </div>
     );
 }
+
+    
