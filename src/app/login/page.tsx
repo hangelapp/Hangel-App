@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -472,7 +473,7 @@ export default function LoginPage() {
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
                         imageUrl={campusIllustration}
-                        imageHint="campus illustration"
+                        imageHint="university building drawing"
                     />
                     <GridItem 
                         title="hangel Üye İşyeri ol"
