@@ -217,7 +217,7 @@ export default function ImpactStoryPage() {
 
           {/* Touch Zones */}
           <div className="absolute inset-0 z-30 flex">
-            <div className="w-1/3 h-full cursor-pointer" onClick={prevStory} />
+            <div className="w-1/3 h-full cursor-pointer" onClick={prevSlide} />
             <div className="w-2/3 h-full cursor-pointer" onClick={nextSlide} />
           </div>
 
