@@ -363,7 +363,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/volunteering">Tümünü Gör</Link>
+                            <Link href="/volunteering">Tümünü Gör ({volunteeringOpportunities.length} İlan)</Link>
                         </Button>
                     </div>
                 </section>
@@ -414,7 +414,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tümünü Gör</Link>
+                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
                         </Button>
                     </div>
                 </section>
