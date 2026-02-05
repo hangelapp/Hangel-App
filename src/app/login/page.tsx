@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -90,12 +91,6 @@ const Header = () => {
                     </div>
                     
                     <div className="flex items-center gap-1">
-                        <Link href="/emergency">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                                <Siren className="h-4 w-4" />
-                            </Button>
-                        </Link>
-
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
@@ -112,6 +107,12 @@ const Header = () => {
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
+
+                        <Link href="/emergency">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                                <Siren className="h-4 w-4" />
+                            </Button>
+                        </Link>
                     </div>
 
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
@@ -295,14 +296,6 @@ export default function LoginPage() {
                         <Button asChild size="lg" className="rounded-full px-10 h-12 text-base font-bold bg-primary hover:bg-primary/90">
                             <Link href="/login/selection?action=register">Şimdi Katıl</Link>
                         </Button>
-                    </div>
-                    <div className="relative w-full h-[400px] mt-12 flex items-center justify-center">
-                        <div className="relative w-64 h-64">
-                            <div className="absolute inset-0 bg-primary/20 rounded-full animate-pulse blur-3xl" />
-                            <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-4">
-                                <Heart className="w-32 h-32 text-primary" fill="currentColor" />
-                            </div>
-                        </div>
                     </div>
                 </section>
 
