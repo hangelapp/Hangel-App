@@ -71,7 +71,7 @@ const Header = () => {
                     <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-primary"
+                        className="h-8 w-8 text-[#1d1d1f]/80"
                         onClick={() => toast({ title: "Arama", description: "Arama özelliği yakında eklenecek!" })}
                     >
                         <Search className="h-4 w-4" />
@@ -79,13 +79,13 @@ const Header = () => {
                     
                     <div className="flex items-center gap-0">
                         <Link href="/volunteering">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
                                 <HeartHandshake className="h-4 w-4" />
                             </Button>
                         </Link>
 
                         <Link href="/market">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
                                 <ShoppingBag className="h-4 w-4" />
                             </Button>
                         </Link>
@@ -117,7 +117,7 @@ const Header = () => {
                         </DropdownMenu>
                     </div>
 
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary md:hidden">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
                         <Menu className="h-5 w-5" />
                     </Button>
                 </div>
@@ -195,7 +195,7 @@ const Footer = () => (
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/corporate"}] },
                         { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
-                        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
+                        { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
                         <AccordionItem key={group.title} value={group.title} className="border-b border-black/10">
                             <AccordionTrigger className="text-[12px] font-bold py-3 hover:no-underline uppercase tracking-tight text-[#1d1d1f]/80">
