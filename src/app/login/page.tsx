@@ -154,7 +154,7 @@ const GridItem = ({
 
     return (
         <section className={cn(
-            "relative h-[620px] rounded-[2.5rem] overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
+            "relative h-[680px] rounded-[2.5rem] overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
             theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
             className
         )}>
@@ -174,7 +174,7 @@ const GridItem = ({
             </div>
             <div className="relative w-full flex-1 flex items-center justify-center pb-12 px-6">
                 <div className={cn(
-                    "w-full max-w-[380px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
+                    "w-full max-w-[420px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
                     theme === 'dark' ? "border border-white/10" : "border border-black/5"
                 )}>
                     {images && images.length > 0 ? (
@@ -339,12 +339,12 @@ export default function LoginPage() {
     const merchantImg = PlaceHolderImages.find(img => img.id === 'merchant-illustration');
     const libraryImg = PlaceHolderImages.find(img => img.id === 'library-illustration');
 
-    const campusImages = [
-        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration')?.imageUrl || '', hint: 'charcoal university' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-2')?.imageUrl || '', hint: 'charcoal university' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-3')?.imageUrl || '', hint: 'charcoal university' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-4')?.imageUrl || '', hint: 'charcoal university' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-illustration-5')?.imageUrl || '', hint: 'charcoal university' },
+    const campusBanners = [
+        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-1')?.imageUrl || '', hint: 'minimalist university conference poster' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-2')?.imageUrl || '', hint: 'apple style student summit banner' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-3')?.imageUrl || '', hint: 'clean design campus concert flyer' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-4')?.imageUrl || '', hint: 'modern academic workshop poster' },
+        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-5')?.imageUrl || '', hint: 'minimalist college hackathon banner' },
     ];
 
     return (
@@ -496,7 +496,7 @@ export default function LoginPage() {
                         cta2="Özellikleri İncele"
                         cta2Href="/ngo-onboarding"
                         imageUrl={stkImg?.imageUrl || ''}
-                        imageHint={stkImg?.imageHint || 'charcoal charity'}
+                        imageHint={stkImg?.imageHint || 'charcoal charity drawing'}
                     />
                     <GridItem 
                         title="hangel Kampüs"
@@ -506,7 +506,7 @@ export default function LoginPage() {
                         cta2="Avantajları Gör"
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
-                        images={campusImages}
+                        images={campusBanners}
                     />
                     <GridItem 
                         title="hangel üye işyeri"
@@ -516,7 +516,7 @@ export default function LoginPage() {
                         cta2="Avantajları Gör"
                         cta2Href="/merchant"
                         imageUrl={merchantImg?.imageUrl || ''}
-                        imageHint={merchantImg?.imageHint || 'charcoal merchant'}
+                        imageHint={merchantImg?.imageHint || 'charcoal merchant store drawing'}
                         theme="dark"
                     />
                     <GridItem 
@@ -525,7 +525,7 @@ export default function LoginPage() {
                         cta1="Kaynakları Gör"
                         cta1Href="/library"
                         imageUrl={libraryImg?.imageUrl || ''}
-                        imageHint={libraryImg?.imageHint || 'charcoal library'}
+                        imageHint={libraryImg?.imageHint || 'charcoal library book drawing'}
                     />
                 </div>
             </main>
