@@ -154,27 +154,27 @@ const GridItem = ({
     className?: string
 }) => (
     <section className={cn(
-        "relative h-[580px] rounded-3xl overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
+        "relative h-[620px] rounded-[2.5rem] overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
         <div className="relative z-10 space-y-1 px-6 mb-8">
-            <h3 className="text-3xl font-bold tracking-tight">{title}</h3>
-            {subtitle && <p className="text-lg font-medium opacity-90">{subtitle}</p>}
-            <div className="flex items-center justify-center gap-4 pt-3">
-                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm font-bold">
+            <h3 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h3>
+            {subtitle && <p className="text-lg md:text-xl font-medium opacity-90">{subtitle}</p>}
+            <div className="flex items-center justify-center gap-4 pt-4">
+                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
                     {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
                 </Link>
                 {cta2 && (
-                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm font-bold">
+                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
                         {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
                     </Link>
                 )}
             </div>
         </div>
-        <div className="relative w-full flex-1 flex items-center justify-center pb-12">
+        <div className="relative w-full flex-1 flex items-center justify-center pb-12 px-6">
             <div className={cn(
-                "w-64 h-64 relative rounded-[2.5rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-105",
+                "w-full max-w-[380px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
                 theme === 'dark' ? "border border-white/10" : "border border-black/5"
             )}>
                 <Image 
