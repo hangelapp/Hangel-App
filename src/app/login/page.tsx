@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -286,7 +287,7 @@ export default function LoginPage() {
                             <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80">
                                 Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
                             </p>
-                            <p className="text-sm md:text-lg text-[#1d1d1f]/60 font-medium">
+                            <p className="text-sm md:text-lg text-[#1d1d1f]/60 font-medium pt-12">
                                 Merhaba; günlük alışverişini iyi fiyatlarla yaparken ek masraf ödemeden bağışa dönüştürmeni ve profesyonel yetkinliklerin ile sosyal hassasiyetlerin doğrultusunda gönüllülük yapmanı sağlayan bir sosyal etki platformuna hoş geldin.
                             </p>
                         </div>
