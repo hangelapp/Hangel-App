@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -173,7 +172,7 @@ const GridItem = ({
                 )}
             </div>
         </div>
-        <div className="relative w-full flex-1 flex items-center justify-center pb-12 px-6">
+        <div className="relative w-full flex-1 flex items-center justify-center pb-12">
             <div className={cn(
                 "w-full max-w-[380px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
                 theme === 'dark' ? "border border-white/10" : "border border-black/5"
@@ -472,9 +471,9 @@ export default function LoginPage() {
                     <GridItem 
                         title="hangel Kampüs"
                         subtitle="Üniversiteler için sosyal etki ağı."
-                        cta1="Temsilci Ol"
+                        cta1="Kulübünü Kaydet"
                         cta1Href="/contact/universities"
-                        cta2="Okulunu Kaydet"
+                        cta2="Avantajları Gör"
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
                         imageUrl={campusImg?.imageUrl || ''}
@@ -484,7 +483,7 @@ export default function LoginPage() {
                         title="hangel Üye İşyeri ol"
                         subtitle="İşletmenizde QR ile ödeme alın."
                         cta1="Başvur"
-                        cta1Href="/merchant"
+                        cta1Href="/login/selection?action=register&type=corporate"
                         cta2="Avantajları Gör"
                         cta2Href="/merchant"
                         imageUrl={merchantImg?.imageUrl || ''}
@@ -506,5 +505,3 @@ export default function LoginPage() {
         </div>
     );
 }
-
-    
