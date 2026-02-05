@@ -196,7 +196,7 @@ const Footer = () => (
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
                         { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
-                        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
+                        { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
                         <AccordionItem key={group.title} value={group.title} className="border-b border-black/10">
                             <AccordionTrigger className="text-[12px] font-bold py-3 hover:no-underline uppercase tracking-tight text-[#1d1d1f]/80">
@@ -240,16 +240,15 @@ const Footer = () => (
                     <Link href="#" className="hover:underline">Opera Store</Link>
                 </div>
                 
-                <div className="h-px bg-black/10 w-full" />
-
-                {/* Social Media Icons Section */}
-                <div className="flex gap-5 items-center pb-2">
-                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></Link>
-                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></Link>
-                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Facebook className="h-5 w-5" /></Link>
-                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Linkedin className="h-5 w-5" /></Link>
-                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Youtube className="h-5 w-5" /></Link>
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
+                    <Link href="#" className="hover:underline">Instagram</Link>
+                    <Link href="#" className="hover:underline">Facebook</Link>
+                    <Link href="#" className="hover:underline">X (Twitter)</Link>
+                    <Link href="#" className="hover:underline">LinkedIn</Link>
+                    <Link href="#" className="hover:underline">YouTube</Link>
                 </div>
+
+                <div className="h-px bg-black/10 w-full" />
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-[#1d1d1f]/50 font-medium tracking-tight">
                     <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
