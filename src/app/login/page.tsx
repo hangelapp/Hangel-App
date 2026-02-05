@@ -525,7 +525,7 @@ export default function LoginPage() {
                         cta1="Kaynakları Gör"
                         cta1Href="/library"
                         imageUrl={libraryImg?.imageUrl || ''}
-                        imageHint={libraryImg?.imageHint || 'charcoal library book drawing'}
+                        imageHint={libraryImg?.imageHint || 'charcoal library drawing'}
                     />
                 </div>
             </main>
