@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -93,7 +92,7 @@ const Header = () => {
                     
                     <div className="flex items-center gap-1">
                         <Link href="/emergency">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
                                 <Siren className="h-4 w-4" />
                             </Button>
                         </Link>
@@ -262,17 +261,6 @@ const Footer = () => (
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-black/10 pt-4">
                     <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
                         <span className="whitespace-nowrap">Telif Hakkı © 2024 Hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1">
-                            <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
-                            <span className="text-black/10">|</span>
-                            <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerezlerin Kullanımı</Link>
-                            <span className="text-black/10">|</span>
-                            <Link href="/settings/contracts" className="hover:underline">Sözleşmeler</Link>
-                            <span className="text-black/10">|</span>
-                            <Link href="#" className="hover:underline">Site Haritası</Link>
-                            <span className="text-black/10">|</span>
-                            <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
-                        </div>
                     </div>
                     <div className="text-[12px] font-medium text-[#1d1d1f]/70 hover:text-[#1d1d1f] cursor-pointer transition-colors shrink-0">
                         Türkiye
@@ -290,13 +278,18 @@ export default function LoginPage() {
             
             <main className="pt-12">
                 <section className="bg-[#f5f5f7] pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
                             Yok öyle yalnız başına mücadele etmek.
                         </h1>
-                        <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80 max-w-4xl mx-auto">
-                            Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
-                        </p>
+                        <div className="space-y-2 max-w-4xl mx-auto">
+                            <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80">
+                                Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
+                            </p>
+                            <p className="text-sm md:text-lg text-[#1d1d1f]/60 font-medium">
+                                Merhaba; günlük alışverişini iyi fiyatlarla yaparken ek masraf ödemeden bağışa dönüştürmeni ve profesyonel yetkinliklerin ile sosyal hassasiyetlerin doğrultusunda gönüllülük yapmanı sağlayan bir sosyal etki platformuna hoş geldin.
+                            </p>
+                        </div>
                     </div>
                     <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Button asChild size="lg" className="rounded-full px-10 h-12 text-base font-bold bg-primary hover:bg-primary/90">
@@ -379,7 +372,7 @@ export default function LoginPage() {
                                         <h4 className="font-bold text-xl leading-tight text-[#1d1d1f] line-clamp-2">{opp.title}</h4>
                                         <p className="text-xs font-black text-primary uppercase tracking-widest">{opp.organization}</p>
                                     </div>
-                                    <p className="text-sm text-[#1d1d1f]/60 font-medium line-clamp-4 leading-relaxed">{opp.description}</p>
+                                    <div className="text-sm text-[#1d1d1f]/60 font-medium line-clamp-4 leading-relaxed">{opp.description}</div>
                                     
                                     <div className="mt-auto flex items-center justify-between w-full pt-6 border-t border-black/5">
                                         <div className="flex flex-col">
