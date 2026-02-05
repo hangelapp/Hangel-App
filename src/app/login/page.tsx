@@ -24,7 +24,8 @@ import {
     Zap,
     QrCode,
     BookOpen,
-    Heart
+    Heart,
+    ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -91,11 +92,18 @@ const Header = () => {
                     </div>
                     
                     <div className="flex items-center gap-1">
+                        <Link href="/emergency">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                                <Siren className="h-4 w-4" />
+                            </Button>
+                        </Link>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 px-2 gap-1 text-[11px] font-medium text-[#1d1d1f]/80">
                                     <Globe className="h-4 w-4" />
                                     <span className="hidden sm:inline">{currentLang}</span>
+                                    <ChevronDown className="h-3 w-3 opacity-50" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
@@ -107,12 +115,6 @@ const Header = () => {
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
-
-                        <Link href="/emergency">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                                <Siren className="h-4 w-4" />
-                            </Button>
-                        </Link>
                     </div>
 
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
@@ -239,12 +241,16 @@ const Footer = () => (
                 
                 <div className="h-px bg-black/10 w-full" />
 
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
-                    <Link href="#" className="hover:underline">Instagram</Link>
-                    <Link href="#" className="hover:underline">Facebook</Link>
-                    <Link href="#" className="hover:underline">X (Twitter)</Link>
-                    <Link href="#" className="hover:underline">LinkedIn</Link>
-                    <Link href="#" className="hover:underline">Youtube</Link>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-[#1d1d1f]/50 font-medium tracking-tight">
+                    <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
+                    <span className="text-black/10">|</span>
+                    <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerezlerin Kullanımı</Link>
+                    <span className="text-black/10">|</span>
+                    <Link href="/settings/contracts" className="hover:underline">Sözleşmeler</Link>
+                    <span className="text-black/10">|</span>
+                    <Link href="#" className="hover:underline">Site Haritası</Link>
+                    <span className="text-black/10">|</span>
+                    <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
                 </div>
 
                 <div className="h-px bg-black/10 w-full" />
