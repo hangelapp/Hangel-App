@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
@@ -47,6 +47,7 @@ import { useToast } from '@/hooks/use-toast';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import type { Brand } from '@/lib/types';
 
 const languages = [
     "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
@@ -302,14 +303,14 @@ const Footer = () => (
 );
 
 export default function LoginPage() {
-    const typeOrder = ['cooperative', 'economic', 'brand', 'social'];
-    
-    const sortedBrands = useMemo(() => {
-        return [...allEntityLists].sort((a, b) => {
-            const indexA = typeOrder.indexOf(a.type);
-            const indexB = typeOrder.indexOf(b.type);
-            return indexA - indexB;
-        }).slice(0, 21);
+    const [displayBrands, setDisplayBrands] = useState<Brand[]>([]);
+
+    useEffect(() => {
+        // Shuffle the brands each time the page loads
+        const shuffled = [...allEntityLists]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 21);
+        setDisplayBrands(shuffled);
     }, []);
 
     const stkImg = PlaceHolderImages.find(img => img.id === 'stk-illustration');
@@ -359,7 +360,7 @@ export default function LoginPage() {
                     
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
-                            {sortedBrands.map((brand) => (
+                            {displayBrands.map((brand) => (
                                 <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-[22rem] transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
                                     <div className="absolute top-6 right-6">
                                         <span className="text-[9px] font-black text-[#1d1d1f]/40 uppercase tracking-widest bg-white/50 backdrop-blur-sm px-2 py-0.5 rounded-full border border-black/5">
