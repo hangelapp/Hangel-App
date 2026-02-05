@@ -80,25 +80,25 @@
     },
     {
       "id": "stk-illustration",
-      "description": "NGO and charity illustration",
+      "description": "Charcoal charcoal charity",
       "imageUrl": "https://images.unsplash.com/photo-1751730739594-9d016ed468b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjaGFyaXR5JTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc3MDI2MjY3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "charity illustration"
+      "imageHint": "charcoal charity"
     },
     {
       "id": "campus-illustration",
-      "description": "Historical university campus drawing",
+      "description": "Charcoal university building",
       "imageUrl": "https://images.unsplash.com/photo-1652397836984-946d46c3e47a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx1bml2ZXJzaXR5JTIwYnVpbGRpbmclMjBkcmF3aW5nfGVufDB8fHx8MTc3MDI2MzMzNnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "university building drawing"
+      "imageHint": "charcoal university"
     },
     {
       "id": "merchant-illustration",
-      "description": "Merchant and payment illustration",
+      "description": "Charcoal merchant store",
       "imageUrl": "https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzdG9yZSUyMGlsbHVzdHJhdGlvbnxlbnwwfHx8fDE3NzAyNjI2NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "store drawing"
+      "imageHint": "charcoal merchant"
     },
     {
       "id": "library-illustration",
-      "description": "Charcoal library drawing, blending digital and traditional",
+      "description": "Charcoal charcoal library",
       "imageUrl": "https://images.unsplash.com/photo-1755194993560-88d303a893b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsaWJyYXJ5JTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc3MDI2MjY3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "charcoal library"
     }
