@@ -196,7 +196,7 @@ const Footer = () => (
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/corporate"}] },
                         { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
-                        { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
+                        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
                         <AccordionItem key={group.title} value={group.title} className="border-b border-black/10">
                             <AccordionTrigger className="text-[12px] font-bold py-3 hover:no-underline uppercase tracking-tight text-[#1d1d1f]/80">
