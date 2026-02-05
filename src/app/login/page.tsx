@@ -240,6 +240,8 @@ const Footer = () => (
                     <Link href="#" className="hover:underline">Opera Store</Link>
                 </div>
                 
+                <div className="h-px bg-black/10 w-full" />
+
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
                     <Link href="#" className="hover:underline">Instagram</Link>
                     <Link href="#" className="hover:underline">Facebook</Link>
