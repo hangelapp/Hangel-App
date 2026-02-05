@@ -365,7 +365,7 @@ export default function LoginPage() {
                                             {typeLabels[brand.type] || 'Marka'}
                                         </span>
                                     </div>
-                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <ShoppingBag className="h-6 w-6" />
                                     </div>
                                     <div className="relative w-24 h-24 mb-6">
