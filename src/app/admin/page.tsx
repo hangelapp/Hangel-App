@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Store, FileText, HeartHandshake, Users, LayoutGrid, Calendar, Building, Building2, Briefcase, Landmark, Smartphone, MessageCircle, Database, PhoneCall, GraduationCap, MapPin } from 'lucide-react';
+import { ChevronRight, Store, FileText, HeartHandshake, Users, LayoutGrid, Calendar, Building, Building2, Briefcase, Landmark, Smartphone, MessageCircle, Database, PhoneCall, GraduationCap, MapPin, HandCoins, Globe } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { managedItems } from '@/lib/data';
