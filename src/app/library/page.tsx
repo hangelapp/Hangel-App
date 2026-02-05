@@ -212,12 +212,12 @@ export default function LibraryPage() {
         {/* Project Assistant (Top) */}
         <Dialog open={isProjectAssistantOpen} onOpenChange={setIsProjectAssistantOpen}>
             <DialogTrigger asChild>
-                <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl bg-orange-600 hover:bg-orange-700 animate-in slide-in-from-bottom-4 duration-500">
-                    <Bot className="h-7 w-7 text-white" />
+                <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl bg-indigo-600 hover:bg-indigo-700 animate-in slide-in-from-bottom-4 duration-500">
+                    <Sparkles className="h-7 w-7 text-white" />
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[450px] h-[600px] flex flex-col p-0 gap-0">
-                <DialogHeader className="p-4 border-b bg-orange-600 text-white rounded-t-lg">
+                <DialogHeader className="p-4 border-b bg-indigo-600 text-white rounded-t-lg">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/20 rounded-lg">
                             <Sparkles className="h-6 w-6" />
@@ -252,8 +252,8 @@ export default function LibraryPage() {
                             )}>
                                 <Avatar className="h-8 w-8 shrink-0">
                                     {msg.role === 'assistant' ? (
-                                        <div className="bg-orange-100 h-full w-full flex items-center justify-center">
-                                            <Bot className="h-4 w-4 text-orange-600" />
+                                        <div className="bg-indigo-100 h-full w-full flex items-center justify-center">
+                                            <Sparkles className="h-4 w-4 text-indigo-600" />
                                         </div>
                                     ) : (
                                         <AvatarFallback className="bg-muted text-[10px]">BEN</AvatarFallback>
@@ -262,7 +262,7 @@ export default function LibraryPage() {
                                 <div className={cn(
                                     "p-3 rounded-2xl text-sm max-w-[85%]",
                                     msg.role === 'user' 
-                                        ? "bg-orange-600 text-white rounded-tr-none" 
+                                        ? "bg-indigo-600 text-white rounded-tr-none" 
                                         : "bg-background border rounded-tl-none"
                                 )}>
                                     {msg.content}
@@ -271,8 +271,8 @@ export default function LibraryPage() {
                         ))}
                         {isProjectLoading && (
                             <div className="flex items-start gap-3">
-                                <Avatar className="h-8 w-8 bg-orange-100">
-                                    <Bot className="h-4 w-4 text-orange-600 m-auto animate-pulse" />
+                                <Avatar className="h-8 w-8 bg-indigo-100">
+                                    <Sparkles className="h-4 w-4 text-indigo-600 m-auto animate-pulse" />
                                 </Avatar>
                                 <div className="p-3 bg-background border rounded-2xl rounded-tl-none">
                                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -291,7 +291,7 @@ export default function LibraryPage() {
                             disabled={isProjectLoading}
                             className="flex-1"
                         />
-                        <Button type="submit" size="icon" disabled={isProjectLoading || !projectQuestion.trim()} className="bg-orange-600 hover:bg-orange-700 text-white">
+                        <Button type="submit" size="icon" disabled={isProjectLoading || !projectQuestion.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                             <Send className="h-4 w-4" />
                         </Button>
                     </form>
