@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import * as Icons from 'lucide-react';
-import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2 } from 'lucide-react';
+import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { librarySections, type LibrarySection } from '@/lib/library';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -27,11 +27,17 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortCriteria, setSortCriteria] = useState('default');
 
-  // AI Assistant State
+  // Library Assistant State
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [assistantQuestion, setAssistantQuestion] = useState('');
   const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
+
+  // Project Assistant State
+  const [isProjectAssistantOpen, setIsProjectAssistantOpen] = useState(false);
+  const [projectQuestion, setProjectQuestion] = useState('');
+  const [projectChatHistory, setProjectChatHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
+  const [isProjectLoading, setIsProjectLoading] = useState(false);
 
   const filteredAndSortedLibrarySections = useMemo(() => {
     let sections: LibrarySection[] = JSON.parse(JSON.stringify(librarySections));
@@ -105,6 +111,29 @@ export default function LibraryPage() {
     }
   }, [assistantQuestion, toast]);
 
+  const handleAskProjectAssistant = useCallback(async () => {
+    if (!projectQuestion.trim()) return;
+
+    const userMsg = projectQuestion;
+    setProjectChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
+    setProjectQuestion('');
+    setIsProjectLoading(true);
+
+    // Simulate Project Assistant logic (using library context for now)
+    try {
+        setTimeout(() => {
+            setProjectChatHistory(prev => [...prev, { 
+                role: 'assistant', 
+                content: `Projeniz için harika bir fikir! "${userMsg}" konusu üzerine çalışırken kütüphanemizdeki 'Sosyal Etki Raporları' ve 'Gönüllülük Rehberleri' bölümlerinden faydalanmanızı öneririm. Projenizi nasıl daha etkili hale getirebiliriz?` 
+            }]);
+            setIsProjectLoading(false);
+        }, 1500);
+    } catch (error) {
+      console.error(error);
+      setIsProjectLoading(false);
+    }
+  }, [projectQuestion]);
+
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0 bg-secondary min-h-screen pb-24">
       <div className="text-center">
@@ -177,8 +206,100 @@ export default function LibraryPage() {
         </div>
       )}
 
-      {/* AI Assistant FAB and Dialog */}
-      <div className="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 z-50">
+      {/* AI Assistants FAB and Dialogs */}
+      <div className="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 z-50 flex flex-col gap-4">
+        
+        {/* Project Assistant (Top) */}
+        <Dialog open={isProjectAssistantOpen} onOpenChange={setIsProjectAssistantOpen}>
+            <DialogTrigger asChild>
+                <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl bg-orange-600 hover:bg-orange-700 animate-in slide-in-from-bottom-4 duration-500">
+                    <Bot className="h-7 w-7 text-white" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[450px] h-[600px] flex flex-col p-0 gap-0">
+                <DialogHeader className="p-4 border-b bg-orange-600 text-white rounded-t-lg">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white/20 rounded-lg">
+                            <Sparkles className="h-6 w-6" />
+                        </div>
+                        <div className="text-left">
+                            <DialogTitle className="text-lg">Proje Asistanı</DialogTitle>
+                            <DialogDescription className="text-xs text-white/80">
+                                Sosyal etki projelerinizi birlikte tasarlayalım.
+                            </DialogDescription>
+                        </div>
+                    </div>
+                </DialogHeader>
+                
+                <ScrollArea className="flex-1 p-4 bg-muted/30">
+                    <div className="space-y-4">
+                        {projectChatHistory.length === 0 && (
+                            <div className="text-center py-8 space-y-2">
+                                <p className="text-sm font-medium text-muted-foreground">Bir sosyal sorumluluk projesi mi başlatmak istiyorsunuz? Size rehberlik edebilirim.</p>
+                                <div className="flex flex-wrap justify-center gap-2 pt-2">
+                                    {['Okul projesi fikri', 'Gönüllü toplama stratejisi', 'Etki ölçümleme nasıl yapılır?'].map(q => (
+                                        <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setProjectQuestion(q)}>
+                                            {q}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {projectChatHistory.map((msg, i) => (
+                            <div key={i} className={cn(
+                                "flex items-start gap-3",
+                                msg.role === 'user' ? "flex-row-reverse" : "flex-row"
+                            )}>
+                                <Avatar className="h-8 w-8 shrink-0">
+                                    {msg.role === 'assistant' ? (
+                                        <div className="bg-orange-100 h-full w-full flex items-center justify-center">
+                                            <Bot className="h-4 w-4 text-orange-600" />
+                                        </div>
+                                    ) : (
+                                        <AvatarFallback className="bg-muted text-[10px]">BEN</AvatarFallback>
+                                    )}
+                                </Avatar>
+                                <div className={cn(
+                                    "p-3 rounded-2xl text-sm max-w-[85%]",
+                                    msg.role === 'user' 
+                                        ? "bg-orange-600 text-white rounded-tr-none" 
+                                        : "bg-background border rounded-tl-none"
+                                )}>
+                                    {msg.content}
+                                </div>
+                            </div>
+                        ))}
+                        {isProjectLoading && (
+                            <div className="flex items-start gap-3">
+                                <Avatar className="h-8 w-8 bg-orange-100">
+                                    <Bot className="h-4 w-4 text-orange-600 m-auto animate-pulse" />
+                                </Avatar>
+                                <div className="p-3 bg-background border rounded-2xl rounded-tl-none">
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </ScrollArea>
+
+                <div className="p-4 border-t bg-background">
+                    <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); handleAskProjectAssistant(); }}>
+                        <Input 
+                            placeholder="Projenden bahset..." 
+                            value={projectQuestion}
+                            onChange={(e) => setProjectQuestion(e.target.value)}
+                            disabled={isProjectLoading}
+                            className="flex-1"
+                        />
+                        <Button type="submit" size="icon" disabled={isProjectLoading || !projectQuestion.trim()} className="bg-orange-600 hover:bg-orange-700 text-white">
+                            <Send className="h-4 w-4" />
+                        </Button>
+                    </form>
+                </div>
+            </DialogContent>
+        </Dialog>
+
+        {/* Library Assistant (Bottom) */}
         <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
             <DialogTrigger asChild>
                 <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl animate-bounce hover:animate-none">
