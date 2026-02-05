@@ -94,13 +94,13 @@
       "id": "merchant-illustration",
       "description": "Merchant and payment illustration",
       "imageUrl": "https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzdG9yZSUyMGlsbHVzdHJhdGlvbnxlbnwwfHx8fDE3NzAyNjI2NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "store illustration"
+      "imageHint": "store drawing"
     },
     {
       "id": "library-illustration",
-      "description": "Digital and traditional library blend illustration",
+      "description": "Charcoal library drawing, blending digital and traditional",
       "imageUrl": "https://images.unsplash.com/photo-1755194993560-88d303a893b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsaWJyYXJ5JTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc3MDI2MjY3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "digital library"
+      "imageHint": "charcoal library"
     }
   ]
 }

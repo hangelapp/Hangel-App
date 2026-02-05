@@ -312,10 +312,10 @@ export default function LoginPage() {
         }).slice(0, 21);
     }, []);
 
-    const stkIllustration = PlaceHolderImages.find(img => img.id === 'stk-illustration')?.imageUrl || '';
-    const campusIllustration = PlaceHolderImages.find(img => img.id === 'campus-illustration')?.imageUrl || '';
-    const merchantIllustration = PlaceHolderImages.find(img => img.id === 'merchant-illustration')?.imageUrl || '';
-    const libraryIllustration = PlaceHolderImages.find(img => img.id === 'library-illustration')?.imageUrl || '';
+    const stkImg = PlaceHolderImages.find(img => img.id === 'stk-illustration');
+    const campusImg = PlaceHolderImages.find(img => img.id === 'campus-illustration');
+    const merchantImg = PlaceHolderImages.find(img => img.id === 'merchant-illustration');
+    const libraryImg = PlaceHolderImages.find(img => img.id === 'library-illustration');
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
@@ -360,7 +360,7 @@ export default function LoginPage() {
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
                             {sortedBrands.map((brand) => (
-                                <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
+                                <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-[22rem] transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
                                     <div className="absolute top-6 right-6">
                                         <span className="text-[9px] font-black text-[#1d1d1f]/40 uppercase tracking-widest bg-white/50 backdrop-blur-sm px-2 py-0.5 rounded-full border border-black/5">
                                             {typeLabels[brand.type] || 'Marka'}
@@ -461,8 +461,8 @@ export default function LoginPage() {
                         cta1Href="/login/selection?action=register&type=corporate"
                         cta2="Özellikleri İncele"
                         cta2Href="/ngo-onboarding"
-                        imageUrl={stkIllustration}
-                        imageHint="charity illustration"
+                        imageUrl={stkImg?.imageUrl || ''}
+                        imageHint={stkImg?.imageHint || 'charity illustration'}
                     />
                     <GridItem 
                         title="hangel Kampüs"
@@ -472,8 +472,8 @@ export default function LoginPage() {
                         cta2="Okulunu Kaydet"
                         cta2Href="/login/selection?action=register&type=corporate"
                         theme="dark"
-                        imageUrl={campusIllustration}
-                        imageHint="university building drawing"
+                        imageUrl={campusImg?.imageUrl || ''}
+                        imageHint={campusImg?.imageHint || 'university drawing'}
                     />
                     <GridItem 
                         title="hangel Üye İşyeri ol"
@@ -482,8 +482,8 @@ export default function LoginPage() {
                         cta1Href="/merchant"
                         cta2="Avantajları Gör"
                         cta2Href="/merchant"
-                        imageUrl={merchantIllustration}
-                        imageHint="store illustration"
+                        imageUrl={merchantImg?.imageUrl || ''}
+                        imageHint={merchantImg?.imageHint || 'store drawing'}
                         theme="dark"
                     />
                     <GridItem 
@@ -491,8 +491,8 @@ export default function LoginPage() {
                         subtitle="Bilgi paylaştıkça çoğalır."
                         cta1="Kaynakları Gör"
                         cta1Href="/library"
-                        imageUrl={libraryIllustration}
-                        imageHint="digital library"
+                        imageUrl={libraryImg?.imageUrl || ''}
+                        imageHint={libraryImg?.imageHint || 'charcoal library'}
                     />
                 </div>
             </main>
