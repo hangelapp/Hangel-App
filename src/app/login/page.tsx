@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -191,7 +192,7 @@ const Footer = () => (
             <div className="md:hidden">
                 <Accordion type="single" collapsible className="w-full">
                     {[
-                        { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "hangel club ol", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
+                        { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/corporate"}] },
                         { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
@@ -213,7 +214,7 @@ const Footer = () => (
 
             <div className="hidden md:grid grid-cols-5 gap-8 border-b border-black/10 pb-8">
                 {[
-                    { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "hangel club ol", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
+                    { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
                     { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/corporate"}] },
                     { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}] },
                     { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
