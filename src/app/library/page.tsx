@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import * as Icons from 'lucide-react';
-import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2, Sparkles } from 'lucide-react';
+import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2, Sparkles, BookOpen, Target, Users, ClipboardCheck, Wallet, LineChart } from 'lucide-react';
 import Link from 'next/link';
 import { librarySections, type LibrarySection } from '@/lib/library';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -38,6 +38,15 @@ export default function LibraryPage() {
   const [projectQuestion, setProjectQuestion] = useState('');
   const [projectChatHistory, setProjectChatHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [isProjectLoading, setIsProjectLoading] = useState(false);
+
+  const projectSteps = [
+    { label: 'Proje Özeti', icon: BookOpen, prompt: 'Projemin kısa bir özetini hazırlamama yardım et.' },
+    { label: 'Amaç ve Hedefler', icon: Target, prompt: 'Projemin amaç ve hedeflerini (SMART) nasıl belirlemeliyim?' },
+    { label: 'Hedef Kitle', icon: Users, prompt: 'Projemin hedef kitlesini ve paydaş analizini yapalım.' },
+    { label: 'Faaliyet Planı', icon: ClipboardCheck, prompt: 'Adım adım bir faaliyet takvimi oluşturmama yardım et.' },
+    { label: 'Bütçe Planlama', icon: Wallet, prompt: 'Projem için temel bütçe kalemlerini belirleyelim.' },
+    { label: 'Etki Ölçümleme', icon: LineChart, prompt: 'Projemin sosyal etkisini nasıl ölçeceğim?' },
+  ];
 
   const filteredAndSortedLibrarySections = useMemo(() => {
     let sections: LibrarySection[] = JSON.parse(JSON.stringify(librarySections));
@@ -111,20 +120,20 @@ export default function LibraryPage() {
     }
   }, [assistantQuestion, toast]);
 
-  const handleAskProjectAssistant = useCallback(async () => {
-    if (!projectQuestion.trim()) return;
+  const handleAskProjectAssistant = useCallback(async (customPrompt?: string) => {
+    const userMsg = customPrompt || projectQuestion;
+    if (!userMsg.trim()) return;
 
-    const userMsg = projectQuestion;
     setProjectChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
     setProjectQuestion('');
     setIsProjectLoading(true);
 
-    // Simulate Project Assistant logic (using library context for now)
     try {
+        // Simulate Project Assistant logic with methodology focus
         setTimeout(() => {
             setProjectChatHistory(prev => [...prev, { 
                 role: 'assistant', 
-                content: `Projeniz için harika bir fikir! "${userMsg}" konusu üzerine çalışırken kütüphanemizdeki 'Sosyal Etki Raporları' ve 'Gönüllülük Rehberleri' bölümlerinden faydalanmanızı öneririm. Projenizi nasıl daha etkili hale getirebiliriz?` 
+                content: `Sosyal sorumluluk projesi yazım esaslarına göre "${userMsg}" talebiniz üzerine çalışalım. \n\nİyi bir proje dosyası için net bir mantıksal çerçeve (logical framework) kurmalıyız. Projenizin sürdürülebilirliğini sağlamak adına kaynak yönetimi ve etki raporlaması adımlarını kütüphanemizdeki güncel verilerle destekleyebilirim. Hangi aşamadan devam edelim?` 
             }]);
             setIsProjectLoading(false);
         }, 1500);
@@ -216,38 +225,51 @@ export default function LibraryPage() {
                     <Sparkles className="h-7 w-7 text-white" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[450px] h-[600px] flex flex-col p-0 gap-0">
+            <DialogContent className="sm:max-w-[480px] h-[650px] flex flex-col p-0 gap-0">
                 <DialogHeader className="p-4 border-b bg-indigo-600 text-white rounded-t-lg">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/20 rounded-lg">
                             <Sparkles className="h-6 w-6" />
                         </div>
                         <div className="text-left">
-                            <DialogTitle className="text-lg">Proje Asistanı</DialogTitle>
+                            <DialogTitle className="text-lg">Proje Yazım Asistanı</DialogTitle>
                             <DialogDescription className="text-xs text-white/80">
-                                Sosyal etki projelerinizi birlikte tasarlayalım.
+                                Sosyal etki metodolojisine uygun proje tasarımı.
                             </DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
                 
                 <ScrollArea className="flex-1 p-4 bg-muted/30">
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {projectChatHistory.length === 0 && (
-                            <div className="text-center py-8 space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">Bir sosyal sorumluluk projesi mi başlatmak istiyorsunuz? Size rehberlik edebilirim.</p>
-                                <div className="flex flex-wrap justify-center gap-2 pt-2">
-                                    {['Okul projesi fikri', 'Gönüllü toplama stratejisi', 'Etki ölçümleme nasıl yapılır?'].map(q => (
-                                        <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setProjectQuestion(q)}>
-                                            {q}
+                            <div className="space-y-6 py-2">
+                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                                    <p className="text-sm font-semibold text-indigo-900 mb-1">Merhaba! Proje yolculuğuna hoş geldin.</p>
+                                    <p className="text-xs text-indigo-700 leading-relaxed">
+                                        Etkili bir sosyal sorumluluk projesi yazmak için aşağıdaki adımları takip edebiliriz. Hangi bölümden başlamak istersin?
+                                    </p>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-2">
+                                    {projectSteps.map(step => (
+                                        <Button 
+                                            key={step.label} 
+                                            variant="outline" 
+                                            className="h-auto py-3 px-3 flex flex-col items-center justify-center gap-2 bg-white hover:bg-indigo-50 hover:border-indigo-200 transition-all text-xs font-bold"
+                                            onClick={() => handleAskProjectAssistant(step.prompt)}
+                                        >
+                                            <step.icon className="h-5 w-5 text-indigo-600" />
+                                            <span className="text-center">{step.label}</span>
                                         </Button>
                                     ))}
                                 </div>
                             </div>
                         )}
+                        
                         {projectChatHistory.map((msg, i) => (
                             <div key={i} className={cn(
-                                "flex items-start gap-3",
+                                "flex items-start gap-3 animate-in fade-in-0 slide-in-from-bottom-2",
                                 msg.role === 'user' ? "flex-row-reverse" : "flex-row"
                             )}>
                                 <Avatar className="h-8 w-8 shrink-0">
@@ -256,14 +278,14 @@ export default function LibraryPage() {
                                             <Sparkles className="h-4 w-4 text-indigo-600" />
                                         </div>
                                     ) : (
-                                        <AvatarFallback className="bg-muted text-[10px]">BEN</AvatarFallback>
+                                        <AvatarFallback className="bg-muted text-[10px]">SEN</AvatarFallback>
                                     )}
                                 </Avatar>
                                 <div className={cn(
-                                    "p-3 rounded-2xl text-sm max-w-[85%]",
+                                    "p-3.5 rounded-2xl text-sm max-w-[85%] leading-relaxed",
                                     msg.role === 'user' 
-                                        ? "bg-indigo-600 text-white rounded-tr-none" 
-                                        : "bg-background border rounded-tl-none"
+                                        ? "bg-indigo-600 text-white rounded-tr-none shadow-md" 
+                                        : "bg-background border rounded-tl-none shadow-sm"
                                 )}>
                                     {msg.content}
                                 </div>
@@ -285,14 +307,14 @@ export default function LibraryPage() {
                 <div className="p-4 border-t bg-background">
                     <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); handleAskProjectAssistant(); }}>
                         <Input 
-                            placeholder="Projenden bahset..." 
+                            placeholder="Projenin amacından bahset..." 
                             value={projectQuestion}
                             onChange={(e) => setProjectQuestion(e.target.value)}
                             disabled={isProjectLoading}
-                            className="flex-1"
+                            className="flex-1 h-11 rounded-xl focus-visible:ring-indigo-600"
                         />
-                        <Button type="submit" size="icon" disabled={isProjectLoading || !projectQuestion.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                            <Send className="h-4 w-4" />
+                        <Button type="submit" size="icon" disabled={isProjectLoading || !projectQuestion.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 w-11 rounded-xl">
+                            <Send className="h-5 w-5" />
                         </Button>
                     </form>
                 </div>
