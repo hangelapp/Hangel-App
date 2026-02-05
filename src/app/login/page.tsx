@@ -25,7 +25,8 @@ import {
     QrCode,
     BookOpen,
     Heart,
-    ChevronDown
+    ChevronDown,
+    Twitter
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -241,6 +242,15 @@ const Footer = () => (
                 
                 <div className="h-px bg-black/10 w-full" />
 
+                {/* Social Media Icons Section */}
+                <div className="flex gap-5 items-center pb-2">
+                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></Link>
+                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></Link>
+                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Facebook className="h-5 w-5" /></Link>
+                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Linkedin className="h-5 w-5" /></Link>
+                    <Link href="#" className="text-[#1d1d1f]/60 hover:text-primary transition-colors"><Youtube className="h-5 w-5" /></Link>
+                </div>
+
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-[#1d1d1f]/50 font-medium tracking-tight">
                     <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
                     <span className="text-black/10">|</span>
@@ -287,7 +297,7 @@ export default function LoginPage() {
                             <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80">
                                 Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
                             </p>
-                            <p className="text-sm md:text-lg text-[#1d1d1f]/60 font-medium pt-12">
+                            <p className="text-sm md:text-lg text-[#1d1d1f]/60 font-normal pt-12">
                                 Merhaba; günlük alışverişini iyi fiyatlarla yaparken ek masraf ödemeden bağışa dönüştürmeni ve profesyonel yetkinliklerin ile sosyal hassasiyetlerin doğrultusunda gönüllülük yapmanı sağlayan bir sosyal etki platformuna hoş geldin.
                             </p>
                         </div>
