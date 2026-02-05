@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -72,7 +71,7 @@ const Header = () => {
                     <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-[#1d1d1f]/80"
+                        className="h-8 w-8 text-primary"
                         onClick={() => toast({ title: "Arama", description: "Arama özelliği yakında eklenecek!" })}
                     >
                         <Search className="h-4 w-4" />
@@ -80,13 +79,13 @@ const Header = () => {
                     
                     <div className="flex items-center gap-0">
                         <Link href="/volunteering">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
                                 <HeartHandshake className="h-4 w-4" />
                             </Button>
                         </Link>
 
                         <Link href="/market">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
                                 <ShoppingBag className="h-4 w-4" />
                             </Button>
                         </Link>
@@ -94,7 +93,7 @@ const Header = () => {
                     
                     <div className="flex items-center gap-1">
                         <Link href="/emergency">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
                                 <Siren className="h-4 w-4" />
                             </Button>
                         </Link>
@@ -118,7 +117,7 @@ const Header = () => {
                         </DropdownMenu>
                     </div>
 
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary md:hidden">
                         <Menu className="h-5 w-5" />
                     </Button>
                 </div>
