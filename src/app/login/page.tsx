@@ -196,7 +196,7 @@ const Footer = () => (
                         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
                         { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
                         { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
-                        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
+                        { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                     ].map((group) => (
                         <AccordionItem key={group.title} value={group.title} className="border-b border-black/10">
                             <AccordionTrigger className="text-[12px] font-bold py-3 hover:no-underline uppercase tracking-tight text-[#1d1d1f]/80">
@@ -219,7 +219,7 @@ const Footer = () => (
                     { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/about"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "İş Fırsatları", href: "/corporate"}] },
                     { title: "İşbirlikleri", links: [{label: "Üye İşyeri", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Kampüs Elçiliği", href: "/contact/universities"}, {label: "Kulüpler", href: "/admin/clubs"}] },
                     { title: "Destek", links: [{label: "Destek Merkezi", href: "/support"}, {label: "S.S.S", href: "/support"}, {label: "İletişim", href: "/about"}, {label: "Bilgi Toplumu", href: "/bilgi-toplumu-hizmetleri"}, {label: "Erişilebilirlik", href: "/settings/accessibility"}] },
-                    { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
+                    { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Bağışlarım", href: "/my-donations"}, {label: "Başvurularım", href: "/my-applications"}] },
                 ].map((group) => (
                     <div key={group.title} className="space-y-3">
                         <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]/80">{group.title}</h4>
@@ -288,7 +288,7 @@ export default function LoginPage() {
             <Header />
             
             <main className="pt-12">
-                {/* Hero Section */}
+                {/* Hero Section - Abstract Visual */}
                 <section className="bg-[#f5f5f7] pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
                     <div className="space-y-2">
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
@@ -304,18 +304,70 @@ export default function LoginPage() {
                         </Button>
                     </div>
                     <div className="relative w-full h-[400px] mt-12">
+                        {/* Replaced photograph with abstract visual render */}
                         <Image 
-                            src="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop" 
-                            alt="Social Impact" 
+                            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2000" 
+                            alt="Social Impact Abstract" 
                             fill 
                             className="object-contain object-bottom" 
-                            data-ai-hint="connecting hands single object"
+                            data-ai-hint="abstract 3d connection graphic"
                         />
                     </div>
                 </section>
 
-                {/* Volunteering Showcase Section - hangel imece */}
+                {/* hangel bağışı - Showcase Section (Now First) */}
                 <section className="bg-white pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
+                    <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağışı</h2>
+                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Alışverişi iyiliğe dönüştürün.</p>
+                        <div className="flex items-center justify-center gap-6 pt-4">
+                            <Link href="/market" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
+                                Markaları Gör
+                            </Link>
+                            <Link href="/about" className="text-primary hover:underline flex items-center text-lg font-medium">
+                                Nasıl Çalışır? <ChevronRight className="h-5 w-5 ml-0.5" />
+                            </Link>
+                        </div>
+                    </div>
+                    
+                    {/* Horizontal Scroll of Brands */}
+                    <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
+                        <div className="flex gap-6 px-8 md:justify-center min-w-max">
+                            {allEntityLists.slice(0, 6).map((brand) => (
+                                <Link href={`/market/${brand.id}`} key={brand.id} className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-center text-center w-64 h-80 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
+                                    <div className="relative w-24 h-24 mb-6">
+                                        <Image 
+                                            src={brand.logoUrl} 
+                                            alt={brand.name} 
+                                            fill 
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <div className="space-y-1 mb-4">
+                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f]">{brand.name}</h4>
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{brand.category}</p>
+                                    </div>
+                                    
+                                    <div className="mt-auto pt-4 border-t border-black/5 w-full">
+                                        <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest block mb-1">Bağış Oranı</span>
+                                        <div className="text-2xl font-black text-primary tracking-tighter">
+                                            %{brand.donationRate}
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center mt-8">
+                        <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
+                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
+                        </Button>
+                    </div>
+                </section>
+
+                {/* hangel imece - Showcase Section */}
+                <section className="bg-[#f5f5f7] pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel imece</h2>
                         <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Gönüllülükte teknoloji devrimi.</p>
@@ -333,8 +385,8 @@ export default function LoginPage() {
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-center min-w-max">
                             {volunteeringOpportunities.slice(0, 4).map((opp) => (
-                                <Link href={`/volunteering/${opp.id}`} key={opp.id} className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-80 h-96 transition-all hover:shadow-2xl hover:scale-[1.02] group">
-                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                <Link href={`/volunteering/${opp.id}`} key={opp.id} className="bg-white rounded-[2rem] p-8 flex flex-col items-start text-left w-80 h-96 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#f5f5f7] shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <HeartHandshake className="h-6 w-6" />
                                     </div>
                                     <div className="space-y-1 mb-4">
@@ -364,57 +416,6 @@ export default function LoginPage() {
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
                             <Link href="/volunteering">Tümünü Gör ({volunteeringOpportunities.length} İlan)</Link>
-                        </Button>
-                    </div>
-                </section>
-
-                {/* hangel bağışı - Showcase Section */}
-                <section className="bg-[#f5f5f7] pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
-                    <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağışı</h2>
-                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Alışverişi iyiliğe dönüştürün.</p>
-                        <div className="flex items-center justify-center gap-6 pt-4">
-                            <Link href="/market" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
-                                Markaları Gör
-                            </Link>
-                            <Link href="/about" className="text-primary hover:underline flex items-center text-lg font-medium">
-                                Nasıl Çalışır? <ChevronRight className="h-5 w-5 ml-0.5" />
-                            </Link>
-                        </div>
-                    </div>
-                    
-                    {/* Horizontal Scroll of Brands */}
-                    <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
-                        <div className="flex gap-6 px-8 md:justify-center min-w-max">
-                            {allEntityLists.slice(0, 6).map((brand) => (
-                                <Link href={`/market/${brand.id}`} key={brand.id} className="bg-white rounded-[2rem] p-8 flex flex-col items-center text-center w-64 h-80 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
-                                    <div className="relative w-24 h-24 mb-6">
-                                        <Image 
-                                            src={brand.logoUrl} 
-                                            alt={brand.name} 
-                                            fill 
-                                            className="object-contain"
-                                        />
-                                    </div>
-                                    <div className="space-y-1 mb-4">
-                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f]">{brand.name}</h4>
-                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{brand.category}</p>
-                                    </div>
-                                    
-                                    <div className="mt-auto pt-4 border-t border-black/5 w-full">
-                                        <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest block mb-1">Bağış Oranı</span>
-                                        <div className="text-2xl font-black text-primary tracking-tighter">
-                                            %{brand.donationRate}
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex justify-center mt-8">
-                        <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
                         </Button>
                     </div>
                 </section>
