@@ -504,7 +504,7 @@ export default function LoginPage() {
                         cta1="Kulübünü Kaydet"
                         cta1Href="/contact/universities"
                         cta2="Avantajları Gör"
-                        cta2Href="/login/selection?action=register&type=corporate"
+                        cta2Href="/campus-advantages"
                         theme="dark"
                         images={campusBanners}
                     />
