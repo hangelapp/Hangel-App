@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { 
@@ -31,7 +31,8 @@ import {
     Phone, 
     MapPin, 
     Share2,
-    Building2
+    Building2,
+    ExternalLink
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -96,7 +97,7 @@ export default function WebsiteBuilderPage() {
                 </div>
             </div>
 
-            {/* 1. Kurumsal Renk Seçimi */}
+            {/* 1. Kurumsal Renk Seçimi - Web Specific */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -150,13 +151,13 @@ export default function WebsiteBuilderPage() {
                                 />
                                 <div className="absolute inset-0 rounded-full border border-black/5 pointer-events-none" />
                             </div>
-                            <p className="text-xs text-muted-foreground">Renk paletinden seçmek için daireye tıklayın.</p>
+                            <p className="text-xs text-muted-foreground">Renk paletinden seçmek için dairesel alana tıklayın.</p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* 2. Görsel Yönetimi (Banner) */}
+            {/* 2. Görsel Yönetimi (Banner) - Web Specific */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -200,7 +201,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 3. Hakkımızda */}
+            {/* 3. Hakkımızda - Hangel Core */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -209,28 +210,27 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Hakkımızda Bölümü</CardTitle>
-                            <CardDescription>Kurumsal hikaye, vizyon ve değerlerinizi yönetin.</CardDescription>
+                            <CardDescription>Kuruluş hikayesi ve misyon bilgilerini yönetin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">Bu bölümdeki ana metinler Hangel STK profilinizden çekilmektedir. Özel bir web metni oluşturmak isterseniz aşağıdaki alanı kullanabilir veya ana profilinizi güncelleyebilirsiniz.</p>
                     <div className="space-y-2">
-                        <Label>Bölüm Başlığı</Label>
-                        <Input defaultValue="İyiliği Herkes İçin Erişilebilir Kılıyoruz" />
+                        <Label>Web Sitesine Özel Hakkımızda Metni (Opsiyonel)</Label>
+                        <Textarea rows={4} placeholder="Eğer profil metninden farklı bir metin isterseniz buraya yazın..." />
                     </div>
-                    <div className="space-y-2">
-                        <Label>İçerik Metni</Label>
-                        <Textarea rows={5} placeholder="Kuruluşunuzun hikayesini buraya yazın..." />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Yan Görsel (Opsiyonel)</Label>
-                        <FileUpload label="Bölüm Görseli" />
-                    </div>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/ngo-admin/manage-profile">
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Kuruluş Profilini Düzenle
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
 
-            {/* 4. Başkanın Mesajı */}
+            {/* 4. Başkanın Mesajı - Web Specific */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -239,7 +239,7 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Başkanın Mesajı</CardTitle>
-                            <CardDescription>Web sitesi ana sayfasında yer alacak resmi kurumsal mesaj.</CardDescription>
+                            <CardDescription>Web sitesi ana sayfasında yer alacak kurumsal mesaj.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
@@ -256,14 +256,14 @@ export default function WebsiteBuilderPage() {
                                 "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
                                 presidentsMessage.length > MESSAGE_LIMIT * 0.9 ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"
                             )}>
-                                {presidentsMessage.length} / {MESSAGE_LIMIT} (Kalan: {MESSAGE_LIMIT - presidentsMessage.length})
+                                {presidentsMessage.length} / {MESSAGE_LIMIT}
                             </span>
                         </div>
                         <Textarea 
                             id="president-message" 
                             rows={6} 
                             maxLength={MESSAGE_LIMIT}
-                            placeholder="Geleceğe dair vizyonunuzu ve toplumsal mesajınızı buraya yazın..."
+                            placeholder="Geleceğe dair vizyonunuzu buraya yazın..."
                             value={presidentsMessage}
                             onChange={(e) => setPresidentsMessage(e.target.value)}
                         />
@@ -271,7 +271,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 5. Kurumsal İstatistikler */}
+            {/* 5. Kurumsal İstatistikler - Hangel Core (Hybrid) */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -280,38 +280,34 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Kurumsal İstatistikler</CardTitle>
-                            <CardDescription>Gönüllü, bağış, yıl ve proje rakamlarını gösterir.</CardDescription>
+                            <CardDescription>Gönüllü ve bağış verilerini web sitesinde gösterin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Gönüllü Sayısı</Label>
+                            <Label>Gönüllü Sayısı (Manuel Müdahale)</Label>
                             <Input defaultValue="150.000" />
                         </div>
                         <div className="space-y-2">
-                            <Label>Bağışçı Sayısı</Label>
+                            <Label>Bağışçı Sayısı (Manuel Müdahale)</Label>
                             <Input defaultValue="250.000" />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Kuruluş Yılı</Label>
-                            <Input defaultValue="2017" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Aktif Kampanya Sayısı</Label>
-                            <Input defaultValue="12" />
-                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label>Bölüm Sloganı</Label>
-                        <Input defaultValue="İyilik her zaman kazanır." />
+                    <div className="p-4 border rounded-xl bg-muted/30">
+                        <p className="text-xs text-muted-foreground mb-3">Sistemdeki gerçek zamanlı verilerinizi görmek ve raporlamak için performans paneline gidin.</p>
+                        <Button asChild variant="outline" size="sm" className="w-full">
+                            <Link href="/ngo-admin/dashboard">
+                                <BarChart3 className="mr-2 h-4 w-4" /> Performans Paneline Git
+                            </Link>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* 6. Bağış Yöntemleri */}
+            {/* 6. Bağış Yöntemleri - Hangel Core */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -320,71 +316,31 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Bağış ve Destek Yöntemleri</CardTitle>
-                            <CardDescription>Aktif bağış kanallarını ve açıklamalarını düzenleyin.</CardDescription>
+                            <CardDescription>Bağış kanallarını ve IBAN bilgilerini yönetin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 gap-4">
-                        {[
-                            { id: 'h-pay', label: 'hangel ile Bağış', type: 'system' },
-                            { id: 'steps-pay', label: 'HelpSteps ile Bağış', desc: 'Adımlarınızı STK\'mız için bağışa dönüştürün.' },
-                            { id: 'sms-pay', label: 'SMS ile Bağış', desc: '3406\'ya mesaj atarak katkı sağlayın.', details: 'sms' },
-                            { id: 'card-pay', label: 'Kredi Kartı', type: 'no-desc' },
-                            { id: 'bank-pay', label: 'Banka EFT/Havale', desc: 'Resmi hesaplarımıza doğrudan transfer yapın.', details: 'iban' },
-                        ].map(item => (
-                            <div key={item.id} className="p-4 border rounded-2xl bg-muted/10 space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <Input defaultValue={item.label} className="h-8 text-sm font-bold bg-background max-w-[200px]" />
-                                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
-                                </div>
-                                {item.type !== 'system' && item.type !== 'no-desc' && (
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground">Görünecek Açıklama</Label>
-                                        <Input defaultValue={item.desc} className="h-8 text-xs bg-background" />
-                                    </div>
-                                )}
-                                {item.details === 'iban' && (
-                                    <div className="space-y-2 pt-2 border-t border-dashed">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground">IBAN Numarası</Label>
-                                        <Input placeholder="TR00 0000 0000 0000 0000 0000 00" className="h-8 text-xs bg-background font-mono" />
-                                    </div>
-                                )}
-                                {item.details === 'sms' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-dashed mt-2">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">Kısa Kod</Label>
-                                            <Input defaultValue="3406" className="h-8 text-xs bg-background" />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">Anahtar Kelime</Label>
-                                            <Input defaultValue="AHBAP" className="h-8 text-xs bg-background" />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">SMS Tutarı (₺)</Label>
-                                            <Input defaultValue="20" type="number" className="h-8 text-xs bg-background" />
-                                        </div>
-                                        <div className="md:col-span-3 space-y-2">
-                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">Aktif Operatörler</Label>
-                                            <div className="flex gap-4">
-                                                {['Turkcell', 'Vodafone', 'Türk Telekom'].map(op => (
-                                                    <div key={op} className="flex items-center gap-2">
-                                                        <Checkbox id={`op-${op}`} defaultChecked />
-                                                        <Label htmlFor={`op-${op}`} className="text-xs">{op}</Label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 border rounded-2xl bg-muted/10">
+                            <span className="text-sm font-bold">hangel ile Bağış</span>
+                            <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                        </div>
+                        <div className="flex items-center justify-between p-4 border rounded-2xl bg-muted/10">
+                            <span className="text-sm font-bold">HelpSteps ile Bağış</span>
+                            <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                        </div>
                     </div>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/ngo-admin/manage-profile">
+                            <Landmark className="mr-2 h-4 w-4" /> Banka ve IBAN Bilgilerini Düzenle
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
 
-            {/* 7. Gönüllülük İlanları */}
+            {/* 7. Gönüllülük İlanları - Hangel Core */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -393,26 +349,22 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Gönüllülük İlanları</CardTitle>
-                            <CardDescription>Aktif saha ve online görevleri listeler.</CardDescription>
+                            <CardDescription>Aktif görevleri web sitenizde listeleyin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label>İlan Listeleme Filtresi</Label>
-                        <Select defaultValue="active">
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="active">Sadece Aktif İlanlar</SelectItem>
-                                <SelectItem value="all">Tüm İlan Geçmişi</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <p className="text-sm text-muted-foreground">İlanların içeriği, başvuru formları ve gönüllü yönetimi ana panelden gerçekleştirilir.</p>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/ngo-admin/volunteer">
+                            <PlusCircle className="mr-2 h-4 w-4" /> Gönüllülük Paneline Git
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
 
-            {/* 8. Haberler ve Duyurular */}
+            {/* 8. Haberler ve Duyurular - Hangel Core */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -421,41 +373,22 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Haberler ve Duyurular</CardTitle>
-                            <CardDescription>Gönderilerinizi blog tarzında sunar.</CardDescription>
+                            <CardDescription>Mini Blog içeriklerini web sitenizde yayınlayın.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Görünüm Modu</Label>
-                            <Select defaultValue="grid">
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="grid">Izgara (Grid)</SelectItem>
-                                    <SelectItem value="list">Liste (List)</SelectItem>
-                                    <SelectItem value="slider">Slider</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Haber Sayısı</Label>
-                            <Input type="number" defaultValue="6" />
-                        </div>
-                    </div>
-                    <div className="pt-4 border-t">
-                        <Button asChild className="w-full h-12 rounded-xl bg-muted text-foreground hover:bg-muted/80 border border-dashed border-primary/20">
-                            <Link href="/ngo-admin/posts">
-                                <PlusCircle className="mr-2 h-5 w-5 text-primary" />
-                                Mini Blog'da Yeni Paylaşım Yap
-                            </Link>
-                        </Button>
-                    </div>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">Haber ve duyuru paylaşımlarınızı Mini Blog üzerinden yapabilirsiniz.</p>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/ngo-admin/posts">
+                            <Megaphone className="mr-2 h-4 w-4" /> Mini Blog Sayfasına Git
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
 
-            {/* 9. Küresel Amaçlar (SKA) */}
+            {/* 9. Küresel Amaçlar (SKA) - Hangel Core */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -464,20 +397,22 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Küresel Amaçlar (SKA)</CardTitle>
-                            <CardDescription>Sürdürülebilir Kalkınma Amaçları gösterimi.</CardDescription>
+                            <CardDescription>Desteklediğiniz hedefleri gösterin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <p className="text-xs text-muted-foreground">Profilinizde seçili olan amaçlar otomatik olarak listelenecektir.</p>
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href="/ngo-admin/manage-profile">Amaçları Profilde Düzenle</Link>
+                    <p className="text-sm text-muted-foreground">Desteklediğiniz Sürdürülebilir Kalkınma Amaçlarını profilinizden seçebilirsiniz.</p>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/ngo-admin/manage-profile">
+                            <Target className="mr-2 h-4 w-4" /> SKA Hedeflerini Düzenle
+                        </Link>
                     </Button>
                 </CardContent>
             </Card>
 
-            {/* 10. Şeffaflık Endeksi */}
+            {/* 10. Şeffaflık Endeksi - Hangel Core */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -486,29 +421,22 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Şeffaflık Endeksi</CardTitle>
-                            <CardDescription>Şeffaflık puanı ve belgelerin gösterimi.</CardDescription>
+                            <CardDescription>Şeffaflık puanı ve belgeleri yönetin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
-                        <span className="text-sm font-medium">Şeffaflık Puanını Göster</span>
-                        <Switch defaultChecked />
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
-                            <span className="text-sm font-medium">Yasal Belgeleri Listele</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
-                            <Link href="/ngo-admin/manage-profile">Belgeleri Profilde Güncelle</Link>
-                        </Button>
-                    </div>
+                    <p className="text-sm text-muted-foreground">Şeffaflık puanınızı artırmak için gerekli belgeleri yükleyin ve onaylatın.</p>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/ngo-admin/transparency">
+                            <ShieldCheck className="mr-2 h-4 w-4" /> Şeffaflık Panelini Yönet
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
 
-            {/* 11. İletişim Bilgileri */}
+            {/* 11. İletişim Bilgileri - Hangel Core */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -517,34 +445,22 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">İletişim Bilgileri</CardTitle>
-                            <CardDescription>Footer ve iletişim sayfasındaki bilgilerin gösterimi.</CardDescription>
+                            <CardDescription>E-posta, telefon ve adres bilgilerini yönetin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="flex items-center justify-between p-3 border rounded-xl">
-                            <span className="text-xs font-medium">E-posta Adresi</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between p-3 border rounded-xl">
-                            <span className="text-xs font-medium">Telefon Numarası</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between p-3 border rounded-xl">
-                            <span className="text-xs font-medium">Açık Adres</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between p-3 border rounded-xl">
-                            <span className="text-xs font-medium">Sosyal Medya Linkleri</span>
-                            <Switch defaultChecked />
-                        </div>
-                    </div>
+                    <p className="text-sm text-muted-foreground">Resmi iletişim bilgileriniz ve sosyal medya hesaplarınız ana profilinizle senkronize çalışır.</p>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/ngo-admin/manage-profile">
+                            <Settings2 className="mr-2 h-4 w-4" /> İletişim Bilgilerini Düzenle
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
 
-            {/* 12. Alan Adı (Domain) Ayarları */}
+            {/* 12. Alan Adı (Domain) Ayarları - Web Specific */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -553,7 +469,7 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Alan Adı (Domain) Ayarları</CardTitle>
-                            <CardDescription>Kendi alan adınızı bağlayarak kurumsal kimliğinizi güçlendirin.</CardDescription>
+                            <CardDescription>Kendi alan adınızı web sitenize bağlayın.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
@@ -574,10 +490,9 @@ export default function WebsiteBuilderPage() {
                             </Select>
                         </div>
                     </div>
-
-                    <div className="space-y-4 p-4 border rounded-2xl bg-indigo-50/50">
-                        <h3 className="text-xs font-bold text-indigo-900 flex items-center gap-2">
-                            <Monitor className="h-4 w-4" /> NameServer (NS) Kayıtları
+                    <div className="p-4 border rounded-2xl bg-indigo-50/50">
+                        <h3 className="text-xs font-bold text-indigo-900 flex items-center gap-2 mb-3">
+                            <Monitor className="h-4 w-4" /> DNS (NameServer) Bilgileri
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
@@ -594,15 +509,10 @@ export default function WebsiteBuilderPage() {
                             </div>
                         </div>
                     </div>
-
-                    <div className="p-4 border rounded-xl bg-blue-50 text-blue-800 text-[10px] flex items-center gap-3">
-                        <ShieldCheck className="h-5 w-5 shrink-0" />
-                        <p>DNS değişikliklerinin yayılması 24-48 saat sürebilir. Bağlantı sonrası SSL otomatik kurulur.</p>
-                    </div>
                 </CardContent>
             </Card>
 
-            {/* 13. Web Analiz Araçları */}
+            {/* 13. Web Analiz Araçları - Web Specific */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -611,26 +521,25 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Web Analiz Araçları</CardTitle>
-                            <CardDescription>Analiz ve takip servislerini sitenize bağlayın.</CardDescription>
+                            <CardDescription>İstatistik ve takip kodlarını sitenize ekleyin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {analyticsProviders.map((ap) => (
                             <div key={ap.id} className="p-3 border rounded-xl flex flex-col items-center gap-2 bg-muted/10">
-                                <Badge className={cn("text-[10px]", ap.id === 'google-analytics' ? "bg-orange-500" : "bg-blue-600")}>{ap.logo}</Badge>
                                 <span className="text-[10px] font-bold">{ap.name}</span>
                                 <Button variant="outline" size="sm" className="h-7 text-[10px] w-full">Bağla</Button>
                             </div>
                         ))}
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase text-muted-foreground">Özel Script / HTML</Label>
+                        <Label className="text-xs font-bold uppercase text-muted-foreground">Özel Script (Head/Body)</Label>
                         <textarea 
                             className="w-full h-32 bg-muted/20 font-mono text-[10px] p-3 border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary" 
-                            placeholder="<!-- Script buraya gelecek -->"
+                            placeholder="<!-- Google Tag Manager, FB Pixel vb. -->"
                         ></textarea>
                     </div>
                 </CardContent>
@@ -642,7 +551,7 @@ export default function WebsiteBuilderPage() {
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                         <div className="text-left hidden sm:block">
                             <p className="font-bold text-sm">Site Yayınlanmaya Hazır</p>
-                            <p className="text-[10px] text-muted-foreground">Tüm veriler profilinizle senkronize.</p>
+                            <p className="text-[10px] text-muted-foreground">Tüm ayarlar kaydedildi.</p>
                         </div>
                         <Button 
                             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-xl"
