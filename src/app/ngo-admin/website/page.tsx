@@ -49,6 +49,10 @@ export default function WebsiteBuilderPage() {
         });
     };
 
+    const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPrimaryColor(e.target.value);
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6 pb-32">
             <div className="flex items-center gap-2">
@@ -61,7 +65,7 @@ export default function WebsiteBuilderPage() {
                 </div>
             </div>
 
-            {/* 1. Renk Seçimi */}
+            {/* 1. Kurumsal Renk Seçimi */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -75,7 +79,7 @@ export default function WebsiteBuilderPage() {
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {colorOptions.map((color) => (
                             <div 
@@ -83,7 +87,7 @@ export default function WebsiteBuilderPage() {
                                 onClick={() => setPrimaryColor(color.value)}
                                 className={cn(
                                     "p-4 border-2 rounded-xl cursor-pointer transition-all flex flex-col items-center gap-2",
-                                    primaryColor === color.value ? "border-primary bg-primary/5 shadow-md scale-105" : "hover:border-primary/30"
+                                    primaryColor.toLowerCase() === color.value.toLowerCase() ? "border-primary bg-primary/5 shadow-md scale-105" : "hover:border-primary/30"
                                 )}
                             >
                                 <div className="w-10 h-10 rounded-full shadow-inner border-2 border-white" style={{ backgroundColor: color.value }} />
@@ -92,10 +96,36 @@ export default function WebsiteBuilderPage() {
                             </div>
                         ))}
                     </div>
+
+                    <div className="pt-4 border-t space-y-4">
+                        <Label className="text-sm font-bold">Özel Renk Seçimi</Label>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 flex-1 max-w-sm">
+                                <span className="text-sm font-mono text-muted-foreground">#</span>
+                                <Input 
+                                    value={primaryColor.replace('#', '')} 
+                                    onChange={(e) => setPrimaryColor(`#${e.target.value}`)}
+                                    placeholder="FFFFFF"
+                                    className="font-mono uppercase"
+                                    maxLength={6}
+                                />
+                            </div>
+                            <div className="relative group">
+                                <input 
+                                    type="color" 
+                                    value={primaryColor} 
+                                    onChange={handleColorChange}
+                                    className="w-12 h-12 rounded-full cursor-pointer border-2 border-white shadow-md appearance-none overflow-hidden"
+                                />
+                                <div className="absolute inset-0 rounded-full border border-black/5 pointer-events-none" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">Renk paletinden seçmek için daireye tıklayın.</p>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
-            {/* 2. Banner Yönetimi */}
+            {/* 2. Görsel Yönetimi (Banner) */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -131,9 +161,9 @@ export default function WebsiteBuilderPage() {
                             </div>
                         ))}
                     </div>
-                    <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-                        <p className="text-[11px] text-primary font-medium italic leading-relaxed">
-                            <strong>Önerilen boyut:</strong> 1920x600px. İlk banner ana sayfa kapak görseli (Hero) olarak kullanılır.
+                    <div className="p-4 rounded-xl bg-orange-50 border border-orange-100 text-orange-800">
+                        <p className="text-xs font-medium italic leading-relaxed">
+                            <span className="font-bold">Önerilen boyut:</span> 1920x600px. İlk banner ana sayfa kapak görseli (Hero) olarak kullanılır.
                         </p>
                     </div>
                 </CardContent>
@@ -159,10 +189,10 @@ export default function WebsiteBuilderPage() {
                         <Input id="president-name" placeholder="Örn: Haluk Levent" />
                     </div>
                     <div className="space-y-2">
-                        <div className="flex justify-between items-end">
+                        <div className="flex justify-between items-end mb-1">
                             <Label htmlFor="president-message">Mesaj İçeriği</Label>
                             <span className={cn(
-                                "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                                "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
                                 presidentsMessage.length > MESSAGE_LIMIT * 0.9 ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"
                             )}>
                                 {presidentsMessage.length} / {MESSAGE_LIMIT} (Kalan: {MESSAGE_LIMIT - presidentsMessage.length})
@@ -244,7 +274,7 @@ export default function WebsiteBuilderPage() {
                         ].map(item => (
                             <div key={item.id} className="p-4 border rounded-2xl bg-muted/10 space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <Label className="text-sm font-bold">{item.label}</Label>
+                                    <Input defaultValue={item.label} className="h-8 text-sm font-bold bg-background max-w-[200px]" />
                                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                                 </div>
                                 <div className="space-y-2">
