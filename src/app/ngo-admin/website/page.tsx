@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, Check, X } from 'lucide-react';
+import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, Check, X, LayoutGrid, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 
 const analyticsProviders = [
     { id: 'google-analytics', name: 'Google Analytics', logo: 'GA', color: 'bg-[#f9ab00]', status: 'Bağlı' },
@@ -28,6 +29,17 @@ const colorOptions = [
 
 const domainRegistrars = [
     "GoDaddy", "Natro", "Turhost", "Google Domains", "Namecheap", "IHS Telekom", "Metunic", "Diğer"
+];
+
+const websiteSections = [
+    { id: 'stats', label: 'Kurumsal İstatistikler', icon: BarChart3, description: 'Gönüllü, bağış ve proje rakamlarını gösterir.' },
+    { id: 'donations', label: 'Bağış ve Destek Yöntemleri', icon: Heart, description: 'Banka, SMS ve hangel bağış kanallarını listeler.' },
+    { id: 'store', label: 'İktisadi İşletme (Mağaza)', icon: ShoppingBag, description: 'Ürünlerinizi web sitesinde vitrine çıkarır.' },
+    { id: 'campaigns', label: 'Aktif Kampanyalar', icon: Megaphone, description: 'Bağış hedeflerinizi ve ilerlemeyi gösterir.' },
+    { id: 'volunteering', label: 'Gönüllülük İlanları', icon: HeartHandshake, description: 'Aktif saha ve online görevleri listeler.' },
+    { id: 'news', label: 'Haberler ve Duyurular', icon: Newspaper, description: 'Zaman tüneli gönderilerinizi blog tarzında sunar.' },
+    { id: 'sdg', label: 'Küresel Amaçlar (SKA)', icon: Target, description: 'Desteklediğiniz BM hedeflerini gösterir.' },
+    { id: 'transparency', label: 'Şeffaflık Endeksi', icon: Shield, description: 'Onaylı belgelerinizi ve puanınızı sergiler.' },
 ];
 
 export default function WebsiteBuilderPage() {
@@ -97,7 +109,6 @@ export default function WebsiteBuilderPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* Slot 1 - Active */}
                         <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary group">
                             <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Banner 1" className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -107,33 +118,16 @@ export default function WebsiteBuilderPage() {
                                 <Badge className="bg-primary text-[8px] h-4 font-bold px-1.5 border-none">ANA BANNER</Badge>
                             </div>
                         </div>
-                        
-                        {/* Slot 2 - Empty */}
-                        <div 
-                            className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                            onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
-                        >
-                            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <p className="text-[10px] font-bold">Banner 2 Yükle</p>
-                        </div>
-
-                        {/* Slot 3 - Empty */}
-                        <div 
-                            className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                            onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
-                        >
-                            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <p className="text-[10px] font-bold">Banner 3 Yükle</p>
-                        </div>
-
-                        {/* Slot 4 - Empty */}
-                        <div 
-                            className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                            onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
-                        >
-                            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <p className="text-[10px] font-bold">Banner 4 Yükle</p>
-                        </div>
+                        {[2, 3, 4].map(i => (
+                            <div 
+                                key={i}
+                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
+                                onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                            >
+                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <p className="text-[10px] font-bold">Banner {i} Yükle</p>
+                            </div>
+                        ))}
                     </div>
                     <p className="text-[10px] text-muted-foreground">Önerilen boyut: 1920x600px. İlk banner ana sayfa kapak görseli olarak kullanılır.</p>
                 </CardContent>
@@ -166,7 +160,36 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 4. Alan Adı (Domain) Ayarları */}
+            {/* 4. Web Sitesi Bölüm Yönetimi */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <LayoutGrid className="h-5 w-5 text-primary" />
+                        Web Sitesi Bölümleri
+                    </CardTitle>
+                    <CardDescription>Hangi başlıkların ve modüllerin web sitenizde görüneceğini kontrol edin.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="divide-y">
+                        {websiteSections.map((section) => (
+                            <div key={section.id} className="flex items-center justify-between p-4 transition-colors hover:bg-muted/30">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2 rounded-lg bg-muted">
+                                        <section.icon className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold">{section.label}</p>
+                                        <p className="text-xs text-muted-foreground">{section.description}</p>
+                                    </div>
+                                </div>
+                                <Switch defaultChecked id={`switch-${section.id}`} />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 5. Alan Adı (Domain) Ayarları */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -258,7 +281,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 5. Web Analiz Araçları Entegrasyonu */}
+            {/* 6. Web Analiz Araçları Entegrasyonu */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
