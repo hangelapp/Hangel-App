@@ -496,9 +496,14 @@ export default function WebsiteBuilderPage() {
                         <span className="text-sm font-medium">Şeffaflık Puanını Göster</span>
                         <Switch defaultChecked />
                     </div>
-                    <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
-                        <span className="text-sm font-medium">Yasal Belgeleri Listele</span>
-                        <Switch defaultChecked />
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
+                            <span className="text-sm font-medium">Yasal Belgeleri Listele</span>
+                            <Switch defaultChecked />
+                        </div>
+                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                            <Link href="/ngo-admin/manage-profile">Belgeleri Profilde Güncelle</Link>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
