@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield, Settings2, Save } from 'lucide-react';
+import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield, Settings2, Save, PlusCircle, ArrowRight } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import Link from 'next/link';
 
 const analyticsProviders = [
     { id: 'google-analytics', name: 'Google Analytics', logo: 'GA', color: 'bg-[#f9ab00]', status: 'Bağlı' },
@@ -38,6 +39,7 @@ export default function WebsiteBuilderPage() {
     const [selectedRegistrar, setSelectedRegistrar] = useState('');
     const [domainName, setDomainName] = useState('');
     const [presidentsMessage, setPresidentsMessage] = useState('');
+    const MESSAGE_LIMIT = 1000;
 
     const copyToClipboard = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
@@ -81,11 +83,12 @@ export default function WebsiteBuilderPage() {
                                 onClick={() => setPrimaryColor(color.value)}
                                 className={cn(
                                     "p-4 border-2 rounded-xl cursor-pointer transition-all flex flex-col items-center gap-2",
-                                    primaryColor === color.value ? "border-primary bg-primary/5" : "hover:border-primary/30"
+                                    primaryColor === color.value ? "border-primary bg-primary/5 shadow-md scale-105" : "hover:border-primary/30"
                                 )}
                             >
-                                <div className="w-8 h-8 rounded-full shadow-md" style={{ backgroundColor: color.value }} />
-                                <span className="text-xs font-medium">{color.name}</span>
+                                <div className="w-10 h-10 rounded-full shadow-inner border-2 border-white" style={{ backgroundColor: color.value }} />
+                                <span className="text-[10px] font-bold font-mono text-muted-foreground uppercase">{color.value}</span>
+                                <span className="text-xs font-semibold">{color.name}</span>
                             </div>
                         ))}
                     </div>
@@ -128,7 +131,11 @@ export default function WebsiteBuilderPage() {
                             </div>
                         ))}
                     </div>
-                    <p className="text-[10px] text-muted-foreground italic">Önerilen boyut: 1920x600px. İlk banner ana sayfa kapak görseli olarak kullanılır.</p>
+                    <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                        <p className="text-[11px] text-primary font-medium italic leading-relaxed">
+                            <strong>Önerilen boyut:</strong> 1920x600px. İlk banner ana sayfa kapak görseli (Hero) olarak kullanılır.
+                        </p>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -152,10 +159,19 @@ export default function WebsiteBuilderPage() {
                         <Input id="president-name" placeholder="Örn: Haluk Levent" />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="president-message">Mesaj İçeriği</Label>
+                        <div className="flex justify-between items-end">
+                            <Label htmlFor="president-message">Mesaj İçeriği</Label>
+                            <span className={cn(
+                                "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                                presidentsMessage.length > MESSAGE_LIMIT * 0.9 ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"
+                            )}>
+                                {presidentsMessage.length} / {MESSAGE_LIMIT} (Kalan: {MESSAGE_LIMIT - presidentsMessage.length})
+                            </span>
+                        </div>
                         <Textarea 
                             id="president-message" 
                             rows={6} 
+                            maxLength={MESSAGE_LIMIT}
                             placeholder="Geleceğe dair vizyonunuzu ve toplumsal mesajınızı buraya yazın..."
                             value={presidentsMessage}
                             onChange={(e) => setPresidentsMessage(e.target.value)}
@@ -173,7 +189,7 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Kurumsal İstatistikler</CardTitle>
-                            <CardDescription>Gönüllü, bağış ve proje rakamlarını gösterir.</CardDescription>
+                            <CardDescription>Gönüllü, bağış, yıl ve proje rakamlarını gösterir.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
@@ -181,12 +197,20 @@ export default function WebsiteBuilderPage() {
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Gönüllü Sayısı (Görünür)</Label>
+                            <Label>Gönüllü Sayısı</Label>
                             <Input defaultValue="150.000" />
                         </div>
                         <div className="space-y-2">
-                            <Label>Bağışçı Sayısı (Görünür)</Label>
+                            <Label>Bağışçı Sayısı</Label>
                             <Input defaultValue="250.000" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Kuruluş Yılı</Label>
+                            <Input defaultValue="2017" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Aktif Kampanya Sayısı</Label>
+                            <Input defaultValue="12" />
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -205,18 +229,28 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Bağış ve Destek Yöntemleri</CardTitle>
-                            <CardDescription>Aktif bağış kanallarını web sitenizde listeler.</CardDescription>
+                            <CardDescription>Aktif bağış kanallarını ve açıklamalarını düzenleyin.</CardDescription>
                         </div>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Aktif Kanallar</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {['hangel ile Bağış', 'SMS ile Bağış', 'Kredi Kartı', 'Banka EFT/Havale'].map(item => (
-                            <div key={item} className="flex items-center justify-between p-3 border rounded-xl bg-muted/20">
-                                <span className="text-sm font-medium">{item}</span>
-                                <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 gap-4">
+                        {[
+                            { id: 'h-pay', label: 'hangel ile Bağış', desc: 'Alışverişlerinizle ek ücret ödemeden destek olun.' },
+                            { id: 'sms-pay', label: 'SMS ile Bağış', desc: '3406\'ya mesaj atarak katkı sağlayın.' },
+                            { id: 'card-pay', label: 'Kredi Kartı', desc: 'Online ödeme sistemimizle güvenle bağış yapın.' },
+                            { id: 'bank-pay', label: 'Banka EFT/Havale', desc: 'Resmi hesaplarımıza doğrudan transfer yapın.' },
+                        ].map(item => (
+                            <div key={item.id} className="p-4 border rounded-2xl bg-muted/10 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-sm font-bold">{item.label}</Label>
+                                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] uppercase font-black text-muted-foreground">Görünecek Açıklama</Label>
+                                    <Input defaultValue={item.desc} className="h-8 text-xs bg-background" />
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -244,7 +278,6 @@ export default function WebsiteBuilderPage() {
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="active">Sadece Aktif İlanlar</SelectItem>
-                                <SelectItem value="urgent">Öncelikli İlanlar</SelectItem>
                                 <SelectItem value="all">Tüm İlan Geçmişi</SelectItem>
                             </SelectContent>
                         </Select>
@@ -266,7 +299,7 @@ export default function WebsiteBuilderPage() {
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Görünüm Modu</Label>
@@ -283,6 +316,14 @@ export default function WebsiteBuilderPage() {
                             <Label>Haber Sayısı</Label>
                             <Input type="number" defaultValue="6" />
                         </div>
+                    </div>
+                    <div className="pt-4 border-t">
+                        <Button asChild className="w-full h-12 rounded-xl bg-muted text-foreground hover:bg-muted/80 border border-dashed border-primary/20">
+                            <Link href="/ngo-admin/posts">
+                                <PlusCircle className="mr-2 h-5 w-5 text-primary" />
+                                Mini Blog'da Yeni Paylaşım Yap
+                            </Link>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -363,7 +404,7 @@ export default function WebsiteBuilderPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                         {analyticsProviders.map((ap) => (
                             <div key={ap.id} className="p-3 border rounded-xl flex flex-col items-center gap-2 bg-muted/10">
-                                <Badge className={cn("text-[10px]", ap.color)}>{ap.logo}</Badge>
+                                <Badge className={cn("text-[10px]", ap.id === 'google-analytics' ? "bg-orange-500" : "bg-blue-600")}>{ap.logo}</Badge>
                                 <span className="text-[10px] font-bold">{ap.name}</span>
                                 <Button variant="outline" size="sm" className="h-7 text-[10px] w-full">Bağla</Button>
                             </div>
