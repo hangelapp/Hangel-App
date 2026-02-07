@@ -283,39 +283,33 @@ export default function WebsiteBuilderPage() {
             </Card>
 
             {/* 4. Web Sitesi Bölüm Yönetimi - HER BİRİ AYRI PENCERE (KART) OLARAK */}
-            <div className="space-y-4">
-                <h2 className="text-xl font-bold font-headline px-1 flex items-center gap-2">
-                    <LayoutGrid className="h-6 w-6 text-primary" />
-                    Web Sitesi Bölümleri
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {websiteSections.map((section) => (
-                        <Card key={section.id} className="hover:border-primary/30 transition-all shadow-sm">
-                            <CardContent className="p-5 flex flex-col h-full">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="p-2.5 rounded-xl bg-muted">
-                                        <section.icon className="h-6 w-6 text-muted-foreground" />
-                                    </div>
-                                    <Switch defaultChecked id={`switch-${section.id}`} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {websiteSections.map((section) => (
+                    <Card key={section.id} className="hover:border-primary/30 transition-all shadow-sm">
+                        <CardContent className="p-5 flex flex-col h-full">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="p-2.5 rounded-xl bg-muted">
+                                    <section.icon className="h-6 w-6 text-muted-foreground" />
                                 </div>
-                                <div className="space-y-1 flex-1">
-                                    <p className="font-bold text-base leading-none">{section.label}</p>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">{section.description}</p>
-                                </div>
-                                <div className="pt-4 mt-auto">
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full text-xs font-bold gap-1.5 h-9"
-                                        onClick={() => setEditingSection(section.id)}
-                                    >
-                                        <Settings2 className="h-3.5 w-3.5" /> Bölümü Özelleştir
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                <Switch defaultChecked id={`switch-${section.id}`} />
+                            </div>
+                            <div className="space-y-1 flex-1">
+                                <p className="font-bold text-base leading-none">{section.label}</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{section.description}</p>
+                            </div>
+                            <div className="pt-4 mt-auto">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="w-full text-xs font-bold gap-1.5 h-9"
+                                    onClick={() => setEditingSection(section.id)}
+                                >
+                                    <Settings2 className="h-3.5 w-3.5" /> Bölümü Özelleştir
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
 
             {/* 5. Alan Adı (Domain) Ayarları */}
