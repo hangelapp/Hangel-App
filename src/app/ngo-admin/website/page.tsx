@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, Check } from 'lucide-react';
+import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, Check, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -88,28 +88,47 @@ export default function WebsiteBuilderPage() {
                     </div>
 
                     <div className="space-y-4 pt-6 border-t">
-                        <Label className="text-base">Web Sitesi Bannerı</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Label className="text-base">Web Sitesi Bannerları (Maksimum 4)</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Slot 1 - Active */}
+                            <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary group">
+                                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Banner 1" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="secondary" size="sm" className="h-7 text-[10px] px-2"><ImageIcon className="mr-1 h-3 w-3"/> Değiştir</Button>
+                                </div>
+                                <div className="absolute top-1 left-1">
+                                    <Badge className="bg-primary text-[8px] h-4 font-bold px-1.5 border-none">ANA BANNER</Badge>
+                                </div>
+                            </div>
+                            
+                            {/* Slot 2 - Empty */}
                             <div 
-                                className="border-2 border-dashed rounded-2xl aspect-[16/9] flex flex-col items-center justify-center gap-2 hover:bg-muted/50 transition-colors cursor-pointer"
+                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
                                 onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
                             >
-                                <div className="p-3 bg-primary/10 rounded-full text-primary">
-                                    <Upload className="h-6 w-6" />
-                                </div>
-                                <p className="text-sm font-bold">Yeni Banner Yükle</p>
-                                <p className="text-[10px] text-muted-foreground">Önerilen boyut: 1920x600px</p>
+                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <p className="text-[10px] font-bold">Banner 2 Yükle</p>
                             </div>
-                            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border group">
-                                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Current Banner" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button variant="secondary" size="sm"><ImageIcon className="mr-2 h-4 w-4"/> Değiştir</Button>
-                                </div>
-                                <div className="absolute top-2 left-2">
-                                    <Badge className="bg-primary text-[10px] font-bold">AKTİF BANNER</Badge>
-                                </div>
+
+                            {/* Slot 3 - Empty */}
+                            <div 
+                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
+                                onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                            >
+                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <p className="text-[10px] font-bold">Banner 3 Yükle</p>
+                            </div>
+
+                            {/* Slot 4 - Empty */}
+                            <div 
+                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
+                                onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                            >
+                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <p className="text-[10px] font-bold">Banner 4 Yükle</p>
                             </div>
                         </div>
+                        <p className="text-[10px] text-muted-foreground">Önerilen boyut: 1920x600px. İlk banner ana sayfa kapak görseli olarak kullanılır.</p>
                     </div>
                 </CardContent>
             </Card>
@@ -233,7 +252,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 4. Web Analiz Araçları (En Alt Bölüm) */}
+            {/* 4. Web Analiz Araçları Entegrasyonu */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
