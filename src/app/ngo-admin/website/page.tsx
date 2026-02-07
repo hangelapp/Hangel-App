@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,9 @@ import {
     Loader2,
     Smartphone,
     Calendar,
-    ShoppingCart
+    ShoppingCart,
+    Trash2,
+    Plus
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -106,6 +107,11 @@ export default function WebsiteBuilderPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
     
+    // Banner State
+    const [banners, setBanners] = useState([
+        { id: '1', url: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop', isPrimary: true }
+    ]);
+
     const MESSAGE_LIMIT = 1000;
 
     useEffect(() => {
@@ -146,6 +152,17 @@ export default function WebsiteBuilderPage() {
         setPrimaryColor(e.target.value);
     };
 
+    const addBanner = () => {
+        const newId = (banners.length + 1).toString();
+        setBanners([...banners, { id: newId, url: `https://picsum.photos/seed/banner${newId}/1920/600`, isPrimary: false }]);
+        toast({ title: "Yeni Banner Eklendi", description: "Listeye yeni bir görsel alanı tanımlandı." });
+    };
+
+    const removeBanner = (id: string) => {
+        setBanners(prev => prev.filter(b => b.id !== id));
+        toast({ variant: "destructive", title: "Banner Kaldırıldı" });
+    };
+
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0 max-w-5xl mx-auto pb-32">
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
@@ -158,7 +175,7 @@ export default function WebsiteBuilderPage() {
 
             <div className="space-y-6">
                 
-                {/* 1. Alan Adı (Domain) Ayarları - EN ÜSTTE */}
+                {/* 1. Alan Adı (Domain) Ayarları */}
                 <Card className={cn(!sections.domain && "opacity-60")}>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -306,28 +323,44 @@ export default function WebsiteBuilderPage() {
                         />
                     </CardHeader>
                     {sections.banners && (
-                        <CardContent className="space-y-4 pt-0">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary group">
-                                    <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Banner 1" className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Button variant="secondary" size="sm" className="h-7 text-[10px] px-2" onClick={() => toast({title: "Görsel Seçiliyor"})}><ImageIcon className="mr-1 h-3 w-3"/> Değiştir</Button>
-                                    </div>
-                                    <div className="absolute top-1 left-1">
-                                        <Badge className="bg-primary text-[8px] h-4 font-bold px-1.5 border-none">ANA BANNER</Badge>
-                                    </div>
-                                </div>
-                                {[2, 3, 4].map(i => (
-                                    <div 
-                                        key={i}
-                                        className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                                        onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
-                                    >
-                                        <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                                        <p className="text-[10px] font-bold">Banner {i} Yükle</p>
+                        <CardContent className="space-y-6 pt-0">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {banners.map((banner, index) => (
+                                    <div key={banner.id} className="relative group">
+                                        <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-sm">
+                                            <img src={banner.url} alt={`Banner ${banner.id}`} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-2">
+                                                <Button variant="secondary" size="sm" className="h-8 text-xs font-bold" onClick={() => toast({title: "Görsel Değiştir", description: "Dosya seçici açılıyor..."})}>
+                                                    <ImageIcon className="mr-1.5 h-3.5 w-3.5"/> Değiştir
+                                                </Button>
+                                                {!banner.isPrimary && (
+                                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => removeBanner(banner.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            <div className="absolute top-2 left-2 flex gap-1.5">
+                                                {banner.isPrimary ? (
+                                                    <Badge className="bg-primary text-[9px] font-black uppercase tracking-wider h-5 px-2 border-none">ANA BANNER</Badge>
+                                                ) : (
+                                                    <Badge variant="secondary" className="bg-white/90 text-foreground text-[9px] font-black uppercase tracking-wider h-5 px-2 border-none">SIRALAMA: {index + 1}</Badge>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
+                                
+                                <div 
+                                    className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-2 hover:bg-muted/50 transition-colors cursor-pointer group bg-muted/10"
+                                    onClick={addBanner}
+                                >
+                                    <div className="p-2 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <Plus className="h-6 w-6" />
+                                    </div>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary">Yeni Banner Ekle</p>
+                                </div>
                             </div>
+
                             <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 text-primary">
                                 <p className="text-xs font-medium italic leading-relaxed">
                                     <span className="font-bold">Önerilen boyut:</span> 1920x600px. İlk banner ana sayfa kapak görseli (Hero) olarak kullanılır.
@@ -874,4 +907,3 @@ export default function WebsiteBuilderPage() {
         </div>
     );
 }
-    
