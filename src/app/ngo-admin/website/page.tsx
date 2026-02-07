@@ -2,8 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, Check, X, LayoutGrid, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield } from 'lucide-react';
-import React, { useState } from 'react';
+import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, Check, X, LayoutGrid, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield, Settings2, Save } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const analyticsProviders = [
     { id: 'google-analytics', name: 'Google Analytics', logo: 'GA', color: 'bg-[#f9ab00]', status: 'Bağlı' },
@@ -49,6 +50,9 @@ export default function WebsiteBuilderPage() {
     const [selectedRegistrar, setSelectedRegistrar] = useState('');
     const [domainName, setDomainName] = useState('');
     const [presidentsMessage, setPresidentsMessage] = useState('');
+    
+    // Section Editing State
+    const [editingSection, setEditingSection] = useState<string | null>(null);
 
     const copyToClipboard = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
@@ -56,6 +60,124 @@ export default function WebsiteBuilderPage() {
             title: "Kopyalandı",
             description: `${label} başarıyla panoya kopyalandı.`,
         });
+    };
+
+    const handleSaveSection = () => {
+        toast({
+            title: "İçerik Güncellendi",
+            description: "Bölüm ayarları başarıyla kaydedildi.",
+        });
+        setEditingSection(null);
+    };
+
+    const renderSectionEditor = () => {
+        if (!editingSection) return null;
+        
+        const section = websiteSections.find(s => s.id === editingSection);
+        
+        return (
+            <DialogContent className="sm:max-w-[550px]">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        {section && <section.icon className="h-5 w-5 text-primary" />}
+                        {section?.label} Düzenle
+                    </DialogTitle>
+                    <DialogDescription>
+                        Bu bölümün web sitenizde nasıl görüneceğini ve hangi verileri içereceğini ayarlayın.
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+                    {editingSection === 'stats' && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Gönüllü Sayısı (Görünür)</Label>
+                                    <Input defaultValue="150.000" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Bağışçı Sayısı (Görünür)</Label>
+                                    <Input defaultValue="250.000" />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Alt Metin (Slogan)</Label>
+                                <Input defaultValue="İyilik her zaman kazanır." />
+                            </div>
+                        </div>
+                    )}
+
+                    {editingSection === 'donations' && (
+                        <div className="space-y-4">
+                            <Label>Aktif Bağış Kanalları</Label>
+                            <div className="space-y-3">
+                                {['hangel ile Bağış', 'SMS ile Bağış', 'Kredi Kartı', 'Banka EFT/Havale'].map(item => (
+                                    <div key={item} className="flex items-center justify-between p-3 border rounded-xl">
+                                        <span className="text-sm font-medium">{item}</span>
+                                        <Switch defaultChecked />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {editingSection === 'news' && (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Görünüm Modu</Label>
+                                <Select defaultValue="grid">
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="grid">Izgara (Grid)</SelectItem>
+                                        <SelectItem value="list">Liste (List)</SelectItem>
+                                        <SelectItem value="slider">Sürükle (Slider)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Gösterilecek Haber Sayısı</Label>
+                                <Input type="number" defaultValue="6" />
+                            </div>
+                        </div>
+                    )}
+
+                    {editingSection === 'volunteering' && (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>İlan Filtresi</Label>
+                                <Select defaultValue="active">
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Sadece Aktif İlanlar</SelectItem>
+                                        <SelectItem value="urgent">Öncelikli İlanlar</SelectItem>
+                                        <SelectItem value="all">Tüm İlan Geçmişi</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Generic placeholders for other sections */}
+                    {!['stats', 'donations', 'news', 'volunteering'].includes(editingSection) && (
+                        <div className="py-12 text-center space-y-4">
+                            <Settings2 className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+                            <p className="text-sm text-muted-foreground italic">Bu bölüm için içerik yönetim araçları profil verilerinizle otomatik senkronize çalışır. Özel başlık veya açıklama değişikliği yapabilirsiniz.</p>
+                            <div className="space-y-2 text-left">
+                                <Label>Özel Bölüm Başlığı</Label>
+                                <Input placeholder={section?.label} />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <DialogFooter className="border-t pt-4">
+                    <Button variant="ghost" onClick={() => setEditingSection(null)}>İptal</Button>
+                    <Button onClick={handleSaveSection} className="gap-2">
+                        <Save className="h-4 w-4" /> Ayarları Kaydet
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        );
     };
 
     return (
@@ -167,7 +289,7 @@ export default function WebsiteBuilderPage() {
                         <LayoutGrid className="h-5 w-5 text-primary" />
                         Web Sitesi Bölümleri
                     </CardTitle>
-                    <CardDescription>Hangi başlıkların ve modüllerin web sitenizde görüneceğini kontrol edin.</CardDescription>
+                    <CardDescription>Hangi modüllerin web sitenizde görüneceğini seçin ve içeriklerini düzenleyin.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="divide-y">
@@ -182,7 +304,17 @@ export default function WebsiteBuilderPage() {
                                         <p className="text-xs text-muted-foreground">{section.description}</p>
                                     </div>
                                 </div>
-                                <Switch defaultChecked id={`switch-${section.id}`} />
+                                <div className="flex items-center gap-3">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="h-8 text-xs font-bold gap-1.5"
+                                        onClick={() => setEditingSection(section.id)}
+                                    >
+                                        <Settings2 className="h-3.5 w-3.5" /> Düzenle
+                                    </Button>
+                                    <Switch defaultChecked id={`switch-${section.id}`} />
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -350,6 +482,11 @@ export default function WebsiteBuilderPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Section Edit Dialog */}
+            <Dialog open={!!editingSection} onOpenChange={(open) => !open && setEditingSection(null)}>
+                {renderSectionEditor()}
+            </Dialog>
         </div>
     );
 }
