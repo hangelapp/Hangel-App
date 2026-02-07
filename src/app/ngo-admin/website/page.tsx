@@ -36,7 +36,7 @@ import {
     Loader2,
     Smartphone
 } from 'lucide-react';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
@@ -103,8 +103,14 @@ export default function WebsiteBuilderPage() {
     const [presidentName, setPresidentName] = useState('Haluk Levent');
     const [presidentsMessage, setPresidentsMessage] = useState('Geleceğe dair vizyonumuz, dayanışmanın gücüyle her bir ihtiyaç sahibine ulaşmak ve toplumsal faydayı kalıcı hale getirmektir.');
     const [isSaving, setIsSaving] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<string | null>(null);
     
     const MESSAGE_LIMIT = 1000;
+
+    useEffect(() => {
+        // Fix hydration error by setting the time only on client side
+        setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
+    }, []);
 
     const toggleSection = (key: keyof typeof sections) => {
         setSections(prev => ({ ...prev, [key]: !prev[key] }));
@@ -119,6 +125,7 @@ export default function WebsiteBuilderPage() {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 800));
         setIsSaving(false);
+        setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
         
         if (!silent) {
             toast({
@@ -797,7 +804,7 @@ export default function WebsiteBuilderPage() {
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                         <div className="text-left hidden sm:block">
                             <p className="font-bold text-sm">Site Yayınlanmaya Hazır</p>
-                            <p className="text-[10px] text-muted-foreground">Son güncelleme: {new Date().toLocaleTimeString('tr-TR')}</p>
+                            <p className="text-[10px] text-muted-foreground">Son güncelleme: {lastUpdated || '--:--:--'}</p>
                         </div>
                         <Button 
                             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-xl"
