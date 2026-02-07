@@ -458,10 +458,19 @@ export default function WebsiteBuilderPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs">Operatörler</Label>
-                                        <div className="flex gap-2">
-                                            <Badge variant="outline" className="bg-white">Turkcell</Badge>
-                                            <Badge variant="outline" className="bg-white">Vodafone</Badge>
-                                            <Badge variant="outline" className="bg-white">T.Telekom</Badge>
+                                        <div className="flex flex-wrap gap-4">
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox id="op-turkcell" defaultChecked />
+                                                <Label htmlFor="op-turkcell" className="text-xs">Turkcell</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox id="op-vodafone" defaultChecked />
+                                                <Label htmlFor="op-vodafone" className="text-xs">Vodafone</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox id="op-ttelekom" defaultChecked />
+                                                <Label htmlFor="op-ttelekom" className="text-xs">T.Telekom</Label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -470,10 +479,6 @@ export default function WebsiteBuilderPage() {
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-bold">Banka EFT/Havale</span>
                                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>IBAN Numarası</Label>
-                                    <Input placeholder="TR00 0000 0000..." />
                                 </div>
                             </div>
                         </div>
@@ -512,8 +517,8 @@ export default function WebsiteBuilderPage() {
                                 <Label htmlFor="only-active">Sadece Aktif İlanları Göster</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="show-count" />
-                                <Label htmlFor="show-count">Başvuru Sayılarını Göster</Label>
+                                <Checkbox id="show-all" />
+                                <Label htmlFor="show-all">Tüm İlanları Göster</Label>
                             </div>
                         </div>
                         <Button asChild variant="outline" className="w-full">
@@ -741,7 +746,6 @@ export default function WebsiteBuilderPage() {
                                 </div>
                             </div>
                         </div>
-                        <Button className="w-full" onClick={() => handleSave()} disabled={!domainName}><Save className="mr-2 h-4 w-4"/> DNS Ayarlarını Kaydet</Button>
                     </CardContent>
                 )}
             </Card>
