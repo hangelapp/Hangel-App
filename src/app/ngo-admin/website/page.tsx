@@ -114,7 +114,7 @@ export default function WebsiteBuilderPage() {
                                 {['hangel ile Bağış', 'SMS ile Bağış', 'Kredi Kartı', 'Banka EFT/Havale'].map(item => (
                                     <div key={item} className="flex items-center justify-between p-3 border rounded-xl">
                                         <span className="text-sm font-medium">{item}</span>
-                                        <Switch defaultChecked />
+                                        <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                                     </div>
                                 ))}
                             </div>
@@ -194,12 +194,15 @@ export default function WebsiteBuilderPage() {
 
             {/* 1. Renk Seçimi */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <Palette className="h-5 w-5 text-primary" />
-                        Kurumsal Renk Seçimi
-                    </CardTitle>
-                    <CardDescription>Sitenizin ana temasını belirleyecek kurumsal rengi seçin.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Palette className="h-5 w-5 text-primary" />
+                            Kurumsal Renk Seçimi
+                        </CardTitle>
+                        <CardDescription>Sitenizin ana temasını belirleyecek kurumsal rengi seçin.</CardDescription>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -222,12 +225,15 @@ export default function WebsiteBuilderPage() {
 
             {/* 2. Banner Yönetimi */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <ImageIcon className="h-5 w-5 text-primary" />
-                        Görsel Yönetimi (Banner)
-                    </CardTitle>
-                    <CardDescription>Web sitesi ana sayfasında dönecek görselleri yönetin (Maksimum 4).</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <ImageIcon className="h-5 w-5 text-primary" />
+                            Görsel Yönetimi (Banner)
+                        </CardTitle>
+                        <CardDescription>Web sitesi ana sayfasında dönecek görselleri yönetin (Maksimum 4).</CardDescription>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -257,12 +263,15 @@ export default function WebsiteBuilderPage() {
 
             {/* 3. Başkanın Mesajı */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-primary" />
-                        Başkanın Mesajı
-                    </CardTitle>
-                    <CardDescription>Web sitesi ana sayfasında yer alacak resmi kurumsal mesaj.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <MessageSquare className="h-5 w-5 text-primary" />
+                            Başkanın Mesajı
+                        </CardTitle>
+                        <CardDescription>Web sitesi ana sayfasında yer alacak resmi kurumsal mesaj.</CardDescription>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
@@ -282,17 +291,17 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 4. Web Sitesi Bölüm Yönetimi - HER BİRİ AYRI PENCERE (KART) OLARAK */}
+            {/* 4. Modüler Bölümler */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {websiteSections.map((section) => (
                     <Card key={section.id} className="hover:border-primary/30 transition-all shadow-sm">
-                        <CardContent className="p-5 flex flex-col h-full">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="p-2.5 rounded-xl bg-muted">
-                                    <section.icon className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                                <Switch defaultChecked id={`switch-${section.id}`} />
+                        <CardHeader className="flex flex-row items-center justify-between p-5 pb-2">
+                            <div className="p-2.5 rounded-xl bg-muted">
+                                <section.icon className="h-6 w-6 text-muted-foreground" />
                             </div>
+                            <Switch defaultChecked id={`switch-${section.id}`} className="data-[state=checked]:bg-green-600" />
+                        </CardHeader>
+                        <CardContent className="p-5 flex flex-col h-full pt-2">
                             <div className="space-y-1 flex-1">
                                 <p className="font-bold text-base leading-none">{section.label}</p>
                                 <p className="text-xs text-muted-foreground leading-relaxed">{section.description}</p>
@@ -314,12 +323,15 @@ export default function WebsiteBuilderPage() {
 
             {/* 5. Alan Adı (Domain) Ayarları */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-primary" />
-                        Alan Adı (Domain) Ayarları
-                    </CardTitle>
-                    <CardDescription>Kendi alan adınızı bağlayarak kurumsal kimliğinizi güçlendirin.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Globe className="h-5 w-5 text-primary" />
+                            Alan Adı (Domain) Ayarları
+                        </CardTitle>
+                        <CardDescription>Kendi alan adınızı bağlayarak kurumsal kimliğinizi güçlendirin.</CardDescription>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -406,12 +418,15 @@ export default function WebsiteBuilderPage() {
 
             {/* 6. Web Analiz Araçları Entegrasyonu */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <Code className="h-5 w-5 text-primary" />
-                        Web Analiz Araçları Entegrasyonu
-                    </CardTitle>
-                    <CardDescription>Popüler analiz ve takip servislerini sitenize bağlayın.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Code className="h-5 w-5 text-primary" />
+                            Web Analiz Araçları Entegrasyonu
+                        </CardTitle>
+                        <CardDescription>Popüler analiz ve takip servislerini sitenize bağlayın.</CardDescription>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
