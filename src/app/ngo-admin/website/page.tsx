@@ -282,44 +282,41 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 4. Web Sitesi Bölüm Yönetimi */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <LayoutGrid className="h-5 w-5 text-primary" />
-                        Web Sitesi Bölümleri
-                    </CardTitle>
-                    <CardDescription>Hangi modüllerin web sitenizde görüneceğini seçin ve içeriklerini düzenleyin.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="divide-y">
-                        {websiteSections.map((section) => (
-                            <div key={section.id} className="flex items-center justify-between p-4 transition-colors hover:bg-muted/30">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2 rounded-lg bg-muted">
-                                        <section.icon className="h-5 w-5 text-muted-foreground" />
+            {/* 4. Web Sitesi Bölüm Yönetimi - HER BİRİ AYRI PENCERE (KART) OLARAK */}
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold font-headline px-1 flex items-center gap-2">
+                    <LayoutGrid className="h-6 w-6 text-primary" />
+                    Web Sitesi Bölümleri
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {websiteSections.map((section) => (
+                        <Card key={section.id} className="hover:border-primary/30 transition-all shadow-sm">
+                            <CardContent className="p-5 flex flex-col h-full">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="p-2.5 rounded-xl bg-muted">
+                                        <section.icon className="h-6 w-6 text-muted-foreground" />
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-bold">{section.label}</p>
-                                        <p className="text-xs text-muted-foreground">{section.description}</p>
-                                    </div>
+                                    <Switch defaultChecked id={`switch-${section.id}`} />
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="space-y-1 flex-1">
+                                    <p className="font-bold text-base leading-none">{section.label}</p>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">{section.description}</p>
+                                </div>
+                                <div className="pt-4 mt-auto">
                                     <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className="h-8 text-xs font-bold gap-1.5"
+                                        className="w-full text-xs font-bold gap-1.5 h-9"
                                         onClick={() => setEditingSection(section.id)}
                                     >
-                                        <Settings2 className="h-3.5 w-3.5" /> Düzenle
+                                        <Settings2 className="h-3.5 w-3.5" /> Bölümü Özelleştir
                                     </Button>
-                                    <Switch defaultChecked id={`switch-${section.id}`} />
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </div>
 
             {/* 5. Alan Adı (Domain) Ayarları */}
             <Card>
