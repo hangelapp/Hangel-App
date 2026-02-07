@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const portalPartners = [
+    { id: 'gonulluyuz-biz', name: 'Gönüllüyüz Biz', logo: 'G', color: 'bg-red-700', status: 'Bağlı', type: 'Kamu / Bakanlık' },
+    { id: 'ability-pool', name: 'Ability Pool', logo: 'A', color: 'bg-[#00AEEF]', status: 'Bağlanabilir', type: 'Sosyal Girişim' },
     { id: 'gonullu-org', name: 'Gönüllü.org', logo: 'G', color: 'bg-indigo-600', status: 'Bağlı', type: 'Ulusal' },
     { id: 'united-nations', name: 'UN Volunteers', logo: 'U', color: 'bg-blue-500', status: 'Bağlanabilir', type: 'Global' },
     { id: 'e-devlet', name: 'e-Devlet Gönüllülük', logo: 'e', color: 'bg-red-600', status: 'Geliştirme Aşamasında', type: 'Kamu' },
