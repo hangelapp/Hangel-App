@@ -1,9 +1,8 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, BarChart3, Settings2, Code, ShieldCheck, ArrowLeft, Languages, CheckCircle2 } from 'lucide-react';
+import { Globe, Palette, Code, ShieldCheck, ArrowLeft } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
