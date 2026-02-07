@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield, Settings2, Save, PlusCircle, ArrowRight } from 'lucide-react';
+import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield, Settings2, Save, PlusCircle, ArrowRight, Landmark, Info, CheckCircle2, Phone, MapPin, Share2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -170,7 +170,37 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 3. Başkanın Mesajı */}
+            {/* 3. Hakkımızda */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <Building2 className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">Hakkımızda Bölümü</CardTitle>
+                            <CardDescription>Kurumsal hikaye, vizyon ve değerlerinizi yönetin.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Bölüm Başlığı</Label>
+                        <Input defaultValue="İyiliği Herkes İçin Erişilebilir Kılıyoruz" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>İçerik Metni</Label>
+                        <Textarea rows={5} placeholder="Kuruluşunuzun hikayesini buraya yazın..." />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Yan Görsel (Opsiyonel)</Label>
+                        <FileUpload label="Bölüm Görseli" />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 4. Başkanın Mesajı */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -211,7 +241,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 4. Kurumsal İstatistikler */}
+            {/* 5. Kurumsal İstatistikler */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -251,7 +281,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 5. Bağış Yöntemleri */}
+            {/* 6. Bağış Yöntemleri */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -268,23 +298,30 @@ export default function WebsiteBuilderPage() {
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 gap-4">
                         {[
-                            { id: 'h-pay', label: 'hangel ile Bağış', desc: 'Alışverişlerinizle ek ücret ödemeden destek olun.' },
-                            { id: 'sms-pay', label: 'SMS ile Bağış', desc: '3406\'ya mesaj atarak katkı sağlayın.' },
-                            { id: 'card-pay', label: 'Kredi Kartı', desc: 'Online ödeme sistemimizle güvenle bağış yapın.' },
-                            { id: 'bank-pay', label: 'Banka EFT/Havale', desc: 'Resmi hesaplarımıza doğrudan transfer yapın.' },
+                            { id: 'h-pay', label: 'hangel ile Bağış', type: 'system' },
+                            { id: 'steps-pay', label: 'HelpSteps ile Bağış', desc: 'Adımlarınızı STK\'mız için bağışa dönüştürün.' },
+                            { id: 'sms-pay', label: 'SMS ile Bağış', desc: '3406\'ya mesaj atarak katkı sağlayın.', details: 'sms' },
+                            { id: 'card-pay', label: 'Kredi Kartı', type: 'no-desc' },
+                            { id: 'bank-pay', label: 'Banka EFT/Havale', desc: 'Resmi hesaplarımıza doğrudan transfer yapın.', details: 'iban' },
                         ].map(item => (
                             <div key={item.id} className="p-4 border rounded-2xl bg-muted/10 space-y-3">
                                 <div className="flex items-center justify-between">
                                     <Input defaultValue={item.label} className="h-8 text-sm font-bold bg-background max-w-[200px]" />
                                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                                 </div>
-                                {item.id !== 'h-pay' && (
+                                {item.type !== 'system' && item.type !== 'no-desc' && (
                                     <div className="space-y-2">
                                         <Label className="text-[10px] uppercase font-black text-muted-foreground">Görünecek Açıklama</Label>
                                         <Input defaultValue={item.desc} className="h-8 text-xs bg-background" />
                                     </div>
                                 )}
-                                {item.id === 'sms-pay' && (
+                                {item.details === 'iban' && (
+                                    <div className="space-y-2 pt-2 border-t border-dashed">
+                                        <Label className="text-[10px] uppercase font-black text-muted-foreground">IBAN Numarası</Label>
+                                        <Input placeholder="TR00 0000 0000 0000 0000 0000 00" className="h-8 text-xs bg-background font-mono" />
+                                    </div>
+                                )}
+                                {item.details === 'sms' && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-dashed mt-2">
                                         <div className="space-y-1.5">
                                             <Label className="text-[10px] uppercase font-black text-muted-foreground">Kısa Kod</Label>
@@ -317,7 +354,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 6. Gönüllülük İlanları */}
+            {/* 7. Gönüllülük İlanları */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -345,7 +382,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 7. Haberler ve Duyurular */}
+            {/* 8. Haberler ve Duyurular */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -388,7 +425,91 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 8. Alan Adı (Domain) Ayarları */}
+            {/* 9. Küresel Amaçlar (SKA) */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <Target className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">Küresel Amaçlar (SKA)</CardTitle>
+                            <CardDescription>Sürdürülebilir Kalkınma Amaçları gösterimi.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-xs text-muted-foreground">Profilinizde seçili olan amaçlar otomatik olarak listelenecektir.</p>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href="/ngo-admin/manage-profile">Amaçları Profilde Düzenle</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+
+            {/* 10. Şeffaflık Endeksi */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <Shield className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">Şeffaflık Endeksi</CardTitle>
+                            <CardDescription>Şeffaflık puanı ve belgelerin gösterimi.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
+                        <span className="text-sm font-medium">Şeffaflık Puanını Göster</span>
+                        <Switch defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/10">
+                        <span className="text-sm font-medium">Yasal Belgeleri Listele</span>
+                        <Switch defaultChecked />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 11. İletişim Bilgileri */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <Phone className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">İletişim Bilgileri</CardTitle>
+                            <CardDescription>Footer ve iletişim sayfasındaki bilgilerin gösterimi.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex items-center justify-between p-3 border rounded-xl">
+                            <span className="text-xs font-medium">E-posta Adresi</span>
+                            <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded-xl">
+                            <span className="text-xs font-medium">Telefon Numarası</span>
+                            <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded-xl">
+                            <span className="text-xs font-medium">Açık Adres</span>
+                            <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded-xl">
+                            <span className="text-xs font-medium">Sosyal Medya Linkleri</span>
+                            <Switch defaultChecked />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 12. Alan Adı (Domain) Ayarları */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -446,7 +567,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 9. Web Analiz Araçları */}
+            {/* 13. Web Analiz Araçları */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -503,3 +624,16 @@ export default function WebsiteBuilderPage() {
         </div>
     );
 }
+
+const FileUpload = ({label, currentFile}: {label: string, currentFile?: string}) => (
+    <div className="space-y-2">
+        <Label>{label}</Label>
+        <div className="flex items-center gap-4">
+            <Input id={`${label}-upload`} type="file" className="hidden" />
+            <Button asChild variant="outline" size="sm">
+                <label htmlFor={`${label}-upload`} className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />{currentFile ? 'Değiştir' : 'Yükle'}</label>
+            </Button>
+            {currentFile && <span className="text-xs text-muted-foreground">Mevcut: {currentFile}</span>}
+        </div>
+    </div>
+);
