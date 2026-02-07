@@ -58,82 +58,88 @@ export default function WebsiteBuilderPage() {
                 </div>
             </div>
 
-            {/* 1. Tasarım & Görsel Kimlik */}
+            {/* 1. Renk Seçimi */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                         <Palette className="h-5 w-5 text-primary" />
-                        Görsel Kimlik & Tasarım
+                        Kurumsal Renk Seçimi
                     </CardTitle>
-                    <CardDescription>Sitenizin renklerini ve görsellerini markanıza uygun hale getirin.</CardDescription>
+                    <CardDescription>Sitenizin ana temasını belirleyecek kurumsal rengi seçin.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
-                    <div className="space-y-4">
-                        <Label className="text-base">Temel Renk Seçimi</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            {colorOptions.map((color) => (
-                                <div 
-                                    key={color.value}
-                                    onClick={() => setPrimaryColor(color.value)}
-                                    className={cn(
-                                        "p-4 border-2 rounded-xl cursor-pointer transition-all flex flex-col items-center gap-2",
-                                        primaryColor === color.value ? "border-primary bg-primary/5" : "hover:border-primary/30"
-                                    )}
-                                >
-                                    <div className="w-8 h-8 rounded-full shadow-md" style={{ backgroundColor: color.value }} />
-                                    <span className="text-xs font-medium">{color.name}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="space-y-4 pt-6 border-t">
-                        <Label className="text-base">Web Sitesi Bannerları (Maksimum 4)</Label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {/* Slot 1 - Active */}
-                            <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary group">
-                                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Banner 1" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button variant="secondary" size="sm" className="h-7 text-[10px] px-2"><ImageIcon className="mr-1 h-3 w-3"/> Değiştir</Button>
-                                </div>
-                                <div className="absolute top-1 left-1">
-                                    <Badge className="bg-primary text-[8px] h-4 font-bold px-1.5 border-none">ANA BANNER</Badge>
-                                </div>
-                            </div>
-                            
-                            {/* Slot 2 - Empty */}
+                <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {colorOptions.map((color) => (
                             <div 
-                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                                onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                                key={color.value}
+                                onClick={() => setPrimaryColor(color.value)}
+                                className={cn(
+                                    "p-4 border-2 rounded-xl cursor-pointer transition-all flex flex-col items-center gap-2",
+                                    primaryColor === color.value ? "border-primary bg-primary/5" : "hover:border-primary/30"
+                                )}
                             >
-                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <p className="text-[10px] font-bold">Banner 2 Yükle</p>
+                                <div className="w-8 h-8 rounded-full shadow-md" style={{ backgroundColor: color.value }} />
+                                <span className="text-xs font-medium">{color.name}</span>
                             </div>
-
-                            {/* Slot 3 - Empty */}
-                            <div 
-                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                                onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
-                            >
-                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <p className="text-[10px] font-bold">Banner 3 Yükle</p>
-                            </div>
-
-                            {/* Slot 4 - Empty */}
-                            <div 
-                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                                onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
-                            >
-                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <p className="text-[10px] font-bold">Banner 4 Yükle</p>
-                            </div>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">Önerilen boyut: 1920x600px. İlk banner ana sayfa kapak görseli olarak kullanılır.</p>
+                        ))}
                     </div>
                 </CardContent>
             </Card>
 
-            {/* 2. Başkanın Mesajı */}
+            {/* 2. Banner Yönetimi */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <ImageIcon className="h-5 w-5 text-primary" />
+                        Görsel Yönetimi (Banner)
+                    </CardTitle>
+                    <CardDescription>Web sitesi ana sayfasında dönecek görselleri yönetin (Maksimum 4).</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Slot 1 - Active */}
+                        <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary group">
+                            <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Banner 1" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button variant="secondary" size="sm" className="h-7 text-[10px] px-2"><ImageIcon className="mr-1 h-3 w-3"/> Değiştir</Button>
+                            </div>
+                            <div className="absolute top-1 left-1">
+                                <Badge className="bg-primary text-[8px] h-4 font-bold px-1.5 border-none">ANA BANNER</Badge>
+                            </div>
+                        </div>
+                        
+                        {/* Slot 2 - Empty */}
+                        <div 
+                            className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
+                            onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                        >
+                            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <p className="text-[10px] font-bold">Banner 2 Yükle</p>
+                        </div>
+
+                        {/* Slot 3 - Empty */}
+                        <div 
+                            className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
+                            onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                        >
+                            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <p className="text-[10px] font-bold">Banner 3 Yükle</p>
+                        </div>
+
+                        {/* Slot 4 - Empty */}
+                        <div 
+                            className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
+                            onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                        >
+                            <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <p className="text-[10px] font-bold">Banner 4 Yükle</p>
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Önerilen boyut: 1920x600px. İlk banner ana sayfa kapak görseli olarak kullanılır.</p>
+                </CardContent>
+            </Card>
+
+            {/* 3. Başkanın Mesajı */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -160,7 +166,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 3. Alan Adı (Domain) Ayarları */}
+            {/* 4. Alan Adı (Domain) Ayarları */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -252,7 +258,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 4. Web Analiz Araçları Entegrasyonu */}
+            {/* 5. Web Analiz Araçları Entegrasyonu */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -307,7 +313,7 @@ export default function WebsiteBuilderPage() {
                             <p className="text-[10px] text-muted-foreground">Profil ve ilan verilerinizle otomatik senkronize.</p>
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto">
-                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => toast({title: "Ayarlar Kaydedildi"})}>Ayarları Kaydet</Button>
+                            <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => toast({title: "Ayarlar Kaydedildi"})}>Ayarlar Kaydet</Button>
                             <Button 
                                 className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-bold"
                                 onClick={() => {
