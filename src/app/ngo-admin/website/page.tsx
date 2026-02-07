@@ -33,7 +33,8 @@ import {
     Share2,
     Building2,
     ExternalLink,
-    Loader2
+    Loader2,
+    Smartphone
 } from 'lucide-react';
 import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -63,6 +64,15 @@ const colorOptions = [
 
 const domainRegistrars = [
     "GoDaddy", "Natro", "Turhost", "Google Domains", "Namecheap", "IHS Telekom", "Metunic", "Diğer"
+];
+
+const transparencyDocs = [
+    { id: 'faaliyet', label: 'Faaliyet Belgesi' },
+    { id: 'tuzuk', label: 'Tüzük / Vakıf Senedi' },
+    { id: 'yonetim', label: 'Yönetim Kurulu Listesi' },
+    { id: 'mali', label: 'Finansal Tablolar' },
+    { id: 'denetim', label: 'Bağımsız Denetim Raporu' },
+    { id: 'etki', label: 'Sosyal Etki Raporu' },
 ];
 
 export default function WebsiteBuilderPage() {
@@ -279,14 +289,13 @@ export default function WebsiteBuilderPage() {
                 {sections.about && (
                     <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground">Bu bölümdeki veriler kuruluş profilinizle senkronize çalışır.</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <Button asChild variant="outline" className="w-full">
                                 <Link href="/ngo-admin/manage-profile">
                                     <ExternalLink className="mr-2 h-4 w-4" />
                                     Profilde Düzenle
                                 </Link>
                             </Button>
-                            <Button variant="secondary" onClick={() => handleSave()}>Değişiklikleri Uygula</Button>
                         </div>
                     </CardContent>
                 )}
@@ -424,6 +433,37 @@ export default function WebsiteBuilderPage() {
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-bold">HelpSteps ile Bağış</span>
                                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                                </div>
+                            </div>
+                            <div className="p-4 border rounded-2xl space-y-4 bg-muted/5">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Smartphone className="h-4 w-4 text-primary" />
+                                        <span className="text-sm font-bold">SMS ile Bağış</span>
+                                    </div>
+                                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Kısa Kod</Label>
+                                        <Input placeholder="Örn: 3406" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Anahtar Kelime</Label>
+                                        <Input placeholder="Örn: AHBAP" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">SMS Tutarı (₺)</Label>
+                                        <Input type="number" placeholder="20" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Operatörler</Label>
+                                        <div className="flex gap-2">
+                                            <Badge variant="outline" className="bg-white">Turkcell</Badge>
+                                            <Badge variant="outline" className="bg-white">Vodafone</Badge>
+                                            <Badge variant="outline" className="bg-white">T.Telekom</Badge>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-4 border rounded-2xl space-y-4 bg-muted/5">
@@ -574,14 +614,21 @@ export default function WebsiteBuilderPage() {
                     />
                 </CardHeader>
                 {sections.transparency && (
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center space-x-2 p-3 border rounded-xl bg-muted/10">
-                            <Checkbox id="show-docs" defaultChecked />
-                            <Label htmlFor="show-docs">Yasal Belgeleri Listele</Label>
+                    <CardContent className="space-y-6">
+                        <div className="space-y-4">
+                            <Label className="text-sm font-bold">Yayınlanacak Belgeleri Onayla</Label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {transparencyDocs.map(doc => (
+                                    <div key={doc.id} className="flex items-center space-x-2 p-2.5 border rounded-xl bg-muted/10 hover:bg-muted/30 transition-colors">
+                                        <Checkbox id={`pub-doc-${doc.id}`} defaultChecked />
+                                        <Label htmlFor={`pub-doc-${doc.id}`} className="text-xs font-medium cursor-pointer">{doc.label}</Label>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <Button asChild variant="outline" className="w-full">
                             <Link href="/ngo-admin/transparency">
-                                <ShieldCheck className="mr-2 h-4 w-4" /> Şeffaflık Panelini Yönet
+                                <ShieldCheck className="mr-2 h-4 w-4" /> Belgeleri Profilde Güncelle
                             </Link>
                         </Button>
                     </CardContent>
