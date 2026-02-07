@@ -99,7 +99,7 @@ export default function WebsiteBuilderPage() {
                     </div>
 
                     <div className="pt-4 border-t space-y-4">
-                        <Label className="text-sm font-bold">Özel Renk Seçimi</Label>
+                        <Label className="text-sm font-bold">Özel Renk Girişi</Label>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 flex-1 max-w-sm">
                                 <span className="text-sm font-mono text-muted-foreground">#</span>
@@ -278,10 +278,12 @@ export default function WebsiteBuilderPage() {
                                     <Input defaultValue={item.label} className="h-8 text-sm font-bold bg-background max-w-[200px]" />
                                     <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] uppercase font-black text-muted-foreground">Görünecek Açıklama</Label>
-                                    <Input defaultValue={item.desc} className="h-8 text-xs bg-background" />
-                                </div>
+                                {item.id !== 'h-pay' && (
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] uppercase font-black text-muted-foreground">Görünecek Açıklama</Label>
+                                        <Input defaultValue={item.desc} className="h-8 text-xs bg-background" />
+                                    </div>
+                                )}
                                 {item.id === 'sms-pay' && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-dashed mt-2">
                                         <div className="space-y-1.5">
