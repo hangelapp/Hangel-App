@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,11 @@ import {
     Building2,
     ExternalLink,
     Loader2,
-    Smartphone
+    Smartphone,
+    Users,
+    Calendar,
+    ShoppingCart,
+    Handshake
 } from 'lucide-react';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -93,7 +98,11 @@ export default function WebsiteBuilderPage() {
         transparency: true,
         contact: true,
         domain: true,
-        analytics: true
+        analytics: true,
+        events: true,
+        ecommerce: false,
+        board: false,
+        partners: true
     });
 
     // Content States
@@ -108,7 +117,6 @@ export default function WebsiteBuilderPage() {
     const MESSAGE_LIMIT = 1000;
 
     useEffect(() => {
-        // Fix hydration error by setting the time only on client side
         setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
     }, []);
 
@@ -122,7 +130,6 @@ export default function WebsiteBuilderPage() {
 
     const handleSave = async (silent = false) => {
         setIsSaving(true);
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 800));
         setIsSaving(false);
         setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
@@ -537,6 +544,66 @@ export default function WebsiteBuilderPage() {
                 )}
             </Card>
 
+            {/* 14. Etkinlikler (YENİ) */}
+            <Card className={cn(!sections.events && "opacity-60")}>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <Calendar className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">Etkinlik Takvimi</CardTitle>
+                            <CardDescription>Web sitesinde yaklaşan etkinliklerinizi listeleyin.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch 
+                        checked={sections.events} 
+                        onCheckedChange={() => toggleSection('events')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
+                </CardHeader>
+                {sections.events && (
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">Etkinlikleriniz, mekan rezervasyonlarınız ve takvim verileriniz burada listelenir.</p>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/events">
+                                <ExternalLink className="mr-2 h-4 w-4" /> Etkinlikleri Yönet
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
+            </Card>
+
+            {/* 15. İktisadi İşletme (YENİ) */}
+            <Card className={cn(!sections.ecommerce && "opacity-60")}>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <ShoppingCart className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">İktisadi İşletme Mağazası</CardTitle>
+                            <CardDescription>Ürünlerinizi web sitesi vitrininde sergileyin.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch 
+                        checked={sections.ecommerce} 
+                        onCheckedChange={() => toggleSection('ecommerce')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
+                </CardHeader>
+                {sections.ecommerce && (
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">Pazar yeri entegrasyonu ve aktif ürün listesi ayarlarını yönetin.</p>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/ecommerce">
+                                <ShoppingCart className="mr-2 h-4 w-4" /> Mağaza Paneline Git
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
+            </Card>
+
             {/* 8. Haberler ve Duyurular */}
             <Card className={cn(!sections.news && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -571,6 +638,66 @@ export default function WebsiteBuilderPage() {
                         <Button asChild variant="outline" className="w-full">
                             <Link href="/ngo-admin/posts">
                                 <Megaphone className="mr-2 h-4 w-4" /> Mini Blog Sayfasına Git
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
+            </Card>
+
+            {/* 16. Yönetim Kurulu / Ekibimiz (YENİ) */}
+            <Card className={cn(!sections.board && "opacity-60")}>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <Users className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">Yönetim Kurulu & Ekibimiz</CardTitle>
+                            <CardDescription>Kuruluş yetkililerini web sitesinde tanıtın.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch 
+                        checked={sections.board} 
+                        onCheckedChange={() => toggleSection('board')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
+                </CardHeader>
+                {sections.board && (
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">Yetkili listesi ve görev tanımlarını yönetin.</p>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/users">
+                                <Users className="mr-2 h-4 w-4" /> Yetkilileri Yönet
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
+            </Card>
+
+            {/* 17. Destekçi Markalar (YENİ) */}
+            <Card className={cn(!sections.partners && "opacity-60")}>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-muted">
+                            <Handshake className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg">Destekçi Markalar</CardTitle>
+                            <CardDescription>Sizi destekleyen iş ortaklarınızın logolarını listeleyin.</CardDescription>
+                        </div>
+                    </div>
+                    <Switch 
+                        checked={sections.partners} 
+                        onCheckedChange={() => toggleSection('partners')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
+                </CardHeader>
+                {sections.partners && (
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">Pazarlama ve görünürlük ayarlarından destekçi marka listesini güncelleyin.</p>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/marketing">
+                                <Target className="mr-2 h-4 w-4" /> Partnerleri Yönet
                             </Link>
                         </Button>
                     </CardContent>
@@ -828,3 +955,4 @@ export default function WebsiteBuilderPage() {
         </div>
     );
 }
+    
