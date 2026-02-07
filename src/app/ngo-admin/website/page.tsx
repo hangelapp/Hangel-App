@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 
 const analyticsProviders = [
@@ -281,6 +282,33 @@ export default function WebsiteBuilderPage() {
                                     <Label className="text-[10px] uppercase font-black text-muted-foreground">Görünecek Açıklama</Label>
                                     <Input defaultValue={item.desc} className="h-8 text-xs bg-background" />
                                 </div>
+                                {item.id === 'sms-pay' && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-dashed mt-2">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">Kısa Kod</Label>
+                                            <Input defaultValue="3406" className="h-8 text-xs bg-background" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">Anahtar Kelime</Label>
+                                            <Input defaultValue="AHBAP" className="h-8 text-xs bg-background" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">SMS Tutarı (₺)</Label>
+                                            <Input defaultValue="20" type="number" className="h-8 text-xs bg-background" />
+                                        </div>
+                                        <div className="md:col-span-3 space-y-2">
+                                            <Label className="text-[10px] uppercase font-black text-muted-foreground">Aktif Operatörler</Label>
+                                            <div className="flex gap-4">
+                                                {['Turkcell', 'Vodafone', 'Türk Telekom'].map(op => (
+                                                    <div key={op} className="flex items-center gap-2">
+                                                        <Checkbox id={`op-${op}`} defaultChecked />
+                                                        <Label htmlFor={`op-${op}`} className="text-xs">{op}</Label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
