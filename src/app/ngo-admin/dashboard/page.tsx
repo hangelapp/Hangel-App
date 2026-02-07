@@ -38,6 +38,9 @@ const iconColorMap: { [key: string]: string } = {
   'building-2': 'bg-slate-600',
   'graduation-cap': 'bg-blue-700',
   'map-pin': 'bg-teal-600',
+  'briefcase': 'bg-blue-600',
+  'network': 'bg-rose-500',
+  'line-chart': 'bg-amber-600',
 };
 
 const NavLink = ({ href, icon, label }: { href: string, icon: string, label: string }) => {
@@ -106,6 +109,9 @@ const navGroups = [
             { id: 'field-team', href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
             { id: 'dm', href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
             { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
+            { id: 'hr-integration', href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: 'briefcase', roles: ['Genel Yönetici'] },
+            { id: 'volunteer-portal', href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: 'network', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+            { id: 'analytics-tools', href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: 'line-chart', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
         ]
     },
     {

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Store, FileText, HeartHandshake, Users, LayoutGrid, Calendar, Building, Building2, Briefcase, Landmark, Smartphone, MessageCircle, Database, PhoneCall, GraduationCap, MapPin, HandCoins, Globe } from 'lucide-react';
+import { ChevronRight, Store, FileText, HeartHandshake, Users, LayoutGrid, Calendar, Building, Building2, Briefcase, Landmark, Smartphone, MessageCircle, Database, PhoneCall, GraduationCap, MapPin, HandCoins, Globe, Network, LineChart } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { managedItems } from '@/lib/data';
@@ -29,6 +29,9 @@ const toolItems = [
     { name: 'Üniversite Gönüllük Dersi', icon: GraduationCap, color: 'bg-blue-700', href: '/ngo-admin/university-volunteering' },
     { name: 'Saha Ekip Yönetimi', icon: MapPin, color: 'bg-teal-600', href: '/ngo-admin/field-team' },
     { name: 'DM Mesajlaşma Merkezi', icon: MessageCircle, color: 'bg-sky-500', href: '/ngo-admin/dm' },
+    { name: 'İK Şirketleri Entegrasyonu', icon: Briefcase, color: 'bg-blue-600', href: '/ngo-admin/hr-integration' },
+    { name: 'Gönüllülük Portalı Entegrasyonu', icon: Network, color: 'bg-rose-500', href: '/ngo-admin/volunteer-portal' },
+    { name: 'Web Analiz Araçları', icon: LineChart, color: 'bg-amber-600', href: '/ngo-admin/analytics-tools' },
 ];
 
 const statusVariantMap = {
