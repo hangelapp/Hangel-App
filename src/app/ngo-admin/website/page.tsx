@@ -2,7 +2,37 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield, Settings2, Save, PlusCircle, ArrowRight, Landmark, Info, CheckCircle2, Phone, MapPin, Share2 } from 'lucide-react';
+import { 
+    Globe, 
+    Palette, 
+    Code, 
+    ShieldCheck, 
+    ArrowLeft, 
+    Copy, 
+    Upload, 
+    Image as ImageIcon, 
+    MessageSquare, 
+    Monitor, 
+    BarChart3, 
+    Heart, 
+    ShoppingBag, 
+    Megaphone, 
+    HeartHandshake, 
+    Newspaper, 
+    Target, 
+    Shield, 
+    Settings2, 
+    Save, 
+    PlusCircle, 
+    ArrowRight, 
+    Landmark, 
+    Info, 
+    CheckCircle2, 
+    Phone, 
+    MapPin, 
+    Share2,
+    Building2
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
