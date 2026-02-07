@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Globe, Palette, Code, ShieldCheck, ArrowLeft, Copy, Upload, Image as ImageIcon, MessageSquare, Monitor, Check, X, LayoutGrid, BarChart3, Heart, ShoppingBag, Megaphone, HeartHandshake, Newspaper, Target, Shield, Settings2, Save } from 'lucide-react';
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
@@ -157,7 +157,6 @@ export default function WebsiteBuilderPage() {
                         </div>
                     )}
 
-                    {/* Generic placeholders for other sections */}
                     {!['stats', 'donations', 'news', 'volunteering'].includes(editingSection) && (
                         <div className="py-12 text-center space-y-4">
                             <Settings2 className="h-12 w-12 text-muted-foreground/30 mx-auto" />
@@ -292,34 +291,32 @@ export default function WebsiteBuilderPage() {
             </Card>
 
             {/* 4. Modüler Bölümler */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {websiteSections.map((section) => (
-                    <Card key={section.id} className="hover:border-primary/30 transition-all shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between p-5 pb-2">
+            {websiteSections.map((section) => (
+                <Card key={section.id} className="hover:border-primary/30 transition-all shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div className="flex items-center gap-4">
                             <div className="p-2.5 rounded-xl bg-muted">
                                 <section.icon className="h-6 w-6 text-muted-foreground" />
                             </div>
-                            <Switch defaultChecked id={`switch-${section.id}`} className="data-[state=checked]:bg-green-600" />
-                        </CardHeader>
-                        <CardContent className="p-5 flex flex-col h-full pt-2">
-                            <div className="space-y-1 flex-1">
-                                <p className="font-bold text-base leading-none">{section.label}</p>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{section.description}</p>
+                            <div className="space-y-1">
+                                <CardTitle className="text-lg">{section.label}</CardTitle>
+                                <CardDescription>{section.description}</CardDescription>
                             </div>
-                            <div className="pt-4 mt-auto">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="w-full text-xs font-bold gap-1.5 h-9"
-                                    onClick={() => setEditingSection(section.id)}
-                                >
-                                    <Settings2 className="h-3.5 w-3.5" /> Bölümü Özelleştir
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
+                        </div>
+                        <Switch defaultChecked id={`switch-${section.id}`} className="data-[state=checked]:bg-green-600" />
+                    </CardHeader>
+                    <CardContent className="pt-2">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full text-xs font-bold gap-1.5 h-9"
+                            onClick={() => setEditingSection(section.id)}
+                        >
+                            <Settings2 className="h-3.5 w-3.5" /> Bölümü Özelleştir
+                        </Button>
+                    </CardContent>
+                </Card>
+            ))}
 
             {/* 5. Alan Adı (Domain) Ayarları */}
             <Card>
