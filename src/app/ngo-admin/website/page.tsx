@@ -58,53 +58,7 @@ export default function WebsiteBuilderPage() {
                 </div>
             </div>
 
-            {/* 1. Web Analiz Araçları */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <Code className="h-5 w-5 text-primary" />
-                        Web Analiz Araçları Entegrasyonu
-                    </CardTitle>
-                    <CardDescription>Popüler analiz ve takip servislerini sitenize bağlayın.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        {analyticsProviders.map((ap) => (
-                            <Card key={ap.id} className="hover:border-primary transition-colors cursor-pointer group">
-                                <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
-                                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", ap.color)}>
-                                        {ap.logo}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-sm">{ap.name}</p>
-                                        <Badge variant={ap.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
-                                            {ap.status}
-                                        </Badge>
-                                    </div>
-                                    <Button variant="outline" size="sm" className="w-full">Bağla</Button>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-
-                    <div className="space-y-4 pt-6 border-t">
-                        <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Özel Script Ekleme</h3>
-                        <div className="space-y-2">
-                            <Label>Script Başlığı</Label>
-                            <Input placeholder="Örn: Hotjar Tracking Code" />
-                        </div>
-                        <div className="p-4 border rounded-xl bg-muted/20">
-                            <Label className="text-xs uppercase font-bold text-muted-foreground mb-2 block">Özel HTML / Script</Label>
-                            <textarea 
-                                className="w-full h-32 bg-background font-mono text-xs p-3 border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" 
-                                placeholder="<!-- Script buraya gelecek -->"
-                            ></textarea>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* 2. Tasarım & Görsel Kimlik */}
+            {/* 1. Tasarım & Görsel Kimlik */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -160,7 +114,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 3. Başkanın Mesajı */}
+            {/* 2. Başkanın Mesajı */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -187,7 +141,7 @@ export default function WebsiteBuilderPage() {
                 </CardContent>
             </Card>
 
-            {/* 4. Alan Adı (Domain) Ayarları */}
+            {/* 3. Alan Adı (Domain) Ayarları */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -275,6 +229,52 @@ export default function WebsiteBuilderPage() {
                     <div className="p-4 border rounded-xl bg-blue-50 text-blue-800 text-[10px] flex items-center gap-3">
                         <ShieldCheck className="h-5 w-5 shrink-0" />
                         <p>DNS değişikliklerinin yayılması 24-48 saat sürebilir. Doğrulama sonrası SSL sertifikanız otomatik kurulacaktır.</p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 4. Web Analiz Araçları (En Alt Bölüm) */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Code className="h-5 w-5 text-primary" />
+                        Web Analiz Araçları Entegrasyonu
+                    </CardTitle>
+                    <CardDescription>Popüler analiz ve takip servislerini sitenize bağlayın.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        {analyticsProviders.map((ap) => (
+                            <Card key={ap.id} className="hover:border-primary transition-colors cursor-pointer group">
+                                <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+                                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", ap.color)}>
+                                        {ap.logo}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-sm">{ap.name}</p>
+                                        <Badge variant={ap.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                            {ap.status}
+                                        </Badge>
+                                    </div>
+                                    <Button variant="outline" size="sm" className="w-full">Bağla</Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+
+                    <div className="space-y-4 pt-6 border-t">
+                        <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Özel Script Ekleme</h3>
+                        <div className="space-y-2">
+                            <Label>Script Başlığı</Label>
+                            <Input placeholder="Örn: Hotjar Tracking Code" />
+                        </div>
+                        <div className="p-4 border rounded-xl bg-muted/20">
+                            <Label className="text-xs uppercase font-bold text-muted-foreground mb-2 block">Özel HTML / Script</Label>
+                            <textarea 
+                                className="w-full h-32 bg-background font-mono text-xs p-3 border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" 
+                                placeholder="<!-- Script buraya gelecek -->"
+                            ></textarea>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
