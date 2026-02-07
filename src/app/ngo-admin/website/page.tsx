@@ -32,9 +32,10 @@ import {
     MapPin, 
     Share2,
     Building2,
-    ExternalLink
+    ExternalLink,
+    Loader2
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
@@ -67,11 +68,55 @@ const domainRegistrars = [
 export default function WebsiteBuilderPage() {
     const router = useRouter();
     const { toast } = useToast();
+    
+    // Website Section Visibility States
+    const [sections, setSections] = useState({
+        colors: true,
+        banners: true,
+        about: true,
+        president: true,
+        stats: true,
+        donations: true,
+        volunteering: true,
+        news: true,
+        sdg: true,
+        transparency: true,
+        contact: true,
+        domain: true,
+        analytics: true
+    });
+
+    // Content States
     const [primaryColor, setPrimaryColor] = useState('#f34723');
     const [selectedRegistrar, setSelectedRegistrar] = useState('');
     const [domainName, setDomainName] = useState('');
-    const [presidentsMessage, setPresidentsMessage] = useState('');
+    const [presidentName, setPresidentName] = useState('Haluk Levent');
+    const [presidentsMessage, setPresidentsMessage] = useState('Geleceğe dair vizyonumuz, dayanışmanın gücüyle her bir ihtiyaç sahibine ulaşmak ve toplumsal faydayı kalıcı hale getirmektir.');
+    const [isSaving, setIsSaving] = useState(false);
+    
     const MESSAGE_LIMIT = 1000;
+
+    const toggleSection = (key: keyof typeof sections) => {
+        setSections(prev => ({ ...prev, [key]: !prev[key] }));
+        toast({
+            title: "Görünüm Güncellendi",
+            description: `${key.toUpperCase()} bölümü ${!sections[key] ? 'aktif' : 'pasif'} hale getirildi.`
+        });
+    };
+
+    const handleSave = async (silent = false) => {
+        setIsSaving(true);
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setIsSaving(false);
+        
+        if (!silent) {
+            toast({
+                title: "Tüm Değişiklikler Kaydedildi",
+                description: "Web siteniz güncel bilgilerle yayına hazır.",
+            });
+        }
+    };
 
     const copyToClipboard = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
@@ -97,8 +142,8 @@ export default function WebsiteBuilderPage() {
                 </div>
             </div>
 
-            {/* 1. Kurumsal Renk Seçimi - Web Specific */}
-            <Card>
+            {/* 1. Kurumsal Renk Seçimi */}
+            <Card className={cn(!sections.colors && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -109,56 +154,62 @@ export default function WebsiteBuilderPage() {
                             <CardDescription>Sitenizin ana temasını belirleyecek kurumsal rengi seçin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.colors} 
+                        onCheckedChange={() => toggleSection('colors')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {colorOptions.map((color) => (
-                            <div 
-                                key={color.value}
-                                onClick={() => setPrimaryColor(color.value)}
-                                className={cn(
-                                    "p-4 border-2 rounded-xl cursor-pointer transition-all flex flex-col items-center gap-2",
-                                    primaryColor.toLowerCase() === color.value.toLowerCase() ? "border-primary bg-primary/5 shadow-md scale-105" : "hover:border-primary/30"
-                                )}
-                            >
-                                <div className="w-10 h-10 rounded-full shadow-inner border-2 border-white" style={{ backgroundColor: color.value }} />
-                                <span className="text-[10px] font-bold font-mono text-muted-foreground uppercase">{color.value}</span>
-                                <span className="text-xs font-semibold">{color.name}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="pt-4 border-t space-y-4">
-                        <Label className="text-sm font-bold">Özel Renk Girişi</Label>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 flex-1 max-w-sm">
-                                <span className="text-sm font-mono text-muted-foreground">#</span>
-                                <Input 
-                                    value={primaryColor.replace('#', '')} 
-                                    onChange={(e) => setPrimaryColor(`#${e.target.value}`)}
-                                    placeholder="FFFFFF"
-                                    className="font-mono uppercase"
-                                    maxLength={6}
-                                />
-                            </div>
-                            <div className="relative group">
-                                <input 
-                                    type="color" 
-                                    value={primaryColor} 
-                                    onChange={handleColorChange}
-                                    className="w-12 h-12 rounded-full cursor-pointer border-2 border-white shadow-md appearance-none overflow-hidden"
-                                />
-                                <div className="absolute inset-0 rounded-full border border-black/5 pointer-events-none" />
-                            </div>
-                            <p className="text-xs text-muted-foreground">Renk paletinden seçmek için dairesel alana tıklayın.</p>
+                {sections.colors && (
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            {colorOptions.map((color) => (
+                                <div 
+                                    key={color.value}
+                                    onClick={() => setPrimaryColor(color.value)}
+                                    className={cn(
+                                        "p-4 border-2 rounded-xl cursor-pointer transition-all flex flex-col items-center gap-2",
+                                        primaryColor.toLowerCase() === color.value.toLowerCase() ? "border-primary bg-primary/5 shadow-md scale-105" : "hover:border-primary/30"
+                                    )}
+                                >
+                                    <div className="w-10 h-10 rounded-full shadow-inner border-2 border-white" style={{ backgroundColor: color.value }} />
+                                    <span className="text-[10px] font-bold font-mono text-muted-foreground uppercase">{color.value}</span>
+                                    <span className="text-xs font-semibold">{color.name}</span>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                </CardContent>
+
+                        <div className="pt-4 border-t space-y-4">
+                            <Label className="text-sm font-bold">Özel Renk Girişi</Label>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 flex-1 max-w-sm">
+                                    <span className="text-sm font-mono text-muted-foreground">#</span>
+                                    <Input 
+                                        value={primaryColor.replace('#', '')} 
+                                        onChange={(e) => setPrimaryColor(`#${e.target.value}`)}
+                                        placeholder="FFFFFF"
+                                        className="font-mono uppercase"
+                                        maxLength={6}
+                                    />
+                                </div>
+                                <div className="relative group">
+                                    <input 
+                                        type="color" 
+                                        value={primaryColor} 
+                                        onChange={handleColorChange}
+                                        className="w-12 h-12 rounded-full cursor-pointer border-2 border-white shadow-md appearance-none overflow-hidden"
+                                    />
+                                    <div className="absolute inset-0 rounded-full border border-black/5 pointer-events-none" />
+                                </div>
+                                <p className="text-xs text-muted-foreground">Renk paletinden seçmek için dairesel alana tıklayın.</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 2. Görsel Yönetimi (Banner) - Web Specific */}
-            <Card>
+            {/* 2. Görsel Yönetimi (Banner) */}
+            <Card className={cn(!sections.banners && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -166,43 +217,49 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Görsel Yönetimi (Banner)</CardTitle>
-                            <CardDescription>Web sitesi ana sayfasında dönecek görselleri yönetin (Maksimum 4).</CardDescription>
+                            <CardDescription>Web sitesi ana sayfasında dönecek görselleri yönetin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.banners} 
+                        onCheckedChange={() => toggleSection('banners')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary group">
-                            <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Banner 1" className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="secondary" size="sm" className="h-7 text-[10px] px-2"><ImageIcon className="mr-1 h-3 w-3"/> Değiştir</Button>
+                {sections.banners && (
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="relative aspect-[16/9] rounded-xl overflow-hidden border-2 border-primary group">
+                                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop" alt="Banner 1" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="secondary" size="sm" className="h-7 text-[10px] px-2" onClick={() => toast({title: "Görsel Seçiliyor", description: "Dosya yöneticisi açılıyor..."})}><ImageIcon className="mr-1 h-3 w-3"/> Değiştir</Button>
+                                </div>
+                                <div className="absolute top-1 left-1">
+                                    <Badge className="bg-primary text-[8px] h-4 font-bold px-1.5 border-none">ANA BANNER</Badge>
+                                </div>
                             </div>
-                            <div className="absolute top-1 left-1">
-                                <Badge className="bg-primary text-[8px] h-4 font-bold px-1.5 border-none">ANA BANNER</Badge>
-                            </div>
+                            {[2, 3, 4].map(i => (
+                                <div 
+                                    key={i}
+                                    className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
+                                    onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
+                                >
+                                    <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    <p className="text-[10px] font-bold">Banner {i} Yükle</p>
+                                </div>
+                            ))}
                         </div>
-                        {[2, 3, 4].map(i => (
-                            <div 
-                                key={i}
-                                className="border-2 border-dashed rounded-xl aspect-[16/9] flex flex-col items-center justify-center gap-1 hover:bg-muted/50 transition-colors cursor-pointer group"
-                                onClick={() => toast({title: "Dosya Seçici Açılıyor"})}
-                            >
-                                <Upload className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <p className="text-[10px] font-bold">Banner {i} Yükle</p>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="p-4 rounded-xl bg-orange-50 border border-orange-100 text-orange-800">
-                        <p className="text-xs font-medium italic leading-relaxed">
-                            <span className="font-bold">Önerilen boyut:</span> 1920x600px. İlk banner ana sayfa kapak görseli (Hero) olarak kullanılır.
-                        </p>
-                    </div>
-                </CardContent>
+                        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 text-primary">
+                            <p className="text-xs font-medium italic leading-relaxed">
+                                <span className="font-bold">Önerilen boyut:</span> 1920x600px. İlk banner ana sayfa kapak görseli (Hero) olarak kullanılır.
+                            </p>
+                        </div>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 3. Hakkımızda - Hangel Core */}
-            <Card>
+            {/* 3. Hakkımızda */}
+            <Card className={cn(!sections.about && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -213,25 +270,30 @@ export default function WebsiteBuilderPage() {
                             <CardDescription>Kuruluş hikayesi ve misyon bilgilerini yönetin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.about} 
+                        onCheckedChange={() => toggleSection('about')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Bu bölümdeki ana metinler Hangel STK profilinizden çekilmektedir. Özel bir web metni oluşturmak isterseniz aşağıdaki alanı kullanabilir veya ana profilinizi güncelleyebilirsiniz.</p>
-                    <div className="space-y-2">
-                        <Label>Web Sitesine Özel Hakkımızda Metni (Opsiyonel)</Label>
-                        <Textarea rows={4} placeholder="Eğer profil metninden farklı bir metin isterseniz buraya yazın..." />
-                    </div>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/ngo-admin/manage-profile">
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Kuruluş Profilini Düzenle
-                        </Link>
-                    </Button>
-                </CardContent>
+                {sections.about && (
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">Bu bölümdeki veriler kuruluş profilinizle senkronize çalışır.</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Button asChild variant="outline" className="w-full">
+                                <Link href="/ngo-admin/manage-profile">
+                                    <ExternalLink className="mr-2 h-4 w-4" />
+                                    Profilde Düzenle
+                                </Link>
+                            </Button>
+                            <Button variant="secondary" onClick={() => handleSave()}>Değişiklikleri Uygula</Button>
+                        </div>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 4. Başkanın Mesajı - Web Specific */}
-            <Card>
+            {/* 4. Başkanın Mesajı */}
+            <Card className={cn(!sections.president && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -242,37 +304,49 @@ export default function WebsiteBuilderPage() {
                             <CardDescription>Web sitesi ana sayfasında yer alacak kurumsal mesaj.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.president} 
+                        onCheckedChange={() => toggleSection('president')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="president-name">Başkanın Adı Soyadı</Label>
-                        <Input id="president-name" placeholder="Örn: Haluk Levent" />
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-end mb-1">
-                            <Label htmlFor="president-message">Mesaj İçeriği</Label>
-                            <span className={cn(
-                                "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
-                                presidentsMessage.length > MESSAGE_LIMIT * 0.9 ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"
-                            )}>
-                                {presidentsMessage.length} / {MESSAGE_LIMIT}
-                            </span>
+                {sections.president && (
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="president-name">Başkanın Adı Soyadı</Label>
+                            <Input 
+                                id="president-name" 
+                                value={presidentName} 
+                                onChange={(e) => setPresidentName(e.target.value)}
+                                placeholder="Örn: Haluk Levent" 
+                            />
                         </div>
-                        <Textarea 
-                            id="president-message" 
-                            rows={6} 
-                            maxLength={MESSAGE_LIMIT}
-                            placeholder="Geleceğe dair vizyonunuzu buraya yazın..."
-                            value={presidentsMessage}
-                            onChange={(e) => setPresidentsMessage(e.target.value)}
-                        />
-                    </div>
-                </CardContent>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-end mb-1">
+                                <Label htmlFor="president-message">Mesaj İçeriği</Label>
+                                <span className={cn(
+                                    "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
+                                    presidentsMessage.length > MESSAGE_LIMIT * 0.9 ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"
+                                )}>
+                                    {presidentsMessage.length} / {MESSAGE_LIMIT}
+                                </span>
+                            </div>
+                            <Textarea 
+                                id="president-message" 
+                                rows={6} 
+                                maxLength={MESSAGE_LIMIT}
+                                placeholder="Geleceğe dair vizyonunuzu buraya yazın..."
+                                value={presidentsMessage}
+                                onChange={(e) => setPresidentsMessage(e.target.value)}
+                            />
+                        </div>
+                        <Button className="w-full" onClick={() => handleSave()}><Save className="mr-2 h-4 w-4" /> Mesajı Kaydet</Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 5. Kurumsal İstatistikler - Hangel Core (Hybrid) */}
-            <Card>
+            {/* 5. Kurumsal İstatistikler */}
+            <Card className={cn(!sections.stats && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -280,35 +354,47 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Kurumsal İstatistikler</CardTitle>
-                            <CardDescription>Gönüllü ve bağış verilerini web sitesinde gösterin.</CardDescription>
+                            <CardDescription>Web sitesinde gösterilecek sayaçları yönetin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.stats} 
+                        onCheckedChange={() => toggleSection('stats')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Gönüllü Sayısı (Manuel Müdahale)</Label>
-                            <Input defaultValue="150.000" />
+                {sections.stats && (
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Gönüllü Sayısı</Label>
+                                <Input type="number" defaultValue="150000" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Bağışçı Sayısı</Label>
+                                <Input type="number" defaultValue="250000" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Kuruluş Yılı</Label>
+                                <Input type="number" defaultValue="2017" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Aktif Kampanya</Label>
+                                <Input type="number" defaultValue="12" />
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Bağışçı Sayısı (Manuel Müdahale)</Label>
-                            <Input defaultValue="250.000" />
+                        <div className="flex gap-2">
+                            <Button asChild variant="outline" className="flex-1">
+                                <Link href="/ngo-admin/dashboard"><BarChart3 className="mr-2 h-4 w-4" /> Performans Paneli</Link>
+                            </Button>
+                            <Button className="flex-1" onClick={() => handleSave()}>Verileri Güncelle</Button>
                         </div>
-                    </div>
-                    <div className="p-4 border rounded-xl bg-muted/30">
-                        <p className="text-xs text-muted-foreground mb-3">Sistemdeki gerçek zamanlı verilerinizi görmek ve raporlamak için performans paneline gidin.</p>
-                        <Button asChild variant="outline" size="sm" className="w-full">
-                            <Link href="/ngo-admin/dashboard">
-                                <BarChart3 className="mr-2 h-4 w-4" /> Performans Paneline Git
-                            </Link>
-                        </Button>
-                    </div>
-                </CardContent>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 6. Bağış Yöntemleri - Hangel Core */}
-            <Card>
+            {/* 6. Bağış Yöntemleri */}
+            <Card className={cn(!sections.donations && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -316,32 +402,52 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Bağış ve Destek Yöntemleri</CardTitle>
-                            <CardDescription>Bağış kanallarını ve IBAN bilgilerini yönetin.</CardDescription>
+                            <CardDescription>Aktif bağış kanallarını yapılandırın.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.donations} 
+                        onCheckedChange={() => toggleSection('donations')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 border rounded-2xl bg-muted/10">
-                            <span className="text-sm font-bold">hangel ile Bağış</span>
-                            <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                {sections.donations && (
+                    <CardContent className="space-y-6">
+                        <div className="space-y-4">
+                            <div className="p-4 border rounded-2xl space-y-4 bg-muted/5">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold">hangel ile Bağış</span>
+                                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                                </div>
+                            </div>
+                            <div className="p-4 border rounded-2xl space-y-4 bg-muted/5">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold">HelpSteps ile Bağış</span>
+                                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                                </div>
+                            </div>
+                            <div className="p-4 border rounded-2xl space-y-4 bg-muted/5">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold">Banka EFT/Havale</span>
+                                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>IBAN Numarası</Label>
+                                    <Input placeholder="TR00 0000 0000..." />
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex items-center justify-between p-4 border rounded-2xl bg-muted/10">
-                            <span className="text-sm font-bold">HelpSteps ile Bağış</span>
-                            <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
-                        </div>
-                    </div>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/ngo-admin/manage-profile">
-                            <Landmark className="mr-2 h-4 w-4" /> Banka ve IBAN Bilgilerini Düzenle
-                        </Link>
-                    </Button>
-                </CardContent>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/manage-profile">
+                                <Landmark className="mr-2 h-4 w-4" /> Banka Bilgilerini Düzenle
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 7. Gönüllülük İlanları - Hangel Core */}
-            <Card>
+            {/* 7. Gönüllülük İlanları */}
+            <Card className={cn(!sections.volunteering && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -349,23 +455,38 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Gönüllülük İlanları</CardTitle>
-                            <CardDescription>Aktif görevleri web sitenizde listeleyin.</CardDescription>
+                            <CardDescription>İlanların web sitesindeki görünümünü yönetin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.volunteering} 
+                        onCheckedChange={() => toggleSection('volunteering')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">İlanların içeriği, başvuru formları ve gönüllü yönetimi ana panelden gerçekleştirilir.</p>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/ngo-admin/volunteer">
-                            <PlusCircle className="mr-2 h-4 w-4" /> Gönüllülük Paneline Git
-                        </Link>
-                    </Button>
-                </CardContent>
+                {sections.volunteering && (
+                    <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox id="only-active" defaultChecked />
+                                <Label htmlFor="only-active">Sadece Aktif İlanları Göster</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox id="show-count" />
+                                <Label htmlFor="show-count">Başvuru Sayılarını Göster</Label>
+                            </div>
+                        </div>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/volunteer">
+                                <PlusCircle className="mr-2 h-4 w-4" /> Gönüllülük Paneline Git
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 8. Haberler ve Duyurular - Hangel Core */}
-            <Card>
+            {/* 8. Haberler ve Duyurular */}
+            <Card className={cn(!sections.news && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -373,23 +494,39 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Haberler ve Duyurular</CardTitle>
-                            <CardDescription>Mini Blog içeriklerini web sitenizde yayınlayın.</CardDescription>
+                            <CardDescription>Mini Blog içeriklerini yayına alın.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.news} 
+                        onCheckedChange={() => toggleSection('news')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Haber ve duyuru paylaşımlarınızı Mini Blog üzerinden yapabilirsiniz.</p>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/ngo-admin/posts">
-                            <Megaphone className="mr-2 h-4 w-4" /> Mini Blog Sayfasına Git
-                        </Link>
-                    </Button>
-                </CardContent>
+                {sections.news && (
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Listelenecek Haber Sayısı</Label>
+                            <Select defaultValue="3">
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="3">Son 3 Haber</SelectItem>
+                                    <SelectItem value="6">Son 6 Haber</SelectItem>
+                                    <SelectItem value="9">Son 9 Haber</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/posts">
+                                <Megaphone className="mr-2 h-4 w-4" /> Mini Blog Sayfasına Git
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 9. Küresel Amaçlar (SKA) - Hangel Core */}
-            <Card>
+            {/* 9. Küresel Amaçlar (SKA) */}
+            <Card className={cn(!sections.sdg && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -397,23 +534,29 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Küresel Amaçlar (SKA)</CardTitle>
-                            <CardDescription>Desteklediğiniz hedefleri gösterin.</CardDescription>
+                            <CardDescription>Desteklediğiniz 17 amacı web sitenizde listeleyin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.sdg} 
+                        onCheckedChange={() => toggleSection('sdg')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Desteklediğiniz Sürdürülebilir Kalkınma Amaçlarını profilinizden seçebilirsiniz.</p>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/ngo-admin/manage-profile">
-                            <Target className="mr-2 h-4 w-4" /> SKA Hedeflerini Düzenle
-                        </Link>
-                    </Button>
-                </CardContent>
+                {sections.sdg && (
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">SKA seçimlerinizi profilinizden yönetebilirsiniz.</p>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/manage-profile">
+                                <Target className="mr-2 h-4 w-4" /> SKA Hedeflerini Düzenle
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 10. Şeffaflık Endeksi - Hangel Core */}
-            <Card>
+            {/* 10. Şeffaflık Endeksi */}
+            <Card className={cn(!sections.transparency && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -421,23 +564,32 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Şeffaflık Endeksi</CardTitle>
-                            <CardDescription>Şeffaflık puanı ve belgeleri yönetin.</CardDescription>
+                            <CardDescription>Güven puanınızı ve belgelerinizi gösterin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.transparency} 
+                        onCheckedChange={() => toggleSection('transparency')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Şeffaflık puanınızı artırmak için gerekli belgeleri yükleyin ve onaylatın.</p>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/ngo-admin/transparency">
-                            <ShieldCheck className="mr-2 h-4 w-4" /> Şeffaflık Panelini Yönet
-                        </Link>
-                    </Button>
-                </CardContent>
+                {sections.transparency && (
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center space-x-2 p-3 border rounded-xl bg-muted/10">
+                            <Checkbox id="show-docs" defaultChecked />
+                            <Label htmlFor="show-docs">Yasal Belgeleri Listele</Label>
+                        </div>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/transparency">
+                                <ShieldCheck className="mr-2 h-4 w-4" /> Şeffaflık Panelini Yönet
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 11. İletişim Bilgileri - Hangel Core */}
-            <Card>
+            {/* 11. İletişim Bilgileri */}
+            <Card className={cn(!sections.contact && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -445,23 +597,46 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">İletişim Bilgileri</CardTitle>
-                            <CardDescription>E-posta, telefon ve adres bilgilerini yönetin.</CardDescription>
+                            <CardDescription>İletişim kanallarını yapılandırın.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.contact} 
+                        onCheckedChange={() => toggleSection('contact')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Resmi iletişim bilgileriniz ve sosyal medya hesaplarınız ana profilinizle senkronize çalışır.</p>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/ngo-admin/manage-profile">
-                            <Settings2 className="mr-2 h-4 w-4" /> İletişim Bilgilerini Düzenle
-                        </Link>
-                    </Button>
-                </CardContent>
+                {sections.contact && (
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+                                <Checkbox id="show-phone" defaultChecked />
+                                <Label htmlFor="show-phone">Telefon</Label>
+                            </div>
+                            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+                                <Checkbox id="show-email" defaultChecked />
+                                <Label htmlFor="show-email">E-posta</Label>
+                            </div>
+                            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+                                <Checkbox id="show-address" defaultChecked />
+                                <Label htmlFor="show-address">Adres</Label>
+                            </div>
+                            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+                                <Checkbox id="show-social" defaultChecked />
+                                <Label htmlFor="show-social">Sosyal Medya</Label>
+                            </div>
+                        </div>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/ngo-admin/manage-profile">
+                                <Settings2 className="mr-2 h-4 w-4" /> İletişim Bilgilerini Düzenle
+                            </Link>
+                        </Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 12. Alan Adı (Domain) Ayarları - Web Specific */}
-            <Card>
+            {/* 12. Alan Adı Ayarları */}
+            <Card className={cn(!sections.domain && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -469,51 +644,63 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Alan Adı (Domain) Ayarları</CardTitle>
-                            <CardDescription>Kendi alan adınızı web sitenize bağlayın.</CardDescription>
+                            <CardDescription>Web sitenizi markanıza bağlayın.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.domain} 
+                        onCheckedChange={() => toggleSection('domain')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="domain-name">Alan Adınız (Domain)</Label>
-                            <Input id="domain-name" placeholder="kurulusunuz.org" value={domainName} onChange={(e) => setDomainName(e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Domain Sağlayıcı</Label>
-                            <Select value={selectedRegistrar} onValueChange={setSelectedRegistrar}>
-                                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                <SelectContent>
-                                    {domainRegistrars.map(reg => <SelectItem key={reg} value={reg}>{reg}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <div className="p-4 border rounded-2xl bg-indigo-50/50">
-                        <h3 className="text-xs font-bold text-indigo-900 flex items-center gap-2 mb-3">
-                            <Monitor className="h-4 w-4" /> DNS (NameServer) Bilgileri
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
-                                <code className="text-[10px] font-bold font-mono">ns1.hangel.org</code>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns1.hangel.org', 'NS1')}>
-                                    <Copy className="h-4 w-4 text-indigo-600" />
-                                </Button>
+                {sections.domain && (
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="domain-name">Alan Adınız</Label>
+                                <Input 
+                                    id="domain-name" 
+                                    placeholder="kurulusunuz.org" 
+                                    value={domainName} 
+                                    onChange={(e) => setDomainName(e.target.value)} 
+                                />
                             </div>
-                            <div className="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
-                                <code className="text-[10px] font-bold font-mono">ns2.hangel.org</code>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns2.hangel.org', 'NS2')}>
-                                    <Copy className="h-4 w-4 text-indigo-600" />
-                                </Button>
+                            <div className="space-y-2">
+                                <Label>Domain Sağlayıcı</Label>
+                                <Select value={selectedRegistrar} onValueChange={setSelectedRegistrar}>
+                                    <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {domainRegistrars.map(reg => <SelectItem key={reg} value={reg}>{reg}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
-                    </div>
-                </CardContent>
+                        <div className="p-4 border rounded-2xl bg-indigo-50/50">
+                            <h3 className="text-xs font-bold text-indigo-900 flex items-center gap-2 mb-3">
+                                <Monitor className="h-4 w-4" /> DNS (NameServer) Bilgileri
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
+                                    <code className="text-[10px] font-bold font-mono">ns1.hangel.org</code>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns1.hangel.org', 'NS1')}>
+                                        <Copy className="h-4 w-4 text-indigo-600" />
+                                    </Button>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
+                                    <code className="text-[10px] font-bold font-mono">ns2.hangel.org</code>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns2.hangel.org', 'NS2')}>
+                                        <Copy className="h-4 w-4 text-indigo-600" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                        <Button className="w-full" onClick={() => handleSave()} disabled={!domainName}><Save className="mr-2 h-4 w-4"/> DNS Ayarlarını Kaydet</Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* 13. Web Analiz Araçları - Web Specific */}
-            <Card>
+            {/* 13. Web Analiz Araçları */}
+            <Card className={cn(!sections.analytics && "opacity-60")}>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-muted">
@@ -521,46 +708,61 @@ export default function WebsiteBuilderPage() {
                         </div>
                         <div className="space-y-1">
                             <CardTitle className="text-lg">Web Analiz Araçları</CardTitle>
-                            <CardDescription>İstatistik ve takip kodlarını sitenize ekleyin.</CardDescription>
+                            <CardDescription>Takip kodlarını sitenize entegre edin.</CardDescription>
                         </div>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+                    <Switch 
+                        checked={sections.analytics} 
+                        onCheckedChange={() => toggleSection('analytics')}
+                        className="data-[state=checked]:bg-green-600" 
+                    />
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {analyticsProviders.map((ap) => (
-                            <div key={ap.id} className="p-3 border rounded-xl flex flex-col items-center gap-2 bg-muted/10">
-                                <span className="text-[10px] font-bold">{ap.name}</span>
-                                <Button variant="outline" size="sm" className="h-7 text-[10px] w-full">Bağla</Button>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase text-muted-foreground">Özel Script (Head/Body)</Label>
-                        <textarea 
-                            className="w-full h-32 bg-muted/20 font-mono text-[10px] p-3 border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary" 
-                            placeholder="<!-- Google Tag Manager, FB Pixel vb. -->"
-                        ></textarea>
-                    </div>
-                </CardContent>
+                {sections.analytics && (
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            {analyticsProviders.map((ap) => (
+                                <div key={ap.id} className="p-3 border rounded-xl flex flex-col items-center gap-2 bg-muted/10">
+                                    <span className="text-[10px] font-bold">{ap.name}</span>
+                                    <Button variant="outline" size="sm" className="h-7 text-[10px] w-full" onClick={() => toast({title: `${ap.name} Bağlantısı`, description: "Entegrasyon penceresi açılıyor..."})}>Bağla</Button>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Özel Script (Head/Body)</Label>
+                            <Textarea 
+                                className="font-mono text-[10px]" 
+                                rows={5}
+                                placeholder="<!-- Google Tag Manager, FB Pixel vb. -->"
+                            />
+                        </div>
+                        <Button className="w-full" onClick={() => handleSave()}><Save className="mr-2 h-4 w-4"/> Kodları Kaydet</Button>
+                    </CardContent>
+                )}
             </Card>
 
-            {/* Yayınla Paneli */}
+            {/* Sabit Yayınla Paneli */}
             <div className="fixed bottom-6 inset-x-4 z-50 flex justify-center pointer-events-none">
                 <Card className="bg-background/90 backdrop-blur-xl border-primary/20 shadow-2xl max-w-lg w-full pointer-events-auto">
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                         <div className="text-left hidden sm:block">
                             <p className="font-bold text-sm">Site Yayınlanmaya Hazır</p>
-                            <p className="text-[10px] text-muted-foreground">Tüm ayarlar kaydedildi.</p>
+                            <p className="text-[10px] text-muted-foreground">Son güncelleme: {new Date().toLocaleTimeString('tr-TR')}</p>
                         </div>
                         <Button 
                             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-xl"
-                            onClick={() => {
-                                toast({ title: "Siteniz Yayınlandı!", description: "Önizleme açılıyor..." });
-                                window.open('/ngo-admin/website/preview', '_blank');
+                            disabled={isSaving}
+                            onClick={async () => {
+                                await handleSave(true);
+                                toast({ title: "Siteniz Yayınlandı!", description: "Önizleme yeni sekmede açılıyor..." });
+                                window.open(`/ngo-admin/website/preview?primary=${primaryColor.replace('#', '')}`, '_blank');
                             }}
                         >
-                            <Globe className="mr-2 h-4 w-4" /> Siteyi Yayınla ve Görüntüle
+                            {isSaving ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Globe className="mr-2 h-4 w-4" />
+                            )}
+                            Siteyi Yayınla ve Görüntüle
                         </Button>
                     </CardContent>
                 </Card>
@@ -568,16 +770,3 @@ export default function WebsiteBuilderPage() {
         </div>
     );
 }
-
-const FileUpload = ({label, currentFile}: {label: string, currentFile?: string}) => (
-    <div className="space-y-2">
-        <Label>{label}</Label>
-        <div className="flex items-center gap-4">
-            <Input id={`${label}-upload`} type="file" className="hidden" />
-            <Button asChild variant="outline" size="sm">
-                <label htmlFor={`${label}-upload`} className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />{currentFile ? 'Değiştir' : 'Yükle'}</label>
-            </Button>
-            {currentFile && <span className="text-xs text-muted-foreground">Mevcut: {currentFile}</span>}
-        </div>
-    </div>
-);
