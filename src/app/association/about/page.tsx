@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -87,7 +87,7 @@ export default function AssociationAboutPage() {
             <AppleSection 
                 title="Bir Fikirle Başladı."
                 subtitle="Şimdi bir etki hareketiyiz."
-                description="Social Business Global Derneği (SBG), sosyal fayda üreten yapıların sayısını artırmayı, etkilerini derinleştirmeyi ve uluslararası bir ekosistem kurmayı amaçlar."
+                description="Social Business Global Derneği (SBG), sosyal fayda üreten yapıların sayısını artırmayı, etkilerini derinleştirmeyi ve süreklilik temelinde uluslararası bir sosyal dönüşüm ekosistemi kurmayı amaçlar."
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                 imageHint="students working together library"
             />
@@ -96,10 +96,35 @@ export default function AssociationAboutPage() {
             <AppleSection 
                 theme="dark"
                 title="Misyonumuz Sosyal Kalkınma."
-                description="Ekonomik kalkınmanın ötesinde, insan onurunu ve kolektif bilinci esas alan bir dönüşüm hareketi görüyoruz. Halkın kendi sorunlarını imece usulüyle çözümlemesini destekliyoruz."
+                description="Sosyal girişimciliği ekonomik bir modelin ötesinde, insan onurunu ve kolektif bilinci temel alan bir dönüşüm hareketi olarak görüyoruz. Halkın kendi sorunlarını imece usulüyle çözümlemesini destekliyoruz."
                 imageUrl="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
                 imageHint="volunteers holding hands"
             />
+
+            {/* Metrics */}
+            <section className="bg-[#f5f5f7] py-32 text-center border-b border-black/5">
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-20 text-[#1d1d1f]">Rakamlarla 5 Yıl.</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16">
+                        <div className="space-y-2">
+                            <p className="text-6xl font-black tracking-tighter text-primary">54</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Ülke Katılımı</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-6xl font-black tracking-tighter text-primary">632</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">İncelenen Girişim</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-6xl font-black tracking-tighter text-primary">15K+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Doğrudan Erişim</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-6xl font-black tracking-tighter text-primary">126</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Etkinlik & Konferans</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             {/* Vision */}
             <AppleSection 
@@ -109,27 +134,6 @@ export default function AssociationAboutPage() {
                 imageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
                 imageHint="network graph global connections"
             />
-
-            {/* Stats */}
-            <section className="bg-[#f5f5f7] py-32 text-center border-b border-black/5">
-                <div className="container mx-auto px-6 max-w-5xl">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-20 text-[#1d1d1f]">Rakamlarla 5 Yıl.</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-                        <div className="space-y-2">
-                            <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary">54</p>
-                            <p className="text-sm font-bold uppercase tracking-widest text-[#1d1d1f]/60">Ülke Katılımı</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary">15K+</p>
-                            <p className="text-sm font-bold uppercase tracking-widest text-[#1d1d1f]/60">Doğrudan Erişim</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary">632</p>
-                            <p className="text-sm font-bold uppercase tracking-widest text-[#1d1d1f]/60">İncelenen Girişim</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <PublicFooter currentPageLabel="Dernek Hakkında" />
         </div>
