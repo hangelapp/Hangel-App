@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { Brand } from '@/lib/types';
@@ -5,6 +6,7 @@ import type { Brand } from '@/lib/types';
 /**
  * Üç farklı ajansın (Gelir Ortakları, Affocean, ReklamAction) 
  * verilerini çeken ve birleştiren sunucu eylemi.
+ * Kullanıcının sağladığı commission ve brands yapısını destekler.
  */
 export async function getApiOffers(): Promise<Brand[]> {
     const AGENCIES = [
@@ -36,7 +38,6 @@ export async function getApiOffers(): Promise<Brand[]> {
             }
 
             try {
-                console.log(`Fetching from ${agency.name}...`);
                 const response = await fetch(agency.url, {
                     headers: {
                         "Authorization": `Bearer ${agency.key}`,
@@ -52,10 +53,12 @@ export async function getApiOffers(): Promise<Brand[]> {
 
                 const result = await response.json();
                 
-                // Farklı API yapılarını normalize et
+                // Farklı API yapılarını normalize et (brands, data, offers, items)
                 let rawItems = [];
                 if (Array.isArray(result)) {
                     rawItems = result;
+                } else if (result.brands && Array.isArray(result.brands)) {
+                    rawItems = result.brands;
                 } else if (result.data && Array.isArray(result.data)) {
                     rawItems = result.data;
                 } else if (result.offers && Array.isArray(result.offers)) {
@@ -64,19 +67,15 @@ export async function getApiOffers(): Promise<Brand[]> {
                     rawItems = result.items;
                 }
 
-                console.log(`${agency.name} returned ${rawItems.length} items.`);
-                
                 return rawItems.map((m: any) => {
                     if (!m) return null;
 
-                    // Gelir Ortakları için sağlanan spesifik mapping (b.name, b.logo, b.tracking_url)
-                    // Diğer ajanslar için fallback alanları
                     const brandName = m.name || m.title || m.brand_name || m.advertiser_name || "Bilinmeyen Marka";
                     const logoUrl = m.logo || m.image || m.logo_url || m.image_url || m.brand_logo || "";
                     const targetLink = m.tracking_url || m.preview_url || m.link || m.url || m.click_url || "#";
 
-                    // Payout (Oran) tespiti
-                    const rawPayout = String(m.payout || m.commission || "0");
+                    // Komisyon / Payout tespiti (commission alanını önceliklendiriyoruz)
+                    const rawPayout = String(m.commission || m.payout || m.payout_percent || "0");
                     const isFixed = /TL|TRY|₺/i.test(rawPayout);
                     const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
                     const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
@@ -103,7 +102,7 @@ export async function getApiOffers(): Promise<Brand[]> {
         const results = await Promise.all(fetchPromises);
         const allItems = results.flat() as Brand[];
 
-        // Mükerrer kayıtları temizle (İsim bazlı)
+        // Mükerrer kayıtları temizle
         const uniqueItemsMap = new Map<string, Brand>();
         allItems.forEach((brand) => {
             const key = brand.name.toLowerCase().trim();
@@ -111,16 +110,13 @@ export async function getApiOffers(): Promise<Brand[]> {
                 uniqueItemsMap.set(key, brand);
             } else {
                 const existing = uniqueItemsMap.get(key)!;
-                // Daha yüksek bağış oranı olanı veya geçerli bir logosu olanı tercih et
                 if (brand.donationRate > existing.donationRate || (!existing.logoUrl && brand.logoUrl)) {
                     uniqueItemsMap.set(key, brand);
                 }
             }
         });
 
-        const finalResult = Array.from(uniqueItemsMap.values());
-        console.log(`Total unique brands found: ${finalResult.length}`);
-        return finalResult;
+        return Array.from(uniqueItemsMap.values());
     } catch (e) {
         console.error("Global API fetch operation failed:", e);
         return [];
