@@ -11,7 +11,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { title: "KEŞFEDİN", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
         { title: "KURUMSAL", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/social-impact"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/careers"}] },
         { title: "İŞBİRLİKLERİ", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}, {label: "Kamu İşbirlikleri", href: "/corporate"}] },
-        { title: "HANGEL DERNEĞİ", links: [{label: "Hakkında", href: "/about"}, {label: "Etkinlikler", href: "/events"}, {label: "Uluslararası Çalıştay", href: "/events"}, {label: "Mevzuat Taslağı", href: "/library"}] },
+        { title: "HANGEL DERNEĞİ", links: [{label: "Dernek Hakkında", href: "/association/about"}, {label: "Dernek Etkinlikleri", href: "/association/events"}, {label: "Uluslararası Çalıştay", href: "/association/workshop"}, {label: "Mevzuat Taslağı", href: "/association/legislation"}] },
         { title: "HESABIM", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Destek Merkezi", href: "/support"}, {label: "Geri Bildirim", href: "/feedback"}] },
     ];
 

@@ -18,8 +18,8 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
-                    <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Hakkında</Link>
-                    <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Etkinlikler</Link>
+                    <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
+                    <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</Link>
                     <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</Link>
                     <Link href="/association/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>Mevzuat Taslağı</Link>
                 </nav>
@@ -118,7 +118,7 @@ export default function AssociationEventsPage() {
                 </div>
             </section>
 
-            <PublicFooter currentPageLabel="Etkinlikler" />
+            <PublicFooter currentPageLabel="Dernek Etkinlikleri" />
         </div>
     );
 }
