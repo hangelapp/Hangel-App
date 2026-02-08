@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Zap, Globe, Twitter, Instagram, Linkedin, MessageSquare } from 'lucide-react';
+import { ChevronRight, Globe, Instagram, Linkedin, MessageSquare } from 'lucide-react';
 import { HangelLogo } from '@/components/icons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -14,11 +14,54 @@ const XIcon = (props: any) => (
 
 export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }) {
     const footerGroups = [
-        { title: "KİM İÇİN", links: [{label: "Sivil Toplum Kuruluşları", href: "/ngo-onboarding"}, {label: "Sosyal Girişimciler", href: "/hangelassociation/about"}, {label: "Gençler", href: "/campus-advantages"}, {label: "Markalar", href: "/merchant"}, {label: "Akademisyenler", href: "/hangelassociation/workshop"}, {label: "Hukukçular", href: "/hangelassociation/legislation"}, {label: "İK Uzmanları", href: "/corporate"}] },
-        { title: "RAPORLAR", links: [{label: "5 Yıllık Sosyal Fayda Raporu", href: "#"}, {label: "Etkinlik Raporumuz", href: "/hangelassociation/events"}, {label: "Afetler Öncesi ve Sonrası Müdaheleler", href: "#"}] },
-        { title: "PROJELER", links: [{label: "Sosyal Girişimcilik Kanun Teklifi", href: "/hangelassociation/legislation"}, {label: "Girişimcilik Kütüphanesi", href: "/hangelassociation/workshop"}, {label: "Etki Odaklı İstihdam Protokolü", href: "#"}, {label: "Sosyal Etki Atlası", href: "#"}, {label: "Sivil Toplumda Gelir Modeli Oluşturma", href: "#"}] },
-        { title: "KOMİTELER", links: [{label: "Etki Mevzuatı ve Politika Komisyonu", href: "#"}, {label: "Sosyal İnovasyon Akademik Bilim Kurulu", href: "#"}, {label: "Etki Odaklı İnsan ve Kültür Komitesi", href: "#"}, {label: "hangel Sosyal İnovasyon Komitesi", href: "#"}] },
-        { title: "KURUMSAL", links: [{label: "Anasayfa", href: "/hangelassociation"}, {label: "Dernek Hakkında", href: "/hangelassociation/about"}, {label: "İletişim", href: "/support"}, {label: "Geri Bildirim", href: "/feedback"}] },
+        { 
+            title: "KİM İÇİN", 
+            links: [
+                {label: "Sivil Toplum Kuruluşları", href: "/hangelassociation/for/stk"}, 
+                {label: "Sosyal Girişimciler", href: "/hangelassociation/for/sosyal-girisimciler"}, 
+                {label: "Gençler", href: "/hangelassociation/for/gencler"}, 
+                {label: "Markalar", href: "/hangelassociation/for/markalar"}, 
+                {label: "Akademisyenler", href: "/hangelassociation/for/akademisyenler"}, 
+                {label: "Hukukçular", href: "/hangelassociation/for/hukukcular"}, 
+                {label: "İK Uzmanları", href: "/hangelassociation/for/ik-uzmanlari"}
+            ] 
+        },
+        { 
+            title: "RAPORLAR", 
+            links: [
+                {label: "5 Yıllık Sosyal Fayda Raporu", href: "/hangelassociation/reports/5-yillik-etki"}, 
+                {label: "Etkinlik Raporumuz", href: "/hangelassociation/reports/etkinlikler"}, 
+                {label: "Afetler Öncesi ve Sonrası Müdaheleler", href: "/hangelassociation/reports/afet-mudahale"}
+            ] 
+        },
+        { 
+            title: "PROJELER", 
+            links: [
+                {label: "Sosyal Girişimcilik Kanun Teklifi", href: "/hangelassociation/legislation"}, 
+                {label: "Girişimcilik Kütüphanesi", href: "/hangelassociation/workshop"}, 
+                {label: "Etki Odaklı İstihdam Protokolü", href: "/hangelassociation/projects/istihdam-protokolu"}, 
+                {label: "Sosyal Etki Atlası", href: "/hangelassociation/projects/etki-atlasi"}, 
+                {label: "Sivil Toplumda Gelir Modeli Oluşturma", href: "/hangelassociation/projects/gelir-modeli"}
+            ] 
+        },
+        { 
+            title: "KOMİTELER", 
+            links: [
+                {label: "Etki Mevzuatı ve Politika Komisyonu", href: "/hangelassociation/committees/mevzuat"}, 
+                {label: "Sosyal İnovasyon Akademik Bilim Kurulu", href: "/hangelassociation/committees/akademik"}, 
+                {label: "Etki Odaklı İnsan ve Kültür Komitesi", href: "/hangelassociation/committees/insan-kultur"}, 
+                {label: "hangel Sosyal İnovasyon Komitesi", href: "/hangelassociation/committees/inovasyon"}
+            ] 
+        },
+        { 
+            title: "KURUMSAL", 
+            links: [
+                {label: "Anasayfa", href: "/hangelassociation"}, 
+                {label: "Dernek Hakkında", href: "/hangelassociation/about"}, 
+                {label: "İletişim", href: "/hangelassociation/contact"}, 
+                {label: "Geri Bildirim", href: "/hangelassociation/feedback"}
+            ] 
+        },
     ];
 
     return (
@@ -26,11 +69,11 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
             <div className="container mx-auto max-w-5xl">
                 {/* Breadcrumb Navigation */}
                 <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-10 px-1">
-                    <Link href="/login" className="hover:text-[#1d1d1f] transition-colors">
+                    <Link href="/hangelassociation" className="hover:text-[#1d1d1f] transition-colors">
                         <HangelLogo className="text-base scale-90 grayscale opacity-70" />
                     </Link>
                     <ChevronRight className="h-3 w-3" />
-                    <Link href="/login" className="hover:text-[#1d1d1f] transition-colors">Anasayfa</Link>
+                    <Link href="/hangelassociation" className="hover:text-[#1d1d1f] transition-colors">Dernek</Link>
                     {currentPageLabel && (
                         <>
                             <ChevronRight className="h-3 w-3" />
