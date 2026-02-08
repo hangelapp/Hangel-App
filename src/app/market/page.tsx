@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -107,7 +106,7 @@ const VisualAdCarousel = () => {
     )
 }
 
-// Güvenli Logo Bileşeni
+// Güvenli Logo Bileşeni - Browser bazlı yükleme ve fallback desteği
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
@@ -152,7 +151,7 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch API Data
+  // Fetch API Data from multiple keys via server action
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
@@ -162,6 +161,7 @@ export default function MarketPage() {
                 const mappedBrands: Brand[] = data.map((m: any) => {
                     const rawPayout = m.payout || "0";
                     const isFixed = rawPayout.includes('TL') || rawPayout.includes('TRY') || rawPayout.includes('₺');
+                    // Oran ayıklama (örn: %5.00 -> 5.00)
                     const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
                     const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
 
@@ -181,7 +181,7 @@ export default function MarketPage() {
                 setApiBrands(mappedBrands);
             }
         } catch (e) {
-            console.error("API Error:", e);
+            console.error("API Fetch failed:", e);
         } finally {
             setIsApiLoading(false);
         }
@@ -190,8 +190,10 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
+    // Statik ve API verilerini birleştir
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
+    // Tekrar eden isimleri temizle
     const uniqueBrandsMap = new Map();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase();

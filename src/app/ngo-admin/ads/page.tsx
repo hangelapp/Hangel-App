@@ -18,7 +18,7 @@ export default function AdsManagementPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
 
-    // ReklamAction Configuration (Multiple keys support)
+    // ReklamAction Configuration (Multiple keys)
     const [apiKeys, setApiKeys] = useState([
         '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
         '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48'
@@ -40,7 +40,7 @@ export default function AdsManagementPage() {
         setTimeout(() => {
             toast({
                 title: "Bağlantı Başarılı",
-                description: "Tüm API anahtarları doğrulandı. Veri akışı aktif.",
+                description: `${apiKeys.length} API anahtarı doğrulandı. Veri akışı aktif.`,
             });
             setIsTesting(false);
         }, 2000);
@@ -109,17 +109,16 @@ export default function AdsManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="integration" className="mt-6 space-y-6">
-                    {/* ReklamAction Integration Card */}
                     <Card className="border-primary/30 bg-primary/5 shadow-md">
                         <CardHeader>
                             <div className="flex justify-between items-start">
                                 <div>
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <Target className="h-5 w-5 text-primary" /> ReklamAction API Havuzu
+                                        <Target className="h-5 w-5 text-primary" /> ReklamAction API Entegrasyonu
                                     </CardTitle>
-                                    <CardDescription>Aktif olarak kullanılan ve veri toplanan API anahtarları.</CardDescription>
+                                    <CardDescription>Aktif olarak kullanılan {apiKeys.length} adet API anahtarı.</CardDescription>
                                 </div>
-                                <Badge className="bg-green-600 text-white">AKTİF ({apiKeys.length})</Badge>
+                                <Badge className="bg-green-600 text-white">BAĞLI</Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -138,17 +137,17 @@ export default function AdsManagementPage() {
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-blue-100/50 rounded-xl border border-blue-200 text-blue-800 text-[11px] font-medium leading-relaxed">
                                 <Layers className="h-4 w-4 shrink-0" />
-                                <p>Sistem birden fazla anahtarı kullanarak veri çekiyor. Bu anahtarlardan gelen tüm teklifler birleştirilerek tek bir Market akışında gösterilmektedir.</p>
+                                <p>Her iki anahtardan gelen teklifler otomatik olarak birleştirilir ve benzersiz olanlar Market sayfasında listelenir.</p>
                             </div>
                         </CardContent>
                         <CardFooter className="bg-background/50 border-t p-4 flex justify-end gap-2">
                             <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={isTesting}>
                                 {isTesting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                                Bağlantıları Kontrol Et
+                                Bağlantıları Test Et
                             </Button>
                             <Button size="sm" onClick={handleSaveIntegration} disabled={isSaving}>
                                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
-                                Güncelle
+                                Ayarları Güncelle
                             </Button>
                         </CardFooter>
                     </Card>
@@ -171,7 +170,7 @@ export default function AdsManagementPage() {
                             </div>
                             <div className="p-4 border rounded-xl bg-blue-50 text-blue-800 text-xs flex items-center gap-3">
                                 <ShieldCheck className="h-5 w-5 shrink-0" />
-                                <p>Bu kodlar profil sayfanızda ve web sitenizde otomatik olarak aktifleşerek reklam performansınızı ölçmenizi sağlar.</p>
+                                <p>Bu kodlar profil sayfanızda otomatik olarak aktifleşerek reklam performansınızı ölçmenizi sağlar.</p>
                             </div>
                         </CardContent>
                         <CardFooter className="border-t bg-muted/10 p-4 flex justify-end">

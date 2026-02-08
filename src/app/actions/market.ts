@@ -12,6 +12,8 @@ export async function getApiOffers() {
     const url = "https://api.reklamaction.com/v1/offer?network=reklamaction";
 
     try {
+        console.log(`API Fetching started for ${API_KEYS.length} keys...`);
+        
         // Tüm anahtarlar için paralel fetch işlemleri başlatılıyor
         const fetchPromises = API_KEYS.map(async (key) => {
             try {
@@ -28,6 +30,7 @@ export async function getApiOffers() {
                 }
 
                 const result = await response.json();
+                // API bazen direkt dizi bazen { data: [] } döner
                 const offers = result.data || result || [];
                 return Array.isArray(offers) ? offers : [];
             } catch (err) {
@@ -42,7 +45,7 @@ export async function getApiOffers() {
         // Tüm teklifleri tek bir dizide topla
         const allOffers = results.flat();
 
-        // Aynı ID'ye sahip teklifleri temizle (Mükerrer kaydı önle)
+        // Aynı ID'ye veya isme sahip teklifleri temizle (Mükerrer kaydı önle)
         const uniqueOffersMap = new Map();
         allOffers.forEach((offer: any) => {
             if (offer && (offer.id || offer.name)) {
@@ -54,7 +57,7 @@ export async function getApiOffers() {
         });
 
         const mergedOffers = Array.from(uniqueOffersMap.values());
-        console.log(`API Fetch Complete: ${mergedOffers.length} unique offers found across ${API_KEYS.length} keys.`);
+        console.log(`API Fetch Complete: ${mergedOffers.length} unique offers found.`);
         
         return mergedOffers;
     } catch (e) {
