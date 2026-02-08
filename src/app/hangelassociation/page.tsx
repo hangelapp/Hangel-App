@@ -2,7 +2,31 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Globe, Users, Heart, ShieldCheck, Newspaper, Target, ArrowRight, Home, Truck, Briefcase, ExternalLink } from 'lucide-react';
+import { 
+    ChevronRight, 
+    ArrowLeft, 
+    Globe, 
+    Users, 
+    Heart, 
+    ShieldCheck, 
+    Newspaper, 
+    Target, 
+    ArrowRight, 
+    Home, 
+    Truck, 
+    Briefcase, 
+    ExternalLink,
+    Brain,
+    Scale,
+    UserCheck,
+    Map as MapIcon,
+    BookOpen,
+    DollarSign,
+    GraduationCap,
+    FileText,
+    Sparkles,
+    Siren
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -31,6 +55,14 @@ const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
     );
 };
 
+const StatCard = ({ label, value, sub }: { label: string, value: string, sub?: string }) => (
+    <div className="text-center p-6 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">{label}</p>
+        <p className="text-4xl md:text-6xl font-black tracking-tighter text-primary">{value}</p>
+        {sub && <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase">{sub}</p>}
+    </div>
+);
+
 const FeatureCard = ({ title, subtitle, href, image, hint, theme = 'light' }: any) => (
     <Link href={href} className="group relative block w-full aspect-square md:aspect-[16/9] rounded-[2.5rem] overflow-hidden shadow-xl border border-black/5">
         <Image src={image} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-1000" data-ai-hint={hint} />
@@ -48,180 +80,219 @@ const FeatureCard = ({ title, subtitle, href, image, hint, theme = 'light' }: an
     </Link>
 );
 
-const ProjectHighlight = ({ title, category, description, icon: Icon, image, hint }: any) => (
-    <div className="relative group w-full bg-white rounded-[3rem] overflow-hidden border border-black/5 shadow-sm hover:shadow-2xl transition-all duration-700">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
-            <div className="p-8 md:p-16 space-y-6 flex flex-col justify-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary w-fit">
-                    <Icon className="h-4 w-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{category}</span>
-                </div>
-                <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-[#1d1d1f] leading-tight">{title}</h3>
-                <p className="text-lg text-muted-foreground font-medium leading-relaxed">{description}</p>
-                <Button variant="ghost" className="p-0 h-auto self-start text-primary font-bold text-lg hover:bg-transparent">
-                    Proje Detaylarını Gör <ChevronRight className="ml-1 h-5 w-5" />
-                </Button>
-            </div>
-            <div className="relative h-[300px] lg:h-auto overflow-hidden">
-                <Image src={image} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-1000" data-ai-hint={hint} />
-            </div>
-        </div>
+const SectionTitle = ({ title, subtitle, centered = false }: { title: string, subtitle?: string, centered?: boolean }) => (
+    <div className={cn("space-y-4 mb-12", centered ? "text-center" : "text-left")}>
+        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">{title}</h2>
+        {subtitle && <p className="text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">{subtitle}</p>}
     </div>
 );
 
 export default function AssociationHomePage() {
-    const pressLinks = [
-        { source: "AA", title: "Türkiye'nin Sosyal Girişimcilik Etki Haritası Çıkartılacak", url: "https://www.aa.com.tr/tr/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikartilacak/1526753" },
-        { source: "TRT Haber", title: "Sosyal Girişimcilik Etki Haritası Çıkarılacak", url: "https://www.trthaber.com/haber/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikarilacak-422386.html" },
-        { source: "Hürriyet", title: "Rekabetin Yeni Adı: Sosyal Fayda", url: "https://www.hurriyet.com.tr/yazarlar/sibel-bagci-uzun/rekabetin-yeni-adi-sosyal-fayda-41862206" },
-        { source: "NTV", title: "Üniversitelilerden Van'a Kan Bağışı", url: "https://www.ntv.com.tr/egitim/universitelilerden-vana-kan,KYYWoqEdIEO-E38v3kzFSw" }
-    ];
-
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader />
 
             {/* Hero Section */}
-            <section className="relative pt-32 pb-20 px-6 text-center space-y-6 overflow-hidden">
-                <div className="container mx-auto max-w-5xl space-y-6">
-                    <h1 className="text-5xl md:text-8xl font-bold tracking-tighter text-[#1d1d1f] animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                        5 Yıl Önce Bir Fikirle Başladık. <br /> Şimdi Bir Etki Hareketiyiz.
+            <section className="relative pt-32 pb-20 px-6 text-center space-y-8 overflow-hidden bg-[#f5f5f7]">
+                <div className="container mx-auto max-w-5xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
+                        <Sparkles className="h-4 w-4" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Social Business Global</span>
+                    </div>
+                    <h1 className="text-5xl md:text-8xl font-bold tracking-tighter text-[#1d1d1f] leading-[0.95]">
+                        Yok öyle yalnız başına mücadele etmek.
                     </h1>
-                    <p className="text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
-                        Social Business Global (SBG), sosyal girişimciliği Türkiye'den dünyaya yayılan küresel bir modele dönüştürüyor.
+                    <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
+                        Sosyal sorunlara çözüm için sistemli mücadeleyi ve sosyal inovasyonu önceliklendiren, sosyal girişimcilik ve gönüllülük alanında araştırma, politika ve projeler üreten etki odaklı fikirlerin buluşma noktasına hoş geldiniz.
                     </p>
+                    <div className="pt-4">
+                        <p className="text-lg font-bold text-primary italic">"Bunu acıları yarıştırmadan hep birlikte gerçekleştireceğiz."</p>
+                    </div>
                 </div>
             </section>
 
             {/* Stats Highlight */}
-            <section className="bg-[#f5f5f7] py-20 border-y border-black/5">
-                <div className="container mx-auto px-6 max-w-5xl">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
-                        <div className="text-center">
-                            <p className="text-4xl md:text-6xl font-black tracking-tighter text-primary">54</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60 mt-2">Ülke Katılımı</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-4xl md:text-6xl font-black tracking-tighter text-primary">126</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60 mt-2">Etkinlik</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-4xl md:text-6xl font-black tracking-tighter text-primary">632</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60 mt-2">Raporlanan Girişim</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-4xl md:text-6xl font-black tracking-tighter text-primary">15K+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60 mt-2">Doğrudan Erişim</p>
-                        </div>
+            <section className="py-24 px-6">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        <StatCard label="Serüven" value="5" sub="Yıl" />
+                        <StatCard label="Erişim" value="54" sub="Farklı Ülke" />
+                        <StatCard label="Etki" value="15.561" sub="Katılımcı" />
+                        <StatCard label="İş Birliği" value="126" sub="Etkinlik" />
+                        <StatCard label="Akademi" value="42" sub="Üniversite" />
+                        <StatCard label="Kamusal" value="17" sub="Valilik & Belediye" />
+                        <StatCard label="Ekosistem" value="12" sub="Ticaret Odası" />
+                        <StatCard label="Güç Birliği" value="120" sub="Aktif Partner" />
                     </div>
                 </div>
             </section>
 
-            {/* Hub Grid */}
-            <section className="container mx-auto px-6 py-24 max-w-6xl space-y-6">
-                <div className="grid grid-cols-1 gap-6">
-                    <FeatureCard 
-                        title="Dernek Hakkında"
-                        subtitle="Vizyonumuzu ve misyonumuzu keşfedin"
-                        href="/hangelassociation/about"
-                        image="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
-                        hint="team working together"
-                    />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FeatureCard 
-                            title="Dernek Etkinlikleri"
-                            subtitle="Sahadaki etkimizi izleyin"
-                            href="/hangelassociation/events"
-                            image="https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop"
-                            hint="charity event volunteer"
-                            theme="dark"
-                        />
-                        <FeatureCard 
-                            title="Uluslararası Çalıştay"
-                            subtitle="Sınırları aşan diyalog"
-                            href="/hangelassociation/workshop"
-                            image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
-                            hint="international meeting"
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Projelerimiz Section */}
-            <section className="bg-[#f5f5f7] py-32 px-6">
-                <div className="container mx-auto max-w-6xl space-y-16">
-                    <div className="text-left space-y-4">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Vizyon Projelerimiz.</h2>
-                        <p className="text-xl text-muted-foreground font-medium max-w-2xl">Türkiye'den dünyaya yayılan sürdürülebilir sosyal etki modelleri.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-8">
-                        <ProjectHighlight 
-                            icon={Home}
-                            category="AFET DAYANIŞMASI"
-                            title="Deprem Bölgesi Örnek Köy Projesi"
-                            description="Hatay Antakya'da 4000 gönüllü ve 2000 işletme desteğiyle hayata geçen; Tiny House evleri, kreş, atölye ve kütüphaneden oluşan sürdürülebilir yaşam alanı."
-                            image="https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop"
-                            hint="charity village house"
-                        />
-                        <ProjectHighlight 
-                            icon={Truck}
-                            category="LOJİSTİK DESTEK"
-                            title="Afet Dönemi Yakıt & İlaç Köprüsü"
-                            description="Shell Türkiye işbirliğiyle 120 ton yakıt desteği ve Romanya partnerlerimizle sağlanan 2 TIR dolusu kritik ilaç sevkiyatı koordinasyonu."
-                            image="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
-                            hint="truck delivery logistics"
-                        />
-                        <ProjectHighlight 
-                            icon={Briefcase}
-                            category="İSTİHDAM"
-                            title="Etki Odaklı İstihdam Protokolü"
-                            description="Arçelik ile başlatılan, gönüllülük faaliyetlerini resmi özgeçmiş olarak tanıyan ve iş dünyasında liyakati sosyal fayda ile birleştiren protokol."
-                            image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
-                            hint="business meeting collaboration"
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Basında Biz Section */}
-            <section className="py-32 px-6 bg-white">
-                <div className="container mx-auto max-w-4xl space-y-12">
-                    <div className="flex items-center gap-3">
-                        <Newspaper className="h-8 w-8 text-primary" />
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1d1d1f]">Basında Biz.</h2>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4">
-                        {pressLinks.map((link, i) => (
-                            <a 
-                                key={i} 
-                                href={link.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="group flex items-center justify-between p-8 bg-[#f5f5f7] rounded-3xl hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-black/5"
-                            >
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">{link.source}</span>
-                                    <h4 className="text-xl font-bold text-[#1d1d1f] group-hover:text-primary transition-colors">{link.title}</h4>
-                                </div>
-                                <ExternalLink className="h-6 w-6 text-[#1d1d1f]/20 group-hover:text-primary transition-colors" />
-                            </a>
+            {/* Agenda Section */}
+            <section className="py-24 px-6 bg-[#f5f5f7]">
+                <div className="container mx-auto max-w-6xl">
+                    <SectionTitle title="Gündem." subtitle="Sosyal fayda ekosisteminin öncelikli başlıkları." />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                            { title: "STK Gelir Modelleri", desc: "Sürdürülebilirlik ve finansal bağımsızlık stratejileri." },
+                            { title: "Global Çalıştay", desc: "Uluslararası sosyal girişimcilik diyalogları." },
+                            { title: "hangel Clubs", desc: "Kampüslerde sosyal inovasyon hareketi." },
+                            { title: "Mevzuat Tasarısı", desc: "Sosyal Girişimcilik Kanunu için yasal süreçler." }
+                        ].map((item, i) => (
+                            <div key={i} className="p-8 bg-white rounded-[2.5rem] border border-black/5 hover:border-primary/20 transition-all group">
+                                <h4 className="font-bold text-xl mb-3 group-hover:text-primary transition-colors">{item.title}</h4>
+                                <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
+                            </div>
                         ))}
                     </div>
-                    <div className="text-center pt-8">
-                        <Button variant="outline" className="rounded-full px-10 h-12 font-bold border-black/10 hover:bg-black/5">
-                            Tüm Medya Yansımalarını Gör
-                        </Button>
+                </div>
+            </section>
+
+            {/* Committees Section */}
+            <section className="py-32 px-6">
+                <div className="container mx-auto max-w-6xl">
+                    <SectionTitle title="Komitelerimiz." subtitle="Bilimsel veri ve stratejik politika üretim merkezlerimiz." />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {[
+                            { title: "Sosyal İnovasyon Akademik Bilim Kurulu", icon: Brain, color: "bg-blue-500" },
+                            { title: "Etki Mevzuatı ve Politika Geliştirme Komisyonu", icon: Scale, color: "bg-primary" },
+                            { title: "hangel Sosyal İnovasyon Komitesi", icon: Sparkles, color: "bg-purple-500" },
+                            { title: "Etki Odaklı İnsan ve Kültür Komitesi", icon: Users, color: "bg-orange-500" }
+                        ].map((comm, i) => (
+                            <div key={i} className="flex items-center gap-6 p-8 bg-[#f5f5f7] rounded-[2.5rem] hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-black/5">
+                                <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg", comm.color)}>
+                                    <comm.icon className="h-8 w-8" />
+                                </div>
+                                <h3 className="text-xl md:text-2xl font-bold tracking-tight text-[#1d1d1f]">{comm.title}</h3>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Quote Section */}
+            {/* Projects Section */}
+            <section className="py-32 px-6 bg-black text-white">
+                <div className="container mx-auto max-w-6xl">
+                    <SectionTitle title="Projelerimiz." subtitle="Sivil toplumun dijital ve yasal dönüşümüne öncülük eden vizyon projeler." />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[
+                            { title: "Sosyal Girişimcilik Kanun Teklifi", icon: Scale, href: "/hangelassociation/legislation" },
+                            { title: "hangel Impact Fellow", icon: UserCheck, href: "#" },
+                            { title: "Etki Odaklı İstihdam Protokolü", icon: Briefcase, href: "#" },
+                            { title: "hangel Sosyal Etki Atlası", icon: MapIcon, href: "#" },
+                            { title: "Girişimcilik Kütüphanesi", icon: BookOpen, href: "/hangelassociation/workshop" },
+                            { title: "STK Gelir Modeli & Sürdürülebilirlik", icon: DollarSign, href: "#" }
+                        ].map((proj, i) => (
+                            <div key={i} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between min-h-[280px]">
+                                <div className="p-4 bg-white/10 rounded-2xl w-fit">
+                                    <proj.icon className="h-6 w-6 text-primary" />
+                                </div>
+                                <div className="space-y-4">
+                                    <h3 className="text-2xl font-bold tracking-tight leading-tight">{proj.title}</h3>
+                                    <Link href={proj.href} className="inline-flex items-center text-primary font-bold hover:underline">
+                                        İncele <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Academic Section */}
+            <section className="py-32 px-6">
+                <div className="container mx-auto max-w-6xl">
+                    <SectionTitle title="Heyecanlarımız." subtitle="Türkiye'de sosyal girişimciliğin akademik temellerini atıyoruz." />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[
+                            { title: "Mersin Üniversitesi", desc: "Sosyal Girişimcilik Yüksek Lisans Programı", logo: "https://logo.clearbit.com/mersin.edu.tr" },
+                            { title: "Int. Science & Tech University", desc: "Social Enterprise Master Program", logo: "https://picsum.photos/seed/univ1/200/200" },
+                            { title: "Maltepe Üniversitesi", desc: "Uygulamalı Sosyal Girişimcilik Lisans Dersi", logo: "https://logo.clearbit.com/maltepe.edu.tr" }
+                        ].map((item, i) => (
+                            <Card key={i} className="rounded-[2.5rem] border-none shadow-lg overflow-hidden group">
+                                <div className="p-8 space-y-6">
+                                    <Avatar className="h-16 w-16 border bg-white">
+                                        <AvatarImage src={item.logo} className="object-contain p-2" />
+                                        <AvatarFallback><GraduationCap /></AvatarFallback>
+                                    </Avatar>
+                                    <div className="space-y-2">
+                                        <h4 className="font-black text-xs uppercase tracking-widest text-primary">{item.title}</h4>
+                                        <p className="text-xl font-bold leading-tight">{item.desc}</p>
+                                    </div>
+                                    <Button variant="ghost" className="p-0 h-auto text-primary font-bold group-hover:pl-2 transition-all">Detayları İncele <ChevronRight className="ml-1 h-4 w-4"/></Button>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Reports Section */}
+            <section className="py-32 px-6 bg-[#f5f5f7]">
+                <div className="container mx-auto max-w-6xl">
+                    <SectionTitle title="Raporlarımız." subtitle="Şeffaf ve hesap verebilir sivil toplum için veriye dayalı dökümanlar." />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                            { title: "5 Yıllık Sosyal Fayda Raporu", desc: "2020-2025 Etki Analizi" },
+                            { title: "Sosyal Girişimcilik 2025", desc: "Türkiye Mevcut Durum Raporu" },
+                            { title: "Afet Müdahale Raporu", desc: "Deprem Öncesi ve Sonrası Süreçler" },
+                            { title: "Etkinlik & Konferans", desc: "SBG Ulusal ve Uluslararası Faaliyetler" }
+                        ].map((report, i) => (
+                            <div key={i} className="p-8 bg-white rounded-[2.5rem] border border-black/5 flex flex-col justify-between hover:shadow-2xl transition-all group min-h-[320px]">
+                                <div className="p-4 bg-muted rounded-2xl w-fit group-hover:bg-primary/10 transition-colors">
+                                    <FileText className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
+                                </div>
+                                <div className="space-y-4">
+                                    <h4 className="font-bold text-xl leading-tight">{report.title}</h4>
+                                    <p className="text-xs text-muted-foreground font-medium">{report.desc}</p>
+                                    <Button variant="outline" className="w-full rounded-full border-black/10 font-bold hover:bg-black hover:text-white">Raporu İncele</Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* News Section */}
+            <section id="haberler" className="py-32 px-6">
+                <div className="container mx-auto max-w-4xl space-y-12">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Newspaper className="h-8 w-8 text-primary" />
+                            <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Güncel Haberler.</h2>
+                        </div>
+                        <Button variant="ghost" className="font-bold text-primary">Tüm Haberler</Button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-6">
+                        {[
+                            { title: "4. Uluslararası Sosyal Girişimcilik Çalıştayı Tunceli'de Gerçekleşti", date: "9 Aralık 2024", author: "admin", img: "https://picsum.photos/seed/news1/800/400" },
+                            { title: "Hakkari Üniversitesinden “Sosyal Girişimcilik” Semineri", date: "1 Mart 2024", author: "admin", img: "https://picsum.photos/seed/news2/800/400" },
+                            { title: "STK’larda Gelir Modeli Oluşturma Buluşmaları Başlıyor", date: "8 Ağustos 2025", author: "admin", img: "https://picsum.photos/seed/news3/800/400" }
+                        ].map((news, i) => (
+                            <div key={i} className="group flex flex-col md:flex-row gap-8 p-6 bg-[#f5f5f7] rounded-3xl hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-black/5">
+                                <div className="relative w-full md:w-64 aspect-video rounded-2xl overflow-hidden shrink-0">
+                                    <Image src={news.img} alt={news.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                                </div>
+                                <div className="space-y-3 flex flex-col justify-center">
+                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                        <span>{news.author}</span>
+                                        <span>•</span>
+                                        <span>{news.date}</span>
+                                    </div>
+                                    <h4 className="text-xl md:text-2xl font-bold text-[#1d1d1f] group-hover:text-primary transition-colors leading-tight">{news.title}</h4>
+                                    <Button variant="ghost" className="p-0 h-auto self-start text-primary font-bold">Okumaya Devam Et <ArrowRight className="ml-1 h-4 w-4" /></Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Bottom Quote Section */}
             <section className="bg-black text-white py-32 text-center border-b border-white/5">
-                <div className="container mx-auto px-6 max-w-4xl space-y-8">
+                <div className="container mx-auto px-6 max-w-4xl space-y-12">
                     <Heart className="h-16 w-16 text-primary mx-auto" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Dayanışmayla Büyür.</h2>
-                    <p className="text-xl md:text-2xl text-white/70 leading-relaxed font-medium">
+                    <h2 className="text-4xl md:text-7xl font-black tracking-tighter">Dayanışmayla Büyür.</h2>
+                    <p className="text-xl md:text-3xl text-white/70 leading-relaxed font-medium italic">
                         "Bir toplumun gücü, en savunmasız anlarda gösterdiği dayanışma ile ölçülür. Bir fikirle başlar, dayanışmayla büyür, vizyonla dünya değişir."
                     </p>
                     <div className="pt-8">

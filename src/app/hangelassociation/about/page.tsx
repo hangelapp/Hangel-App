@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, Globe, Rocket, BookOpen, GraduationCap, Scale } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, Globe, Rocket, BookOpen, GraduationCap, Scale, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -95,133 +95,101 @@ export default function AssociationAboutPage() {
 
             {/* Hero */}
             <AppleSection 
-                title="Bir Toplumsal Uyanış."
-                subtitle="Sosyal girişimcilik, ekonomik modelin ötesindedir."
-                description="Social Business Global Derneği (SBG), yerel girişimleri uluslararası bir ağa taşıyan, sosyal fayda üreten yapıların etkisini derinleştiren bir sosyal dönüşüm ekosistemidir."
+                title="Daha İyi Bir Dünya."
+                subtitle="Hayal gücü ile eylemin kesişiminde."
+                description="Biz, dünyayı daha iyi bir yer haline getirme vizyonumuzu ve ideallerimizi paylaşan insanları dünyanın dört bir yanından bir araya getiriyoruz. Zorluklardan kaçmıyor, onları fırsata dönüştürmek için harekete geçiyoruz."
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                 imageHint="students working together library"
             />
 
-            {/* Misyonumuz Detay */}
+            {/* Mission Section */}
             <section className="py-32 bg-white border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-5xl space-y-20">
                     <div className="text-center space-y-4">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Misyonumuz Sosyal Kalkınma.</h2>
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Misyonumuz.</h2>
                         <p className="text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                            Ekonomik kalkınmadan ziyade sosyal kalkınmanın daha önemli olduğuna inanıyoruz. Halkın kendi sorunlarını kolektif bir bilinç ve imece usulüyle çözümlemesini destekliyoruz.
+                            Hangel ve Social Business Global olarak misyonumuz; hayatın her kesiminden herkesin iyilik yapmaya katılabildiği adil ve kapsayıcı bir sistem inşa etmektir. İyiliği kolaylaştırmanın, birlikte daha iyi bir geleceği şekillendirmenin ilk adımı olduğuna inanıyoruz.
                         </p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <FeatureBlock 
-                            icon={Rocket}
-                            title="Etki Kapasitesi"
-                            desc="Mevcut sosyal girişimlerin sosyal fayda üretim gücünü artırıyor ve ölçümlüyoruz."
+                            icon={ShoppingCart}
+                            title="Alışverişle Bağış"
+                            desc="Günlük harcamaları ek ücret ödemeden toplumsal faydaya dönüştüren modeller."
                         />
                         <FeatureBlock 
-                            icon={Users}
-                            title="Kolektif Bilinç"
-                            desc="Gençleri, akademiyi ve sivil toplumu aynı masa etrafında buluşturan katılımcı modeller kuruyoruz."
+                            icon={HeartHandshake}
+                            title="Yetenek Bazlı Gönüllülük"
+                            desc="Profesyonel becerilerin sivil toplumun ihtiyaçlarıyla eşleştiği bir imece sistemi."
                         />
                         <FeatureBlock 
-                            icon={Scale}
-                            title="Etik Standartlar"
-                            desc="Sosyal şirket farkındalığını toplumun her kesimine yayarak şeffaf bir ticaret ekosistemi hedefliyoruz."
+                            icon={Briefcase}
+                            title="Etki Odaklı İstihdam"
+                            desc="Sosyal sorumluluk projelerini resmi özgeçmiş olarak tanıyan iş birliği protokolleri."
                         />
                     </div>
                 </div>
             </section>
 
-            {/* Rakamlarla 5 Yıl */}
+            {/* Global Network Section */}
             <section className="bg-black text-white py-32 text-center overflow-hidden">
-                <div className="container mx-auto px-6 max-w-6xl">
-                    <h2 className="text-4xl md:text-7xl font-bold tracking-tight mb-20">Etkimizin Kanıtı Rakamlar.</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white mb-8">
+                        <Globe className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Küresel Ağ Hedefimiz</span>
+                    </div>
+                    <h2 className="text-4xl md:text-7xl font-bold tracking-tight mb-8">Acıları Yarıştırmadan.</h2>
+                    <p className="text-xl md:text-2xl text-white/70 leading-relaxed font-medium max-w-4xl mx-auto mb-20">
+                        Ulusal ve uluslararası paydaşlarımız ile sosyal girişimcileri bir araya getirerek, birbirlerinden ilham almalarını ve birbirlerini desteklemelerini sağlayacak doğal bir ağ oluşturuyoruz. Benzer sorunlarla karşılaşan farklı kültürlerin, kolektif güçle çok daha etkili çözümler üreteceğine inanıyoruz.
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
                         <div className="space-y-2">
-                            <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary">54</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Ülke Katılımı</p>
+                            <p className="text-6xl font-black tracking-tighter text-primary">54</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Ülke</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary">632</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Raporlanan Girişim</p>
+                            <p className="text-6xl font-black tracking-tighter text-primary">120</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Partner</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary">421</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Uluslararası Lider</p>
+                            <p className="text-6xl font-black tracking-tighter text-primary">42</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Üniversite</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary">15K+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Doğrudan Erişim</p>
+                            <p className="text-6xl font-black tracking-tighter text-primary">17</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Belediye</p>
                         </div>
                     </div>
-                    <p className="text-white/40 text-sm font-medium italic">"Sadece geçmişi anlatmıyor, geleceğe bir sosyal miras bırakıyoruz."</p>
                 </div>
             </section>
 
-            {/* Gönüllüler ve Akademi */}
+            {/* Why SBG Section */}
+            <AppleSection 
+                title="Neden hangel?"
+                subtitle="Birleştirici bir güç."
+                description="SOCIAL BUSINESS GLOBAL, kolektif bilinçle toplumsal fayda bilincinin yanı sıra toplumsal etki için çalışan çocuklar, gençler, iş insanları ve sivil toplum liderleri için birleştirici bir güç olarak hizmet vermektedir."
+                imageUrl="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
+                imageHint="collaborative business meeting"
+            />
+
+            {/* Social Innovation Section */}
             <section className="py-32 bg-[#f5f5f7] border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-5xl flex flex-col md:flex-row items-center gap-16">
                     <div className="flex-1 space-y-8 text-left">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">İyilik, Bilgiyle Büyür.</h2>
-                        <div className="space-y-6">
-                            <div className="flex items-start gap-4">
-                                <GraduationCap className="h-6 w-6 text-primary mt-1" />
-                                <div>
-                                    <p className="font-bold text-xl">12 Akademisyen</p>
-                                    <p className="text-muted-foreground text-sm font-medium">Stratejik danışmanlık ve bilimsel veri desteği sağlayan akademik kurulumuz.</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4">
-                                <Users className="h-6 w-6 text-primary mt-1" />
-                                <div>
-                                    <p className="font-bold text-xl">21 Üniversite Temsilcisi</p>
-                                    <p className="text-muted-foreground text-sm font-medium">Kampüslerde sosyal etkiyi örgütleyen genç liderler ağımız.</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4">
-                                <ShieldCheck className="h-6 w-6 text-primary mt-1" />
-                                <div>
-                                    <p className="font-bold text-xl">13 Farklı Branş</p>
-                                    <p className="text-muted-foreground text-sm font-medium">Hukuktan lojistiğe, tasarımdan mühendisliğe saha desteği veren profesyonel gönüllü ekibimiz.</p>
-                                </div>
-                            </div>
+                        <div className="p-3 bg-primary/10 rounded-2xl w-fit">
+                            <Sparkles className="h-8 w-8 text-primary" />
                         </div>
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Sosyal İnovasyon.</h2>
+                        <p className="text-xl text-muted-foreground font-medium leading-relaxed">
+                            Üniversite, sanayi, iş dünyası ve Sivil Toplum kuruluşları ile yürütülen araştırma projeleri ile sürdürülebilir sosyal girişim modelleri geliştiriyoruz. Sosyal girişim start-up şirketlerin desteklenmesine ve sayılarının artmasına zemin hazırlıyoruz.
+                        </p>
+                        <Button className="rounded-full px-8 h-12 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">Modelleri İncele</Button>
                     </div>
                     <div className="flex-1 relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white">
-                        <Image src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" alt="Team" fill className="object-cover" data-ai-hint="team collaborating meeting" />
+                        <Image src="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop" alt="Innovation" fill className="object-cover" data-ai-hint="team collaborating meeting" />
                     </div>
                 </div>
             </section>
-
-            {/* Bilimsel Destek ve Kaynaklar */}
-            <section className="py-32 bg-white">
-                <div className="container mx-auto px-6 max-w-4xl text-center space-y-12">
-                    <BookOpen className="h-16 w-16 text-primary mx-auto" />
-                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[#1d1d1f]">Literatüre Katkı Sağlıyoruz.</h2>
-                    <p className="text-lg text-muted-foreground font-medium leading-relaxed">
-                        Akademik ve bilimsel araştırmalara aracılık ediyoruz. Sosyal girişimcilik kaynaklarımız ve veri setlerimizle; <strong>2 Doktora</strong>, <strong>3 Yüksek Lisans</strong> tezi ve <strong>2 Akademik makalenin</strong> yazımına doğrudan kaynak desteği sağladık.
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
-                        <div className="p-6 bg-[#f5f5f7] rounded-3xl text-left border border-black/5">
-                            <p className="text-primary font-black text-xs uppercase tracking-widest mb-2">Mersin Üniversitesi</p>
-                            <p className="text-sm font-bold">Dünyanın 27., Türkiye'nin ilk Sosyal Girişimcilik Yüksek Lisans programı.</p>
-                        </div>
-                        <div className="p-6 bg-[#f5f5f7] rounded-3xl text-left border border-black/5">
-                            <p className="text-primary font-black text-xs uppercase tracking-widest mb-2">Maltepe Üniversitesi</p>
-                            <p className="text-sm font-bold">YÖK onaylı 'Uygulamalı Sosyal Girişimcilik' dersinin genel müfredata girişi.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Finansal Şeffaflık */}
-            <AppleSection 
-                theme="dark"
-                title="Şeffaf Kaynak Yönetimi."
-                subtitle="Her bir kuruşun toplumsal faydaya yolculuğu."
-                description="Kethüda Hamamı sergi geliri olan 2.000.000 TL ve Uluslararası Kitipto Network Derneği'nden gelen 480.000 TL bağışın tamamı, Hatay Örnek Köy Projesi'ne aktarılarak şeffaf bir şekilde raporlanmıştır."
-                imageUrl="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop"
-                imageHint="coins gold stack donation"
-            />
 
             <PublicFooter currentPageLabel="Dernek Hakkında" />
         </div>
