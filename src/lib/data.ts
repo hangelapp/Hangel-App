@@ -205,6 +205,54 @@ export const ngos: NGO[] = [
     }
 ];
 
+export const events: Event[] = [
+  {
+    id: '1',
+    name: 'Girişimcilik Zirvesi \'24',
+    organizer: 'İTÜ Girişimcilik Kulübü',
+    type: 'Zirve',
+    date: '25 Ekim 2024',
+    time: '10:00 - 18:00',
+    location: 'İTÜ Ayazağa Yerleşkesi',
+    capacity: { current: 150, max: 200 },
+    tags: ['Girişimcilik', 'Zirve', 'Network'],
+    imageUrl: 'https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop',
+    imageHint: 'conference auditorium',
+    description: 'Türkiye\'nin önde gelen girişimcilerini bir araya getiren en büyük öğrenci zirvesi.',
+    providesCertificate: true
+  },
+  {
+    id: '2',
+    name: 'Sonbahar Konseri',
+    organizer: 'Boğaziçi Üniversitesi Müzik Kulübü',
+    type: 'Konser',
+    date: '15 Kasım 2024',
+    time: '19:00 - 22:00',
+    location: 'Albert Long Hall',
+    capacity: { current: 80, max: 100 },
+    tags: ['Müzik', 'Konser', 'Eğlence'],
+    imageUrl: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop',
+    imageHint: 'concert stage',
+    description: 'Klasik müzikten moderne uzanan eşsiz bir müzik ziyafeti.',
+    providesCertificate: false
+  },
+  {
+    id: '3',
+    name: 'SivilFest Karşıyaka',
+    organizer: 'Karşıyaka Belediyesi',
+    type: 'Festival',
+    date: '1-7 Aralık 2024',
+    time: '09:00 - 20:00',
+    location: 'Karşıyaka Sahil',
+    capacity: { current: 500, max: 1000 },
+    tags: ['Sivil Toplum', 'Festival', 'Dayanışma'],
+    imageUrl: 'https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop',
+    imageHint: 'festival crowd',
+    description: 'Sivil toplum kuruluşlarının projelerini sergilediği dev festival.',
+    providesCertificate: true
+  }
+];
+
 export const studentClubs: StudentClub[] = [
     { id: '1', name: 'İTÜ Girişimcilik Kulübü', university: 'İTÜ', type: 'university', avatarUrl: 'https://logo.clearbit.com/itu.edu.tr', coverPhotoUrl: '', members: 1500, points: 12500, description: 'Girişimcilik vizyonu.', vision: 'Liderlik.', joinDate: '2023-05-20', contact: { email: 'gk@itu.edu.tr', phone: '', website: '' } }
 ];
