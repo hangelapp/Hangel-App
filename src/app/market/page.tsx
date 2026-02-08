@@ -136,7 +136,6 @@ export default function MarketPage() {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
                 const mappedBrands: Brand[] = data.map((m: any) => {
-                    // Kullanıcının paylaştığı kod yapısına (m.logo, m.name) sadık kalıyoruz
                     const rawPayout = m.payout || "0";
                     const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
                     const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
@@ -322,7 +321,7 @@ export default function MarketPage() {
                                     )}
                                     {visualSearchImage && (
                                         <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
-                                            <Image src={visualSearchImage} alt="Yüklenen görsel" fill className="object-contain rounded-lg" />
+                                            <img src={visualSearchImage} alt="Yüklenen görsel" className="w-full h-full object-contain rounded-lg" />
                                             {isVisualSearching && (
                                                 <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-lg">
                                                     <Loader2 className="h-12 w-12 text-white animate-spin" />
@@ -428,7 +427,7 @@ export default function MarketPage() {
                     key={cat.mainCategory}
                     onClick={() => setActiveCategory(cat.mainCategory)}
                     className={cn(
-                    "text-left text-xs sm:text-sm p-1 sm:p-1.5 whitespace-nowrap truncate",
+                    "text-left text-xs sm:text-sm p-1.5 sm:p-2 whitespace-nowrap truncate",
                     activeCategory === cat.mainCategory
                         ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
                         : "text-muted-foreground hover:bg-accent",
@@ -457,15 +456,15 @@ export default function MarketPage() {
                             <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
                                     <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all p-2">
-                                        <div className="relative w-full h-full">
-                                            <Image 
-                                                src={brand.logoUrl} 
-                                                alt={brand.name} 
-                                                fill
-                                                className="object-contain"
-                                                sizes="(max-width: 768px) 33vw, 10vw"
-                                            />
-                                        </div>
+                                        <img 
+                                            src={brand.logoUrl} 
+                                            alt={brand.name} 
+                                            className="w-full h-full object-contain"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = `https://placehold.co/400x400?text=${encodeURIComponent(brand.name)}`;
+                                            }}
+                                        />
                                     </div>
                                     {brand.donationRate > 0 && (
                                         <div className="absolute top-0 right-0 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-[#f34723] text-[9px] sm:text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">

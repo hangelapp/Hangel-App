@@ -90,51 +90,43 @@ export const user: User = {
 };
 
 export const timelinePosts: Post[] = [
-    { id: '1', author: { name: 'TEMA Vakfı', avatarUrl: 'https://logo.clearbit.com/tema.org.tr' }, content: 'Bugün fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 #Doğaİçin', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
-    { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'İhtiyaç sahibi aileler için hazırladığımız gıda kolilerini dağıtmaya başladık. 🙏', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' },
-    { id: '3', author: { name: 'Patagonia', avatarUrl: 'https://logo.clearbit.com/patagonia.com' }, content: 'Her alışverişin %10\'u okyanuslarımızı temizlemek için ayrılıyor. 🌊', timestamp: '1 gün önce', likes: 850, comments: 12, imageUrl: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?q=80&w=1920&auto=format&fit=crop', imageHint: 'sea turtle', sponsored: true }
+    { id: '1', author: { name: 'TEMA Vakfı', avatarUrl: 'https://www.google.com/s2/favicons?domain=tema.org.tr&sz=128' }, content: 'Bugün fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 #Doğaİçin', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
+    { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://www.google.com/s2/favicons?domain=ahbap.org&sz=128' }, content: 'İhtiyaç sahibi aileler için hazırladığımız gıda kolilerini dağıtmaya başladık. 🙏', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' },
+    { id: '3', author: { name: 'Patagonia', avatarUrl: 'https://www.google.com/s2/favicons?domain=patagonia.com&sz=128' }, content: 'Her alışverişin %10\'u okyanuslarımızı temizlemek için ayrılıyor. 🌊', timestamp: '1 gün önce', likes: 850, comments: 12, imageUrl: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?q=80&w=1920&auto=format&fit=crop', imageHint: 'sea turtle', sponsored: true }
 ];
 
 export const allEntityLists: Brand[] = [
     // GİYİM
-    { id: 'b1', name: 'Nike', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/nike.com', type: 'brand', followers: 12000000 },
-    { id: 'b2', name: 'Adidas', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/adidas.com', type: 'brand', followers: 10000000 },
-    { id: 'b3', name: 'Patagonia', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/patagonia.com', type: 'brand', followers: 5000000 },
-    { id: 'b4', name: 'H&M', category: 'Giyim', donationRate: 3, logoUrl: 'https://logo.clearbit.com/hm.com', type: 'brand', followers: 8000000 },
-    { id: 'b5', name: 'Zara', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/zara.com', type: 'brand', followers: 9500000 },
-    { id: 'b6', name: 'Mavi', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/mavi.com', type: 'brand', followers: 2000000 },
-    { id: 'b7', name: 'Beymen', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/beymen.com', type: 'brand', followers: 1200000 },
+    { id: 'b1', name: 'Nike', category: 'Giyim', donationRate: 5, logoUrl: 'https://www.google.com/s2/favicons?domain=nike.com&sz=128', type: 'brand', followers: 12000000 },
+    { id: 'b2', name: 'Adidas', category: 'Giyim', donationRate: 6, logoUrl: 'https://www.google.com/s2/favicons?domain=adidas.com&sz=128', type: 'brand', followers: 10000000 },
+    { id: 'b3', name: 'Patagonia', category: 'Giyim', donationRate: 10, logoUrl: 'https://www.google.com/s2/favicons?domain=patagonia.com&sz=128', type: 'brand', followers: 5000000 },
+    { id: 'b4', name: 'H&M', category: 'Giyim', donationRate: 3, logoUrl: 'https://www.google.com/s2/favicons?domain=hm.com&sz=128', type: 'brand', followers: 8000000 },
+    { id: 'b5', name: 'Zara', category: 'Giyim', donationRate: 4, logoUrl: 'https://www.google.com/s2/favicons?domain=zara.com&sz=128', type: 'brand', followers: 9500000 },
+    { id: 'b6', name: 'Mavi', category: 'Giyim', donationRate: 7, logoUrl: 'https://www.google.com/s2/favicons?domain=mavi.com&sz=128', type: 'brand', followers: 2000000 },
     
     // AYAKKABI
-    { id: 'b8', name: 'New Balance', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/newbalance.com', type: 'brand', followers: 4500000 },
-    { id: 'b9', name: 'Converse', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/converse.com', type: 'brand', followers: 3000000 },
-    { id: 'b10', name: 'Vans', category: 'Ayakkabı', donationRate: 7, logoUrl: 'https://logo.clearbit.com/vans.com', type: 'brand', followers: 5500000 },
-    { id: 'b11', name: 'SuperStep', category: 'Ayakkabı', donationRate: 4, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', type: 'brand', followers: 600000 },
+    { id: 'b8', name: 'New Balance', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://www.google.com/s2/favicons?domain=newbalance.com&sz=128', type: 'brand', followers: 4500000 },
+    { id: 'b9', name: 'Converse', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://www.google.com/s2/favicons?domain=converse.com&sz=128', type: 'brand', followers: 3000000 },
+    { id: 'b10', name: 'Vans', category: 'Ayakkabı', donationRate: 7, logoUrl: 'https://www.google.com/s2/favicons?domain=vans.com&sz=128', type: 'brand', followers: 5500000 },
     
     // ELEKTRONIK
-    { id: 'b12', name: 'Apple', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/apple.com', type: 'brand', followers: 50000000 },
-    { id: 'b13', name: 'Samsung', category: 'Elektronik', donationRate: 3, logoUrl: 'https://logo.clearbit.com/samsung.com', type: 'brand', followers: 40000000 },
-    { id: 'b14', name: 'Teknosa', category: 'Elektronik', donationRate: 4, logoUrl: 'https://logo.clearbit.com/teknosa.com', type: 'brand', followers: 2000000 },
-    { id: 'b15', name: 'Hepsiburada', category: 'Pazaryeri', donationRate: 3, logoUrl: 'https://logo.clearbit.com/hepsiburada.com', type: 'brand', followers: 15000000 },
+    { id: 'b12', name: 'Apple', category: 'Elektronik', donationRate: 2, logoUrl: 'https://www.google.com/s2/favicons?domain=apple.com&sz=128', type: 'brand', followers: 50000000 },
+    { id: 'b13', name: 'Samsung', category: 'Elektronik', donationRate: 3, logoUrl: 'https://www.google.com/s2/favicons?domain=samsung.com&sz=128', type: 'brand', followers: 40000000 },
+    { id: 'b14', name: 'Teknosa', category: 'Elektronik', donationRate: 4, logoUrl: 'https://www.google.com/s2/favicons?domain=teknosa.com&sz=128', type: 'brand', followers: 2000000 },
+    { id: 'b15', name: 'Hepsiburada', category: 'Pazaryeri', donationRate: 3, logoUrl: 'https://www.google.com/s2/favicons?domain=hepsiburada.com&sz=128', type: 'brand', followers: 15000000 },
     
     // EV & YAŞAM
-    { id: 'b16', name: 'IKEA', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/ikea.com.tr', type: 'brand', followers: 8000000 },
-    { id: 'b17', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 6, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand', followers: 3000000 },
-    { id: 'b18', name: 'Paşabahçe', category: 'Ev & Yaşam', donationRate: 7, logoUrl: 'https://logo.clearbit.com/pasabahce.com.tr', type: 'brand', followers: 1500000 },
+    { id: 'b16', name: 'IKEA', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://www.google.com/s2/favicons?domain=ikea.com.tr&sz=128', type: 'brand', followers: 8000000 },
+    { id: 'b17', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 6, logoUrl: 'https://www.google.com/s2/favicons?domain=karaca.com&sz=128', type: 'brand', followers: 3000000 },
     
     // SÜPERMARKET
-    { id: 'b19', name: 'Migros', category: 'Süpermarket', donationRate: 2, logoUrl: 'https://logo.clearbit.com/migros.com.tr', type: 'brand', followers: 5000000 },
-    { id: 'b20', name: 'Getir', category: 'Süpermarket', donationRate: 4, logoUrl: 'https://logo.clearbit.com/getir.com', type: 'brand', followers: 9000000 },
-    { id: 'b21', name: 'Tire Süt', category: 'Süpermarket', donationRate: 15, logoUrl: 'https://logo.clearbit.com/tiresutkooperatifi.com', type: 'cooperative', followers: 120000 },
+    { id: 'b19', name: 'Migros', category: 'Süpermarket', donationRate: 2, logoUrl: 'https://www.google.com/s2/favicons?domain=migros.com.tr&sz=128', type: 'brand', followers: 5000000 },
+    { id: 'b20', name: 'Getir', category: 'Süpermarket', donationRate: 4, logoUrl: 'https://www.google.com/s2/favicons?domain=getir.com&sz=128', type: 'brand', followers: 9000000 },
     
     // KİŞİSEL BAKIM
-    { id: 'b22', name: 'Gratis', category: 'Kişisel Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/gratis.com', type: 'brand', followers: 6000000 },
-    { id: 'b23', name: 'Watsons', category: 'Kişisel Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/watsons.com.tr', type: 'brand', followers: 5000000 },
-    { id: 'b24', name: 'Sephora', category: 'Kişisel Bakım', donationRate: 4, logoUrl: 'https://logo.clearbit.com/sephora.com.tr', type: 'brand', followers: 12000000 },
-    
-    // SOSYAL İŞLETMELER
-    { id: 'b25', name: 'Çöp(m)adam', category: 'Ev & Yaşam', donationRate: 25, logoUrl: 'https://picsum.photos/seed/copmadam/400/400', type: 'social', followers: 45000 },
-    { id: 'b26', name: 'KEDV', category: 'Giyim', donationRate: 20, logoUrl: 'https://logo.clearbit.com/kedv.org.tr', type: 'social', followers: 150000 }
+    { id: 'b22', name: 'Gratis', category: 'Kişisel Bakım', donationRate: 5, logoUrl: 'https://www.google.com/s2/favicons?domain=gratis.com&sz=128', type: 'brand', followers: 6000000 },
+    { id: 'b23', name: 'Watsons', category: 'Kişisel Bakım', donationRate: 5, logoUrl: 'https://www.google.com/s2/favicons?domain=watsons.com.tr&sz=128', type: 'brand', followers: 5000000 },
+    { id: 'b24', name: 'Sephora', category: 'Kişisel Bakım', donationRate: 4, logoUrl: 'https://www.google.com/s2/favicons?domain=sephora.com.tr&sz=128', type: 'brand', followers: 12000000 },
 ];
 
 export const marketCategories: MarketCategory[] = [
@@ -171,7 +163,7 @@ export const ngos: NGO[] = [
         foundationYear: 1992,
         category: 'Çevre',
         type: 'Vakıf',
-        avatarUrl: 'https://logo.clearbit.com/tema.org.tr',
+        avatarUrl: 'https://www.google.com/s2/favicons?domain=tema.org.tr&sz=128',
         coverPhotoUrl: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2041&auto=format&fit=crop',
         stats: { followers: 120000, donors: 50000, volunteers: 80000, volunteerHours: 250000, projects: 150, totalDonation: 1500000, donationCount: 65000, avgDonation: 23.07, highestSingleDonation: 500, peopleReached: 500000 },
         transparencyScore: 92,
@@ -190,7 +182,7 @@ export const ngos: NGO[] = [
         foundationYear: 2017,
         category: 'Dayanışma',
         type: 'Dernek',
-        avatarUrl: 'https://logo.clearbit.com/ahbap.org',
+        avatarUrl: 'https://www.google.com/s2/favicons?domain=ahbap.org&sz=128',
         coverPhotoUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop',
         stats: { followers: 850000, donors: 250000, volunteers: 150000, volunteerHours: 500000, projects: 500, totalDonation: 12500000, donationCount: 300000, avgDonation: 41.67, highestSingleDonation: 1000, peopleReached: 2000000 },
         transparencyScore: 95,
@@ -254,7 +246,7 @@ export const events: Event[] = [
 ];
 
 export const studentClubs: StudentClub[] = [
-    { id: '1', name: 'İTÜ Girişimcilik Kulübü', university: 'İTÜ', type: 'university', avatarUrl: 'https://logo.clearbit.com/itu.edu.tr', coverPhotoUrl: '', members: 1500, points: 12500, description: 'Girişimcilik vizyonu.', vision: 'Liderlik.', joinDate: '2023-05-20', contact: { email: 'gk@itu.edu.tr', phone: '', website: '' } }
+    { id: '1', name: 'İTÜ Girişimcilik Kulübü', university: 'İTÜ', type: 'university', avatarUrl: 'https://www.google.com/s2/favicons?domain=itu.edu.tr&sz=128', coverPhotoUrl: '', members: 1500, points: 12500, description: 'Girişimcilik vizyonu.', vision: 'Liderlik.', joinDate: '2023-05-20', contact: { email: 'gk@itu.edu.tr', phone: '', website: '' } }
 ];
 
 export const schoolRepresentatives: SchoolRepresentative[] = [
@@ -289,7 +281,7 @@ export const ngoHelpTopics = helpTopics;
 export const ngoFaqArticles = [{ title: 'Bağışlar nasıl aktarılır?', link: '#' }];
 export const pastVolunteering = [];
 export const managedItems: ManagedItem[] = [
-    { name: 'Ahbap Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/ahbap.org' }
+    { name: 'Ahbap Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://www.google.com/s2/favicons?domain=ahbap.org&sz=128' }
 ];
 
 export const qrPaymentCardData = [
