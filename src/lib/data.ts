@@ -1,8 +1,17 @@
 
+'use client';
+
 import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
-import { Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, QrCode, School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign, Smartphone } from 'lucide-react';
+import { 
+    Award, Baby, Bot, Building, Calendar, CheckCircle, Dog, Download, Eye, Hand, Heart, 
+    HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, QrCode, 
+    School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, 
+    Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, 
+    UserCircle, BookText, Settings2, HeartHandshake, Wallet, LucideIcon, DollarSign, Smartphone,
+    ShoppingBag
+} from 'lucide-react';
 
 
 const getImage = (id: string): ImagePlaceholder | undefined => PlaceHolderImages.find(img => img.id === id);
@@ -294,6 +303,7 @@ export const ngos: NGO[] = [
                 district: 'Sarıyer',
             }
         },
+        economicEnterpriseUrl: '/market/1',
         posts: timelinePosts.filter(p => p.author.name === 'TEMA Vakfı'),
         opportunities: volunteeringOpportunities.filter(o => o.ngoId === '1')
     },
@@ -360,6 +370,54 @@ export const allEntityLists: Brand[] = [
     { id: '5', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 10, logoUrl: 'https://logo.clearbit.com/karaca.com', link: '#', followers: 6000000, type: 'brand' },
 ];
 
+export const events: Event[] = [
+  {
+    id: '1',
+    name: 'Girişimcilik Zirvesi \'24',
+    organizer: 'İTÜ Girişimcilik Kulübü',
+    type: 'Konferans',
+    date: '25 Ekim 2024',
+    time: '10:00',
+    location: 'Süleyman Demirel Kültür Merkezi, Maslak',
+    capacity: { current: 450, max: 500 },
+    tags: ['Girişimcilik', 'Teknoloji', 'Networking'],
+    imageUrl: 'https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop',
+    imageHint: 'conference hall',
+    description: 'Türkiye\'nin en kapsamlı öğrenci zirvelerinden biri olan İTÜ Girişimcilik Zirvesi, sektörün liderlerini öğrencilerle buluşturuyor.',
+    providesCertificate: true
+  },
+  {
+    id: '2',
+    name: 'Dayanışma Konseri',
+    organizer: 'Ahbap Derneği',
+    type: 'Konser',
+    date: '12 Ağustos 2024',
+    time: '20:00',
+    location: 'Harbiye Cemil Topuzlu Açık Hava Tiyatrosu',
+    capacity: { current: 3200, max: 4500 },
+    tags: ['Müzik', 'Dayanışma', 'Yardım'],
+    imageUrl: 'https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=2070&auto=format&fit=crop',
+    imageHint: 'concert crowd',
+    description: 'Elde edilen gelirin tamamının afetzedelere aktarılacağı bu özel gecede, sevilen sanatçılar iyilik için sahne alıyor.',
+    providesCertificate: false
+  },
+  {
+    id: '3',
+    name: 'İklim Krizi Çalıştayı',
+    organizer: 'TEMA Vakfı',
+    type: 'Çalıştay',
+    date: '5 Eylül 2024',
+    time: '09:00',
+    location: 'Online (Zoom)',
+    capacity: { current: 150, max: 300 },
+    tags: ['Çevre', 'İklim', 'Eğitim'],
+    imageUrl: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2041&auto=format&fit=crop',
+    imageHint: 'forest sunlight',
+    description: 'İklim krizi ile mücadelede bireysel ve kurumsal adımların tartışılacağı interaktif bir çalıştay.',
+    providesCertificate: true
+  }
+];
+
 export const adBanners: AdBanner[] = [
     { id: '1', title: 'Okul Alışverişiyle Destek Ol!', description: 'Kırtasiye ve okul ihtiyaçlarınızla TEGV\'e bağış yapın.', imageUrl: 'https://images.unsplash.com/photo-1766961557637-f40431f5839b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080', link: '/market' },
     { id: '2', title: 'Tatile Çıkarken İyilik Yapın', description: 'Otel ve uçak rezervasyonlarınızla TEMA\'yı destekleyin.', imageUrl: 'https://images.unsplash.com/photo-1503220317375-aa068c833b36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080', link: '/market' },
@@ -373,6 +431,70 @@ export const managedItems: ManagedItem[] = [
 
 export const studentClubs: StudentClub[] = [
   { id: '1', name: 'İTÜ Girişimcilik Kulübü', university: 'İstanbul Teknik Üniversitesi', type: 'university', avatarUrl: 'https://logo.clearbit.com/itu.edu.tr', coverPhotoUrl: 'https://picsum.photos/seed/itu/1200/400', members: 1500, points: 12500, description: 'Türkiye\'nin en eski ve en büyük girişimcilik kulüplerinden biri.', vision: 'Girişimcilik ekosistemine yön veren lider bir gençlik hareketi olmak.', joinDate: '2023-05-20', contact: {email: 'gk@itu.edu.tr', phone: 'N/A', website: 'itugk.com'}, projects: 25, volunteerHours: 3200, activeMemberRate: 85 },
+];
+
+export const schoolRepresentatives: SchoolRepresentative[] = [
+  { id: '1', name: 'Can Demir', school: 'İstanbul Teknik Üniversitesi', type: 'university', role: 'Kampüs Başkanı', avatarUrl: 'https://i.pravatar.cc/150?u=can', linkedinUrl: '#' },
+  { id: '2', name: 'Ayşe Yılmaz', school: 'Boğaziçi Üniversitesi', type: 'university', role: 'Kampüs Başkanı', avatarUrl: 'https://i.pravatar.cc/150?u=ayse2', linkedinUrl: '#' },
+  { id: '3', name: 'Mehmet Öztürk', school: 'Orta Doğu Teknik Üniversitesi', type: 'university', role: 'Kampüs Başkanı', avatarUrl: 'https://i.pravatar.cc/150?u=mehmet2', linkedinUrl: '#' },
+  { id: '4', name: 'Zeynep Kaya', school: 'Galatasaray Üniversitesi', type: 'university', role: 'Kampüs Başkanı', avatarUrl: 'https://i.pravatar.cc/150?u=zeynep2', linkedinUrl: '#' },
+  { id: '5', name: 'Ali Arslan', school: 'İstanbul Teknik Üniversitesi', type: 'university', role: 'Fakülte Temsilcisi', avatarUrl: 'https://i.pravatar.cc/150?u=ali2', linkedinUrl: '#' },
+];
+
+export const applications: Application[] = [
+    { id: '1', title: 'Afet Bölgesi Yardım Dağıtımı', type: 'Gönüllülük', org: 'Ahbap Derneği', date: '2024-07-21', location: 'Hatay', status: 'Onaylandı', entityId: '1' },
+    { id: '2', title: 'İTÜ Girişimcilik Kulübü Üyeliği', type: 'Kulüpler', org: 'İTÜ', date: '2024-07-20', location: 'İstanbul', status: 'Beklemede', entityId: '1' },
+];
+
+export const donationTransactions: DonationTransaction[] = [
+    { id: '1', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA Vakfı'], date: '2024-07-21', time: '14:32' },
+    { id: '2', type: 'expense', brand: 'Lezzet Köyü', purchaseAmount: '120.50', donationAmount: '12.05', ngo: ['Ahbap Derneği'], date: '2024-07-20', time: '18:10' },
+    { id: '3', type: 'income', brand: 'Bakiye Yükleme', purchaseAmount: '500.00', donationAmount: '0.00', ngo: [], date: '2024-07-20', time: '10:00' },
+];
+
+export const badges: Badge[] = [
+  { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 },
+  { id: '2', name: 'Hayvan Dostu', iconName: Dog, level: 'Bronz', socialArea: 'Hayvan Hakları', pointsRequired: 500, currentPoints: 650 },
+  { id: '3', name: 'Eğitim Gönüllüsü', iconName: School, level: 'Bakır', socialArea: 'Eğitim', pointsRequired: 250, currentPoints: 300 },
+  { id: '4', name: 'Afet Kahramanı', iconName: Siren, level: 'Demir', socialArea: 'Afet', pointsRequired: 100, currentPoints: 150 },
+];
+
+export const certificates: Certificate[] = [
+  { id: '1', title: 'Afet Gönüllülüğü Başarı Belgesi', organization: 'Ahbap Derneği', date: '15 Temmuz 2024', linkedinUrl: '#' },
+  { id: '2', title: 'Ağaç Dikme Gönüllülük Sertifikası', organization: 'TEMA Vakfı', date: '20 Haziran 2024', linkedinUrl: '#' },
+];
+
+export const helpTopics: HelpTopic[] = [
+  {
+    icon: 'Info',
+    title: 'Genel Bilgiler',
+    slug: 'genel-bilgiler',
+    description: 'Hangel nedir ve nasıl çalışır?',
+    subtopics: [
+      { title: 'Hangel Nedir?', link: '#', content: '<p>Hangel, toplumsal fayda için teknoloji üreten bir sosyal girişimdir.</p>' }
+    ]
+  }
+];
+
+export const ngoHelpTopics: HelpTopic[] = [
+  {
+    icon: 'Building',
+    title: 'STK Yönetimi',
+    slug: 'stk-yonetimi',
+    description: 'Profilinizi ve bağışlarınızı yönetin.',
+    subtopics: [
+      { title: 'Profil Güncelleme', link: '#', content: '<p>Profilinizi yönetici panelinden güncelleyebilirsiniz.</p>' }
+    ]
+  }
+];
+
+export const ngoFaqArticles = [
+  { title: 'Nasıl bağış alırım?', link: '#' },
+  { title: 'Gönüllüleri nasıl yönetirim?', link: '#' }
+];
+
+export const pastVolunteering = [
+  { id: '1', title: 'Afet Bölgesi Lojistik', organization: 'Ahbap', dates: { eventEnd: '2024-07-01' }, description: 'Lojistik destek sağlandı.', review: { rating: 5, comment: 'Mükemmel katkı!' } }
 ];
 
 export const marketCategories: MarketCategory[] = [
@@ -400,3 +522,11 @@ export const qrPaymentCardData = [
     cvv: '123'
   }
 ];
+
+export const categoryMapping = {
+    'Giyim': ['Giyim', 'Spor Giyim', 'Outdoor'],
+    'Ayakkabı': ['Ayakkabı'],
+    'Elektronik': ['Elektronik'],
+    'Ev & Yaşam': ['Ev & Yaşam'],
+    'Süpermarket': ['Süpermarket'],
+};
