@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import {
@@ -24,7 +23,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
-import { Users, Building, Store, HandCoins, Bot, Filter, ArrowDownUp } from "lucide-react";
+import { Users, Building, Store, HandCoins, Bot, Filter, ArrowDownUp, BarChart3 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -107,7 +106,11 @@ export default function AnalyticsPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-lg font-semibold md:text-2xl">Platform Analizleri</h1>
+            <div className="space-y-1">
+                <h1 className="text-2xl font-bold font-headline tracking-tight">Platform Analizleri ve Raporlar</h1>
+                <p className="text-muted-foreground text-sm">Büyüme metriklerini, kullanıcı etkileşimini ve bağış hacmini gerçek zamanlı verilerle takip edin.</p>
+            </div>
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                  <Card className="aspect-square flex flex-col justify-center items-center p-4">
                     <Users className="h-8 w-8 text-muted-foreground" />
@@ -137,7 +140,8 @@ export default function AnalyticsPage() {
             
             <Card>
                 <CardHeader>
-                    <CardTitle>Platform İstatistikleri</CardTitle>
+                    <CardTitle>Büyüme ve Etkileşim Trendleri</CardTitle>
+                    <CardDescription>Platformun son 6 aydaki performans grafikleri.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="graphs">
@@ -149,7 +153,7 @@ export default function AnalyticsPage() {
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <Card>
                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Kullanıcı Büyümesi (Son 6 Ay)</CardTitle>
+                                        <CardTitle className="text-base">Kullanıcı Büyümesi</CardTitle>
                                         <ChartToolbar />
                                     </CardHeader>
                                     <CardContent>
@@ -167,7 +171,7 @@ export default function AnalyticsPage() {
                                 </Card>
                                  <Card>
                                      <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Bağış ve Gönüllülük Değeri</CardTitle>
+                                        <CardTitle className="text-base">Bağış ve Gönüllülük</CardTitle>
                                         <ChartToolbar />
                                     </CardHeader>
                                     <CardContent>
@@ -186,7 +190,7 @@ export default function AnalyticsPage() {
                                 </Card>
                                  <Card>
                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Kullanıcı Yaş Dağılımı</CardTitle>
+                                        <CardTitle className="text-base">Demografik Dağılım (Yaş)</CardTitle>
                                         <ChartToolbar />
                                     </CardHeader>
                                     <CardContent>
@@ -202,7 +206,7 @@ export default function AnalyticsPage() {
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Platform Etkileşimi</CardTitle>
+                                        <CardTitle className="text-base">Sosyal Etkileşim</CardTitle>
                                         <ChartToolbar />
                                     </CardHeader>
                                     <CardContent>
@@ -226,7 +230,7 @@ export default function AnalyticsPage() {
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <Card>
                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Kullanıcı Büyümesi (Sayısal)</CardTitle>
+                                        <CardTitle className="text-base">Veri Tablosu: Kullanıcılar</CardTitle>
                                          <DropdownMenu>
                                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowDownUp className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
@@ -239,7 +243,7 @@ export default function AnalyticsPage() {
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Bağış ve Gönüllülük (Sayısal)</CardTitle>
+                                        <CardTitle className="text-base">Veri Tablosu: Finansal & Operasyonel</CardTitle>
                                          <DropdownMenu>
                                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowDownUp className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
@@ -329,5 +333,4 @@ export default function AnalyticsPage() {
             </Card>
         </div>
     )
-
-    
+}

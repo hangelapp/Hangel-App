@@ -80,8 +80,8 @@ export default function SuperAdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold font-headline">Admin Paneli</h1>
-        <p className="text-muted-foreground">hangel platformunu buradan yönetebilirsiniz.</p>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Paneli Ana Sayfa</h1>
+        <p className="text-muted-foreground text-sm">hangel platformunun genel sağlığını, üyelik süreçlerini ve operasyonel araçlarını buradan denetleyin.</p>
       </div>
 
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -142,7 +142,7 @@ export default function SuperAdminDashboard() {
         <Card>
             <CardHeader>
                 <CardTitle>Yönetim Araçları</CardTitle>
-                <CardDescription>Platformun temel fonksiyonlarını buradan yönetin.</CardDescription>
+                <CardDescription>Platformun temel fonksiyonlarını ve sistem ayarlarını yapılandırın.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
                 {superAdminNavItems.map(item => (
