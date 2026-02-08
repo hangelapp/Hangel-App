@@ -108,12 +108,11 @@ const VisualAdCarousel = () => {
 
 /**
  * Güvenli Logo Bileşeni
- * Tarayıcı bazlı yükleme yapar ve hata durumunda harf logosuna düşer.
+ * Kırık görsel ikonlarını engellemek için fallback (yer tutucu) sistemine sahiptir.
  */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
-    // Eğer logo yüklenemezse veya hiç yoksa şık bir harf logosu göster
     if (hasError || !brand.logoUrl) {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase border shadow-inner">
@@ -155,7 +154,7 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // API Verilerini Çekme
+  // Üçlü Ajans Verilerini Çekme
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
@@ -174,10 +173,9 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
-    // Statik ve API verilerini birleştir
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Tekrar eden isimleri temizle (Deduplication)
+    // Tekilleştirme zaten Sunucu tarafında yapılıyor ama burada da bir kontrol ekliyoruz
     const uniqueBrandsMap = new Map();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -187,13 +185,11 @@ export default function MarketPage() {
     });
     filteredList = Array.from(uniqueBrandsMap.values());
 
-    // Arama filtresi
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
         filteredList = filteredList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
-    // Kategori filtresi
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (brandCategories && brandCategories.length > 0) {
@@ -205,17 +201,14 @@ export default function MarketPage() {
       }
     }
 
-    // Kurumsal tür filtresi
     if (activeEntityType !== 'all') {
       filteredList = filteredList.filter(item => item.type === activeEntityType);
     }
 
-    // Sadece bağış yapanlar
     if (onlyDonating) {
         filteredList = filteredList.filter(item => (item.donationRate || 0) > 0);
     }
     
-    // Sıralama
     filteredList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
