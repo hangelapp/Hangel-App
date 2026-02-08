@@ -1,3 +1,4 @@
+
 'use client';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
     Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Instagram, Facebook, Linkedin, 
-    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, Award, Calendar, ShoppingBag
+    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, Award, Calendar, ShoppingBag,
+    FileText, Eye
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
