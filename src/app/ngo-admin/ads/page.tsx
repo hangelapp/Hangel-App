@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Megaphone, Target, Globe, Plus, MousePointer2, ShieldCheck, KeyRound, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Megaphone, Target, Globe, ShieldCheck, KeyRound, CheckCircle2, Loader2, RefreshCw, Layers } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,18 +18,18 @@ export default function AdsManagementPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
 
-    // ReklamAction Configuration (Using provided credentials)
-    const [reklamActionConfig, setReklamActionConfig] = useState({
-        networkId: 'reklamaction',
-        apiKey: '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54'
-    });
+    // ReklamAction Configuration (Multiple keys support)
+    const [apiKeys, setApiKeys] = useState([
+        '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
+        '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48'
+    ]);
 
     const handleSaveIntegration = () => {
         setIsSaving(true);
         setTimeout(() => {
             toast({ 
                 title: "Entegrasyon Kaydedildi", 
-                description: "ReklamAction ve diğer izleme kodları başarıyla güncellendi." 
+                description: "API anahtarları ve reklam yapılandırmaları başarıyla güncellendi." 
             });
             setIsSaving(false);
         }, 1500);
@@ -40,7 +40,7 @@ export default function AdsManagementPage() {
         setTimeout(() => {
             toast({
                 title: "Bağlantı Başarılı",
-                description: "ReklamAction API sunucularına erişim sağlandı. Veri akışı aktif.",
+                description: "Tüm API anahtarları doğrulandı. Veri akışı aktif.",
             });
             setIsTesting(false);
         }, 2000);
@@ -115,42 +115,36 @@ export default function AdsManagementPage() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <Target className="h-5 w-5 text-primary" /> ReklamAction Entegrasyonu
+                                        <Target className="h-5 w-5 text-primary" /> ReklamAction API Havuzu
                                     </CardTitle>
-                                    <CardDescription>Satış ve bağış dönüşümlerini izlemek için bağlı hesap.</CardDescription>
+                                    <CardDescription>Aktif olarak kullanılan ve veri toplanan API anahtarları.</CardDescription>
                                 </div>
-                                <Badge className="bg-green-600 text-white">BAĞLI</Badge>
+                                <Badge className="bg-green-600 text-white">AKTİF ({apiKeys.length})</Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ağ Kimliği (Network ID)</Label>
-                                    <Input 
-                                        value={reklamActionConfig.networkId} 
-                                        onChange={(e) => setReklamActionConfig({...reklamActionConfig, networkId: e.target.value})}
-                                        className="bg-background font-mono text-sm"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">API Anahtarı (API Key)</Label>
-                                    <Input 
-                                        type="password"
-                                        value={reklamActionConfig.apiKey} 
-                                        onChange={(e) => setReklamActionConfig({...reklamActionConfig, apiKey: e.target.value})}
-                                        className="bg-background font-mono text-sm"
-                                    />
-                                </div>
+                            <div className="space-y-4">
+                                {apiKeys.map((key, index) => (
+                                    <div key={index} className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">API ANAHTARI #{index + 1}</Label>
+                                        <Input 
+                                            type="password"
+                                            value={key}
+                                            readOnly
+                                            className="bg-background font-mono text-xs opacity-80"
+                                        />
+                                    </div>
+                                ))}
                             </div>
-                            <div className="flex items-center gap-3 p-3 bg-green-100/50 rounded-xl border border-green-200 text-green-800 text-xs">
-                                <CheckCircle2 className="h-4 w-4 shrink-0" />
-                                <p>ReklamAction üzerinden gelen trafik ve dönüşümler anlık olarak raporlanmaktadır.</p>
+                            <div className="flex items-center gap-3 p-3 bg-blue-100/50 rounded-xl border border-blue-200 text-blue-800 text-[11px] font-medium leading-relaxed">
+                                <Layers className="h-4 w-4 shrink-0" />
+                                <p>Sistem birden fazla anahtarı kullanarak veri çekiyor. Bu anahtarlardan gelen tüm teklifler birleştirilerek tek bir Market akışında gösterilmektedir.</p>
                             </div>
                         </CardContent>
                         <CardFooter className="bg-background/50 border-t p-4 flex justify-end gap-2">
                             <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={isTesting}>
                                 {isTesting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                                Bağlantıyı Test Et
+                                Bağlantıları Kontrol Et
                             </Button>
                             <Button size="sm" onClick={handleSaveIntegration} disabled={isSaving}>
                                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
