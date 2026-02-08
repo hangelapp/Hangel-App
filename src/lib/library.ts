@@ -91,6 +91,21 @@ export const librarySections: LibrarySection[] = [
                 slug: 'bagiscilik-ve-etik',
                 title: "Bilinçli Bağışçılık: Etki Yaratmanın Yolları",
                 content: `<h4>Özet</h4><p>Peter Singer gibi düşünürlerin perspektifinden, bağış yaparken en yüksek etkiyi nasıl sağlayabileceğimizi sorgulayan bir eser.</p><h4>Kritik Sorular</h4><ul><li>Hangi soruna odaklanmalıyız?</li><li>Bağışımızın nereye gittiğini nasıl denetleriz?</li><li>Bireysel çaba tek başına yeterli mi?</li></ul>`
+            },
+            {
+                slug: 'bolluk-gelecek-sandiginizdan-daha-iyi',
+                title: "Bolluk: Gelecek Sandığınızdan Daha İyi",
+                content: `<h4>Açıklama</h4><p>Peter Diamandis ve Steven Kotler'in kaleme aldığı bu kitap, teknolojinin küresel sorunları (açlık, susuzluk, enerji) nasıl çözebileceğine dair iyimser ve bilimsel bir bakış açısı sunar.</p><h4>Sosyal Etki Notu</h4><p>Eser, sosyal girişimcilerin teknolojik imkanları kullanarak nasıl katlanarak artan (exponential) bir etki yaratabileceğini örneklerle açıklar.</p>`
+            },
+            {
+                slug: 'iyilik-uzerine-dusunceler',
+                title: "İyilik Üzerine Düşünceler",
+                content: `<h4>Özet</h4><p>Antik çağlardan günümüze 'iyilik' kavramının felsefi kökenlerini inceleyen bu kitap, modern hayırseverliğin etik temellerini sorgular.</p><h4>Neden Okumalısınız?</h4><p>Gönüllülük motivasyonunuzu güçlendirmek ve 'neden yardım ediyoruz?' sorusuna derin yanıtlar bulmak için ideal bir kaynaktır.</p>`
+            },
+            {
+                slug: 'sosyal-girisimcinin-el-kitabi',
+                title: "Sosyal Girişimcinin El Kitabı",
+                content: `<h4>Kılavuz Özeti</h4><p>Fikirden uygulamaya, bir sosyal girişimin tüm aşamalarını kapsayan pratik bir rehberdir. Kaynak geliştirme, ekip yönetimi ve sürdürülebilirlik konularında somut araçlar sunar.</p>`
             }
         ]
     },
@@ -109,6 +124,21 @@ export const librarySections: LibrarySection[] = [
                 slug: 'ben-daniel-blake',
                 title: "Ben, Daniel Blake (I, Daniel Blake)",
                 content: `<h4>Konu</h4><p>Modern refah devletindeki bürokratik engeller ve sivil dayanışmanın gerekliliği.</p><h4>Neden İzlenmeli?</h4><p>STK'ların neden bürokrasinin boşluklarını doldurması gerektiğini anlamak için en güçlü sinematik anlatılardan biridir.</p>`
+            },
+            {
+                slug: 'ruzgari-dizginleyen-cocuk',
+                title: "Rüzgarı Dizginleyen Çocuk",
+                content: `<h4>Hikaye</h4><p>Malavi'de yaşayan genç bir çocuğun, kütüphanedeki kitaplardan öğrendiği bilgilerle köyünü kuraklıktan kurtarmak için bir rüzgar türbini inşa etmesini konu alır.</p><h4>İlham Kaynağı</h4><p>Eğitimin, kütüphanelerin ve bireysel inovasyonun yerel topluluklar üzerindeki devrimsel etkisini gösteren gerçek bir hayat hikayesidir.</p>`
+            },
+            {
+                slug: 'lion',
+                title: "Lion",
+                content: `<h4>Konu</h4><p>Hindistan'da kaybolan ve Avustralyalı bir aile tarafından evlat edinilen bir gencin, yıllar sonra teknolojik imkanları (Google Earth) kullanarak köklerini bulma çabası.</p><h4>Sosyal Mesaj</h4><p>Kayıp çocuklar, evlat edinme süreçleri ve sivil toplum ağlarının küresel boyuttaki önemine vurgu yapar.</p>`
+            },
+            {
+                slug: 'parazit',
+                title: "Parazit (Parasite)",
+                content: `<h4>Analiz</h4><p>Sınıfsal farklılıklar, gelir adaletsizliği ve toplumsal ayrışma üzerine modern bir şaheser. Sosyal adaletin sağlanmadığı bir toplumun kırılganlığını çarpıcı bir dille anlatır.</p>`
             }
         ]
     },
@@ -127,6 +157,16 @@ export const librarySections: LibrarySection[] = [
                 slug: 'sosyal-dilemma',
                 title: "The Social Dilemma (Sosyal İkilem)",
                 content: `<h4>Açıklama</h4><p>Sosyal medyanın toplumsal algı ve sivil katılım üzerindeki etkilerini sorgulayan çarpıcı bir belgesel.</p><h4>Tartışma Konusu</h4><p>Dijital aktivizmin sınırları ve teknoloji şirketlerinin etik sorumlulukları.</p>`
+            },
+            {
+                slug: 'the-true-cost',
+                title: "The True Cost (Gerçek Bedel)",
+                content: `<h4>Konu</h4><p>Hızlı moda endüstrisinin çevresel ve insani maliyetlerini inceler. Giyim sektöründeki emek sömürüsü ve çevre kirliliği üzerine sarsıcı veriler sunar.</p><h4>Bilinçli Tüketim</h4><p>Markaların sosyal etki taahhütlerinin neden bu kadar kritik olduğunu anlamak için izlenmesi gereken bir yapımdır.</p>`
+            },
+            {
+                slug: 'gezegenimizden-bir-iz',
+                title: "David Attenborough: Gezegenimizden Bir İz",
+                content: `<h4>Vasiyet Niteliğinde</h4><p>Ünlü doğa bilimci David Attenborough'nun kariyeri boyunca doğadaki değişime tanıklığını ve insanlığın kurtuluşu için sunduğu çözüm önerilerini içerir.</p>`
             }
         ]
     },
@@ -140,7 +180,7 @@ export const librarySections: LibrarySection[] = [
           { slug: 'gonulluluk', title: 'Gönüllülük', content: '<p>Bireyin kendi özgür iradesiyle, maddi bir karşılık beklemeden, toplumsal fayda sağlamak amacıyla zamanını ve yetkinliklerini bir amaç uğruna seferber etmesidir.</p>' },
           { slug: 'surdurulebilirlik', title: 'SürdürülebilirliK', content: '<p>Mevcut ihtiyaçların, gelecek nesillerin kendi ihtiyaçlarını karşılama yeteneğinden ödün vermeden karşılanmasıdır. Sosyal, çevresel ve ekonomik boyutları bulunur.</p>' },
           { slug: 'seffaflik', title: 'Şeffaflık', content: '<p>Kuruluşların faaliyetleri, kararları ve finansal yapıları hakkındaki bilgileri paydaşları ve kamuoyu ile açık, anlaşılır ve erişilebilir bir şekilde paylaşmasıdır.</p>' },
-          { slug: 'hesap-verebilirlik', title: 'Hesap Verebilirlik', content: '<p>Bir kuruluşun aldığı kararların ve yürüttüğü faaliyetlerin sonuçlarını üstlenme ve paydaşlarına açıklama yükümlülüğüdür.</p>' },
+          { slug: 'hesap-verebilirlik', title: 'Hesap Verebilirlik', content: '<p>Bir kuruluşun aldığı kararların ve yürüttüğü faaliyetlerin sonuçlarını üstlenme ve paydaşlarına açıklama yükümlülükdür.</p>' },
           { slug: 'kaynak-gelistirme', title: 'Kaynak Geliştirme (Fundraising)', content: '<p>Bir kuruluşun misyonunu gerçekleştirmek için ihtiyaç duyduğu finansal ve ayni kaynakları bireylerden, kurumlardan veya fonlardan toplama sürecidir.</p>' },
           { slug: 'savunuculuk', title: 'Savunuculuk (Advocacy)', content: '<p>Belirli bir toplumsal sorunla ilgili farkındalık yaratmak, politika yapıcıları etkilemek ve yapısal değişiklikler sağlamak için yürütülen sistematik faaliyetlerdir.</p>' },
           { slug: 'paydas', title: 'Paydaş (Stakeholder)', content: '<p>Bir kuruluşun faaliyetlerinden etkilenen veya bu faaliyetleri etkileyen tüm kişi, grup ve kurumlardır (Gönüllüler, bağışçılar, faydalanıcılar vb.).</p>' },
