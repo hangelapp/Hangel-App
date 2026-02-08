@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Calendar, MapPin, Users, Heart, Zap } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Calendar, MapPin, Users, Heart, Zap, ExternalLink, Newspaper } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-                <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
+                <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
@@ -51,13 +51,21 @@ const EventLineup = ({ title, date, location, image, hint, description, category
     </div>
 );
 
-const Badge = ({ children, className, variant }: any) => (
+const Badge = ({ children, className }: any) => (
     <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold", className)}>
         {children}
     </span>
 );
 
 export default function AssociationEventsPage() {
+    const pressLinks = [
+        { source: "AA", title: "Türkiye'nin Sosyal Girişimcilik Etki Haritası", url: "https://www.aa.com.tr/tr/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikartilacak/1526753" },
+        { source: "TRT Haber", title: "Sosyal Girişimcilik Etki Haritası Çıkarılacak", url: "https://www.trthaber.com/haber/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikarilacak-422386.html" },
+        { source: "Akşam", title: "Uluslararası Çalıştay İstanbul'da Toplandı", url: "https://www.aksam.com.tr/guncel/uluslararasi-sosyal-girisimcilik-calistayi-istanbulda-toplandi/haber-1006693" },
+        { source: "Platin", title: "Sosyal Girişimcilik Zirvesi Düzce'de", url: "https://www.platinonline.com/girisimcilik/uluslararasi-sosyal-girisimcilik-zirvesi-ilk-kez-duzcede-1012108" },
+        { source: "Hürriyet", title: "Rekabetin Yeni Adı: Sosyal Fayda", url: "https://www.hurriyet.com.tr/yazarlar/sibel-bagci-uzun/rekabetin-yeni-adi-sosyal-fayda-41862206" }
+    ];
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="events" />
@@ -97,16 +105,34 @@ export default function AssociationEventsPage() {
                     image="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
                     hint="university students seminar"
                 />
-                <EventLineup 
-                    category="LOJİSTİK DESTEK"
-                    title="Afet Dönemi Yakıt & İlaç Köprüsü"
-                    date="2023"
-                    location="Gaziantep, Hatay, Suriye"
-                    description="Shell Türkiye desteğiyle 120 ton yakıt dağıtımı (70 tonu Ahbap ile) ve Romanya partnerimizle 2 TIR ilaç sevkiyatı gerçekleştirdik."
-                    image="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
-                    hint="truck delivery logistics"
-                />
             </div>
+
+            {/* Basında Biz Section */}
+            <section className="py-32 bg-white border-t border-black/5">
+                <div className="container mx-auto px-6 max-w-4xl">
+                    <div className="flex items-center gap-3 mb-12">
+                        <Newspaper className="h-8 w-8 text-primary" />
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1d1d1f]">Basında Biz.</h2>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                        {pressLinks.map((link, i) => (
+                            <a 
+                                key={i} 
+                                href={link.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="group flex items-center justify-between p-6 bg-[#f5f5f7] rounded-2xl hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-black/5"
+                            >
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">{link.source}</span>
+                                    <h4 className="text-lg font-bold text-[#1d1d1f] group-hover:text-primary transition-colors">{link.title}</h4>
+                                </div>
+                                <ExternalLink className="h-5 w-5 text-[#1d1d1f]/20 group-hover:text-primary transition-colors" />
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
             <section className="bg-black text-white py-32 text-center">
                 <div className="container mx-auto px-6 max-w-4xl space-y-8">

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Globe, Users, Target, Rocket, Database, BookOpen } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Globe, Users, Target, Rocket, Database, BookOpen, Library } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-                <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
+                <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
@@ -65,7 +65,7 @@ export default function AssociationWorkshopPage() {
             <section className="bg-[#f5f5f7] py-32 border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-5xl">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                        <div className="space-y-6">
+                        <div className="space-y-6 text-left">
                             <Database className="h-12 w-12 text-primary" />
                             <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Sosyal Girişim Big Data.</h2>
                             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
@@ -80,6 +80,31 @@ export default function AssociationWorkshopPage() {
                 </div>
             </section>
 
+            {/* Girişimcilik Kütüphanesi Section */}
+            <section className="py-32 bg-white border-b border-black/5">
+                <div className="container mx-auto px-6 max-w-5xl text-center space-y-16">
+                    <div className="space-y-4">
+                        <Library className="h-12 w-12 text-primary mx-auto" />
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Girişimcilik Kütüphanesi.</h2>
+                        <p className="text-xl text-muted-foreground font-medium max-w-3xl mx-auto">
+                            21 girişimcilik merkezinde kurulumuna başladığımız kütüphane ağıyla, bilgi ve tecrübe temelli yol haritaları sunuyoruz.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                        {[
+                            { name: "İTO BTM", desc: "Dünyanın en iyi 5. girişimcilik merkezi." },
+                            { name: "Girişim360", desc: "Batman İl Milli Eğitim Müdürlüğü bünyesinde." },
+                            { name: "Denizakvaryum", desc: "Denizbank işbirliği ile inovasyon odağında." }
+                        ].map((partner, i) => (
+                            <div key={i} className="p-8 bg-[#f5f5f7] rounded-[2rem] text-left space-y-2 hover:bg-primary hover:text-white transition-colors group">
+                                <h4 className="font-bold text-xl">{partner.name}</h4>
+                                <p className="text-sm opacity-70 group-hover:text-white/80">{partner.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             <ShowcaseSection 
                 theme="dark"
                 title="Akademik Öncülük."
@@ -89,24 +114,6 @@ export default function AssociationWorkshopPage() {
                 image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
                 hint="academic meeting discussion"
             />
-
-            <section className="py-32 bg-white text-center">
-                <div className="container mx-auto px-6 max-w-4xl space-y-16">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Geleceğin Müfredatı.</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
-                        <div className="p-10 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
-                            <BookOpen className="h-8 w-8 text-primary group-hover:text-white" />
-                            <h3 className="text-xl font-bold group-hover:text-white">YÖK Onaylı Müfredat</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">Maltepe Üniversitesi'nde hazırladığımız 'Uygulamalı Sosyal Girişimcilik' dersi YÖK onayıyla genel müfredata girdi.</p>
-                        </div>
-                        <div className="p-10 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
-                            <Rocket className="h-8 w-8 text-primary group-hover:text-white" />
-                            <h3 className="text-xl font-bold group-hover:text-white">Bilimsel Destek</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">2 Doktora, 3 Yüksek Lisans tezi ve 2 akademik makaleye veri ve kaynak desteği sağlayarak literatürü güçlendirdik.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <PublicFooter currentPageLabel="Uluslararası Çalıştay" />
         </div>

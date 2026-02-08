@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, Globe, Rocket } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-                <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
+                <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
@@ -126,14 +126,39 @@ export default function AssociationAboutPage() {
                 </div>
             </section>
 
-            {/* Vision */}
+            {/* Financial Transparency */}
             <AppleSection 
-                title="Küresel Bir Sosyal Etki Ağı."
-                subtitle="Türkiye'den dünyaya yayılan bir model."
-                description="Türkiye merkezli, etik değerler temelinde kurumsallaşmış ve farklı ülkelerde temsilciliklerle genişleyen bütüncül bir ekosistem kurmak için çalışıyoruz."
-                imageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
-                imageHint="network graph global connections"
+                title="Şeffaf Kaynak Yönetimi."
+                subtitle="Her kuruş toplumsal faydaya."
+                description="Ortaköy Kethüda Hamamı sergi geliri olan 2.000.000 TL ve Kitipto Network bağışı olan 480.000 TL'nin tamamı Hatay Örnek Köy Projesi'ne aktarılmıştır."
+                imageUrl="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop"
+                imageHint="coins gold stack donation"
             />
+
+            {/* Vision 2030 */}
+            <AppleSection 
+                theme="dark"
+                title="Gelecek 5 Yıl."
+                subtitle="Küresel bir sosyal etki ağı."
+                description="İngiltere, Nijerya, Kongo, Malezya, Azerbaycan ve KKTC ile temsilcilik görüşmelerimiz başladı. Türkiye'den dünyaya yayılan bütüncül bir ekosistem kuruyoruz."
+                className="bg-[#1d1d1f]"
+            >
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
+                    {[
+                        { name: "İngiltere", icon: Globe },
+                        { name: "Azerbaycan", icon: Target },
+                        { name: "Malezya", icon: Rocket },
+                        { name: "Nijerya", icon: Users },
+                        { name: "KKTC", icon: ShieldCheck },
+                        { name: "Kongo", icon: Heart }
+                    ].map((item, i) => (
+                        <div key={i} className="flex flex-col items-center gap-2">
+                            <item.icon className="h-8 w-8 text-primary" />
+                            <span className="text-xs font-bold uppercase tracking-widest opacity-60">{item.name}</span>
+                        </div>
+                    ))}
+                </div>
+            </AppleSection>
 
             <PublicFooter currentPageLabel="Dernek Hakkında" />
         </div>
