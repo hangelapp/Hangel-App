@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -14,14 +13,18 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import * as Icons from 'lucide-react';
-import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2, Sparkles, BookOpen, Target, Users, ClipboardCheck, Wallet, LineChart, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2, Sparkles, BookOpen, Target, Users, ClipboardCheck, Wallet, LineChart, ThumbsUp, ThumbsDown, Landmark, Building2, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { librarySections, type LibrarySection, type LibraryItem } from '@/lib/library';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { askLibraryAssistant } from '@/ai/flows/library-ai-assistant';
+import { writeProjectProposal } from '@/ai/flows/project-writer-flow';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 const DictionaryItem = ({ item }: { item: LibraryItem }) => {
     const { toast } = useToast();
@@ -86,17 +89,26 @@ export default function LibraryPage() {
 
   // Project Assistant State
   const [isProjectAssistantOpen, setIsProjectAssistantOpen] = useState(false);
-  const [projectQuestion, setProjectQuestion] = useState('');
-  const [projectChatHistory, setProjectChatHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [isProjectLoading, setIsProjectLoading] = useState(false);
+  const [projectResult, setProjectResult] = useState<string | null>(null);
+  
+  const [projectForm, setProjectForm] = useState({
+    institution: '',
+    summary: '',
+    goals: '',
+    audience: '',
+    activities: '',
+    budget: '',
+    impact: ''
+  });
 
   const projectSteps = [
-    { label: 'Proje Özeti', icon: BookOpen, prompt: 'Projemin kısa bir özetini hazırlamama yardım et.' },
-    { label: 'Amaç ve Hedefler', icon: Target, prompt: 'Projemin amaç ve hedeflerini (SMART) nasıl belirlemeliyim?' },
-    { label: 'Hedef Kitle', icon: Users, prompt: 'Projemin hedef kitlesini ve paydaş analizini yapalım.' },
-    { label: 'Faaliyet Planı', icon: ClipboardCheck, prompt: 'Adım adım bir faaliyet takvimi oluşturmama yardım et.' },
-    { label: 'Bütçe Planlama', icon: Wallet, prompt: 'Projem için temel bütçe kalemlerini belirleyelim.' },
-    { label: 'Etki Ölçümleme', icon: LineChart, prompt: 'Projemin sosyal etkisini nasıl ölçeceğim?' },
+    { id: 'summary', label: 'Proje Özeti', icon: BookOpen, placeholder: 'Projenizin temel fikrini birkaç cümleyle açıklayın...' },
+    { id: 'goals', label: 'Amaç ve Hedefler', icon: Target, placeholder: 'Neyi başarmak istiyorsunuz? SMART hedeflerinizi belirtin...' },
+    { id: 'audience', label: 'Hedef Kitle', icon: Users, placeholder: 'Proje kimlere fayda sağlayacak? Paydaşlarınız kimler?' },
+    { id: 'activities', label: 'Faaliyet Planı', icon: ClipboardCheck, placeholder: 'Hangi adımları atacaksınız? Uygulama takviminiz nasıl?' },
+    { id: 'budget', label: 'Bütçe Planlama', icon: Wallet, placeholder: 'Tahmini maliyetler ve kaynak ihtiyaçları nelerdir?' },
+    { id: 'impact', label: 'Etki Ölçümleme', icon: LineChart, placeholder: 'Başarıyı nasıl ölçeceksiniz? Hangi göstergeleri kullanacaksınız?' },
   ];
 
   const filteredAndSortedLibrarySections = useMemo(() => {
@@ -171,28 +183,43 @@ export default function LibraryPage() {
     }
   }, [assistantQuestion, toast]);
 
-  const handleAskProjectAssistant = useCallback(async (customPrompt?: string) => {
-    const userMsg = customPrompt || projectQuestion;
-    if (!userMsg.trim()) return;
+  const handleGenerateProject = async () => {
+    if (!projectForm.institution) {
+        toast({ variant: 'destructive', title: 'Kurum Seçimi Gerekli', description: 'Lütfen başvurulacak kurumu seçin.' });
+        return;
+    }
 
-    setProjectChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
-    setProjectQuestion('');
     setIsProjectLoading(true);
+    setProjectResult(null);
 
     try {
-        // Simulate Project Assistant logic with methodology focus
-        setTimeout(() => {
-            setProjectChatHistory(prev => [...prev, { 
-                role: 'assistant', 
-                content: `Sosyal sorumluluk projesi yazım esaslarına göre "${userMsg}" talebiniz üzerine çalışalım. \n\nİyi bir proje dosyası için net bir mantıksal çerçeve (logical framework) kurmalıyız. Projenizin sürdürülebilirliğini sağlamak adına kaynak yönetimi ve etki raporlaması adımlarını kütüphanemizdeki güncel verilerle destekleyebilirim. Hangi aşamadan devam edelim?` 
-            }]);
-            setIsProjectLoading(false);
-        }, 1500);
+        const libraryContext = librarySections.map(section => 
+            `Kategori: ${section.title}, Açıklama: ${section.description}, İçerikler: ${section.items.map(i => `${i.title} (Özet: ${i.content.replace(/<[^>]*>?/gm, '').slice(0, 150)}...)`).join('; ')}`
+        ).join('\n---\n');
+
+        const result = await writeProjectProposal({
+            institution: projectForm.institution,
+            sections: {
+                summary: projectForm.summary,
+                goals: projectForm.goals,
+                audience: projectForm.audience,
+                activities: projectForm.activities,
+                budget: projectForm.budget,
+                impact: projectForm.impact
+            },
+            libraryContext
+        });
+
+        if (result.fullProposal) {
+            setProjectResult(result.fullProposal);
+        }
     } catch (error) {
-      console.error(error);
-      setIsProjectLoading(false);
+        console.error(error);
+        toast({ variant: 'destructive', title: 'Hata', description: 'Proje oluşturulurken bir sorun oluştu.' });
+    } finally {
+        setIsProjectLoading(false);
     }
-  }, [projectQuestion]);
+  };
 
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0 bg-secondary min-h-screen pb-24">
@@ -286,8 +313,8 @@ export default function LibraryPage() {
                     <Sparkles className="h-7 w-7 text-white" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px] h-[650px] flex flex-col p-0 gap-0">
-                <DialogHeader className="p-4 border-b bg-indigo-600 text-white rounded-t-lg">
+            <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+                <DialogHeader className="p-4 border-b bg-indigo-600 text-white rounded-t-lg shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/20 rounded-lg">
                             <Sparkles className="h-6 w-6" />
@@ -295,89 +322,103 @@ export default function LibraryPage() {
                         <div className="text-left">
                             <DialogTitle className="text-lg">Proje Yazım Asistanı</DialogTitle>
                             <DialogDescription className="text-xs text-white/80">
-                                Sosyal etki metodolojisine uygun proje tasarımı.
+                                Kurumsal standartlarda sosyal sorumluluk projesi tasarımı.
                             </DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
                 
-                <ScrollArea className="flex-1 p-4 bg-muted/30">
-                    <div className="space-y-6">
-                        {projectChatHistory.length === 0 && (
-                            <div className="space-y-6 py-2">
-                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                                    <p className="text-sm font-semibold text-indigo-900 mb-1">Merhaba! Proje yolculuğuna hoş geldin.</p>
-                                    <p className="text-xs text-indigo-700 leading-relaxed">
-                                        Etkili bir sosyal sorumluluk projesi yazmak için aşağıdaki adımları takip edebiliriz. Hangi bölümden başlamak istersin?
-                                    </p>
-                                </div>
-                                
-                                <div className="grid grid-cols-2 gap-2">
+                <ScrollArea className="flex-1 p-6 bg-muted/30">
+                    {!projectResult ? (
+                        <div className="space-y-8">
+                            <div className="space-y-2">
+                                <Label className="text-indigo-900 font-bold uppercase tracking-widest text-[10px]">1. Başvurulacak Kurum</Label>
+                                <Select value={projectForm.institution} onValueChange={(val) => setProjectForm(prev => ({...prev, institution: val}))}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-white border-indigo-100 shadow-sm focus:ring-indigo-600">
+                                        <SelectValue placeholder="Kurum seçiniz..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Avrupa Birliği (AB) / Erasmus+">Avrupa Birliği (AB) / Erasmus+</SelectItem>
+                                        <SelectItem value="UNDP / Birleşmiş Milletler">UNDP / Birleşmiş Milletler</SelectItem>
+                                        <SelectItem value="Kalkınma Ajansı">Kalkınma Ajansı</SelectItem>
+                                        <SelectItem value="T.C. İçişleri Bakanlığı">T.C. İçişleri Bakanlığı</SelectItem>
+                                        <SelectItem value="Özel Sektör / Kurumsal Fonlar">Özel Sektör / Kurumsal Fonlar</SelectItem>
+                                        <SelectItem value="Büyükelçilik Fonları">Büyükelçilik Fonları</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-indigo-900 font-bold uppercase tracking-widest text-[10px]">2. Proje Taslak Bilgileri</Label>
+                                <Accordion type="single" collapsible className="w-full space-y-2">
                                     {projectSteps.map(step => (
-                                        <Button 
-                                            key={step.label} 
-                                            variant="outline" 
-                                            className="h-auto py-3 px-3 flex flex-col items-center justify-center gap-2 bg-white hover:bg-indigo-50 hover:border-indigo-200 transition-all text-xs font-bold"
-                                            onClick={() => handleAskProjectAssistant(step.prompt)}
-                                        >
-                                            <step.icon className="h-5 w-5 text-indigo-600" />
-                                            <span className="text-center">{step.label}</span>
-                                        </Button>
+                                        <AccordionItem key={step.id} value={step.id} className="border rounded-xl bg-white overflow-hidden shadow-sm">
+                                            <AccordionTrigger className="px-4 py-3 hover:no-underline font-semibold text-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <step.icon className="h-4 w-4 text-indigo-600" />
+                                                    {step.label}
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="p-4 pt-0">
+                                                <Textarea 
+                                                    placeholder={step.placeholder}
+                                                    className="min-h-[100px] border-none bg-muted/30 focus-visible:ring-0 text-sm"
+                                                    value={projectForm[step.id as keyof typeof projectForm]}
+                                                    onChange={(e) => setProjectForm(prev => ({...prev, [step.id]: e.target.value}))}
+                                                />
+                                            </AccordionContent>
+                                        </AccordionItem>
                                     ))}
-                                </div>
+                                </Accordion>
                             </div>
-                        )}
-                        
-                        {projectChatHistory.map((msg, i) => (
-                            <div key={i} className={cn(
-                                "flex items-start gap-3 animate-in fade-in-0 slide-in-from-bottom-2",
-                                msg.role === 'user' ? "flex-row-reverse" : "flex-row"
-                            )}>
-                                <Avatar className="h-8 w-8 shrink-0">
-                                    {msg.role === 'assistant' ? (
-                                        <div className="bg-indigo-100 h-full w-full flex items-center justify-center">
-                                            <Sparkles className="h-4 w-4 text-indigo-600" />
-                                        </div>
-                                    ) : (
-                                        <AvatarFallback className="bg-muted text-[10px]">SEN</AvatarFallback>
-                                    )}
-                                </Avatar>
-                                <div className={cn(
-                                    "p-3.5 rounded-2xl text-sm max-w-[85%] leading-relaxed",
-                                    msg.role === 'user' 
-                                        ? "bg-indigo-600 text-white rounded-tr-none shadow-md" 
-                                        : "bg-background border rounded-tl-none shadow-sm"
-                                )}>
-                                    {msg.content}
-                                </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-bold text-lg text-indigo-900">Hazırlanan Proje Dosyası</h3>
+                                <Button variant="outline" size="sm" onClick={() => setProjectResult(null)}>Düzenlemeye Dön</Button>
                             </div>
-                        ))}
-                        {isProjectLoading && (
-                            <div className="flex items-start gap-3">
-                                <Avatar className="h-8 w-8 bg-indigo-100">
-                                    <Sparkles className="h-4 w-4 text-indigo-600 m-auto animate-pulse" />
-                                </Avatar>
-                                <div className="p-3 bg-background border rounded-2xl rounded-tl-none">
-                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            <div className="p-6 bg-white border rounded-3xl shadow-sm prose prose-sm max-w-none prose-indigo">
+                                <div className="flex justify-end mb-4">
+                                    <Button variant="ghost" size="sm" onClick={() => { navigator.clipboard.writeText(projectResult); toast({title: 'Kopyalandı'}); }}>
+                                        <Icons.Copy className="h-4 w-4 mr-2" /> Kopyala
+                                    </Button>
                                 </div>
+                                <div dangerouslySetInnerHTML={{ __html: projectResult.replace(/\n/g, '<br/>') }} />
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </ScrollArea>
 
-                <div className="p-4 border-t bg-background">
-                    <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); handleAskProjectAssistant(); }}>
-                        <Input 
-                            placeholder="Projenin amacından bahset..." 
-                            value={projectQuestion}
-                            onChange={(e) => setProjectQuestion(e.target.value)}
-                            disabled={isProjectLoading}
-                            className="flex-1 h-11 rounded-xl focus-visible:ring-indigo-600"
-                        />
-                        <Button type="submit" size="icon" disabled={isProjectLoading || !projectQuestion.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 w-11 rounded-xl">
-                            <Send className="h-5 w-5" />
+                <div className="p-4 border-t bg-background shrink-0">
+                    {!projectResult ? (
+                        <Button 
+                            className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base shadow-xl shadow-indigo-200"
+                            onClick={handleGenerateProject}
+                            disabled={isProjectLoading || !projectForm.institution}
+                        >
+                            {isProjectLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Yapay Zeka Projeyi Yazıyor...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="mr-2 h-5 w-5" />
+                                    Projeyi Kurum Esaslarına Göre Oluştur
+                                </>
+                            )}
                         </Button>
-                    </form>
+                    ) : (
+                        <div className="flex gap-2">
+                            <Button variant="outline" className="flex-1 h-12 rounded-xl border-indigo-200 text-indigo-700 font-bold" onClick={() => toast({title: 'PDF Hazırlanıyor'})}>
+                                <Icons.Download className="mr-2 h-5 w-5" /> PDF İndir
+                            </Button>
+                            <Button className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold" onClick={() => toast({title: 'Paylaşım Menüsü'})}>
+                                <Icons.Share2 className="mr-2 h-5 w-5" /> Projeyi Paylaş
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>
