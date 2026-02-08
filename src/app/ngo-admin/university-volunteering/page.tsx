@@ -63,11 +63,6 @@ export default function UniversityVolunteeringPage() {
                         </CardContent>
                     </Card>
                 ))}
-                <Card className="border-dashed border-2 flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => toast({title: "Üniversite Ekle", description: "Yeni üniversite işbirliği protokolü hazırlama formu açılıyor."})}>
-                    <Plus className="h-10 w-10 text-muted-foreground mb-2" />
-                    <p className="text-sm font-bold">Yeni Üniversite Bağla</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Akademik protokol başlatmak için tıkla.</p>
-                </Card>
             </div>
 
             <Card>
