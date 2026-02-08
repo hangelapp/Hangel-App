@@ -21,7 +21,8 @@ export default function AdsManagementPage() {
     // ReklamAction Configuration (Multiple keys)
     const [apiKeys, setApiKeys] = useState([
         '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
-        '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48'
+        '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48',
+        '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3'
     ]);
 
     const handleSaveIntegration = () => {
@@ -137,7 +138,7 @@ export default function AdsManagementPage() {
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-blue-100/50 rounded-xl border border-blue-200 text-blue-800 text-[11px] font-medium leading-relaxed">
                                 <Layers className="h-4 w-4 shrink-0" />
-                                <p>Her iki anahtardan gelen teklifler otomatik olarak birleştirilir ve benzersiz olanlar Market sayfasında listelenir.</p>
+                                <p>Tüm anahtarlardan gelen teklifler otomatik olarak birleştirilir ve benzersiz olanlar Market sayfasında listelenir.</p>
                             </div>
                         </CardContent>
                         <CardFooter className="bg-background/50 border-t p-4 flex justify-end gap-2">

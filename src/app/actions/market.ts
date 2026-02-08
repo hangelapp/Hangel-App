@@ -2,12 +2,13 @@
 
 /**
  * ReklamAction API'lerinden teklifleri (markaları) çeken sunucu eylemi.
- * Birden fazla API anahtarını destekleyecek ve verileri temizleyerek birleştirecek şekilde güncellendi.
+ * Üç farklı API anahtarını destekleyecek ve verileri temizleyerek birleştirecek şekilde güncellendi.
  */
 export async function getApiOffers() {
     const API_KEYS = [
         "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54",
-        "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48"
+        "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48",
+        "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3"
     ];
     const url = "https://api.reklamaction.com/v1/offer?network=reklamaction";
 
@@ -45,7 +46,7 @@ export async function getApiOffers() {
         // Tüm teklifleri tek bir dizide topla
         const allOffers = results.flat();
 
-        // Aynı ID'ye veya isme sahip teklifleri temizle (Mükerrer kaydı önle)
+        // Aynı isme sahip teklifleri temizle (Mükerrer kaydı önle)
         const uniqueOffersMap = new Map();
         
         const processedBrands = allOffers.map((m: any) => {
@@ -62,7 +63,7 @@ export async function getApiOffers() {
                 name: m.name,
                 category: (m.categories && m.categories[0]?.name) || 'Diğer',
                 type: 'brand' as const,
-                logoUrl: m.logo || `https://logo.clearbit.com/${m.name.toLowerCase().replace(/\s+/g, '')}.com`,
+                logoUrl: m.logo || `https://www.google.com/s2/favicons?domain=${m.name.toLowerCase().replace(/\s+/g, '')}.com&sz=128`,
                 donationRate: cleanPayout,
                 donationRateDisplay: isFixed ? `${cleanPayout} ₺` : `%${cleanPayout}`,
                 followers: Math.floor(Math.random() * 50000) + 500,
@@ -72,14 +73,14 @@ export async function getApiOffers() {
         }).filter(Boolean);
 
         processedBrands.forEach((brand: any) => {
-            const key = brand.name.toLowerCase();
+            const key = brand.name.toLowerCase().trim();
             if (!uniqueOffersMap.has(key)) {
                 uniqueOffersMap.set(key, brand);
             }
         });
 
         const finalOffers = Array.from(uniqueOffersMap.values());
-        console.log(`API Fetch Complete: ${finalOffers.length} unique brands processed.`);
+        console.log(`API Fetch Complete: ${finalOffers.length} unique brands processed from ${API_KEYS.length} keys.`);
         
         return finalOffers;
     } catch (e) {
