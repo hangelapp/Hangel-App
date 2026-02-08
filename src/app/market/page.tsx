@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
@@ -128,7 +127,7 @@ export default function MarketPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const brandsToShow = useMemo(() => {
-    let filteredList: Brand[] = allEntityLists;
+    let filteredList: Brand[] = [...allEntityLists];
 
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
@@ -411,10 +410,10 @@ export default function MarketPage() {
                     return (
                     <Fragment key={brand.id}>
                         <Link href={`/market/${brand.id}`} className="group">
-                            <div className="flex flex-col items-center text-center space-y-3 p-1 transition-all duration-300">
+                            <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
-                                    <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
-                                        <div className="relative w-full h-full p-2">
+                                    <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all p-2 sm:p-3">
+                                        <div className="relative w-full h-full">
                                             <Image 
                                                 src={brand.logoUrl} 
                                                 alt={brand.name} 
@@ -425,12 +424,12 @@ export default function MarketPage() {
                                         </div>
                                     </div>
                                     {brand.donationRate > 0 && (
-                                        <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#f34723] text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">
+                                        <div className="absolute top-0 right-0 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-[#f34723] text-[9px] sm:text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">
                                         %{brand.donationRate}
                                         </div>
                                     )}
                                 </div>
-                                <p className="text-[12px] font-bold text-[#042654] leading-tight group-hover:text-primary transition-colors px-1">{brand.name}</p>
+                                <p className="text-[10px] sm:text-[12px] font-bold text-[#042654] leading-tight group-hover:text-primary transition-colors px-1 line-clamp-2">{brand.name}</p>
                             </div>
                         </Link>
                         {index === 5 && (
