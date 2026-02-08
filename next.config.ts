@@ -47,6 +47,18 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'reklamaction.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.reklamaction.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

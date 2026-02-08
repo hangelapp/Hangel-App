@@ -1,9 +1,10 @@
+
 'use client';
 
-import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
+import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Camera, Filter, ArrowDownUp, Bot } from 'lucide-react';
+import { Search, Camera, Filter, ArrowDownUp, Bot, Loader2 } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,25 @@ import {
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Server Action equivalent for fetching API data
+async function getApiOffers() {
+    const API_KEY = "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
+    const url = "https://api.reklamaction.com/v1/offer?network=reklamaction";
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`
+            }
+        });
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result.data || [];
+    } catch (e) {
+        console.error("API Error:", e);
+        return null;
+    }
+}
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -113,6 +133,8 @@ export default function MarketPage() {
   const [sortKey, setSortKey] = useState('followers');
   const [onlyDonating, setOnlyDonating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [apiBrands, setApiBrands] = useState<Brand[]>([]);
+  const [isApiLoading, setIsApiLoading] = useState(false);
 
   // AI Assistant State
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -126,8 +148,37 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch API Data on Mount
+  useEffect(() => {
+    const fetchOffers = async () => {
+        setIsApiLoading(true);
+        const data = await getApiOffers();
+        if (data && Array.isArray(data)) {
+            const mappedBrands: Brand[] = data.map((offer: any) => ({
+                id: `ra-${offer.id}`,
+                name: offer.name,
+                category: (offer.categories && offer.categories[0]?.name) || 'Diğer',
+                type: 'brand',
+                logoUrl: offer.logo_url || offer.thumbnail_url || 'https://placehold.co/400x400?text=' + encodeURIComponent(offer.name),
+                donationRate: parseFloat(offer.payout?.replace('%', '')) || 5,
+                followers: Math.floor(Math.random() * 100000) + 1000,
+                about: offer.description || offer.name + " markası hangel ekosisteminde sosyal fayda sağlamaktadır.",
+                link: offer.preview_url
+            }));
+            setApiBrands(mappedBrands);
+        }
+        setIsApiLoading(false);
+    };
+    fetchOffers();
+  }, []);
+
   const brandsToShow = useMemo(() => {
-    let filteredList: Brand[] = [...allEntityLists];
+    // Combine static and API brands
+    let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
+
+    // Remove duplicates by name if any (API might return brands already in static list)
+    const uniqueBrands = Array.from(new Map(filteredList.map(item => [item.name.toLowerCase(), item])).values());
+    filteredList = uniqueBrands;
 
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
@@ -139,7 +190,8 @@ export default function MarketPage() {
       if (brandCategories && brandCategories.length > 0) {
         filteredList = filteredList.filter(brand => brandCategories.includes(brand.category));
       } else {
-        filteredList = [];
+        // Simple fallback check for categories not explicitly in mapping but present in API
+        filteredList = filteredList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
     }
 
@@ -170,7 +222,7 @@ export default function MarketPage() {
     
     return filteredList;
 
-  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm]);
+  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands]);
   
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;
@@ -179,7 +231,7 @@ export default function MarketPage() {
     setAssistantResponse('');
 
     try {
-        const brandsContext = allEntityLists.map(b => 
+        const brandsContext = brandsToShow.slice(0, 50).map(b => 
             `Marka: ${b.name}, Kategori: ${b.category}, Bağış Oranı: %${b.donationRate}, Tür: ${b.type}, Hakkında: ${b.about || 'Bilgi yok.'}`
         ).join('\n---\n');
 
@@ -202,7 +254,7 @@ export default function MarketPage() {
       setIsAssistantLoading(false);
       setAssistantQuestion('');
     }
-  }, [assistantQuestion, toast]);
+  }, [assistantQuestion, brandsToShow, toast]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -217,7 +269,7 @@ export default function MarketPage() {
             title: "Özellik Yakında",
             description: "Görsel arama sonuçları yakında bu ekranda görüntülenecektir.",
           });
-        }, 3000); // Simulate search for 3 seconds
+        }, 3000); 
       };
       reader.readAsDataURL(file);
     }
@@ -279,7 +331,7 @@ export default function MarketPage() {
                                             <Image src={visualSearchImage} alt="Yüklenen görsel" fill className="object-contain rounded-lg" />
                                             {isVisualSearching && (
                                                 <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-lg">
-                                                    <div className="animate-pulse rounded-full bg-muted h-12 w-12" />
+                                                    <Loader2 className="h-12 w-12 text-white animate-spin" />
                                                     <p className="text-white mt-2">Benzer ürünler aranıyor...</p>
                                                 </div>
                                             )}
@@ -349,7 +401,7 @@ export default function MarketPage() {
                         <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>
-                            Sadece Bağış Yapanlar
+                            Sadece Bağış Yapanlar {isApiLoading && <Loader2 className="ml-2 h-3 w-3 animate-spin inline" />}
                         </DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -402,14 +454,17 @@ export default function MarketPage() {
 
             <main className="w-3/4 flex-1 overflow-y-auto p-2">
             <div>
-                <h2 className="font-bold text-sm sm:text-base mb-2 px-2">
-                {activeCategory}
-                </h2>
+                <div className="flex items-center justify-between px-2 mb-2">
+                    <h2 className="font-bold text-sm sm:text-base">
+                        {activeCategory}
+                    </h2>
+                    {isApiLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
                     return (
                     <Fragment key={brand.id}>
-                        <Link href={`/market/${brand.id}`} className="group">
+                        <Link href={brand.link || `/market/${brand.id}`} target={brand.id.startsWith('ra-') ? "_blank" : "_self"} className="group">
                             <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
                                     <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all p-2 sm:p-3">
