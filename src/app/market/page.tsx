@@ -113,6 +113,7 @@ const VisualAdCarousel = () => {
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
+    // Eğer logo yüklenemezse veya hiç yoksa şık bir harf logosu göster
     if (hasError || !brand.logoUrl) {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase border shadow-inner">
@@ -176,7 +177,7 @@ export default function MarketPage() {
     // Statik ve API verilerini birleştir
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Tekrar eden isimleri temizle
+    // Tekrar eden isimleri temizle (Deduplication)
     const uniqueBrandsMap = new Map();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -211,7 +212,7 @@ export default function MarketPage() {
 
     // Sadece bağış yapanlar
     if (onlyDonating) {
-        filteredList = filteredList.filter(item => item.donationRate > 0);
+        filteredList = filteredList.filter(item => (item.donationRate || 0) > 0);
     }
     
     // Sıralama
@@ -387,13 +388,13 @@ export default function MarketPage() {
                                 </div>
                             )}
                             <div className="flex items-center gap-2">
-                                <Input
+                                <input
                                     placeholder="Örn: Sürdürülebilir spor ayakkabı..."
                                     value={assistantQuestion}
                                     onChange={(e) => setAssistantQuestion(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
                                     disabled={isAssistantLoading}
-                                    className="rounded-xl h-11"
+                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 />
                                 <Button onClick={handleAskAssistant} disabled={isAssistantLoading || !assistantQuestion.trim()} className="rounded-xl h-11 px-6">Sor</Button>
                             </div>
@@ -508,14 +509,10 @@ export default function MarketPage() {
                     </Fragment>
                 )}) : (
                     <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
-                        {isApiLoading ? (
-                            <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
-                        ) : (
-                            <div className="text-center space-y-2">
-                                <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-                                <p className="text-muted-foreground text-sm font-medium">Bu kategoride marka bulunamadı.</p>
-                            </div>
-                        )}
+                        <div className="text-center space-y-2">
+                            <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+                            <p className="text-muted-foreground text-sm font-medium">Bu kategoride marka bulunamadı.</p>
+                        </div>
                     </div>
                 )}
                 </div>

@@ -18,11 +18,11 @@ export default function AdsManagementPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
 
-    // Entegre edilen 3 ajans bilgisi
+    // Aktif 3 ajans bilgisi
     const agencies = [
-        { id: 'go', name: 'Gelir Ortakları', key: '891bae...9cd3', status: 'Aktif' },
-        { id: 'ao', name: 'Affocean', key: '942147...48d48', status: 'Aktif' },
-        { id: 'ra', name: 'ReklamAction', key: '2ae3a9...bb54', status: 'Aktif' }
+        { id: 'go', name: 'Gelir Ortakları', key: '891bae...9cd3', status: 'Aktif', color: 'bg-orange-600' },
+        { id: 'ao', name: 'Affocean', key: '942147...48d48', status: 'Aktif', color: 'bg-blue-500' },
+        { id: 'ra', name: 'ReklamAction', key: '2ae3a9...bb54', status: 'Aktif', color: 'bg-red-600' }
     ];
 
     const handleSaveIntegration = () => {
@@ -115,9 +115,9 @@ export default function AdsManagementPage() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <Target className="h-5 w-5 text-primary" /> Çoklu Ajans API Entegrasyonu
+                                        <Target className="h-5 w-5 text-primary" /> Üçlü Ajans API Havuzu
                                     </CardTitle>
-                                    <CardDescription>Aktif olarak kullanılan 3 farklı ajans bağlantısı.</CardDescription>
+                                    <CardDescription>Aktif olarak kullanılan 3 farklı iş ortağı bağlantısı.</CardDescription>
                                 </div>
                                 <Badge className="bg-green-600 text-white">3/3 AKTİF</Badge>
                             </div>
@@ -127,7 +127,9 @@ export default function AdsManagementPage() {
                                 {agencies.map((agency) => (
                                     <div key={agency.id} className="flex items-center justify-between p-4 bg-background border rounded-xl shadow-sm">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-muted"><Target className="h-4 w-4 text-primary" /></div>
+                                            <div className={cn("p-2 rounded-lg text-white", agency.color)}>
+                                                <Target className="h-4 w-4" />
+                                            </div>
                                             <div>
                                                 <p className="text-sm font-bold">{agency.name}</p>
                                                 <p className="text-[10px] font-mono text-muted-foreground">{agency.key}</p>
@@ -139,7 +141,7 @@ export default function AdsManagementPage() {
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-blue-100/50 rounded-xl border border-blue-200 text-blue-800 text-[11px] font-medium leading-relaxed">
                                 <Layers className="h-4 w-4 shrink-0" />
-                                <p>Tüm ajanslardan gelen teklifler isim bazlı tekilleştirilerek Market sayfasında listelenir.</p>
+                                <p>Tüm ajanslardan gelen veriler Market sayfasında birleştirilir. Aynı mağazalar tekilleştirilerek en yüksek oranlı olan gösterilir.</p>
                             </div>
                         </CardContent>
                         <CardFooter className="bg-background/50 border-t p-4 flex justify-end gap-2">
@@ -157,7 +159,7 @@ export default function AdsManagementPage() {
                     <Card className="shadow-sm">
                         <CardHeader>
                             <CardTitle>Dönüşüm Takibi</CardTitle>
-                            <CardDescription>Facebook (Meta) Pixel ve Google Ads etiketlerinizi bağlayarak bağışçı dönüşümlerini takip edin.</CardDescription>
+                            <CardDescription>Reklamlarınızın başarısını ölçümlemek için takip kodlarını bağlayın.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-4">
@@ -172,7 +174,7 @@ export default function AdsManagementPage() {
                             </div>
                             <div className="p-4 border rounded-xl bg-blue-50 text-blue-800 text-xs flex items-center gap-3">
                                 <ShieldCheck className="h-5 w-5 shrink-0" />
-                                <p>Bu kodlar sayesinde reklamlarınızın hangi bağışçıları getirdiğini verilerle görebilirsiniz.</p>
+                                <p>Dönüşüm takibi sayesinde hangi ajansın daha fazla bağışçı getirdiğini verilerle görebilirsiniz.</p>
                             </div>
                         </CardContent>
                         <CardFooter className="border-t bg-muted/10 p-4 flex justify-end">
