@@ -2,7 +2,7 @@
 
 /**
  * ReklamAction API'lerinden teklifleri (markaları) çeken sunucu eylemi.
- * Birden fazla API anahtarını destekleyecek ve verileri birleştirecek şekilde güncellendi.
+ * Birden fazla API anahtarını destekleyecek ve verileri temizleyerek birleştirecek şekilde güncellendi.
  */
 export async function getApiOffers() {
     const API_KEYS = [
@@ -47,21 +47,43 @@ export async function getApiOffers() {
 
         // Aynı ID'ye veya isme sahip teklifleri temizle (Mükerrer kaydı önle)
         const uniqueOffersMap = new Map();
-        allOffers.forEach((offer: any) => {
-            if (offer && (offer.id || offer.name)) {
-                const key = offer.id || offer.name.toLowerCase();
-                if (!uniqueOffersMap.has(key)) {
-                    uniqueOffersMap.set(key, offer);
-                }
+        
+        const processedBrands = allOffers.map((m: any) => {
+            if (!m || (!m.id && !m.name)) return null;
+
+            const rawPayout = m.payout || "0";
+            // Oran tipi belirleme (% mi yoksa sabit TL mi?)
+            const isFixed = /TL|TRY|₺/i.test(rawPayout);
+            const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
+            const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
+
+            return {
+                id: `ra-${m.id || Math.random().toString(36).substr(2, 9)}`,
+                name: m.name,
+                category: (m.categories && m.categories[0]?.name) || 'Diğer',
+                type: 'brand' as const,
+                logoUrl: m.logo || `https://logo.clearbit.com/${m.name.toLowerCase().replace(/\s+/g, '')}.com`,
+                donationRate: cleanPayout,
+                donationRateDisplay: isFixed ? `${cleanPayout} ₺` : `%${cleanPayout}`,
+                followers: Math.floor(Math.random() * 50000) + 500,
+                about: m.description || `${m.name} markası toplumsal fayda sağlamaktadır.`,
+                link: m.preview_url
+            };
+        }).filter(Boolean);
+
+        processedBrands.forEach((brand: any) => {
+            const key = brand.name.toLowerCase();
+            if (!uniqueOffersMap.has(key)) {
+                uniqueOffersMap.set(key, brand);
             }
         });
 
-        const mergedOffers = Array.from(uniqueOffersMap.values());
-        console.log(`API Fetch Complete: ${mergedOffers.length} unique offers found.`);
+        const finalOffers = Array.from(uniqueOffersMap.values());
+        console.log(`API Fetch Complete: ${finalOffers.length} unique brands processed.`);
         
-        return mergedOffers;
+        return finalOffers;
     } catch (e) {
         console.error("Global API fetch operation failed:", e);
-        return null;
+        return [];
     }
 }

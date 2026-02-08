@@ -106,13 +106,16 @@ const VisualAdCarousel = () => {
     )
 }
 
-// Güvenli Logo Bileşeni - Browser bazlı yükleme ve fallback desteği
+/**
+ * Güvenli Logo Bileşeni
+ * Tarayıcı bazlı yükleme yapar ve hata durumunda harf logosuna düşer.
+ */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
     if (hasError || !brand.logoUrl) {
         return (
-            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-gray-400 font-bold text-xl uppercase border shadow-inner">
+            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase border shadow-inner">
                 {brand.name.charAt(0)}
             </div>
         );
@@ -151,37 +154,17 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch API Data from multiple keys via server action
+  // API Verilerini Çekme
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
         try {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
-                const mappedBrands: Brand[] = data.map((m: any) => {
-                    const rawPayout = m.payout || "0";
-                    const isFixed = rawPayout.includes('TL') || rawPayout.includes('TRY') || rawPayout.includes('₺');
-                    // Oran ayıklama (örn: %5.00 -> 5.00)
-                    const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
-                    const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
-
-                    return {
-                        id: `ra-${m.id}`,
-                        name: m.name,
-                        category: (m.categories && m.categories[0]?.name) || 'Diğer',
-                        type: 'brand',
-                        logoUrl: m.logo || `https://logo.clearbit.com/${m.name.toLowerCase().replace(/\s+/g, '')}.com`,
-                        donationRate: cleanPayout,
-                        donationRateDisplay: isFixed ? `${cleanPayout} ₺` : `%${cleanPayout}`,
-                        followers: Math.floor(Math.random() * 50000) + 500,
-                        about: m.description || `${m.name} markası sosyal fayda sağlamaktadır.`,
-                        link: m.preview_url
-                    };
-                });
-                setApiBrands(mappedBrands);
+                setApiBrands(data);
             }
         } catch (e) {
-            console.error("API Fetch failed:", e);
+            console.error("Market API load error:", e);
         } finally {
             setIsApiLoading(false);
         }
@@ -196,41 +179,48 @@ export default function MarketPage() {
     // Tekrar eden isimleri temizle
     const uniqueBrandsMap = new Map();
     filteredList.forEach(item => {
-        const key = item.name.toLowerCase();
+        const key = item.name.toLowerCase().trim();
         if (!uniqueBrandsMap.has(key)) {
             uniqueBrandsMap.set(key, item);
         }
     });
     filteredList = Array.from(uniqueBrandsMap.values());
 
+    // Arama filtresi
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
         filteredList = filteredList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
+    // Kategori filtresi
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (brandCategories && brandCategories.length > 0) {
-        filteredList = filteredList.filter(brand => brandCategories.includes(brand.category));
+        filteredList = filteredList.filter(brand => 
+            brandCategories.some(cat => brand.category.toLowerCase().includes(cat.toLowerCase()))
+        );
       } else {
         filteredList = filteredList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
     }
 
+    // Kurumsal tür filtresi
     if (activeEntityType !== 'all') {
       filteredList = filteredList.filter(item => item.type === activeEntityType);
     }
 
+    // Sadece bağış yapanlar
     if (onlyDonating) {
         filteredList = filteredList.filter(item => item.donationRate > 0);
     }
     
+    // Sıralama
     filteredList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
                 return (b.donationRate || 0) - (a.donationRate || 0);
             case 'name':
-                return a.name.localeCompare(b.name);
+                return a.name.localeCompare(b.name, 'tr');
             case 'followers':
             default:
                 return (b.followers || 0) - (a.followers || 0);
@@ -253,7 +243,7 @@ export default function MarketPage() {
 
     try {
         const brandsContext = brandsToShow.slice(0, 50).map(b => 
-            `Marka: ${b.name}, Kategori: ${b.category}, Bağış: ${b.donationRateDisplay || '%' + b.donationRate}, Tür: ${b.type}`
+            `Marka: ${b.name}, Kategori: ${b.category}, Bağış: ${b.donationRateDisplay || '%' + b.donationRate}`
         ).join('\n---\n');
 
       const result = await askMarketAssistant({
@@ -269,7 +259,7 @@ export default function MarketPage() {
       toast({
         variant: "destructive",
         title: "Bir hata oluştu",
-        description: "Yapay zeka asistanı yanıt verirken bir sorun oluştu.",
+        description: "Yapay zeka asistanı şu an yanıt veremiyor.",
       });
     } finally {
       setIsAssistantLoading(false);
@@ -287,8 +277,8 @@ export default function MarketPage() {
         setTimeout(() => {
           setIsVisualSearching(false);
           toast({
-            title: "Görsel Arama Başarılı",
-            description: "Görseldeki ürüne en yakın markalar listeleniyor.",
+            title: "Görsel Analiz Tamamlandı",
+            description: "Görseldeki ürüne en yakın bağışçı markalar listeleniyor.",
           });
         }, 2000); 
       };
