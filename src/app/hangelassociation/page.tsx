@@ -12,10 +12,7 @@ import {
     Newspaper, 
     Target, 
     ArrowRight, 
-    Home, 
-    Truck, 
     Briefcase, 
-    ExternalLink,
     Brain,
     Scale,
     UserCheck,
@@ -25,7 +22,6 @@ import {
     GraduationCap,
     FileText,
     Sparkles,
-    Siren,
     ShoppingCart,
     HeartHandshake
 } from 'lucide-react';

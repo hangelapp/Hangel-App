@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Users, Heart, Truck, Home, Newspaper, ExternalLink, School, Building2, Landmark, GraduationCap, Globe, Zap, MessageSquare, Briefcase, Target, Award, Search, Filter } from 'lucide-react';
+import { Calendar, MapPin, Users, Heart, Truck, Home, Newspaper, ExternalLink, School, Building2, Landmark, GraduationCap, Globe, Zap, MessageSquare, Briefcase, Target, Award, Search, Filter, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -33,23 +33,10 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const ArrowLeft = (props: any) => (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-    </svg>
-);
-
 const Badge = ({ children, className }: any) => (
     <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest", className)}>
         {children}
     </span>
-);
-
-const SectionHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
-    <div className="text-left space-y-2 mb-12">
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[#1d1d1f]">{title}</h2>
-        {subtitle && <p className="text-lg text-muted-foreground font-medium max-w-2xl">{subtitle}</p>}
-    </div>
 );
 
 const InstitutionList = ({ title, count, items, icon: Icon, logos, onDetailClick }: { title: string, count: number, items: string[], icon: any, logos?: string[], onDetailClick?: (item: string) => void }) => (

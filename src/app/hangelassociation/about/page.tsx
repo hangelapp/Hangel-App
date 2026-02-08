@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, Globe, Rocket, BookOpen, GraduationCap, Scale, Sparkles, ShoppingCart, HeartHandshake, Briefcase } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, ShoppingCart, HeartHandshake, Briefcase, Globe, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
