@@ -2,7 +2,7 @@
 
 /**
  * ReklamAction API'sinden teklifleri (markaları) çeken sunucu eylemi.
- * Kullanıcı tarafından sağlanan Express mantığı Next.js Server Action olarak yapılandırılmıştır.
+ * Kullanıcı tarafından sağlanan Node.js/Express mantığı Next.js Server Action olarak yapılandırılmıştır.
  */
 export async function getApiOffers() {
     const API_KEY = "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
@@ -13,7 +13,7 @@ export async function getApiOffers() {
             headers: {
                 "Authorization": `Bearer ${API_KEY}`
             },
-            cache: 'no-store' // Canlı veri için önbelleği devre dışı bırakıyoruz
+            cache: 'no-store'
         });
 
         if (!response.ok) {
@@ -23,8 +23,9 @@ export async function getApiOffers() {
 
         const result = await response.json();
         
-        // API'den gelen ham veri içindeki 'data' dizisini döndürüyoruz
-        return result.data || [];
+        // API'den gelen ham veriyi döndürüyoruz. 
+        // Kullanıcının örneğine göre liste 'data' içinde veya direkt dizi olarak gelebilir.
+        return result.data || result || [];
     } catch (e) {
         console.error("Fetch failed:", e);
         return null;

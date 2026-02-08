@@ -1,4 +1,3 @@
-
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -10,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true,
+    unoptimized: true, // Sunucu taraflı DNS ve ağ kısıtlamalarını aşmak için görsel optimizasyonunu devre dışı bırakıyoruz.
     remotePatterns: [
       {
         protocol: 'https',
@@ -27,18 +26,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i.imgur.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.qrserver.com',
         port: '',
         pathname: '/**',
       },

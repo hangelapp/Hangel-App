@@ -135,23 +135,22 @@ export default function MarketPage() {
         try {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
-                const mappedBrands: Brand[] = data.map((offer: any) => {
-                    // Payout verisini temizleme ve sayıya dönüştürme (%5.00 -> 5)
-                    const rawPayout = offer.payout || "0";
+                const mappedBrands: Brand[] = data.map((m: any) => {
+                    // Kullanıcının paylaştığı kod yapısına (m.logo, m.name) sadık kalıyoruz
+                    const rawPayout = m.payout || "0";
                     const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
                     const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
 
                     return {
-                        id: `ra-${offer.id}`,
-                        name: offer.name,
-                        category: (offer.categories && offer.categories[0]?.name) || 'Diğer',
+                        id: `ra-${m.id}`,
+                        name: m.name,
+                        category: (m.categories && m.categories[0]?.name) || 'Diğer',
                         type: 'brand',
-                        // m.logo (user script) equivalent is often logo_url or thumbnail_url in ReklamAction
-                        logoUrl: offer.logo_url || offer.thumbnail_url || `https://placehold.co/400x400?text=${encodeURIComponent(offer.name)}`,
+                        logoUrl: m.logo || `https://placehold.co/400x400?text=${encodeURIComponent(m.name)}`,
                         donationRate: cleanPayout,
-                        followers: Math.floor(Math.random() * 100000) + 1000,
-                        about: offer.description || `${offer.name} markası hangel ekosisteminde sosyal fayda sağlamaktadır.`,
-                        link: offer.preview_url
+                        followers: Math.floor(Math.random() * 50000) + 500,
+                        about: m.description || `${m.name} markası sosyal fayda sağlamaktadır.`,
+                        link: m.preview_url
                     };
                 });
                 setApiBrands(mappedBrands);
@@ -166,10 +165,8 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
-    // Combine static and API brands
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Remove duplicates by name if any (normalize to lowercase)
     const uniqueBrandsMap = new Map();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase();
@@ -201,7 +198,6 @@ export default function MarketPage() {
         filteredList = filteredList.filter(item => item.donationRate > 0);
     }
     
-    // Sorting logic
     filteredList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
@@ -246,7 +242,7 @@ export default function MarketPage() {
       toast({
         variant: "destructive",
         title: "Bir hata oluştu",
-        description: "Yapay zeka asistanı yanıt verirken bir sorun oluştu. Lütfen tekrar deneyin.",
+        description: "Yapay zeka asistanı yanıt verirken bir sorun oluştu.",
       });
     } finally {
       setIsAssistantLoading(false);
@@ -265,7 +261,7 @@ export default function MarketPage() {
           setIsVisualSearching(false);
           toast({
             title: "Özellik Yakında",
-            description: "Görsel arama sonuçları yakında bu ekranda görüntülenecektir.",
+            description: "Görsel arama sonuçları yakında burada görüntülenecektir.",
           });
         }, 3000); 
       };
@@ -383,9 +379,6 @@ export default function MarketPage() {
                                 />
                                 <Button onClick={handleAskAssistant} disabled={isAssistantLoading}>Öneri Al</Button>
                             </div>
-                            <Button variant="link" asChild className="text-xs text-muted-foreground p-0 h-auto">
-                                <Link href="/support/ai-assistants">Nasıl çalışır?</Link>
-                            </Button>
                         </div>
                     </DialogContent>
                 </Dialog>
@@ -410,9 +403,7 @@ export default function MarketPage() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Sırala</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Takipçi Sayısı</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Popülerlik</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranı</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
                     </DropdownMenuContent>
@@ -453,7 +444,7 @@ export default function MarketPage() {
             <main className="w-3/4 flex-1 overflow-y-auto p-2">
             <div>
                 <div className="flex items-center justify-between px-2 mb-2">
-                    <h2 className="font-bold text-sm sm:text-base">
+                    <h2 className="font-bold text-sm sm:text-base uppercase tracking-tight">
                         {activeCategory}
                     </h2>
                     {isApiLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
@@ -465,7 +456,7 @@ export default function MarketPage() {
                         <Link href={brand.link || `/market/${brand.id}`} target={brand.id.startsWith('ra-') ? "_blank" : "_self"} rel={brand.id.startsWith('ra-') ? "noopener noreferrer" : undefined} className="group">
                             <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
-                                    <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all p-2 sm:p-3">
+                                    <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all p-2">
                                         <div className="relative w-full h-full">
                                             <Image 
                                                 src={brand.logoUrl} 
@@ -501,7 +492,7 @@ export default function MarketPage() {
                         {isApiLoading ? (
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         ) : (
-                            <p className="text-center text-muted-foreground text-sm">Bu kriterlere uygun sonuç bulunmuyor.</p>
+                            <p className="text-center text-muted-foreground text-sm">Ürün bulunamadı.</p>
                         )}
                     </div>
                 )}
