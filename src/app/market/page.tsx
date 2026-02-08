@@ -135,17 +135,23 @@ export default function MarketPage() {
         try {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
-                const mappedBrands: Brand[] = data.map((offer: any) => ({
-                    id: `ra-${offer.id}`,
-                    name: offer.name,
-                    category: (offer.categories && offer.categories[0]?.name) || 'Diğer',
-                    type: 'brand',
-                    logoUrl: offer.logo_url || offer.thumbnail_url || `https://placehold.co/400x400?text=${encodeURIComponent(offer.name)}`,
-                    donationRate: parseFloat(offer.payout?.replace('%', '')) || 5,
-                    followers: Math.floor(Math.random() * 100000) + 1000,
-                    about: offer.description || `${offer.name} markası hangel ekosisteminde sosyal fayda sağlamaktadır.`,
-                    link: offer.preview_url
-                }));
+                const mappedBrands: Brand[] = data.map((offer: any) => {
+                    // Payout verisini temizleme ve sayıya dönüştürme (%5.00 -> 5)
+                    const rawPayout = offer.payout || "0";
+                    const cleanPayout = parseFloat(rawPayout.replace(',', '.').replace(/[^0-9.]/g, '')) || 0;
+
+                    return {
+                        id: `ra-${offer.id}`,
+                        name: offer.name,
+                        category: (offer.categories && offer.categories[0]?.name) || 'Diğer',
+                        type: 'brand',
+                        logoUrl: offer.logo_url || offer.thumbnail_url || `https://placehold.co/400x400?text=${encodeURIComponent(offer.name)}`,
+                        donationRate: cleanPayout,
+                        followers: Math.floor(Math.random() * 100000) + 1000,
+                        about: offer.description || `${offer.name} markası hangel ekosisteminde sosyal fayda sağlamaktadır.`,
+                        link: offer.preview_url
+                    };
+                });
                 setApiBrands(mappedBrands);
             }
         } catch (e) {

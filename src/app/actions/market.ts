@@ -23,6 +23,12 @@ export async function getApiOffers() {
         }
 
         const result = await response.json();
+        
+        // Log ham verileri kontrol etmek için (Server konsolunda görünür)
+        if (result.data && result.data.length > 0) {
+            console.log("Örnek Payout Verisi:", result.data[0].payout);
+        }
+        
         console.log("Canlı veri akışı sağlandı:", result.data?.length, "yeni marka bulundu.");
         
         return result.data || [];
