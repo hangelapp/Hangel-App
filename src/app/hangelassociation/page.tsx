@@ -1,13 +1,13 @@
 
 'use client';
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     ChevronRight, ArrowLeft, Globe, Users, Heart, ShieldCheck, Newspaper, Target, ArrowRight, 
     Briefcase, Brain, Scale, UserCheck, Map as MapIcon, BookOpen, DollarSign, GraduationCap, 
     FileText, Sparkles, ShoppingCart, HeartHandshake, Landmark, Search, Filter, ArrowDownUp,
-    Store, MessageSquare, Download
+    Store, MessageSquare, Download, School
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,7 +25,7 @@ const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-                <Button onClick={() => router.push('/login')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
+                <Button onClick={() => router.push('/login')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-[#1d1d1f]/80">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Platforma Dön
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
@@ -146,8 +147,38 @@ export default function AssociationHomePage() {
                 </div>
             </section>
 
+            {/* Projelerimiz Section */}
+            <section className="py-32 px-6 bg-white overflow-hidden">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="text-center space-y-4 mb-20">
+                        <Briefcase className="h-12 w-12 text-primary mx-auto mb-4" />
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Projelerimiz.</h2>
+                        <p className="text-xl text-muted-foreground font-medium max-w-3xl mx-auto">Sürdürülebilir dönüşüm için hayata geçirdiğimiz vizyon modeller.</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {[
+                            { title: "Sosyal Girişimcilik Kanunu", desc: "Sektörün yasal statüsü için 29 maddelik kanun teklifi taslağı.", icon: Scale, slug: "legislation" },
+                            { title: "Girişimcilik Kütüphanesi", desc: "21 merkezde bilgi ve tecrübe temelli yol haritası kütüphaneleri.", icon: BookOpen, slug: "workshop" },
+                            { title: "Etki İstihdamı Protokolü", desc: "Gönüllülüğü 'Resmi Özgeçmiş' sayan kurumsal işbirliği ağı.", icon: ShieldCheck, slug: "projects/istihdam-protokolu" },
+                            { title: "Sosyal Etki Atlası", desc: "Türkiye'nin dijital sosyal sorun ve çözüm haritası.", icon: MapIcon, slug: "projects/etki-atlasi" }
+                        ].map((project, i) => (
+                            <Link key={i} href={`/hangelassociation/${project.slug}`} className="group relative bg-[#f5f5f7] rounded-[3rem] p-10 flex flex-col gap-6 hover:bg-white hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-black/5">
+                                <div className="p-4 bg-white rounded-2xl w-fit shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <project.icon className="h-8 w-8 text-primary group-hover:text-white" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-[#1d1d1f] tracking-tight">{project.title}</h3>
+                                <p className="text-base text-muted-foreground leading-relaxed font-medium">{project.desc}</p>
+                                <div className="mt-auto pt-4 flex items-center text-primary font-bold text-sm uppercase tracking-widest">
+                                    İncele <ChevronRight className="ml-1 h-4 w-4" />
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* Komitelerimiz */}
-            <section className="py-32 px-6">
+            <section className="py-32 px-6 bg-[#f5f5f7]">
                 <div className="container mx-auto max-w-6xl">
                     <div className="text-center space-y-4 mb-20">
                         <Users className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -160,7 +191,7 @@ export default function AssociationHomePage() {
                             { title: "Etki Mevzuatı Komisyonu", icon: Scale, color: "bg-primary", slug: "mevzuat" },
                             { title: "İnsan ve Kültür Komitesi", icon: Users, color: "bg-orange-500", slug: "insan-kultur" }
                         ].map((comm, i) => (
-                            <Link key={i} href={`/hangelassociation/committees/${comm.slug}`} className="flex flex-col items-center gap-6 p-10 bg-[#f5f5f7] rounded-[3rem] hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-black/5 text-center group">
+                            <Link key={i} href={`/hangelassociation/committees/${comm.slug}`} className="flex flex-col items-center gap-6 p-10 bg-white rounded-[3rem] hover:shadow-2xl transition-all border border-black/5 text-center group">
                                 <div className={cn("w-20 h-20 rounded-[2rem] flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-500", comm.color)}>
                                     <comm.icon className="h-10 w-10" />
                                 </div>
@@ -237,36 +268,30 @@ export default function AssociationHomePage() {
                 </div>
             </section>
 
-            {/* Haberler Section */}
-            <section id="haberler" className="py-32 px-6 bg-white">
-                <div className="container mx-auto max-w-5xl space-y-16">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Newspaper className="h-10 w-10 text-primary" />
-                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Haberler.</h2>
+            {/* Basında Biz Section */}
+            <section className="py-32 px-6 bg-white border-b border-black/5">
+                <div className="container mx-auto max-w-5xl">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                        <div className="space-y-4">
+                            <Newspaper className="h-12 w-12 text-primary" />
+                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Basında Biz.</h2>
                         </div>
-                        <Button variant="ghost" className="font-bold text-primary text-lg" onClick={() => handleAction('Tüm Haberler')}>Tüm Haberler <ChevronRight className="ml-1 h-5 w-5"/></Button>
+                        <Link href="/press" className="text-primary font-bold flex items-center hover:underline">Medya Arşivini Gör <ChevronRight className="h-5 w-5 ml-1"/></Link>
                     </div>
-                    <div className="grid grid-cols-1 gap-8">
+                    <div className="grid grid-cols-1 gap-4">
                         {[
-                            { title: "4. Uluslararası Sosyal Girişimcilik Çalıştayı Tunceli'de Gerçekleşti", date: "9 Aralık 2024", author: "Social Business Global", img: "https://picsum.photos/seed/news1/800/400" },
-                            { title: "Hakkari Üniversitesinden “Sosyal Girişimcilik” Semineri", date: "1 Mart 2024", author: "Social Business Global", img: "https://picsum.photos/seed/news2/800/400" },
-                            { title: "STK’larda Gelir Modeli Oluşturma Buluşmaları Başlıyor", date: "8 Ağustos 2025", author: "Social Business Global", img: "https://picsum.photos/seed/news3/800/400" }
+                            { agency: "AA", title: "Türkiye'nin sosyal girişimcilik etki haritası çıkartılacak", link: "https://www.aa.com.tr/tr/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikartilacak/1526753" },
+                            { agency: "TRT Haber", title: "Sistemli İyilik: Sosyal Girişimcilik Dönüşümü", link: "https://www.trthaber.com/haber/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikarilacak-422386.html" },
+                            { agency: "Hürriyet", title: "Rekabetin yeni adı: Sosyal Fayda", link: "https://www.hurriyet.com.tr/yazarlar/sibel-bagci-uzun/rekabetin-yeni-adi-sosyal-fayda-41862206" },
+                            { agency: "NTV", title: "Üniversitelilerden Vana Kan Bağışı Desteği", link: "https://www.ntv.com.tr/egitim/universitelilerden-vana-kan,KYYWoqEdIEO-E38v3kzFSw" }
                         ].map((news, i) => (
-                            <div key={i} className="group flex flex-col md:flex-row gap-10 p-8 bg-[#f5f5f7] rounded-[3rem] hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-black/5">
-                                <div className="relative w-full md:w-80 aspect-video rounded-[2rem] overflow-hidden shrink-0 shadow-lg">
-                                    <Image src={news.img} alt={news.title} fill className="object-cover group-hover:scale-105 transition-transform duration-1000" />
+                            <a key={i} href={news.link} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between p-8 bg-[#f5f5f7] rounded-[2rem] hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-black/5">
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">{news.agency}</span>
+                                    <h4 className="text-xl font-bold text-[#1d1d1f] group-hover:text-primary transition-colors">{news.title}</h4>
                                 </div>
-                                <div className="space-y-4 flex flex-col justify-center">
-                                    <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                                        <span className="text-primary">{news.author}</span>
-                                        <span className="opacity-20">•</span>
-                                        <span>{news.date}</span>
-                                    </div>
-                                    <h4 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] group-hover:text-primary transition-colors leading-tight">{news.title}</h4>
-                                    <Button variant="ghost" className="p-0 h-auto self-start text-primary font-bold text-base" onClick={() => handleAction(news.title)}>Okumaya Devam Et <ArrowRight className="ml-2 h-4 w-4" /></Button>
-                                </div>
-                            </div>
+                                <ExternalLink className="h-6 w-6 text-primary opacity-40 group-hover:opacity-100 transition-opacity" />
+                            </a>
                         ))}
                     </div>
                 </div>
