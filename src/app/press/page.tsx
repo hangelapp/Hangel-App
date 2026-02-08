@@ -2,20 +2,12 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    ChevronRight, 
-    ArrowLeft,
-    Download,
-    FileText,
-    Rss,
-    Zap,
-    Users,
-    Target
-} from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { PublicFooter } from '@/components/layout/public-footer';
 
 const PressSection = ({ 
     title, 
@@ -72,7 +64,7 @@ export default function PressPage() {
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight">Basın Odası</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
-                        <Link href="/press/kit">Medya Kiti</Link>
+                        <Link href="/support">İletişime Geç</Link>
                     </Button>
                 </div>
             </header>
@@ -105,57 +97,7 @@ export default function PressPage() {
                 imageHint="colorful abstract corporate identity"
             />
 
-            {/* Detailed Footer */}
-            <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-20 pb-12 px-4 sm:px-6">
-                <div className="container mx-auto max-w-4xl space-y-16">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-black/10 pt-12">
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight">Kurumsal</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/about" className="hover:underline">Biz Kimiz?</Link>
-                                <Link href="/social-impact" className="hover:underline">Sosyal Etkimiz</Link>
-                                <Link href="/press" className="hover:underline">Basın Odası</Link>
-                                <Link href="/yatirimci-iliskileri" className="hover:underline">Yatırımcı İlişkileri</Link>
-                            </nav>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight">İşbirlikleri</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/merchant" className="hover:underline">Üye İşyeri</Link>
-                                <Link href="/ngo-onboarding" className="hover:underline">STK Başvurusu</Link>
-                                <Link href="/corporate" className="hover:underline">Kamu İşbirlikleri</Link>
-                            </nav>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight">Destek</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/support" className="hover:underline">Yardım Merkezi</Link>
-                                <Link href="/feedback" className="hover:underline">Geri Bildirim</Link>
-                                <Link href="/accessibility" className="hover:underline">Erişilebilirlik</Link>
-                            </nav>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight">Yasal</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
-                                <Link href="/sitemap" className="hover:underline">Site Haritası</Link>
-                            </nav>
-                        </div>
-                    </div>
-
-                    <div className="pt-8 border-t border-black/10 flex flex-col md:flex-row justify-between items-start gap-8">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <Zap className="h-5 w-5 text-primary" />
-                                <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel A.Ş.</span>
-                            </div>
-                            <p className="text-[11px] text-[#86868b] max-w-xs leading-relaxed">
-                                © 2024 hangel A.Ş. İletişim Ofisi. Tüm hakları saklıdır.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <PublicFooter currentPageLabel="Basın Odası" />
         </div>
     );
 }

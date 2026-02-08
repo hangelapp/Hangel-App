@@ -2,22 +2,12 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    ChevronRight, 
-    ArrowLeft,
-    Briefcase,
-    Landmark,
-    School,
-    DollarSign,
-    ShieldCheck,
-    Globe,
-    Zap,
-    Users
-} from 'lucide-react';
+import { ChevronRight, ArrowLeft, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { PublicFooter } from '@/components/layout/public-footer';
 
 const ProductSection = ({ 
     title, 
@@ -130,78 +120,7 @@ export default function CorporateShowcasePage() {
                 imageHint="world map data visualization digital"
             />
 
-            {/* Apple-style Footer Detail Area */}
-            <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-20 pb-12 px-4 sm:px-6">
-                <div className="container mx-auto max-w-4xl space-y-16">
-                    <div className="space-y-6 text-xs text-[#86868b] leading-relaxed">
-                        <p>
-                            1. hangel Kamu İşbirliği Programı, onaylı STK'lar, yerel yönetimler ve kamu kuruluşları için geçerlidir. Başvuru süreci, kuruluşun şeffaflık endeksi kriterlerini karşılamasına bağlı olarak değişkenlik gösterebilir.
-                        </p>
-                        <p>
-                            2. "Bağış Eşleştirme" (Matching Gift) özellikleri, kurumların sistemleri ile hangel API entegrasyonu tamamlandıktan sonra aktif hale gelir. Teknik destek için hangel A.Ş. çözüm merkeziyle iletişime geçiniz.
-                        </p>
-                        <p>
-                            3. Üniversite programı kapsamındaki "Akademik Kredi" desteği, ilgili üniversite senatosunun onayı ve hangel ile imzalanan kurumsal protokol çerçevesinde sunulmaktadır.
-                        </p>
-                        <p>
-                            4. Tüm finansal hareketler ve bağış aktarımları, PCI-DSS standartlarında şifrelenmiş altyapı üzerinden ve yasal mevzuatlara uygun olarak gerçekleştirilmektedir.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-black/10 pt-12">
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]">İşbirlikleri</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/contact/municipalities" className="hover:underline">Belediyeler</Link>
-                                <Link href="/contact/universities" className="hover:underline">Üniversiteler</Link>
-                                <Link href="/contact/funds" className="hover:underline">Fonlar</Link>
-                            </nav>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]">Kurumsal</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/about" className="hover:underline">Biz Kimiz?</Link>
-                                <Link href="/press" className="hover:underline">Basın Odası</Link>
-                                <Link href="/yatirimci-iliskileri" className="hover:underline">Yatırımcı İlişkileri</Link>
-                                <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu</Link>
-                            </nav>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]">Destek</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/support" className="hover:underline">Yardım Merkezi</Link>
-                                <Link href="/settings/contracts" className="hover:underline">Sözleşmeler</Link>
-                                <Link href="/about" className="hover:underline">Bize Ulaşın</Link>
-                            </nav>
-                        </div>
-                        <div className="space-y-4">
-                            <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]">Sosyal Etki</h4>
-                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/impact-story" className="hover:underline">Etki Story</Link>
-                                <Link href="/leaderboard" className="hover:underline">Liderlik Tablosu</Link>
-                                <Link href="/library" className="hover:underline">Kütüphane</Link>
-                            </nav>
-                        </div>
-                    </div>
-
-                    <div className="pt-8 border-t border-black/10 flex flex-col md:flex-row justify-between items-start gap-8">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <Zap className="h-5 w-5 text-primary" />
-                                <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel A.Ş.</span>
-                            </div>
-                            <p className="text-[11px] text-[#86868b] max-w-xs leading-relaxed">
-                                © 2024 hangel A.Ş. Kamu Çözümleri Merkezi. Tüm hakları saklıdır.
-                            </p>
-                        </div>
-                        <div className="flex gap-6 text-[11px] font-medium text-[#1d1d1f]/60">
-                            <Link href="/settings/contracts" className="hover:underline">Gizlilik Politikası</Link>
-                            <Link href="/settings/contracts" className="hover:underline">Kullanım Şartları</Link>
-                            <Link href="#" className="hover:underline">Site Haritası</Link>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <PublicFooter currentPageLabel="Kamu İşbirlikleri" />
         </div>
     );
 }

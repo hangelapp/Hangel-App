@@ -2,16 +2,11 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    ChevronRight, 
-    ArrowLeft,
-    LayoutGrid,
-    Search,
-    Zap
-} from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { PublicFooter } from '@/components/layout/public-footer';
 
 const SitemapGroup = ({ title, links }: { title: string, links: { label: string, href: string }[] }) => (
     <div className="space-y-6">
@@ -114,15 +109,7 @@ export default function SitemapPage() {
                 </div>
             </main>
 
-            <footer className="bg-[#f5f5f7] border-t border-black/5 py-12 px-4">
-                <div className="container mx-auto max-w-4xl flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div className="flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-primary" />
-                        <span className="font-bold text-lg tracking-tighter">hangel A.Ş.</span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">© 2024 hangel A.Ş. Tüm hakları saklıdır.</p>
-                </div>
-            </footer>
+            <PublicFooter currentPageLabel="Site Haritası" />
         </div>
     );
 }

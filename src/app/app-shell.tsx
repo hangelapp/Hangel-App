@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -44,9 +43,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');
     const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
+    
+    // Landing pages that should not have the side menu or app shell wrapping
+    const isLandingPage = [
+        '/about', '/social-impact', '/press', '/yatirimci-iliskileri', '/careers',
+        '/corporate', '/feedback', '/accessibility', '/sitemap', '/bilgi-toplumu-hizmetleri',
+        '/campus-advantages', '/merchant', '/ngo-onboarding'
+    ].some(path => pathname === path || pathname.startsWith(path + '/'));
 
 
-    if (isPreviewPage || isSuperAdminPage || isAuthPage) {
+    if (isPreviewPage || isSuperAdminPage || isAuthPage || isLandingPage) {
         return <>{children}</>;
     }
 

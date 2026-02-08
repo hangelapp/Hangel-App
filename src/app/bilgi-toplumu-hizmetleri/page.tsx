@@ -1,10 +1,11 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Building2, Users, FileText, Eye, UserCheck, Briefcase, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Building2, Users, FileText, Eye, UserCheck, ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { PublicFooter } from '@/components/layout/public-footer';
 
 export default function InformationSocietyServicesPage() {
   const router = useRouter();
@@ -22,77 +23,90 @@ export default function InformationSocietyServicesPage() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 animate-in fade-in-0">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
-        <ArrowLeft className="h-6 w-6" />
-      </Button>
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold font-headline">Bilgi Toplumu Hizmetleri</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          5651 sayılı kanun kapsamında ve ilgili mevzuat uyarınca yasal yükümlülüklerimize istinaden hazırlanan bilgilendirme sayfasıdır.
-        </p>
-      </div>
+    <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+      <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+          <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
+              <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+              </Button>
+              <span className="text-[12px] font-bold tracking-tight">Bilgi Toplumu Hizmetleri</span>
+              <div className="w-20" />
+          </div>
+      </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Building2 className="h-5 w-5 text-primary" />
-            Ticari Bilgiler
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <p><strong>Ticari Unvan:</strong> Hangel Teknoloji ve Sosyal Etki Anonim Şirketi</p>
-          <p><strong>MERSİS Numarası:</strong> 0123456789101112</p>
-          <p><strong>Merkez Adresi:</strong> Caferağa Mah. Moda Cad. No: 123 D:4, Kadıköy, İstanbul</p>
-          <p><strong>Sorumlu Kişi:</strong> İsmail Hilmi Adıgüzel</p>
-          <p><strong>Kayıtlı Elektronik Posta (KEP) Adresi:</strong> hangel@hs01.kep.tr</p>
-          <p><strong>Yer Sağlayıcı:</strong> Google Cloud</p>
-        </CardContent>
-      </Card>
+      <main className="container mx-auto px-4 pt-32 pb-32 max-w-4xl space-y-12">
+        <div className="text-left space-y-4">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">Şeffaf Ticaret.</h1>
+          <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl">
+            5651 sayılı kanun kapsamında ve ilgili mevzuat uyarınca yasal yükümlülüklerimize istinaden hazırlanan bilgilendirme sayfasıdır.
+          </p>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Users className="h-5 w-5 text-primary" />
-            Yönetim Kurulu
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {boardMembers.map((member) => (
-            <div key={member.name} className="flex items-center gap-3 p-3 rounded-lg border bg-accent/50">
-              <UserCheck className="h-6 w-6 text-muted-foreground" />
-              <div>
-                <p className="font-semibold">{member.name}</p>
-                <p className="text-xs text-muted-foreground">{member.role}</p>
+        <Card className="rounded-[2.5rem] border-black/5 shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+              <Building2 className="h-5 w-5 text-primary" />
+              Ticari Bilgiler
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p><strong>Ticari Unvan:</strong> Hangel Teknoloji ve Sosyal Etki Anonim Şirketi</p>
+            <p><strong>MERSİS Numarası:</strong> 0123456789101112</p>
+            <p><strong>Merkez Adresi:</strong> Caferağa Mah. Moda Cad. No: 123 D:4, Kadıköy, İstanbul</p>
+            <p><strong>Sorumlu Kişi:</strong> İsmail Hilmi Adıgüzel</p>
+            <p><strong>Kayıtlı Elektronik Posta (KEP) Adresi:</strong> hangel@hs01.kep.tr</p>
+            <p><strong>Yer Sağlayıcı:</strong> Google Cloud</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-[2.5rem] border-black/5 shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+              <Users className="h-5 w-5 text-primary" />
+              Yönetim Kurulu
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {boardMembers.map((member) => (
+              <div key={member.name} className="flex items-center gap-3 p-4 rounded-2xl border bg-accent/50 transition-colors hover:bg-white">
+                <UserCheck className="h-6 w-6 text-muted-foreground" />
+                <div>
+                  <p className="font-semibold text-sm">{member.name}</p>
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">{member.role}</p>
+                </div>
               </div>
+            ))}
+          </CardContent>
+        </Card>
+        
+        <Card className="rounded-[2.5rem] border-black/5 shadow-xl overflow-hidden">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+              <FileText className="h-5 w-5 text-primary" />
+              Yasal Belgeler ve Politikalar
+            </CardTitle>
+            <CardDescription>
+              Kurumsal şeffaflığımız kapsamında ilgili belgelere aşağıdan ulaşabilirsiniz.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 p-0">
+            <div className="divide-y border-t">
+              {legalDocuments.map((doc) => (
+                <a key={doc.name} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 hover:bg-accent transition-colors">
+                  <span className="font-bold text-sm">{doc.name}</span>
+                  <Eye className="h-5 w-5 text-muted-foreground" />
+                </a>
+              ))}
+              <Link href="/settings/contracts" className="flex items-center justify-between p-6 hover:bg-primary/5 transition-colors text-primary font-black uppercase text-xs tracking-widest">
+                <span>Tüm Sözleşme ve Politikaları Görüntüle</span>
+                <ChevronRight className="h-5 w-5" />
+              </Link>
             </div>
-          ))}
-        </CardContent>
-      </Card>
-      
-       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <FileText className="h-5 w-5 text-primary" />
-            Yasal Belgeler ve Politikalar
-          </CardTitle>
-          <CardDescription>
-            Kurumsal şeffaflığımız kapsamında ilgili belgelere aşağıdan ulaşabilirsiniz.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {legalDocuments.map((doc) => (
-            <a key={doc.name} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
-              <span className="font-medium">{doc.name}</span>
-              <Eye className="h-5 w-5 text-muted-foreground" />
-            </a>
-          ))}
-            <Link href="/settings/contracts" className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors text-primary font-bold">
-              <span>Tüm Sözleşme ve Politikaları Görüntüle</span>
-              <ChevronRight className="h-5 w-5" />
-            </Link>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </main>
+
+      <PublicFooter currentPageLabel="Bilgi Toplumu Hizmetleri" />
     </div>
   );
 }
