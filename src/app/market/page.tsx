@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -107,17 +108,16 @@ const VisualAdCarousel = () => {
 }
 
 /**
- * Güvenli Logo Bileşeni (Next.js Image Proxy ve DNS Hatalarını Aşar)
+ * Güvenli Logo Bileşeni (Fallback Destekli)
  */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
-    // Görsel yüklenemezse veya URL yoksa markanın baş harfini içeren şık bir Avatar göster
     if (hasError || !brand.logoUrl) {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex flex-col items-center justify-center border shadow-inner p-2">
                 <span className="text-primary font-black text-3xl uppercase">{brand.name.charAt(0)}</span>
-                <span className="text-[8px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center">{brand.name}</span>
+                <span className="text-[8px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center px-1">{brand.name}</span>
             </div>
         );
     }
@@ -141,7 +141,7 @@ export default function MarketPage() {
   const [onlyDonating, setOnlyDonating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);
-  const [isApiLoading, setIsApiLoading] = useState(false);
+  const [isApiLoading, setIsApiLoading] = useState(true);
 
   // AI Assistant State
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -177,14 +177,13 @@ export default function MarketPage() {
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
     // Tekilleştirme (İsim bazlı)
-    const uniqueBrandsMap = new Map();
+    const uniqueBrandsMap = new Map<string, Brand>();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
         if (!uniqueBrandsMap.has(key)) {
             uniqueBrandsMap.set(key, item);
         } else {
-            // Eğer aynı isimde marka varsa, API'den geleni veya daha yüksek oranlıyı tercih et
-            const existing = uniqueBrandsMap.get(key);
+            const existing = uniqueBrandsMap.get(key)!;
             if (item.donationRate > existing.donationRate) {
                 uniqueBrandsMap.set(key, item);
             }
@@ -471,7 +470,7 @@ export default function MarketPage() {
                 
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
-                    const isApiBrand = brand.id.startsWith('agency-');
+                    const isApiBrand = brand.id.startsWith('agency-') || brand.id.startsWith('go-');
                     return (
                     <Fragment key={brand.id}>
                         <Link 
@@ -507,13 +506,22 @@ export default function MarketPage() {
                            </div>
                         )}
                     </Fragment>
-                )}) : (
+                )}) : !isApiLoading && (
                     <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
                         <div className="text-center space-y-2">
                             <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
                             <p className="text-muted-foreground text-sm font-medium">Bu kategoride marka bulunamadı.</p>
                         </div>
                     </div>
+                )}
+                
+                {isApiLoading && brandsToShow.length === 0 && (
+                    Array.from({ length: 12 }).map((_, i) => (
+                        <div key={i} className="space-y-2">
+                            <Skeleton className="aspect-square w-full rounded-[1.5rem]" />
+                            <Skeleton className="h-3 w-3/4 mx-auto" />
+                        </div>
+                    ))
                 )}
                 </div>
             </div>

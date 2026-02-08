@@ -6,7 +6,6 @@ import type { Brand } from '@/lib/types';
 /**
  * Üç farklı ajansın (Gelir Ortakları, Affocean, ReklamAction) 
  * verilerini çeken ve birleştiren sunucu eylemi.
- * Gelir Ortakları için en güncel Search API (POST) kullanılır.
  */
 export async function getApiOffers(): Promise<Brand[]> {
     const GELIR_ORTAKLARI_KEY = process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3";
@@ -14,7 +13,7 @@ export async function getApiOffers(): Promise<Brand[]> {
     const REKLAMACTION_KEY = process.env.REKLAMACTION_KEY || "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
 
     try {
-        // --- 1. Gelir Ortakları (POST Search API) ---
+        // --- 1. Gelir Ortakları (POST Search API - En Güncel Yöntem) ---
         const fetchGelirOrtaklari = async (): Promise<Brand[]> => {
             try {
                 const response = await fetch("https://feed.gelirortaklari.com/api/v1/search", {
@@ -28,12 +27,16 @@ export async function getApiOffers(): Promise<Brand[]> {
                         limit: 100,
                         page: 1,
                         type: "text",
-                        value: "" // Genel liste için boş veya popüler bir terim
+                        value: "" // Boş string genellikle tüm aktif markaları/teklifleri getirir
                     }),
                     cache: 'no-store'
                 });
 
-                if (!response.ok) return [];
+                if (!response.ok) {
+                    console.error("Gelir Ortakları API Yanıt Hatası:", response.status);
+                    return [];
+                }
+
                 const result = await response.json();
                 const items = result.results || [];
 
@@ -50,12 +53,12 @@ export async function getApiOffers(): Promise<Brand[]> {
                     link: m.tracking_url || m.url || "#"
                 }));
             } catch (e) {
-                console.error("Gelir Ortakları API Hatası:", e);
+                console.error("Gelir Ortakları İşlem Hatası:", e);
                 return [];
             }
         };
 
-        // --- 2. Affocean & ReklamAction (GET API) ---
+        // --- 2. Diğer Ajanslar (GET API) ---
         const fetchAgency = async (name: string, key: string, network: string): Promise<Brand[]> => {
             try {
                 const url = `https://api.reklamaction.com/v1/offer?network=${network}`;
@@ -70,10 +73,12 @@ export async function getApiOffers(): Promise<Brand[]> {
                 if (!response.ok) return [];
                 const result = await response.json();
                 
+                // Veri dizi mi yoksa nesne içinde mi?
                 let rawItems = [];
                 if (Array.isArray(result)) rawItems = result;
                 else if (result.data) rawItems = result.data;
                 else if (result.offers) rawItems = result.offers;
+                else if (result.results) rawItems = result.results;
 
                 return rawItems.map((m: any) => {
                     const rawPayout = String(m.payout || m.commission || "0");
@@ -116,8 +121,8 @@ export async function getApiOffers(): Promise<Brand[]> {
                 uniqueItemsMap.set(key, brand);
             } else {
                 const existing = uniqueItemsMap.get(key)!;
-                // Daha yüksek bağış oranı olanı veya logosu olanı tercih et
-                if (brand.donationRate > existing.donationRate || (!existing.logoUrl && brand.logoUrl)) {
+                // Daha yüksek bağış oranı olanı tercih et
+                if (brand.donationRate > existing.donationRate) {
                     uniqueItemsMap.set(key, brand);
                 }
             }
