@@ -161,9 +161,15 @@ export default function MarketPage() {
     // Combine static and API brands
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Remove duplicates by name if any
-    const uniqueBrands = Array.from(new Map(filteredList.map(item => [item.name.toLowerCase(), item])).values());
-    filteredList = uniqueBrands;
+    // Remove duplicates by name if any (normalize to lowercase)
+    const uniqueBrandsMap = new Map();
+    filteredList.forEach(item => {
+        const key = item.name.toLowerCase();
+        if (!uniqueBrandsMap.has(key)) {
+            uniqueBrandsMap.set(key, item);
+        }
+    });
+    filteredList = Array.from(uniqueBrandsMap.values());
 
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
@@ -448,7 +454,7 @@ export default function MarketPage() {
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
                     return (
                     <Fragment key={brand.id}>
-                        <Link href={brand.link || `/market/${brand.id}`} target={brand.id.startsWith('ra-') ? "_blank" : "_self"} className="group">
+                        <Link href={brand.link || `/market/${brand.id}`} target={brand.id.startsWith('ra-') ? "_blank" : "_self"} rel={brand.id.startsWith('ra-') ? "noopener noreferrer" : undefined} className="group">
                             <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
                                     <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all p-2 sm:p-3">
@@ -483,7 +489,13 @@ export default function MarketPage() {
                         )}
                     </Fragment>
                 )}) : (
-                    <p className="col-span-full text-center text-muted-foreground mt-8 text-sm">Bu kriterlere uygun sonuç bulunmuyor.</p>
+                    <div className="col-span-full py-12 flex flex-col items-center justify-center gap-4">
+                        {isApiLoading ? (
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        ) : (
+                            <p className="text-center text-muted-foreground text-sm">Bu kriterlere uygun sonuç bulunmuyor.</p>
+                        )}
+                    </div>
                 )}
                 </div>
             </div>

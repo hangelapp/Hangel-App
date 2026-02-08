@@ -1,33 +1,33 @@
 'use server';
 
 /**
- * ReklamAction API'sinden teklifleri çeken sunucu eylemi.
- * CORS sorunlarını aşmak ve API anahtarını güvenli tutmak için sunucu tarafında çalışır.
+ * ReklamAction API'sinden teklifleri (markaları) çeken sunucu eylemi.
+ * API Anahtarı ve Network bilgileri burada güvenli bir şekilde işlenir.
  */
 export async function getApiOffers() {
     const API_KEY = "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
     const url = "https://api.reklamaction.com/v1/offer?network=reklamaction";
 
     try {
-        console.log("ReklamAction API isteği başlatılıyor...");
+        console.log("ReklamAction API bağlantısı kuruluyor...");
         const response = await fetch(url, {
             headers: {
                 "Authorization": `Bearer ${API_KEY}`
             },
-            cache: 'no-store' // Canlı veri için cache devre dışı
+            cache: 'no-store'
         });
 
         if (!response.ok) {
-            console.error(`API Hatası: ${response.status} - ${response.statusText}`);
+            console.error(`API Bağlantı Hatası: ${response.status}`);
             return null;
         }
 
         const result = await response.json();
-        console.log("API verisi başarıyla çekildi:", result.data?.length, "teklif bulundu.");
+        console.log("Canlı veri akışı sağlandı:", result.data?.length, "yeni marka bulundu.");
         
         return result.data || [];
     } catch (e) {
-        console.error("ReklamAction API Fetch Hatası:", e);
+        console.error("Fetch işlemi başarısız oldu:", e);
         return null;
     }
 }
