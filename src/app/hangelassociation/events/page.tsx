@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Calendar, MapPin, Users, Heart, Zap, ExternalLink, Newspaper, Truck, Home } from 'lucide-react';
+import { Calendar, MapPin, Users, Heart, Truck, Home, Newspaper, ExternalLink, School, Building2, Landmark, GraduationCap, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,12 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
         </header>
     );
 };
+
+const ArrowLeft = (props: any) => (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+    </svg>
+);
 
 const EventLineup = ({ title, date, location, image, hint, description, category, icon: Icon }: any) => (
     <div className="group relative w-full border-b border-black/5 py-16 flex flex-col md:flex-row items-center gap-12 px-6 hover:bg-[#f5f5f7]/50 transition-colors">
@@ -60,6 +66,27 @@ const Badge = ({ children, className }: any) => (
     </span>
 );
 
+const InstitutionList = ({ title, count, items, icon: Icon }: { title: string, count: number, items: string[], icon: any }) => (
+    <div className="space-y-8">
+        <div className="flex items-end justify-between border-b border-black/5 pb-4">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#f5f5f7] rounded-lg">
+                    <Icon className="h-5 w-5 text-[#1d1d1f]/60" />
+                </div>
+                <h3 className="text-xl font-bold tracking-tight text-[#1d1d1f]">{title}</h3>
+            </div>
+            <span className="text-3xl font-black tracking-tighter text-primary/30">{count}</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2">
+            {items.map((item, i) => (
+                <p key={i} className="text-[13px] font-medium text-[#1d1d1f]/70 leading-relaxed border-l-2 border-transparent hover:border-primary/20 hover:pl-2 transition-all">
+                    {item}
+                </p>
+            ))}
+        </div>
+    </div>
+);
+
 export default function AssociationEventsPage() {
     const pressLinks = [
         { source: "AA", title: "Türkiye'nin Sosyal Girişimcilik Etki Haritası Çıkartılacak", url: "https://www.aa.com.tr/tr/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikartilacak/1526753" },
@@ -69,6 +96,48 @@ export default function AssociationEventsPage() {
         { source: "Akşam", title: "Uluslararası Çalıştay İstanbul'da Toplandı", url: "https://www.aksam.com.tr/guncel/uluslararasi-sosyal-girisimcilik-calistayi-istanbulda-toplandi/haber-1006693" },
         { source: "Platin", title: "Sosyal Girişimcilik Zirvesi Düzce Etabı", url: "https://www.platinonline.com/girisimcilik/uluslararasi-sosyal-girisimcilik-zirvesi-ilk-kez-duzcede-1012108" }
     ];
+
+    const networkData = {
+        universities: [
+            "Sakarya Üniversitesi", "Mersin Üniversitesi", "Hakkari Üniversitesi 1", "Hakkari Üniversitesi 2", "İstanbul Üniversitesi",
+            "Yıldız Teknik Üniversitesi", "Düzce Üniversitesi", "Bursa Teknik Üniversitesi", "Sakarya Üniversitesi", "Erzurum Atatürk Üniversitesi",
+            "Akdeniz Üniversitesi", "Manisa Celal Bayar Üniversitesi", "İstanbul Medeniyet Üniversitesi", "İstanbul Medipol Üniversitesi",
+            "Celal Bayar Üniversitesi", "Sakarya Üniversitesi", "İstanbul Gelişim Üniversitesi", "Çanakkale Üniversitesi", "İstanbul Kent Üniversitesi",
+            "Maltepe Üniversitesi", "Tekirdağ Namık Kemal Üniversitesi", "Karamanoğlu Mehmetbey Üniversitesi", "İstanbul Şehir Üniversitesi",
+            "Pamukkale Üniversitesi İlahiyat Fakültesi", "Pamukkale Üniversitesi Eğitim Fakültesi", "Mustafa Kemal Üniversitesi Merkez Kampüs",
+            "Mustafa Kemal Üniversitesi Yayladağ Meslek Yüksekokulu", "Mustafa Kemal Üniversitesi Reyhanlı Meslek Yüksekokulu", "İzmir Ekonomi Üniversitesi",
+            "Süleyman Demirel Üniversitesi Merkez Kampüs", "Süleyman Demirel Üniversitesi Eğirdir Meslek Yüksekokulu", "Sabahattin Zaim Üniversitesi Halkalı Kampüsü",
+            "Sabahattin Zaim Üniversitesi Altunizade Kampüsü", "İstanbul Atlas Üniversitesi", "Kars Kafkas Üniversitesi", "Tunceli Munzur Üniversitesi",
+            "Bandırma 17 Eylül Üniversitesi", "Ankara Medipol Üniversitesi", "Ankara Üniversitesi", "Kayseri Erciyes Üniversitesi",
+            "Polonya Uluslararası Bilim ve Teknoloji Üniversitesi", "Yeditepe Üniversitesi", "Hacı Bayram Veli Üniversitesi"
+        ],
+        chambers: [
+            "Tekirdağ Ticaret ve Sanayi Odası", "Ağrı Ticaret ve Sanayi Odası", "Karaman Ticaret ve Sanayi Odası", "Erdemli Ticaret ve Sanayi Odası",
+            "Düzce Ticaret ve Sanayi Odası", "Antalya Ticaret ve Sanayi Odası", "Mersin Ticaret ve Sanayi Odası",
+            "Azerbaycan Küçük ve Orta Ölçekli İşletmeleri Geliştirme Ajansı (KOBİA)", "Bursa Eskişehir Kalkınma Ajansı (BEBKA)",
+            "İzmir Bornova Gençlik ve Spor Bakanlığı Gençlik Merkezi", "GAP İdaresi", "Etimesgut Kent Konseyi", "Ankara Kent Konseyi"
+        ],
+        municipalities: [
+            "Hakkari Valiliği", "Bilecik Valiliği", "İstanbul Büyükşehir Belediyesi", "Eskişehir Büyükşehir Belediyesi", "İzmir Büyükşehir Belediyesi",
+            "İzmir Çiğli Belediyesi", "İzmir Bayraklı Belediyesi", "İzmir Bornova Belediyesi", "İzmir Buca Belediyesi", "İzmir Karşıyaka Belediyesi",
+            "İzmir Bergama Belediyesi", "Manisa Şehzadeler Belediyesi", "Bursa İnegöl Belediyesi", "İstanbul Üsküdar Belediyesi", "Ankara Etimesgut Belediyesi",
+            "Konya Büyükşehir Belediyesi"
+        ],
+        schools: [
+            "İstanbul Doğa Koleji", "Bursa Şükrü Şenkaya Anadolu Lisesi", "İzmir Suphi Koyuncu Lisesi", "İzmir Bornova Anadolu Lisesi",
+            "Ferhatlar Koleji (Denizli)", "İzmir İsabet Koleji", "Manisa Endüstri Meslek Lisesi", "Manisa Kız Meslek Lisesi", "Hakkari Anadolu Lisesi",
+            "Şemdinli Anadolu Lisesi", "Şemdinli İmam Hatip Lisesi", "Antalya Manavgat Namuk Kamancı Fen Lisesi 1", "Antalya Manavgat Namuk Kamancı Fen Lisesi 2",
+            "Antalya Manavgat Meslek Lisesi", "Manavgat Evliya Çelebi Teknik Lisesi", "Şule Muzaffer Büyük Meslek Lisesi", "Fethi Yılmaz Sezer Meslek Lisesi",
+            "Antalya Manavgat Anadolu Lisesi", "Antalya Manavgat Batı Koleji", "Antalya Manavgat Bilsem"
+        ],
+        ngos: [
+            "Tüzder Üstün Zekalılar Derneği", "Gaziantep JCI Temsilciliği", "Bursa JCI Temsilciliği", "Bursa Simbiyoz Aktivite Derneği",
+            "İzmir Pergamon Lions Kulübü", "TÜGVA İzmir Temsilciliği", "AIESEC İstanbul İl Kongresi", "Azerbaycan Enactus Temsilciliği",
+            "TÜMMİAD Uluslararası Mucit Girişimcilik Derneği", "Ability Pool", "Herbalife Eskişehir", "Genç Sosyal Hizmet Platformu",
+            "Güçlü İyilik Platformu", "Doğa Koleji Beykent Kampüsü", "Evokulu Derneği", "e-gönüllü", "Azerbaycan Gençler Fondu",
+            "Karadeniz Vakfı", "Gençlik Otobüsü Derneği", "Türkiye Patent Hareketi", "Gençler İçin Yeşil", "Grofrc9436"
+        ]
+    };
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -81,6 +150,7 @@ export default function AssociationEventsPage() {
                 </p>
             </section>
 
+            {/* Showcase Section */}
             <div className="container mx-auto max-w-6xl">
                 <EventLineup 
                     category="AFET DAYANIŞMASI"
@@ -112,20 +182,53 @@ export default function AssociationEventsPage() {
                     image="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
                     hint="university students seminar"
                 />
-                <EventLineup 
-                    category="GÖNÜLLÜ AĞI"
-                    title="Karavan Gönüllü Seferberliği"
-                    date="2023"
-                    location="Sahada Aktif"
-                    icon={Heart}
-                    description="Depremin hemen 2. günü Almanya, İngiltere ve Türkiye’den gönüllü 60 karavan sahibini sahaya sevk ettik. Arama kurtarma, eczacı ve güvenlik güçleri ekiplerine konaklama ve operasyon merkezi desteği sağladık."
-                    image="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?q=80&w=2070&auto=format&fit=crop"
-                    hint="camper van outdoor"
-                />
             </div>
 
-            {/* Basında Biz Section */}
+            {/* Network Section - New Extensive List */}
             <section className="py-32 bg-white border-t border-black/5">
+                <div className="container mx-auto px-6 max-w-6xl space-y-24">
+                    <div className="text-left space-y-4 max-w-3xl">
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">İyiliği Paylaşıyoruz.</h2>
+                        <p className="text-xl text-muted-foreground font-medium">Eğitim, konferans ve farkındalık çalışmaları yürüttüğümüz kurumsal ağımız.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-20">
+                        <InstitutionList 
+                            icon={GraduationCap}
+                            title="Üniversiteler" 
+                            count={42} 
+                            items={networkData.universities} 
+                        />
+                        <InstitutionList 
+                            icon={Building2}
+                            title="Ticaret Odaları ve Ajanslar" 
+                            count={12} 
+                            items={networkData.chambers} 
+                        />
+                        <InstitutionList 
+                            icon={Landmark}
+                            title="Valilikler ve Belediyeler" 
+                            count={17} 
+                            items={networkData.municipalities} 
+                        />
+                        <InstitutionList 
+                            icon={School}
+                            title="İlköğretim ve Liseler" 
+                            count={20} 
+                            items={networkData.schools} 
+                        />
+                        <InstitutionList 
+                            icon={Globe}
+                            title="STK ve Uluslararası Networkler" 
+                            count={22} 
+                            items={networkData.ngos} 
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* Basında Biz Section */}
+            <section className="py-32 bg-[#f5f5f7] border-t border-black/5">
                 <div className="container mx-auto px-6 max-w-4xl">
                     <div className="flex items-center gap-3 mb-12">
                         <Newspaper className="h-8 w-8 text-primary" />
@@ -138,7 +241,7 @@ export default function AssociationEventsPage() {
                                 href={link.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="group flex items-center justify-between p-6 bg-[#f5f5f7] rounded-2xl hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-black/5"
+                                className="group flex items-center justify-between p-6 bg-white rounded-2xl hover:shadow-xl transition-all border border-black/5"
                             >
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-primary">{link.source}</span>
