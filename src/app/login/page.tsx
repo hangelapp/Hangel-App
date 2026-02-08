@@ -349,7 +349,7 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
-            <Header />
+            < Header />
             
             <main className="pt-12">
                 {/* HERO SECTION */}
@@ -526,6 +526,7 @@ export default function LoginPage() {
                         cta1Href="/library"
                         imageUrl={libraryImg?.imageUrl || ''}
                         imageHint={libraryImg?.imageHint || 'charcoal library drawing'}
+                        theme="dark"
                     />
                 </div>
             </main>
