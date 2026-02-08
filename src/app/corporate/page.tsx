@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -50,7 +49,7 @@ const ProductSection = ({
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
-        <div className="relative z-10 space-y-4 px-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="relative z-10 space-y-4 px-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
@@ -91,23 +90,13 @@ export default function CorporateShowcasePage() {
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
                     <div className="flex items-center gap-6 text-[12px] font-medium text-[#1d1d1f]/80">
-                        <span className="hidden sm:inline">Kurumsal İşbirliği Programları</span>
+                        <span className="hidden sm:inline">Kamu İşbirliği Programları</span>
                         <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
                             <Link href="/login/selection?action=register&type=corporate">Şimdi Katıl</Link>
                         </Button>
                     </div>
                 </div>
             </header>
-
-            {/* Şirketler Bölümü */}
-            <ProductSection 
-                title="Şirketler için hangel."
-                subtitle="Kurumsal sosyal sorumlulukta yeni nesil."
-                description="Marka değerinizi artırın ve çalışan bağlılığını güçlendirin. Her alışverişi şeffaf bir iyilik hikayesine dönüştürün."
-                cta1Href="/contact/companies"
-                imageUrl="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"
-                imageHint="modern office meeting room glass"
-            />
 
             {/* Belediyeler Bölümü */}
             <ProductSection 
@@ -146,10 +135,10 @@ export default function CorporateShowcasePage() {
                 <div className="container mx-auto max-w-4xl space-y-16">
                     <div className="space-y-6 text-xs text-[#86868b] leading-relaxed">
                         <p>
-                            1. hangel Kurumsal İşbirliği Programı, onaylı STK'lar, markalar ve kamu kuruluşları için geçerlidir. Başvuru süreci, kuruluşun şeffaflık endeksi kriterlerini karşılamasına bağlı olarak değişkenlik gösterebilir.
+                            1. hangel Kamu İşbirliği Programı, onaylı STK'lar, yerel yönetimler ve kamu kuruluşları için geçerlidir. Başvuru süreci, kuruluşun şeffaflık endeksi kriterlerini karşılamasına bağlı olarak değişkenlik gösterebilir.
                         </p>
                         <p>
-                            2. "Bağış Eşleştirme" (Matching Gift) özellikleri, markaların ve şirketlerin İK sistemleri ile hangel API entegrasyonu tamamlandıktan sonra aktif hale gelir. Teknik destek için hangel Hub çözüm merkeziyle iletişime geçiniz.
+                            2. "Bağış Eşleştirme" (Matching Gift) özellikleri, kurumların sistemleri ile hangel API entegrasyonu tamamlandıktan sonra aktif hale gelir. Teknik destek için hangel Hub çözüm merkeziyle iletişime geçiniz.
                         </p>
                         <p>
                             3. Üniversite programı kapsamındaki "Akademik Kredi" desteği, ilgili üniversite senatosunun onayı ve hangel ile imzalanan kurumsal protokol çerçevesinde sunulmaktadır.
@@ -163,7 +152,6 @@ export default function CorporateShowcasePage() {
                         <div className="space-y-4">
                             <h4 className="text-[12px] font-bold uppercase tracking-tight text-[#1d1d1f]">İşbirlikleri</h4>
                             <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
-                                <Link href="/contact/companies" className="hover:underline">Şirketler</Link>
                                 <Link href="/contact/municipalities" className="hover:underline">Belediyeler</Link>
                                 <Link href="/contact/universities" className="hover:underline">Üniversiteler</Link>
                                 <Link href="/contact/funds" className="hover:underline">Fonlar</Link>
@@ -203,7 +191,7 @@ export default function CorporateShowcasePage() {
                                 <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel hub</span>
                             </div>
                             <p className="text-[11px] text-[#86868b] max-w-xs leading-relaxed">
-                                © 2024 Hangel Hub Teknoloji A.Ş. Kurumsal Çözümler Merkezi. Tüm hakları saklıdır.
+                                © 2024 Hangel Hub Teknoloji A.Ş. Kamu Çözümleri Merkezi. Tüm hakları saklıdır.
                             </p>
                         </div>
                         <div className="flex gap-6 text-[11px] font-medium text-[#1d1d1f]/60">
