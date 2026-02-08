@@ -5,21 +5,23 @@ import { Button } from '@/components/ui/button';
 import { 
     ChevronRight, 
     ArrowLeft,
-    Download,
-    FileText,
-    Rss,
+    TrendingUp,
+    Target,
+    Award,
+    Heart,
     Zap,
     Users,
-    Target
+    Globe
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
-const PressSection = ({ 
+const ImpactSection = ({ 
     title, 
     subtitle, 
+    stat,
     description, 
     theme = 'light',
     imageUrl,
@@ -28,6 +30,7 @@ const PressSection = ({
 }: { 
     title: string, 
     subtitle?: string, 
+    stat?: string,
     description?: string, 
     theme?: 'light' | 'dark',
     imageUrl: string,
@@ -35,12 +38,13 @@ const PressSection = ({
     className?: string
 }) => (
     <section className={cn(
-        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
+        "relative min-h-[85vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            {stat && <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary mt-2">{stat}</p>}
             {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
         </div>
@@ -59,7 +63,7 @@ const PressSection = ({
     </section>
 );
 
-export default function PressPage() {
+export default function SocialImpactPage() {
     const router = useRouter();
 
     return (
@@ -70,39 +74,52 @@ export default function PressPage() {
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight">Basın Odası</span>
+                    <span className="text-[12px] font-bold tracking-tight">Sosyal Etkimiz</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
-                        <Link href="/press/kit">Medya Kiti</Link>
+                        <Link href="/impact-story">Etkiyi Gör</Link>
                     </Button>
                 </div>
             </header>
 
-            {/* Hero */}
-            <PressSection 
-                title="Haberin Kalbinde İyilik."
-                subtitle="Resmi duyurular ve medya kaynakları."
-                description="Hangel'in toplumsal değişime öncülük eden projeleri, marka işbirlikleri ve teknolojik yenilikleri hakkında güncel verilere buradan ulaşın."
-                imageUrl="https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=2070&auto=format&fit=crop"
-                imageHint="journalism camera broadcast news"
+            {/* Total Reach */}
+            <ImpactSection 
+                title="Milyonlara Ulaştık."
+                stat="1.2M+"
+                subtitle="Hayata doğrudan dokunuş."
+                description="Türkiye genelinde yürüttüğümüz projeler ve desteklediğimiz sivil toplum kuruluşları ile toplumsal kalkınmanın lokomotifi oluyoruz."
+                imageUrl="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
+                imageHint="happy group people support"
             />
 
-            {/* Latest Releases */}
-            <PressSection 
+            {/* Donation Value */}
+            <ImpactSection 
                 theme="dark"
-                title="Son Duyurular."
-                subtitle="Sosyal etkide şeffaf raporlama."
-                description="2024 Sosyal Etki Raporu ve yeni kampüs programlarımız hakkında yayınlanan en yeni basın bültenlerimizi inceleyin."
-                imageUrl="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop"
-                imageHint="newspaper stack clean minimalist"
+                title="Sürdürülebilir Kaynak."
+                stat="12.5M ₺"
+                subtitle="Aktarılan toplam bağış hacmi."
+                description="Alışverişi iyiliğe dönüştüren modelimizle, sivil toplumun finansal sürdürülebilirliğini sağlıyoruz. Ek ücret yok, sadece somut fayda var."
+                imageUrl="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop"
+                imageHint="coins gold stack donation"
             />
 
-            {/* Visual Assets */}
-            <PressSection 
-                title="Marka Kimliği."
-                subtitle="Logo ve kurumsal materyaller."
-                description="Hangel logolarını, kurumsal renk paletimizi ve kullanım rehberini medya projeleriniz için yüksek çözünürlüklü olarak indirin."
-                imageUrl="https://images.unsplash.com/photo-1557683311-eac922347aa1?q=80&w=2029&auto=format&fit=crop"
-                imageHint="colorful abstract corporate identity"
+            {/* Volunteer Hours */}
+            <ImpactSection 
+                title="İmece Gücüyle."
+                stat="500K+"
+                subtitle="Tamamlanan gönüllülük saati."
+                description="Zamanını ve yeteneklerini toplumsal sorunların çözümü için seferber eden dev gönüllü ordumuzla her sahada varız."
+                imageUrl="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
+                imageHint="volunteers working together collaboration"
+            />
+
+            {/* SDG Goals */}
+            <ImpactSection 
+                theme="dark"
+                title="Küresel Hedefler."
+                subtitle="BM Sürdürülebilir Kalkınma Amaçları."
+                description="Yoksullukla mücadeleden iklim eylemine kadar 17 temel hedefin 12'sinde aktif olarak projeler geliştiriyor ve destekliyoruz."
+                imageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
+                imageHint="world connection data visualization"
             />
 
             {/* Detailed Footer */}
@@ -150,7 +167,7 @@ export default function PressPage() {
                                 <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel A.Ş.</span>
                             </div>
                             <p className="text-[11px] text-[#86868b] max-w-xs leading-relaxed">
-                                © 2024 hangel A.Ş. İletişim Ofisi. Tüm hakları saklıdır.
+                                © 2024 hangel A.Ş. Etki Analiz Merkezi. Tüm hakları saklıdır.
                             </p>
                         </div>
                     </div>

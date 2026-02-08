@@ -1,168 +1,172 @@
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Twitter, Instagram, Linkedin, Users, HandCoins, Hourglass, MessageSquare, Building2, Briefcase, Landmark, School, DollarSign } from 'lucide-react';
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { 
+    ChevronRight, 
+    ArrowLeft,
+    Users,
+    Heart,
+    ShieldCheck,
+    Target,
+    Zap,
+    Building2,
+    Globe
+} from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
+
+const AppleSection = ({ 
+    title, 
+    subtitle, 
+    description, 
+    cta1 = "Daha Fazla Bilgi", 
+    cta1Href = "#",
+    theme = 'light',
+    imageUrl,
+    imageHint,
+    className
+}: { 
+    title: string, 
+    subtitle?: string, 
+    description?: string, 
+    cta1?: string, 
+    cta1Href?: string,
+    theme?: 'light' | 'dark',
+    imageUrl: string,
+    imageHint: string,
+    className?: string
+}) => (
+    <section className={cn(
+        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
+        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+        className
+    )}>
+        <div className="relative z-10 space-y-4 px-6 max-w-4xl">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
+            {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
+            
+            <div className="flex items-center justify-center gap-6 pt-4">
+                <Link href={cta1Href} className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
+                    {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
+                </Link>
+            </div>
+        </div>
+        
+        <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
+            <div className="relative w-full aspect-[16/10] md:aspect-[21/9] rounded-t-[3rem] overflow-hidden shadow-2xl">
+                <Image 
+                    src={imageUrl} 
+                    alt={title} 
+                    fill 
+                    className="object-cover" 
+                    data-ai-hint={imageHint}
+                />
+            </div>
+        </div>
+    </section>
+);
 
 export default function AboutPage() {
-  return (
-    <div className="p-4 sm:p-6 space-y-6 animate-in fade-in-0">
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold font-headline">Hakkımızda</h1>
-        <div className="text-muted-foreground space-y-3 max-w-3xl mx-auto text-base">
-          <p>İyiliğin ve sosyal etkinin buluşma noktası.</p>
-          <p>
-            Alışverişlerimizde ek ödeme yapmaksızın her birimizin ayrı ayrı seçtiğimiz Sivil Toplum Kuruluşlarına %15’e varan oranlarda bağış yapmamızı mümkün kılan,
-          </p>
-          <p>
-            Sahip olduğumuz profesyonel yetkinliklerimiz ve sosyal hassasiyetlerimiz doğrultusunda gönüllülük faaliyetlerine katkı sunmamızı mümkün kılan,
-          </p>
-          <p className="font-semibold text-foreground">
-            Bağış ve gönüllük odaklı bir Sosyal Etki Platformudur.
-          </p>
+    const router = useRouter();
+
+    return (
+        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+            {/* Nav */}
+            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+                <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
+                    <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                    </Button>
+                    <span className="text-[12px] font-bold tracking-tight">Biz Kimiz?</span>
+                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
+                        <Link href="/login/selection?action=register">Şimdi Katıl</Link>
+                    </Button>
+                </div>
+            </header>
+
+            {/* Hero */}
+            <AppleSection 
+                title="İyiliği Dijitalleştirdik."
+                subtitle="hangel A.Ş. ile geleceğin dayanışma modelini inşa ediyoruz."
+                description="Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, Türkiye'nin en kapsamlı sosyal etki platformuyuz."
+                imageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
+                imageHint="modern office people collaborating"
+            />
+
+            {/* Mission */}
+            <AppleSection 
+                theme="dark"
+                title="Misyonumuz Şeffaflık."
+                subtitle="Her bir kuruşun yolculuğunu izleyin."
+                description="Teknolojinin gücüyle bağışçılığı daha güvenilir, gönüllülüğü daha etkili kılıyoruz. Şeffaflık endeksimizle sivil topluma olan güveni yeniden tanımlıyoruz."
+                imageUrl="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop"
+                imageHint="document verify shield icon concept"
+            />
+
+            {/* Team/Community */}
+            <AppleSection 
+                title="Büyük Bir Topluluğuz."
+                subtitle="Milyonlarca gönüllü, yüzlerce STK."
+                description="Sadece bir platform değil, iyilik hareketini bir yaşam biçimi haline getiren bilinçli bir topluluğuz. Her bir üyemiz, kampüs temsilcimiz ve iş ortağımızla daha güçlüyüz."
+                imageUrl="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
+                imageHint="happy group people outdoors"
+            />
+
+            {/* Detailed Footer */}
+            <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-20 pb-12 px-4 sm:px-6">
+                <div className="container mx-auto max-w-4xl space-y-16">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-black/10 pt-12">
+                        <div className="space-y-4">
+                            <h4 className="text-[12px] font-bold uppercase tracking-tight">Kurumsal</h4>
+                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
+                                <Link href="/about" className="hover:underline">Biz Kimiz?</Link>
+                                <Link href="/social-impact" className="hover:underline">Sosyal Etkimiz</Link>
+                                <Link href="/press" className="hover:underline">Basın Odası</Link>
+                                <Link href="/yatirimci-iliskileri" className="hover:underline">Yatırımcı İlişkileri</Link>
+                            </nav>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-[12px] font-bold uppercase tracking-tight">İşbirlikleri</h4>
+                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
+                                <Link href="/merchant" className="hover:underline">Üye İşyeri</Link>
+                                <Link href="/ngo-onboarding" className="hover:underline">STK Başvurusu</Link>
+                                <Link href="/corporate" className="hover:underline">Kamu İşbirlikleri</Link>
+                            </nav>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-[12px] font-bold uppercase tracking-tight">Destek</h4>
+                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
+                                <Link href="/support" className="hover:underline">Yardım Merkezi</Link>
+                                <Link href="/feedback" className="hover:underline">Geri Bildirim</Link>
+                                <Link href="/accessibility" className="hover:underline">Erişilebilirlik</Link>
+                            </nav>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-[12px] font-bold uppercase tracking-tight">Yasal</h4>
+                            <nav className="flex flex-col gap-2.5 text-[12px] text-[#1d1d1f]/70">
+                                <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
+                                <Link href="/sitemap" className="hover:underline">Site Haritası</Link>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-black/10 flex flex-col md:flex-row justify-between items-start gap-8">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Zap className="h-5 w-5 text-primary" />
+                                <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel A.Ş.</span>
+                            </div>
+                            <p className="text-[11px] text-[#86868b] max-w-xs leading-relaxed">
+                                © 2024 hangel A.Ş. Genel Merkezi. Tüm hakları saklıdır.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
-      </div>
-
-       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Sosyal Etki Raporu (Özet)</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4 text-center">
-            <div>
-                <Users className="h-8 w-8 text-primary mx-auto mb-2"/>
-                <p className="text-xl font-bold">1 Milyon+</p>
-                <p className="text-xs text-muted-foreground">Ulaşılan İnsan</p>
-            </div>
-             <div>
-                <HandCoins className="h-8 w-8 text-primary mx-auto mb-2"/>
-                <p className="text-xl font-bold">500.000 ₺+</p>
-                <p className="text-xs text-muted-foreground">Aktarılan Bağış</p>
-            </div>
-             <div>
-                <Hourglass className="h-8 w-8 text-primary mx-auto mb-2"/>
-                <p className="text-xl font-bold">10.000+ Saat</p>
-                <p className="text-xs text-muted-foreground">Gönüllülük</p>
-            </div>
-        </CardContent>
-      </Card>
-
-       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">hangel'e Hoş Geldiniz</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-muted-foreground text-sm">
-          <p>
-            Hangel olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim oluşturabileceği bir platform oluşturma hayaliyle yola başladık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.
-          </p>
-           <p>
-            Platformumuz, günlük alışverişlerinizi birer iyilik hareketine dönüştürmenize olanak tanır. Anlaşmalı markalardan yaptığınız her harcamanın bir kısmı, hiçbir ek ücret ödemeden sizin seçtiğiniz bir STK'ya bağış olarak aktarılır. Böylece, günlük ihtiyaçlarınızı karşılarken aynı zamanda topluma katkıda bulunmuş olursunuz.
-          </p>
-          <p>
-            Aynı zamanda Hangel, yeteneklerinizi ve zamanınızı topluma fayda sağlamak için kullanabileceğiniz bir gönüllülük merkezidir. İlgi alanlarınıza ve becerilerinize uygun gönüllülük ilanlarını keşfedebilir, başvurabilir ve sağladığınız etkiyi 'Sosyal Etki Puanı' ile ölçebilirsiniz.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Misyonumuz</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm">
-          <p>
-            Sosyal etki oluşturmak isteyen herkes için güvenilir, kolay ve ilham verici bir dijital köprü kurarak, toplumsal sorunlara sürdürülebilir çözümler bulunmasına aracılık etmek.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Vizyonumuz</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm">
-          <p>
-            Türkiye'de ve dünyada sosyal sorumluluk ve gönüllülük denince akla gelen ilk platform olmak; iyiliği bir yaşam biçimi haline getiren, bilinçli ve aktif bir toplumun oluşmasına liderlik etmek.
-          </p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Kurumsal</CardTitle>
-          <CardDescription>
-            Şeffaflık ilkemiz doğrultusunda kurumsal bilgilerimize, yatırımcı ve kamu ilişkileri sayfalarımıza buradan ulaşabilirsiniz.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <Link href="/bilgi-toplumu-hizmetleri" className="block">
-            <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
-              <Building2 className="h-8 w-8 text-primary mx-auto mb-2"/>
-              <p className="font-semibold">Bilgi Toplumu Hizmetleri</p>
-            </div>
-          </Link>
-          <Link href="/yatirimci-iliskileri" className="block">
-            <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
-              <Briefcase className="h-8 w-8 text-primary mx-auto mb-2"/>
-              <p className="font-semibold">Yatırımcı İlişkileri</p>
-            </div>
-          </Link>
-          <Link href="/corporate" className="block">
-            <div className="p-4 border rounded-lg hover:bg-accent transition-colors text-center h-full flex flex-col justify-center">
-              <Users className="h-8 w-8 text-primary mx-auto mb-2"/>
-              <p className="font-semibold">Kamu İlişkileri</p>
-            </div>
-          </Link>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Bize Ulaşın</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6 text-sm">
-            <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <span>turkiye@hangel.org</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>0554 700 70 07</span>
-                </div>
-                 <div className="flex items-start gap-4">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-medium">Genel Merkez (Posta Adresi)</p>
-                        <p className='text-muted-foreground'>Caferağa Mah. Moda Cad. No: 123 D:4, Kadıköy, İstanbul</p>
-                    </div>
-                </div>
-            </div>
-            <div className='space-y-4 pt-4 border-t'>
-                 <h4 className='font-semibold'>Ofislerimiz</h4>
-                 <div className="flex items-start gap-4">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-medium">Marmara Bölge İrtibat Ofisi</p>
-                        <p className='text-muted-foreground'>Maslak, Büyükdere Cad. No: 255, Sarıyer, İstanbul</p>
-                    </div>
-                </div>
-                 <div className="flex items-start gap-4">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-medium">Ege Bölge İrtibat Ofisi</p>
-                        <p className='text-muted-foreground'>Sancar Maruflu STK Yerleşkesi, Bahçeli Evler Mh., Kat:1 No:21, Karşıyaka, İzmir</p>
-                    </div>
-                </div>
-            </div>
-             <div className='space-y-4 pt-4 border-t'>
-                <h4 className='font-semibold'>Sosyal Medya</h4>
-                 <div className="flex gap-6">
-                    <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer"><Instagram className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
-                    <a href="#" target="_blank" rel="noopener noreferrer"><Linkedin className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
-                    <a href="https://wa.me/905547007007" target="_blank" rel="noopener noreferrer"><MessageSquare className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" /></a>
-                 </div>
-            </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    );
 }

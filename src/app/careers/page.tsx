@@ -5,19 +5,19 @@ import { Button } from '@/components/ui/button';
 import { 
     ChevronRight, 
     ArrowLeft,
-    Download,
-    FileText,
-    Rss,
     Zap,
     Users,
-    Target
+    Target,
+    Rocket,
+    Globe,
+    Briefcase
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
-const PressSection = ({ 
+const CareerSection = ({ 
     title, 
     subtitle, 
     description, 
@@ -59,7 +59,7 @@ const PressSection = ({
     </section>
 );
 
-export default function PressPage() {
+export default function CareersPage() {
     const router = useRouter();
 
     return (
@@ -70,39 +70,39 @@ export default function PressPage() {
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight">Basın Odası</span>
+                    <span className="text-[12px] font-bold tracking-tight">Kariyer</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
-                        <Link href="/press/kit">Medya Kiti</Link>
+                        <Link href="/login/selection?action=register">İlana Başvur</Link>
                     </Button>
                 </div>
             </header>
 
             {/* Hero */}
-            <PressSection 
-                title="Haberin Kalbinde İyilik."
-                subtitle="Resmi duyurular ve medya kaynakları."
-                description="Hangel'in toplumsal değişime öncülük eden projeleri, marka işbirlikleri ve teknolojik yenilikleri hakkında güncel verilere buradan ulaşın."
-                imageUrl="https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=2070&auto=format&fit=crop"
-                imageHint="journalism camera broadcast news"
+            <CareerSection 
+                title="Geleceği Bizimle İnşa Edin."
+                subtitle="Etki odaklı bir kariyer yolculuğuna başlayın."
+                description="Hangel'de sadece kod yazmıyor veya kampanya yönetmiyoruz; toplumsal bir dönüşümün mimarları oluyoruz. Yeteneklerinizi dünya için kullanmaya hazır mısınız?"
+                imageUrl="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
+                imageHint="young professionals working happy"
             />
 
-            {/* Latest Releases */}
-            <PressSection 
+            {/* Values */}
+            <CareerSection 
                 theme="dark"
-                title="Son Duyurular."
-                subtitle="Sosyal etkide şeffaf raporlama."
-                description="2024 Sosyal Etki Raporu ve yeni kampüs programlarımız hakkında yayınlanan en yeni basın bültenlerimizi inceleyin."
-                imageUrl="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop"
-                imageHint="newspaper stack clean minimalist"
+                title="Değerlerimizle Güçlüyüz."
+                subtitle="Yaratıcılık, Şeffaflık ve Cesaret."
+                description="Sınırları zorlamayı seviyoruz. Hiyerarşiden uzak, fikirlerin özgürce paylaşıldığı ve sosyal etkinin her şeyin önünde olduğu bir ekosistemde çalışıyoruz."
+                imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
+                imageHint="collaborative meeting brainstorming"
             />
 
-            {/* Visual Assets */}
-            <PressSection 
-                title="Marka Kimliği."
-                subtitle="Logo ve kurumsal materyaller."
-                description="Hangel logolarını, kurumsal renk paletimizi ve kullanım rehberini medya projeleriniz için yüksek çözünürlüklü olarak indirin."
-                imageUrl="https://images.unsplash.com/photo-1557683311-eac922347aa1?q=80&w=2029&auto=format&fit=crop"
-                imageHint="colorful abstract corporate identity"
+            {/* Global Impact */}
+            <CareerSection 
+                title="Global Bir Vizyon."
+                subtitle="Türkiye'den dünyaya uzanan iyilik köprüsü."
+                description="Yerel sorunlara global standartlarda çözümler üretiyoruz. Teknoloji ekibimizden saha koordinatörlerimize kadar hepimiz aynı tutkuyla çalışıyoruz."
+                imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                imageHint="students group study discussion"
             />
 
             {/* Detailed Footer */}
@@ -150,7 +150,7 @@ export default function PressPage() {
                                 <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel A.Ş.</span>
                             </div>
                             <p className="text-[11px] text-[#86868b] max-w-xs leading-relaxed">
-                                © 2024 hangel A.Ş. İletişim Ofisi. Tüm hakları saklıdır.
+                                © 2024 hangel A.Ş. Yetenek Kazanım Merkezi. Tüm hakları saklıdır.
                             </p>
                         </div>
                     </div>
