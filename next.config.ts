@@ -37,18 +37,6 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'reklamaction.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.reklamaction.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'gelirortaklari.com',
         port: '',
         pathname: '/**',
@@ -56,6 +44,18 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.gelirortaklari.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'reklamaction.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.reklamaction.com',
         port: '',
         pathname: '/**',
       },
