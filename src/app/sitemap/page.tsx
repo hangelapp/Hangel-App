@@ -44,6 +44,15 @@ export default function SitemapPage() {
             ]
         },
         {
+            title: "hangel Derneği",
+            links: [
+                { label: "Hakkında", href: "/about" },
+                { label: "Etkinlikler", href: "/events" },
+                { label: "Uluslararası Çalıştay", href: "/events" },
+                { label: "Mevzuat Taslağı", href: "/library" }
+            ]
+        },
+        {
             title: "Kurumsal",
             links: [
                 { label: "Biz Kimiz?", href: "/about" },
