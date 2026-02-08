@@ -41,10 +41,10 @@ export default function SitemapPage() {
         {
             title: "hangel Derneği",
             links: [
-                { label: "Hakkında", href: "/about" },
-                { label: "Etkinlikler", href: "/events" },
-                { label: "Uluslararası Çalıştay", href: "/events" },
-                { label: "Mevzuat Taslağı", href: "/library" }
+                { label: "Hakkında", href: "/association/about" },
+                { label: "Etkinlikler", href: "/association/events" },
+                { label: "Uluslararası Çalıştay", href: "/association/workshop" },
+                { label: "Mevzuat Taslağı", href: "/association/legislation" }
             ]
         },
         {
@@ -62,7 +62,7 @@ export default function SitemapPage() {
         {
             title: "İşbirlikleri",
             links: [
-                { label: "Üye İşyeri Programı", href: "/merchant" },
+                { label: "Üye İşyeri ol", href: "/merchant" },
                 { label: "STK Kayıt ve Başvuru", href: "/ngo-onboarding" },
                 { label: "Kampüs Temsilciliği", href: "/contact/universities" },
                 { label: "Kulüp Avantajları", href: "/campus-advantages" },
