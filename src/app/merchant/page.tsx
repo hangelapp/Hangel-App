@@ -1,202 +1,217 @@
+
 'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-    Zap, 
-    TrendingUp, 
-    Handshake, 
-    QrCode, 
-    ShieldCheck, 
-    Users, 
-    ArrowLeft, 
     ChevronRight, 
-    LayoutGrid, 
-    Sparkles, 
-    Store,
-    CreditCard
+    ArrowLeft,
+    QrCode,
+    TrendingUp,
+    LayoutGrid,
+    ShieldCheck,
+    Smartphone,
+    CreditCard,
+    Zap,
+    ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-const AdvantageCard = ({ 
+const ProductSection = ({ 
     title, 
+    subtitle, 
     description, 
-    icon: Icon, 
-    className,
-    isLarge = false,
-    image
+    cta1 = "Daha Fazla Bilgi", 
+    cta2 = "Hemen Başvur", 
+    theme = 'light',
+    imageUrl,
+    imageHint,
+    className
 }: { 
     title: string, 
-    description: string, 
-    icon: any, 
-    className?: string,
-    isLarge?: boolean,
-    image?: string
+    subtitle?: string, 
+    description?: string, 
+    cta1?: string, 
+    cta2?: string, 
+    theme?: 'light' | 'dark',
+    imageUrl: string,
+    imageHint: string,
+    className?: string
 }) => (
-    <div className={cn(
-        "group relative flex flex-col bg-white rounded-[2.5rem] p-8 transition-all hover:shadow-2xl border border-black/5 overflow-hidden",
-        isLarge ? "md:col-span-2 min-h-[450px] justify-between" : "min-h-[300px] justify-start",
+    <section className={cn(
+        "relative min-h-screen flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
+        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
-        {image && (
-            <div className="absolute inset-0 z-0">
-                <Image src={image} alt={title} fill className="object-cover opacity-10 group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
-            </div>
-        )}
-        <div className="relative z-10">
-            <div className={cn(
-                "rounded-2xl flex items-center justify-center mb-6 transition-colors",
-                isLarge ? "w-16 h-16 bg-primary/10 text-primary" : "w-12 h-12 bg-[#f5f5f7] text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-            )}>
-                <Icon className={isLarge ? "h-8 w-8" : "h-6 w-6"} />
-            </div>
-            <div className="space-y-3">
-                <h3 className={cn("font-bold tracking-tight text-[#1d1d1f]", isLarge ? "text-3xl md:text-4xl" : "text-xl")}>{title}</h3>
-                <p className={cn("text-muted-foreground leading-relaxed font-medium", isLarge ? "text-lg md:text-xl max-w-md" : "text-sm")}>{description}</p>
+        <div className="relative z-10 space-y-4 px-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
+            {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
+            
+            <div className="flex items-center justify-center gap-6 pt-4">
+                <Link href="#" className="text-primary hover:underline flex items-center text-lg font-medium">
+                    {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
+                </Link>
+                <Link href="/login/selection?action=register&type=corporate" className="text-primary hover:underline flex items-center text-lg font-medium">
+                    {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
+                </Link>
             </div>
         </div>
-        {isLarge && (
-            <div className="relative z-10 pt-8">
-                <span className="text-primary font-bold flex items-center text-sm md:text-base">
-                    Sistemi Keşfet <ChevronRight className="h-4 w-4 ml-1" />
-                </span>
+        
+        <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
+            <div className="relative w-full aspect-[16/10] md:aspect-[21/9] rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
+                <Image 
+                    src={imageUrl} 
+                    alt={title} 
+                    fill 
+                    className="object-cover" 
+                    data-ai-hint={imageHint}
+                />
             </div>
-        )}
-    </div>
+        </div>
+    </section>
 );
 
 export default function MerchantAdvantagesPage() {
     const router = useRouter();
 
     return (
-        <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30 pb-24">
-            {/* Navigation */}
-            <div className="container mx-auto px-4 pt-8">
-                <Button onClick={() => router.back()} variant="ghost" className="rounded-full hover:bg-white text-[#1d1d1f]">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Geri Dön
-                </Button>
-            </div>
-
-            {/* Hero Section */}
-            <section className="container mx-auto px-4 pt-16 pb-20 text-center space-y-6">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
-                    <Zap className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-widest">hangel Üye İşyeri Programı</span>
-                </div>
-                <h1 className="text-5xl md:text-8xl font-bold tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto">
-                    İşletmenizi <br className="hidden md:block" /> İyiliğin Merkezine Taşıyın.
-                </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                    Hangel QR Ödeme sistemine dahil olun. Müşterilerinize modern bir ödeme deneyimi sunarken, her işlemi toplumsal bir faydaya dönüştürün.
-                </p>
-                <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
-                        <Link href="/login/selection?action=register&type=corporate">Hemen Başvur</Link>
+        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+            {/* Header / Nav */}
+            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+                <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
+                    <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-[#1d1d1f]/80">
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
-                    <Button asChild variant="ghost" size="lg" className="rounded-full px-10 h-14 text-lg font-bold border border-black/10 hover:bg-white">
-                        <Link href="/support">Destek Al</Link>
-                    </Button>
-                </div>
-            </section>
-
-            {/* Main Advantages - Large Cards */}
-            <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-                <AdvantageCard 
-                    isLarge
-                    icon={QrCode}
-                    title="Temassız QR Ödeme"
-                    description="Kasa hızınızı artırın. Müşterileriniz saniyeler içinde sadece QR kod okutarak güvenle ödeme yapsın."
-                    image="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
-                />
-                <AdvantageCard 
-                    isLarge
-                    icon={TrendingUp}
-                    title="Marka Değeri ve Sadakat"
-                    description="Bilinçli tüketiciler için tercih sebebi olun. Her alışverişin bir iyiliğe vesile olması müşteri bağlılığını %40 artırır."
-                    image="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
-                />
-                <AdvantageCard 
-                    isLarge
-                    icon={Users}
-                    title="Yeni Müşteri Kitlesi"
-                    description="Hangel ağındaki binlerce duyarlı kullanıcıya 'İyilik Noktası' olarak görünün ve fiziksel trafiğinizi artırın."
-                    image="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
-                />
-                <AdvantageCard 
-                    isLarge
-                    icon={ShieldCheck}
-                    title="Sıfır Operasyonel Yük"
-                    description="Bağış süreçlerini biz yönetiyoruz. Siz sadece satışınızı yapın, sistem bağış paylarını otomatik olarak ayırır."
-                    image="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop"
-                />
-            </section>
-
-            {/* Detailed Benefits Grid */}
-            <section className="container mx-auto px-4 space-y-12">
-                <div className="text-left md:text-center space-y-2">
-                    <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1d1d1f]">İşletmeniz İçin Akıllı Çözümler.</h2>
-                    <p className="text-lg text-muted-foreground font-medium">Hangel Üye İşyeri olarak sahip olacağınız diğer ayrıcalıklar.</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <AdvantageCard 
-                        icon={LayoutGrid} 
-                        title="Yönetim Paneli" 
-                        description="Tüm işlemleri anlık takip edin, günlük ve aylık ciro raporlarınızı tek tıkla alın." 
-                    />
-                    <AdvantageCard 
-                        icon={CreditCard} 
-                        title="Düşük Komisyon" 
-                        description="Sosyal etki odaklı işletmelere özel, piyasa standartlarının altında avantajlı oranlar." 
-                    />
-                    <AdvantageCard 
-                        icon={Sparkles} 
-                        title="Görünürlük Desteği" 
-                        description="Uygulama içinde 'Öne Çıkan Mekanlar' listesinde yer alarak marka bilinirliğinizi artırın." 
-                    />
-                    <AdvantageCard 
-                        icon={Store} 
-                        title="Dijital Vitrin" 
-                        description="İşletme profilinizi fotoğraflar ve hikayelerle zenginleştirin, kampüs ağımıza entegre olun." 
-                    />
-                    <AdvantageCard 
-                        icon={Handshake} 
-                        title="Kurumsal İşbirliği" 
-                        description="Platformdaki STK'lar ile ortak projeler geliştirme ve kurumsal sosyal sorumluluk fırsatları." 
-                    />
-                    <AdvantageCard 
-                        icon={ShieldCheck} 
-                        title="Güvenli Altyapı" 
-                        description="PCI-DSS uyumlu, yüksek güvenlikli ödeme altyapısı ile hem siz hem müşteriniz güvende kalın." 
-                    />
-                </div>
-            </section>
-
-            {/* Final CTA */}
-            <section className="container mx-auto px-4 pt-24 pb-12">
-                <div className="bg-[#1d1d1f] rounded-[3rem] p-12 text-center text-white space-y-8 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight relative z-10">Geleceğin Ticaretine <br /> Bugün Katılın.</h2>
-                    <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto relative z-10">
-                        Üye işyeri başvurunuzu saniyeler içinde tamamlayın, işletmenizi iyiliğin bir parçası yapın.
-                    </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
-                        <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold bg-white text-black hover:bg-white/90">
+                    <div className="flex items-center gap-6 text-[12px] font-medium text-[#1d1d1f]/80">
+                        <span className="hidden sm:inline">Üye İşyeri Programı</span>
+                        <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
                             <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
-                        </Button>
-                        <Button asChild variant="ghost" size="lg" className="rounded-full px-12 h-14 text-lg font-bold text-white hover:bg-white/10">
-                            <Link href="/support">Bilgi Al</Link>
                         </Button>
                     </div>
                 </div>
-            </section>
+            </header>
 
-            <footer className="container mx-auto px-4 text-center text-[12px] text-muted-foreground font-medium pt-8">
-                <p>&copy; 2024 Hangel Hub Teknoloji A.Ş. Üye İşyeri Çözüm Merkezi.</p>
+            {/* Hero Section */}
+            <ProductSection 
+                title="İşletmenizi İyiliğe Açın."
+                subtitle="hangel Üye İşyeri ile ticaretin yeni nesil hali."
+                description="Müşterilerinize modern bir ödeme deneyimi sunarken, her işlemi toplumsal bir faydaya dönüştürün. Ek masraf yok, sadece etki var."
+                imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
+                imageHint="modern minimalist retail store interior"
+            />
+
+            {/* QR Payment Section */}
+            <ProductSection 
+                theme="dark"
+                title="QR ile Temassız Ödeme."
+                subtitle="Saniyeler içinde, güvenle."
+                description="Kasa hızınızı artırın. Müşterileriniz sadece QR kod okutarak ödemesini tamamlasın, bağışını seçsin."
+                imageUrl="https://images.unsplash.com/photo-1556742049-02e1f6c40b12?q=80&w=2070&auto=format&fit=crop"
+                imageHint="smartphone scanning qr code checkout"
+            />
+
+            {/* Loyalty Section */}
+            <ProductSection 
+                title="Marka Sadakatini Artırın."
+                subtitle="Her alışveriş bir iyilik hikayesi."
+                description="Bilinçli tüketiciler için tercih sebebi olun. Yapılan her alışverişin bir STK'ya bağışlanması, müşteri bağlılığını %40'a kadar artırır."
+                imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
+                imageHint="happy customer shopping in high end store"
+            />
+
+            {/* Management Section */}
+            <ProductSection 
+                theme="dark"
+                title="Tam Kontrol Panelinizde."
+                subtitle="Veriye dayalı yönetim araçları."
+                description="Günlük cirolarınızı, bağış hacminizi ve müşteri demografinizi şeffaf bir şekilde takip edin. Raporlarınızı tek tıkla alın."
+                imageUrl="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
+                imageHint="sleek minimalist dashboard on tablet screen"
+            />
+
+            {/* Detailed Info Footer - Apple Style */}
+            <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-20 pb-12 px-4 sm:px-6">
+                <div className="container mx-auto max-w-4xl space-y-12">
+                    <div className="space-y-4 text-center">
+                        <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Sıkça Sorulan Sorular</h3>
+                        <p className="text-muted-foreground font-medium">Üye işyeri süreçleri hakkında detaylı bilgiler.</p>
+                    </div>
+
+                    <Accordion type="single" collapsible className="w-full border-t border-black/10">
+                        <AccordionItem value="item-1" className="border-b border-black/10">
+                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
+                                hangel üye işyeri olmak ücretli mi?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
+                                Hayır, hangel üye işyeri programına dahil olmak tamamen ücretsizdir. Herhangi bir aylık sabit ücret veya üyelik bedeli bulunmamaktadır. Sadece gerçekleşen işlemler üzerinden sektörel bazda belirlenen düşük komisyon oranları uygulanır.
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-2" className="border-b border-black/10">
+                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
+                                Bağış oranlarını kim belirliyor?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
+                                Bağış oranları, markanızın kurumsal sosyal sorumluluk hedefleri doğrultusunda sizin tarafınızdan belirlenir. Bu oranlar kategori bazlı olarak farklılık gösterebilir ve dilediğiniz zaman yönetim panelinden güncellenebilir.
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-3" className="border-b border-black/10">
+                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
+                                Ödemeler ne zaman hesabıma geçer?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
+                                QR ödeme sistemi ile gerçekleşen satışlarınızın tutarı, yasal mutabakat süreleri (genellikle ertesi iş günü) içerisinde banka hesabınıza aktarılır. Bağış payları sistem tarafından otomatik olarak ayrıştırılır ve ilgili STK havuzuna yönlendirilir.
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-4" className="border-b border-black/10">
+                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
+                                Teknik entegrasyon gerekiyor mu?
+                            </AccordionTrigger>
+                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
+                                Fiziksel mağazalar için herhangi bir teknik entegrasyon gerekmez. Size özel tanımlanan QR kodlu stickerları kasanıza yerleştirmeniz yeterlidir. Online pazar yeri satıcıları için ise XML veya API entegrasyonu seçeneklerimiz mevcuttur.
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+
+                    <div className="pt-12 border-t border-black/10 flex flex-col md:flex-row justify-between items-start gap-8">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <Zap className="h-5 w-5 text-primary" />
+                                <span className="font-bold text-xl tracking-tight">hangel hub</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
+                                2024 Hangel Hub Teknoloji A.Ş. Üye İşyeri Çözüm Merkezi. Tüm hakları saklıdır. Veriler PCI-DSS standartlarında şifrelenmektedir.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Kurumsal</h4>
+                                <nav className="flex flex-col gap-2">
+                                    <Link href="/about" className="text-xs font-medium hover:underline">Hakkımızda</Link>
+                                    <Link href="/corporate" className="text-xs font-medium hover:underline">Kamu İlişkileri</Link>
+                                    <Link href="/press" className="text-xs font-medium hover:underline">Basın Odası</Link>
+                                </nav>
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Destek</h4>
+                                <nav className="flex flex-col gap-2">
+                                    <Link href="/support" className="text-xs font-medium hover:underline">Yardım Merkezi</Link>
+                                    <Link href="/bilgi-toplumu-hizmetleri" className="text-xs font-medium hover:underline">Bilgi Toplumu</Link>
+                                    <Link href="/settings/contracts" className="text-xs font-medium hover:underline">Yasal Metinler</Link>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </footer>
         </div>
     );
