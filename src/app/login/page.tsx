@@ -312,7 +312,7 @@ const Footer = () => {
                     
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-black/10 pt-4">
                         <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
-                            <span className="whitespace-nowrap">Telif Hakkı © 2024 Hangel Hub Teknoloji A.Ş. Tüm hakları saklıdır.</span>
+                            <span className="whitespace-nowrap">Telif Hakkı © 2024 hangel A.Ş. Tüm hakları saklıdır.</span>
                         </div>
                         <div className="text-[12px] font-medium text-[#1d1d1f]/70 hover:text-[#1d1d1f] cursor-pointer transition-colors shrink-0">
                             Türkiye
@@ -377,7 +377,7 @@ export default function LoginPage() {
                 {/* BRANDS SECTION */}
                 <section className="bg-white pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel Derneği</h2>
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağış</h2>
                         <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Alışverişi iyiliğe dönüştürün.</p>
                         <div className="flex items-center justify-center gap-6 pt-4">
                             <Link href="/market" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
