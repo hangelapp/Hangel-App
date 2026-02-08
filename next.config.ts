@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true, // Sunucu taraflı DNS ve ağ kısıtlamalarını aşmak için görsel optimizasyonunu devre dışı bırakıyoruz.
+    unoptimized: true, 
     remotePatterns: [
       {
         protocol: 'https',
@@ -47,6 +47,30 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'gelirortaklari.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.gelirortaklari.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'affocean.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.affocean.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 };

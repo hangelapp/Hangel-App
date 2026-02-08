@@ -1,4 +1,3 @@
-
 'use server';
 
 import type { Brand } from '@/lib/types';
@@ -29,9 +28,11 @@ export async function getApiOffers(): Promise<Brand[]> {
     try {
         const fetchPromises = AGENCIES.map(async (agency) => {
             try {
+                console.log(`Fetching from ${agency.name}...`);
                 const response = await fetch(agency.url, {
                     headers: {
-                        "Authorization": `Bearer ${agency.key}`
+                        "Authorization": `Bearer ${agency.key}`,
+                        "Accept": "application/json"
                     },
                     cache: 'no-store'
                 });
@@ -42,28 +43,50 @@ export async function getApiOffers(): Promise<Brand[]> {
                 }
 
                 const result = await response.json();
-                // Veri yapısı API'ye göre Array veya Object içinde 'data' olabilir
-                const offers = Array.isArray(result) ? result : (result.data || []);
+                
+                // Farklı API yapılarını (data, offers, items veya direkt array) normalize et
+                let offers = [];
+                if (Array.isArray(result)) {
+                    offers = result;
+                } else if (result.data && Array.isArray(result.data)) {
+                    offers = result.data;
+                } else if (result.offers && Array.isArray(result.offers)) {
+                    offers = result.offers;
+                } else if (result.items && Array.isArray(result.items)) {
+                    offers = result.items;
+                }
+
+                console.log(`${agency.name} returned ${offers.length} offers.`);
                 
                 return offers.map((m: any) => {
-                    if (!m || !m.name) return null;
+                    if (!m) return null;
 
-                    const rawPayout = m.payout || "0";
+                    // İsim/Başlık tespiti
+                    const brandName = m.name || m.title || m.brand_name || m.advertiser_name || "Bilinmeyen Marka";
+                    
+                    // Logo tespiti
+                    const logoUrl = m.logo || m.image || m.logo_url || m.image_url || m.brand_logo || "";
+                    
+                    // Link tespiti
+                    const targetLink = m.preview_url || m.link || m.url || m.click_url || "#";
+
+                    // Payout (Oran) tespiti ve temizliği
+                    const rawPayout = String(m.payout || m.commission || "0");
                     const isFixed = /TL|TRY|₺/i.test(rawPayout);
                     const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
                     const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
 
                     return {
                         id: `agency-${agency.name.toLowerCase().replace(/\s/g, '-')}-${m.id || Math.random().toString(36).substr(2, 9)}`,
-                        name: m.name,
-                        category: (m.categories && m.categories[0]?.name) || 'Diğer',
+                        name: brandName,
+                        category: (m.categories && m.categories[0]?.name) || m.category || 'Diğer',
                         type: 'brand' as const,
-                        logoUrl: m.logo || m.image || '',
+                        logoUrl: logoUrl,
                         donationRate: cleanPayout,
                         donationRateDisplay: isFixed ? `${cleanPayout} ₺` : `%${cleanPayout}`,
                         followers: Math.floor(Math.random() * 50000) + 500,
-                        about: m.description || `${m.name} markası toplumsal fayda sağlamaktadır.`,
-                        link: m.preview_url || m.link || '#'
+                        about: m.description || `${brandName} markası toplumsal fayda sağlamaktadır.`,
+                        link: targetLink
                     };
                 }).filter(Boolean);
             } catch (err) {
@@ -83,14 +106,15 @@ export async function getApiOffers(): Promise<Brand[]> {
                 uniqueOffersMap.set(key, brand);
             } else {
                 const existing = uniqueOffersMap.get(key)!;
-                // Eğer aynı marka varsa, daha yüksek bağış oranı olanı tut
                 if (brand.donationRate > existing.donationRate) {
                     uniqueOffersMap.set(key, brand);
                 }
             }
         });
 
-        return Array.from(uniqueOffersMap.values());
+        const finalResult = Array.from(uniqueOffersMap.values());
+        console.log(`Total unique brands: ${finalResult.length}`);
+        return finalResult;
     } catch (e) {
         console.error("Global API fetch operation failed:", e);
         return [];
