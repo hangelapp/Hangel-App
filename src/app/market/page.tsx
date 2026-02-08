@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Camera, Filter, ArrowDownUp, Bot, Loader2 } from 'lucide-react';
+import { Search, Camera, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -138,13 +138,15 @@ export default function MarketPage() {
                 const mappedBrands: Brand[] = data.map((offer: any) => {
                     // Payout verisini temizleme ve sayıya dönüştürme (%5.00 -> 5)
                     const rawPayout = offer.payout || "0";
-                    const cleanPayout = parseFloat(rawPayout.replace(',', '.').replace(/[^0-9.]/g, '')) || 0;
+                    const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
+                    const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
 
                     return {
                         id: `ra-${offer.id}`,
                         name: offer.name,
                         category: (offer.categories && offer.categories[0]?.name) || 'Diğer',
                         type: 'brand',
+                        // m.logo (user script) equivalent is often logo_url or thumbnail_url in ReklamAction
                         logoUrl: offer.logo_url || offer.thumbnail_url || `https://placehold.co/400x400?text=${encodeURIComponent(offer.name)}`,
                         donationRate: cleanPayout,
                         followers: Math.floor(Math.random() * 100000) + 1000,
