@@ -108,16 +108,17 @@ const VisualAdCarousel = () => {
 }
 
 /**
- * Güvenli Logo Bileşeni (Next.js Image Proxy Hatalarını Aşar)
+ * Güvenli Logo Bileşeni (Next.js Image Proxy ve DNS Hatalarını Aşar)
  */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
-    // Görsel yoksa veya hata verdiyse markanın baş harfini göster
+    // Görsel yüklenemezse veya URL yoksa markanın baş harfini içeren şık bir Avatar göster
     if (hasError || !brand.logoUrl) {
         return (
-            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase border shadow-inner">
-                {brand.name.charAt(0)}
+            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex flex-col items-center justify-center border shadow-inner p-2">
+                <span className="text-primary font-black text-3xl uppercase">{brand.name.charAt(0)}</span>
+                <span className="text-[8px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center">{brand.name}</span>
             </div>
         );
     }
@@ -126,7 +127,7 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
         <img 
             src={brand.logoUrl} 
             alt={brand.name} 
-            className="w-full h-full object-contain p-3"
+            className="w-full h-full object-contain p-3 transition-opacity duration-300"
             onError={() => setHasError(true)}
             loading="lazy"
         />
@@ -155,7 +156,7 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // API Verilerini Çekme (Server Action Üzerinden)
+  // API Verilerini Çekme
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
@@ -176,12 +177,18 @@ export default function MarketPage() {
   const brandsToShow = useMemo(() => {
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Tekilleştirme
+    // Tekilleştirme (İsim bazlı)
     const uniqueBrandsMap = new Map();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
         if (!uniqueBrandsMap.has(key)) {
             uniqueBrandsMap.set(key, item);
+        } else {
+            // Eğer aynı isimde marka varsa, API'den geleni veya daha yüksek oranlıyı tercih et
+            const existing = uniqueBrandsMap.get(key);
+            if (item.donationRate > existing.donationRate) {
+                uniqueBrandsMap.set(key, item);
+            }
         }
     });
     filteredList = Array.from(uniqueBrandsMap.values());
@@ -465,7 +472,7 @@ export default function MarketPage() {
                 
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
-                    const isApiBrand = brand.id.startsWith('ra-');
+                    const isApiBrand = brand.id.startsWith('agency-');
                     return (
                     <Fragment key={brand.id}>
                         <Link 

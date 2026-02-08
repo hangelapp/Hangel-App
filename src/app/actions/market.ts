@@ -5,35 +5,31 @@ import type { Brand } from '@/lib/types';
 
 /**
  * Üç farklı ajansın (Gelir Ortakları, Affocean, ReklamAction) 
- * kendi ağ parametreleri ile verileri çeken sunucu eylemi.
+ * kendi özel URL ve anahtarlarıyla verileri çeken sunucu eylemi.
  */
 export async function getApiOffers(): Promise<Brand[]> {
     const AGENCIES = [
         { 
             name: "Gelir Ortakları", 
             key: "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3",
-            network: "gelirortaklari" 
+            url: "https://api.gelirortaklari.com/v1/offers" 
         },
         { 
             name: "Affocean", 
             key: "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48",
-            network: "affocean" 
+            url: "https://api.reklamaction.com/v1/offer?network=affocean" 
         },
         { 
             name: "ReklamAction", 
             key: "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54",
-            network: "reklamaction" 
+            url: "https://api.reklamaction.com/v1/offer?network=reklamaction" 
         }
     ];
-    
-    const baseUrl = "https://api.reklamaction.com/v1/offer";
 
     try {
-        // Tüm ajanslar için paralel ve bağımsız fetch işlemleri
         const fetchPromises = AGENCIES.map(async (agency) => {
             try {
-                const url = `${baseUrl}?network=${agency.network}`;
-                const response = await fetch(url, {
+                const response = await fetch(agency.url, {
                     headers: {
                         "Authorization": `Bearer ${agency.key}`
                     },
@@ -46,6 +42,7 @@ export async function getApiOffers(): Promise<Brand[]> {
                 }
 
                 const result = await response.json();
+                // Veri yapısı API'ye göre Array veya Object içinde 'data' olabilir
                 const offers = Array.isArray(result) ? result : (result.data || []);
                 
                 return offers.map((m: any) => {
@@ -57,7 +54,7 @@ export async function getApiOffers(): Promise<Brand[]> {
                     const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
 
                     return {
-                        id: `ra-${agency.network}-${m.id || Math.random().toString(36).substr(2, 9)}`,
+                        id: `agency-${agency.name.toLowerCase().replace(/\s/g, '-')}-${m.id || Math.random().toString(36).substr(2, 9)}`,
                         name: m.name,
                         category: (m.categories && m.categories[0]?.name) || 'Diğer',
                         type: 'brand' as const,
@@ -86,6 +83,7 @@ export async function getApiOffers(): Promise<Brand[]> {
                 uniqueOffersMap.set(key, brand);
             } else {
                 const existing = uniqueOffersMap.get(key)!;
+                // Eğer aynı marka varsa, daha yüksek bağış oranı olanı tut
                 if (brand.donationRate > existing.donationRate) {
                     uniqueOffersMap.set(key, brand);
                 }
