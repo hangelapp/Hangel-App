@@ -58,6 +58,7 @@ export type Brand = {
   logoHint?: string;
   coverPhotoUrl?: string;
   donationRate: number;
+  donationRateDisplay?: string;
   stats?: {
     supporters: number;
     totalDonation: number;

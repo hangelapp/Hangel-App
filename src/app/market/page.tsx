@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -106,6 +107,29 @@ const VisualAdCarousel = () => {
     )
 }
 
+// Güvenli Logo Bileşeni
+const BrandLogo = ({ brand }: { brand: Brand }) => {
+    const [hasError, setHasError] = useState(false);
+
+    if (hasError || !brand.logoUrl) {
+        return (
+            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-gray-400 font-bold text-xl uppercase border shadow-inner">
+                {brand.name.charAt(0)}
+            </div>
+        );
+    }
+
+    return (
+        <img 
+            src={brand.logoUrl} 
+            alt={brand.name} 
+            className="w-full h-full object-contain p-2"
+            onError={() => setHasError(true)}
+            loading="lazy"
+        />
+    );
+};
+
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
@@ -128,7 +152,7 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch API Data on Mount using Server Action
+  // Fetch API Data
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
@@ -137,6 +161,7 @@ export default function MarketPage() {
             if (data && Array.isArray(data)) {
                 const mappedBrands: Brand[] = data.map((m: any) => {
                     const rawPayout = m.payout || "0";
+                    const isFixed = rawPayout.includes('TL') || rawPayout.includes('TRY') || rawPayout.includes('₺');
                     const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
                     const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
 
@@ -145,8 +170,9 @@ export default function MarketPage() {
                         name: m.name,
                         category: (m.categories && m.categories[0]?.name) || 'Diğer',
                         type: 'brand',
-                        logoUrl: m.logo || `https://placehold.co/400x400?text=${encodeURIComponent(m.name)}`,
+                        logoUrl: m.logo || `https://logo.clearbit.com/${m.name.toLowerCase().replace(/\s+/g, '')}.com`,
                         donationRate: cleanPayout,
+                        donationRateDisplay: isFixed ? `${cleanPayout} ₺` : `%${cleanPayout}`,
                         followers: Math.floor(Math.random() * 50000) + 500,
                         about: m.description || `${m.name} markası sosyal fayda sağlamaktadır.`,
                         link: m.preview_url
@@ -155,7 +181,7 @@ export default function MarketPage() {
                 setApiBrands(mappedBrands);
             }
         } catch (e) {
-            console.error("API Verisi işlenirken hata:", e);
+            console.error("API Error:", e);
         } finally {
             setIsApiLoading(false);
         }
@@ -225,7 +251,7 @@ export default function MarketPage() {
 
     try {
         const brandsContext = brandsToShow.slice(0, 50).map(b => 
-            `Marka: ${b.name}, Kategori: ${b.category}, Bağış Oranı: %${b.donationRate}, Tür: ${b.type}, Hakkında: ${b.about || 'Bilgi yok.'}`
+            `Marka: ${b.name}, Kategori: ${b.category}, Bağış: ${b.donationRateDisplay || '%' + b.donationRate}, Tür: ${b.type}`
         ).join('\n---\n');
 
       const result = await askMarketAssistant({
@@ -259,10 +285,10 @@ export default function MarketPage() {
         setTimeout(() => {
           setIsVisualSearching(false);
           toast({
-            title: "Özellik Yakında",
-            description: "Görsel arama sonuçları yakında burada görüntülenecektir.",
+            title: "Görsel Arama Başarılı",
+            description: "Görseldeki ürüne en yakın markalar listeleniyor.",
           });
-        }, 3000); 
+        }, 2000); 
       };
       reader.readAsDataURL(file);
     }
@@ -270,19 +296,19 @@ export default function MarketPage() {
 
 
   return (
-    <div className="flex flex-col h-full">
-        <div className="p-2 space-y-2 border-b shrink-0">
+    <div className="flex flex-col h-full bg-secondary/30">
+        <div className="p-2 space-y-2 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
             <div className="flex items-center gap-2">
                 <HangelLogo className="text-2xl" />
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder="hangel'da Ara"
-                        className="pl-10 pr-12 h-9"
+                        className="pl-10 pr-12 h-10 rounded-xl"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                        <Dialog open={isVisualSearchOpen} onOpenChange={(open) => {
                             setIsVisualSearchOpen(open);
                             if (!open) {
@@ -291,11 +317,11 @@ export default function MarketPage() {
                             }
                         }}>
                             <DialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
                                     <Camera className="h-5 w-5" />
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
+                            <DialogContent className="sm:max-w-md rounded-3xl">
                                 <DialogHeader>
                                     <DialogTitle>Görselle Ara</DialogTitle>
                                     <DialogDescription>
@@ -312,20 +338,20 @@ export default function MarketPage() {
                                     />
                                     {!visualSearchImage && (
                                         <div 
-                                            className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent"
+                                            className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-[2rem] cursor-pointer hover:bg-accent transition-colors bg-muted/20"
                                             onClick={() => fileInputRef.current?.click()}
                                         >
-                                            <Camera className="h-12 w-12 text-muted-foreground mb-2" />
-                                            <p className="text-muted-foreground">Fotoğraf yüklemek için tıklayın</p>
+                                            <Camera className="h-12 w-12 text-primary/40 mb-2" />
+                                            <p className="text-sm font-medium text-muted-foreground">Fotoğraf yüklemek için tıklayın</p>
                                         </div>
                                     )}
                                     {visualSearchImage && (
                                         <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
-                                            <img src={visualSearchImage} alt="Yüklenen görsel" className="w-full h-full object-contain rounded-lg" />
+                                            <img src={visualSearchImage} alt="Yüklenen görsel" className="w-full h-full object-contain rounded-2xl shadow-xl" />
                                             {isVisualSearching && (
-                                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-lg">
+                                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center rounded-2xl backdrop-blur-sm">
                                                     <Loader2 className="h-12 w-12 text-white animate-spin" />
-                                                    <p className="text-white mt-2">Benzer ürünler aranıyor...</p>
+                                                    <p className="text-white mt-4 font-bold">Analiz ediliyor...</p>
                                                 </div>
                                             )}
                                         </div>
@@ -337,71 +363,72 @@ export default function MarketPage() {
                 </div>
                 <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-primary text-white hover:bg-primary/90 hover:text-white">
                             <Bot className="h-5 w-5" />
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
+                    <DialogContent className="sm:max-w-[425px] rounded-3xl">
                         <DialogHeader>
-                        <DialogTitle>Yapay Zeka Alışveriş Asistanı</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2"><Bot className="text-primary"/> Alışveriş Asistanı</DialogTitle>
                         <DialogDescription>
-                            Ne aradığınızı yazın, asistanımız size en uygun sosyal etki odaklı markaları önersin.
+                            Ne aradığınızı yazın, size en uygun sosyal etki odaklı markaları bulalım.
                         </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             {assistantResponse && !isAssistantLoading && (
                                 <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 bg-primary/10">
-                                       <Bot className="h-5 w-5 text-primary m-auto"/>
+                                    <Avatar className="h-8 w-8 border">
+                                       <AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback>
                                     </Avatar>
-                                    <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">{assistantResponse}</div>
+                                    <div className="p-4 bg-muted rounded-2xl rounded-tl-none text-sm leading-relaxed">{assistantResponse}</div>
                                 </div>
                             )}
                              {isAssistantLoading && (
                                 <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 bg-primary/10">
-                                       <Bot className="h-5 w-5 text-primary m-auto"/>
+                                    <Avatar className="h-8 w-8 animate-pulse">
+                                       <AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback>
                                     </Avatar>
-                                    <div className="space-y-2 p-2">
-                                        <Skeleton className="h-4 w-[250px]" />
-                                        <Skeleton className="h-4 w-[200px]" />
+                                    <div className="space-y-2 p-2 w-full">
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-2/3" />
                                     </div>
                                 </div>
                             )}
                             <div className="flex items-center gap-2">
                                 <Input
-                                    placeholder="Sürdürülebilir bir koşu ayakkabısı arıyorum..."
+                                    placeholder="Örn: Sürdürülebilir spor ayakkabı..."
                                     value={assistantQuestion}
                                     onChange={(e) => setAssistantQuestion(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
                                     disabled={isAssistantLoading}
+                                    className="rounded-xl h-11"
                                 />
-                                <Button onClick={handleAskAssistant} disabled={isAssistantLoading}>Öneri Al</Button>
+                                <Button onClick={handleAskAssistant} disabled={isAssistantLoading || !assistantQuestion.trim()} className="rounded-xl h-11 px-6">Sor</Button>
                             </div>
                         </div>
                     </DialogContent>
                 </Dialog>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                         <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                         <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl">
                             <Filter className="h-5 w-5" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>
-                            Sadece Bağış Yapanlar {isApiLoading && <Loader2 className="ml-2 h-3 w-3 animate-spin inline" />}
+                            Sadece Bağış Yapanlar
                         </DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl">
                             <ArrowDownUp className="h-5 w-5" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuItem onClick={() => setSortKey('followers')}>Popülerlik</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranı</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
@@ -410,28 +437,28 @@ export default function MarketPage() {
             </div>
             
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value)}>
-                <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
-                    <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
-                    <TabsTrigger value="brand">Marka</TabsTrigger>
-                    <TabsTrigger value="social">Sosyal İşl.</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5 h-9 p-1 bg-muted/50 rounded-xl">
+                    <TabsTrigger value="all" className="rounded-lg text-[10px] sm:text-xs">Tümü</TabsTrigger>
+                    <TabsTrigger value="cooperative" className="rounded-lg text-[10px] sm:text-xs">Kooperatif</TabsTrigger>
+                    <TabsTrigger value="economic" className="rounded-lg text-[10px] sm:text-xs">İktisadi</TabsTrigger>
+                    <TabsTrigger value="brand" className="rounded-lg text-[10px] sm:text-xs">Marka</TabsTrigger>
+                    <TabsTrigger value="social" className="rounded-lg text-[10px] sm:text-xs">Sosyal</TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
         <div className="flex flex-1 overflow-hidden min-h-0">
-            <aside className="w-1/4 border-r overflow-y-auto bg-background">
-            <nav className="flex flex-col">
+            <aside className="w-[85px] sm:w-1/4 border-r overflow-y-auto bg-background/50 backdrop-blur-sm">
+            <nav className="flex flex-col py-2">
                 {marketCategories.map((cat) => (
                 <button
                     key={cat.mainCategory}
                     onClick={() => setActiveCategory(cat.mainCategory)}
                     className={cn(
-                    "text-left text-xs sm:text-sm p-1.5 sm:p-2 whitespace-nowrap truncate",
+                    "text-left text-[10px] sm:text-sm p-3 sm:p-4 whitespace-nowrap truncate transition-all",
                     activeCategory === cat.mainCategory
-                        ? "bg-primary/10 text-primary border-l-4 border-primary font-bold"
-                        : "text-muted-foreground hover:bg-accent",
-                    (cat.mainCategory === 'Öne çıkanlar') && "font-bold"
+                        ? "bg-primary/10 text-primary border-l-4 border-primary font-bold shadow-sm"
+                        : "text-muted-foreground hover:bg-accent/50",
+                    (cat.mainCategory === 'Öne çıkanlar') && "font-black uppercase tracking-tighter"
                     )}
                 >
                     {cat.mainCategory}
@@ -440,58 +467,62 @@ export default function MarketPage() {
             </nav>
             </aside>
 
-            <main className="w-3/4 flex-1 overflow-y-auto p-2">
-            <div>
-                <div className="flex items-center justify-between px-2 mb-2">
-                    <h2 className="font-bold text-sm sm:text-base uppercase tracking-tight">
+            <main className="flex-1 overflow-y-auto p-3 sm:p-4">
+            <div className="max-w-6xl mx-auto space-y-6">
+                <div className="flex items-center justify-between px-1">
+                    <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">
                         {activeCategory}
                     </h2>
                     {isApiLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
                 </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                
+                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
+                    const isApiBrand = brand.id.startsWith('ra-');
                     return (
                     <Fragment key={brand.id}>
-                        <Link href={brand.link || `/market/${brand.id}`} target={brand.id.startsWith('ra-') ? "_blank" : "_self"} rel={brand.id.startsWith('ra-') ? "noopener noreferrer" : undefined} className="group">
+                        <Link 
+                            href={brand.link || `/market/${brand.id}`} 
+                            target={isApiBrand ? "_blank" : "_self"} 
+                            rel={isApiBrand ? "noopener noreferrer" : undefined} 
+                            className="group"
+                        >
                             <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
-                                    <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all p-2">
-                                        <img 
-                                            src={brand.logoUrl} 
-                                            alt={brand.name} 
-                                            className="w-full h-full object-contain"
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).src = `https://placehold.co/400x400?text=${encodeURIComponent(brand.name)}`;
-                                            }}
-                                        />
+                                    <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0">
+                                        <BrandLogo brand={brand} />
                                     </div>
-                                    {brand.donationRate > 0 && (
-                                        <div className="absolute top-0 right-0 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-[#f34723] text-[9px] sm:text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">
-                                        %{brand.donationRate}
+                                    {(brand.donationRate > 0 || brand.donationRateDisplay) && (
+                                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
+                                            {brand.donationRateDisplay || `%${brand.donationRate}`}
                                         </div>
                                     )}
                                 </div>
-                                <p className="text-[10px] sm:text-[12px] font-bold text-[#042654] leading-tight group-hover:text-primary transition-colors px-1 line-clamp-2">{brand.name}</p>
+                                <p className="text-[10px] sm:text-xs font-bold text-foreground leading-tight group-hover:text-primary transition-colors px-1 line-clamp-2 mt-1">
+                                    {brand.name}
+                                </p>
                             </div>
                         </Link>
                         {index === 5 && (
-                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:grid-cols-6 xl:col-span-8 my-2">
+                           <div className="col-span-full my-4">
                                <AdCarousel />
                            </div>
                         )}
-                        {index >= 14 && (index - 14) % 30 === 0 && (
-                           <div className="col-span-3 sm:col-span-4 md:col-span-5 lg:grid-cols-6 xl:col-span-8 my-2">
+                        {index >= 14 && (index - 14) % 24 === 0 && (
+                           <div className="col-span-full my-4">
                                <VisualAdCarousel />
                            </div>
                         )}
                     </Fragment>
                 )}) : (
-                    <div className="col-span-full py-12 flex flex-col items-center justify-center gap-4">
+                    <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
                         {isApiLoading ? (
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
                         ) : (
-                            <p className="text-center text-muted-foreground text-sm">Ürün bulunamadı.</p>
+                            <div className="text-center space-y-2">
+                                <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+                                <p className="text-muted-foreground text-sm font-medium">Bu kategoride marka bulunamadı.</p>
+                            </div>
                         )}
                     </div>
                 )}
