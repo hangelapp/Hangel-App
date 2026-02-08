@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Globe, Users, Heart, ShieldCheck, Newspaper, Target, ArrowRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Globe, Users, Heart, ShieldCheck, Newspaper, Target, ArrowRight, Home, Truck, Briefcase, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -48,7 +48,35 @@ const FeatureCard = ({ title, subtitle, href, image, hint, theme = 'light' }: an
     </Link>
 );
 
+const ProjectHighlight = ({ title, category, description, icon: Icon, image, hint }: any) => (
+    <div className="relative group w-full bg-white rounded-[3rem] overflow-hidden border border-black/5 shadow-sm hover:shadow-2xl transition-all duration-700">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+            <div className="p-8 md:p-16 space-y-6 flex flex-col justify-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary w-fit">
+                    <Icon className="h-4 w-4" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{category}</span>
+                </div>
+                <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-[#1d1d1f] leading-tight">{title}</h3>
+                <p className="text-lg text-muted-foreground font-medium leading-relaxed">{description}</p>
+                <Button variant="ghost" className="p-0 h-auto self-start text-primary font-bold text-lg hover:bg-transparent">
+                    Proje Detaylarını Gör <ChevronRight className="ml-1 h-5 w-5" />
+                </Button>
+            </div>
+            <div className="relative h-[300px] lg:h-auto overflow-hidden">
+                <Image src={image} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-1000" data-ai-hint={hint} />
+            </div>
+        </div>
+    </div>
+);
+
 export default function AssociationHomePage() {
+    const pressLinks = [
+        { source: "AA", title: "Türkiye'nin Sosyal Girişimcilik Etki Haritası Çıkartılacak", url: "https://www.aa.com.tr/tr/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikartilacak/1526753" },
+        { source: "TRT Haber", title: "Sosyal Girişimcilik Etki Haritası Çıkarılacak", url: "https://www.trthaber.com/haber/turkiye/turkiyenin-sosyal-girisimcilik-etki-haritasi-cikarilacak-422386.html" },
+        { source: "Hürriyet", title: "Rekabetin Yeni Adı: Sosyal Fayda", url: "https://www.hurriyet.com.tr/yazarlar/sibel-bagci-uzun/rekabetin-yeni-adi-sosyal-fayda-41862206" },
+        { source: "NTV", title: "Üniversitelilerden Van'a Kan Bağışı", url: "https://www.ntv.com.tr/egitim/universitelilerden-vana-kan,KYYWoqEdIEO-E38v3kzFSw" }
+    ];
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader />
@@ -116,14 +144,75 @@ export default function AssociationHomePage() {
                             hint="international meeting"
                         />
                     </div>
-                    <FeatureCard 
-                        title="Mevzuat Taslağı"
-                        subtitle="Geleceği yasallaştırıyoruz"
-                        href="/hangelassociation/legislation"
-                        image="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop"
-                        hint="legal documents"
-                        theme="dark"
-                    />
+                </div>
+            </section>
+
+            {/* Projelerimiz Section */}
+            <section className="bg-[#f5f5f7] py-32 px-6">
+                <div className="container mx-auto max-w-6xl space-y-16">
+                    <div className="text-left space-y-4">
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Vizyon Projelerimiz.</h2>
+                        <p className="text-xl text-muted-foreground font-medium max-w-2xl">Türkiye'den dünyaya yayılan sürdürülebilir sosyal etki modelleri.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-8">
+                        <ProjectHighlight 
+                            icon={Home}
+                            category="AFET DAYANIŞMASI"
+                            title="Deprem Bölgesi Örnek Köy Projesi"
+                            description="Hatay Antakya'da 4000 gönüllü ve 2000 işletme desteğiyle hayata geçen; Tiny House evleri, kreş, atölye ve kütüphaneden oluşan sürdürülebilir yaşam alanı."
+                            image="https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop"
+                            hint="charity village house"
+                        />
+                        <ProjectHighlight 
+                            icon={Truck}
+                            category="LOJİSTİK DESTEK"
+                            title="Afet Dönemi Yakıt & İlaç Köprüsü"
+                            description="Shell Türkiye işbirliğiyle 120 ton yakıt desteği ve Romanya partnerlerimizle sağlanan 2 TIR dolusu kritik ilaç sevkiyatı koordinasyonu."
+                            image="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
+                            hint="truck delivery logistics"
+                        />
+                        <ProjectHighlight 
+                            icon={Briefcase}
+                            category="İSTİHDAM"
+                            title="Etki Odaklı İstihdam Protokolü"
+                            description="Arçelik ile başlatılan, gönüllülük faaliyetlerini resmi özgeçmiş olarak tanıyan ve iş dünyasında liyakati sosyal fayda ile birleştiren protokol."
+                            image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
+                            hint="business meeting collaboration"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* Basında Biz Section */}
+            <section className="py-32 px-6 bg-white">
+                <div className="container mx-auto max-w-4xl space-y-12">
+                    <div className="flex items-center gap-3">
+                        <Newspaper className="h-8 w-8 text-primary" />
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1d1d1f]">Basında Biz.</h2>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                        {pressLinks.map((link, i) => (
+                            <a 
+                                key={i} 
+                                href={link.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="group flex items-center justify-between p-8 bg-[#f5f5f7] rounded-3xl hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-black/5"
+                            >
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">{link.source}</span>
+                                    <h4 className="text-xl font-bold text-[#1d1d1f] group-hover:text-primary transition-colors">{link.title}</h4>
+                                </div>
+                                <ExternalLink className="h-6 w-6 text-[#1d1d1f]/20 group-hover:text-primary transition-colors" />
+                            </a>
+                        ))}
+                    </div>
+                    <div className="text-center pt-8">
+                        <Button variant="outline" className="rounded-full px-10 h-12 font-bold border-black/10 hover:bg-black/5">
+                            Tüm Medya Yansımalarını Gör
+                        </Button>
+                    </div>
                 </div>
             </section>
 
