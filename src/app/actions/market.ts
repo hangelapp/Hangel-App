@@ -1,49 +1,46 @@
 'use server';
 
 /**
- * ReklamAction API'lerinden teklifleri (markaları) çeken sunucu eylemi.
- * Üç farklı API anahtarını destekleyecek ve verileri temizleyerek birleştirecek şekilde güncellendi.
+ * Üç farklı ajanstan (Gelir Ortakları, Affocean, ReklamAction) teklifleri çeken sunucu eylemi.
+ * Veriler temizlenerek ve mükerrer kayıtlar elenerek birleştirilir.
  */
 export async function getApiOffers() {
-    const API_KEYS = [
-        "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54",
-        "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48",
-        "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3"
+    const AGENCIES = [
+        { name: "Gelir Ortakları", key: "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3" },
+        { name: "Affocean", key: "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48" },
+        { name: "ReklamAction", key: "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54" }
     ];
+    
     const url = "https://api.reklamaction.com/v1/offer?network=reklamaction";
 
     try {
-        console.log(`API Fetching started for ${API_KEYS.length} keys...`);
+        console.log(`API Fetching started for ${AGENCIES.length} agencies...`);
         
-        // Tüm anahtarlar için paralel fetch işlemleri başlatılıyor
-        const fetchPromises = API_KEYS.map(async (key) => {
+        // Tüm ajanslar için paralel fetch işlemleri başlatılıyor
+        const fetchPromises = AGENCIES.map(async (agency) => {
             try {
                 const response = await fetch(url, {
                     headers: {
-                        "Authorization": `Bearer ${key}`
+                        "Authorization": `Bearer ${agency.key}`
                     },
                     cache: 'no-store'
                 });
 
                 if (!response.ok) {
-                    console.error(`API Error for key ${key.substring(0, 8)}...: ${response.status}`);
+                    console.error(`API Error for ${agency.name}: ${response.status}`);
                     return [];
                 }
 
                 const result = await response.json();
-                // API bazen direkt dizi bazen { data: [] } döner
                 const offers = result.data || result || [];
                 return Array.isArray(offers) ? offers : [];
             } catch (err) {
-                console.error(`Fetch failed for key ${key.substring(0, 8)}...:`, err);
+                console.error(`Fetch failed for ${agency.name}:`, err);
                 return [];
             }
         });
 
-        // Tüm sonuçları bekle
         const results = await Promise.all(fetchPromises);
-        
-        // Tüm teklifleri tek bir dizide topla
         const allOffers = results.flat();
 
         // Aynı isme sahip teklifleri temizle (Mükerrer kaydı önle)
@@ -53,7 +50,6 @@ export async function getApiOffers() {
             if (!m || (!m.id && !m.name)) return null;
 
             const rawPayout = m.payout || "0";
-            // Oran tipi belirleme (% mi yoksa sabit TL mi?)
             const isFixed = /TL|TRY|₺/i.test(rawPayout);
             const cleanPayoutMatch = rawPayout.match(/[\d.,]+/);
             const cleanPayout = cleanPayoutMatch ? parseFloat(cleanPayoutMatch[0].replace(',', '.')) : 0;
@@ -80,7 +76,7 @@ export async function getApiOffers() {
         });
 
         const finalOffers = Array.from(uniqueOffersMap.values());
-        console.log(`API Fetch Complete: ${finalOffers.length} unique brands processed from ${API_KEYS.length} keys.`);
+        console.log(`API Fetch Complete: ${finalOffers.length} unique brands processed from 3 agencies.`);
         
         return finalOffers;
     } catch (e) {
