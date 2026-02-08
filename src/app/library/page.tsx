@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -13,14 +14,64 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import * as Icons from 'lucide-react';
-import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2, Sparkles, BookOpen, Target, Users, ClipboardCheck, Wallet, LineChart } from 'lucide-react';
+import { ArrowDownUp, ChevronRight, Filter, Search, Bot, Send, X, Loader2, Sparkles, BookOpen, Target, Users, ClipboardCheck, Wallet, LineChart, ThumbsUp, ThumbsDown } from 'lucide-react';
 import Link from 'next/link';
-import { librarySections, type LibrarySection } from '@/lib/library';
+import { librarySections, type LibrarySection, type LibraryItem } from '@/lib/library';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { askLibraryAssistant } from '@/ai/flows/library-ai-assistant';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+
+const DictionaryItem = ({ item }: { item: LibraryItem }) => {
+    const { toast } = useToast();
+    const [voted, setVoted] = useState<'up' | 'down' | null>(null);
+
+    const handleVote = (type: 'up' | 'down') => {
+        setVoted(type);
+        toast({
+            title: "Geri Bildiriminiz Alındı",
+            description: "Bu tanımın geliştirilmesine yardımcı olduğunuz için teşekkürler!",
+        });
+    };
+
+    return (
+        <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value={item.slug} className="border-b last:border-b-0">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-accent/30 text-sm font-medium">
+                    {item.title}
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 pt-2 bg-muted/20">
+                    <div 
+                        className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground mb-4"
+                        dangerouslySetInnerHTML={{ __html: item.content }}
+                    />
+                    <div className="flex items-center gap-3 pt-3 border-t border-dashed">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Bu tanım yararlı oldu mu?</span>
+                        <div className="flex gap-1">
+                            <Button 
+                                variant={voted === 'up' ? 'default' : 'outline'} 
+                                size="sm" 
+                                className="h-7 px-2 gap-1 text-[10px]"
+                                onClick={() => handleVote('up')}
+                            >
+                                <ThumbsUp className="h-3 w-3" /> Yararlı
+                            </Button>
+                            <Button 
+                                variant={voted === 'down' ? 'destructive' : 'outline'} 
+                                size="sm" 
+                                className="h-7 px-2 gap-1 text-[10px]"
+                                onClick={() => handleVote('down')}
+                            >
+                                <ThumbsDown className="h-3 w-3" /> Yararsız
+                            </Button>
+                        </div>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
+    );
+};
 
 export default function LibraryPage() {
   const { toast } = useToast();
@@ -180,6 +231,8 @@ export default function LibraryPage() {
         <Accordion type="single" collapsible className="w-full space-y-4">
           {filteredAndSortedLibrarySections.map((section) => {
               const Icon = Icons[section.icon as keyof typeof Icons] || Icons.HelpCircle;
+              const isDictionary = section.slug === 'sivil-toplum-sozlugu' || section.slug === 'hangel-sozluk';
+
               return (
                   <Card key={section.title} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       <AccordionItem value={section.title} className="border-b-0">
@@ -192,16 +245,24 @@ export default function LibraryPage() {
                                   </div>
                               </div>
                           </AccordionTrigger>
-                          <AccordionContent>
+                          <AccordionContent className="p-0">
                              <div className="border-t">
-                               {section.items.map(item => (
-                                  <Link href={`/library/${item.slug}`} key={item.slug} className="block">
-                                      <div className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-accent/50 transition-colors">
-                                          <span className="font-medium text-sm flex-1 pr-4">{item.title}</span>
-                                          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                                      </div>
-                                  </Link>
-                              ))}
+                               {isDictionary ? (
+                                   <div className="divide-y bg-background">
+                                       {section.items.map(item => <DictionaryItem key={item.slug} item={item} />)}
+                                   </div>
+                               ) : (
+                                   <div className="bg-background">
+                                       {section.items.map(item => (
+                                          <Link href={`/library/${item.slug}`} key={item.slug} className="block">
+                                              <div className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-accent/50 transition-colors">
+                                                  <span className="font-medium text-sm flex-1 pr-4">{item.title}</span>
+                                                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                                              </div>
+                                          </Link>
+                                      ))}
+                                   </div>
+                               )}
                              </div>
                           </AccordionContent>
                       </AccordionItem>

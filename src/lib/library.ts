@@ -52,87 +52,11 @@ export const librarySections: LibrarySection[] = [
         title: "Sosyal Etki Raporları",
         description: "Hangel'in ve paydaşlarının sağladığı etkiyi inceleyin.",
         icon: "FileText",
-        items: Array.from({ length: 21 }, (_, i) => ({
+        items: Array.from({ length: 10 }, (_, i) => ({
             slug: `etki-raporu-202${3 - (i % 3)}-${['cevre', 'egitim', 'genel'][i%3]}-${i + 1}`,
             title: `202${3 - (i % 3)} Yılı ${['Çevre', 'Eğitim', 'Genel'][i%3]} Etki Raporu #${i + 1}`,
-            content: `<h4>Özet</h4><p>Bu rapor, 202${3 - (i % 3)} yılı içerisinde ${['çevre koruma', 'eğitimde fırsat eşitliği', 'genel toplumsal kalkınma'][i%3]} alanında yürütülen projelerin, yapılan bağışların ve gönüllülük faaliyetlerinin sağladığı sosyal etkiyi kapsamlı bir şekilde analiz etmektedir.</p><h4>Temel Bulgular</h4><ul><li>Toplam <strong>${(i+1)*12345}₺</strong> bağış toplandı.</li><li><strong>${(i+1)*50} saat</strong> gönüllülük faaliyeti gerçekleştirildi.</li><li><strong>${(i+1)*100} kişiye</strong> doğrudan ulaşıldı.</li></ul><p>Raporun tamamı, metodoloji ve detaylı proje çıktıları hakkında bilgi içermektedir.</p>`
+            content: `<h4>Özet</h4><p>Bu rapor, 202${3 - (i % 3)} yılı içerisinde ${['çevre koruma', 'eğitimde fırsat eşitliği', 'genel toplumsal kalkınma'][i%3]} alanında yürütülen projelerin, yapılan bağışların ve gönüllülük faaliyetlerinin sağladığı sosyal etkiyi kapsamlı bir şekilde analiz etmektedir.</p><h4>Temel Bulgular</h4><ul><li>Toplam <strong>${(i+1)*12345}₺</strong> bağış toplandı.</li><li><strong>${(i+1)*50} saat</strong> gönüllülük faieli gerçekleştirildi.</li><li><strong>${(i+1)*100} kişiye</strong> doğrudan ulaşıldı.</li></ul>`
         }))
-    },
-    {
-        slug: 'gonulluluk-rehberleri',
-        title: "Gönüllülük Rehberleri",
-        description: "Gönüllülük yolculuğunuzda size yardımcı olacak kaynaklar.",
-        icon: "HeartHandshake",
-        items: Array.from({ length: 21 }, (_, i) => {
-            const titles = ['Etkili Gönüllülük İçin 5 Adım', 'Gönüllülükte Motivasyonunu Koruma', 'Doğru STK\'yı Nasıl Seçersin?'];
-            const contents = [
-                '<h4>1. İlgi Alanlarını Belirle</h4><p>Hangi alanda (çevre, eğitim, hayvan hakları vb.) etki oluşturmak istediğini düşün.</p><h4>2. Zamanını Planla</h4><p>Ne kadar süre ayırabileceğini gerçekçi bir şekilde değerlendir.</p><h4>3. Araştırma Yap</h4><p>İlgili alanda çalışan STK\'ları ve projelerini incele.</p><h4>4. Başvur ve İletişime Geç</h4><p>Kendini ve motivasyonunu iyi ifade eden bir başvuru yap.</p><h4>5. Geri Bildirimde Bulun</h4><p>Deneyimlerini hem STK ile hem de çevrenle paylaşarak daha fazla insana ilham ver.</p>',
-                '<h4>1. Neden Başladığını Hatırla</h4><p>Gönüllülüğe başlarkenki ilk motivasyonunu ve hedeflerini kendine hatırlat.</p><h4>2. Küçük Başarıları Kutla</h4><p>Sağladığınız etkinin her adımını fark et ve kendini takdir et.</p><h4>3. Toplulukla Bağlantıda Kal</h4><p>Diğer gönüllülerle deneyimlerini paylaşmak motivasyonunu artıracaktır.</p>',
-                '<h4>1. Şeffaflığı Kontrol Et</h4><p>STK\'nın web sitesini, faaliyet ve raporlarını incele. Hangel üzerindeki şeffaflık puanı iyi bir göstergedir.</p><h4>2. Misyon ve Vizyonunu Anla</h4><p>Kuruluşun amacı ve değerleri senin kendi değerlerinle örtüşüyor mu?</p><h4>3. Gönüllü Yorumlarını Oku</h4><p>Daha önce o STK\'da gönüllülük yapmış kişilerin deneyimlerini araştır.</p>'
-            ];
-            return {
-                slug: `gonulluluk-rehberi-${i + 1}`,
-                title: `${titles[i % titles.length]} #${Math.floor(i / titles.length) + 1}`,
-                content: contents[i % contents.length]
-            }
-        })
-    },
-    {
-        slug: 'stklar-icin-kaynaklar',
-        title: "STK'lar için Kaynaklar",
-        description: "STK'ların kapasitelerini geliştirmelerine yönelik kılavuzlar.",
-        icon: "Building",
-        items: Array.from({ length: 21 }, (_, i) => {
-            const titles = ['Dijital Kaynak Geliştirme Yöntemleri', 'Etkili Gönüllü Yönetimi El Kitabı', 'Sosyal Medyada Görünürlüğü Artırma'];
-            const contents = [
-                '<h4>Online Bağış Kampanyaları</h4><p>Özel günler ve acil durumlar için hedef odaklı dijital kampanyalar oluşturun. Sosyal medya ve e-posta bültenlerini aktif kullanın.</p><h4>Kurumsal İşbirlikleri</h4><p>Hangel gibi platformlar aracılığıyla sosyal sorumlu markalarla ortak projeler geliştirin.</p>',
-                '<h4>Net Görev Tanımları</h4><p>Gönüllüler için net ve anlaşılır görev tanımları oluşturun. Beklentileri en baştan doğru belirleyin.</p><h4>Oryantasyon ve Eğitim</h4><p>Gönüllülerinize kurum kültürü, hedefler ve görevleri hakkında kapsamlı bir başlangıç eğitimi sunun.</p><h4>Takdir ve Geri Bildirim</h4><p>Gönüllülerin çabalarını düzenli olarak takdir edin ve onlara yapıcı geri bildirimlerde bulunun.</p>',
-                '<h4>Hedef Kitlenizi Tanıyın</h4><p>Hangi sosyal medya platformunun sizin hedef kitlenize daha uygun olduğunu belirleyin.</p><h4>Görsel İçeriğe Önem Verin</h4><p>Etkinliklerinizden yüksek kaliteli fotoğraflar ve videolar paylaşın. Sağladığınız etkinin gücünü görsel olarak anlatın.</p><h4>Etkileşimi Artırın</h4><p>Takipçilerinizin yorumlarına ve mesajlarına yanıt verin, onlara sorular sorarak etkileşimi teşvik edin.</p>'
-            ];
-            return {
-                slug: `stk-kaynak-${i + 1}`,
-                title: `${titles[i % titles.length]} #${Math.floor(i / titles.length) + 1}`,
-                content: contents[i % contents.length]
-            }
-        })
-    },
-    {
-        slug: 'kitaplar',
-        title: "Kitaplar",
-        description: "Sosyal etki ve sivil toplum alanında ilham veren kitaplar.",
-        icon: "BookCopy",
-        items: Array.from({ length: 21 }, (_, i) => {
-            const titles = ["Sapiens: Hayvanlardan Tanrılara", "Etkili İnsanların 7 Alışkanlığı", "Dürtme: Sağlık, Zenginlik ve Mutlulukla İlgili Kararları Uygulamak"];
-            const contents = [
-                '<h5>Yuval Noah Harari</h5><p>İnsan türünün tarihini ve gelişimini, büyük resmi görerek anlatan, toplumların nasıl organize olduğu ve inanç sistemlerinin nasıl çalıştığı üzerine ufuk açıcı bir eser.</p>',
-                '<h5>Stephen R. Covey</h5><p>Kişisel ve profesyonel etkinlik için temel prensipleri sunan bu klasik, sosyal etki oluşturmak isteyen bireyler için proaktif olma ve sinerji oluşturma gibi konularda değerli dersler içerir.</p>',
-                '<h5>Richard H. Thaler & Cass R. Sunstein</h5><p>İnsanların daha iyi kararlar almalarını sağlamak için "dürtme" kavramını tanıtan bu kitap, sosyal programlar ve kampanyalar tasarlarken davranışmal ekonomiden nasıl yararlanılabileceğini gösteriyor.</p>'
-            ];
-            return {
-                slug: `kitap-${i+1}`,
-                title: `${titles[i % titles.length]}`,
-                content: contents[i % contents.length]
-            }
-        })
-    },
-    {
-        slug: 'akademik-makaleler',
-        title: "Akademik Makaleler",
-        description: "Sivil toplum ve sosyal etki üzerine bilimsel çalışmalar.",
-        icon: "GraduationCap",
-        items: Array.from({ length: 21 }, (_, i) => {
-            const titles = ["Sosyal Girişimcilikte Etki Ölçümleme Modelleri", "Türkiye'de Gönüllülüğe Katılım Motivasyonları Üzerine Bir Araştırma", "Dijital Aktivizmin Sivil Toplum Üzerindeki Etkisi"];
-            const contents = [
-                '<h5>Özet</h5><p>Bu makale, sosyal girişimlerin sağladığı sosyal ve çevresel etkiyi ölçmek için kullanılan SROI (Yatırımın Sosyal Geri Dönüşü), B-Corp Etki Değerlemesi gibi farklı modelleri karşılaştırmalı olarak incelemektedir.</p>',
-                '<h5>Özet</h5><p>Türkiye\'nin farklı demografik gruplarından bireylerin gönüllülük faaliyetlerine katılma veya katılmama nedenlerini araştıran bu çalışma, altruistik ve egoistik motivasyonların rolünü analiz etmektedir.</p>',
-                '<h5>Özet</h5><p>Online platformlar ve sosyal medyanın, sivil toplum kuruluşlarının kaynak geliştirme, savunuculuk ve topluluk oluşturma kapasiteleri üzerindeki dönüştürücü etkileri vaka çalışmaları üzerinden incelenmektedir.</p>'
-            ];
-            return {
-                slug: `makale-${i+1}`,
-                title: `${titles[i % titles.length]}`,
-                content: contents[i % contents.length]
-            }
-        })
     },
     {
         slug: 'sivil-toplum-sozlugu',
@@ -140,28 +64,39 @@ export const librarySections: LibrarySection[] = [
         description: "Sivil toplum alanında sıkça kullanılan terimlerin açıklamaları.",
         icon: "BookOpen",
         items: [
-          { slug: 'sosyal-etki', title: 'Sosyal Etki', content: '<p>Bir faaliyetin, projenin veya politikanın bir topluluk veya toplum üzerindeki net etkileridir. Bu etkiler, hedeflenmiş veya hedeflenmemiş, olumlu veya olumsuz olabilir.</p>' },
-          { slug: 'sosyal-inovasyon', title: 'Sosyal Inovasyon', content: '<p>Toplumsal veya çevresel bir soruna, mevcut çözümlerden daha etkili, verimli ve sürdürülebilir yeni fikirler, stratejiler, ürünler veya organizasyon modelleri geliştirme sürecidir.</p>' },
-          { slug: 'filantropi', title: 'Filantropi (Philanthropy)', content: '<p>Toplumsal sorunların çözümü için genellikle büyük ölçekli ve stratejik bağışlar yaparak kamu yararını artırma çabasıdır. Genellikle "insan sevgisi" olarak tanımlanır.</p>' },
+          { slug: 'stk', title: 'Sivil Toplum Kuruluşu (STK)', content: '<p>Kâr amacı gütmeyen, gönüllülük esasına dayalı, toplumsal sorunlara çözüm üretmek amacıyla kurulan tüzel kişiliklerdir. Dernekler ve vakıflar en yaygın STK türleridir.</p>' },
+          { slug: 'gonulluluk', title: 'Gönüllülük', content: '<p>Bireyin kendi özgür iradesiyle, maddi bir karşılık beklemeden, toplumsal fayda sağlamak amacıyla zamanını ve yetkinliklerini bir amaç uğruna seferber etmesidir.</p>' },
+          { slug: 'surdurulebilirlik', title: 'Sürdürülebilirlik', content: '<p>Mevcut ihtiyaçların, gelecek nesillerin kendi ihtiyaçlarını karşılama yeteneğinden ödün vermeden karşılanmasıdır. Sosyal, çevresel ve ekonomik boyutları bulunur.</p>' },
+          { slug: 'seffaflik', title: 'Şeffaflık', content: '<p>Kuruluşların faaliyetleri, kararları ve finansal yapıları hakkındaki bilgileri paydaşları ve kamuoyu ile açık, anlaşılır ve erişilebilir bir şekilde paylaşmasıdır.</p>' },
+          { slug: 'hesap-verebilirlik', title: 'Hesap Verebilirlik', content: '<p>Bir kuruluşun aldığı kararların ve yürüttüğü faaliyetlerin sonuçlarını üstlenme ve paydaşlarına açıklama yükümlülüğüdür.</p>' },
+          { slug: 'kaynak-gelistirme', title: 'Kaynak Geliştirme (Fundraising)', content: '<p>Bir kuruluşun misyonunu gerçekleştirmek için ihtiyaç duyduğu finansal ve ayni kaynakları bireylerden, kurumlardan veya fonlardan toplama sürecidir.</p>' },
+          { slug: 'savunuculuk', title: 'Savunuculuk (Advocacy)', content: '<p>Belirli bir toplumsal sorunla ilgili farkındalık yaratmak, politika yapıcıları etkilemek ve yapısal değişiklikler sağlamak için yürütülen sistematik faaliyetlerdir.</p>' },
+          { slug: 'paydas', title: 'Paydaş (Stakeholder)', content: '<p>Bir kuruluşun faaliyetlerinden etkilenen veya bu faaliyetleri etkileyen tüm kişi, grup ve kurumlardır (Gönüllüler, bağışçılar, faydalanıcılar vb.).</p>' },
+          { slug: 'sosyal-girisimcilik', title: 'Sosyal Girişimcilik', content: '<p>Toplumsal bir sorunu çözmek için ticari yöntemler kullanan, elde ettiği kârı öncelikli olarak sosyal misyonuna yatıran iş modelidir.</p>' },
+          { slug: 'iktisadi-isletme', title: 'İktisadi İşletme', content: '<p>Dernek veya vakıfların amaçlarını gerçekleştirmek için ihtiyaç duydukları geliri sağlamak amacıyla kurdukları ticari işletmelerdir.</p>' },
+          { slug: 'sroi', title: 'SROI (Sosyal Getiri Analizi)', content: '<p>Yatırılan her bir birim kaynağın karşılığında yaratılan sosyal ve çevresel değerin parasal bir ifadeyle ölçülmesini sağlayan metodolojidir.</p>' },
+          { slug: 'sosyal-fayda', title: 'Sosyal Fayda', content: '<p>Toplumun genel refahını, yaşam kalitesini veya adaleti artıran her türlü olumlu sonuç ve etkidir.</p>' },
+          { slug: 'mikro-gonulluluk', title: 'Mikro Gönüllülük', content: '<p>Uzun süreli bağlılık gerektirmeyen, genellikle dijital ortamda gerçekleştirilen, kısa süreli ve küçük çaplı gönüllülük görevleridir.</p>' },
+          { slug: 'dijital-aktivizm', title: 'Dijital Aktivizm', content: '<p>Toplumsal veya siyasal bir değişim yaratmak amacıyla internet ve sosyal medya araçlarının kullanılmasıdır.</p>' }
         ]
     },
     {
         slug: 'hangel-sozluk',
-        title: "Hangel Sözlük",
+        title: "hangel Sözlük",
         description: "Platforma özgü terimlerin ve kavramların açıklamaları.",
         icon: 'BookOpen',
-        items: Array.from({ length: 21 }, (_, i) => {
-            const titles = ["Sosyal Etki Puanı", "Şeffaflık Endeksi", "hangel Katkı Payı"];
-            const contents = [
-                '<p>Kullanıcıların platform üzerinde gerçekleştirdiği her türlü olumlu eylemin (gönüllülük, bağış, davet vb.) karşılığında kazandığı, sosyal etki seviyesini ve platforma olan katkısını gösteren bir puan sistemidir.</p>',
-                '<p>STK\'ların mali tabloları, faaliyet raporları, yönetim kurulu gibi bilgileri kamuoyu ile paylaşma düzeyini ölçen ve Hangel tarafından belirlenen kriterlere dayanan bir puandır. Yüksek puan, STK\'nın daha şeffaf ve hesap verebilir olduğunu gösterir.</p>',
-                '<p>Alışverişlerden doğan bağışların STK\'lara aktarılması sürecindeki operasyonel ve teknik maliyetleri karşılamak ve platformun sürdürülebilirliğini sağlamak amacıyla, STK\'ya aktarılan net bağış tutarı üzerinden alınan %10\'luk hizmet bedelidir.</p>'
-            ];
-             return {
-                slug: `sozluk-${i + 1}`,
-                title: `${titles[i % titles.length]}`,
-                content: contents[i % contents.length]
-            }
-        })
+        items: [
+            { slug: 'etki-puani', title: 'hangel Etki Puanı', content: '<p>Kullanıcıların gönüllülük, bağış ve davet gibi olumlu eylemleri sonucunda kazandıkları, sosyal etki seviyelerini gösteren oyunlaştırılmış puan sistemidir.</p>' },
+            { slug: 'seffaflik-endeksi', title: 'hangel Şeffaflık Endeksi', content: '<p>STK\'ların yasal belgelerini ve raporlarını paylaşma düzeyine göre hesaplanan, bağışçılar için güven göstergesi olan 100 üzerinden bir puandır.</p>' },
+            { slug: 'katki-payi', title: 'hangel Katkı Payı', content: '<p>Bağışların STK\'lara aktarılması sürecindeki teknik ve operasyonel maliyetleri karşılamak için net bağış tutarı üzerinden alınan %10\'luk hizmet bedelidir.</p>' },
+            { slug: 'hangel-imece', title: 'hangel İmece', content: '<p>Platformun yetenek bazlı gönüllülük modülüdür. Gönüllülerle STK\'ları yetkinlikler üzerinden buluşturur.</p>' },
+            { slug: 'hangel-bagis', title: 'hangel Bağış', content: '<p>Günlük alışverişleri ek masrafsız bağışa dönüştüren sistemin genel adıdır.</p>' },
+            { slug: 'hangel-kampus', title: 'hangel Kampüs', content: '<p>Üniversite kulüplerini ve öğrencilerini sosyal etki ekosistemine dahil eden özel programdır.</p>' },
+            { slug: 'uye-isyeri', title: 'hangel Üye İşyeri', content: '<p>Mağazasında hangel QR ödeme sistemini kullanarak satışlarını sosyal faydaya dönüştüren ticari işletmelerdir.</p>' },
+            { slug: 'etki-hikayem', title: 'Etki Hikayem', content: '<p>Yapay zeka desteğiyle, kullanıcının aylık sosyal katkılarını ilham verici bir anlatıya dönüştüren paylaşım özelliğidir.</p>' },
+            { slug: 'hangel-rozet', title: 'hangel Rozeti', content: '<p>Belirli etki hedeflerine ulaşan kullanıcılara verilen dijital başarı sembolleridir.</p>' },
+            { slug: 'dolayli-bagis', title: 'Dolaylı Bağış', content: '<p>Kullanıcının cebinden ek bir ücret çıkmadan, yaptığı alışverişin bir kısmının marka tarafından STK\'ya aktarılmasıdır.</p>' },
+            { slug: 'sosyal-etki-seviyesi', title: 'Sosyal Etki Seviyesi', content: '<p>Kullanıcının toplam etki puanına göre belirlenen; Demir, Bakır, Bronz gibi metallerle ifade edilen statüsüdür.</p>' }
+        ]
     }
 ];

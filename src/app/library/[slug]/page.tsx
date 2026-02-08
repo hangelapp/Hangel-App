@@ -1,3 +1,4 @@
+
 'use client';
 
 import { librarySections } from '@/lib/library';
@@ -79,27 +80,29 @@ export default function LibraryItemPage({ params }: { params: { slug: string } }
             </Button>
           </div>
           <div className="flex items-center justify-between p-4 border rounded-lg">
-             <p className="font-medium">Bu içeriği tavsiye eder misin?</p>
+             <p className="font-medium">Bu içeriği yararlı buldun mu?</p>
              <div className="flex gap-2">
                 <Button 
                   variant={recommendation === 'up' ? 'default' : 'outline'} 
-                  size="icon"
+                  size="sm"
+                  className="gap-2"
                   onClick={() => handleRecommend('up')}
                 >
-                  <ThumbsUp />
+                  <ThumbsUp className="h-4 w-4" /> Yararlı
                 </Button>
                 <Button 
                   variant={recommendation === 'down' ? 'destructive' : 'outline'} 
-                  size="icon"
+                  size="sm"
+                  className="gap-2"
                   onClick={() => handleRecommend('down')}
                 >
-                  <ThumbsDown />
+                  <ThumbsDown className="h-4 w-4" /> Yararsız
                 </Button>
              </div>
           </div>
           <div className="text-center pt-4">
             <p className="font-bold text-lg text-primary">%87</p>
-            <p className="text-sm text-muted-foreground">oranında tavsiye ediliyor.</p>
+            <p className="text-sm text-muted-foreground">oranında yararlı bulunuyor.</p>
           </div>
         </CardContent>
       </Card>
