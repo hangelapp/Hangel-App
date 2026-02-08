@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     ChevronRight, 
@@ -34,9 +34,10 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { HangelLogo } from '@/components/icons';
+import { useToast } from '@/hooks/use-toast';
 
 const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
     const router = useRouter();
@@ -93,6 +94,15 @@ const SectionTitle = ({ title, subtitle, centered = false }: { title: string, su
 );
 
 export default function AssociationHomePage() {
+    const { toast } = useToast();
+
+    const handleAction = (label: string) => {
+        toast({
+            title: label,
+            description: "İlgili içerik veya modül yükleniyor...",
+        });
+    };
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader />
@@ -138,14 +148,23 @@ export default function AssociationHomePage() {
                     <SectionTitle title="Gündem." subtitle="Sosyal fayda ekosisteminin öncelikli başlıkları." />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {[
-                            { title: "STK Gelir Modelleri", desc: "Sürdürülebilirlik ve finansal bağımsızlık stratejileri." },
-                            { title: "Global Çalıştay", desc: "Uluslararası sosyal girişimcilik diyalogları." },
-                            { title: "hangel Clubs", desc: "Kampüslerde sosyal inovasyon hareketi." },
-                            { title: "Mevzuat Tasarısı", desc: "Sosyal Girişimcilik Kanunu için yasal süreçler." }
+                            { title: "STK Gelir Modelleri", desc: "Sürdürülebilirlik ve finansal bağımsızlık stratejileri.", action: "STK Gelir Modelleri" },
+                            { title: "Global Çalıştay", desc: "Uluslararası sosyal girişimcilik diyalogları.", href: "/hangelassociation/workshop" },
+                            { title: "hangel Clubs", desc: "Kampüslerde sosyal inovasyon hareketi.", action: "hangel Clubs" },
+                            { title: "Mevzuat Tasarısı", desc: "Sosyal Girişimcilik Kanunu için yasal süreçler.", href: "/hangelassociation/legislation" }
                         ].map((item, i) => (
-                            <div key={i} className="p-8 bg-white rounded-[2.5rem] border border-black/5 hover:border-primary/20 transition-all group">
-                                <h4 className="font-bold text-xl mb-3 group-hover:text-primary transition-colors">{item.title}</h4>
-                                <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
+                            <div key={i}>
+                                {item.href ? (
+                                    <Link href={item.href} className="block p-8 bg-white h-full rounded-[2.5rem] border border-black/5 hover:border-primary/20 transition-all group">
+                                        <h4 className="font-bold text-xl mb-3 group-hover:text-primary transition-colors">{item.title}</h4>
+                                        <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
+                                    </Link>
+                                ) : (
+                                    <button onClick={() => handleAction(item.action!)} className="w-full text-left p-8 bg-white h-full rounded-[2.5rem] border border-black/5 hover:border-primary/20 transition-all group">
+                                        <h4 className="font-bold text-xl mb-3 group-hover:text-primary transition-colors">{item.title}</h4>
+                                        <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -163,12 +182,12 @@ export default function AssociationHomePage() {
                             { title: "hangel Sosyal İnovasyon Komitesi", icon: Sparkles, color: "bg-purple-500" },
                             { title: "Etki Odaklı İnsan ve Kültür Komitesi", icon: Users, color: "bg-orange-500" }
                         ].map((comm, i) => (
-                            <div key={i} className="flex items-center gap-6 p-8 bg-[#f5f5f7] rounded-[2.5rem] hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-black/5">
+                            <button key={i} onClick={() => handleAction(comm.title)} className="flex items-center gap-6 p-8 bg-[#f5f5f7] rounded-[2.5rem] hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-black/5 text-left w-full">
                                 <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg", comm.color)}>
                                     <comm.icon className="h-8 w-8" />
                                 </div>
                                 <h3 className="text-xl md:text-2xl font-bold tracking-tight text-[#1d1d1f]">{comm.title}</h3>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -181,11 +200,11 @@ export default function AssociationHomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[
                             { title: "Sosyal Girişimcilik Kanun Teklifi", icon: Scale, href: "/hangelassociation/legislation" },
-                            { title: "hangel Impact Fellow", icon: UserCheck, href: "#" },
-                            { title: "Etki Odaklı İstihdam Protokolü", icon: Briefcase, href: "#" },
-                            { title: "hangel Sosyal Etki Atlası", icon: MapIcon, href: "#" },
+                            { title: "hangel Impact Fellow", icon: UserCheck, action: "Impact Fellow" },
+                            { title: "Etki Odaklı İstihdam Protokolü", icon: Briefcase, action: "İstihdam Protokolü" },
+                            { title: "hangel Sosyal Etki Atlası", icon: MapIcon, action: "Etki Atlası" },
                             { title: "Girişimcilik Kütüphanesi", icon: BookOpen, href: "/hangelassociation/workshop" },
-                            { title: "STK Gelir Modeli & Sürdürülebilirlik", icon: DollarSign, href: "#" }
+                            { title: "STK Gelir Modeli & Sürdürülebilirlik", icon: DollarSign, action: "Gelir Modeli" }
                         ].map((proj, i) => (
                             <div key={i} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex flex-col justify-between min-h-[280px]">
                                 <div className="p-4 bg-white/10 rounded-2xl w-fit">
@@ -193,9 +212,15 @@ export default function AssociationHomePage() {
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-2xl font-bold tracking-tight leading-tight">{proj.title}</h3>
-                                    <Link href={proj.href} className="inline-flex items-center text-primary font-bold hover:underline">
-                                        İncele <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
+                                    {proj.href ? (
+                                        <Link href={proj.href} className="inline-flex items-center text-primary font-bold hover:underline">
+                                            İncele <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    ) : (
+                                        <button onClick={() => handleAction(proj.action!)} className="inline-flex items-center text-primary font-bold hover:underline">
+                                            İncele <ArrowRight className="ml-2 h-4 w-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -223,7 +248,9 @@ export default function AssociationHomePage() {
                                         <h4 className="font-black text-xs uppercase tracking-widest text-primary">{item.title}</h4>
                                         <p className="text-xl font-bold leading-tight">{item.desc}</p>
                                     </div>
-                                    <Button variant="ghost" className="p-0 h-auto text-primary font-bold group-hover:pl-2 transition-all">Detayları İncele <ChevronRight className="ml-1 h-4 w-4"/></Button>
+                                    <Button variant="ghost" className="p-0 h-auto text-primary font-bold group-hover:pl-2 transition-all" onClick={() => handleAction(item.title)}>
+                                        Detayları İncele <ChevronRight className="ml-1 h-4 w-4"/>
+                                    </Button>
                                 </div>
                             </Card>
                         ))}
@@ -249,7 +276,7 @@ export default function AssociationHomePage() {
                                 <div className="space-y-4">
                                     <h4 className="font-bold text-xl leading-tight">{report.title}</h4>
                                     <p className="text-xs text-muted-foreground font-medium">{report.desc}</p>
-                                    <Button variant="outline" className="w-full rounded-full border-black/10 font-bold hover:bg-black hover:text-white">Raporu İncele</Button>
+                                    <Button variant="outline" className="w-full rounded-full border-black/10 font-bold hover:bg-black hover:text-white" onClick={() => handleAction(report.title)}>Raporu İncele</Button>
                                 </div>
                             </div>
                         ))}
@@ -265,7 +292,7 @@ export default function AssociationHomePage() {
                             <Newspaper className="h-8 w-8 text-primary" />
                             <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Güncel Haberler.</h2>
                         </div>
-                        <Button variant="ghost" className="font-bold text-primary">Tüm Haberler</Button>
+                        <Button variant="ghost" className="font-bold text-primary" onClick={() => handleAction('Tüm Haberler')}>Tüm Haberler</Button>
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                         {[
@@ -284,7 +311,7 @@ export default function AssociationHomePage() {
                                         <span>{news.date}</span>
                                     </div>
                                     <h4 className="text-xl md:text-2xl font-bold text-[#1d1d1f] group-hover:text-primary transition-colors leading-tight">{news.title}</h4>
-                                    <Button variant="ghost" className="p-0 h-auto self-start text-primary font-bold">Okumaya Devam Et <ArrowRight className="ml-1 h-4 w-4" /></Button>
+                                    <Button variant="ghost" className="p-0 h-auto self-start text-primary font-bold" onClick={() => handleAction(news.title)}>Okumaya Devam Et <ArrowRight className="ml-1 h-4 w-4" /></Button>
                                 </div>
                             </div>
                         ))}

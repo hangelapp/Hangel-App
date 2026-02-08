@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -51,7 +52,7 @@ const SectionHeader = ({ title, subtitle }: { title: string, subtitle?: string }
     </div>
 );
 
-const InstitutionList = ({ title, count, items, icon: Icon, logos }: { title: string, count: number, items: string[], icon: any, logos?: string[] }) => (
+const InstitutionList = ({ title, count, items, icon: Icon, logos, onDetailClick }: { title: string, count: number, items: string[], icon: any, logos?: string[], onDetailClick?: (item: string) => void }) => (
     <div className="space-y-8 bg-white p-8 md:p-12 rounded-[3rem] border border-black/5 shadow-sm hover:shadow-2xl transition-all">
         <div className="flex items-end justify-between border-b border-black/5 pb-6">
             <div className="flex items-center gap-4">
@@ -79,16 +80,21 @@ const InstitutionList = ({ title, count, items, icon: Icon, logos }: { title: st
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-12 gap-y-3">
             {items.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 text-[13px] font-medium text-[#1d1d1f]/70 leading-relaxed border-l-2 border-transparent hover:border-primary/20 hover:pl-3 transition-all cursor-default">
+                <button 
+                    key={i} 
+                    onClick={() => onDetailClick?.(item)}
+                    className="flex items-center gap-3 text-[13px] font-medium text-[#1d1d1f]/70 text-left leading-relaxed border-l-2 border-transparent hover:border-primary/20 hover:pl-3 transition-all"
+                >
                     <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
                     {item}
-                </div>
+                </button>
             ))}
         </div>
     </div>
 );
 
 export default function AssociationEventsPage() {
+    const { toast } = useToast();
     const networkData = {
         universities: [
             "Sakarya Üniversitesi", "Mersin Üniversitesi", "Hakkari Üniversitesi 1", "Hakkari Üniversitesi 2", "İstanbul Üniversitesi",
@@ -136,6 +142,13 @@ export default function AssociationEventsPage() {
         "https://logo.clearbit.com/istanbul.edu.tr"
     ];
 
+    const handleInstitutionClick = (item: string) => {
+        toast({
+            title: item,
+            description: "Kurumsal iş birliği detayları ve geçmiş etkinlik raporları yükleniyor.",
+        });
+    };
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="events" />
@@ -154,6 +167,7 @@ export default function AssociationEventsPage() {
                     count={42} 
                     items={networkData.universities} 
                     logos={universityLogos}
+                    onDetailClick={handleInstitutionClick}
                 />
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -162,12 +176,14 @@ export default function AssociationEventsPage() {
                         title="Ticaret Odaları" 
                         count={12} 
                         items={networkData.chambers} 
+                        onDetailClick={handleInstitutionClick}
                     />
                     <InstitutionList 
                         icon={Landmark}
                         title="Belediyeler" 
                         count={17} 
                         items={networkData.municipalities} 
+                        onDetailClick={handleInstitutionClick}
                     />
                 </div>
 
@@ -177,12 +193,14 @@ export default function AssociationEventsPage() {
                         title="Okullar" 
                         count={20} 
                         items={networkData.schools} 
+                        onDetailClick={handleInstitutionClick}
                     />
                     <InstitutionList 
                         icon={Globe}
                         title="Networkler" 
                         count={22} 
                         items={networkData.ngos} 
+                        onDetailClick={handleInstitutionClick}
                     />
                 </div>
             </div>
@@ -197,7 +215,7 @@ export default function AssociationEventsPage() {
                             <p className="text-xl text-white/70 leading-relaxed font-medium">
                                 Sivil toplumun gücünü yerel yönetimlerle birleştirdiğimiz, binlerce vatandaşın sosyal fayda projeleriyle buluştuğu Türkiye'nin en kapsamlı sivil festivallerinden biri.
                             </p>
-                            <Button size="lg" className="rounded-full px-10 h-14 font-bold bg-white text-black hover:bg-white/90">Festivali Keşfet</Button>
+                            <Button size="lg" className="rounded-full px-10 h-14 font-bold bg-white text-black hover:bg-white/90" onClick={() => toast({ title: "SivilFest", description: "Festival programı ve katılım rehberi yükleniyor." })}>Festivali Keşfet</Button>
                         </div>
                         <div className="relative aspect-square rounded-[3rem] overflow-hidden border-8 border-white/5 shadow-2xl">
                             <Image src="https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop" alt="Festival" fill className="object-cover" />

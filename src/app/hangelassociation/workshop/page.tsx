@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useToast } from '@/hooks/use-toast';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -49,6 +50,8 @@ const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, them
 );
 
 export default function AssociationWorkshopPage() {
+    const { toast } = useToast();
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="workshop" />
@@ -71,6 +74,7 @@ export default function AssociationWorkshopPage() {
                             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
                                 54 ülkeden 632 sosyal girişimi detaylıca inceledik ve raporladık. Bu verileri 'Big Data' formatında tüm sosyal girişimcilerin kullanımına sunuyoruz. Bilginin paylaşıldıkça çoğaldığına inanıyoruz.
                             </p>
+                            <Button variant="outline" className="rounded-full font-bold" onClick={() => toast({ title: "Veri Portalı", description: "Big Data erişim paneli yetkilendirme sonrası açılacaktır." })}>Veriye Eriş</Button>
                         </div>
                         <div className="p-10 bg-white rounded-[2.5rem] shadow-xl border border-black/5 text-center">
                             <p className="text-8xl font-black tracking-tighter text-primary mb-2">632</p>
@@ -106,10 +110,10 @@ export default function AssociationWorkshopPage() {
                             { name: "Girişim360", desc: "Batman İl Milli Eğitim Müdürlüğü Sosyal Girişimcilik Merkezi'nde." },
                             { name: "Denizakvaryum", desc: "Denizbank inovasyon merkezi işbirliği ile girişimcilere açık." }
                         ].map((partner, i) => (
-                            <div key={i} className="p-8 bg-[#f5f5f7] rounded-[2rem] text-left space-y-2 hover:bg-primary hover:text-white transition-colors group">
+                            <button key={i} onClick={() => toast({ title: partner.name, description: "Kütüphane kayıt ve kitap paylaşım modülü yükleniyor." })} className="p-8 bg-[#f5f5f7] rounded-[2rem] text-left space-y-2 hover:bg-primary hover:text-white transition-colors group">
                                 <h4 className="font-bold text-xl">{partner.name}</h4>
                                 <p className="text-sm opacity-70 group-hover:text-white/80">{partner.desc}</p>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -126,11 +130,13 @@ export default function AssociationWorkshopPage() {
                             <BookOpen className="h-8 w-8 text-primary" />
                             <h3 className="text-xl font-bold">YÖK Onaylı Müfredat</h3>
                             <p className="text-sm text-muted-foreground leading-relaxed">Maltepe Üniversitesi'nde hazırladığımız 'Uygulamalı Sosyal Girişimcilik' dersi YÖK onayıyla genel müfredata girerek tüm bölümlere açıldı.</p>
+                            <Button variant="link" className="p-0 text-primary font-bold" onClick={() => toast({ title: "Müfredat Detayı", description: "Ders içeriği ve kazanımları raporu indiriliyor." })}>İçeriği Gör</Button>
                         </div>
                         <div className="p-10 bg-white rounded-[2.5rem] space-y-4 shadow-sm">
                             <Rocket className="h-8 w-8 text-primary" />
                             <h3 className="text-xl font-bold">Tez ve Kaynak Desteği</h3>
                             <p className="text-sm text-muted-foreground leading-relaxed">2 Doktora, 3 Yüksek Lisans tezi ve 2 akademik makaleye veri ve kaynak desteği sağlayarak sivil toplum literatürünü güçlendirdik.</p>
+                            <Button variant="link" className="p-0 text-primary font-bold" onClick={() => toast({ title: "Akademik Destek", description: "Desteklenen tezlerin ve yayınların listesi hazırlanıyor." })}>Yayınları Listele</Button>
                         </div>
                     </div>
                 </div>

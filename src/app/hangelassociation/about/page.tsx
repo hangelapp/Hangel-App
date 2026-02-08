@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useToast } from '@/hooks/use-toast';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -78,17 +79,26 @@ const AppleSection = ({
     </section>
 );
 
-const FeatureBlock = ({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) => (
-    <div className="flex flex-col items-center gap-4 text-center p-8 bg-[#f5f5f7] rounded-[2.5rem] border border-black/5 hover:bg-white hover:shadow-xl transition-all group">
+const FeatureBlock = ({ icon: Icon, title, desc, onClick }: { icon: any, title: string, desc: string, onClick?: () => void }) => (
+    <button onClick={onClick} className="flex flex-col items-center gap-4 text-center p-8 bg-[#f5f5f7] rounded-[2.5rem] border border-black/5 hover:bg-white hover:shadow-xl transition-all group w-full">
         <div className="p-4 bg-white rounded-2xl shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
             <Icon className="h-8 w-8 text-primary group-hover:text-white" />
         </div>
         <h4 className="text-xl font-bold text-[#1d1d1f] tracking-tight">{title}</h4>
         <p className="text-sm text-muted-foreground leading-relaxed font-medium">{desc}</p>
-    </div>
+    </button>
 );
 
 export default function AssociationAboutPage() {
+    const { toast } = useToast();
+
+    const handleModelClick = () => {
+        toast({
+            title: "Sosyal İnovasyon Modelleri",
+            description: "Sürdürülebilir kalkınma modellerimiz hakkında detaylı bilgiye yakında buradan ulaşabileceksiniz.",
+        });
+    };
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="about" />
@@ -116,16 +126,19 @@ export default function AssociationAboutPage() {
                             icon={ShoppingCart}
                             title="Alışverişle Bağış"
                             desc="Günlük harcamaları ek ücret ödemeden toplumsal faydaya dönüştüren modeller."
+                            onClick={() => toast({ title: "Alışverişle Bağış", description: "Hangel A.Ş. altyapısıyla entegre modellerimiz inceleniyor." })}
                         />
                         <FeatureBlock 
                             icon={HeartHandshake}
                             title="Yetenek Bazlı Gönüllülük"
                             desc="Profesyonel becerilerin sivil toplumun ihtiyaçlarıyla eşleştiği bir imece sistemi."
+                            onClick={() => toast({ title: "İmece Modülü", description: "Yetenek bazlı eşleştirme algoritmalarımız güncelleniyor." })}
                         />
                         <FeatureBlock 
                             icon={Briefcase}
                             title="Etki Odaklı İstihdam"
                             desc="Sosyal sorumluluk projelerini resmi özgeçmiş olarak tanıyan iş birliği protokolleri."
+                            onClick={() => toast({ title: "İstihdam Protokolü", description: "Arçelik ve diğer partnerlerimizle olan süreçler detaylandırılıyor." })}
                         />
                     </div>
                 </div>
@@ -183,7 +196,7 @@ export default function AssociationAboutPage() {
                         <p className="text-xl text-muted-foreground font-medium leading-relaxed">
                             Üniversite, sanayi, iş dünyası ve Sivil Toplum kuruluşları ile yürütülen araştırma projeleri ile sürdürülebilir sosyal girişim modelleri geliştiriyoruz. Sosyal girişim start-up şirketlerin desteklenmesine ve sayılarının artmasına zemin hazırlıyoruz.
                         </p>
-                        <Button className="rounded-full px-8 h-12 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">Modelleri İncele</Button>
+                        <Button className="rounded-full px-8 h-12 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" onClick={handleModelClick}>Modelleri İncele</Button>
                     </div>
                     <div className="flex-1 relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white">
                         <Image src="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop" alt="Innovation" fill className="object-cover" data-ai-hint="team collaborating meeting" />

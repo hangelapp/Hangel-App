@@ -18,7 +18,8 @@ import {
     Target,
     Shield,
     HeartHandshake,
-    Eye
+    Eye,
+    Download
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useToast } from '@/hooks/use-toast';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -36,24 +38,36 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
-                    <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
-                    <Link href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</Link>
-                    <Link href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</Link>
-                    <Link href="/hangelassociation/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>Mevzuat Taslağı</Link>
+                    <a href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</a>
+                    <a href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</a>
+                    <a href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</a>
+                    <a href="/hangelassociation/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>Mevzuat Taslağı</a>
                 </nav>
                 <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                    <Link href="/login/selection?action=register">Gönüllü Ol</Link>
+                    <a href="/login/selection?action=register">Gönüllü Ol</a>
                 </Button>
             </div>
         </header>
     );
 };
 
-const Link = ({ href, children, className }: any) => (
-    <a href={href} className={className}>{children}</a>
-);
-
 export default function AssociationLegislationPage() {
+    const { toast } = useToast();
+
+    const handleDownload = () => {
+        toast({
+            title: "Dosya Hazırlanıyor",
+            description: "29 maddelik Kanun Teklifi taslağı PDF formatında indiriliyor.",
+        });
+    };
+
+    const handleFeedback = () => {
+        toast({
+            title: "Görüş Bildir",
+            description: "Mevzuat taslağı hakkındaki görüşleriniz için iletişim formu açılıyor.",
+        });
+    };
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="legislation" />
@@ -202,11 +216,11 @@ export default function AssociationLegislationPage() {
                             { country: "Güney Kore", model: "Promotion Act", desc: "Sosyal girişimler kamu alımlarında %100 öncelik hakkına sahip." },
                             { country: "ABD", model: "L3C / B-Corp", desc: "Düşük kârla çalışan sosyal işletmelere özel tüzel kişilik tanımı." }
                         ].map((item, i) => (
-                            <div key={i} className="p-8 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all">
+                            <button key={i} onClick={() => toast({ title: `${item.country} Modeli`, description: `${item.model} yapısı hakkında detaylı kıyaslama raporu yükleniyor.` })} className="p-8 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all text-left">
                                 <h4 className="text-primary font-black text-xs uppercase tracking-[0.2em] mb-4">{item.country}</h4>
                                 <h3 className="text-2xl font-bold mb-3">{item.model}</h3>
                                 <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -223,22 +237,22 @@ export default function AssociationLegislationPage() {
                                 British Council, Marmara Üniversitesi ve KUSIF gibi kuruluşların araştırmaları, Türkiye'de yasal tanım eksikliğinin sosyal etkiyi %70 oranında sınırladığını gösteriyor.
                             </p>
                             <div className="space-y-4">
-                                <div className="flex items-center gap-4 p-4 bg-[#f5f5f7] rounded-2xl border border-black/5 group cursor-pointer hover:bg-primary/5 transition-colors">
+                                <button onClick={() => toast({ title: "Rapor Açılıyor", description: "Marmara Üniversitesi akademik analizi yükleniyor." })} className="flex w-full items-center gap-4 p-4 bg-[#f5f5f7] rounded-2xl border border-black/5 group cursor-pointer hover:bg-primary/5 transition-colors">
                                     <FileText className="h-6 w-6 text-primary" />
-                                    <div className="flex-1">
+                                    <div className="flex-1 text-left">
                                         <p className="text-sm font-bold">Marmara Üni. Analizi (2024)</p>
                                         <p className="text-xs text-muted-foreground">Mevzuat eksikliği ve gelişim süreci raporu.</p>
                                     </div>
                                     <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-1 transition-transform" />
-                                </div>
-                                <div className="flex items-center gap-4 p-4 bg-[#f5f5f7] rounded-2xl border border-black/5 group cursor-pointer hover:bg-primary/5 transition-colors">
+                                </button>
+                                <button onClick={() => toast({ title: "Rapor Açılıyor", description: "British Council sosyal girişim durumu raporu yükleniyor." })} className="flex w-full items-center gap-4 p-4 bg-[#f5f5f7] rounded-2xl border border-black/5 group cursor-pointer hover:bg-primary/5 transition-colors">
                                     <FileText className="h-6 w-6 text-primary" />
-                                    <div className="flex-1">
+                                    <div className="flex-1 text-left">
                                         <p className="text-sm font-bold">British Council Raporu (2019)</p>
                                         <p className="text-xs text-muted-foreground">Sosyal Girişimlerin Mevcut Durumu ve Engeller.</p>
                                     </div>
                                     <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-1 transition-transform" />
-                                </div>
+                                </button>
                             </div>
                         </div>
                         <div className="p-12 bg-[#f5f5f7] rounded-[3rem] space-y-8">
@@ -269,10 +283,10 @@ export default function AssociationLegislationPage() {
                         Bu teklif, bir metinden öte toplumsal bir mirastır. Sosyal meselelerle uğraşan girişimcilerin yalnızca alkış değil, mevzuat desteği de gördüğü bir gelecek için çalışıyoruz.
                     </p>
                     <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Button size="lg" className="rounded-full px-12 h-14 font-bold bg-primary hover:bg-primary/90 text-lg shadow-2xl shadow-primary/20">
+                        <Button size="lg" className="rounded-full px-12 h-14 font-bold bg-primary hover:bg-primary/90 text-lg shadow-2xl shadow-primary/20" onClick={handleDownload}>
                             Taslağı İndir <Download className="ml-2 h-5 w-5" />
                         </Button>
-                        <Button variant="ghost" size="lg" className="rounded-full px-12 h-14 font-bold border border-black/10 hover:bg-white text-lg">
+                        <Button variant="ghost" size="lg" className="rounded-full px-12 h-14 font-bold border border-black/10 hover:bg-white text-lg" onClick={handleFeedback}>
                             Görüş Bildir <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </div>
@@ -283,9 +297,3 @@ export default function AssociationLegislationPage() {
         </div>
     );
 }
-
-const Download = (props: any) => (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-    </svg>
-);
