@@ -25,13 +25,18 @@ import {
     GraduationCap,
     FileText,
     Sparkles,
-    Siren
+    Siren,
+    ShoppingCart,
+    HeartHandshake
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { HangelLogo } from '@/components/icons';
 
 const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
     const router = useRouter();
