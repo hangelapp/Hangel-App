@@ -7,7 +7,7 @@ import {
     ChevronRight, ArrowLeft, Globe, Users, Heart, ShieldCheck, Newspaper, Target, ArrowRight, 
     Briefcase, Brain, Scale, UserCheck, Map as MapIcon, BookOpen, DollarSign, GraduationCap, 
     FileText, Sparkles, ShoppingCart, HeartHandshake, Landmark, Search, Filter, ArrowDownUp,
-    Store, MessageSquare
+    Store, MessageSquare, Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -104,7 +104,7 @@ export default function AssociationHomePage() {
                 <div className="container mx-auto max-w-6xl">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
                         <div className="space-y-4">
-                            <BadgeIcon className="h-12 w-12 text-primary" />
+                            <Target className="h-12 w-12 text-primary" />
                             <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Gündem.</h2>
                         </div>
                         <p className="text-xl text-muted-foreground font-medium max-w-md">Sosyal fayda ekosisteminin öncelikli stratejik başlıkları.</p>
