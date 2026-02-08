@@ -1,14 +1,20 @@
+
 'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, ShoppingCart, HeartHandshake, Briefcase, Globe, Sparkles } from 'lucide-react';
+import { 
+    ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, ShoppingCart, 
+    HeartHandshake, Briefcase, Globe, Sparkles, Star, Award, Landmark,
+    Cpu, Map, Scale, Brain
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -32,174 +38,143 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const AppleSection = ({ 
-    title, 
-    subtitle, 
-    description, 
-    theme = 'light',
-    imageUrl,
-    imageHint,
-    className,
-    children
-}: { 
-    title: string, 
-    subtitle?: string, 
-    description?: string, 
-    theme?: 'light' | 'dark',
-    imageUrl?: string,
-    imageHint?: string,
-    className?: string,
-    children?: React.ReactNode
-}) => (
-    <section className={cn(
-        "relative min-h-[85vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
-        className
-    )}>
-        <div className="relative z-10 space-y-4 px-6 max-w-4xl animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
-            {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
-            {description && <p className="text-sm md:text-lg opacity-70 max-w-3xl mx-auto leading-relaxed font-medium">{description}</p>}
-            {children}
+const SectionHeading = ({ badge, title, desc, centered = true }: any) => (
+    <div className={cn("space-y-6 max-w-4xl", centered ? "mx-auto text-center" : "text-left")}>
+        <div className={cn("inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary", !centered && "mb-4")}>
+            <Sparkles className="h-4 w-4" />
+            <span className="text-[10px] font-black uppercase tracking-widest">{badge}</span>
         </div>
-        
-        {imageUrl && (
-            <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
-                <div className="relative w-full aspect-[16/10] md:aspect-[21/9] rounded-t-[3rem] overflow-hidden shadow-2xl">
-                    <Image 
-                        src={imageUrl} 
-                        alt={title} 
-                        fill 
-                        className="object-cover" 
-                        data-ai-hint={imageHint}
-                    />
-                </div>
-            </div>
-        )}
-    </section>
+        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">{title}</h2>
+        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed">{desc}</p>
+    </div>
 );
 
 const FeatureBlock = ({ icon: Icon, title, desc, onClick }: { icon: any, title: string, desc: string, onClick?: () => void }) => (
-    <button onClick={onClick} className="flex flex-col items-center gap-4 text-center p-8 bg-[#f5f5f7] rounded-[2.5rem] border border-black/5 hover:bg-white hover:shadow-xl transition-all group w-full">
-        <div className="p-4 bg-white rounded-2xl shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
-            <Icon className="h-8 w-8 text-primary group-hover:text-white" />
+    <button onClick={onClick} className="flex flex-col items-center gap-6 text-center p-10 bg-[#f5f5f7] rounded-[3rem] border border-black/5 hover:bg-white hover:shadow-2xl transition-all duration-500 group w-full">
+        <div className="p-5 bg-white rounded-3xl shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+            <Icon className="h-10 w-10 text-primary group-hover:text-white" />
         </div>
-        <h4 className="text-xl font-bold text-[#1d1d1f] tracking-tight">{title}</h4>
-        <p className="text-sm text-muted-foreground leading-relaxed font-medium">{desc}</p>
+        <h4 className="text-2xl font-bold text-[#1d1d1f] tracking-tight">{title}</h4>
+        <p className="text-base text-muted-foreground leading-relaxed font-medium">{desc}</p>
     </button>
 );
 
 export default function AssociationAboutPage() {
     const { toast } = useToast();
 
-    const handleModelClick = () => {
-        toast({
-            title: "Sosyal İnovasyon Modelleri",
-            description: "Sürdürülebilir kalkınma modellerimiz hakkında detaylı bilgiye yakında buradan ulaşabileceksiniz.",
-        });
-    };
-
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="about" />
 
-            {/* Hero */}
-            <AppleSection 
-                title="Daha İyi Bir Dünya."
-                subtitle="Hayal gücü ile eylemin kesişiminde."
-                description="Biz, dünyayı daha iyi bir yer haline getirme vizyonumuzu ve ideallerimizi paylaşan insanları dünyanın dört bir yanından bir araya getiriyoruz. Zorluklardan kaçmıyor, onları fırsata dönüştürmek için harekete geçiyoruz."
-                imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
-                imageHint="students working together library"
-            />
-
-            {/* Mission Section */}
-            <section className="py-32 bg-white border-b border-black/5">
-                <div className="container mx-auto px-6 max-w-5xl space-y-20">
-                    <div className="text-center space-y-4">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Misyonumuz.</h2>
-                        <p className="text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                            Hangel ve Social Business Global olarak misyonumuz; hayatın her kesiminden herkesin iyilik yapmaya katılabildiği adil ve kapsayıcı bir sistem inşa etmektir. İyiliği kolaylaştırmanın, birlikte daha iyi bir geleceği şekillendirmenin ilk adımı olduğuna inanıyoruz.
-                        </p>
+            {/* Hero Section */}
+            <section className="relative pt-32 pb-24 px-6 text-center bg-[#f5f5f7] overflow-hidden">
+                <div className="container mx-auto max-w-5xl space-y-12 relative z-10">
+                    <SectionHeading 
+                        badge="BİZ KİMİZ?"
+                        title="Daha İyi Bir Dünya İçin Kolektif Bir Bilinç."
+                        desc="Biz, dünyayı daha iyi bir yer haline getirme vizyonumuzu ve ideallerimizi paylaşan insanları dünyanın dört bir yanından bir araya getiriyoruz. Zorluklardan kaçmıyor, onları fırsata dönüştürmek için harekete geçiyoruz."
+                    />
+                    <div className="relative w-full aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl mt-12 group">
+                        <Image src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" alt="Team" fill className="object-cover group-hover:scale-105 transition-transform duration-1000" />
+                        <div className="absolute inset-0 bg-black/10" />
                     </div>
+                </div>
+            </section>
+
+            {/* Misyon & Vizyon */}
+            <section className="py-32 px-6 border-b border-black/5">
+                <div className="container mx-auto max-w-5xl space-y-24">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                        <div className="space-y-8">
+                            <div className="p-4 bg-primary/10 rounded-2xl w-fit"><Target className="h-8 w-8 text-primary" /></div>
+                            <h3 className="text-4xl font-black tracking-tighter">Misyonumuz.</h3>
+                            <p className="text-xl text-muted-foreground leading-relaxed font-medium">
+                                Hangel ve Social Business Global olarak misyonumuz; hayatın her kesiminden, kurum ve sivil toplumdan herkesin iyilik yapmaya katılabildiği adil ve kapsayıcı bir sistem inşa etmektir. Alışveriş yoluyla bağış, yetkinlik bazlı gönüllülük ve sosyal girişimcilik gibi yenilikçi modellerle sürdürülebilir dönüşüme hayat veriyoruz.
+                            </p>
+                        </div>
+                        <div className="space-y-8">
+                            <div className="p-4 bg-primary/10 rounded-2xl w-fit"><Globe className="h-8 w-8 text-primary" /></div>
+                            <h3 className="text-4xl font-black tracking-tighter">Küresel Ağ Hedefimiz.</h3>
+                            <p className="text-xl text-muted-foreground leading-relaxed font-medium">
+                                Ulusal ve uluslararası paydaşlarımız ile hayata sosyal fayda odaklı bakan sosyal girişimcileri bir araya getirerek, birbirlerinden ilham almalarını sağlayacak doğal bir ağ oluşturuyoruz. Ülke temsilcilerimizi acıları yarıştırmadan, ortak sorunlara kolektif çözümler üretmek üzere birleştiriyoruz.
+                            </p>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <FeatureBlock 
                             icon={ShoppingCart}
                             title="Alışverişle Bağış"
                             desc="Günlük harcamaları ek ücret ödemeden toplumsal faydaya dönüştüren modeller."
-                            onClick={() => toast({ title: "Alışverişle Bağış", description: "Hangel A.Ş. altyapısıyla entegre modellerimiz inceleniyor." })}
+                            onClick={() => toast({ title: "Alışverişle Bağış", description: "Hangel A.Ş. altyapısıyla entegre modeller inceleniyor." })}
                         />
                         <FeatureBlock 
                             icon={HeartHandshake}
-                            title="Yetenek Bazlı Gönüllülük"
-                            desc="Profesyonel becerilerin sivil toplumun ihtiyaçlarıyla eşleştiği bir imece sistemi."
-                            onClick={() => toast({ title: "İmece Modülü", description: "Yetenek bazlı eşleştirme algoritmalarımız güncelleniyor." })}
+                            title="İmece Sistemi"
+                            desc="Profesyonel becerilerin sivil toplumun ihtiyaçlarıyla eşleştiği yetenek bazlı gönüllülük."
+                            onClick={() => toast({ title: "İmece Modülü", description: "Yetenek bazlı eşleştirme algoritmalarımız devrede." })}
                         />
                         <FeatureBlock 
                             icon={Briefcase}
-                            title="Etki Odaklı İstihdam"
-                            desc="Sosyal sorumluluk projelerini resmi özgeçmiş olarak tanıyan iş birliği protokolleri."
-                            onClick={() => toast({ title: "İstihdam Protokolü", description: "Arçelik ve diğer partnerlerimizle olan süreçler detaylandırılıyor." })}
+                            title="Etki İstihdamı"
+                            desc="Sosyal sorumluluk projelerini resmi özgeçmiş olarak tanıyan kurumsal protokoller."
+                            onClick={() => toast({ title: "İstihdam Protokolü", description: "Arçelik ve diğer partnerlerimizle süreçler yürütülüyor." })}
                         />
                     </div>
                 </div>
             </section>
 
-            {/* Global Network Section */}
-            <section className="bg-black text-white py-32 text-center overflow-hidden">
-                <div className="container mx-auto px-6 max-w-5xl">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white mb-8">
-                        <Globe className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Küresel Ağ Hedefimiz</span>
-                    </div>
-                    <h2 className="text-4xl md:text-7xl font-bold tracking-tight mb-8">Acıları Yarıştırmadan.</h2>
-                    <p className="text-xl md:text-2xl text-white/70 leading-relaxed font-medium max-w-4xl mx-auto mb-20">
-                        Ulusal ve uluslararası paydaşlarımız ile sosyal girişimcileri bir araya getirerek, birbirlerinden ilham almalarını ve birbirlerini desteklemelerini sağlayacak doğal bir ağ oluşturuyoruz. Benzer sorunlarla karşılaşan farklı kültürlerin, kolektif güçle çok daha etkili çözümler üreteceğine inanıyoruz.
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">54</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Ülke</p>
+            {/* Founder Profile - İsmail Hilmi ADIGÜZEL */}
+            <section className="py-32 px-6 bg-black text-white overflow-hidden">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                        <div className="relative aspect-square rounded-[3rem] overflow-hidden border-8 border-white/5 shadow-2xl">
+                            <Image src="https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1080" alt="İsmail Hilmi ADIGÜZEL" fill className="object-cover" />
                         </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">120</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Partner</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">42</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Üniversite</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">17</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Belediye</p>
+                        <div className="space-y-10">
+                            <div className="space-y-4">
+                                <Badge className="bg-primary text-white border-none text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full">KURUCU LİDER</Badge>
+                                <h3 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">İsmail Hilmi ADIGÜZEL.</h3>
+                                <p className="text-xl text-white/60 font-medium">Türkiye’nin sosyal girişimcilik, sivil toplum ve sosyal inovasyon alanlarında öncü ismi.</p>
+                            </div>
+                            <div className="space-y-6 text-lg text-white/80 font-medium leading-relaxed">
+                                <p>2009 yılından bu yana 147 üniversitede örgütlenen sosyal projelerin mimarı olan ADIGÜZEL, 300'ün üzerinde konferans ile binlerce gence "Sistemli İyilik" vizyonunu aşıladı.</p>
+                                <p>Hangel.org ve Social Business Global Derneği'nin kurucu liderliğini yürüterek, bireylerin günlük aktivitelerini STK'lara kaynak aktarımına dönüştüren yenilikçi modelleri hayata geçirdi.</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-8 border-t border-white/10 pt-8">
+                                <div className="space-y-1">
+                                    <p className="text-4xl font-black text-primary tracking-tighter">300+</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Konferans</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-4xl font-black text-primary tracking-tighter">15K+</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Genç Etkileşimi</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Why SBG Section */}
-            <AppleSection 
-                title="Neden hangel?"
-                subtitle="Birleştirici bir güç."
-                description="SOCIAL BUSINESS GLOBAL, kolektif bilinçle toplumsal fayda bilincinin yanı sıra toplumsal etki için çalışan çocuklar, gençler, iş insanları ve sivil toplum liderleri için birleştirici bir güç olarak hizmet vermektedir."
-                imageUrl="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
-                imageHint="collaborative business meeting"
-            />
-
-            {/* Social Innovation Section */}
-            <section className="py-32 bg-[#f5f5f7] border-b border-black/5">
-                <div className="container mx-auto px-6 max-w-5xl flex flex-col md:flex-row items-center gap-16">
-                    <div className="flex-1 space-y-8 text-left">
-                        <div className="p-3 bg-primary/10 rounded-2xl w-fit">
-                            <Sparkles className="h-8 w-8 text-primary" />
+            {/* Neden Bölümü */}
+            <section className="py-32 px-6 bg-white">
+                <div className="container mx-auto max-w-4xl text-center space-y-12">
+                    <SectionHeading 
+                        badge="NEDEN HANGEL?"
+                        title="Birleştirici Bir Güç."
+                        desc="Hangel ve Social Business Global, yalnızca sosyal fayda bilincine sahip olmakla kalmayıp, kalıcı sosyal etki için aktif olarak çalışan çocuklar, gençler, iş insanları ve sivil toplum liderleri için bir köprüdür."
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
+                        <div className="p-8 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 hover:shadow-xl transition-all">
+                            <div className="p-3 bg-white rounded-xl w-fit shadow-sm"><Users className="h-6 w-6 text-primary" /></div>
+                            <h4 className="text-xl font-bold">Kolektif Bilinç</h4>
+                            <p className="text-sm text-muted-foreground font-medium">Halkın kendi sorunlarını yine kendi arasında paylaşarak imece usulüyle çözmesini sağlıyoruz.</p>
                         </div>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Sosyal İnovasyon.</h2>
-                        <p className="text-xl text-muted-foreground font-medium leading-relaxed">
-                            Üniversite, sanayi, iş dünyası ve Sivil Toplum kuruluşları ile yürütülen araştırma projeleri ile sürdürülebilir sosyal girişim modelleri geliştiriyoruz. Sosyal girişim start-up şirketlerin desteklenmesine ve sayılarının artmasına zemin hazırlıyoruz.
-                        </p>
-                        <Button className="rounded-full px-8 h-12 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" onClick={handleModelClick}>Modelleri İncele</Button>
-                    </div>
-                    <div className="flex-1 relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white">
-                        <Image src="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop" alt="Innovation" fill className="object-cover" data-ai-hint="team collaborating meeting" />
+                        <div className="p-8 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 hover:shadow-xl transition-all">
+                            <div className="p-3 bg-white rounded-xl w-fit shadow-sm"><Sparkles className="h-6 w-6 text-primary" /></div>
+                            <h4 className="text-xl font-bold">Sosyal İnovasyon</h4>
+                            <p className="text-sm text-muted-foreground font-medium">Üniversite, sanayi ve sivil toplum kuruluşları ile yürütülen araştırmalarla sürdürülebilir modeller geliştiriyoruz.</p>
+                        </div>
                     </div>
                 </div>
             </section>
