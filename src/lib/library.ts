@@ -50,13 +50,85 @@ export const librarySections: LibrarySection[] = [
     {
         slug: 'sosyal-etki-raporlari',
         title: "Sosyal Etki Raporları",
-        description: "Hangel'in ve paydaşlarının sağladığı etkiyi inceleyin.",
+        description: "hangel'in ve paydaşlarının sağladığı etkiyi inceleyin.",
         icon: "FileText",
         items: Array.from({ length: 10 }, (_, i) => ({
             slug: `etki-raporu-202${3 - (i % 3)}-${['cevre', 'egitim', 'genel'][i%3]}-${i + 1}`,
             title: `202${3 - (i % 3)} Yılı ${['Çevre', 'Eğitim', 'Genel'][i%3]} Etki Raporu #${i + 1}`,
             content: `<h4>Özet</h4><p>Bu rapor, 202${3 - (i % 3)} yılı içerisinde ${['çevre koruma', 'eğitimde fırsat eşitliği', 'genel toplumsal kalkınma'][i%3]} alanında yürütülen projelerin, yapılan bağışların ve gönüllülük faaliyetlerinin sağladığı sosyal etkiyi kapsamlı bir şekilde analiz etmektedir.</p><h4>Temel Bulgular</h4><ul><li>Toplam <strong>${(i+1)*12345}₺</strong> bağış toplandı.</li><li><strong>${(i+1)*50} saat</strong> gönüllülük faieli gerçekleştirildi.</li><li><strong>${(i+1)*100} kişiye</strong> doğrudan ulaşıldı.</li></ul>`
         }))
+    },
+    {
+        slug: 'akademik-yayinlar',
+        title: "Akademik Yayınlar",
+        description: "Sivil toplum ve sosyal etki alanındaki bilimsel çalışmalar ve makaleler.",
+        icon: "GraduationCap",
+        items: [
+            {
+                slug: 'sosyal-etki-olcumlama-metodolojileri',
+                title: "Sosyal Etki Ölçümleme: SROI ve Ötesi",
+                content: `<h4>Giriş</h4><p>Bu makale, kâr amacı gütmeyen kuruluşların oluşturdukları sosyal değeri parasal ve niteliksel olarak nasıl ölçebileceklerini ele almaktadır.</p><h4>Öne Çıkan Başlıklar</h4><ul><li>Teorik Çerçeve: Değişim Teorisi (Theory of Change)</li><li>SROI Hesaplama Adımları</li><li>Niteliksel Verinin Nicelleştirilmesi</li></ul><p>Sonuç bölümünde, şeffaf raporlamanın bağışçı güveni üzerindeki etkisi bilimsel verilerle kanıtlanmaktadır.</p>`
+            },
+            {
+                slug: 'dijital-gonulluluk-egilimleri',
+                title: "Dijital Gönüllülük: Yeni Nesil Katılım Modelleri",
+                content: `<h4>Araştırma Özeti</h4><p>Teknolojinin gelişmesiyle birlikte gönüllülük kavramının nasıl dönüştüğünü inceleyen güncel bir çalışmadır.</p><h4>Bulgular</h4><ul><li>Mikro Gönüllülük (Micro-volunteering) kavramı</li><li>Z kuşağının sivil topluma katılım motivasyonları</li><li>Gamification (oyunlaştırma) yöntemlerinin gönüllü bağlılığına etkisi</li></ul>`
+            }
+        ]
+    },
+    {
+        slug: 'kitaplar',
+        title: "Kitaplar",
+        description: "Sosyal gelişim ve toplumsal dönüşüm üzerine temel eserler.",
+        icon: "Library",
+        items: [
+            {
+                slug: 'sosyal-girisimcilik-rehberi',
+                title: "Sosyal Girişimcilik: Dünyayı Değiştiren İş Modelleri",
+                content: `<h4>Kitap Hakkında</h4><p>Geleneksel hayırseverlikten sürdürülebilir sosyal girişimciliğe geçişi anlatan temel bir başvuru kaynağıdır.</p><h4>Neden Okumalısınız?</h4><p>Kendi sosyal girişiminizi kurmak veya mevcut STK'nızı daha sürdürülebilir bir modele dönüştürmek istiyorsanız, bu kitap size yol haritası sunacaktır.</p>`
+            },
+            {
+                slug: 'bagiscilik-ve-etik',
+                title: "Bilinçli Bağışçılık: Etki Yaratmanın Yolları",
+                content: `<h4>Özet</h4><p>Peter Singer gibi düşünürlerin perspektifinden, bağış yaparken en yüksek etkiyi nasıl sağlayabileceğimizi sorgulayan bir eser.</p><h4>Kritik Sorular</h4><ul><li>Hangi soruna odaklanmalıyız?</li><li>Bağışımızın nereye gittiğini nasıl denetleriz?</li><li>Bireysel çaba tek başına yeterli mi?</li></ul>`
+            }
+        ]
+    },
+    {
+        slug: 'filmler',
+        title: "Filmler",
+        description: "Toplumsal farkındalığı artıran ve ilham veren sinema eserleri.",
+        icon: "Film",
+        items: [
+            {
+                slug: 'umudunu-kaybetme',
+                title: "Umudunu Kaybetme (The Pursuit of Happyness)",
+                content: `<h4>Film Analizi</h4><p>Azim ve toplumsal dayanışma üzerine çarpıcı bir hikaye.</p><h4>Sosyal Etki Notu</h4><p>Bireysel mücadelenin sivil destek sistemleriyle nasıl birleşebileceğini gösteren, yoksulluk ve evsizlik sorunlarına dikkat çeken bir yapım.</p>`
+            },
+            {
+                slug: 'ben-daniel-blake',
+                title: "Ben, Daniel Blake (I, Daniel Blake)",
+                content: `<h4>Konu</h4><p>Modern refah devletindeki bürokratik engeller ve sivil dayanışmanın gerekliliği.</p><h4>Neden İzlenmeli?</h4><p>STK'ların neden bürokrasinin boşluklarını doldurması gerektiğini anlamak için en güçlü sinematik anlatılardan biridir.</p>`
+            }
+        ]
+    },
+    {
+        slug: 'belgeseller',
+        title: "Belgeseller",
+        description: "Küresel krizleri ve çözüm önerilerini mercek altına alan yapımlar.",
+        icon: "Tv",
+        items: [
+            {
+                slug: 'gezegenimiz',
+                title: "Our Planet (Gezegenimiz)",
+                content: `<h4>Belgesel Özeti</h4><p>İklim değişikliğinin yaban hayatı üzerindeki etkilerini eşsiz görsellerle sunan bir başyapıt.</p><h4>Eylem Çağrısı</h4><p>Doğa koruma alanında çalışan STK'ların önemi ve bireysel tüketim alışkanlıklarımızın küresel etkisi.</p>`
+            },
+            {
+                slug: 'sosyal-dilemma',
+                title: "The Social Dilemma (Sosyal İkilem)",
+                content: `<h4>Açıklama</h4><p>Sosyal medyanın toplumsal algı ve sivil katılım üzerindeki etkilerini sorgulayan çarpıcı bir belgesel.</p><h4>Tartışma Konusu</h4><p>Dijital aktivizmin sınırları ve teknoloji şirketlerinin etik sorumlulukları.</p>`
+            }
+        ]
     },
     {
         slug: 'sivil-toplum-sozlugu',
@@ -66,7 +138,7 @@ export const librarySections: LibrarySection[] = [
         items: [
           { slug: 'stk', title: 'Sivil Toplum Kuruluşu (STK)', content: '<p>Kâr amacı gütmeyen, gönüllülük esasına dayalı, toplumsal sorunlara çözüm üretmek amacıyla kurulan tüzel kişiliklerdir. Dernekler ve vakıflar en yaygın STK türleridir.</p>' },
           { slug: 'gonulluluk', title: 'Gönüllülük', content: '<p>Bireyin kendi özgür iradesiyle, maddi bir karşılık beklemeden, toplumsal fayda sağlamak amacıyla zamanını ve yetkinliklerini bir amaç uğruna seferber etmesidir.</p>' },
-          { slug: 'surdurulebilirlik', title: 'Sürdürülebilirlik', content: '<p>Mevcut ihtiyaçların, gelecek nesillerin kendi ihtiyaçlarını karşılama yeteneğinden ödün vermeden karşılanmasıdır. Sosyal, çevresel ve ekonomik boyutları bulunur.</p>' },
+          { slug: 'surdurulebilirlik', title: 'SürdürülebilirliK', content: '<p>Mevcut ihtiyaçların, gelecek nesillerin kendi ihtiyaçlarını karşılama yeteneğinden ödün vermeden karşılanmasıdır. Sosyal, çevresel ve ekonomik boyutları bulunur.</p>' },
           { slug: 'seffaflik', title: 'Şeffaflık', content: '<p>Kuruluşların faaliyetleri, kararları ve finansal yapıları hakkındaki bilgileri paydaşları ve kamuoyu ile açık, anlaşılır ve erişilebilir bir şekilde paylaşmasıdır.</p>' },
           { slug: 'hesap-verebilirlik', title: 'Hesap Verebilirlik', content: '<p>Bir kuruluşun aldığı kararların ve yürüttüğü faaliyetlerin sonuçlarını üstlenme ve paydaşlarına açıklama yükümlülüğüdür.</p>' },
           { slug: 'kaynak-gelistirme', title: 'Kaynak Geliştirme (Fundraising)', content: '<p>Bir kuruluşun misyonunu gerçekleştirmek için ihtiyaç duyduğu finansal ve ayni kaynakları bireylerden, kurumlardan veya fonlardan toplama sürecidir.</p>' },
