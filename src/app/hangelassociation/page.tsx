@@ -7,7 +7,7 @@ import {
     ChevronRight, ArrowLeft, Globe, Users, Heart, ShieldCheck, Newspaper, Target, ArrowRight, 
     Briefcase, Brain, Scale, UserCheck, Map as MapIcon, BookOpen, DollarSign, GraduationCap, 
     FileText, Sparkles, ShoppingCart, HeartHandshake, Landmark, Search, Filter, ArrowDownUp,
-    Store, MessageSquare, Download, School
+    Store, MessageSquare, Download, School, ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
