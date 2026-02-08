@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -107,12 +108,12 @@ const VisualAdCarousel = () => {
 }
 
 /**
- * Güvenli Logo Bileşeni
- * Kırık görsel ikonlarını engellemek için fallback (yer tutucu) sistemine sahiptir.
+ * Güvenli Logo Bileşeni (Next.js Image Proxy Hatalarını Aşar)
  */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
+    // Görsel yoksa veya hata verdiyse markanın baş harfini göster
     if (hasError || !brand.logoUrl) {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center text-primary font-black text-2xl uppercase border shadow-inner">
@@ -125,7 +126,7 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
         <img 
             src={brand.logoUrl} 
             alt={brand.name} 
-            className="w-full h-full object-contain p-2"
+            className="w-full h-full object-contain p-3"
             onError={() => setHasError(true)}
             loading="lazy"
         />
@@ -154,7 +155,7 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Üçlü Ajans Verilerini Çekme
+  // API Verilerini Çekme (Server Action Üzerinden)
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
@@ -175,7 +176,7 @@ export default function MarketPage() {
   const brandsToShow = useMemo(() => {
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Tekilleştirme zaten Sunucu tarafında yapılıyor ama burada da bir kontrol ekliyoruz
+    // Tekilleştirme
     const uniqueBrandsMap = new Map();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -468,7 +469,7 @@ export default function MarketPage() {
                     return (
                     <Fragment key={brand.id}>
                         <Link 
-                            href={brand.link || `/market/${brand.id}`} 
+                            href={isApiBrand ? (brand.link || '#') : `/market/${brand.id}`} 
                             target={isApiBrand ? "_blank" : "_self"} 
                             rel={isApiBrand ? "noopener noreferrer" : undefined} 
                             className="group"

@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { Brand } from '@/lib/types';
@@ -6,7 +7,7 @@ import type { Brand } from '@/lib/types';
  * Üç farklı ajansın (Gelir Ortakları, Affocean, ReklamAction) 
  * kendi ağ parametreleri ile verileri çeken sunucu eylemi.
  */
-export async function getApiOffers() {
+export async function getApiOffers(): Promise<Brand[]> {
     const AGENCIES = [
         { 
             name: "Gelir Ortakları", 
@@ -28,8 +29,6 @@ export async function getApiOffers() {
     const baseUrl = "https://api.reklamaction.com/v1/offer";
 
     try {
-        console.log(`API Fetching started for ${AGENCIES.length} agencies...`);
-        
         // Tüm ajanslar için paralel ve bağımsız fetch işlemleri
         const fetchPromises = AGENCIES.map(async (agency) => {
             try {
@@ -49,8 +48,6 @@ export async function getApiOffers() {
                 const result = await response.json();
                 const offers = Array.isArray(result) ? result : (result.data || []);
                 
-                console.log(`${agency.name} returned ${offers.length} offers.`);
-
                 return offers.map((m: any) => {
                     if (!m || !m.name) return null;
 
@@ -64,12 +61,12 @@ export async function getApiOffers() {
                         name: m.name,
                         category: (m.categories && m.categories[0]?.name) || 'Diğer',
                         type: 'brand' as const,
-                        logoUrl: m.logo,
+                        logoUrl: m.logo || m.image || '',
                         donationRate: cleanPayout,
                         donationRateDisplay: isFixed ? `${cleanPayout} ₺` : `%${cleanPayout}`,
                         followers: Math.floor(Math.random() * 50000) + 500,
                         about: m.description || `${m.name} markası toplumsal fayda sağlamaktadır.`,
-                        link: m.preview_url || m.link
+                        link: m.preview_url || m.link || '#'
                     };
                 }).filter(Boolean);
             } catch (err) {
@@ -79,27 +76,23 @@ export async function getApiOffers() {
         });
 
         const results = await Promise.all(fetchPromises);
-        const allOffers = results.flat();
+        const allOffers = results.flat() as Brand[];
 
         // Mükerrer kayıtları temizle (İsim bazlı)
-        const uniqueOffersMap = new Map();
-        allOffers.forEach((brand: any) => {
+        const uniqueOffersMap = new Map<string, Brand>();
+        allOffers.forEach((brand) => {
             const key = brand.name.toLowerCase().trim();
-            // Eğer marka zaten varsa ama yeni gelenin oranı daha yüksekse güncelle
             if (!uniqueOffersMap.has(key)) {
                 uniqueOffersMap.set(key, brand);
             } else {
-                const existing = uniqueOffersMap.get(key);
+                const existing = uniqueOffersMap.get(key)!;
                 if (brand.donationRate > existing.donationRate) {
                     uniqueOffersMap.set(key, brand);
                 }
             }
         });
 
-        const finalOffers = Array.from(uniqueOffersMap.values());
-        console.log(`API Fetch Complete: ${finalOffers.length} unique brands processed from all agencies.`);
-        
-        return finalOffers;
+        return Array.from(uniqueOffersMap.values());
     } catch (e) {
         console.error("Global API fetch operation failed:", e);
         return [];
