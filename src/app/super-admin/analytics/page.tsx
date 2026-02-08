@@ -1,5 +1,6 @@
+
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -76,6 +77,11 @@ export default function AnalyticsPage() {
     const { toast } = useToast();
     const [userGrowthSort, setUserGrowthSort] = useState({ key: 'users', direction: 'desc' });
     const [donationSort, setDonationSort] = useState({ key: 'Bagis', direction: 'desc' });
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+      setIsMounted(true);
+    }, []);
 
     const showComingSoon = () => toast({ title: 'Bu özellik yakında gelecek!' });
 
@@ -103,6 +109,8 @@ export default function AnalyticsPage() {
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={showComingSoon}><ArrowDownUp className="h-4 w-4" /></Button>
         </div>
     );
+
+    if (!isMounted) return null;
 
     return (
         <div className="space-y-6">

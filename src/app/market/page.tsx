@@ -107,17 +107,6 @@ const VisualAdCarousel = () => {
     )
 }
 
-const fallbackColors = [
-    { bg: 'bg-red-500', text: 'text-white' },
-    { bg: 'bg-blue-500', text: 'text-white' },
-    { bg: 'bg-green-500', text: 'text-white' },
-    { bg: 'bg-amber-500', text: 'text-white' },
-    { bg: 'bg-purple-500', text: 'text-white' },
-    { bg: 'bg-pink-500', text: 'text-white' },
-    { bg: 'bg-indigo-500', text: 'text-white' },
-    { bg: 'bg-teal-500', text: 'text-white' },
-];
-
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
@@ -381,7 +370,7 @@ export default function MarketPage() {
                 </DropdownMenu>
             </div>
             
-            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveType(value)}>
+            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value)}>
                 <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all">Tümü</TabsTrigger>
                     <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>

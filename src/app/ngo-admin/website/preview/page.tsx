@@ -1,3 +1,4 @@
+
 'use client';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -45,8 +46,7 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
       </svg>
 );
 
-
-export default function WebsitePreviewPage() {
+function PreviewContent() {
     const searchParams = useSearchParams();
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği
     const { toast } = useToast();
@@ -660,5 +660,13 @@ export default function WebsitePreviewPage() {
 
             <PostDetailDialog post={selectedPost} open={!!selectedPost} onClose={() => setSelectedPost(null)} />
         </div>
+    );
+}
+
+export default function WebsitePreviewPage() {
+    return (
+        <Suspense fallback={<div className="h-screen flex items-center justify-center">Önizleme yükleniyor...</div>}>
+            <PreviewContent />
+        </Suspense>
     );
 }
