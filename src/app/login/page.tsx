@@ -142,7 +142,7 @@ const GridItem = ({
     cta1Href?: string,
     cta2?: string, 
     cta2Href?: string,
-    theme?: 'light' | 'dark',
+    theme?: 'light' | 'dark' | 'primary',
     imageUrl?: string,
     images?: { url: string, hint: string }[],
     imageHint?: string,
@@ -152,21 +152,30 @@ const GridItem = ({
         Autoplay({ delay: 3000, stopOnInteraction: false })
     );
 
+    const isLight = theme === 'light';
+    const isPrimary = theme === 'primary';
+
     return (
         <section className={cn(
             "relative h-[680px] rounded-[2.5rem] overflow-hidden flex flex-col items-center pt-12 text-center border border-black/5",
-            theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+            theme === 'dark' ? "bg-black text-white" : isPrimary ? "bg-primary text-white border-primary/10" : "bg-white text-[#1d1d1f]",
             className
         )}>
             <div className="relative z-10 space-y-1 px-6 mb-8">
                 <h3 className="text-3xl md:text-4xl font-bold tracking-tight">{title}</h3>
                 {subtitle && <p className="text-lg md:text-xl font-medium opacity-90">{subtitle}</p>}
                 <div className="flex items-center justify-center gap-4 pt-4">
-                    <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
+                    <Link href={cta1Href} className={cn(
+                        "hover:underline flex items-center text-sm md:text-base font-bold",
+                        isLight ? "text-primary" : "text-white"
+                    )}>
                         {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
                     </Link>
                     {cta2 && (
-                        <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm md:text-base font-bold">
+                        <Link href={cta2Href} className={cn(
+                            "hover:underline flex items-center text-sm md:text-base font-bold",
+                            isLight ? "text-primary" : "text-white"
+                        )}>
                             {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
                         </Link>
                     )}
@@ -175,7 +184,7 @@ const GridItem = ({
             <div className="relative w-full flex-1 flex items-center justify-center pb-12 px-6">
                 <div className={cn(
                     "w-full max-w-[420px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
-                    theme === 'dark' ? "border border-white/10" : "border border-black/5"
+                    theme === 'dark' ? "border border-white/10" : isPrimary ? "border border-white/20" : "border border-black/5"
                 )}>
                     {images && images.length > 0 ? (
                         <Carousel 
@@ -202,7 +211,10 @@ const GridItem = ({
                             src={imageUrl} 
                             alt={title} 
                             fill 
-                            className="object-cover" 
+                            className={cn(
+                                "object-cover",
+                                isPrimary && "opacity-40 brightness-75"
+                            )}
                             data-ai-hint={imageHint}
                         />
                     )}
@@ -526,7 +538,7 @@ export default function LoginPage() {
                         cta1Href="/library"
                         imageUrl={libraryImg?.imageUrl || ''}
                         imageHint={libraryImg?.imageHint || 'charcoal library drawing'}
-                        theme="dark"
+                        theme="primary"
                     />
                 </div>
             </main>
