@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Globe, Users, Target, Rocket, Database, BookOpen, Library } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Globe, Users, Target, Rocket, Database, BookOpen, Library, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,7 @@ export default function AssociationWorkshopPage() {
                 title="Sınırları Aşan Diyalog."
                 stat="54"
                 subtitle="Farklı ülkeden vizyoner katılımcı."
-                description="Uluslararası Sosyal Girişimcilik Çalıştayı, 4 yıldır küresel sorunlara kolektif çözümler üretmek için dünyayı Türkiye'de buluşturuyor."
+                description="Uluslararası Sosyal Girişimcilik Çalıştayı, 4 yıldır küresel sorunlara kolektif çözümler üretmek için dünyayı Türkiye'de buluşturuyor. İstanbul, Mersin, İzmir ve Tunceli'de düzenlenen oturumlarda 421 uluslararası liderle sosyal etki modellerini tartıştık."
                 image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
                 hint="diverse group of international students"
             />
@@ -69,7 +69,7 @@ export default function AssociationWorkshopPage() {
                             <Database className="h-12 w-12 text-primary" />
                             <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Sosyal Girişim Big Data.</h2>
                             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
-                                54 ülkeden 632 sosyal girişimi detaylıca inceledik ve raporladık. Bu verileri 'Big Data' formatında tüm sosyal girişimcilerin kullanımına sunuyoruz.
+                                54 ülkeden 632 sosyal girişimi detaylıca inceledik ve raporladık. Bu verileri 'Big Data' formatında tüm sosyal girişimcilerin kullanımına sunuyoruz. Bilginin paylaşıldıkça çoğaldığına inanıyoruz.
                             </p>
                         </div>
                         <div className="p-10 bg-white rounded-[2.5rem] shadow-xl border border-black/5 text-center">
@@ -79,6 +79,16 @@ export default function AssociationWorkshopPage() {
                     </div>
                 </div>
             </section>
+
+            <ShowcaseSection 
+                theme="dark"
+                title="Akademik Öncülük."
+                stat="421"
+                subtitle="Uluslararası akademik katılımcı."
+                description="Mersin Üniversitesi işbirliği ile Türkiye'nin ilk, dünyanın 27. Sosyal Girişimcilik Yüksek Lisans programına ilham verdik. Polonya Bilim ve Teknoloji Üniversitesi de çalışmalarımızı temel alarak kendi programını hayata geçirdi."
+                image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
+                hint="academic meeting discussion"
+            />
 
             {/* Girişimcilik Kütüphanesi Section */}
             <section className="py-32 bg-white border-b border-black/5">
@@ -92,9 +102,9 @@ export default function AssociationWorkshopPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                         {[
-                            { name: "İTO BTM", desc: "Dünyanın en iyi 5. girişimcilik merkezi." },
-                            { name: "Girişim360", desc: "Batman İl Milli Eğitim Müdürlüğü bünyesinde." },
-                            { name: "Denizakvaryum", desc: "Denizbank işbirliği ile inovasyon odağında." }
+                            { name: "İTO BTM", desc: "İstanbul Ticaret Odası Bilgiyi Ticarileştirme Merkezi bünyesinde." },
+                            { name: "Girişim360", desc: "Batman İl Milli Eğitim Müdürlüğü Sosyal Girişimcilik Merkezi'nde." },
+                            { name: "Denizakvaryum", desc: "Denizbank inovasyon merkezi işbirliği ile girişimcilere açık." }
                         ].map((partner, i) => (
                             <div key={i} className="p-8 bg-[#f5f5f7] rounded-[2rem] text-left space-y-2 hover:bg-primary hover:text-white transition-colors group">
                                 <h4 className="font-bold text-xl">{partner.name}</h4>
@@ -105,15 +115,26 @@ export default function AssociationWorkshopPage() {
                 </div>
             </section>
 
-            <ShowcaseSection 
-                theme="dark"
-                title="Akademik Öncülük."
-                stat="421"
-                subtitle="Uluslararası akademik katılımcı."
-                description="Mersin Üniversitesi işbirliği ile Türkiye'nin ilk, dünyanın 27. Sosyal Girişimcilik Yüksek Lisans programına ilham verdik."
-                image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
-                hint="academic meeting discussion"
-            />
+            <section className="py-32 bg-[#f5f5f7] text-center">
+                <div className="container mx-auto px-6 max-w-4xl space-y-16">
+                    <div className="space-y-4">
+                        <GraduationCap className="h-12 w-12 text-primary mx-auto" />
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Bilimsel Destek.</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
+                        <div className="p-10 bg-white rounded-[2.5rem] space-y-4 shadow-sm">
+                            <BookOpen className="h-8 w-8 text-primary" />
+                            <h3 className="text-xl font-bold">YÖK Onaylı Müfredat</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">Maltepe Üniversitesi'nde hazırladığımız 'Uygulamalı Sosyal Girişimcilik' dersi YÖK onayıyla genel müfredata girerek tüm bölümlere açıldı.</p>
+                        </div>
+                        <div className="p-10 bg-white rounded-[2.5rem] space-y-4 shadow-sm">
+                            <Rocket className="h-8 w-8 text-primary" />
+                            <h3 className="text-xl font-bold">Tez ve Kaynak Desteği</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">2 Doktora, 3 Yüksek Lisans tezi ve 2 akademik makaleye veri ve kaynak desteği sağlayarak sivil toplum literatürünü güçlendirdik.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <PublicFooter currentPageLabel="Uluslararası Çalıştay" />
         </div>
