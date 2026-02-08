@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -31,26 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// Server Action equivalent for fetching API data
-async function getApiOffers() {
-    const API_KEY = "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
-    const url = "https://api.reklamaction.com/v1/offer?network=reklamaction";
-
-    try {
-        const response = await fetch(url, {
-            headers: {
-                "Authorization": `Bearer ${API_KEY}`
-            }
-        });
-        if (!response.ok) return null;
-        const result = await response.json();
-        return result.data || [];
-    } catch (e) {
-        console.error("API Error:", e);
-        return null;
-    }
-}
+import { getApiOffers } from '@/app/actions/market';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -148,26 +128,31 @@ export default function MarketPage() {
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch API Data on Mount
+  // Fetch API Data on Mount using Server Action
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
-        const data = await getApiOffers();
-        if (data && Array.isArray(data)) {
-            const mappedBrands: Brand[] = data.map((offer: any) => ({
-                id: `ra-${offer.id}`,
-                name: offer.name,
-                category: (offer.categories && offer.categories[0]?.name) || 'Diğer',
-                type: 'brand',
-                logoUrl: offer.logo_url || offer.thumbnail_url || 'https://placehold.co/400x400?text=' + encodeURIComponent(offer.name),
-                donationRate: parseFloat(offer.payout?.replace('%', '')) || 5,
-                followers: Math.floor(Math.random() * 100000) + 1000,
-                about: offer.description || offer.name + " markası hangel ekosisteminde sosyal fayda sağlamaktadır.",
-                link: offer.preview_url
-            }));
-            setApiBrands(mappedBrands);
+        try {
+            const data = await getApiOffers();
+            if (data && Array.isArray(data)) {
+                const mappedBrands: Brand[] = data.map((offer: any) => ({
+                    id: `ra-${offer.id}`,
+                    name: offer.name,
+                    category: (offer.categories && offer.categories[0]?.name) || 'Diğer',
+                    type: 'brand',
+                    logoUrl: offer.logo_url || offer.thumbnail_url || `https://placehold.co/400x400?text=${encodeURIComponent(offer.name)}`,
+                    donationRate: parseFloat(offer.payout?.replace('%', '')) || 5,
+                    followers: Math.floor(Math.random() * 100000) + 1000,
+                    about: offer.description || `${offer.name} markası hangel ekosisteminde sosyal fayda sağlamaktadır.`,
+                    link: offer.preview_url
+                }));
+                setApiBrands(mappedBrands);
+            }
+        } catch (e) {
+            console.error("API Verisi işlenirken hata:", e);
+        } finally {
+            setIsApiLoading(false);
         }
-        setIsApiLoading(false);
     };
     fetchOffers();
   }, []);
@@ -176,7 +161,7 @@ export default function MarketPage() {
     // Combine static and API brands
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Remove duplicates by name if any (API might return brands already in static list)
+    // Remove duplicates by name if any
     const uniqueBrands = Array.from(new Map(filteredList.map(item => [item.name.toLowerCase(), item])).values());
     filteredList = uniqueBrands;
 
@@ -190,7 +175,6 @@ export default function MarketPage() {
       if (brandCategories && brandCategories.length > 0) {
         filteredList = filteredList.filter(brand => brandCategories.includes(brand.category));
       } else {
-        // Simple fallback check for categories not explicitly in mapping but present in API
         filteredList = filteredList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
     }
