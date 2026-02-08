@@ -25,7 +25,7 @@ const impactStories: ImpactSlide[] = [
   {
     id: 1,
     title: "2024 Sosyal Etki Raporu",
-    subtitle: "hangel Hub",
+    subtitle: "hangel A.Ş.",
     content: "Birlikte büyüttüğümüz iyilik hareketinin somut sonuçlarını keşfedin. Her adımda daha güçlüyüz.",
     icon: TrendingUp,
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",

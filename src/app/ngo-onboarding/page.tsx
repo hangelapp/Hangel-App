@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -176,7 +175,7 @@ export default function NgoOnboardingPage() {
             </section>
 
             <footer className="container mx-auto px-4 text-center text-[12px] text-muted-foreground font-medium pt-8">
-                <p>&copy; 2024 Hangel Hub Teknoloji A.Ş. Sivil Toplum Çözüm Merkezi.</p>
+                <p>&copy; 2024 hangel A.Ş. Sivil Toplum Çözüm Merkezi.</p>
             </footer>
         </div>
     );

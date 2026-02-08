@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -186,10 +185,10 @@ export default function MerchantAdvantagesPage() {
                         <div className="space-y-4">
                             <div className="flex items-center gap-2">
                                 <Zap className="h-5 w-5 text-primary" />
-                                <span className="font-bold text-xl tracking-tight">hangel hub</span>
+                                <span className="font-bold text-xl tracking-tight">hangel A.Ş.</span>
                             </div>
                             <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
-                                2024 Hangel Hub Teknoloji A.Ş. Üye İşyeri Çözüm Merkezi. Tüm hakları saklıdır. Veriler PCI-DSS standartlarında şifrelenmektedir.
+                                2024 hangel A.Ş. Üye İşyeri Çözüm Merkezi. Tüm hakları saklıdır. Veriler PCI-DSS standartlarında şifrelenmektedir.
                             </p>
                         </div>
                         <div className="grid grid-cols-2 gap-x-12 gap-y-4">

@@ -27,7 +27,7 @@ const organizations = [
     },
     {
         id: 'org2',
-        name: 'Hangel Hub',
+        name: 'hangel A.Ş.',
         type: 'İş Ortağı',
         logo: '',
         venues: [

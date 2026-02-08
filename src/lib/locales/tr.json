@@ -1,7 +1,6 @@
-
 {
   "general": {
-    "appName": "hangel Hub",
+    "appName": "hangel A.Ş.",
     "appNameStrong": "hangel",
     "all": "Tümü",
     "back": "Geri",
@@ -80,7 +79,7 @@
   "onboarding": {
     "steps": [
       {
-        "title": "hangel Hub'a Hoş Geldin!",
+        "title": "hangel A.Ş.'ye Hoş Geldin!",
         "description": "İyiliğin ve sosyal etkinin buluşma noktası. Topluluğumuzun bir parçası olmaya hazır mısın?"
       },
       {
@@ -117,7 +116,7 @@
       },
       {
         "title": "Hazırsan Başlayalım!",
-        "description": "hangel Hub ile iyilik dolu bir yolculuğa çıkmak için sadece bir adım kaldı."
+        "description": "hangel A.Ş. ile iyilik dolu bir yolculuğa çıkmak için sadece bir adım kaldı."
       }
     ]
   },
@@ -174,8 +173,7 @@
     "totalDonationAmount": "Toplam Bağış Tutarı",
     "supporterCount": "Destekçi Sayısı",
     "monthlyDonationIncrease": "Aylık Bağış Artışı",
-    "volunteerStatsTitle": "Gönüllülük İstatistikleri",
-    "totalVolunteerHours": "Toplam Gönüllülük Saati",
+    "volunteerHours": "Toplam Gönüllülük Saati",
     "activeVolunteerCount": "Aktif Gönüllü Sayısı",
     "supportedProjectCount": "Desteklenen Proje Sayısı",
     "visibilityStatsTitle": "Görünürlük İstatistikleri",
@@ -312,8 +310,8 @@
   "about": {
     "pageTitle": "Hakkımızda",
     "pageDescription": "İyiliğin ve sosyal etkinin buluşma noktası.",
-    "welcomeTitle": "hangel Hub'a Hoş Geldiniz",
-    "welcomeText": "hangel Hub olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim oluşturabileceği bir platform oluşturma hayaliyle yola başladık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.",
+    "welcomeTitle": "hangel A.Ş.'ye Hoş Geldiniz",
+    "welcomeText": "hangel A.Ş. olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim oluşturabileceği bir platform oluşturma hayaliyle yola başladık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.",
     "missionTitle": "Misyonumuz",
     "missionText": "Sosyal etki oluşturmak isteyen herkes için güvenilir, kolay ve ilham verici bir dijital köprü kurarak, toplumsal sorunlara sürdürülebilir çözümler bulunmasına aracılık etmek.",
     "visionTitle": "Vizyonumuz",
@@ -352,9 +350,9 @@
   },
   "invite": {
     "pageTitle": "Arkadaşlarını Davet Et",
-    "pageDescription": "İyilik zincirini büyütmek için arkadaşlarını hangel Hub'a davet et.",
+    "pageDescription": "İyilik zincirini büyütmek için arkadaşlarını hangel A.Ş.'ye davet et.",
     "cardTitle": "Arkadaşlarını İyiliğe Davet Et",
-    "cardDescription": "Bu linki arkadaşlarınla paylaşarak onların da hangel Hub'a katılmasını ve sosyal etki oluşturmasını sağla.",
+    "cardDescription": "Bu linki arkadaşlarınla paylaşarak onların da hangel A.Ş.'ye katılmasını ve sosyal etki oluşturmasını sağla.",
     "linkCopiedToast": "Davet linkini panoya kopyaladın."
   },
   "myApplications": {
@@ -451,8 +449,6 @@
     "totalDonations": "Yapılan Bağış",
     "earnedBadges": "Kazanılan Rozet",
     "completedProjects": "Tamamlanan Proje",
-    "volunteerDetailsTitle": "Gönüllülük Detayları",
-    "supportedNgos": "Desteklenen Farklı STK",
     "volunteerRank": "Gönüllü Sıralaması",
     "mostActiveArea": "En Aktif Gönüllülük Alanı",
     "avgVolunteerDuration": "Ortalama Gönüllülük Süresi",

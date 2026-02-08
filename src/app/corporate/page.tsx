@@ -138,7 +138,7 @@ export default function CorporateShowcasePage() {
                             1. hangel Kamu İşbirliği Programı, onaylı STK'lar, yerel yönetimler ve kamu kuruluşları için geçerlidir. Başvuru süreci, kuruluşun şeffaflık endeksi kriterlerini karşılamasına bağlı olarak değişkenlik gösterebilir.
                         </p>
                         <p>
-                            2. "Bağış Eşleştirme" (Matching Gift) özellikleri, kurumların sistemleri ile hangel API entegrasyonu tamamlandıktan sonra aktif hale gelir. Teknik destek için hangel Hub çözüm merkeziyle iletişime geçiniz.
+                            2. "Bağış Eşleştirme" (Matching Gift) özellikleri, kurumların sistemleri ile hangel API entegrasyonu tamamlandıktan sonra aktif hale gelir. Teknik destek için hangel A.Ş. çözüm merkeziyle iletişime geçiniz.
                         </p>
                         <p>
                             3. Üniversite programı kapsamındaki "Akademik Kredi" desteği, ilgili üniversite senatosunun onayı ve hangel ile imzalanan kurumsal protokol çerçevesinde sunulmaktadır.
@@ -188,10 +188,10 @@ export default function CorporateShowcasePage() {
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
                                 <Zap className="h-5 w-5 text-primary" />
-                                <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel hub</span>
+                                <span className="font-bold text-xl tracking-tighter text-[#1d1d1f]">hangel A.Ş.</span>
                             </div>
                             <p className="text-[11px] text-[#86868b] max-w-xs leading-relaxed">
-                                © 2024 Hangel Hub Teknoloji A.Ş. Kamu Çözümleri Merkezi. Tüm hakları saklıdır.
+                                © 2024 hangel A.Ş. Kamu Çözümleri Merkezi. Tüm hakları saklıdır.
                             </p>
                         </div>
                         <div className="flex gap-6 text-[11px] font-medium text-[#1d1d1f]/60">

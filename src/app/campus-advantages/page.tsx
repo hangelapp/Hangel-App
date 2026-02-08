@@ -197,7 +197,7 @@ export default function CampusAdvantagesPage() {
             </section>
 
             <footer className="container mx-auto px-4 text-center text-[12px] text-muted-foreground font-medium pt-8">
-                <p>&copy; 2024 Hangel Hub Teknoloji A.Ş. Kampüs Gelişim Merkezi.</p>
+                <p>&copy; 2024 hangel A.Ş. Kampüs Gelişim Merkezi.</p>
             </footer>
         </div>
     );

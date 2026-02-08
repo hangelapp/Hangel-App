@@ -1,4 +1,3 @@
-
 'use client';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -652,7 +651,7 @@ function PreviewContent() {
                         <p className="text-xs text-muted-foreground font-medium">&copy; {new Date().getFullYear()} {ngo.name}. Tüm hakları saklıdır.</p>
                         <div className="flex items-center justify-center gap-2 text-xs">
                             <span className="text-muted-foreground opacity-60">Powered by</span>
-                            <a href="https://hangel.org" target="_blank" rel="noopener noreferrer" className="font-black text-primary hover:scale-105 transition-transform">hangel hub</a>
+                            <a href="https://hangel.org" target="_blank" rel="noopener noreferrer" className="font-black text-primary hover:scale-105 transition-transform">hangel A.Ş.</a>
                         </div>
                     </div>
                 </div>
