@@ -16,7 +16,9 @@ import {
     BarChart3, 
     Users,
     Target,
-    Shield
+    Shield,
+    HeartHandshake,
+    Eye
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -86,7 +88,7 @@ export default function AssociationLegislationPage() {
             <section className="py-32 px-6 bg-white">
                 <div className="container mx-auto max-w-5xl space-y-20">
                     <div className="text-center space-y-4">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Bir Paradigm Değişikliği.</h2>
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Bir Paradigma Değişikliği.</h2>
                         <p className="text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                             Hedefimiz net: Sosyal girişimcilikte yasa ithal eden değil, yasa ihraç eden bir ülke olmak. Ahilikten vakıf kültürüne uzanan mirasımızı çağın ihtiyaçlarıyla buluşturuyoruz.
                         </p>
