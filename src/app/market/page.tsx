@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
@@ -90,6 +91,7 @@ const VisualAdCarousel = () => {
                             alt={ad.title}
                             fill
                             className="object-cover"
+                            priority
                             />
                             <div className="absolute inset-0 bg-black/40" />
                             <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
@@ -379,7 +381,7 @@ export default function MarketPage() {
                 </DropdownMenu>
             </div>
             
-            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value as any)}>
+            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveType(value)}>
                 <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all">Tümü</TabsTrigger>
                     <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
@@ -417,27 +419,21 @@ export default function MarketPage() {
                 </h2>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
-                    const color = fallbackColors[index % fallbackColors.length];
                     return (
                     <Fragment key={brand.id}>
                         <Link href={`/market/${brand.id}`} className="group">
                             <div className="flex flex-col items-center text-center space-y-3 p-1 transition-all duration-300">
                                 <div className="relative w-full aspect-square">
-                                    <div className="w-full h-full rounded-2xl bg-[#f9f9f9] border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
-                                        {brand.logoUrl ? (
-                                            <div className="relative w-full h-full p-3">
-                                                <Image 
-                                                    src={brand.logoUrl} 
-                                                    alt={brand.name} 
-                                                    fill
-                                                    className="object-contain opacity-90 group-hover:opacity-100 transition-opacity" 
-                                                />
-                                            </div>
-                                        ) : (
-                                            <span className="text-xl sm:text-2xl font-bold text-gray-400">
-                                                {brand.name.slice(0, 2).toUpperCase()}
-                                            </span>
-                                        )}
+                                    <div className="w-full h-full rounded-2xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/30 group-hover:shadow-md transition-all">
+                                        <div className="relative w-full h-full p-2">
+                                            <Image 
+                                                src={brand.logoUrl} 
+                                                alt={brand.name} 
+                                                fill
+                                                className="object-contain"
+                                                sizes="(max-width: 768px) 33vw, 10vw"
+                                            />
+                                        </div>
                                     </div>
                                     {brand.donationRate > 0 && (
                                         <div className="absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#f34723] text-[11px] font-bold text-white shadow-md border-2 border-white translate-x-1 translate-y-0">

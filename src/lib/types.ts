@@ -398,6 +398,7 @@ export type ManagedItem = {
     name: string;
     type: 'STK' | 'Marka' | 'Öğrenci Kulübü';
     icon: string;
+    logoUrl?: string;
     href: string;
     status: 'approved' | 'pending';
 };
