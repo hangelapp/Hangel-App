@@ -24,11 +24,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/dialog";
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { getApiOffers } from '@/app/actions/market';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
@@ -84,36 +83,14 @@ export default function MarketPage() {
   const [sortKey, setSortKey] = useState('donationRate');
   const [onlyDonating, setOnlyDonating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [apiBrands, setApiBrands] = useState<Brand[]>([]);
-  const [isApiLoading, setIsApiLoading] = useState(true);
 
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [assistantQuestion, setAssistantQuestion] = useState('');
   const [assistantResponse, setAssistantResponse] = useState('');
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchOffers = async () => {
-        setIsApiLoading(true);
-        try {
-            const data = await getApiOffers();
-            if (data && Array.isArray(data) && data.length > 0) {
-                setApiBrands(data);
-            } else {
-                setApiBrands([]);
-            }
-        } catch (e) {
-            setApiBrands([]);
-        } finally {
-            setIsApiLoading(false);
-        }
-    };
-    fetchOffers();
-  }, []);
-
   const brandsToShow = useMemo(() => {
-    // API'den veri geldiyse onu kullan, yoksa demo verileri (allEntityLists) kullan
-    let combinedList: Brand[] = apiBrands.length > 0 ? [...apiBrands] : [...allEntityLists];
+    let combinedList: Brand[] = [...allEntityLists];
 
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
@@ -142,7 +119,7 @@ export default function MarketPage() {
     combinedList.sort((a, b) => sortKey === 'name' ? a.name.localeCompare(b.name, 'tr') : b.donationRate - a.donationRate);
 
     return combinedList;
-  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands]);
+  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm]);
   
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;
@@ -162,23 +139,6 @@ export default function MarketPage() {
   return (
     <div className="flex flex-col h-full bg-secondary/30">
         <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
-            
-            {/* LIVE DATA STATUS BOX (MAC DEBUG) */}
-            <div className="bg-white border-2 border-primary/20 rounded-[2rem] p-6 mb-4 grid grid-cols-3 gap-4 text-center shadow-lg animate-in slide-in-from-top duration-500">
-                <div className="flex flex-col justify-center">
-                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Gelir Ortakları</p>
-                    <p className="text-3xl font-black text-primary tracking-tighter">{apiBrands.filter(b => b.agency === 'Gelir Ortakları').length}</p>
-                </div>
-                <div className="flex flex-col justify-center border-x border-muted px-4">
-                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Affocean</p>
-                    <p className="text-3xl font-black text-primary tracking-tighter">{apiBrands.filter(b => b.agency?.includes('Affocean')).length}</p>
-                </div>
-                <div className="flex flex-col justify-center">
-                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">ReklamAction</p>
-                    <p className="text-3xl font-black text-primary tracking-tighter">{apiBrands.filter(b => b.agency?.includes('ReklamAction')).length}</p>
-                </div>
-            </div>
-
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -275,31 +235,26 @@ export default function MarketPage() {
                         <Sparkles className="h-4 w-4 text-primary" />
                         <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
                     </div>
-                    {isApiLoading && (
-                        <div className="flex items-center gap-2 text-[10px] font-black text-primary animate-pulse uppercase tracking-widest">
-                            <Loader2 className="h-3 w-3 animate-spin" /> Veriler Güncelleniyor...
-                        </div>
-                    )}
                 </div>
                 
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => (
                         <Fragment key={brand.id}>
-                            <Link href={brand.link || `/market/${brand.id}`} target={brand.link ? "_blank" : undefined} rel={brand.link ? "noopener noreferrer" : undefined} className="group">
+                            <Link href={`/market/${brand.id}`} className="group">
                                 <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                     <div className="relative w-full aspect-square">
                                         <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all">
                                             <BrandLogo brand={brand} />
                                         </div>
                                         <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
-                                            {brand.donationRate > 0 ? `%${brand.donationRate}` : 'İncele'}
+                                            %{brand.donationRate}
                                         </div>
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2 mt-1">{brand.name}</p>
                                         <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">
-                                            {brand.agency || 'Önerilen'}
+                                            {brand.agency || 'Aktif Kampanya'}
                                         </p>
                                     </div>
                                 </div>
@@ -308,21 +263,10 @@ export default function MarketPage() {
                         </Fragment>
                     ))
                 ) : (
-                    !isApiLoading && (
-                        <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
-                            <AlertCircle className="h-12 w-12 text-primary/40" />
-                            <p className="text-foreground font-bold text-sm">Şu an marka bulunamadı.</p>
-                        </div>
-                    )
-                )}
-                
-                {isApiLoading && apiBrands.length === 0 && (
-                    Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className="space-y-2">
-                            <Skeleton className="aspect-square w-full rounded-[1.5rem]" />
-                            <Skeleton className="h-3 w-3/4 mx-auto mt-2" />
-                        </div>
-                    ))
+                    <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
+                        <AlertCircle className="h-12 w-12 text-primary/40" />
+                        <p className="text-foreground font-bold text-sm">Şu an marka bulunamadı.</p>
+                    </div>
                 )}
                 </div>
             </div>
