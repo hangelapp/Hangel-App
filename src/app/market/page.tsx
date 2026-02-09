@@ -4,8 +4,8 @@
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag } from 'lucide-react';
-import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
+import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag, WifiOff } from 'lucide-react';
+import { marketCategories, adBanners, categoryMapping } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -121,9 +121,8 @@ export default function MarketPage() {
   }, [toast]);
 
   const brandsToShow = useMemo(() => {
-    // Statik veriler (Hangel markaları) ve API verilerini birleştir
-    const localBrands = allEntityLists.map(b => ({ ...b, agency: 'hangel' }));
-    let combinedList: Brand[] = [...localBrands, ...apiBrands];
+    // STATIK VERILERI KALDIRDIK - Sadece API'den gelen gerçek ajans verileri kullanılıyor.
+    let combinedList: Brand[] = [...apiBrands];
 
     // Search filter
     if (searchTerm.trim()) {
@@ -161,14 +160,13 @@ export default function MarketPage() {
                 return b.donationRate - a.donationRate;
             case 'name':
                 return a.name.localeCompare(b.name, 'tr');
-            case 'followers':
             default:
-                return (b.followers || 0) - (a.followers || 0);
+                return (b.donationRate || 0) - (a.donationRate || 0);
         }
     });
 
     if (activeCategory === 'Öne çıkanlar' && !searchTerm) {
-        return combinedList.slice(0, 100); 
+        return combinedList.slice(0, 150); 
     }
     
     return combinedList;
@@ -201,7 +199,7 @@ export default function MarketPage() {
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
-                        placeholder="Platformda Ara"
+                        placeholder="Gerçek Ajans Verilerinde Ara"
                         className="pl-10 pr-12 h-10 rounded-xl border-none bg-muted/50 focus-visible:ring-1"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -261,7 +259,6 @@ export default function MarketPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranı</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Popülerlik</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -312,13 +309,13 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => {
-                        const isApiBrand = brand.agency !== 'hangel';
+                        const isApiBrand = true; // Artık hepsi API markası
                         return (
                             <Fragment key={brand.id}>
                                 <Link 
-                                    href={isApiBrand ? (brand.link || '#') : `/market/${brand.id}`} 
-                                    target={isApiBrand ? "_blank" : "_self"} 
-                                    rel={isApiBrand ? "noopener noreferrer" : undefined} 
+                                    href={brand.link || '#'} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
                                     className="group"
                                 >
                                     <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
@@ -339,7 +336,7 @@ export default function MarketPage() {
                                             )}>
                                                 {brand.name}
                                             </p>
-                                            <p className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-tighter">
+                                            <p className="text-[8px] font-black uppercase text-primary tracking-tighter">
                                                 {brand.agency}
                                             </p>
                                         </div>
@@ -352,8 +349,11 @@ export default function MarketPage() {
                 ) : (
                     !isApiLoading && (
                         <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
-                            <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-                            <p className="text-muted-foreground text-sm font-medium">Gösterilecek marka bulunamadı.</p>
+                            <WifiOff className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+                            <div className="text-center space-y-1">
+                                <p className="text-foreground font-bold text-sm">Şu an ajans bağlantısı kurulamıyor.</p>
+                                <p className="text-muted-foreground text-xs font-medium">Lütfen internet bağlantınızı kontrol edin veya daha sonra tekrar deneyin.</p>
+                            </div>
                         </div>
                     )
                 )}
