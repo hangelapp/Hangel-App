@@ -21,19 +21,18 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 
 /**
  * Fetches offers from all configured agencies (Gelir Ortakları, ReklamAction, Affocean).
- * Uses the latest API standards provided by the user.
+ * Uses the latest API standards provided by the user (POST Search API for GO).
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
-    const GO_KEY = process.env.GELIR_ORTAKLARI_KEY;
-    const RA_KEY = process.env.REKLAMACTION_KEY;
-    const AO_KEY = process.env.AFFOCEAN_KEY;
+    const GO_KEY = process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3";
+    const RA_KEY = process.env.REKLAMACTION_KEY || "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
+    const AO_KEY = process.env.AFFOCEAN_KEY || "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48";
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
-     * Matches the Firebase Function example exactly.
+     * Using the latest standards provided: POST method, x-api-key header, results array.
      */
     const fetchGelir = async (): Promise<Brand[]> => {
-        if (!GO_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://feed.gelirortaklari.com/api/v1/search", {
                 method: "POST",
@@ -46,15 +45,15 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a" // Returns a wide range of brands to ensure 42+ results
+                    value: "a" // Broad search to ensure 42+ results
                 }),
                 cache: 'no-store'
             });
             if (!res.ok) return [];
             const data = await res.json();
             
-            // Handle results array based on GO schema
-            const results = data.results || data.brands || (Array.isArray(data) ? data : []);
+            // Handle GO results schema: data.results
+            const results = data.results || [];
             
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -77,7 +76,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
      * 2. REKLAMACTION (GET Bearer)
      */
     const fetchReklam = async (): Promise<Brand[]> => {
-        if (!RA_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://api.reklamaction.com/v1/offer?network=reklamaction", {
                 headers: { 
@@ -110,7 +108,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
      * 3. AFFOCEAN (GET Bearer)
      */
     const fetchAffocean = async (): Promise<Brand[]> => {
-        if (!AO_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://affocean.com/api/v1/offers", {
                 headers: { 

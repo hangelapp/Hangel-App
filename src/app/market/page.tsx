@@ -174,7 +174,7 @@ export default function MarketPage() {
         }
     });
 
-    // Ensure we list at least 42 brands if available by using a high limit for featured
+    // Increased limit to show 42+ brands easily
     if (activeCategory === 'Öne çıkanlar') {
         return filteredList.slice(0, 100); 
     }
