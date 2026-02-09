@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign } from 'lucide-react';

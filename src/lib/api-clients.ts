@@ -1,8 +1,8 @@
-
 import type { Brand } from './types';
 
 /**
  * Marka isimlerini tertemiz yapan Regex motoru.
+ * CPS, CPL, Kampanyası gibi ekleri temizler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Marka";
@@ -64,7 +64,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         const resData = await response.json();
         let rawList = [];
 
-        // Dinamik yapı kontrolü
+        // Dinamik API yapısı kontrolü
         if (Array.isArray(resData)) rawList = resData;
         else if (Array.isArray(resData.data)) rawList = resData.data;
         else if (Array.isArray(resData.offers)) rawList = resData.offers;
@@ -86,6 +86,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           };
         });
       } catch (err) {
+        console.error(`Error fetching from ${agency.name}:`, err);
         return [];
       }
     })
@@ -93,6 +94,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
+  // Tekilleştirme (Aynı markanın en yüksek oranlısını tut)
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
     const key = brand.name.toLowerCase().trim();

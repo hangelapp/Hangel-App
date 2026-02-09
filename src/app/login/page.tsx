@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -9,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
-import { allEntityLists } from '@/lib/data';
+import { fetchAllAgencyOffers } from '@/lib/api-clients';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Brand } from '@/lib/types';
@@ -227,9 +226,15 @@ export default function LoginPage() {
 
     useEffect(() => {
         setMounted(true);
-        // allEntityLists artık boş olduğu için burası boş dönecek veya API'den veri bekleyecek.
-        // Şimdilik hydration hatasını önlemek için boş bırakıyoruz.
-        setDisplayBrands([]);
+        const loadPreviewBrands = async () => {
+            try {
+                const data = await fetchAllAgencyOffers();
+                setDisplayBrands(data.slice(0, 10));
+            } catch (err) {
+                console.error("Preview load error:", err);
+            }
+        };
+        loadPreviewBrands();
     }, []);
 
     if (!mounted) return <div className="min-h-screen bg-[#f5f5f7]" />;
