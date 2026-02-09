@@ -1,4 +1,3 @@
-
 import type { Brand } from './types';
 
 const FETCH_TIMEOUT = 15000;
@@ -21,7 +20,7 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 
 /**
  * Server-side function to fetch offers from all configured agencies.
- * Uses environment variables for security.
+ * This acts as a proxy to bypass CORS and hide API keys from the client.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const GO_KEY = process.env.GELIR_ORTAKLARI_KEY;
@@ -30,6 +29,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
+     * Mapping: advertiser_name -> name, logo_url -> logoUrl, commission_rate -> donationRate, click_url -> link
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         if (!GO_KEY) return [];
@@ -47,12 +47,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             if (!res.ok) return [];
             const data = await res.json();
             
-            console.log("Gelir Ortakları Ham Veri (Server):", Array.isArray(data.results) ? data.results.length : 0);
-            
             const results = data.results || [];
+            console.log("Gelir Ortakları Ham Veri (Server):", results.length);
+
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.advertiser_name || item.name || "Marka",
+                name: item.advertiser_name || item.name || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
                 logoUrl: item.logo_url || item.image || "",
@@ -62,7 +62,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları iş ortağı."
             }));
         } catch (e) {
-            console.error("Gelir Ortakları Fetch Error:", e);
+            console.error("Gelir Ortakları Proxy Error:", e);
             return [];
         }
     };
@@ -88,7 +88,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
             return results.map((item: any) => ({
                 id: `ao-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.name || "Marka",
+                name: item.name || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
                 logoUrl: item.logo || item.image || "",
@@ -98,7 +98,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Affocean iş ortağı."
             }));
         } catch (e) {
-            console.error("Affocean Fetch Error:", e);
+            console.error("Affocean Proxy Error:", e);
             return [];
         }
     };
@@ -124,7 +124,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
             return results.map((item: any) => ({
                 id: `ra-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.name || "Marka",
+                name: item.name || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
                 logoUrl: item.logo || item.image || "",
@@ -134,15 +134,15 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "ReklamAction iş ortağı."
             }));
         } catch (e) {
-            console.error("ReklamAction Fetch Error:", e);
+            console.error("ReklamAction Proxy Error:", e);
             return [];
         }
     };
 
-    const results = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
+    const settled = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
     
-    const combinedData = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-    console.log("Tüm Ajanslardan Gelen Toplam Veri (Server):", combinedData.length);
+    const combined = settled.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    console.log("Tüm Ajanslardan Gelen Toplam Birleşik Veri (Server):", combined.length);
 
-    return combinedData;
+    return combined;
 }

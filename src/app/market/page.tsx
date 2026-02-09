@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -108,18 +107,21 @@ export default function MarketPage() {
         setIsApiLoading(true);
         try {
             const data = await getApiOffers();
-            console.log("Market Page - API Verisi Alındı (Client):", data);
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
+                // Enhanced debug logging requested by user
+                console.log("Market Page - Tüm Ajanslardan Gelen Toplam Veri:");
+                console.table(data.slice(0, 20)); // First 20 for readability
             }
         } catch (e) {
             console.error("Market API load error:", e);
+            toast({ variant: 'destructive', title: 'Veri Hatası', description: 'Ajans verileri çekilemedi.' });
         } finally {
             setIsApiLoading(false);
         }
     };
     fetchOffers();
-  }, []);
+  }, [toast]);
 
   const brandsToShow = useMemo(() => {
     let combinedList: Brand[] = [...allEntityLists, ...apiBrands];
@@ -194,7 +196,7 @@ export default function MarketPage() {
       if (result.answer) setAssistantResponse(result.answer);
     } catch (error) {
       console.error(error);
-      toast({ variant: "destructive", title: "Hapi hatası", description: "Asistan şu an yanıt veremiyor." });
+      toast({ variant: "destructive", title: "Hata", description: "Asistan şu an yanıt veremiyor." });
     } finally {
       setIsAssistantLoading(false);
       setAssistantQuestion('');
@@ -223,9 +225,7 @@ export default function MarketPage() {
                     <DialogContent className="sm:max-w-[425px] rounded-3xl">
                         <DialogHeader>
                         <DialogTitle className="flex items-center gap-2"><Bot className="text-primary"/> Alışveriş Asistanı</DialogTitle>
-                        <DialogHeader>
-                            <DialogDescription>Ne aradığınızı yazın, size en uygun markaları bulalım.</DialogDescription>
-                        </DialogHeader>
+                        <DialogDescription>Ne aradığınızı yazın, size en uygun markaları bulalım.</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             {assistantResponse && !isAssistantLoading && (
@@ -311,7 +311,7 @@ export default function MarketPage() {
             <div className="max-w-6xl mx-auto space-y-6">
                 <div className="flex items-center justify-between px-1">
                     <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
-                    {isApiLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                    {isApiLoading && <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> API Verisi Bekleniyor...</div>}
                 </div>
                 
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
@@ -346,7 +346,7 @@ export default function MarketPage() {
                 )}) : !isApiLoading && (
                     <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
                         <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-                        <p className="text-muted-foreground text-sm font-medium">Bu kriterlere uygun marka bulunamadı.</p>
+                        <p className="text-muted-foreground text-sm font-medium">Gösterilecek marka bulunamadı.</p>
                     </div>
                 )}
                 

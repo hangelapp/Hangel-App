@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -208,12 +207,6 @@ export default function AppHeader() {
               <Button variant="ghost" size="icon">
                   <UserAvatar />
               </Button>
-            </Link>
-          </div>
-
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-             <Link href="/market" passHref className="">
-                <span className="text-xl font-bold text-primary">hangel</span>
             </Link>
           </div>
 
