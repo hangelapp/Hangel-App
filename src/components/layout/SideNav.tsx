@@ -107,10 +107,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
 
   return (
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">
-      <div className="flex grow flex-col overflow-y-auto bg-secondary border-r px-4 pb-4">
-        <div className="flex h-16 shrink-0 items-center px-2">
-            {/* Logo removed per request */}
-        </div>
+      <div className="flex grow flex-col overflow-y-auto bg-secondary border-r px-4 pb-4 pt-8">
         <nav className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col space-y-4">
             {mainItems.length > 0 && <NavList items={mainItems} />}

@@ -29,7 +29,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
-     * Using the latest standards provided: POST method, x-api-key header, results array.
+     * Implementation based on provided Firebase Function example.
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         try {
@@ -44,13 +44,13 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a" // Broad search to get 42+ results
+                    value: "a" // Wide search to catch 42+ brands
                 }),
                 cache: 'no-store'
             });
             if (!res.ok) return [];
             const data = await res.json();
-            const results = data.results || data.brands || (Array.isArray(data) ? data : []);
+            const results = data.results || [];
             
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -83,7 +83,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             });
             if (!res.ok) return [];
             const data = await res.json();
-            const results = Array.isArray(data) ? data : (data.results || data.offers || []);
+            const results = Array.isArray(data) ? data : [];
             return results.map((item: any) => ({
                 id: `ra-${item.id || Math.random().toString(36).substr(2, 9)}`,
                 name: item.name || "Marka",
@@ -115,7 +115,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             });
             if (!res.ok) return [];
             const data = await res.json();
-            const results = Array.isArray(data) ? data : (data.results || data.offers || []);
+            const results = Array.isArray(data) ? data : [];
             return results.map((item: any) => ({
                 id: `ao-${item.id || Math.random().toString(36).substr(2, 9)}`,
                 name: item.name || "Marka",
