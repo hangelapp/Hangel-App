@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Loader2, Bot, Sparkles, Send } from 'lucide-react';
-import { marketCategories } from '@/lib/data';
+import { marketCategories, allEntityLists } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -59,10 +59,21 @@ export default function MarketPage() {
   useEffect(() => {
     const loadBrands = async () => {
       try {
-        const data = await fetchAllAgencyOffers();
-        setDynamicBrands(data);
+        const apiData = await fetchAllAgencyOffers();
+        // Merge API data with the hardcoded list, prioritizing higher rates for duplicates
+        const combined = [...apiData, ...allEntityLists];
+        const uniqueMap = new Map<string, Brand>();
+        combined.forEach(brand => {
+          const key = brand.name.toLowerCase().trim();
+          const existing = uniqueMap.get(key);
+          if (!existing || brand.donationRate > existing.donationRate) {
+            uniqueMap.set(key, brand);
+          }
+        });
+        setDynamicBrands(Array.from(uniqueMap.values()));
       } catch (err) {
         console.error("Market fetch error:", err);
+        setDynamicBrands(allEntityLists);
       } finally {
         setIsLoading(false);
       }
