@@ -1,8 +1,7 @@
-
 import type { Brand } from './types';
 
 /**
- * Marka isimlerindeki teknik ibareleri (CPS, Mobil vb.) temizler.
+ * Marka isimlerindeki teknik ibareleri ([CPS], [CPL], Mobil, Influencer vb.) temizler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Bilinmeyen Marka";
@@ -24,13 +23,45 @@ const parseRate = (rate: any): number => {
 };
 
 /**
- * Proxy üzerinden tüm ajans verilerini çeker.
+ * Real Fallback Data: If APIs return empty, show these real brands from the user's list.
+ */
+const fallbackBrands: Brand[] = [
+  {
+    id: 'fallback-converse',
+    name: 'Converse',
+    logoUrl: 'https://logo.clearbit.com/converse.com',
+    donationRate: 7,
+    type: 'brand',
+    agency: 'Affocean (Geçici Veri)',
+    category: 'Ayakkabı',
+    link: 'https://www.converse.com.tr'
+  },
+  {
+    id: 'fallback-teknosa',
+    name: 'Teknosa',
+    logoUrl: 'https://logo.clearbit.com/teknosa.com',
+    donationRate: 2,
+    type: 'brand',
+    agency: 'ReklamAction (Geçici Veri)',
+    category: 'Elektronik',
+    link: 'https://www.teknosa.com'
+  },
+  {
+    id: 'fallback-ebebek',
+    name: 'Ebebek',
+    logoUrl: 'https://logo.clearbit.com/ebebek.com',
+    donationRate: 5,
+    type: 'brand',
+    agency: 'Affocean (Geçici Veri)',
+    category: 'Anne & Bebek',
+    link: 'https://www.e-bebek.com'
+  }
+];
+
+/**
+ * Main Data Engine: Fetches and unifies data from 3 agencies.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
-  const proxyUrl = '/api/proxy'; // Client-side check: this needs to be an absolute URL if called from server, but we call it from actions
-  // IMPORTANT: Since this is likely called from a Server Action, we can keep the logic here or call our own API.
-  // To ensure reliability in IDX, we use the server context directly here.
-
   const agencies = [
     {
       id: 'go',
@@ -38,8 +69,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       url: 'https://feed.gelirortaklari.com/api/v1/search',
       key: '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3',
       method: 'POST',
-      body: { "value": "", "type": "all" },
-      authHeader: 'x-api-key'
+      body: { "value": "", "type": "all" }, // REQUIRED TYPE PARAMETER
+      headers: { 'x-api-key': '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3' }
     },
     {
       id: 'ao',
@@ -47,7 +78,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       url: 'https://affocean.com/api/v1/offers',
       key: '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48',
       method: 'GET',
-      authHeader: 'Authorization'
+      headers: { 'Authorization': 'Bearer 9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48' }
     },
     {
       id: 'ra',
@@ -55,47 +86,40 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       url: 'https://api.reklamaction.com/v1/offers?network=reklamaction',
       key: '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
       method: 'GET',
-      authHeader: 'Authorization'
+      headers: { 'Authorization': 'Bearer 2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54' }
     }
   ];
 
   const results = await Promise.allSettled(
     agencies.map(async (agency) => {
       try {
-        const headers: any = {
+        const response = await fetch(agency.url, {
+          method: agency.method,
+          headers: {
+            ...agency.headers,
             'Content-Type': 'application/json',
             'Origin': 'https://hangel.org',
             'Referer': 'https://hangel.org'
-        };
-
-        if (agency.authHeader === 'x-api-key') {
-            headers['x-api-key'] = agency.key;
-            headers['api-key'] = agency.key; // Alternative
-        } else {
-            headers['Authorization'] = `Bearer ${agency.key}`;
-        }
-
-        const response = await fetch(agency.url, {
-          method: agency.method,
-          headers: headers,
+          },
           body: agency.method === 'POST' ? JSON.stringify(agency.body) : undefined,
           cache: 'no-store'
         });
 
-        const text = await response.text();
-        let resData;
-        try {
-            resData = JSON.parse(text);
-        } catch (e) {
-            console.error(`[Server] ${agency.name} JSON Parse Error`);
+        if (!response.ok) {
+            console.error(`[Server] ${agency.name} HTTP Error: ${response.status}`);
             return [];
         }
 
+        const resData = await response.json();
+        
+        // Scan for brand arrays in various common locations
         const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
         if (!Array.isArray(rawList)) return [];
 
+        console.log(`[Server] ${agency.name} captured ${rawList.length} items.`);
+
         return rawList.map((item: any) => ({
-          id: `${agency.id}-${item.id || Math.random().toString(36).substr(2, 9)}`,
+          id: `${agency.id}-${item.id || Math.random()}`,
           name: cleanBrandName(item.advertiser_name || item.name || item.title),
           logoUrl: item.logo_url || item.logo || item.image || item.preview_url || "",
           donationRate: parseRate(item.commission_rate || item.payout || item.commission || 0),
@@ -105,7 +129,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           category: item.category || "Genel"
         }));
       } catch (err: any) {
-        console.error(`[Server] ${agency.name} Error:`, err.message);
+        console.error(`[Server] ${agency.name} Connection Error:`, err.message);
         return [];
       }
     })
@@ -113,6 +137,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   let combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
+  // Deduplicate and select best rates
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
       const key = brand.name.toLowerCase().trim();
@@ -122,5 +147,13 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       }
   });
 
-  return Array.from(uniqueMap.values());
+  const finalResults = Array.from(uniqueMap.values());
+
+  // IF ALL APIS EMPTY -> INJECT FALLBACKS
+  if (finalResults.length === 0) {
+      console.warn("[Server] All APIs returned empty. Injecting Fallback Data.");
+      return fallbackBrands;
+  }
+
+  return finalResults;
 }
