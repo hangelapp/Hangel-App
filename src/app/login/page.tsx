@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Search, ChevronRight, Globe, ShoppingBag, HeartHandshake, Check, Siren, ChevronDown, Menu } from 'lucide-react';
+import { Search, ChevronRight, Globe, ShoppingBag, HeartHandshake, Check, Siren, ChevronDown, Menu, MapPin, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -83,6 +83,7 @@ const Header = () => {
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
                         <Menu className="h-5 w-5" />
                     </Button>
+                    <HangelLogo className="ml-4"/>
                 </div>
             </div>
         </header>
@@ -320,7 +321,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tümünü Gör</Link>
+                            <Link href="/market">Tüm ({allEntityLists.length}) Markayı Gör</Link>
                         </Button>
                     </div>
                 </section>
@@ -342,8 +343,12 @@ export default function LoginPage() {
                                         <h4 className="font-bold text-xl leading-tight text-[#1d1d1f] line-clamp-3">{opp.title}</h4>
                                         <p className="text-sm text-muted-foreground">{opp.organization}</p>
                                     </div>
+                                     <div className="space-y-2 text-xs text-muted-foreground w-full">
+                                        <div className="flex items-center gap-2"><MapPin className="h-3 w-3" />{opp.location.city} ({opp.location.type})</div>
+                                        <div className="flex items-center gap-2"><Calendar className="h-3 w-3" />{opp.commitment}</div>
+                                    </div>
                                     <div className="mt-auto pt-4 border-t border-black/5 w-full">
-                                        <div className="text-2xl font-black text-primary">{opp.points} Puan</div>
+                                        <div className="text-lg font-bold text-primary flex items-center gap-1">{opp.points} <span className="text-xs font-normal">Puan</span></div>
                                     </div>
                                 </Link>
                             ))}
@@ -352,7 +357,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/volunteering">Tümünü Gör</Link>
+                            <Link href="/volunteering">Tüm ({volunteeringOpportunities.length}) İlanı Gör</Link>
                         </Button>
                     </div>
                 </section>
