@@ -212,9 +212,6 @@ export default function MarketPage() {
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2 mt-1">{brand.name}</p>
-                                        <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">
-                                            Aktif Kampanya
-                                        </p>
                                     </div>
                                 </div>
                             </Link>
