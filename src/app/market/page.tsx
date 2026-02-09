@@ -108,6 +108,8 @@ export default function MarketPage() {
         try {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
+                // CLIENT LOG (Requested by user)
+                console.log("Gelir Ortakları Ham Veri (Client):", data.filter(b => b.id.startsWith('go-')));
                 setApiBrands(data);
             }
         } catch (e) {
@@ -173,7 +175,7 @@ export default function MarketPage() {
         }
     });
 
-    // Support showing 42+ brands easily by setting a high limit
+    // Increased limit to 100 to show 42+ brands correctly
     if (activeCategory === 'Öne çıkanlar') {
         return filteredList.slice(0, 100); 
     }

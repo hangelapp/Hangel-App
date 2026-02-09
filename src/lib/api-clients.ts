@@ -20,7 +20,7 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 
 /**
  * Fetches offers from all configured agencies (Gelir Ortakları, ReklamAction, Affocean).
- * Uses the latest API standards (POST Search API for GO).
+ * Uses specific mapping requested by the user.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const GO_KEY = process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3";
@@ -29,7 +29,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
-     * Implementation based on provided Firebase Function example.
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         try {
@@ -44,22 +43,26 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a" // Wide search to catch 42+ brands
+                    value: "product" // Broad search to get maximum results
                 }),
                 cache: 'no-store'
             });
             if (!res.ok) return [];
             const data = await res.json();
-            const results = data.results || [];
+            
+            // SERVER LOG (For identification)
+            console.log("Gelir Ortakları Ham Veri (Server):", data);
+            
+            const results = data.results || (Array.isArray(data) ? data : []);
             
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.name || "Marka",
+                name: item.advertiser_name || item.name || "Marka", // MAPPING: advertiser_name or name
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo || "",
-                donationRate: parseFloat(String(item.commission || "0")),
-                link: item.tracking_url || "#",
+                logoUrl: item.logo_url || item.image || item.logo || "", // MAPPING: logo_url or image
+                donationRate: parseFloat(String(item.commission_rate || item.commission || "0")), // MAPPING: commission_rate
+                link: item.click_url || item.tracking_url || "#", // MAPPING: click_url
                 followers: Math.floor(Math.random() * 5000) + 1000,
                 about: "Gelir Ortakları iş ortağı."
             }));
