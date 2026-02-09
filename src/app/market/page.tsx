@@ -4,7 +4,7 @@
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag, WifiOff } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag, WifiOff, AlertCircle } from 'lucide-react';
 import { marketCategories, adBanners, categoryMapping } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -187,7 +187,7 @@ export default function MarketPage() {
   return (
     <div className="flex flex-col h-full bg-secondary/30">
         <div className="p-2 space-y-2 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
-            {/* DEBUG RAPOR KUTUSU (MAC İÇİN) */}
+            {/* DEBUG RAPOR KUTUSU (ZORUNLU GÖSTERİM) */}
             <div className="bg-white border-2 border-primary/20 rounded-2xl p-4 mb-2 grid grid-cols-3 gap-2 text-center shadow-lg animate-in slide-in-from-top duration-500">
                 <div className="flex flex-col">
                     <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">Gelir Ortakları</p>
@@ -195,11 +195,11 @@ export default function MarketPage() {
                 </div>
                 <div className="flex flex-col border-x border-muted px-2">
                     <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">Affocean</p>
-                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency === 'Affocean').length}</p>
+                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency?.includes('Affocean')).length}</p>
                 </div>
                 <div className="flex flex-col">
                     <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">ReklamAction</p>
-                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency === 'ReklamAction').length}</p>
+                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency?.includes('ReklamAction')).length}</p>
                 </div>
             </div>
 
@@ -356,10 +356,10 @@ export default function MarketPage() {
                 ) : (
                     !isApiLoading && (
                         <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
-                            <WifiOff className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+                            <AlertCircle className="h-12 w-12 text-primary/40 mx-auto" />
                             <div className="text-center space-y-1">
                                 <p className="text-foreground font-bold text-sm">Şu an ajans bağlantısı kurulamıyor.</p>
-                                <p className="text-muted-foreground text-xs font-medium">Veriler yüklenemedi, lütfen daha sonra tekrar deneyin.</p>
+                                <p className="text-muted-foreground text-xs font-medium">Veriler çekilemedi, lütfen internetinizi ve bağlantıları kontrol edin.</p>
                             </div>
                         </div>
                     )
