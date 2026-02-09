@@ -19,15 +19,28 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 }
 
 /**
+ * Cleans brand names by removing common suffixes like CPS, Influencer, etc.
+ */
+function cleanBrandName(name: string): string {
+    if (!name) return "Bilinmeyen Marka";
+    return name
+        .split('|')[0]
+        .split('- CPS')[0]
+        .split('- Influencer')[0]
+        .split('CPS')[0]
+        .split('CPA')[0]
+        .split('CPL')[0]
+        .trim();
+}
+
+/**
  * Server-side function to fetch offers from all configured agencies.
- * Uses domain headers (hangel.org) to satisfy API restrictions.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const GO_KEY = (process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3").trim();
     const AO_KEY = (process.env.AFFOCEAN_KEY || "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48").trim();
     const RA_KEY = (process.env.REKLAMACTION_KEY || "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54").trim();
 
-    // Standard headers for all requests to ensure domain verification
     const standardHeaders = {
         "accept": "application/json",
         "Content-Type": "application/json",
@@ -50,18 +63,15 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 cache: 'no-store'
             });
             
-            if (!res.ok) {
-                console.error(`Gelir Ortakları Error: ${res.status}`);
-                return [];
-            }
+            console.log("Gelir Ortakları Status:", res.status);
+            if (!res.ok) return [];
 
             const raw = await res.json();
-            // Gelir Ortakları mapping from 'results' array
             const items = raw.results || raw.data || (Array.isArray(raw) ? raw : []);
             
             return items.map((item: any) => ({
                 id: `go-${item.id || Math.random()}`,
-                name: item.advertiser_name || item.name || "Bilinmeyen Marka",
+                name: cleanBrandName(item.advertiser_name || item.name),
                 category: item.category || "Genel",
                 type: 'brand' as const,
                 logoUrl: item.logo_url || item.image || "",
@@ -71,13 +81,13 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("Gelir Ortakları Fetch Failed:", e);
+            console.error("Gelir Ortakları Fetch Error:", e);
             return [];
         }
     };
 
     /**
-     * 2. AFFOCEAN (GET API)
+     * 2. AFFOCEAN
      */
     const fetchAffocean = async (): Promise<Brand[]> => {
         try {
@@ -96,7 +106,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
             return items.map((item: any) => ({
                 id: `ao-${item.id || Math.random()}`,
-                name: item.name || item.title || "Bilinmeyen Marka",
+                name: cleanBrandName(item.name || item.title),
                 category: item.category || "Genel",
                 type: 'brand' as const,
                 logoUrl: item.logo || item.image || "",
@@ -106,13 +116,13 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Affocean sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("Affocean Fetch Failed:", e);
+            console.error("Affocean Fetch Error:", e);
             return [];
         }
     };
 
     /**
-     * 3. REKLAMACTION (GET API)
+     * 3. REKLAMACTION
      */
     const fetchReklam = async (): Promise<Brand[]> => {
         try {
@@ -131,7 +141,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
             return items.map((item: any) => ({
                 id: `ra-${item.id || Math.random()}`,
-                name: item.name || item.title || "Bilinmeyen Marka",
+                name: cleanBrandName(item.name || item.title),
                 category: item.category || "Genel",
                 type: 'brand' as const,
                 logoUrl: item.image || item.logo || "",
@@ -141,7 +151,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "ReklamAction sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("ReklamAction Fetch Failed:", e);
+            console.error("ReklamAction Fetch Error:", e);
             return [];
         }
     };

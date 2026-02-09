@@ -7,7 +7,6 @@ import * as Icons from 'lucide-react';
 import type { SideNavItem } from '@/lib/types';
 import { useTranslation } from '@/components/providers/language-provider';
 
-// iOS-style icon background colors
 const iconColorMap: { [key: string]: string } = {
   store: 'bg-green-500',
   building: 'bg-orange-500',

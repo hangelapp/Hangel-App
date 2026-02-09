@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -106,7 +105,8 @@ export default function MarketPage() {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
-                console.log(`Market - Toplam ${data.length} ajans teklifi yüklendi.`);
+                console.log("Tüm Ajanslardan Gelen Toplam Veri:");
+                console.table(data);
             }
         } catch (e) {
             console.error("Market API load error:", e);
@@ -125,7 +125,8 @@ export default function MarketPage() {
     combinedList.forEach(item => {
         const key = item.name.toLowerCase().trim();
         const existing = uniqueBrandsMap.get(key);
-        if (!existing || item.donationRate > (existing.donationRate || 0)) {
+        // Deduplication: Always keep the one with higher donation rate
+        if (!existing || (item.donationRate || 0) > (existing.donationRate || 0)) {
             uniqueBrandsMap.set(key, item);
         }
     });
@@ -329,11 +330,9 @@ export default function MarketPage() {
                                             )}>
                                                 <BrandLogo brand={brand} />
                                             </div>
-                                            {(brand.donationRate > 0) && (
-                                                <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
-                                                    %{brand.donationRate}
-                                                </div>
-                                            )}
+                                            <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
+                                                {brand.donationRate > 0 ? `%${brand.donationRate}` : 'İncele'}
+                                            </div>
                                         </div>
                                         <p className={cn(
                                             "text-[10px] sm:text-xs font-bold leading-tight transition-colors px-1 line-clamp-2 mt-1",
