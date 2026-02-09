@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Loader2 } from 'lucide-react';
-import { marketCategories } from '@/lib/data';
+import { Search, Filter, Loader2, Bot, Sparkles, MessageSquare, Send, X } from 'lucide-react';
+import { marketCategories, allEntityLists } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,9 +14,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { allEntityLists } from '@/lib/data';
+import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -41,13 +45,18 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 };
 
 export default function MarketPage() {
-  const [brands, setBrands] = useState<Brand[]>(allEntityLists);
   const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
   const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // AI Assistant State
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [assistantQuestion, setAssistantQuestion] = useState('');
+  const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
+  const [isAssistantLoading, setIsAssistantLoading] = useState(false);
+
   const brandsToShow = useMemo(() => {
-    let list = [...brands];
+    let list = [...allEntityLists];
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -60,10 +69,39 @@ export default function MarketPage() {
 
     list.sort((a, b) => sortKey === 'name' ? a.name.localeCompare(b.name, 'tr') : b.donationRate - a.donationRate);
     return list;
-  }, [brands, activeCategory, sortKey, searchTerm]);
+  }, [activeCategory, sortKey, searchTerm]);
+
+  const handleAskAssistant = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!assistantQuestion.trim()) return;
+
+    const userMsg = assistantQuestion;
+    setChatHistory(prev => [...prev, { role: 'user', content: userMsg }]);
+    setAssistantQuestion('');
+    setIsAssistantLoading(true);
+
+    try {
+      const brandsContext = allEntityLists.slice(0, 50).map(b => 
+        `${b.name} (%${b.donationRate} bağış, Kategori: ${b.category})`
+      ).join(', ');
+
+      const result = await askMarketAssistant({
+        userQuestion: userMsg,
+        brandsContext: brandsContext,
+      });
+
+      if (result.answer) {
+        setChatHistory(prev => [...prev, { role: 'assistant', content: result.answer }]);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAssistantLoading(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full bg-secondary/30">
+    <div className="flex flex-col h-full bg-secondary/30 relative">
       <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
         <div className="flex items-center gap-2">
           <div className="relative flex-grow">
@@ -128,6 +166,94 @@ export default function MarketPage() {
             </div>
           </div>
         </main>
+      </div>
+
+      {/* AI Shopping Assistant FAB */}
+      <div className="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 z-50">
+        <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
+          <DialogTrigger asChild>
+            <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl animate-in zoom-in duration-500 bg-primary hover:bg-primary/90">
+              <Bot className="h-7 w-7 text-white" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] h-[600px] flex flex-col p-0 gap-0 overflow-hidden">
+            <DialogHeader className="p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg">Alışveriş Asistanı</DialogTitle>
+                  <DialogDescription className="text-xs text-primary-foreground/80">
+                    Sizin için en doğru markaları ve bağış oranlarını bulurum.
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            
+            <ScrollArea className="flex-1 p-4 bg-muted/30">
+              <div className="space-y-4">
+                {chatHistory.length === 0 && (
+                  <div className="text-center py-8 space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Nasıl yardımcı olabilirim?</p>
+                    <div className="flex flex-wrap justify-center gap-2 pt-2">
+                      {['En yüksek bağışlı ayakkabı?', 'Anne & Bebek ürünleri', 'Teknoloji markaları'].map(q => (
+                        <Button key={q} variant="outline" size="sm" className="text-xs rounded-full" onClick={() => { setAssistantQuestion(q); }}>
+                          {q}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {chatHistory.map((msg, i) => (
+                  <div key={i} className={cn(
+                    "flex items-start gap-3",
+                    msg.role === 'user' ? "flex-row-reverse" : "flex-row"
+                  )}>
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarFallback className={cn("text-[10px]", msg.role === 'user' ? "bg-primary text-white" : "bg-muted")}>
+                        {msg.role === 'user' ? 'BEN' : 'AI'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className={cn(
+                      "p-3 rounded-2xl text-sm max-w-[85%] shadow-sm",
+                      msg.role === 'user' 
+                        ? "bg-primary text-primary-foreground rounded-tr-none" 
+                        : "bg-background border rounded-tl-none text-foreground"
+                    )}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+                {isAssistantLoading && (
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-8 w-8 bg-muted animate-pulse">
+                      <AvatarFallback className="text-[10px]">AI</AvatarFallback>
+                    </Avatar>
+                    <div className="p-3 bg-background border rounded-2xl rounded-tl-none">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            <div className="p-4 border-t bg-background">
+              <form className="flex gap-2" onSubmit={handleAskAssistant}>
+                <Input 
+                  placeholder="Bir şeyler sor..." 
+                  value={assistantQuestion}
+                  onChange={(e) => setAssistantQuestion(e.target.value)}
+                  disabled={isAssistantLoading}
+                  className="flex-1 rounded-xl h-11"
+                />
+                <Button type="submit" size="icon" disabled={isAssistantLoading || !assistantQuestion.trim()} className="rounded-xl h-11 w-11">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

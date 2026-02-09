@@ -336,8 +336,9 @@ export default function LoginPage() {
 
     useEffect(() => {
         setMounted(true);
+        // Hydration hatasını önlemek için markaları sadece client tarafında seçiyoruz
         const shuffled = [...allEntityLists]
-            .sort(() => Math.random() - 0.5)
+            .sort(() => 0.5 - Math.random())
             .slice(0, 21);
         setDisplayBrands(shuffled);
     }, []);
@@ -354,7 +355,7 @@ export default function LoginPage() {
         { url: PlaceHolderImages.find(img => img.id === 'campus-poster-5')?.imageUrl || '', hint: 'minimalist college hackathon banner' },
     ];
 
-    if (!mounted) return null;
+    if (!mounted) return <div className="min-h-screen bg-[#f5f5f7]" />;
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
