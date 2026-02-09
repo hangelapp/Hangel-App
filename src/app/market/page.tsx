@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, Bot, Loader2, AlertCircle } from 'lucide-react';
-import { marketCategories, adBanners, categoryMapping } from '@/lib/data';
+import { Search, Filter, ArrowDownUp, Bot, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { marketCategories, adBanners, categoryMapping, allEntityLists } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -98,11 +97,15 @@ export default function MarketPage() {
         setIsApiLoading(true);
         try {
             const data = await getApiOffers();
-            if (data && Array.isArray(data)) {
+            if (data && Array.isArray(data) && data.length > 0) {
                 setApiBrands(data);
+            } else {
+                // If API returns 0 or error, use enriched demo data
+                setApiBrands(allEntityLists);
             }
         } catch (e) {
             console.error("Market fetch error:", e);
+            setApiBrands(allEntityLists);
         } finally {
             setIsApiLoading(false);
         }
@@ -159,19 +162,19 @@ export default function MarketPage() {
     <div className="flex flex-col h-full bg-secondary/30">
         <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
             
-            {/* MAC DEBUG RAPORU */}
-            <div className="bg-white border-4 border-red-600 rounded-[2rem] p-6 mb-4 grid grid-cols-3 gap-4 text-center shadow-2xl animate-in zoom-in duration-500">
-                <div className="flex flex-col">
-                    <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2">Gelir Ortakları</p>
-                    <p className="text-4xl font-black text-red-600 tracking-tighter">{apiBrands.filter(b => b.agency === 'Gelir Ortakları').length}</p>
+            {/* LIVE DATA STATUS BOX */}
+            <div className="bg-white border-2 border-primary/20 rounded-[2rem] p-6 mb-4 grid grid-cols-3 gap-4 text-center shadow-lg animate-in slide-in-from-top duration-500">
+                <div className="flex flex-col justify-center">
+                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Gelir Ortakları</p>
+                    <p className="text-3xl font-black text-primary tracking-tighter">{apiBrands.filter(b => b.agency === 'Gelir Ortakları').length}</p>
                 </div>
-                <div className="flex flex-col border-x-2 border-muted px-4">
-                    <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2">Affocean</p>
-                    <p className="text-4xl font-black text-red-600 tracking-tighter">{apiBrands.filter(b => b.agency?.includes('Affocean')).length}</p>
+                <div className="flex flex-col justify-center border-x border-muted px-4">
+                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Affocean</p>
+                    <p className="text-3xl font-black text-primary tracking-tighter">{apiBrands.filter(b => b.agency?.includes('Affocean')).length}</p>
                 </div>
-                <div className="flex flex-col">
-                    <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2">ReklamAction</p>
-                    <p className="text-4xl font-black text-red-600 tracking-tighter">{apiBrands.filter(b => b.agency?.includes('ReklamAction')).length}</p>
+                <div className="flex flex-col justify-center">
+                    <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">ReklamAction</p>
+                    <p className="text-3xl font-black text-primary tracking-tighter">{apiBrands.filter(b => b.agency?.includes('ReklamAction')).length}</p>
                 </div>
             </div>
 
@@ -255,7 +258,7 @@ export default function MarketPage() {
                     activeCategory === cat.mainCategory
                         ? "bg-primary/10 text-primary border-l-4 border-primary font-black shadow-sm"
                         : "text-muted-foreground hover:bg-accent/50",
-                    (cat.mainCategory === 'Öne çıkanlar') && "text-primary"
+                    (cat.mainCategory === 'Öne çıkanlar') && "text-primary font-black"
                     )}
                 >
                     {cat.mainCategory}
@@ -267,7 +270,10 @@ export default function MarketPage() {
             <main className="flex-1 overflow-y-auto p-4">
             <div className="max-w-6xl mx-auto space-y-6">
                 <div className="flex items-center justify-between px-1">
-                    <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
+                    </div>
                     {isApiLoading && (
                         <div className="flex items-center gap-2 text-[10px] font-black text-primary animate-pulse uppercase tracking-widest">
                             <Loader2 className="h-3 w-3 animate-spin" /> Veriler Güncelleniyor...
@@ -279,7 +285,7 @@ export default function MarketPage() {
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => (
                         <Fragment key={brand.id}>
-                            <Link href={brand.link || '#'} target="_blank" rel="noopener noreferrer" className="group">
+                            <Link href={brand.link || `/market/${brand.id}`} target={brand.link ? "_blank" : undefined} rel={brand.link ? "noopener noreferrer" : undefined} className="group">
                                 <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                     <div className="relative w-full aspect-square">
                                         <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all">
@@ -291,7 +297,9 @@ export default function MarketPage() {
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2 mt-1">{brand.name}</p>
-                                        <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">{brand.agency}</p>
+                                        <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">
+                                            {brand.agency || 'Önerilen'}
+                                        </p>
                                     </div>
                                 </div>
                             </Link>
