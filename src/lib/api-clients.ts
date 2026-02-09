@@ -30,7 +30,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
-     * Mapping: advertiser_name -> name, logo_url -> logoUrl, commission_rate -> donationRate
+     * Deep Scan: results -> data
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         try {
@@ -44,30 +44,26 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 body: JSON.stringify({ "value": "" }),
                 cache: 'no-store'
             });
-            if (!res.ok) {
-                console.error("Gelir Ortakları HTTP Hatası:", res.status);
-                return [];
-            }
-            const rawResponse = await res.json();
-            console.log("Gelir Ortakları Ham Yanıt:", JSON.stringify(rawResponse).slice(0, 500) + "...");
-
-            // Deep mapping: Check results or data arrays
-            const results = rawResponse.results || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
             
-            if (results.length === 0) {
-                console.error("Hangi Ajans Boş Döndü: Gelir Ortakları");
-            }
+            console.log("Gelir Ortakları Status:", res.status);
+            if (!res.ok) return [];
 
-            return results.map((item: any) => ({
-                id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.advertiser_name || item.name || item.title || "Bilinmeyen Marka",
+            const raw = await res.json();
+            // Deep Scanning for results
+            const items = raw.results || raw.data || (Array.isArray(raw) ? raw : []);
+            
+            if (items.length === 0) console.error("Hangi Ajans Boş Döndü: Gelir Ortakları");
+
+            return items.map((item: any) => ({
+                id: `go-${item.id || Math.random()}`,
+                name: item.advertiser_name || item.name || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo_url || item.image || item.logo || "",
+                logoUrl: item.logo_url || item.image || "",
                 donationRate: parseFloat(String(item.commission_rate || item.commission || "0")),
                 link: item.click_url || item.tracking_url || "#",
                 followers: Math.floor(Math.random() * 5000) + 1000,
-                about: "Gelir Ortakları aracılığıyla sağlanan sosyal fayda ortağı."
+                about: "Gelir Ortakları sosyal fayda ortağı."
             }));
         } catch (e) {
             console.error("Gelir Ortakları Fetch Hatası:", e);
@@ -76,8 +72,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     };
 
     /**
-     * 2. AFFOCEAN (GET API)
-     * Mapping: name -> name, logo -> logoUrl, payout/commission -> donationRate
+     * 2. AFFOCEAN
+     * Deep Scan: offers -> results -> data
      */
     const fetchAffocean = async (): Promise<Brand[]> => {
         try {
@@ -88,25 +84,23 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 },
                 cache: 'no-store'
             });
+            
+            console.log("Affocean Status:", res.status);
             if (!res.ok) return [];
-            const rawResponse = await res.json();
-            
-            const results = rawResponse.results || rawResponse.offers || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
-            
-            if (results.length === 0) {
-                console.error("Hangi Ajans Boş Döndü: Affocean");
-            }
 
-            return results.map((item: any) => ({
-                id: `ao-${item.id || Math.random().toString(36).substr(2, 9)}`,
+            const raw = await res.json();
+            const items = raw.offers || raw.results || raw.data || (Array.isArray(raw) ? raw : []);
+
+            return items.map((item: any) => ({
+                id: `ao-${item.id || Math.random()}`,
                 name: item.name || item.title || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo || item.image || item.logo_url || "",
+                logoUrl: item.logo || item.image || "",
                 donationRate: parseFloat(String(item.payout || item.commission || "0")),
                 link: item.link || item.tracking_url || "#",
                 followers: Math.floor(Math.random() * 3000) + 500,
-                about: "Affocean aracılığıyla sağlanan sosyal fayda ortağı."
+                about: "Affocean sosyal fayda ortağı."
             }));
         } catch (e) {
             console.error("Affocean Fetch Hatası:", e);
@@ -115,8 +109,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     };
 
     /**
-     * 3. REKLAMACTION (GET API - Specific query network=reklamaction)
-     * Mapping: name -> name, image -> logoUrl, commission -> donationRate
+     * 3. REKLAMACTION
      */
     const fetchReklam = async (): Promise<Brand[]> => {
         try {
@@ -127,25 +120,23 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 },
                 cache: 'no-store'
             });
+            
+            console.log("ReklamAction Status:", res.status);
             if (!res.ok) return [];
-            const rawResponse = await res.json();
-            
-            const results = rawResponse.results || rawResponse.offers || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
-            
-            if (results.length === 0) {
-                console.error("Hangi Ajans Boş Döndü: ReklamAction");
-            }
 
-            return results.map((item: any) => ({
-                id: `ra-${item.id || Math.random().toString(36).substr(2, 9)}`,
+            const raw = await res.json();
+            const items = raw.results || raw.offers || raw.data || (Array.isArray(raw) ? raw : []);
+
+            return items.map((item: any) => ({
+                id: `ra-${item.id || Math.random()}`,
                 name: item.name || item.title || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.image || item.logo || item.logo_url || "",
+                logoUrl: item.image || item.logo || "",
                 donationRate: parseFloat(String(item.commission || item.payout || "0")),
                 link: item.tracking_url || item.link || "#",
                 followers: Math.floor(Math.random() * 4000) + 800,
-                about: "ReklamAction aracılığıyla sağlanan sosyal fayda ortağı."
+                about: "ReklamAction sosyal fayda ortağı."
             }));
         } catch (e) {
             console.error("ReklamAction Fetch Hatası:", e);
@@ -153,11 +144,9 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         }
     };
 
-    // Execute all fetches in parallel, continuing even if some fail
-    const settled = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
+    const results = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
+    const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
     
-    const combined = settled.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-    console.log("Sunucu: Toplam Birleştirilen Marka Sayısı:", combined.length);
-
+    console.log("Sunucu: Toplam Birleştirilen Veri:", combined.length);
     return combined;
 }

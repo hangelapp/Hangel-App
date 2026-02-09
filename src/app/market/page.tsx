@@ -105,10 +105,22 @@ export default function MarketPage() {
         setIsApiLoading(true);
         try {
             const data = await getApiOffers();
-            if (data && Array.isArray(data)) {
+            if (data && Array.isArray(data) && data.length > 0) {
                 setApiBrands(data);
                 console.log("Market Page - API Verisi Alındı (Client):", data.length);
-                console.table(data.slice(0, 100)); // Log detailed table for inspection
+                console.table(data.slice(0, 50));
+            } else {
+                // Dummy data fallback for testing connection
+                setApiBrands([{
+                    id: 'test-1',
+                    name: 'API BAGLANTISI BASARILI',
+                    category: 'Test',
+                    type: 'brand',
+                    logoUrl: '',
+                    donationRate: 10,
+                    followers: 999,
+                    about: 'Bu bir test kaydıdır. API bağlantısının sağlandığını ancak veri dönmediğini gösterir.'
+                }]);
             }
         } catch (e) {
             console.error("Market API load error:", e);
@@ -123,7 +135,6 @@ export default function MarketPage() {
   const brandsToShow = useMemo(() => {
     let combinedList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Deduplicate brands by name and select the one with the best commission rate
     const uniqueBrandsMap = new Map<string, Brand>();
     combinedList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -134,13 +145,11 @@ export default function MarketPage() {
     });
     combinedList = Array.from(uniqueBrandsMap.values());
 
-    // Search Filtering
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
         combinedList = combinedList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
-    // Category Filtering
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const mappedCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (mappedCategories && mappedCategories.length > 0) {
@@ -153,17 +162,14 @@ export default function MarketPage() {
       }
     }
 
-    // Entity Type Filtering
     if (activeEntityType !== 'all') {
       combinedList = combinedList.filter(item => item.type === activeEntityType);
     }
 
-    // Donation Filter
     if (onlyDonating) {
         combinedList = combinedList.filter(item => (item.donationRate || 0) > 0);
     }
     
-    // Sorting
     combinedList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
@@ -210,7 +216,7 @@ export default function MarketPage() {
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
-                        placeholder="hangel'da Ara"
+                        placeholder="Platformda Ara"
                         className="pl-10 pr-12 h-10 rounded-xl border-none bg-muted/50 focus-visible:ring-1"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -321,7 +327,7 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => {
-                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-');
+                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-') || brand.id === 'test-1';
                         return (
                             <Fragment key={brand.id}>
                                 <Link 
