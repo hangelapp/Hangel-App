@@ -172,7 +172,6 @@ export default function MarketPage() {
         }
     });
 
-    // ÖNEMLİ: 'Öne çıkanlar' sekmesindeki 18 limitini kaldırdım veya artırdım.
     if (activeCategory === 'Öne çıkanlar') {
         return filteredList.slice(0, 100); 
     }
@@ -223,7 +222,9 @@ export default function MarketPage() {
                     <DialogContent className="sm:max-w-[425px] rounded-3xl">
                         <DialogHeader>
                         <DialogTitle className="flex items-center gap-2"><Bot className="text-primary"/> Alışveriş Asistanı</DialogTitle>
-                        <DialogDescription>Ne aradığınızı yazın, size en uygun markaları bulalım.</DialogDescription>
+                        <DialogHeader>
+                            <DialogDescription>Ne aradığınızı yazın, size en uygun markaları bulalım.</DialogDescription>
+                        </DialogHeader>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             {assistantResponse && !isAssistantLoading && (
