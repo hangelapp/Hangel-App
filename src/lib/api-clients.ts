@@ -1,14 +1,14 @@
 import type { Brand } from './types';
 
 /**
- * Gelişmiş İsim Temizleme: [CPS], [CPL], Mobil gibi ibareleri siler.
+ * Gelişmiş İsim Temizleme: Teknik ibareleri siler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Bilinmeyen Marka";
   return name
     .replace(/\[.*?\]/g, '') 
     .replace(/\(.*?\)/g, '')
-    .replace(/CPS|CPL|CPA|Mobil|Influencer|Offer|Kampanyası|Sale|İndirim|Online|TR/gi, '') 
+    .replace(/CPS|CPL|CPA|CPO|Mobil|Influencer|Offer|Kampanyası|Sale|İndirim|Online|TR|BPC/gi, '') 
     .replace(/[\-\|]/g, '')
     .replace(/\s+/g, ' ') 
     .trim();
@@ -35,13 +35,13 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       name: 'Gelir Ortakları',
       url: 'https://feed.gelirortaklari.com/api/v1/search',
       method: 'POST',
-      body: { "value": "", "type": "advertiser" }, // Updated type parameter
+      body: { "value": "", "type": "advertiser" },
       headers: { 'x-api-key': '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3' }
     },
     {
       id: 'ao',
       name: 'Affocean',
-      url: 'https://affocean.com/api/v1/offers',
+      url: 'https://affocean.com/api/v1/offers?limit=100&status=active',
       method: 'GET',
       headers: { 'Authorization': 'Bearer 9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48' }
     },
@@ -54,7 +54,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     }
   ];
 
-  const proxyUrl = 'https://' + (typeof window !== 'undefined' ? window.location.host : 'localhost:3000') + '/api/proxy';
+  const proxyUrl = '/api/proxy';
 
   const results = await Promise.allSettled(
     agencies.map(async (agency) => {
@@ -68,14 +68,16 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
         const resData = await response.json();
         
-        // Scan for brand arrays with Array.isArray checks
         let rawList = [];
         if (Array.isArray(resData)) rawList = resData;
         else if (resData.results && Array.isArray(resData.results)) rawList = resData.results;
         else if (resData.data && Array.isArray(resData.data)) rawList = resData.data;
         else if (resData.offers && Array.isArray(resData.offers)) rawList = resData.offers;
 
-        console.log(`[Server] ${agency.name} found ${rawList.length} valid entries.`);
+        if (!Array.isArray(rawList)) {
+            console.error(`[Data Error] ${agency.name} response is not an array.`);
+            return [];
+        }
 
         return rawList.map((item: any) => ({
           id: `${agency.id}-${item.id || Math.random()}`,
@@ -88,7 +90,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           category: item.category || "Genel"
         }));
       } catch (err: any) {
-        console.error(`[Server] ${agency.name} Fetch Error:`, err.message);
         return [];
       }
     })
@@ -96,7 +97,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   let combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  // Deduplicate
+  // Tekilleştirme
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
       const key = brand.name.toLowerCase().trim();
@@ -108,12 +109,10 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   const finalResults = Array.from(uniqueMap.values());
 
-  // Disable fallback if real data is present
+  // Eğer hiç gerçek veri yoksa fallback dön
   if (finalResults.length === 0) {
-      console.warn("[Server] No real data. Using fallbacks.");
       return fallbackBrands;
   }
 
-  console.log(`[Server] Total unique brands identified: ${finalResults.length}`);
   return finalResults;
 }
