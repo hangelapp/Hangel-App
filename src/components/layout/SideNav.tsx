@@ -109,6 +109,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
         <nav className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col space-y-4">
             {/* Logo alanı boş bırakıldı */}
+            <div className="h-8" />
             {mainItems.length > 0 && <NavList items={mainItems} />}
             {navItems.length > 0 && <NavList items={navItems} />}
             {userItems.length > 0 && <NavList items={userItems} />}

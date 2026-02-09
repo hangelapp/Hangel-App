@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -106,8 +107,8 @@ export default function MarketPage() {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
-                console.log("Tüm Ajanslardan Gelen Birleşmiş Veri:");
-                console.table(data);
+                console.log("--- AJANS VERİ RAPORU ---");
+                console.table(data.map(b => ({ Marka: b.name, Oran: `%${b.donationRate}`, Kaynak: b.agency })));
             }
         } catch (e) {
             console.error("Market API error:", e);
@@ -120,8 +121,9 @@ export default function MarketPage() {
   }, [toast]);
 
   const brandsToShow = useMemo(() => {
-    // Statik veriler ve API verilerini birleştir
-    let combinedList: Brand[] = [...allEntityLists, ...apiBrands];
+    // Statik veriler (Hangel markaları) ve API verilerini birleştir
+    const localBrands = allEntityLists.map(b => ({ ...b, agency: 'hangel' }));
+    let combinedList: Brand[] = [...localBrands, ...apiBrands];
 
     // Search filter
     if (searchTerm.trim()) {
@@ -310,7 +312,7 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => {
-                        const isApiBrand = brand.agency !== undefined;
+                        const isApiBrand = brand.agency !== 'hangel';
                         return (
                             <Fragment key={brand.id}>
                                 <Link 
@@ -330,12 +332,17 @@ export default function MarketPage() {
                                                 {brand.donationRate > 0 ? `%${brand.donationRate}` : 'İncele'}
                                             </div>
                                         </div>
-                                        <p className={cn(
-                                            "text-[10px] sm:text-xs font-bold leading-tight transition-colors px-1 line-clamp-2 mt-1",
-                                            "text-foreground group-hover:text-primary"
-                                        )}>
-                                            {brand.name}
-                                        </p>
+                                        <div className="space-y-0.5">
+                                            <p className={cn(
+                                                "text-[10px] sm:text-xs font-bold leading-tight transition-colors px-1 line-clamp-2 mt-1",
+                                                "text-foreground group-hover:text-primary"
+                                            )}>
+                                                {brand.name}
+                                            </p>
+                                            <p className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-tighter">
+                                                {brand.agency}
+                                            </p>
+                                        </div>
                                     </div>
                                 </Link>
                                 {index === 11 && <div className="col-span-full my-4"><AdCarousel /></div>}

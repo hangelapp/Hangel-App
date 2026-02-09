@@ -53,14 +53,14 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       url: 'https://affocean.com/api/v1/offers',
       key: '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48',
       method: 'GET',
-      authHeader: 'Authorization' // Bearer formatı
+      authHeader: 'Authorization'
     },
     {
       name: 'ReklamAction',
       url: 'https://api.reklamaction.com/v1/offer?network=reklamaction',
       key: '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
       method: 'GET',
-      authHeader: 'Authorization' // Bearer formatı
+      authHeader: 'Authorization'
     }
   ];
 
@@ -83,17 +83,16 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         });
 
         if (!response.ok) {
-            console.error(`[Server] ${agency.name} Hata Kodu: ${response.status}`);
+            console.error(`[Server] ${agency.name} Hata: ${response.status}`);
             return [];
         }
 
         const resData = await response.json();
         
-        // Hiyerarşik veri taraması
+        // Hiyerarşik veri taraması (Deep Scan)
         const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
 
         if (!Array.isArray(rawList)) {
-            console.warn(`[Server] ${agency.name} geçerli bir liste döndürmedi.`);
             return [];
         }
 
@@ -108,9 +107,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           category: item.category || "Genel"
         }));
 
-        // AJANS BAZLI SAYI RAPORU
         console.log(`[Server] ${agency.name} yakalanan marka sayısı: ${mapped.length}`);
-        
         return mapped;
       } catch (err) {
         console.error(`[Server] ${agency.name} Bağlantı Hatası:`, err);
@@ -131,8 +128,5 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       }
   });
 
-  const finalData = Array.from(uniqueMap.values());
-  console.log(`[Server] Toplam Benzersiz Marka Sayısı: ${finalData.length}`);
-  
-  return finalData;
+  return Array.from(uniqueMap.values());
 }
