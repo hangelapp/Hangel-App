@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { fetchAllAgencyOffers } from '@/lib/api-clients';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { allEntityLists } from '@/lib/data';
 import type { Brand } from '@/lib/types';
 
 const languages = ["Türkçe", "English", "Mandarin Chinese", "Español", "Français"];
@@ -229,8 +230,8 @@ export default function LoginPage() {
         setMounted(true);
         const loadPreviewBrands = async () => {
             try {
-                const data = await fetchAllAgencyOffers();
-                setDisplayBrands(data.slice(0, 10));
+                const apiData = await fetchAllAgencyOffers();
+                setDisplayBrands(apiData.slice(0, 10));
             } catch (err) {
                 console.error("Preview load error:", err);
             }
@@ -292,7 +293,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tüm Markaları Gör</Link>
+                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
                         </Button>
                     </div>
                 </section>
