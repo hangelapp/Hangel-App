@@ -1,0 +1,672 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the Hangel application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "User's full name."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "User's phone number."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "User's date of birth.",
+          "format": "date-time"
+        },
+        "gender": {
+          "type": "string",
+          "description": "User's gender."
+        },
+        "bloodType": {
+          "type": "string",
+          "description": "User's blood type."
+        },
+        "address": {
+          "type": "string",
+          "description": "User's address."
+        },
+        "skills": {
+          "type": "array",
+          "description": "List of user's skills.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "socialInterests": {
+          "type": "array",
+          "description": "List of user's social interests.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "graduation": {
+          "type": "string",
+          "description": "User's graduation information."
+        },
+        "occupation": {
+          "type": "string",
+          "description": "User's occupation."
+        },
+        "followedNgoIds": {
+          "type": "array",
+          "description": "References to NGOs followed by the user. (Relationship: User N:N NGO)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "phoneNumber"
+      ]
+    },
+    "NGO": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "NGO",
+      "type": "object",
+      "description": "Represents a Non-Governmental Organization.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the NGO entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the NGO."
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "URL of the NGO's logo.",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the NGO."
+        },
+        "sector": {
+          "type": "string",
+          "description": "Area of activity of the NGO."
+        },
+        "sustainableDevelopmentGoals": {
+          "type": "array",
+          "description": "UN Sustainable Development Goals the NGO contributes to.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "beneficiaryGroups": {
+          "type": "array",
+          "description": "Groups that benefit from the NGO's activities.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Brand": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Brand",
+      "type": "object",
+      "description": "Represents a brand, cooperative, social enterprise, or economic enterprise.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the brand entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the brand."
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "URL of the brand's logo.",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the brand."
+        },
+        "sector": {
+          "type": "string",
+          "description": "Sector of activity for the brand."
+        },
+        "donationRatio": {
+          "type": "number",
+          "description": "Donation ratio offered by the brand."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "TimelinePost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TimelinePost",
+      "type": "object",
+      "description": "Represents a timeline post from an NGO or brand.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the timeline post entity."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Reference to the author (NGO or Brand). (Relationship: Author 1:N TimelinePost)"
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the timeline post."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the post.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "authorId",
+        "content",
+        "timestamp"
+      ]
+    },
+    "QRCodePayment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QRCodePayment",
+      "type": "object",
+      "description": "Represents a QR code payment transaction.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the QR code payment transaction."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the user making the payment. (Relationship: User 1:N QRCodePayment)"
+        },
+        "brandId": {
+          "type": "string",
+          "description": "Reference to the brand receiving the payment. (Relationship: Brand 1:N QRCodePayment)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the payment."
+        },
+        "donationAmount": {
+          "type": "number",
+          "description": "Amount donated to the NGO."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the payment.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "brandId",
+        "amount",
+        "donationAmount",
+        "timestamp"
+      ]
+    },
+    "VolunteerOpportunity": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VolunteerOpportunity",
+      "type": "object",
+      "description": "Represents a volunteer opportunity posted by an NGO.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the volunteer opportunity entity."
+        },
+        "ngoId": {
+          "type": "string",
+          "description": "Reference to the NGO posting the opportunity. (Relationship: NGO 1:N VolunteerOpportunity)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the volunteer opportunity."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the volunteer opportunity."
+        },
+        "skillsRequired": {
+          "type": "array",
+          "description": "List of skills required for the opportunity.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the volunteer opportunity."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Start date of the volunteer opportunity.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "End date of the volunteer opportunity.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "ngoId",
+        "title",
+        "description",
+        "startDate",
+        "endDate"
+      ]
+    },
+    "Event": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Event",
+      "type": "object",
+      "description": "Represents an event organized by an NGO or brand.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the event entity."
+        },
+        "organizerId": {
+          "type": "string",
+          "description": "Reference to the organizer (NGO or Brand). (Relationship: Organizer 1:N Event)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the event."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the event."
+        },
+        "eventType": {
+          "type": "string",
+          "description": "Type of the event (e.g., Education, Workshop)."
+        },
+        "socialInterest": {
+          "type": "string",
+          "description": "Social interest related to the event (e.g., Children, Animals)."
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Start time of the event.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "End time of the event.",
+          "format": "date-time"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the event (Online or City)."
+        },
+        "capacity": {
+          "type": "number",
+          "description": "Maximum capacity of the event."
+        }
+      },
+      "required": [
+        "id",
+        "organizerId",
+        "name",
+        "description",
+        "eventType",
+        "startTime",
+        "endTime",
+        "location"
+      ]
+    },
+    "EmergencyAssistance": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmergencyAssistance",
+      "type": "object",
+      "description": "Represents an emergency assistance request.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the emergency assistance request."
+        },
+        "requesterId": {
+          "type": "string",
+          "description": "Reference to the user or organization requesting assistance. (Relationship: Requester 1:N EmergencyAssistance)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of emergency (e.g., Blood, Volunteer, Donation)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the emergency."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the emergency."
+        },
+        "bloodType": {
+          "type": "string",
+          "description": "Blood type needed (if applicable)."
+        },
+        "hospital": {
+          "type": "string",
+          "description": "Hospital requiring assistance (if applicable)."
+        }
+      },
+      "required": [
+        "id",
+        "requesterId",
+        "type",
+        "description",
+        "location"
+      ]
+    },
+    "ImpactScore": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ImpactScore",
+      "type": "object",
+      "description": "Represents the user's impact score and its components.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Reference to the user. (Relationship: User 1:1 ImpactScore)"
+        },
+        "donationAmount": {
+          "type": "number",
+          "description": "Total donation amount by the user."
+        },
+        "volunteeringHours": {
+          "type": "number",
+          "description": "Total volunteering hours by the user."
+        },
+        "socialAreaDiversity": {
+          "type": "number",
+          "description": "Diversity of social areas the user has contributed to."
+        },
+        "invitedActiveUsers": {
+          "type": "number",
+          "description": "Number of active users invited by the user."
+        },
+        "invitedActiveNgos": {
+          "type": "number",
+          "description": "Number of active NGOs invited by the user."
+        },
+        "invitedActiveBrands": {
+          "type": "number",
+          "description": "Number of active brands invited by the user."
+        }
+      },
+      "required": [
+        "userId"
+      ]
+    },
+    "Badge": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Badge",
+      "type": "object",
+      "description": "Represents a badge earned by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the badge entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the user who earned the badge. (Relationship: User 1:N Badge)"
+        },
+        "socialArea": {
+          "type": "string",
+          "description": "Social area associated with the badge (e.g., Animal, Children)."
+        },
+        "level": {
+          "type": "string",
+          "description": "Level of the badge (e.g., Iron, Bronze, Silver)."
+        },
+        "criteria": {
+          "type": "string",
+          "description": "Criteria for earning the badge (e.g., Volunteering hours, Completed tasks)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "socialArea",
+        "level"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Path-based ownership ensures only the user can read/write their data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ngos/{ngoId}",
+        "definition": {
+          "entityName": "NGO",
+          "schema": {
+            "$ref": "#/backend/entities/NGO"
+          },
+          "description": "Stores NGO profiles. Publicly readable, but only NGO admins can modify.",
+          "params": [
+            {
+              "name": "ngoId",
+              "description": "The unique identifier for the NGO."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/brands/{brandId}",
+        "definition": {
+          "entityName": "Brand",
+          "schema": {
+            "$ref": "#/backend/entities/Brand"
+          },
+          "description": "Stores brand profiles. Publicly readable, but only brand admins can modify.",
+          "params": [
+            {
+              "name": "brandId",
+              "description": "The unique identifier for the brand."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ngos/{ngoId}/timelinePosts/{timelinePostId}",
+        "definition": {
+          "entityName": "TimelinePost",
+          "schema": {
+            "$ref": "#/backend/entities/TimelinePost"
+          },
+          "description": "Stores timeline posts for NGOs. Only the NGO can create/modify posts.",
+          "params": [
+            {
+              "name": "ngoId",
+              "description": "The unique identifier for the NGO."
+            },
+            {
+              "name": "timelinePostId",
+              "description": "The unique identifier for the timeline post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/brands/{brandId}/timelinePosts/{timelinePostId}",
+        "definition": {
+          "entityName": "TimelinePost",
+          "schema": {
+            "$ref": "#/backend/entities/TimelinePost"
+          },
+          "description": "Stores timeline posts for Brands. Only the Brand can create/modify posts.",
+          "params": [
+            {
+              "name": "brandId",
+              "description": "The unique identifier for the Brand."
+            },
+            {
+              "name": "timelinePostId",
+              "description": "The unique identifier for the timeline post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/qrCodePayments/{qrCodePaymentId}",
+        "definition": {
+          "entityName": "QRCodePayment",
+          "schema": {
+            "$ref": "#/backend/entities/QRCodePayment"
+          },
+          "description": "Stores QR code payment transactions for a user. Path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "qrCodePaymentId",
+              "description": "The unique identifier for the QR code payment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ngos/{ngoId}/volunteerOpportunities/{volunteerOpportunityId}",
+        "definition": {
+          "entityName": "VolunteerOpportunity",
+          "schema": {
+            "$ref": "#/backend/entities/VolunteerOpportunity"
+          },
+          "description": "Stores volunteer opportunities posted by NGOs. Only the NGO can create/modify.",
+          "params": [
+            {
+              "name": "ngoId",
+              "description": "The unique identifier for the NGO."
+            },
+            {
+              "name": "volunteerOpportunityId",
+              "description": "The unique identifier for the volunteer opportunity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/events/{eventId}",
+        "definition": {
+          "entityName": "Event",
+          "schema": {
+            "$ref": "#/backend/entities/Event"
+          },
+          "description": "Stores events organized by NGOs or brands. Publicly readable.",
+          "params": [
+            {
+              "name": "eventId",
+              "description": "The unique identifier for the event."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/emergencyAssistance/{emergencyAssistanceId}",
+        "definition": {
+          "entityName": "EmergencyAssistance",
+          "schema": {
+            "$ref": "#/backend/entities/EmergencyAssistance"
+          },
+          "description": "Stores emergency assistance requests.  Publicly readable.",
+          "params": [
+            {
+              "name": "emergencyAssistanceId",
+              "description": "The unique identifier for the emergency assistance request."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/impactScore",
+        "definition": {
+          "entityName": "ImpactScore",
+          "schema": {
+            "$ref": "#/backend/entities/ImpactScore"
+          },
+          "description": "Stores impact scores for users. Path-based ownership. Only the user can read/write their data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/badges/{badgeId}",
+        "definition": {
+          "entityName": "Badge",
+          "schema": {
+            "$ref": "#/backend/entities/Badge"
+          },
+          "description": "Stores badges earned by a user. Path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "badgeId",
+              "description": "The unique identifier for the badge."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the Hangel application's features, including timeline feeds, a marketplace, QR code payments, volunteer opportunities, events, emergency assistance, and user impact scores. The structure prioritizes authorization independence, clarity, and scalability.\n\n**Authorization Independence:** Authorization is handled through path-based ownership and membership maps to avoid hierarchical dependencies and ensure atomic operations. For example, user-specific data is stored under `/users/{userId}`, and collaborative data uses `members` maps within documents.\n\n**Structural Segregation:** Data with different access requirements is segregated into different collections to simplify security rules. For example, user profiles are stored in `/users/{userId}`, while NGO profiles are stored in `/ngos/{ngoId}`.\n\n**Access Modeling:** Consistent patterns are used for authorization. Private data is stored under user-specific paths. Collaborative data (e.g., events, volunteer opportunities) uses membership maps. Global roles are managed via existence checks in dedicated collections.\n\n**QAPs (Rules are not Filters):** The structure enables secure `list` operations by segregating data based on access needs and using denormalization to avoid filtering on the client side. For example, timeline posts are associated with NGOs or Brands, and users can only see timeline posts of NGOs and brands they are following. The app uses denormalization to store a list of followedNgoIds in the user document, and it supports the timeline post QAP by filtering timeline posts server side by this list to return only the posts from the NGO's a user follows, thereby ensuring security rules are not filters.\n\n**Invariants:** The structure supports the integrity of ownership, timestamps, and denormalized data. Security rules enforce ownership and prevent unauthorized modifications.\n\n**Denormalization Strategy:** The design copies authorization-related attributes into subcollections where necessary. For example, if access to event participation depends on NGO membership, the membership information is copied into each event document to avoid `get()` calls in security rules.\n"
+  }
+}

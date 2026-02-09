@@ -1,0 +1,173 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * CORE PHILOSOPHY:
+     * This ruleset implements a dual-layered security model tailored for the Hangel platform:
+     * 1. User Privacy: All personal data (profiles, impact scores, badges, payments) is strictly
+     *    isolated under /users/{userId} paths, accessible only by the owner.
+     * 2. Public Engagement: NGO and Brand profiles, events, and timeline posts are publicly
+     *    readable to facilitate community engagement, while write access is restricted to 
+     *    authenticated creators/organizers.
+     *
+     * DATA STRUCTURE:
+     * - Personal: /users/{userId} and its subcollections.
+     * - Organizational: /ngos/{ngoId} and /brands/{brandId}.
+     * - Discovery: /events, /emergencyAssistance, and organization subcollections for posts/opportunities.
+     *
+     * KEY SECURITY DECISIONS:
+     * - Structural Segregation: User-specific data is nested to simplify ownership checks.
+     * - Relational Integrity: On creation, we enforce that the document's internal IDs 
+     *   (like creatorId or requesterId) match the authenticated user's UID.
+     * - Prototyping Flexibility: Schema validation is omitted except for fields critical 
+     *    to authorization and relational consistency.
+     */
+
+    // --- Helper Functions ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /**
+     * @description Rules for the User profile. Ensures users can only manage their own profile.
+     * @path /users/{userId}
+     * @allow (get, list, create, update, delete) if userId matches request.auth.uid.
+     * @deny (all) if userId does not match request.auth.uid.
+     * @principle Path-based ownership and internal ID consistency.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Stores QR code payment transactions for a user.
+       * @path /users/{userId}/qrCodePayments/{paymentId}
+       * @allow (create) if the user is creating a record for themselves.
+       * @principle Path-based ownership via parent document.
+       */
+      match /qrCodePayments/{paymentId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description User's impact score components.
+       * @path /users/{userId}/impactScore
+       */
+      match /impactScore {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Badges earned by the user.
+       * @path /users/{userId}/badges/{badgeId}
+       */
+      match /badges/{badgeId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    /**
+     * @description NGO profiles are public, but only the NGO (represented by ID) can edit.
+     * @path /ngos/{ngoId}
+     * @allow (get, list) for all users.
+     * @deny (write) if the authenticated user is not the NGO owner.
+     * @principle Public read with owner-only writes.
+     */
+    match /ngos/{ngoId} {
+      allow get, list: if true;
+      allow create: if isOwner(ngoId) && request.resource.data.id == ngoId;
+      allow update: if isExistingOwner(ngoId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(ngoId);
+
+      /**
+       * @description Timeline posts for an NGO.
+       * @path /ngos/{ngoId}/timelinePosts/{postId}
+       */
+      match /timelinePosts/{postId} {
+        allow get, list: if true;
+        allow create: if isOwner(ngoId) && request.resource.data.authorId == ngoId;
+        allow update: if isExistingOwner(ngoId) && request.resource.data.authorId == resource.data.authorId;
+        allow delete: if isExistingOwner(ngoId);
+      }
+
+      /**
+       * @description Volunteer opportunities posted by an NGO.
+       * @path /ngos/{ngoId}/volunteerOpportunities/{oppId}
+       */
+      match /volunteerOpportunities/{oppId} {
+        allow get, list: if true;
+        allow create: if isOwner(ngoId) && request.resource.data.ngoId == ngoId;
+        allow update: if isExistingOwner(ngoId) && request.resource.data.ngoId == resource.data.ngoId;
+        allow delete: if isExistingOwner(ngoId);
+      }
+    }
+
+    /**
+     * @description Brand profiles are public, but only the Brand (represented by ID) can edit.
+     * @path /brands/{brandId}
+     */
+    match /brands/{brandId} {
+      allow get, list: if true;
+      allow create: if isOwner(brandId) && request.resource.data.id == brandId;
+      allow update: if isExistingOwner(brandId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(brandId);
+
+      /**
+       * @description Timeline posts for a Brand.
+       * @path /brands/{brandId}/timelinePosts/{postId}
+       */
+      match /timelinePosts/{postId} {
+        allow get, list: if true;
+        allow create: if isOwner(brandId) && request.resource.data.authorId == brandId;
+        allow update: if isExistingOwner(brandId) && request.resource.data.authorId == resource.data.authorId;
+        allow delete: if isExistingOwner(brandId);
+      }
+    }
+
+    /**
+     * @description Events organized by NGOs or Brands. Public for discovery.
+     * @path /events/{eventId}
+     * @allow (create) if the user is the organizer.
+     * @principle Author validation on internal field (organizerId).
+     */
+    match /events/{eventId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.organizerId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.organizerId == request.auth.uid && request.resource.data.organizerId == resource.data.organizerId;
+      allow delete: if isSignedIn() && resource.data.organizerId == request.auth.uid;
+    }
+
+    /**
+     * @description Emergency assistance requests. Publicly readable for awareness.
+     * @path /emergencyAssistance/{emergencyAssistanceId}
+     * @allow (create) if the user is the requester.
+     */
+    match /emergencyAssistance/{emergencyAssistanceId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.requesterId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.requesterId == request.auth.uid && request.resource.data.requesterId == resource.data.requesterId;
+      allow delete: if isSignedIn() && resource.data.requesterId == request.auth.uid;
+    }
+  }
+}
