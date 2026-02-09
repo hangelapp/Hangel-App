@@ -27,7 +27,7 @@ export async function getApiOffers(): Promise<Brand[]> {
                         limit: 100,
                         page: 1,
                         type: "text",
-                        value: "a" // 'a' karakteri genellikle en çok sonucu döndürür
+                        value: "a" // 'a' karakteri en geniş sonuç kümesini döndürür
                     }),
                     cache: 'no-store'
                 });
@@ -38,7 +38,7 @@ export async function getApiOffers(): Promise<Brand[]> {
 
                 return results.map((m: any) => ({
                     id: `go-${m.id || Math.random().toString(36).substr(2, 9)}`,
-                    name: m.name || "Gelir Ortakları Markası",
+                    name: m.name || "Marka",
                     category: m.category || "Genel",
                     type: 'brand' as const,
                     logoUrl: m.logo || "",
@@ -55,9 +55,9 @@ export async function getApiOffers(): Promise<Brand[]> {
         };
 
         // --- 2. Affocean & ReklamAction (GET API) ---
-        const fetchAgency = async (key: string, network: string): Promise<Brand[]> => {
+        const fetchAgency = async (key: string, domain: string, network: string): Promise<Brand[]> => {
             try {
-                const response = await fetch(`https://api.reklamaction.com/v1/offer?network=${network}`, {
+                const response = await fetch(`https://${domain}/v1/offer?network=${network}`, {
                     headers: {
                         "Authorization": `Bearer ${key}`,
                         "Accept": "application/json"
@@ -96,8 +96,8 @@ export async function getApiOffers(): Promise<Brand[]> {
         // Tüm ajansları paralel olarak çağır
         const [goResults, aoResults, raResults] = await Promise.all([
             fetchGelirOrtaklari(),
-            fetchAgency(AFFOCEAN_KEY, "affocean"),
-            fetchAgency(REKLAMACTION_KEY, "reklamaction")
+            fetchAgency(AFFOCEAN_KEY, "api.affocean.com", "affocean"),
+            fetchAgency(REKLAMACTION_KEY, "api.reklamaction.com", "reklamaction")
         ]);
 
         const allItems = [...goResults, ...aoResults, ...raResults];

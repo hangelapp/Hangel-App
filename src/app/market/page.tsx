@@ -202,9 +202,10 @@ export default function MarketPage() {
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (brandCategories && brandCategories.length > 0) {
-        filteredList = filteredList.filter(brand => 
-            brandCategories.some(cat => brand.category.toLowerCase().includes(cat.toLowerCase()))
-        );
+        filteredList = filteredList.filter(brand => {
+            const catLower = brand.category.toLowerCase();
+            return brandCategories.some(cat => catLower.includes(cat.toLowerCase()));
+        });
       } else {
         filteredList = filteredList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
@@ -518,7 +519,7 @@ export default function MarketPage() {
                     </div>
                 )}
                 
-                {isApiLoading && brandsToShow.length === 0 && (
+                {isApiLoading && (
                     Array.from({ length: 12 }).map((_, i) => (
                         <div key={i} className="space-y-2">
                             <Skeleton className="aspect-square w-full rounded-[1.5rem]" />
