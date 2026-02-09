@@ -170,7 +170,7 @@ const Footer = () => {
         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/social-impact"}, {label: "Basın Odası", href: "/press"}, {label: "Kariyer", href: "/careers"}] },
         { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}] },
         { title: "hangel Derneği", links: [{label: "Dernek Hakkında", href: "/hangelassociation/about"}, {label: "Mevzuat Taslağı", href: "/hangelassociation/legislation"}] },
-        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Destek Merkezi", href: "/support"}] },
+        { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Destek Merkezi", href: "/support"}] },
     ];
 
     return (
@@ -227,8 +227,9 @@ export default function LoginPage() {
 
     useEffect(() => {
         setMounted(true);
-        const shuffled = [...allEntityLists].sort(() => 0.5 - Math.random()).slice(0, 21);
-        setDisplayBrands(shuffled);
+        // allEntityLists artık boş olduğu için burası boş dönecek veya API'den veri bekleyecek.
+        // Şimdilik hydration hatasını önlemek için boş bırakıyoruz.
+        setDisplayBrands([]);
     }, []);
 
     if (!mounted) return <div className="min-h-screen bg-[#f5f5f7]" />;
@@ -262,7 +263,7 @@ export default function LoginPage() {
                     
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
-                            {displayBrands.map((brand) => (
+                            {displayBrands.length > 0 ? displayBrands.map((brand) => (
                                 <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
                                     <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <ShoppingBag className="h-6 w-6" />
@@ -277,13 +278,15 @@ export default function LoginPage() {
                                         <div className="text-2xl font-black text-primary">%{brand.donationRate}</div>
                                     </div>
                                 </Link>
-                            ))}
+                            )) : (
+                                <div className="w-full py-12 text-muted-foreground italic">Aktif kampanyalar yükleniyor...</div>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
+                            <Link href="/market">Tüm Markaları Gör</Link>
                         </Button>
                     </div>
                 </section>

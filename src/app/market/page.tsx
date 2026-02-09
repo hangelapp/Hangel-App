@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Loader2, Bot, Sparkles, Send } from 'lucide-react';
-import { marketCategories, allEntityLists } from '@/lib/data';
+import { marketCategories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -62,13 +62,9 @@ export default function MarketPage() {
     const loadBrands = async () => {
       try {
         const data = await fetchAllAgencyOffers();
-        if (data.length > 0) {
-          setDynamicBrands(data);
-        } else {
-          setDynamicBrands(allEntityLists);
-        }
+        setDynamicBrands(data);
       } catch (err) {
-        setDynamicBrands(allEntityLists);
+        console.error("Market fetch error:", err);
       } finally {
         setIsLoading(false);
       }
@@ -77,7 +73,7 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
-    let list = dynamicBrands.length > 0 ? [...dynamicBrands] : [...allEntityLists];
+    let list = [...dynamicBrands];
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -168,29 +164,34 @@ export default function MarketPage() {
 
         <main className="flex-1 overflow-y-auto p-4">
           <div className="max-w-6xl mx-auto">
-            {isLoading && (
+            {isLoading ? (
               <div className="flex items-center justify-center py-12 gap-2 text-primary font-bold">
                 <Loader2 className="h-5 w-5 animate-spin" />
                 <span>Kampanyalar Hazırlanıyor...</span>
               </div>
-            )}
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {brandsToShow.map((brand) => (
-                <Link href={`/market/${brand.id}`} key={brand.id} className="group">
-                  <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="relative w-full aspect-square">
-                      <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
-                        <BrandLogo brand={brand} />
+            ) : brandsToShow.length === 0 ? (
+              <div className="text-center py-20 text-muted-foreground italic">
+                Aramanızla eşleşen marka bulunamadı.
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {brandsToShow.map((brand) => (
+                  <Link href={`/market/${brand.id}`} key={brand.id} className="group">
+                    <div className="flex flex-col items-center text-center space-y-2">
+                      <div className="relative w-full aspect-square">
+                        <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
+                          <BrandLogo brand={brand} />
+                        </div>
+                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                          %{brand.donationRate}
+                        </div>
                       </div>
-                      <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
-                        %{brand.donationRate}
-                      </div>
+                      <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
                     </div>
-                    <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>
