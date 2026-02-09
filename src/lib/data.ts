@@ -88,7 +88,7 @@ export const user: User = {
 export const timelinePosts: Post[] = [
     { id: '1', author: { name: 'TEMA Vakfı', avatarUrl: 'https://logo.clearbit.com/tema.org.tr' }, content: 'Bugün Balıkesir fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 Gelecek nesillere daha yeşil bir dünya bırakmak için var gücümüzle çalışıyoruz. #Doğaİçin #TEMA', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
     { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #Ahbap #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' },
-    { id: '3', author: { name: 'Patagonia', avatarUrl: 'https://logo.clearbit.com/patagonia.com' }, content: 'Her alışverişin %10\'u okyanuslarımızı temizlemek ve deniz ekosistemini korumak için ayrılıyor. 🌊 Bilinçli tüketin, geleceği koruyun. #SustainableFashion #OceanGuardians', timestamp: '1 gün önce', likes: 850, comments: 12, imageUrl: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?q=80&w=1920&auto=format&fit=crop', imageHint: 'sea turtle', sponsored: true },
+    { id: '3', author: { name: 'Patagonia', avatarUrl: 'https://logo.clearbit.com/patagonia.com' }, content: 'Her alışverişin %10\'u okyanuslarimizi temizlemek ve deniz ekosistemini korumak için ayrılıyor. 🌊 Bilinçli tüketin, geleceği koruyun. #SustainableFashion #OceanGuardians', timestamp: '1 gün önce', likes: 850, comments: 12, imageUrl: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?q=80&w=1920&auto=format&fit=crop', imageHint: 'sea turtle', sponsored: true },
     { id: '4', author: { name: 'LÖSEV', avatarUrl: 'https://logo.clearbit.com/losev.org.tr' }, content: 'Kanserle mücadele eden minik kahramanlarımızın eğitim hayatlarına destek olmak için yeni bir burs fonu açtık. Her tuğla bir umut! 💖 #LÖSEV #UmudunRengi', timestamp: '2 gün önce', likes: 2100, comments: 88, imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2070&auto=format&fit=crop', imageHint: 'happy school children' }
 ];
 
@@ -104,7 +104,7 @@ export const allEntityLists: Brand[] = [
     { id: 'ay-8', name: 'MarkaStok', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/markastok.com', type: 'brand', agency: 'Affocean' },
     { id: 'ay-9', name: 'Playsports', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/playsports.com.tr', type: 'brand', agency: 'ReklamAction' },
     { id: 'ay-10', name: 'Columbia', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/columbia.com.tr', type: 'brand', agency: 'Gelir Ortakları' },
-    { id: 'ay-11', name: 'Converse', category: 'Ayakkabı', donationRate: 10, logoUrl: 'https://logo.clearbit.com/converse.com', type: 'brand', agency: 'Affocean' },
+    { id: 'ay-11', name: 'Converse', category: 'Ayakkabı', donationRate: 10, logoUrl: 'https://logo.clearbit.com/converse.com.tr', type: 'brand', agency: 'Affocean' },
     { id: 'ay-12', name: 'Hotiç', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/hotic.com.tr', type: 'brand', agency: 'ReklamAction' },
     { id: 'ay-13', name: 'SuperStep', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', type: 'brand', agency: 'Affocean' },
     { id: 'ay-14', name: 'PUMA', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/puma.com', type: 'brand', agency: 'ReklamAction' },
@@ -124,6 +124,7 @@ export const allEntityLists: Brand[] = [
     { id: 'kz-7', name: 'Vitaminler', category: 'Kozmetik & Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/vitaminler.com', type: 'brand', agency: 'ReklamAction' },
     { id: 'kz-8', name: 'CocoBody', category: 'Kozmetik & Bakım', donationRate: 15, logoUrl: 'https://logo.clearbit.com/cocobody.com', type: 'brand', agency: 'Affocean' },
     { id: 'kz-9', name: 'Recete', category: 'Kozmetik & Bakım', donationRate: 6, logoUrl: 'https://logo.clearbit.com/recete.com', type: 'brand', agency: 'Gelir Ortakları' },
+    { id: 'kz-10', name: 'Kuaförümden.com', category: 'Kozmetik & Bakım', donationRate: 7, logoUrl: 'https://logo.clearbit.com/kuaforumden.com', type: 'brand', agency: 'ReklamAction' },
 
     // --- TATIL & SEYAHAT ---
     { id: 'tt-1', name: 'Tatilbudur', category: 'Tatil & Seyahat', donationRate: 3, logoUrl: 'https://logo.clearbit.com/tatilbudur.com', type: 'brand', agency: 'ReklamAction' },

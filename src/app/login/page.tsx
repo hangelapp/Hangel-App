@@ -55,7 +55,6 @@ const Header = () => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
-                {/* Minimalist Header - No Logo */}
                 <div className="w-8 h-8" /> 
 
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
@@ -360,7 +359,6 @@ export default function LoginPage() {
             < Header />
             
             <main className="pt-12">
-                {/* HERO SECTION */}
                 <section className="bg-[#f5f5f7] pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
                     <div className="space-y-4">
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
@@ -382,7 +380,6 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* BRANDS SECTION */}
                 <section className="bg-white pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağış</h2>
@@ -410,11 +407,10 @@ export default function LoginPage() {
                                         <ShoppingBag className="h-6 w-6" />
                                     </div>
                                     <div className="relative w-24 h-24 mb-6">
-                                        <Image 
+                                        <img 
                                             src={brand.logoUrl} 
                                             alt={brand.name} 
-                                            fill 
-                                            className="object-contain"
+                                            className="w-full h-full object-contain"
                                         />
                                     </div>
                                     <div className="space-y-1 mb-4">
@@ -440,7 +436,6 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* VOLUNTEERING SECTION */}
                 <section className="bg-[#f5f5f7] pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel imece</h2>
@@ -493,7 +488,6 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* GRID ITEMS - Apple Lower Sections Style */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
                     <GridItem 
                         title="hangel STK"

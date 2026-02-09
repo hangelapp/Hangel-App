@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, Fragment, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, ArrowDownUp, Bot, Sparkles } from 'lucide-react';
-import { marketCategories, adBanners, categoryMapping, allEntityLists } from '@/lib/data';
+import { marketCategories, categoryMapping, allEntityLists } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,30 +45,6 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
             onError={() => setHasError(true)}
             loading="lazy"
         />
-    );
-};
-
-const AdCarousel = () => {
-    const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
-    return (
-        <Carousel plugins={[plugin.current]} opts={{ align: 'start', loop: true }} className="w-full">
-            <CarouselContent>
-            {adBanners.map((ad) => (
-                <CarouselItem key={ad.id}>
-                    <Link href={ad.link} passHref>
-                        <div className="relative w-full h-8 rounded-lg overflow-hidden bg-primary/10">
-                            <div className="absolute inset-0 flex items-center justify-center p-1">
-                                <p className="text-primary text-xs text-center truncate">
-                                    <span className="font-semibold">{ad.title}</span>
-                                    <span className="opacity-80 ml-2">{ad.description}</span>
-                                </p>
-                            </div>
-                        </div>
-                    </Link>
-                </CarouselItem>
-            ))}
-            </CarouselContent>
-        </Carousel>
     );
 };
 
@@ -120,9 +96,8 @@ export default function MarketPage() {
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;
     setIsAssistantLoading(true);
-    // Simulate AI response
     setTimeout(() => {
-        setAssistantResponse("Size en uygun markaları buldum! Sürdürülebilir ürünler için 'Doğa Dostu Giyim' veya 'Patagonia' markalarını inceleyebilirsiniz.");
+        setAssistantResponse("Size en uygun markaları buldum! Sürdürülebilir ürünler için listemizdeki yeşil etiketli markaları inceleyebilirsiniz.");
         setIsAssistantLoading(false);
         setAssistantQuestion('');
     }, 1000);
@@ -238,12 +213,11 @@ export default function MarketPage() {
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2 mt-1">{brand.name}</p>
                                         <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">
-                                            {brand.agency || 'Aktif Kampanya'}
+                                            Aktif Kampanya
                                         </p>
                                     </div>
                                 </div>
                             </Link>
-                            {index === 11 && <div className="col-span-full my-4"><AdCarousel /></div>}
                         </Fragment>
                     ))
                 ) : (
