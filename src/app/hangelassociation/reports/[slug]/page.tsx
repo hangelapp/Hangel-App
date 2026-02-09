@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 const reportContents: Record<string, any> = {
     '5-yillik-etki': {
@@ -102,9 +103,3 @@ export default function ReportsSlugPage() {
         </div>
     );
 }
-
-const Badge = ({ children, className }: any) => (
-    <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest", className)}>
-        {children}
-    </span>
-);

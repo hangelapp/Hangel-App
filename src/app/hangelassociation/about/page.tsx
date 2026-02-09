@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -15,6 +14,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { Badge } from '@/components/ui/badge';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -49,12 +50,6 @@ const EventLineup = ({ title, date, location, image, hint, description, category
         </div>
         <Button variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-white self-start md:self-center">İncele</Button>
     </div>
-);
-
-const Badge = ({ children, className, variant }: any) => (
-    <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold", className)}>
-        {children}
-    </span>
 );
 
 export default function AssociationEventsPage() {
