@@ -109,6 +109,7 @@ const VisualAdCarousel = () => {
 
 /**
  * Güvenli Logo Bileşeni (Fallback Destekli)
+ * Proxy engellerini aşmak için yerel img etiketi kullanır.
  */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
@@ -116,8 +117,8 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
     if (hasError || !brand.logoUrl) {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex flex-col items-center justify-center border shadow-inner p-2">
-                <span className="text-primary font-black text-3xl uppercase">{brand.name.charAt(0)}</span>
-                <span className="text-[8px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center px-1">{brand.name}</span>
+                <span className="text-primary font-black text-2xl uppercase">{brand.name.charAt(0)}</span>
+                <span className="text-[7px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center px-1">{brand.name}</span>
             </div>
         );
     }
@@ -174,6 +175,7 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
+    // Statik ve API verilerini birleştir
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
     // Tekilleştirme (İsim bazlı)
@@ -184,7 +186,8 @@ export default function MarketPage() {
             uniqueBrandsMap.set(key, item);
         } else {
             const existing = uniqueBrandsMap.get(key)!;
-            if (item.donationRate > existing.donationRate) {
+            // Daha yüksek bağış oranı olanı tercih et
+            if (item.donationRate > (existing.donationRate || 0)) {
                 uniqueBrandsMap.set(key, item);
             }
         }
