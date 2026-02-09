@@ -26,7 +26,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
-     * Sağlanan örneğe göre POST metodu ve x-api-key kullanır.
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         if (!GO_KEY) return [];
@@ -42,13 +41,16 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a" // Geniş sonuç için yaygın karakter
+                    value: "a" // Geniş sonuç için "a" karakteri kullanıldı
                 }),
                 cache: 'no-store'
             });
             if (!res.ok) return [];
             const data = await res.json();
-            const results = data.results || [];
+            
+            // results veya brands altında olabilir, ya da direkt dizi olabilir
+            const results = data.results || data.brands || (Array.isArray(data) ? data : []);
+            
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
                 name: item.name || "Marka",
@@ -68,7 +70,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 2. REKLAMACTION (GET Bearer)
-     * Sağlanan örneğe göre Bearer token ve network=reklamaction kullanır.
      */
     const fetchReklam = async (): Promise<Brand[]> => {
         if (!RA_KEY) return [];
@@ -82,7 +83,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             });
             if (!res.ok) return [];
             const data = await res.json();
-            // ReklamAction bazen direkt dizi döner
             const results = Array.isArray(data) ? data : (data.results || data.offers || []);
             return results.map((item: any) => ({
                 id: `ra-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -138,7 +138,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         const responses = await Promise.allSettled([fetchGelir(), fetchReklam(), fetchAffocean()]);
         const allBrands = responses.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 
-        // Mükerrer markaları temizle (en yüksek oranlı olan kalsın)
         const uniqueMap = new Map<string, Brand>();
         allBrands.forEach(b => {
             const key = b.name.toLowerCase().trim();

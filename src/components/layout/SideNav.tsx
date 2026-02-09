@@ -111,9 +111,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">
       <div className="flex grow flex-col overflow-y-auto bg-secondary border-r px-4 pb-4">
         <div className="flex h-16 shrink-0 items-center px-2">
-            <Link href="/timeline">
-              <HangelLogo className="text-2xl" />
-            </Link>
+            {/* Logo kaldırıldı */}
         </div>
         <nav className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col space-y-4">

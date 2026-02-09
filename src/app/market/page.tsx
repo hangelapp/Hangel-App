@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -34,7 +35,6 @@ import { getApiOffers } from '@/app/actions/market';
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
-    // Bazı logolar direkt URL olarak gelmiyor veya proxy engeline takılıyor
     if (hasError || !brand.logoUrl || brand.logoUrl === "" || brand.logoUrl === "null") {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2">
@@ -119,10 +119,8 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
-    // Statik liste + API'den gelenler birleştirilir
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Tekilleştirme
     const uniqueBrandsMap = new Map<string, Brand>();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -174,7 +172,6 @@ export default function MarketPage() {
         }
     });
 
-    // Öne çıkanlar için geniş limit (42+ marka talebi için 100 yapıldı)
     if (activeCategory === 'Öne çıkanlar') {
         return filteredList.slice(0, 100); 
     }
