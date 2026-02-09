@@ -1,8 +1,9 @@
+
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren, LogOut, ChevronRight, Megaphone, Search, Globe
+  Menu, Bell, Siren, ChevronRight, Search, Globe, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -51,7 +52,7 @@ const group2Items: SideNavItem[] = [
 const group3Items: SideNavItem[] = [
     { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
-    { href: '/impact-story', label: 'Etki Hikayem', icon: 'sparkles' },
+    { href: '/impact-story', label: 'Etki Story', icon: 'sparkles' },
     { href: '/library', label: 'Kütüphane', icon: 'library' },
 ];
 
@@ -202,7 +203,7 @@ export default function AppHeader() {
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
-            <div className="hidden lg:block w-4" /> {/* Spacer instead of logo */}
+            <div className="hidden lg:block w-4" /> 
           </div>
 
           <div className="flex items-center gap-1">
