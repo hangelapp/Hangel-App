@@ -35,7 +35,8 @@ import { getApiOffers } from '@/app/actions/market';
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
-    if (hasError || !brand.logoUrl || brand.logoUrl === "") {
+    // Bazı logolar direkt URL olarak gelmiyor veya proxy engeline takılıyor
+    if (hasError || !brand.logoUrl || brand.logoUrl === "" || brand.logoUrl === "null") {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2">
                 <span className="text-primary font-black text-2xl uppercase">{brand.name.charAt(0)}</span>
@@ -87,7 +88,7 @@ const AdCarousel = () => {
 };
 
 export default function MarketPage() {
-  const [activeCategory, setActiveCategory] = useState('Tümü');
+  const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
   const [activeEntityType, setActiveEntityType] = useState('all');
   const { toast } = useToast();
   const [sortKey, setSortKey] = useState('followers');
@@ -119,8 +120,10 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
+    // Statik liste + API'den gelenler birleştirilir
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
+    // Tekilleştirme
     const uniqueBrandsMap = new Map<string, Brand>();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -172,6 +175,7 @@ export default function MarketPage() {
         }
     });
 
+    // Öne çıkanlar için geniş limit (42+ marka talebi için 100 yapıldı)
     if (activeCategory === 'Öne çıkanlar') {
         return filteredList.slice(0, 100); 
     }
@@ -297,7 +301,7 @@ export default function MarketPage() {
                     activeCategory === cat.mainCategory
                         ? "bg-primary/10 text-primary border-l-4 border-primary font-bold shadow-sm"
                         : "text-muted-foreground hover:bg-accent/50",
-                    (cat.mainCategory === 'Öne çıkanlar') && "font-black uppercase tracking-tighter"
+                    (cat.mainCategory === 'Öne çıkanlar') && "font-black uppercase tracking-tighter text-primary"
                     )}
                 >
                     {cat.mainCategory}
@@ -315,7 +319,7 @@ export default function MarketPage() {
                 
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
-                    const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('agency-');
+                    const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-');
                     return (
                     <Fragment key={brand.id}>
                         <Link 
@@ -340,7 +344,7 @@ export default function MarketPage() {
                                 </p>
                             </div>
                         </Link>
-                        {index === 5 && <div className="col-span-full my-4"><AdCarousel /></div>}
+                        {index === 11 && <div className="col-span-full my-4"><AdCarousel /></div>}
                     </Fragment>
                 )}) : !isApiLoading && (
                     <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">

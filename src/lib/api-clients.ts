@@ -1,7 +1,7 @@
 
 import type { Brand } from './types';
 
-const FETCH_TIMEOUT = 10000;
+const FETCH_TIMEOUT = 15000;
 
 async function fetchWithTimeout(url: string, options: RequestInit) {
     const controller = new AbortController();
@@ -26,6 +26,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
+     * Sağlanan örneğe göre POST metodu ve x-api-key kullanır.
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         if (!GO_KEY) return [];
@@ -41,7 +42,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a" // Broad search to get most brands
+                    value: "a" // Geniş sonuç için yaygın karakter
                 }),
                 cache: 'no-store'
             });
@@ -60,23 +61,28 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları iş ortağı."
             }));
         } catch (e) {
-            console.error("GO Fetch Error:", e);
+            console.error("Gelir Ortakları Fetch Error:", e);
             return [];
         }
     };
 
     /**
      * 2. REKLAMACTION (GET Bearer)
+     * Sağlanan örneğe göre Bearer token ve network=reklamaction kullanır.
      */
     const fetchReklam = async (): Promise<Brand[]> => {
         if (!RA_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://api.reklamaction.com/v1/offer?network=reklamaction", {
-                headers: { "Authorization": `Bearer ${RA_KEY}` },
+                headers: { 
+                    "Authorization": `Bearer ${RA_KEY}`,
+                    "accept": "application/json"
+                },
                 cache: 'no-store'
             });
             if (!res.ok) return [];
             const data = await res.json();
+            // ReklamAction bazen direkt dizi döner
             const results = Array.isArray(data) ? data : (data.results || data.offers || []);
             return results.map((item: any) => ({
                 id: `ra-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -90,7 +96,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "ReklamAction iş ortağı."
             }));
         } catch (e) {
-            console.error("RA Fetch Error:", e);
+            console.error("ReklamAction Fetch Error:", e);
             return [];
         }
     };
@@ -102,7 +108,10 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         if (!AO_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://affocean.com/api/v1/offers", {
-                headers: { "Authorization": `Bearer ${AO_KEY}` },
+                headers: { 
+                    "Authorization": `Bearer ${AO_KEY}`,
+                    "accept": "application/json"
+                },
                 cache: 'no-store'
             });
             if (!res.ok) return [];
@@ -120,7 +129,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Affocean iş ortağı."
             }));
         } catch (e) {
-            console.error("AO Fetch Error:", e);
+            console.error("Affocean Fetch Error:", e);
             return [];
         }
     };
@@ -129,6 +138,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         const responses = await Promise.allSettled([fetchGelir(), fetchReklam(), fetchAffocean()]);
         const allBrands = responses.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 
+        // Mükerrer markaları temizle (en yüksek oranlı olan kalsın)
         const uniqueMap = new Map<string, Brand>();
         allBrands.forEach(b => {
             const key = b.name.toLowerCase().trim();
