@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren, Search, Globe, Megaphone
+  Menu, Bell, Siren, Globe, Megaphone, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';

@@ -7,26 +7,24 @@ const DOMAIN_HEADERS = {
   'Origin': 'https://hangel.org',
   'Referer': 'https://hangel.org',
   'Accept': 'application/json',
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 };
 
 /**
- * Marka isimlerini [CPS], [CPL], Mobil, Influencer gibi teknik eklerden temizler.
+ * Marka isimlerini temizler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Bilinmeyen Marka";
   return name
-    .replace(/\[.*?\]/g, '') // [CPS], [CPL] siler
-    .replace(/\(.*?\)/g, '') // (Mobil) vb. siler
+    .replace(/\[.*?\]/g, '')
+    .replace(/\(.*?\)/g, '')
     .replace(/CPS|CPL|CPA|Mobil|Influencer|Offer|Kampanyası|Sale|Indirim|Online/gi, '') 
-    .replace(/[\-\|]/g, '') // Çizgi ve bar işaretlerini siler
+    .replace(/[\-\|]/g, '')
     .replace(/\s+/g, ' ') 
     .trim();
 };
 
-/**
- * Komisyon oranlarını güvenli bir şekilde sayıya dönüştürür.
- */
 const parseRate = (rate: any): number => {
     if (!rate) return 0;
     if (typeof rate === 'number') return rate;
@@ -35,9 +33,6 @@ const parseRate = (rate: any): number => {
     return isNaN(parsed) ? 0 : parsed;
 };
 
-/**
- * Üç ajansın verilerini sunucu tarafında çeker, birleştirir ve loglar.
- */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const agencies = [
     {
@@ -46,7 +41,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       url: 'https://feed.gelirortaklari.com/api/v1/search',
       key: '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3',
       method: 'POST',
-      body: JSON.stringify({ "value": "" }),
+      body: JSON.stringify({ "value": "", "type": "all" }), // 'type' is required
       authHeader: 'x-api-key'
     },
     {
@@ -60,7 +55,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     {
       id: 'ra',
       name: 'ReklamAction',
-      url: 'https://api.reklamaction.com/v1/offer?network=reklamaction',
+      url: 'https://api.reklamaction.com/v1/offers?network=reklamaction', // plural 'offers'
       key: '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
       method: 'GET',
       authHeader: 'Authorization'
@@ -71,8 +66,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     agencies.map(async (agency) => {
       try {
         const headers: any = { ...DOMAIN_HEADERS };
-        
-        // Ajans bazlı yetkilendirme
         if (agency.authHeader === 'x-api-key') {
             headers['x-api-key'] = agency.key.trim();
         } else {
@@ -86,19 +79,26 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           cache: 'no-store'
         });
 
-        if (!response.ok) {
-            console.error(`[Server] ${agency.name} Hatası: ${response.status}`);
+        console.log(`[Server] ${agency.name} Status: ${response.status}`);
+
+        const text = await response.text();
+        let resData;
+        try {
+            resData = JSON.parse(text);
+        } catch (e) {
+            console.error(`[Server] ${agency.name} JSON Parse Hatası:`, text.slice(0, 100));
             return [];
         }
 
-        const resData = await response.json();
-        
-        // Derin Tarama: data, results veya offers dizisini bul
-        const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
+        if (!response.ok) {
+            console.error(`[Server] ${agency.name} Hatası:`, resData);
+            return [];
+        }
 
+        const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
         if (!Array.isArray(rawList)) return [];
 
-        console.log(`[Server] ${agency.name} yakalanan marka: ${rawList.length}`);
+        console.log(`[Server] ${agency.name} yakalanan: ${rawList.length}`);
 
         return rawList.map((item: any) => ({
           id: `${agency.id}-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -119,33 +119,14 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   let combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  // ZORUNLU FALLBACK (DEBUG İÇİN): API tamamen boş dönerse bile sistemin çalıştığını göster
   if (combined.length === 0) {
+      console.log("[Server] Tüm API'ler boş döndü, Fallback verisi basılıyor.");
       combined = [
-          {
-              id: 'fb-1',
-              name: 'Converse',
-              logoUrl: '',
-              donationRate: 7,
-              type: 'brand',
-              category: 'Ayakkabı',
-              agency: 'Geçici API Verisi (Affocean)',
-              link: '#'
-          },
-          {
-              id: 'fb-2',
-              name: 'Teknosa',
-              logoUrl: '',
-              donationRate: 2,
-              type: 'brand',
-              category: 'Elektronik',
-              agency: 'Geçici API Verisi (ReklamAction)',
-              link: '#'
-          }
+          { id: 'fb-1', name: 'Converse', logoUrl: '', donationRate: 7, type: 'brand', category: 'Ayakkabı', agency: 'Geçici API Verisi (Affocean)', link: '#' },
+          { id: 'fb-2', name: 'Teknosa', logoUrl: '', donationRate: 2, type: 'brand', category: 'Elektronik', agency: 'Geçici API Verisi (ReklamAction)', link: '#' }
       ];
   }
 
-  // Tekilleştirme
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
       const key = brand.name.toLowerCase().trim();
