@@ -9,9 +9,10 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { allEntityLists } from '@/lib/data';
+import { allEntityLists, volunteeringOpportunities } from '@/lib/data';
 import type { Brand } from '@/lib/types';
 import { HangelLogo } from '@/components/icons';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const languages = ["Türkçe", "English", "Mandarin Chinese", "Español", "Français"];
 
@@ -87,8 +88,6 @@ const Header = () => {
         </header>
     );
 };
-
-const PlaceHolderImages: any[] = [];
 
 const GridItem = ({ 
     title, 
@@ -325,6 +324,39 @@ export default function LoginPage() {
                         </Button>
                     </div>
                 </section>
+                
+                <section className="bg-white pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
+                    <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel imece</h2>
+                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Yeteneklerini iyiliğe dönüştürün.</p>
+                    </div>
+                
+                    <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
+                        <div className="flex gap-6 px-8 md:justify-start min-w-max">
+                            {volunteeringOpportunities.slice(0, 10).map((opp) => (
+                                <Link href={`/volunteering/${opp.id}`} key={opp.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
+                                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <HeartHandshake className="h-6 w-6" />
+                                    </div>
+                                    <div className="space-y-1 mb-4 flex-1">
+                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f] line-clamp-3">{opp.title}</h4>
+                                        <p className="text-sm text-muted-foreground">{opp.organization}</p>
+                                    </div>
+                                    <div className="mt-auto pt-4 border-t border-black/5 w-full">
+                                        <div className="text-2xl font-black text-primary">{opp.points} Puan</div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center mt-8">
+                        <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
+                            <Link href="/volunteering">Tümünü Gör</Link>
+                        </Button>
+                    </div>
+                </section>
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
                     <GridItem title="hangel STK" subtitle="Dijitalleşen sivil toplum araçları." theme="dark" cta1="Kuruluşunu Kaydet" cta1Href="/ngo-onboarding" imageUrl={PlaceHolderImages.find(img => img.id === 'stk-illustration')?.imageUrl} imageHint="charcoal charity drawing" />
