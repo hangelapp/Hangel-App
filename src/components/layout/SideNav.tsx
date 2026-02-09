@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -45,11 +44,9 @@ const navKeyMap: Record<string, string> = {
   'Liderlik Tablosu': 'leaderboard',
   'Arkadaş Davet Et': 'invite',
   'Etki Story': 'impactStory',
-  'Etki Hikayem': 'impactStory',
   'Kütüphane': 'library',
   'Yönetim Paneli': 'admin',
   'Süper Admin': 'superAdmin',
-  'Admin Paneli': 'superAdmin',
   'Ayarlar': 'settings',
   'Hakkımızda': 'about',
   'Üye İşyeri': 'merchant',
@@ -60,9 +57,7 @@ const navKeyMap: Record<string, string> = {
 
 const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
     const { t } = useTranslation();
-    // @ts-ignore
-    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
-    
+    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('') as keyof typeof Icons] || Icons.HelpCircle;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
     const translationKey = navKeyMap[item.label] || item.label;
 
@@ -99,15 +94,12 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
-  if (isAuthPage) {
-    return null;
-  }
+  if (isAuthPage) return null;
 
   return (
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">
       <div className="flex grow flex-col overflow-y-auto bg-secondary border-r px-4 pb-4 pt-12">
-        <nav className="flex flex-1 flex-col">
-          <div className="flex flex-1 flex-col space-y-4">
+        <nav className="flex flex-1 flex-col space-y-4">
             <div className="h-8" />
             {mainItems.length > 0 && <NavList items={mainItems} />}
             {navItems.length > 0 && <NavList items={navItems} />}
@@ -117,19 +109,15 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
                 {secondaryItems.length > 0 && <NavList items={secondaryItems} />}
                 <ul className="bg-card rounded-lg overflow-hidden border">
                     <li>
-                        <Link
-                            href="/login"
-                            className='group flex items-center p-3 hover:bg-accent/50'
-                        >
+                        <Link href="/login" className='group flex items-center p-3 hover:bg-accent/50'>
                             <div className='w-7 h-7 rounded-md flex items-center justify-center bg-red-500'>
-                                <Icons.LogOut className='h-4 w-4 text-white' aria-hidden="true" />
+                                <Icons.LogOut className='h-4 w-4 text-white' />
                             </div>
                             <span className='ml-4 text-base font-medium text-destructive'>{t('nav.logout')}</span>
                         </Link>
                     </li>
                 </ul>
             </div>
-          </div>
         </nav>
       </div>
     </div>

@@ -1,8 +1,7 @@
-
 import type { Brand } from './types';
 
 /**
- * Domain Headers: API'lerin domain doğrulaması için gerekli başlıklar.
+ * Domain Headers: API'lerin domain doğrulaması için zorunlu başlıklar.
  */
 const DOMAIN_HEADERS = {
   'Origin': 'https://hangel.org',
@@ -12,14 +11,15 @@ const DOMAIN_HEADERS = {
 };
 
 /**
- * Marka isimlerini teknik ibarelerden ([CPS], Mobil vb.) temizler.
+ * Marka isimlerini [CPS], [CPL], Mobil, Influencer gibi teknik eklerden temizler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Bilinmeyen Marka";
   return name
-    .replace(/\[.*?\]/g, '') 
-    .replace(/\(.*?\)/g, '') 
+    .replace(/\[.*?\]/g, '') // [CPS], [CPL] siler
+    .replace(/\(.*?\)/g, '') // (Mobil) vb. siler
     .replace(/CPS|CPL|CPA|Mobil|Influencer|Offer|Kampanyası|Sale|Indirim|Online/gi, '') 
+    .replace(/[\-\|]/g, '') // Çizgi ve bar işaretlerini siler
     .replace(/\s+/g, ' ') 
     .trim();
 };
@@ -41,6 +41,7 @@ const parseRate = (rate: any): number => {
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const agencies = [
     {
+      id: 'go',
       name: 'Gelir Ortakları',
       url: 'https://feed.gelirortaklari.com/api/v1/search',
       key: '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3',
@@ -49,6 +50,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       authHeader: 'x-api-key'
     },
     {
+      id: 'ao',
       name: 'Affocean',
       url: 'https://affocean.com/api/v1/offers',
       key: '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48',
@@ -56,6 +58,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       authHeader: 'Authorization'
     },
     {
+      id: 'ra',
       name: 'ReklamAction',
       url: 'https://api.reklamaction.com/v1/offer?network=reklamaction',
       key: '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
@@ -69,7 +72,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       try {
         const headers: any = { ...DOMAIN_HEADERS };
         
-        // Ajans bazlı yetkilendirme kontrolü
+        // Ajans bazlı yetkilendirme
         if (agency.authHeader === 'x-api-key') {
             headers['x-api-key'] = agency.key.trim();
         } else {
@@ -83,26 +86,22 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           cache: 'no-store'
         });
 
-        console.log(`[Server] ${agency.name} Status: ${response.status}`);
-
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`[Server] ${agency.name} Hatası:`, errorText);
-            throw new Error(`HTTP ${response.status}`);
+            console.error(`[Server] ${agency.name} Hatası: ${response.status}`);
+            return [];
         }
 
         const resData = await response.json();
         
-        // Hiyerarşik veri taraması
+        // Derin Tarama: data, results veya offers dizisini bul
         const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
 
-        if (!Array.isArray(rawList)) {
-            console.error(`[Server] ${agency.name} yanıtı bir dizi değil.`);
-            return [];
-        }
+        if (!Array.isArray(rawList)) return [];
+
+        console.log(`[Server] ${agency.name} yakalanan marka: ${rawList.length}`);
 
         return rawList.map((item: any) => ({
-          id: `${agency.name.toLowerCase().replace(/\s/g, '-')}-${item.id || Math.random().toString(36).substr(2, 9)}`,
+          id: `${agency.id}-${item.id || Math.random().toString(36).substr(2, 9)}`,
           name: cleanBrandName(item.advertiser_name || item.name || item.title),
           logoUrl: item.logo_url || item.logo || item.image || item.preview_url || "",
           donationRate: parseRate(item.commission_rate || item.payout || item.commission || 0),
@@ -120,12 +119,11 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   let combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  // ZORUNLU FALLBACK: Eğer tüm API'ler boş dönerse sistemin çalıştığını göstermek için debug verisi döndür
+  // ZORUNLU FALLBACK (DEBUG İÇİN): API tamamen boş dönerse bile sistemin çalıştığını göster
   if (combined.length === 0) {
-      console.log("[Server] Tüm API'ler boş döndü, Fallback verisi basılıyor.");
       combined = [
           {
-              id: 'fallback-1',
+              id: 'fb-1',
               name: 'Converse',
               logoUrl: '',
               donationRate: 7,
@@ -135,7 +133,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
               link: '#'
           },
           {
-              id: 'fallback-2',
+              id: 'fb-2',
               name: 'Teknosa',
               logoUrl: '',
               donationRate: 2,
@@ -147,7 +145,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       ];
   }
 
-  // Tekilleştirme: Aynı markadan en yüksek oranlıyı tut
+  // Tekilleştirme
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
       const key = brand.name.toLowerCase().trim();

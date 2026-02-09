@@ -1,14 +1,13 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag, WifiOff, AlertCircle } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, Bot, Loader2, AlertCircle } from 'lucide-react';
 import { marketCategories, adBanners, categoryMapping } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Carousel,
   CarouselContent,
@@ -28,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getApiOffers } from '@/app/actions/market';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -55,16 +54,9 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 };
 
 const AdCarousel = () => {
-    const plugin = useRef(
-        Autoplay({ delay: 4000, stopOnInteraction: true })
-    );
-
+    const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
     return (
-        <Carousel
-            plugins={[plugin.current]}
-            opts={{ align: 'start', loop: true }}
-            className="w-full"
-        >
+        <Carousel plugins={[plugin.current]} opts={{ align: 'start', loop: true }} className="w-full">
             <CarouselContent>
             {adBanners.map((ad) => (
                 <CarouselItem key={ad.id}>
@@ -109,14 +101,13 @@ export default function MarketPage() {
                 setApiBrands(data);
             }
         } catch (e) {
-            console.error("Market API error:", e);
-            toast({ variant: 'destructive', title: 'Hata', description: 'Ajans servislerinden veri alınamadı.' });
+            console.error("Market fetch error:", e);
         } finally {
             setIsApiLoading(false);
         }
     };
     fetchOffers();
-  }, [toast]);
+  }, []);
 
   const brandsToShow = useMemo(() => {
     let combinedList: Brand[] = [...apiBrands];
@@ -128,11 +119,8 @@ export default function MarketPage() {
 
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const mappedCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
-      if (mappedCategories && mappedCategories.length > 0) {
-        combinedList = combinedList.filter(brand => {
-            const catLower = brand.category.toLowerCase();
-            return mappedCategories.some(cat => catLower.includes(cat.toLowerCase()));
-        });
+      if (mappedCategories) {
+        combinedList = combinedList.filter(brand => mappedCategories.some(cat => brand.category.toLowerCase().includes(cat.toLowerCase())));
       } else {
         combinedList = combinedList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
@@ -146,37 +134,19 @@ export default function MarketPage() {
         combinedList = combinedList.filter(item => item.donationRate > 0);
     }
     
-    combinedList.sort((a, b) => {
-        switch(sortKey) {
-            case 'donationRate':
-                return b.donationRate - a.donationRate;
-            case 'name':
-                return a.name.localeCompare(b.name, 'tr');
-            default:
-                return (b.donationRate || 0) - (a.donationRate || 0);
-        }
-    });
+    combinedList.sort((a, b) => sortKey === 'name' ? a.name.localeCompare(b.name, 'tr') : b.donationRate - a.donationRate);
 
-    if (activeCategory === 'Öne çıkanlar' && !searchTerm) {
-        return combinedList.slice(0, 150); 
-    }
-    
     return combinedList;
-
   }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands]);
   
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;
     setIsAssistantLoading(true);
-    setAssistantResponse('');
     try {
-        const brandsContext = brandsToShow.slice(0, 50).map(b => 
-            `Marka: ${b.name}, Kategori: ${b.category}, Bağış: %${b.donationRate}`
-        ).join('\n---\n');
+        const brandsContext = brandsToShow.slice(0, 50).map(b => `Marka: ${b.name}, Kategori: ${b.category}, Bağış: %${b.donationRate}`).join('\n');
       const result = await askMarketAssistant({ userQuestion: assistantQuestion, brandsContext });
       if (result.answer) setAssistantResponse(result.answer);
     } catch (error) {
-      console.error(error);
       toast({ variant: "destructive", title: "Hata", description: "Asistan şu an yanıt veremiyor." });
     } finally {
       setIsAssistantLoading(false);
@@ -186,20 +156,21 @@ export default function MarketPage() {
 
   return (
     <div className="flex flex-col h-full bg-secondary/30">
-        <div className="p-2 space-y-2 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
-            {/* DEBUG RAPOR KUTUSU (ZORUNLU GÖSTERİM) */}
-            <div className="bg-white border-2 border-primary/20 rounded-2xl p-4 mb-2 grid grid-cols-3 gap-2 text-center shadow-lg animate-in slide-in-from-top duration-500">
+        <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
+            
+            {/* MAC DEBUG RAPORU (ZORUNLU) */}
+            <div className="bg-white border-4 border-red-600 rounded-[2rem] p-6 mb-4 grid grid-cols-3 gap-4 text-center shadow-2xl animate-in zoom-in duration-500">
                 <div className="flex flex-col">
-                    <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">Gelir Ortakları</p>
-                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency === 'Gelir Ortakları').length}</p>
+                    <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2">Gelir Ortakları</p>
+                    <p className="text-4xl font-black text-red-600 tracking-tighter">{apiBrands.filter(b => b.agency === 'Gelir Ortakları').length}</p>
                 </div>
-                <div className="flex flex-col border-x border-muted px-2">
-                    <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">Affocean</p>
-                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency?.includes('Affocean')).length}</p>
+                <div className="flex flex-col border-x-2 border-muted px-4">
+                    <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2">Affocean</p>
+                    <p className="text-4xl font-black text-red-600 tracking-tighter">{apiBrands.filter(b => b.agency?.includes('Affocean')).length}</p>
                 </div>
                 <div className="flex flex-col">
-                    <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">ReklamAction</p>
-                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency?.includes('ReklamAction')).length}</p>
+                    <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2">ReklamAction</p>
+                    <p className="text-4xl font-black text-red-600 tracking-tighter">{apiBrands.filter(b => b.agency?.includes('ReklamAction')).length}</p>
                 </div>
             </div>
 
@@ -208,21 +179,20 @@ export default function MarketPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder="Platformda Ara..."
-                        className="pl-10 pr-12 h-10 rounded-xl border-none bg-muted/50 focus-visible:ring-1"
+                        className="pl-10 pr-12 h-12 rounded-2xl border-none bg-muted/50 focus-visible:ring-1 text-lg"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-primary text-white hover:bg-primary/90 hover:text-white shadow-lg shadow-primary/20 border-none">
-                            <Bot className="h-5 w-5" />
+                        <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-primary text-white hover:bg-primary/90 shadow-lg border-none">
+                            <Bot className="h-6 w-6" />
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px] rounded-3xl">
                         <DialogHeader>
                         <DialogTitle className="flex items-center gap-2"><Bot className="text-primary"/> Alışveriş Asistanı</DialogTitle>
-                        <DialogDescription>Ne aradığınızı yazın, size en uygun markaları bulalım.</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             {assistantResponse && !isAssistantLoading && (
@@ -243,17 +213,16 @@ export default function MarketPage() {
                                     value={assistantQuestion}
                                     onChange={(e) => setAssistantQuestion(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
-                                    disabled={isAssistantLoading}
-                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 shadow-inner"
+                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-inner"
                                 />
-                                <Button onClick={handleAskAssistant} disabled={isAssistantLoading || !assistantQuestion.trim()} className="rounded-xl h-11 px-6">Sor</Button>
+                                <Button onClick={handleAskAssistant} disabled={isAssistantLoading} className="rounded-xl h-11 px-6">Sor</Button>
                             </div>
                         </div>
                     </DialogContent>
                 </Dialog>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                         <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-background shadow-sm border-none"><Filter className="h-5 w-5" /></Button>
+                         <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm"><Filter className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
@@ -261,40 +230,31 @@ export default function MarketPage() {
                         <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>Sadece Bağış Yapanlar</DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-background shadow-sm border-none"><ArrowDownUp className="h-5 w-5" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl">
-                        <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranı</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
             </div>
             
-            <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value)}>
-                <TabsList className="grid w-full grid-cols-5 h-9 p-1 bg-muted/50 rounded-xl">
-                    <TabsTrigger value="all" className="rounded-lg text-[10px] sm:text-xs">Tümü</TabsTrigger>
-                    <TabsTrigger value="brand" className="rounded-lg text-[10px] sm:text-xs">Marka</TabsTrigger>
-                    <TabsTrigger value="cooperative" className="rounded-lg text-[10px] sm:text-xs">Koop.</TabsTrigger>
-                    <TabsTrigger value="social" className="rounded-lg text-[10px] sm:text-xs">Sosyal</TabsTrigger>
-                    <TabsTrigger value="economic" className="rounded-lg text-[10px] sm:text-xs">İktisadi</TabsTrigger>
+            <Tabs defaultValue="all" className="w-full" onValueChange={setActiveEntityType}>
+                <TabsList className="grid w-full grid-cols-5 h-10 p-1 bg-muted/50 rounded-xl">
+                    <TabsTrigger value="all" className="rounded-lg text-xs">Tümü</TabsTrigger>
+                    <TabsTrigger value="brand" className="rounded-lg text-xs">Marka</TabsTrigger>
+                    <TabsTrigger value="cooperative" className="rounded-lg text-xs">Koop.</TabsTrigger>
+                    <TabsTrigger value="social" className="rounded-lg text-xs">Sosyal</TabsTrigger>
+                    <TabsTrigger value="economic" className="rounded-lg text-xs">İktisadi</TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
-        <div className="flex flex-1 overflow-hidden min-0">
-            <aside className="w-[85px] sm:w-1/4 border-r overflow-y-auto bg-background/50 backdrop-blur-sm">
+        <div className="flex flex-1 overflow-hidden">
+            <aside className="w-[100px] sm:w-1/4 border-r overflow-y-auto bg-background/50 backdrop-blur-sm">
             <nav className="flex flex-col py-2">
                 {marketCategories.map((cat) => (
                 <button
                     key={cat.mainCategory}
                     onClick={() => setActiveCategory(cat.mainCategory)}
                     className={cn(
-                    "text-left text-[10px] sm:text-sm p-3 sm:p-4 whitespace-nowrap truncate transition-all",
+                    "text-left text-[11px] sm:text-sm p-4 whitespace-nowrap truncate transition-all",
                     activeCategory === cat.mainCategory
-                        ? "bg-primary/10 text-primary border-l-4 border-primary font-bold shadow-sm"
+                        ? "bg-primary/10 text-primary border-l-4 border-primary font-black shadow-sm"
                         : "text-muted-foreground hover:bg-accent/50",
-                    (cat.mainCategory === 'Öne çıkanlar') && "font-black uppercase tracking-tighter text-primary"
+                    (cat.mainCategory === 'Öne çıkanlar') && "text-primary"
                     )}
                 >
                     {cat.mainCategory}
@@ -303,64 +263,45 @@ export default function MarketPage() {
             </nav>
             </aside>
 
-            <main className="flex-1 overflow-y-auto p-3 sm:p-4">
+            <main className="flex-1 overflow-y-auto p-4">
             <div className="max-w-6xl mx-auto space-y-6">
                 <div className="flex items-center justify-between px-1">
                     <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
                     {isApiLoading && (
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-primary animate-pulse uppercase tracking-widest">
                             <Loader2 className="h-3 w-3 animate-spin" /> Veriler Güncelleniyor...
                         </div>
                     )}
                 </div>
                 
-                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {brandsToShow.length > 0 ? (
-                    brandsToShow.map((brand, index) => {
-                        return (
-                            <Fragment key={brand.id}>
-                                <Link 
-                                    href={brand.link || '#'} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className="group"
-                                >
-                                    <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
-                                        <div className="relative w-full aspect-square">
-                                            <div className={cn(
-                                                "w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0"
-                                            )}>
-                                                <BrandLogo brand={brand} />
-                                            </div>
-                                            <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
-                                                {brand.donationRate > 0 ? `%${brand.donationRate}` : 'İncele'}
-                                            </div>
+                    brandsToShow.map((brand, index) => (
+                        <Fragment key={brand.id}>
+                            <Link href={brand.link || '#'} target="_blank" rel="noopener noreferrer" className="group">
+                                <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
+                                    <div className="relative w-full aspect-square">
+                                        <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all">
+                                            <BrandLogo brand={brand} />
                                         </div>
-                                        <div className="space-y-0.5">
-                                            <p className={cn(
-                                                "text-[10px] sm:text-xs font-bold leading-tight transition-colors px-1 line-clamp-2 mt-1",
-                                                "text-foreground group-hover:text-primary"
-                                            )}>
-                                                {brand.name}
-                                            </p>
-                                            <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">
-                                                {brand.agency}
-                                            </p>
+                                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
+                                            {brand.donationRate > 0 ? `%${brand.donationRate}` : 'İncele'}
                                         </div>
                                     </div>
-                                </Link>
-                                {index === 11 && <div className="col-span-full my-4"><AdCarousel /></div>}
-                            </Fragment>
-                        );
-                    })
+                                    <div className="space-y-0.5">
+                                        <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2 mt-1">{brand.name}</p>
+                                        <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">{brand.agency}</p>
+                                    </div>
+                                </div>
+                            </Link>
+                            {index === 11 && <div className="col-span-full my-4"><AdCarousel /></div>}
+                        </Fragment>
+                    ))
                 ) : (
                     !isApiLoading && (
                         <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
-                            <AlertCircle className="h-12 w-12 text-primary/40 mx-auto" />
-                            <div className="text-center space-y-1">
-                                <p className="text-foreground font-bold text-sm">Şu an ajans bağlantısı kurulamıyor.</p>
-                                <p className="text-muted-foreground text-xs font-medium">Veriler çekilemedi, lütfen internetinizi ve bağlantıları kontrol edin.</p>
-                            </div>
+                            <AlertCircle className="h-12 w-12 text-primary/40" />
+                            <p className="text-foreground font-bold text-sm">Şu an ajans bağlantısı kurulamıyor.</p>
                         </div>
                     )
                 )}

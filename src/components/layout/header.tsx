@@ -1,9 +1,8 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren, ChevronRight, Search, Globe, Megaphone
+  Menu, Bell, Siren, Search, Globe, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -110,7 +109,7 @@ const MobileNavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean })
                             {t(`nav.${translationKey}`)}
                         </span>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                    <Icons.ChevronRight className="h-5 w-5 text-muted-foreground/50" />
                 </Link>
              </SheetClose>
         </li>
@@ -172,7 +171,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
 }
 
 export default function AppHeader() {
-  const { language, changeLanguage, t } = useTranslation();
+  const { language, changeLanguage } = useTranslation();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
@@ -182,18 +181,9 @@ export default function AppHeader() {
     setIsMounted(true);
   }, []);
 
-  if (isAuthPage) {
-    return null;
-  }
+  if (isAuthPage) return null;
   
-  const hiddenOnPages = [
-    '/ngo-admin',
-    '/admin',
-  ];
-
-  if (hiddenOnPages.some(p => pathname.startsWith(p))) {
-    return null;
-  }
+  if (['/ngo-admin', '/admin'].some(p => pathname.startsWith(p))) return null;
 
   return (
     <>
@@ -210,7 +200,7 @@ export default function AppHeader() {
             <div className="hidden md:flex items-center mr-4">
                 <Select value={language} onValueChange={changeLanguage}>
                     <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto p-0 text-[12px] font-normal text-[#1d1d1f] hover:text-primary transition-colors focus:ring-0">
-                        <Globe className="h-3.5 w-3.5" />
+                        <Icons.Globe className="h-3.5 w-3.5" />
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent align="end">
@@ -220,25 +210,11 @@ export default function AppHeader() {
                     </SelectContent>
                 </Select>
             </div>
-            <Button asChild variant="ghost" size="icon">
-              <Link href="/stories">
-                <Megaphone className="h-5 w-5 text-foreground" />
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="icon">
-              <Link href="/emergency">
-                <Siren className="h-5 w-5 text-destructive" />
-              </Link>
-            </Button>
-             <Link href="/notifications" passHref>
-                <Button variant="ghost" size="icon">
-                    <Bell className="h-5 w-5" />
-                </Button>
-            </Link>
+            <Button asChild variant="ghost" size="icon"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
+            <Button asChild variant="ghost" size="icon"><Link href="/emergency"><Siren className="h-5 w-5 text-destructive" /></Link></Button>
+            <Button asChild variant="ghost" size="icon"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
             <Link href="/profile" passHref className="lg:hidden ml-1">
-              <Button variant="ghost" size="icon">
-                  <UserAvatar />
-              </Button>
+              <Button variant="ghost" size="icon"><UserAvatar /></Button>
             </Link>
           </div>
         </div>
