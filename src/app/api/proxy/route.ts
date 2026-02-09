@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 
 /**
  * Gelişmiş Sunucu Proxy: CORS engellerini aşar ve ajans özel başlıklarını yönetir.
- * ReklamAction ve Gelir Ortakları için Bearer token desteği eklenmiştir.
  */
 export async function POST(request: Request) {
   try {
@@ -17,11 +16,6 @@ export async function POST(request: Request) {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
     };
-
-    // Python örneklerindeki Bearer Token yapısı aktarımı
-    if (headers?.Authorization) {
-        finalHeaders['Authorization'] = headers.Authorization;
-    }
 
     const response = await fetch(finalUrl, {
       method: method || 'GET',

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Loader2, Bot, Sparkles, MessageSquare, Send, X } from 'lucide-react';
+import { Search, Filter, Loader2, Bot, Sparkles, Send } from 'lucide-react';
 import { marketCategories, allEntityLists } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -18,7 +18,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -45,7 +44,7 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 };
 
 export default function MarketPage() {
-  const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
+  const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -168,11 +167,10 @@ export default function MarketPage() {
         </main>
       </div>
 
-      {/* AI Shopping Assistant FAB */}
       <div className="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 z-50">
         <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
           <DialogTrigger asChild>
-            <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl animate-in zoom-in duration-500 bg-primary hover:bg-primary/90">
+            <Button size="icon" className="h-14 w-14 rounded-2xl shadow-2xl bg-primary hover:bg-primary/90">
               <Bot className="h-7 w-7 text-white" />
             </Button>
           </DialogTrigger>

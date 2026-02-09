@@ -32,7 +32,7 @@ export default function AppHeader() {
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
-            {/* Talebiniz üzerine logo alanı boşaltıldı */}
+            <div className="w-8 h-8" /> {/* Logo alanı talebiniz üzerine boşaltılmıştır */}
           </div>
 
           <div className="flex items-center gap-1">

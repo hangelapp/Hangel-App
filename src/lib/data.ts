@@ -1,9 +1,6 @@
 'use client';
 
-import { 
-    Leaf, Heart, HeartHandshake, ShoppingBag, Store, Globe, Users, 
-    Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign
-} from 'lucide-react';
+import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign } from 'lucide-react';
 import type { Post, Brand, Event, Volunteering, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory } from './types';
 
 export const user: User = {
@@ -84,13 +81,6 @@ export const user: User = {
     },
     progress: { 'Çevre': 80, 'Hayvan Hakları': 100, 'Eğitim': 50 }
 };
-
-export const timelinePosts: Post[] = [
-    { id: '1', author: { name: 'TEMA Vakfı', avatarUrl: 'https://logo.clearbit.com/tema.org.tr' }, content: 'Bugün Balıkesir fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 Gelecek nesillere daha yeşil bir dünya bırakmak için var gücümüzle çalışıyoruz. #Doğaİçin #TEMA', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
-    { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #Ahbap #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' },
-    { id: '3', author: { name: 'Patagonia', avatarUrl: 'https://logo.clearbit.com/patagonia.com' }, content: 'Her alışverişin %10\'u okyanuslarimizi temizlemek ve deniz ekosistemini korumak için ayrılıyor. 🌊 Bilinçli tüketin, geleceği koruyun. #SustainableFashion #OceanGuardians', timestamp: '1 gün önce', likes: 850, comments: 12, imageUrl: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?q=80&w=1920&auto=format&fit=crop', imageHint: 'sea turtle', sponsored: true },
-    { id: '4', author: { name: 'LÖSEV', avatarUrl: 'https://logo.clearbit.com/losev.org.tr' }, content: 'Kanserle mücadele eden minik kahramanlarımızın eğitim hayatlarına destek olmak için yeni bir burs fonu açtık. Her tuğla bir umut! 💖 #LÖSEV #UmudunRengi', timestamp: '2 gün önce', likes: 2100, comments: 88, imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2070&auto=format&fit=crop', imageHint: 'happy school children' }
-];
 
 export const allEntityLists: Brand[] = [
     // --- AYAKKABI ---
@@ -179,7 +169,7 @@ export const allEntityLists: Brand[] = [
     { id: 'ev-4', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand' },
     { id: 'ev-5', name: 'Arçelik', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/arcelik.com.tr', type: 'brand' },
     { id: 'ev-6', name: 'Mudo', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/mudo.com.tr', type: 'brand' },
-    { id: 'ev-7', name: 'Beko', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/beko.com.tr', type: 'brand' },
+    { id: 'ev-7', name: 'Beko', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/arcelik.com.tr', type: 'brand' },
     { id: 'ev-8', name: 'Fakir', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/fakir.com.tr', type: 'brand' },
     { id: 'ev-9', name: 'Taç', category: 'Ev & Yaşam', donationRate: 6, logoUrl: 'https://logo.clearbit.com/tac.com.tr', type: 'brand' },
     { id: 'ev-10', name: 'Kütahya Porselen', category: 'Ev & Yaşam', donationRate: 7, logoUrl: 'https://logo.clearbit.com/kutahyaporselen.com.tr', type: 'brand' },
@@ -216,7 +206,6 @@ export const allEntityLists: Brand[] = [
 ];
 
 export const marketCategories: MarketCategory[] = [
-    { mainCategory: 'Öne çıkanlar', subCategories: [] },
     { mainCategory: 'Tümü', subCategories: [] },
     { mainCategory: 'Giyim', subCategories: [] },
     { mainCategory: 'Ayakkabı', subCategories: [] },
@@ -231,23 +220,13 @@ export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Hobi & Hizmet', subCategories: [] },
 ];
 
-export const categoryMapping = {
-    'Giyim': ['Giyim', 'Moda'],
-    'Ayakkabı': ['Ayakkabı', 'Shoe'],
-    'Elektronik': ['Elektronik', 'Technology'],
-    'Ev & Yaşam': ['Ev', 'Yaşam', 'Home'],
-    'Süpermarket': ['Süpermarket', 'Market'],
-    'Kozmetik & Bakım': ['Kozmetik', 'Bakım', 'Bakımı'],
-    'Tatil & Seyahat': ['Tatil', 'Seyahat', 'Bilet'],
-    'Anne & Bebek': ['Anne', 'Bebek', 'Çocuk'],
-    'Gıda & İçecek': ['Gıda', 'İçecek', 'Kahve'],
-    'Aksesuar & Takı': ['Aksesuar', 'Takı', 'Saat', 'Pırlanta'],
-    'Hobi & Hizmet': ['Hobi', 'Hizmet', 'Kitap', 'Pet', 'Hizmetleri']
-};
+export const timelinePosts: Post[] = [
+    { id: '1', author: { name: 'TEMA Vakıfı', avatarUrl: 'https://logo.clearbit.com/tema.org.tr' }, content: 'Bugün Balıkesir fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 Gelecek nesillere daha yeşil bir dünya bırakmak için var gücümüzle çalışıyoruz. #Doğaİçin #TEMA', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
+    { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #Ahbap #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' }
+];
 
 export const adBanners: AdBanner[] = [
-    { id: '1', title: 'Okul Alışverişiyle Destek Ol!', description: 'Kırtasiye ihtiyaçlarınızla TEGV\'e bağış yapın.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop', link: '/market' },
-    { id: '2', title: 'Tatile Çıkarken İyilik Yapın', description: 'Rezervasyonlarınızla TEMA\'yı destekleyin.', imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop', link: '/market' }
+    { id: '1', title: 'Okul Alışverişiyle Destek Ol!', description: 'Kırtasiye ihtiyaçlarınızla TEGV\'e bağış yapın.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop', link: '/market' }
 ];
 
 export const ngos: NGO[] = [
@@ -280,7 +259,7 @@ export const ngos: NGO[] = [
         coverPhotoUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop',
         stats: { followers: 850000, donors: 250000, volunteers: 150000, volunteerHours: 500000, projects: 500, totalDonation: 12500000, donationCount: 300000, avgDonation: 41.67, highestSingleDonation: 1000, peopleReached: 2000000 },
         transparencyScore: 95,
-        about: "Ahbap, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir. İhtiyaç sahiplerine doğrudan ulaşarak hayatlerine dokunuyoruz.",
+        about: "Ahbap, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir.",
         joinDate: "2023-02-20",
         supportedSDGs: ['Yoksulluğa Son', 'Açlığa Son', 'Nitelikli Eğitim'],
         beneficiaryGroups: ['İhtiyaç Sahipleri', 'Afetzedeler', 'Öğrenciler'],
@@ -288,81 +267,23 @@ export const ngos: NGO[] = [
         contact: { email: 'info@ahbap.org', phone: '0216 550 50 50', website: 'https://ahbap.org', social: { twitter: 'ahbap', instagram: 'ahbap', facebook: 'ahbap', linkedin: 'ahbap' } },
         posts: [],
         opportunities: []
-    },
-    {
-        id: '3',
-        name: 'LÖSEV',
-        foundationYear: 1998,
-        category: 'Sağlık',
-        type: 'Vakıf',
-        avatarUrl: 'https://logo.clearbit.com/losev.org.tr',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2070&auto=format&fit=crop',
-        stats: { followers: 450000, donors: 180000, volunteers: 60000, volunteerHours: 120000, projects: 80, totalDonation: 8500000, donationCount: 150000, avgDonation: 56.67, highestSingleDonation: 2500, peopleReached: 100000 },
-        transparencyScore: 90,
-        about: "Lösemili çocukları yaşatıyoruz. Onların tedavi, eğitim ve sosyal ihtiyaçlarını karşılayarak hayata tutunmalarını sağlıyoruz.",
-        joinDate: "2023-03-15",
-        supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim'],
-        beneficiaryGroups: ['Çocuklar', 'Hastalar', 'Aileler'],
-        memberOf: ['Açık Açık'],
-        contact: { email: 'losev@losev.org.tr', phone: '0312 447 06 60', website: 'https://losev.org.tr', social: { twitter: 'losev1998', instagram: 'losev1998', facebook: 'losev', linkedin: 'losev' } },
-        posts: [],
-        opportunities: []
     }
-];
-
-export const events: Event[] = [
-  {
-    id: '1',
-    name: 'Girişimcilik Zirvesi \'24',
-    organizer: 'İTÜ Girişimcilik Kulübü',
-    type: 'Zirve',
-    date: '25 Ekim 2024',
-    time: '10:00 - 18:00',
-    location: 'İTÜ Ayazağa Yerleşkesi',
-    capacity: { current: 150, max: 200 },
-    tags: ['Girişimcilik', 'Zirve', 'Network'],
-    imageUrl: 'https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop',
-    imageHint: 'conference auditorium',
-    description: 'Türkiye\'nin önde gelen girişimcilerini bir araya getiren en büyük öğrenci zirvesi.',
-    providesCertificate: true
-  }
-];
-
-export const studentClubs: StudentClub[] = [
-    { id: '1', name: 'İTÜ Girişimcilik Kulübü', university: 'İTÜ', type: 'university', avatarUrl: 'https://logo.clearbit.com/itu.edu.tr', coverPhotoUrl: '', members: 1500, points: 12500, description: 'Girişimcilik ekosistemini kampüse taşıyoruz.', vision: 'Lider girişimciler yetiştirmek.', joinDate: '2023-05-20', contact: { email: 'gk@itu.edu.tr', phone: '', website: '' } },
-    { id: '2', name: 'Boğaziçi Müzik Kulübü', university: 'Boğaziçi Üni.', type: 'university', avatarUrl: 'https://logo.clearbit.com/boun.edu.tr', coverPhotoUrl: '', members: 800, points: 8500, description: 'Sanatla toplumu birleştiriyoruz.', vision: 'Evrensel müzik kültürü.', joinDate: '2023-06-10', contact: { email: 'bumk@boun.edu.tr', phone: '', website: '' } }
-];
-
-export const schoolRepresentatives: SchoolRepresentative[] = [
-    { id: '1', name: 'Can Demir', school: 'İTÜ', type: 'university', role: 'Kampüs Elçisi', avatarUrl: 'https://i.pravatar.cc/150?u=can', linkedinUrl: '#' }
 ];
 
 export const volunteeringOpportunities: Volunteering[] = [
     { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Ahbap Derneği', ngoId: '2', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 50, applications: 120 }, dates: { applicationStart: '2024-07-01', applicationEnd: '2024-07-25', eventStart: '2024-08-01', eventEnd: '2024-08-08' }, hours: { start: '09:00', end: '18:00', total: 56 }, socialArea: 'Afet', points: 1500, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Afet Kahramanı'], hasPreTraining: true, description: 'Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz.', amenities: { transport: true, food: true, accommodation: true } }
 ];
 
-export const applications: Application[] = [
-    { id: '1', title: 'Afet Bölgesi Yardım Dağıtımı', type: 'Gönüllülük', org: 'Ahbap', date: '2024-07-21', location: 'Hatay', status: 'Onaylandı', entityId: '1' }
-];
-
-export const donationTransactions: DonationTransaction[] = [
-    { id: '1', type: 'expense', brand: 'Patagonia', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA'], date: '2024-07-21', time: '14:32' }
-];
-
-export const badges: Badge[] = [
-    { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 }
-];
-
-export const certificates: Certificate[] = [
-    { id: '1', title: 'Afet Gönüllülüğü Başarı Belgesi', organization: 'Ahbap', date: '15.07.2024', linkedinUrl: '#' }
-];
-
-export const helpTopics: HelpTopic[] = [
-    { icon: 'Info', title: 'Genel Bilgiler', slug: 'genel', description: 'Platformun işleyişi hakkında temel bilgiler.', subtopics: [{ title: 'hangel Nedir?', link: '#', content: 'Hangel, alışverişi iyiliğe dönüştüren bir sosyal girişimdir.' }] }
-];
-
+export const events: Event[] = [];
+export const studentClubs: StudentClub[] = [];
+export const schoolRepresentatives: SchoolRepresentative[] = [];
+export const applications: Application[] = [];
+export const donationTransactions: DonationTransaction[] = [];
+export const badges: Badge[] = [];
+export const certificates: Certificate[] = [];
+export const helpTopics: HelpTopic[] = [];
 export const ngoHelpTopics = helpTopics;
-export const ngoFaqArticles = [{ title: 'Bağışlar ne zaman aktarılır?', link: '#' }];
+export const ngoFaqArticles = [];
 export const pastVolunteering = [];
 export const managedItems: ManagedItem[] = [
     { name: 'Ahbap Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/ahbap.org' }

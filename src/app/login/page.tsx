@@ -1,52 +1,19 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { HangelLogo } from '@/components/icons';
 import Link from 'next/link';
-import { 
-    Menu, 
-    Search,
-    ChevronRight,
-    Globe,
-    ShoppingBag,
-    HeartHandshake,
-    Check,
-    Siren,
-    Star,
-    ChevronDown,
-} from 'lucide-react';
+import { Search, ChevronRight, Globe, ShoppingBag, HeartHandshake, Check, Siren, ChevronDown, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-    Accordion,
-    AccordionItem,
-    AccordionTrigger,
-    AccordionContent,
-} from "@/components/ui/accordion";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Brand } from '@/lib/types';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 
-const languages = [
-    "Türkçe", "English", "Mandarin Chinese", "Hindi", "Español", "Français", 
-    "Modern Standard Arabic", "Bengali", "Portuguese", "Russian", "Urdu", 
-    "Indonesian", "Deutsch", "Japanese", "Nigerian Pidgin", "Marathi", 
-    "Telugu", "Tamil", "Yue Chinese", "Vietnamese", "Farsça"
-];
+const languages = ["Türkçe", "English", "Mandarin Chinese", "Español", "Français"];
 
 const Header = () => {
     const [currentLang, setCurrentLang] = useState("Türkçe");
@@ -130,7 +97,6 @@ const GridItem = ({
     cta2Href = "/about",
     theme = 'light',
     imageUrl,
-    images,
     imageHint,
     className
 }: { 
@@ -142,14 +108,9 @@ const GridItem = ({
     cta2Href?: string,
     theme?: 'light' | 'dark' | 'primary',
     imageUrl?: string,
-    images?: { url: string, hint: string }[],
     imageHint?: string,
     className?: string
 }) => {
-    const plugin = useRef(
-        Autoplay({ delay: 3000, stopOnInteraction: false })
-    );
-
     const isLight = theme === 'light';
     const isPrimary = theme === 'primary';
 
@@ -181,30 +142,10 @@ const GridItem = ({
             </div>
             <div className="relative w-full flex-1 flex items-center justify-center pb-12 px-6">
                 <div className={cn(
-                    "w-full max-w-[420px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-[1.03]",
+                    "w-full max-w-[420px] aspect-square relative rounded-[3rem] overflow-hidden shadow-2xl",
                     theme === 'dark' ? "border border-white/10" : isPrimary ? "border border-white/20" : "border border-black/5"
                 )}>
-                    {images && images.length > 0 ? (
-                        <Carousel 
-                            plugins={[plugin.current]}
-                            className="w-full h-full"
-                            opts={{ loop: true }}
-                        >
-                            <CarouselContent className="h-full ml-0">
-                                {images.map((img, idx) => (
-                                    <CarouselItem key={idx} className="h-full pl-0 relative">
-                                        <Image 
-                                            src={img.url} 
-                                            alt={`${title} ${idx + 1}`} 
-                                            fill 
-                                            className="object-cover" 
-                                            data-ai-hint={img.hint}
-                                        />
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                        </Carousel>
-                    ) : imageUrl && (
+                    {imageUrl && (
                         <Image 
                             src={imageUrl} 
                             alt={title} 
@@ -225,19 +166,15 @@ const GridItem = ({
 const Footer = () => {
     const footerGroups = [
         { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
-        { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/social-impact"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/careers"}] },
-        { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}, {label: "Kamu İşbirlikleri", href: "/corporate"}] },
-        { title: "hangel Derneği", links: [{label: "Dernek Hakkında", href: "/hangelassociation/about"}, {label: "Dernek Etkinlikleri", href: "/hangelassociation/events"}, {label: "Uluslararası Çalıştay", href: "/hangelassociation/workshop"}, {label: "Mevzuat Taslağı", href: "/hangelassociation/legislation"}] },
-        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Destek Merkezi", href: "/support"}, {label: "Geri Bildirim", href: "/feedback"}] },
+        { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/social-impact"}, {label: "Basın Odası", href: "/press"}, {label: "Kariyer", href: "/careers"}] },
+        { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}] },
+        { title: "hangel Derneği", links: [{label: "Dernek Hakkında", href: "/hangelassociation/about"}, {label: "Mevzuat Taslağı", href: "/hangelassociation/legislation"}] },
+        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Destek Merkezi", href: "/support"}] },
     ];
 
     return (
         <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-8 pb-12 px-4 sm:px-6 border-t border-black/5 font-sans">
             <div className="container mx-auto max-w-5xl">
-                <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-6 px-1">
-                    <span className="text-[#1d1d1f]/80">Anasayfa</span>
-                </div>
-
                 <div className="md:hidden">
                     <Accordion type="single" collapsible className="w-full">
                         {footerGroups.map((group) => (
@@ -269,51 +206,11 @@ const Footer = () => {
                 </div>
 
                 <div className="pt-6 space-y-4">
-                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
-                        <Link href="#" className="hover:underline">App Store</Link>
-                        <Link href="#" className="hover:underline">Google Play</Link>
-                        <Link href="#" className="hover:underline">Huawei Store</Link>
-                        <Link href="#" className="hover:underline">Chrome Store</Link>
-                        <Link href="#" className="hover:underline">Opera Store</Link>
-                    </div>
-                    
-                    <div className="h-px bg-black/10 w-full" />
-
-                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/70 font-medium tracking-tight">
-                        <Link href="#" className="hover:underline">Instagram</Link>
-                        <Link href="#" className="hover:underline">Facebook</Link>
-                        <Link href="#" className="hover:underline">X (Twitter)</Link>
-                        <Link href="#" className="hover:underline">LinkedIn</Link>
-                        <Link href="#" className="hover:underline">YouTube</Link>
-                    </div>
-
-                    <div className="h-px bg-black/10 w-full" />
-
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-[#1d1d1f]/50 font-medium tracking-tight">
-                        <Link href="/settings/contracts" className="hover:underline">Politikalar</Link>
-                        <span className="text-black/10">|</span>
-                        <Link href="/settings/contracts/cerez-politikasi" className="hover:underline">Çerezlerin Kullanımı</Link>
-                        <span className="text-black/10">|</span>
-                        <Link href="/settings/contracts" className="hover:underline">Sözleşmeler</Link>
-                        <span className="text-black/10">|</span>
-                        <Link href="/sitemap" className="hover:underline">Site Haritası</Link>
-                        <span className="text-black/10">|</span>
-                        <Link href="/bilgi-toplumu-hizmetleri" className="hover:underline">Bilgi Toplumu Hizmetleri</Link>
-                        <span className="text-black/10">|</span>
-                        <Link href="/accessibility" className="hover:underline">Erişilebilirlik</Link>
-                    </div>
-
-                    <div className="h-px bg-black/10 w-full" />
-
-                    <p className="text-[12px] text-[#1d1d1f]/50 leading-relaxed">
-                        Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/market" className="text-primary hover:underline font-medium">hangel destek</Link> bulun veya <span className="whitespace-nowrap">0554 700 70 07</span> numaralı telefonu arayın.
-                    </p>
-                    
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-black/10">
-                        <div className="flex flex-col md:flex-row items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
-                            <span className="whitespace-nowrap">Telif Hakkı © 2024 hangel A.Ş. Tüm hakları saklıdır.</span>
+                        <div className="text-[12px] text-[#1d1d1f]/50">
+                            Telif Hakkı © 2024 hangel A.Ş. Tüm hakları saklıdır.
                         </div>
-                        <div className="text-[12px] font-medium text-[#1d1d1f]/70 hover:text-[#1d1d1f] cursor-pointer transition-colors shrink-0">
+                        <div className="text-[12px] font-medium text-[#1d1d1f]/70">
                             Türkiye
                         </div>
                     </div>
@@ -323,43 +220,21 @@ const Footer = () => {
     );
 };
 
-const typeLabels: Record<string, string> = {
-    brand: 'Marka',
-    cooperative: 'Kooperatif',
-    social: 'Sosyal İşl.',
-    economic: 'İktisadi İşl.'
-};
-
 export default function LoginPage() {
     const [displayBrands, setDisplayBrands] = useState<Brand[]>([]);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        // Hydration hatasını önlemek için markaları sadece client tarafında seçiyoruz
-        const shuffled = [...allEntityLists]
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 21);
+        const shuffled = [...allEntityLists].sort(() => 0.5 - Math.random()).slice(0, 21);
         setDisplayBrands(shuffled);
     }, []);
-
-    const stkImg = PlaceHolderImages.find(img => img.id === 'stk-illustration');
-    const merchantImg = PlaceHolderImages.find(img => img.id === 'merchant-illustration');
-    const libraryImg = PlaceHolderImages.find(img => img.id === 'library-illustration');
-
-    const campusBanners = [
-        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-1')?.imageUrl || '', hint: 'minimalist university conference poster' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-2')?.imageUrl || '', hint: 'apple style student summit banner' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-3')?.imageUrl || '', hint: 'clean design campus concert flyer' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-4')?.imageUrl || '', hint: 'modern academic workshop poster' },
-        { url: PlaceHolderImages.find(img => img.id === 'campus-poster-5')?.imageUrl || '', hint: 'minimalist college hackathon banner' },
-    ];
 
     if (!mounted) return <div className="min-h-screen bg-[#f5f5f7]" />;
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
-            < Header />
+            <Header />
             
             <main className="pt-12">
                 <section className="bg-[#f5f5f7] pt-24 pb-12 text-center space-y-4 px-4 border-b-[12px] border-[#f5f5f7]">
@@ -367,16 +242,11 @@ export default function LoginPage() {
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">
                             Yok öyle yalnız başına mücadele etmek.
                         </h1>
-                        <div className="space-y-2 max-w-4xl mx-auto">
-                            <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80">
-                                Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
-                            </p>
-                            <p className="text-sm md:text-lg text-[#1d1d1f]/70 font-normal leading-relaxed pt-12">
-                                Merhaba; günlük alışverişini iyi fiyatlarla yaparken ek masraf ödemeden bağışa dönüştürmeni ve profesyonel yetkinliklerin ile sosyal hassasiyetlerin doğrultusunda gönüllülük yapmanı sağlayan bir sosyal etki platformuna hoş geldin.
-                            </p>
-                        </div>
+                        <p className="text-xl md:text-3xl font-medium text-[#1d1d1f]/80 max-w-4xl mx-auto">
+                            Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.
+                        </p>
                     </div>
-                    <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <div className="pt-8">
                         <Button asChild size="lg" className="rounded-full px-10 h-12 text-base font-bold bg-primary hover:bg-primary/90">
                             <Link href="/login/selection?action=register">Şimdi Katıl</Link>
                         </Button>
@@ -387,45 +257,23 @@ export default function LoginPage() {
                     <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
                         <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel bağış</h2>
                         <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Alışverişi iyiliğe dönüştürün.</p>
-                        <div className="flex items-center justify-center gap-6 pt-4">
-                            <Link href="/market" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
-                                Markaları Gör
-                            </Link>
-                            <Link href="/about" className="text-primary hover:underline flex items-center text-lg font-medium">
-                                Nasıl Çalışır? <ChevronRight className="h-5 w-5 ml-0.5" />
-                            </Link>
-                        </div>
                     </div>
                     
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
                             {displayBrands.map((brand) => (
-                                <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-[22rem] transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
-                                    <div className="absolute top-6 right-6">
-                                        <span className="text-[9px] font-black text-[#1d1d1f]/40 uppercase tracking-widest bg-white/50 backdrop-blur-sm px-2 py-0.5 rounded-full border border-black/5">
-                                            {typeLabels[brand.type] || 'Marka'}
-                                        </span>
-                                    </div>
+                                <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
                                     <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <ShoppingBag className="h-6 w-6" />
                                     </div>
                                     <div className="relative w-24 h-24 mb-6">
-                                        <img 
-                                            src={brand.logoUrl} 
-                                            alt={brand.name} 
-                                            className="w-full h-full object-contain"
-                                        />
+                                        <img src={brand.logoUrl} alt={brand.name} className="w-full h-full object-contain" />
                                     </div>
                                     <div className="space-y-1 mb-4">
                                         <h4 className="font-bold text-xl leading-tight text-[#1d1d1f]">{brand.name}</h4>
-                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{brand.category}</p>
                                     </div>
-                                    
                                     <div className="mt-auto pt-4 border-t border-black/5 w-full">
-                                        <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest block mb-1">Bağış Oranı</span>
-                                        <div className="text-2xl font-black text-primary tracking-tighter">
-                                            %{brand.donationRate}
-                                        </div>
+                                        <div className="text-2xl font-black text-primary">%{brand.donationRate}</div>
                                     </div>
                                 </Link>
                             ))}
@@ -439,100 +287,9 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                <section className="bg-[#f5f5f7] pt-16 pb-24 text-center border-b-[12px] border-[#f5f5f7] overflow-hidden">
-                    <div className="space-y-2 px-4 max-w-3xl mx-auto mb-12">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">hangel imece</h2>
-                        <p className="text-xl md:text-2xl font-medium text-[#1d1d1f]/80">Gönüllülükte teknoloji devrimi.</p>
-                        <div className="flex items-center justify-center gap-6 pt-4">
-                            <Link href="/login/selection?action=register" className="bg-primary text-white px-6 py-2.5 rounded-full text-base font-medium hover:bg-primary/90 transition-colors">
-                                Gönüllü Ol
-                            </Link>
-                            <Link href="/volunteering" className="text-primary hover:underline flex items-center text-lg font-medium">
-                                İlanları Gör <ChevronRight className="h-5 w-5 ml-0.5" />
-                            </Link>
-                        </div>
-                    </div>
-                    
-                    <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
-                        <div className="flex gap-6 px-8 md:justify-center min-w-max">
-                            {volunteeringOpportunities.slice(0, 4).map((opp) => (
-                                <Link href={`/volunteering/${opp.id}`} key={opp.id} className="bg-white rounded-[2rem] p-8 flex flex-col items-start text-left w-80 h-96 transition-all hover:shadow-2xl hover:scale-[1.02] group border border-black/5">
-                                    <div className="w-12 h-12 rounded-xl bg-[#f5f5f7] shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                                        <HeartHandshake className="h-6 w-6" />
-                                    </div>
-                                    <div className="space-y-1 mb-4">
-                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f] line-clamp-2">{opp.title}</h4>
-                                        <p className="text-xs font-black text-primary uppercase tracking-widest">{opp.organization}</p>
-                                    </div>
-                                    <div className="text-sm text-[#1d1d1f]/60 font-medium line-clamp-4 leading-relaxed">{opp.description}</div>
-                                    
-                                    <div className="mt-auto flex items-center justify-between w-full pt-6 border-t border-black/5">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest mb-1">Kazanılacak Etki</span>
-                                            <div className="flex items-center gap-1.5 text-primary">
-                                                <Star className="h-4 w-4 fill-current" />
-                                                <span className="text-lg font-black tracking-tighter">{opp.points} Puan</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="text-[10px] font-black text-[#1d1d1f]/40 uppercase tracking-widest block mb-1">Konum</span>
-                                            <span className="text-xs font-bold text-[#1d1d1f]">{opp.location.city}</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex justify-center mt-8">
-                        <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/volunteering">Tümünü Gör ({volunteeringOpportunities.length} İlan)</Link>
-                        </Button>
-                    </div>
-                </section>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
-                    <GridItem 
-                        title="hangel STK"
-                        subtitle="Dijitalleşen sivil toplum araçları."
-                        theme="dark"
-                        cta1="Kuruluşunu Kaydet"
-                        cta1Href="/login/selection?action=register&type=corporate"
-                        cta2="Özellikleri İncele"
-                        cta2Href="/ngo-onboarding"
-                        imageUrl={stkImg?.imageUrl || ''}
-                        imageHint={stkImg?.imageHint || 'charcoal charity drawing'}
-                    />
-                    <GridItem 
-                        title="hangel Kampüs"
-                        subtitle="Üniversiteler için sosyal etki ağı."
-                        cta1="Kulübünü Kaydet"
-                        cta1Href="/contact/universities"
-                        cta2="Avantajları Gör"
-                        cta2Href="/campus-advantages"
-                        theme="dark"
-                        images={campusBanners}
-                    />
-                    <GridItem 
-                        title="hangel üye işyeri"
-                        subtitle="İşletmenizde QR ile ödeme alın."
-                        cta1="Başvur"
-                        cta1Href="/login/selection?action=register&type=corporate"
-                        cta2="Avantajları Gör"
-                        cta2Href="/merchant"
-                        imageUrl={merchantImg?.imageUrl || ''}
-                        imageHint={merchantImg?.imageHint || 'charcoal merchant store drawing'}
-                        theme="dark"
-                    />
-                    <GridItem 
-                        title="Kütüphane"
-                        subtitle="Bilgi paylaştıkça çoğalır."
-                        cta1="Kaynakları Gör"
-                        cta1Href="/library"
-                        imageUrl={libraryImg?.imageUrl || ''}
-                        imageHint={libraryImg?.imageHint || 'charcoal library drawing'}
-                        theme="primary"
-                    />
+                    <GridItem title="hangel STK" subtitle="Dijitalleşen sivil toplum araçları." theme="dark" cta1="Kuruluşunu Kaydet" cta1Href="/ngo-onboarding" imageUrl={PlaceHolderImages.find(img => img.id === 'stk-illustration')?.imageUrl} imageHint="charcoal charity drawing" />
+                    <GridItem title="hangel Kampüs" subtitle="Üniversiteler için sosyal etki ağı." cta1="Avantajları Gör" cta1Href="/campus-advantages" theme="dark" imageUrl={PlaceHolderImages.find(img => img.id === 'campus-poster-1')?.imageUrl} imageHint="minimalist university conference poster" />
                 </div>
             </main>
 

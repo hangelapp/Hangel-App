@@ -35,7 +35,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     {
       id: 'ao',
       name: 'Affocean',
-      url: 'https://affocean.com/api/v1/offers?limit=100&status=active',
+      url: 'https://api.afftrck.com/v1/offers',
       method: 'GET',
       headers: { 'Authorization': 'Bearer 9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48' }
     },
@@ -68,7 +68,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         else if (Array.isArray(resData.campaigns)) rawList = resData.campaigns;
 
         return rawList.map((item: any) => {
-          const name = cleanBrandName(item.advertiser_name || item.name || item.title || item.campaign_name);
+          const name = cleanBrandName(item.advertiser_name || item.name || item.title || item.campaign_name || item.brand);
           const domain = item.url ? new URL(item.url).hostname.replace('www.', '') : `${name.toLowerCase().replace(/\s+/g, '')}.com`;
           
           return {
