@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -35,9 +36,9 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 
     if (hasError || !brand.logoUrl || brand.logoUrl === "" || brand.logoUrl === "null") {
         return (
-            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2">
+            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2 text-center overflow-hidden">
                 <span className="text-primary font-black text-2xl uppercase">{brand.name.charAt(0)}</span>
-                <span className="text-[7px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center px-1">{brand.name}</span>
+                <span className="text-[7px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full px-1">{brand.name}</span>
             </div>
         );
     }
@@ -107,7 +108,7 @@ export default function MarketPage() {
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
                 console.log("Market Page - API Verisi Alındı (Client):", data.length);
-                console.table(data.slice(0, 50)); 
+                console.table(data.slice(0, 100)); // Log detailed table for inspection
             }
         } catch (e) {
             console.error("Market API load error:", e);
@@ -122,7 +123,7 @@ export default function MarketPage() {
   const brandsToShow = useMemo(() => {
     let combinedList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Deduplicate and select best commission
+    // Deduplicate brands by name and select the one with the best commission rate
     const uniqueBrandsMap = new Map<string, Brand>();
     combinedList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -133,33 +134,36 @@ export default function MarketPage() {
     });
     combinedList = Array.from(uniqueBrandsMap.values());
 
-    // Filter Logic
+    // Search Filtering
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
         combinedList = combinedList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
+    // Category Filtering
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
-      const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
-      if (brandCategories && brandCategories.length > 0) {
+      const mappedCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
+      if (mappedCategories && mappedCategories.length > 0) {
         combinedList = combinedList.filter(brand => {
             const catLower = brand.category.toLowerCase();
-            return brandCategories.some(cat => catLower.includes(cat.toLowerCase()));
+            return mappedCategories.some(cat => catLower.includes(cat.toLowerCase()));
         });
       } else {
         combinedList = combinedList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
     }
 
+    // Entity Type Filtering
     if (activeEntityType !== 'all') {
       combinedList = combinedList.filter(item => item.type === activeEntityType);
     }
 
+    // Donation Filter
     if (onlyDonating) {
         combinedList = combinedList.filter(item => (item.donationRate || 0) > 0);
     }
     
-    // Sort Logic
+    // Sorting
     combinedList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
@@ -172,21 +176,13 @@ export default function MarketPage() {
         }
     });
 
-    // Fallback/Test Data if empty
-    if (combinedList.length === 0 && !isApiLoading) {
-        return [
-            { id: 'test-go', name: 'Test-GelirOrtakları', logoUrl: '', donationRate: 5, category: 'Test', type: 'brand', followers: 100 },
-            { id: 'test-ra', name: 'Test-ReklamAction', logoUrl: '', donationRate: 10, category: 'Test', type: 'brand', followers: 200 }
-        ] as Brand[];
-    }
-
     if (activeCategory === 'Öne çıkanlar') {
         return combinedList.slice(0, 100); 
     }
     
     return combinedList;
 
-  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands, isApiLoading]);
+  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands]);
   
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;
@@ -215,14 +211,14 @@ export default function MarketPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder="hangel'da Ara"
-                        className="pl-10 pr-12 h-10 rounded-xl"
+                        className="pl-10 pr-12 h-10 rounded-xl border-none bg-muted/50 focus-visible:ring-1"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-primary text-white hover:bg-primary/90 hover:text-white">
+                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-primary text-white hover:bg-primary/90 hover:text-white shadow-lg shadow-primary/20 border-none">
                             <Bot className="h-5 w-5" />
                         </Button>
                     </DialogTrigger>
@@ -234,7 +230,7 @@ export default function MarketPage() {
                         <div className="space-y-4 py-4">
                             {assistantResponse && !isAssistantLoading && (
                                 <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 border"><AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback></Avatar>
+                                    <Avatar className="h-8 w-8 border shadow-sm"><AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback></Avatar>
                                     <div className="p-4 bg-muted rounded-2xl rounded-tl-none text-sm leading-relaxed">{assistantResponse}</div>
                                 </div>
                             )}
@@ -251,7 +247,7 @@ export default function MarketPage() {
                                     onChange={(e) => setAssistantQuestion(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
                                     disabled={isAssistantLoading}
-                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 shadow-inner"
                                 />
                                 <Button onClick={handleAskAssistant} disabled={isAssistantLoading || !assistantQuestion.trim()} className="rounded-xl h-11 px-6">Sor</Button>
                             </div>
@@ -260,7 +256,7 @@ export default function MarketPage() {
                 </Dialog>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                         <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl"><Filter className="h-5 w-5" /></Button>
+                         <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-background shadow-sm border-none"><Filter className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
@@ -270,7 +266,7 @@ export default function MarketPage() {
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl"><ArrowDownUp className="h-5 w-5" /></Button>
+                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-background shadow-sm border-none"><ArrowDownUp className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuItem onClick={() => setSortKey('followers')}>Popülerlik</DropdownMenuItem>
@@ -315,50 +311,59 @@ export default function MarketPage() {
             <div className="max-w-6xl mx-auto space-y-6">
                 <div className="flex items-center justify-between px-1">
                     <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
-                    {isApiLoading && <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> API Verisi Bekleniyor...</div>}
+                    {isApiLoading && (
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
+                            <Loader2 className="h-3 w-3 animate-spin" /> API Verisi Bekleniyor...
+                        </div>
+                    )}
                 </div>
                 
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-                {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
-                    const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-');
-                    return (
-                    <Fragment key={brand.id}>
-                        <Link 
-                            href={isApiBrand ? (brand.link || '#') : `/market/${brand.id}`} 
-                            target={isApiBrand ? "_blank" : "_self"} 
-                            rel={isApiBrand ? "noopener noreferrer" : undefined} 
-                            className="group"
-                        >
-                            <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
-                                <div className="relative w-full aspect-square">
-                                    <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0">
-                                        <BrandLogo brand={brand} />
-                                    </div>
-                                    {(brand.donationRate > 0) && (
-                                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
-                                            %{brand.donationRate}
+                {brandsToShow.length > 0 ? (
+                    brandsToShow.map((brand, index) => {
+                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-');
+                        return (
+                            <Fragment key={brand.id}>
+                                <Link 
+                                    href={isApiBrand ? (brand.link || '#') : `/market/${brand.id}`} 
+                                    target={isApiBrand ? "_blank" : "_self"} 
+                                    rel={isApiBrand ? "noopener noreferrer" : undefined} 
+                                    className="group"
+                                >
+                                    <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
+                                        <div className="relative w-full aspect-square">
+                                            <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0">
+                                                <BrandLogo brand={brand} />
+                                            </div>
+                                            {(brand.donationRate > 0) && (
+                                                <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
+                                                    %{brand.donationRate}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                <p className="text-[10px] sm:text-xs font-bold text-foreground leading-tight group-hover:text-primary transition-colors px-1 line-clamp-2 mt-1">
-                                    {brand.name}
-                                </p>
-                            </div>
-                        </Link>
-                        {index === 11 && <div className="col-span-full my-4"><AdCarousel /></div>}
-                    </Fragment>
-                )}) : !isApiLoading && (
-                    <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
-                        <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-                        <p className="text-muted-foreground text-sm font-medium">Gösterilecek marka bulunamadı.</p>
-                    </div>
+                                        <p className="text-[10px] sm:text-xs font-bold text-foreground leading-tight group-hover:text-primary transition-colors px-1 line-clamp-2 mt-1">
+                                            {brand.name}
+                                        </p>
+                                    </div>
+                                </Link>
+                                {index === 11 && <div className="col-span-full my-4"><AdCarousel /></div>}
+                            </Fragment>
+                        );
+                    })
+                ) : (
+                    !isApiLoading && (
+                        <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
+                            <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+                            <p className="text-muted-foreground text-sm font-medium">Gösterilecek marka bulunamadı.</p>
+                        </div>
+                    )
                 )}
                 
                 {isApiLoading && (
                     Array.from({ length: 12 }).map((_, i) => (
                         <div key={i} className="space-y-2">
                             <Skeleton className="aspect-square w-full rounded-[1.5rem]" />
-                            <Skeleton className="h-3 w-3/4 mx-auto" />
+                            <Skeleton className="h-3 w-3/4 mx-auto mt-2" />
                         </div>
                     ))
                 )}

@@ -1,3 +1,4 @@
+
 import type { Brand } from './types';
 
 const FETCH_TIMEOUT = 15000;
@@ -20,15 +21,16 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 
 /**
  * Server-side function to fetch offers from all configured agencies.
- * Rigorously checks for nested 'results', 'offers', or 'data' arrays.
+ * Acts as a proxy to bypass CORS and hide API keys from the browser.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
-    const GO_KEY = process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3";
-    const AO_KEY = process.env.AFFOCEAN_KEY || "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48";
-    const RA_KEY = process.env.REKLAMACTION_KEY || "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
+    const GO_KEY = process.env.GELIR_ORTAKLARI_KEY;
+    const AO_KEY = process.env.AFFOCEAN_KEY;
+    const RA_KEY = process.env.REKLAMACTION_KEY;
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
+     * Mapping: advertiser_name -> name, logo_url -> logoUrl, commission_rate -> donationRate
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         try {
@@ -37,28 +39,35 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 headers: {
                     "accept": "application/json",
                     "Content-Type": "application/json",
-                    "x-api-key": GO_KEY
+                    "x-api-key": GO_KEY || ""
                 },
                 body: JSON.stringify({ "value": "" }),
                 cache: 'no-store'
             });
-            if (!res.ok) return [];
-            const rawData = await res.json();
+            if (!res.ok) {
+                console.error("Gelir Ortakları HTTP Hatası:", res.status);
+                return [];
+            }
+            const rawResponse = await res.json();
+            console.log("Gelir Ortakları Ham Yanıt:", JSON.stringify(rawResponse).slice(0, 500) + "...");
+
+            // Deep mapping: Check results or data arrays
+            const results = rawResponse.results || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
             
-            // Handle nested 'results' key
-            const results = rawData.results || rawData.data || (Array.isArray(rawData) ? rawData : []);
-            console.log("Gelir Ortakları - Ham Veri Boyutu:", results.length);
+            if (results.length === 0) {
+                console.error("Hangi Ajans Boş Döndü: Gelir Ortakları");
+            }
 
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.advertiser_name || item.name || "Bilinmeyen Marka",
+                name: item.advertiser_name || item.name || item.title || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo_url || item.image || "",
+                logoUrl: item.logo_url || item.image || item.logo || "",
                 donationRate: parseFloat(String(item.commission_rate || item.commission || "0")),
                 link: item.click_url || item.tracking_url || "#",
                 followers: Math.floor(Math.random() * 5000) + 1000,
-                about: "Gelir Ortakları iş ortağı."
+                about: "Gelir Ortakları aracılığıyla sağlanan sosyal fayda ortağı."
             }));
         } catch (e) {
             console.error("Gelir Ortakları Fetch Hatası:", e);
@@ -67,7 +76,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     };
 
     /**
-     * 2. AFFOCEAN
+     * 2. AFFOCEAN (GET API)
+     * Mapping: name -> name, logo -> logoUrl, payout/commission -> donationRate
      */
     const fetchAffocean = async (): Promise<Brand[]> => {
         try {
@@ -79,21 +89,24 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 cache: 'no-store'
             });
             if (!res.ok) return [];
-            const rawData = await res.json();
+            const rawResponse = await res.json();
             
-            const results = rawData.results || rawData.offers || rawData.data || (Array.isArray(rawData) ? rawData : []);
-            console.log("Affocean - Ham Veri Boyutu:", results.length);
+            const results = rawResponse.results || rawResponse.offers || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
+            
+            if (results.length === 0) {
+                console.error("Hangi Ajans Boş Döndü: Affocean");
+            }
 
             return results.map((item: any) => ({
                 id: `ao-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.name || "Bilinmeyen Marka",
+                name: item.name || item.title || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo || item.image || "",
-                donationRate: parseFloat(String(item.commission || "0")),
+                logoUrl: item.logo || item.image || item.logo_url || "",
+                donationRate: parseFloat(String(item.payout || item.commission || "0")),
                 link: item.link || item.tracking_url || "#",
                 followers: Math.floor(Math.random() * 3000) + 500,
-                about: "Affocean iş ortağı."
+                about: "Affocean aracılığıyla sağlanan sosyal fayda ortağı."
             }));
         } catch (e) {
             console.error("Affocean Fetch Hatası:", e);
@@ -102,7 +115,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     };
 
     /**
-     * 3. REKLAMACTION
+     * 3. REKLAMACTION (GET API - Specific query network=reklamaction)
+     * Mapping: name -> name, image -> logoUrl, commission -> donationRate
      */
     const fetchReklam = async (): Promise<Brand[]> => {
         try {
@@ -114,21 +128,24 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 cache: 'no-store'
             });
             if (!res.ok) return [];
-            const rawData = await res.json();
+            const rawResponse = await res.json();
             
-            const results = rawData.results || rawData.offers || rawData.data || (Array.isArray(rawData) ? rawData : []);
-            console.log("ReklamAction - Ham Veri Boyutu:", results.length);
+            const results = rawResponse.results || rawResponse.offers || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
+            
+            if (results.length === 0) {
+                console.error("Hangi Ajans Boş Döndü: ReklamAction");
+            }
 
             return results.map((item: any) => ({
                 id: `ra-${item.id || Math.random().toString(36).substr(2, 9)}`,
-                name: item.name || "Bilinmeyen Marka",
+                name: item.name || item.title || "Bilinmeyen Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo || item.image || "",
-                donationRate: parseFloat(String(item.commission || "0")),
+                logoUrl: item.image || item.logo || item.logo_url || "",
+                donationRate: parseFloat(String(item.commission || item.payout || "0")),
                 link: item.tracking_url || item.link || "#",
                 followers: Math.floor(Math.random() * 4000) + 800,
-                about: "ReklamAction iş ortağı."
+                about: "ReklamAction aracılığıyla sağlanan sosyal fayda ortağı."
             }));
         } catch (e) {
             console.error("ReklamAction Fetch Hatası:", e);
@@ -136,10 +153,11 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         }
     };
 
+    // Execute all fetches in parallel, continuing even if some fail
     const settled = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
     
     const combined = settled.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-    console.log("Sunucu: Birleştirilen Toplam Marka Sayısı:", combined.length);
+    console.log("Sunucu: Toplam Birleştirilen Marka Sayısı:", combined.length);
 
     return combined;
 }
