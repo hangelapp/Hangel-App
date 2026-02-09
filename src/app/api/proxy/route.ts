@@ -1,25 +1,21 @@
+
 import { NextResponse } from 'next/server';
 
 /**
- * Gelişmiş Sunucu Proxy: CORS engellerini aşar ve ajans özel başlıklarını yönetir.
+ * Gelişmiş Sunucu Proxy: Ajans özel başlıklarını yönetir ve terminale detaylı log basar.
  */
 export async function POST(request: Request) {
   try {
     const { agency, url, method, headers, body } = await request.json();
 
-    const finalUrl = url.startsWith('http') ? url : `https://${url}`;
-
-    // Ajans bazlı header yönetimi
-    const finalHeaders: Record<string, string> = {
-      ...headers,
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    const response = await fetch(finalUrl, {
+    const response = await fetch(url, {
       method: method || 'GET',
-      headers: finalHeaders,
+      headers: {
+        ...headers,
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       body: body ? JSON.stringify(body) : undefined,
       cache: 'no-store'
     });
@@ -35,24 +31,10 @@ export async function POST(request: Request) {
 
     return new NextResponse(responseText, {
       status: status,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   } catch (error: any) {
     console.error("[Proxy Fatal Error]:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key, api-key',
-    }
-  });
 }

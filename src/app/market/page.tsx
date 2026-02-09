@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Loader2, Bot, Sparkles, Send } from 'lucide-react';
@@ -20,6 +21,7 @@ import {
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { fetchAllAgencyOffers } from '@/lib/api-clients';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -47,6 +49,8 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
+  const [dynamicBrands, setDynamicBrands] = useState<Brand[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // AI Assistant State
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -54,21 +58,39 @@ export default function MarketPage() {
   const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
 
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const data = await fetchAllAgencyOffers();
+        if (data.length > 0) {
+          setDynamicBrands(data);
+        } else {
+          setDynamicBrands(allEntityLists);
+        }
+      } catch (err) {
+        setDynamicBrands(allEntityLists);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadBrands();
+  }, []);
+
   const brandsToShow = useMemo(() => {
-    let list = [...allEntityLists];
+    let list = dynamicBrands.length > 0 ? [...dynamicBrands] : [...allEntityLists];
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
       list = list.filter(b => b.name.toLowerCase().includes(lower));
     }
 
-    if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
+    if (activeCategory !== 'Tümü') {
       list = list.filter(b => b.category === activeCategory);
     }
 
     list.sort((a, b) => sortKey === 'name' ? a.name.localeCompare(b.name, 'tr') : b.donationRate - a.donationRate);
     return list;
-  }, [activeCategory, sortKey, searchTerm]);
+  }, [activeCategory, sortKey, searchTerm, dynamicBrands]);
 
   const handleAskAssistant = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -80,8 +102,8 @@ export default function MarketPage() {
     setIsAssistantLoading(true);
 
     try {
-      const brandsContext = allEntityLists.slice(0, 50).map(b => 
-        `${b.name} (%${b.donationRate} bağış, Kategori: ${b.category})`
+      const brandsContext = brandsToShow.slice(0, 50).map(b => 
+        `${b.name} (%${b.donationRate} bağış)`
       ).join(', ');
 
       const result = await askMarketAssistant({
@@ -146,6 +168,12 @@ export default function MarketPage() {
 
         <main className="flex-1 overflow-y-auto p-4">
           <div className="max-w-6xl mx-auto">
+            {isLoading && (
+              <div className="flex items-center justify-center py-12 gap-2 text-primary font-bold">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Kampanyalar Hazırlanıyor...</span>
+              </div>
+            )}
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {brandsToShow.map((brand) => (
                 <Link href={`/market/${brand.id}`} key={brand.id} className="group">

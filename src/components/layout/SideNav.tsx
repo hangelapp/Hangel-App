@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -5,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
 import type { SideNavItem } from '@/lib/types';
-import { useTranslation } from '@/components/providers/language-provider';
 
 const iconColorMap: { [key: string]: string } = {
   store: 'bg-green-500',
