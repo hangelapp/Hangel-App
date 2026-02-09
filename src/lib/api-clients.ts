@@ -2,7 +2,6 @@ import type { Brand } from './types';
 
 /**
  * Marka isimlerini tertemiz yapan Regex motoru.
- * CPS, CPL, Kampanyası gibi ekleri temizler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Marka";
@@ -64,7 +63,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         const resData = await response.json();
         let rawList = [];
 
-        // Dinamik API yapısı kontrolü
         if (Array.isArray(resData)) rawList = resData;
         else if (Array.isArray(resData.data)) rawList = resData.data;
         else if (Array.isArray(resData.offers)) rawList = resData.offers;
@@ -73,7 +71,17 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         return rawList.map((item: any) => {
           const rawName = item.brand || item.name || item.advertiser_name || item.title;
           const name = cleanBrandName(rawName);
-          const domain = item.url ? new URL(item.url).hostname.replace('www.', '') : `${name.toLowerCase().replace(/\s+/g, '')}.com`;
+          
+          let domain = `${name.toLowerCase().replace(/\s+/g, '')}.com`;
+          try {
+            const urlString = item.url || item.link || item.offer_link;
+            if (urlString && (urlString.startsWith('http') || urlString.startsWith('//'))) {
+              const fullUrl = urlString.startsWith('//') ? `https:${urlString}` : urlString;
+              domain = new URL(fullUrl).hostname.replace('www.', '');
+            }
+          } catch (e) {
+            // URL parsing failed, fallback to name-based domain
+          }
           
           return {
             id: `${agency.id}-${item.id || Math.random()}`,
@@ -94,7 +102,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  // Tekilleştirme (Aynı markanın en yüksek oranlısını tut)
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
     const key = brand.name.toLowerCase().trim();

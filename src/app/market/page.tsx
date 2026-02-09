@@ -51,7 +51,6 @@ export default function MarketPage() {
   const [dynamicBrands, setDynamicBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // AI Assistant State
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [assistantQuestion, setAssistantQuestion] = useState('');
   const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
