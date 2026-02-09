@@ -63,7 +63,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         const resData = await response.json();
         let rawList = [];
 
-        // Dinamik liste yakalama (Çoklu ajans format desteği)
         if (Array.isArray(resData)) rawList = resData;
         else if (Array.isArray(resData.data)) rawList = resData.data;
         else if (Array.isArray(resData.offers)) rawList = resData.offers;
@@ -73,7 +72,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           const rawName = item.brand || item.name || item.advertiser_name || item.title;
           const name = cleanBrandName(rawName);
           
-          // Fail-safe Domain Extraction
           let domain = `${name.toLowerCase().replace(/\s+/g, '')}.com`;
           try {
             const urlString = item.url || item.link || item.offer_link;
@@ -82,7 +80,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
               domain = new URL(fullUrl).hostname.replace('www.', '');
             }
           } catch (e) {
-            // URL ayrıştırma hatasında marka isminden devam et
+            // Fail-safe
           }
           
           return {
@@ -104,7 +102,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  // Tekilleştirme (En yüksek oranlıyı tut)
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
     const key = brand.name.toLowerCase().trim();

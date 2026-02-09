@@ -23,7 +23,6 @@ const Header = () => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
-                {/* Logo alanı boşaltılmıştır */}
                 <div className="w-8 h-8" /> 
 
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
@@ -231,9 +230,14 @@ export default function LoginPage() {
         const loadPreviewBrands = async () => {
             try {
                 const apiData = await fetchAllAgencyOffers();
-                setDisplayBrands(apiData.slice(0, 10));
+                if (apiData.length > 0) {
+                    setDisplayBrands(apiData.slice(0, 10));
+                } else {
+                    setDisplayBrands(allEntityLists.slice(0, 10));
+                }
             } catch (err) {
                 console.error("Preview load error:", err);
+                setDisplayBrands(allEntityLists.slice(0, 10));
             }
         };
         loadPreviewBrands();
@@ -286,14 +290,14 @@ export default function LoginPage() {
                                     </div>
                                 </Link>
                             )) : (
-                                <div className="w-full py-12 text-muted-foreground italic">Aktif kampanyalar yükleniyor...</div>
+                                <div className="w-full py-12 text-muted-foreground italic">Markalar listeleniyor...</div>
                             )}
                         </div>
                     </div>
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
+                            <Link href="/market">Tümünü Gör</Link>
                         </Button>
                     </div>
                 </section>
