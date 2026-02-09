@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// iOS-style icon background colors
 const iconColorMap: { [key: string]: string } = {
   store: 'bg-green-500',
   building: 'bg-orange-500',

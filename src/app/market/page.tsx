@@ -30,9 +30,6 @@ import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getApiOffers } from '@/app/actions/market';
 
-/**
- * Handles brand logo rendering with an automatic fallback to mark's initials.
- */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
@@ -109,9 +106,8 @@ export default function MarketPage() {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
-                // Enhanced debug logging requested by user
-                console.log("Market Page - Tüm Ajanslardan Gelen Toplam Veri:");
-                console.table(data.slice(0, 20)); // First 20 for readability
+                console.log("Market Page - API Verisi Alındı (Client):", data.length);
+                console.table(data.slice(0, 50)); 
             }
         } catch (e) {
             console.error("Market API load error:", e);
@@ -176,13 +172,21 @@ export default function MarketPage() {
         }
     });
 
+    // Fallback/Test Data if empty
+    if (combinedList.length === 0 && !isApiLoading) {
+        return [
+            { id: 'test-go', name: 'Test-GelirOrtakları', logoUrl: '', donationRate: 5, category: 'Test', type: 'brand', followers: 100 },
+            { id: 'test-ra', name: 'Test-ReklamAction', logoUrl: '', donationRate: 10, category: 'Test', type: 'brand', followers: 200 }
+        ] as Brand[];
+    }
+
     if (activeCategory === 'Öne çıkanlar') {
         return combinedList.slice(0, 100); 
     }
     
     return combinedList;
 
-  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands]);
+  }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands, isApiLoading]);
   
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;

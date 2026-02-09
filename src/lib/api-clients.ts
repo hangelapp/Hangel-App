@@ -20,19 +20,17 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 
 /**
  * Server-side function to fetch offers from all configured agencies.
- * This acts as a proxy to bypass CORS and hide API keys from the client.
+ * Rigorously checks for nested 'results', 'offers', or 'data' arrays.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
-    const GO_KEY = process.env.GELIR_ORTAKLARI_KEY;
-    const AO_KEY = process.env.AFFOCEAN_KEY;
-    const RA_KEY = process.env.REKLAMACTION_KEY;
+    const GO_KEY = process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3";
+    const AO_KEY = process.env.AFFOCEAN_KEY || "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48";
+    const RA_KEY = process.env.REKLAMACTION_KEY || "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54";
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
-     * Mapping: advertiser_name -> name, logo_url -> logoUrl, commission_rate -> donationRate, click_url -> link
      */
     const fetchGelir = async (): Promise<Brand[]> => {
-        if (!GO_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://feed.gelirortaklari.com/api/v1/search", {
                 method: "POST",
@@ -45,10 +43,11 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 cache: 'no-store'
             });
             if (!res.ok) return [];
-            const data = await res.json();
+            const rawData = await res.json();
             
-            const results = data.results || [];
-            console.log("Gelir Ortakları Ham Veri (Server):", results.length);
+            // Handle nested 'results' key
+            const results = rawData.results || rawData.data || (Array.isArray(rawData) ? rawData : []);
+            console.log("Gelir Ortakları - Ham Veri Boyutu:", results.length);
 
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -62,16 +61,15 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları iş ortağı."
             }));
         } catch (e) {
-            console.error("Gelir Ortakları Proxy Error:", e);
+            console.error("Gelir Ortakları Fetch Hatası:", e);
             return [];
         }
     };
 
     /**
-     * 2. AFFOCEAN (GET API)
+     * 2. AFFOCEAN
      */
     const fetchAffocean = async (): Promise<Brand[]> => {
-        if (!AO_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://affocean.com/api/v1/offers", {
                 headers: { 
@@ -81,10 +79,10 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 cache: 'no-store'
             });
             if (!res.ok) return [];
-            const data = await res.json();
+            const rawData = await res.json();
             
-            const results = Array.isArray(data) ? data : (data.results || []);
-            console.log("Affocean Ham Veri (Server):", results.length);
+            const results = rawData.results || rawData.offers || rawData.data || (Array.isArray(rawData) ? rawData : []);
+            console.log("Affocean - Ham Veri Boyutu:", results.length);
 
             return results.map((item: any) => ({
                 id: `ao-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -98,16 +96,15 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Affocean iş ortağı."
             }));
         } catch (e) {
-            console.error("Affocean Proxy Error:", e);
+            console.error("Affocean Fetch Hatası:", e);
             return [];
         }
     };
 
     /**
-     * 3. REKLAMACTION (GET API)
+     * 3. REKLAMACTION
      */
     const fetchReklam = async (): Promise<Brand[]> => {
-        if (!RA_KEY) return [];
         try {
             const res = await fetchWithTimeout("https://api.reklamaction.com/v1/offer?network=reklamaction", {
                 headers: { 
@@ -117,10 +114,10 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 cache: 'no-store'
             });
             if (!res.ok) return [];
-            const data = await res.json();
+            const rawData = await res.json();
             
-            const results = Array.isArray(data) ? data : (data.results || []);
-            console.log("ReklamAction Ham Veri (Server):", results.length);
+            const results = rawData.results || rawData.offers || rawData.data || (Array.isArray(rawData) ? rawData : []);
+            console.log("ReklamAction - Ham Veri Boyutu:", results.length);
 
             return results.map((item: any) => ({
                 id: `ra-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -134,7 +131,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "ReklamAction iş ortağı."
             }));
         } catch (e) {
-            console.error("ReklamAction Proxy Error:", e);
+            console.error("ReklamAction Fetch Hatası:", e);
             return [];
         }
     };
@@ -142,7 +139,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const settled = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
     
     const combined = settled.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-    console.log("Tüm Ajanslardan Gelen Toplam Birleşik Veri (Server):", combined.length);
+    console.log("Sunucu: Birleştirilen Toplam Marka Sayısı:", combined.length);
 
     return combined;
 }
