@@ -202,6 +202,7 @@ export default function AppHeader() {
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
+            {/* Logo area intentionally removed for minimalist design */}
             <Link href="/profile" passHref className='lg:hidden'>
               <Button variant="ghost" size="icon">
                   <UserAvatar />

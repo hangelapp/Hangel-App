@@ -33,7 +33,7 @@ import { getApiOffers } from '@/app/actions/market';
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
-    // If logo is missing or failed to load, show a nice letter-based placeholder
+    // Dynamic letter-based placeholder for missing or failing logos
     if (hasError || !brand.logoUrl || brand.logoUrl === "" || brand.logoUrl === "null") {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2 text-center overflow-hidden">
@@ -123,22 +123,24 @@ export default function MarketPage() {
   const brandsToShow = useMemo(() => {
     let combinedList: Brand[] = [...allEntityLists, ...apiBrands];
 
+    // Deduplication by name, keep higher rate
     const uniqueBrandsMap = new Map<string, Brand>();
     combinedList.forEach(item => {
         const key = item.name.toLowerCase().trim();
         const existing = uniqueBrandsMap.get(key);
-        // Deduplication: Always keep the one with higher donation rate
         if (!existing || (item.donationRate || 0) > (existing.donationRate || 0)) {
             uniqueBrandsMap.set(key, item);
         }
     });
     combinedList = Array.from(uniqueBrandsMap.values());
 
+    // Search filter
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
         combinedList = combinedList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
+    // Category filter
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const mappedCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (mappedCategories && mappedCategories.length > 0) {
@@ -151,14 +153,17 @@ export default function MarketPage() {
       }
     }
 
+    // Entity type filter
     if (activeEntityType !== 'all') {
       combinedList = combinedList.filter(item => item.type === activeEntityType);
     }
 
+    // Optional donation filter
     if (onlyDonating) {
         combinedList = combinedList.filter(item => (item.donationRate || 0) > 0);
     }
     
+    // Sort
     combinedList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':

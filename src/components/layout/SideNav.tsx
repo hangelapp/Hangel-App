@@ -107,7 +107,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
       <div className="flex grow flex-col overflow-y-auto bg-secondary border-r px-4 pb-4 pt-12">
         <nav className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col space-y-4">
-            {/* Logo area intentionally left empty per user request */}
+            {/* Logo area intentionally removed for minimalist design */}
             {mainItems.length > 0 && <NavList items={mainItems} />}
             {navItems.length > 0 && <NavList items={navItems} />}
             {userItems.length > 0 && <NavList items={userItems} />}
