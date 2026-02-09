@@ -27,11 +27,13 @@ import {
 } from "@/components/ui/dialog";
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getApiOffers } from '@/app/actions/market';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
+    // If logo is missing or failed to load, show a nice letter-based placeholder
     if (hasError || !brand.logoUrl || brand.logoUrl === "" || brand.logoUrl === "null") {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2 text-center overflow-hidden">
