@@ -77,7 +77,13 @@ export default function MarketPage() {
       list = list.filter(b => b.category === activeCategory);
     }
 
-    list.sort((a, b) => sortKey === 'name' ? a.name.localeCompare(b.name, 'tr') : b.donationRate - a.donationRate);
+    list.sort((a, b) => {
+      if (sortKey === 'name') {
+        return a.name.localeCompare(b.name, 'tr');
+      }
+      return b.donationRate - a.donationRate;
+    });
+    
     return list;
   }, [activeCategory, sortKey, searchTerm, dynamicBrands]);
 
@@ -96,20 +102,28 @@ export default function MarketPage() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm"><Filter className="h-5 w-5" /></Button>
+              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm">
+                <Filter className="h-5 w-5" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSortKey('donationRate')}>En Yüksek Bağış</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveCategory('Tümü')}>Tüm Kategoriler</DropdownMenuItem>
+              {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => (
+                <DropdownMenuItem key={cat.mainCategory} onClick={() => setActiveCategory(cat.mainCategory)}>
+                  {cat.mainCategory}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm"><ArrowDownUp className="h-5 w-5" /></Button>
+              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm">
+                <ArrowDownUp className="h-5 w-5" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranına Göre</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortKey('name')}>Alfabetik (A-Z)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortKey('donationRate')}>En Yüksek Bağış</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
