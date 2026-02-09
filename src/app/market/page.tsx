@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -174,7 +173,7 @@ export default function MarketPage() {
         }
     });
 
-    // Increased limit to show 42+ brands easily
+    // Support showing 42+ brands easily
     if (activeCategory === 'Öne çıkanlar') {
         return filteredList.slice(0, 100); 
     }

@@ -1,11 +1,9 @@
-
 'use client';
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
-import { HangelLogo } from '../icons';
 import type { SideNavItem } from '@/lib/types';
 import { useTranslation } from '@/components/providers/language-provider';
 
@@ -111,7 +109,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">
       <div className="flex grow flex-col overflow-y-auto bg-secondary border-r px-4 pb-4">
         <div className="flex h-16 shrink-0 items-center px-2">
-            {/* Logo kaldırıldı */}
+            {/* Logo removed per request */}
         </div>
         <nav className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col space-y-4">

@@ -1,4 +1,3 @@
-
 import type { Brand } from './types';
 
 const FETCH_TIMEOUT = 15000;
@@ -21,7 +20,7 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 
 /**
  * Fetches offers from all configured agencies (Gelir Ortakları, ReklamAction, Affocean).
- * Uses the latest API standards provided by the user (POST Search API for GO).
+ * Uses the latest API standards (POST Search API for GO).
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const GO_KEY = process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3";
@@ -45,15 +44,13 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a" // Broad search to ensure 42+ results
+                    value: "a" // Broad search to get 42+ results
                 }),
                 cache: 'no-store'
             });
             if (!res.ok) return [];
             const data = await res.json();
-            
-            // Handle GO results schema: data.results
-            const results = data.results || [];
+            const results = data.results || data.brands || (Array.isArray(data) ? data : []);
             
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -136,21 +133,16 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         }
     };
 
-    try {
-        const responses = await Promise.allSettled([fetchGelir(), fetchReklam(), fetchAffocean()]);
-        const allBrands = responses.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    const results = await Promise.allSettled([fetchGelir(), fetchReklam(), fetchAffocean()]);
+    const allBrands = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 
-        // Unique brands by name, keeping the one with higher donation rate
-        const uniqueMap = new Map<string, Brand>();
-        allBrands.forEach(b => {
-            const key = b.name.toLowerCase().trim();
-            if (!uniqueMap.has(key) || b.donationRate > (uniqueMap.get(key)?.donationRate || 0)) {
-                uniqueMap.set(key, b);
-            }
-        });
+    const uniqueMap = new Map<string, Brand>();
+    allBrands.forEach(b => {
+        const key = b.name.toLowerCase().trim();
+        if (!uniqueMap.has(key) || b.donationRate > (uniqueMap.get(key)?.donationRate || 0)) {
+            uniqueMap.set(key, b);
+        }
+    });
 
-        return Array.from(uniqueMap.values());
-    } catch (e) {
-        return [];
-    }
+    return Array.from(uniqueMap.values());
 }
