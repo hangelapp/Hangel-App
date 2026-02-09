@@ -1,21 +1,23 @@
-
 import type { Brand } from './types';
 
 const DOMAIN_HEADERS = {
   'Origin': 'https://hangel.org',
   'Referer': 'https://hangel.org',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Content-Type': 'application/json'
 };
 
 /**
- * Marka isimlerini teknik ibarelerden temizler.
+ * Marka isimlerini teknik ibarelerden ve gereksiz eklerden temizler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Bilinmeyen Marka";
   return name
     .replace(/\[.*?\]/g, '') // [CPS], [CPL] gibi yapıları siler
-    .replace(/CPS|CPL|Mobil|Influencer|Offer|Kampanyası/gi, '') // Teknik kelimeleri siler
+    .replace(/\(.*?\)/g, '') // Parantez içindeki ekleri siler
+    .replace(/CPS|CPL|CPA|Mobil|Influencer|Offer|Kampanyası|Sale|Indirim|Online/gi, '') // Teknik kelimeleri siler
     .replace(/\s+/g, ' ') // Fazla boşlukları temizler
+    .replace(/-$/, '') // Sondaki tireleri temizler
     .trim();
 };
 
@@ -30,6 +32,9 @@ const parseRate = (rate: any): number => {
     return isNaN(parsed) ? 0 : parsed;
 };
 
+/**
+ * Üç farklı ajansın verilerini çeker, standardize eder ve birleştirir.
+ */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const agencies = [
     {
@@ -37,8 +42,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       url: 'https://feed.gelirortaklari.com/api/v1/search',
       key: '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3',
       method: 'POST',
-      body: JSON.stringify({ value: "" }),
-      authType: 'api-key'
+      body: JSON.stringify({ "value": "" }),
+      authType: 'x-api-key'
     },
     {
       name: 'Affocean',
@@ -56,15 +61,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     }
   ];
 
-  const allResults = await Promise.allSettled(
+  const results = await Promise.allSettled(
     agencies.map(async (agency) => {
       try {
-        const headers: any = {
-          ...DOMAIN_HEADERS,
-          'Content-Type': 'application/json'
-        };
-
-        if (agency.authType === 'api-key') {
+        const headers: any = { ...DOMAIN_HEADERS };
+        
+        if (agency.authType === 'x-api-key') {
             headers['x-api-key'] = agency.key;
         } else {
             headers['Authorization'] = `Bearer ${agency.key}`;
@@ -78,17 +80,17 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         });
 
         if (!response.ok) {
-            console.error(`${agency.name} HTTP Hatası:`, response.status);
+            console.error(`[Server] ${agency.name} Hatası:`, response.status);
             return [];
         }
 
         const resData = await response.json();
         
-        // Veri hiyerarşisini kontrol et
+        // Farklı JSON hiyerarşilerinde veriyi ara
         const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
 
         if (!Array.isArray(rawList)) {
-            console.error(`${agency.name} beklenmeyen veri yapısı döndürdü:`, resData);
+            console.error(`[Server] ${agency.name} geçersiz veri formatı döndürdü.`);
             return [];
         }
 
@@ -104,14 +106,23 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           category: item.category || "Genel"
         }));
       } catch (err) {
-        console.error(`${agency.name} Veri Çekme Hatası:`, err);
+        console.error(`[Server] ${agency.name} Bağlantı Hatası:`, err);
         return [];
       }
     })
   );
 
-  const combined = allResults.flatMap(r => r.status === 'fulfilled' ? r.value : []);
-  console.log("Tüm Ajanslardan Gelen Toplam Veri:", combined.length);
+  const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  return combined;
+  // Marka ismine göre tekilleştir (Aynı marka varsa en yüksek oranlıyı tut)
+  const uniqueMap = new Map<string, Brand>();
+  combined.forEach(brand => {
+      const key = brand.name.toLowerCase().trim();
+      const existing = uniqueMap.get(key);
+      if (!existing || brand.donationRate > existing.donationRate) {
+          uniqueMap.set(key, brand);
+      }
+  });
+
+  return Array.from(uniqueMap.values());
 }

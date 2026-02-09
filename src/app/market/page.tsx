@@ -33,7 +33,6 @@ import { getApiOffers } from '@/app/actions/market';
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
-    // Dynamic letter-based placeholder for missing or failing logos
     if (hasError || !brand.logoUrl || brand.logoUrl === "" || brand.logoUrl === "null") {
         return (
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2 text-center overflow-hidden">
@@ -89,7 +88,7 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
   const [activeEntityType, setActiveEntityType] = useState('all');
   const { toast } = useToast();
-  const [sortKey, setSortKey] = useState('followers');
+  const [sortKey, setSortKey] = useState('donationRate');
   const [onlyDonating, setOnlyDonating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);
@@ -107,11 +106,11 @@ export default function MarketPage() {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
-                console.log("Tüm Ajanslardan Gelen Toplam Veri:");
+                console.log("Tüm Ajanslardan Gelen Birleşmiş Veri:");
                 console.table(data);
             }
         } catch (e) {
-            console.error("Market API load error:", e);
+            console.error("Market API error:", e);
             toast({ variant: 'destructive', title: 'Hata', description: 'Ajans servislerinden veri alınamadı.' });
         } finally {
             setIsApiLoading(false);
@@ -121,18 +120,8 @@ export default function MarketPage() {
   }, [toast]);
 
   const brandsToShow = useMemo(() => {
+    // Statik veriler ve API verilerini birleştir
     let combinedList: Brand[] = [...allEntityLists, ...apiBrands];
-
-    // Deduplication by name, keep higher rate
-    const uniqueBrandsMap = new Map<string, Brand>();
-    combinedList.forEach(item => {
-        const key = item.name.toLowerCase().trim();
-        const existing = uniqueBrandsMap.get(key);
-        if (!existing || (item.donationRate || 0) > (existing.donationRate || 0)) {
-            uniqueBrandsMap.set(key, item);
-        }
-    });
-    combinedList = Array.from(uniqueBrandsMap.values());
 
     // Search filter
     if (searchTerm.trim()) {
@@ -160,14 +149,14 @@ export default function MarketPage() {
 
     // Optional donation filter
     if (onlyDonating) {
-        combinedList = combinedList.filter(item => (item.donationRate || 0) > 0);
+        combinedList = combinedList.filter(item => item.donationRate > 0);
     }
     
     // Sort
     combinedList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
-                return (b.donationRate || 0) - (a.donationRate || 0);
+                return b.donationRate - a.donationRate;
             case 'name':
                 return a.name.localeCompare(b.name, 'tr');
             case 'followers':
@@ -176,7 +165,7 @@ export default function MarketPage() {
         }
     });
 
-    if (activeCategory === 'Öne çıkanlar') {
+    if (activeCategory === 'Öne çıkanlar' && !searchTerm) {
         return combinedList.slice(0, 100); 
     }
     
@@ -269,8 +258,8 @@ export default function MarketPage() {
                         <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl bg-background shadow-sm border-none"><ArrowDownUp className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
-                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Popülerlik</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('donationRate')}>Bağış Oranı</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('followers')}>Popülerlik</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -279,10 +268,10 @@ export default function MarketPage() {
             <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveEntityType(value)}>
                 <TabsList className="grid w-full grid-cols-5 h-9 p-1 bg-muted/50 rounded-xl">
                     <TabsTrigger value="all" className="rounded-lg text-[10px] sm:text-xs">Tümü</TabsTrigger>
-                    <TabsTrigger value="cooperative" className="rounded-lg text-[10px] sm:text-xs">Kooperatif</TabsTrigger>
-                    <TabsTrigger value="economic" className="rounded-lg text-[10px] sm:text-xs">İktisadi</TabsTrigger>
                     <TabsTrigger value="brand" className="rounded-lg text-[10px] sm:text-xs">Marka</TabsTrigger>
+                    <TabsTrigger value="cooperative" className="rounded-lg text-[10px] sm:text-xs">Koop.</TabsTrigger>
                     <TabsTrigger value="social" className="rounded-lg text-[10px] sm:text-xs">Sosyal</TabsTrigger>
+                    <TabsTrigger value="economic" className="rounded-lg text-[10px] sm:text-xs">İktisadi</TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
@@ -313,7 +302,7 @@ export default function MarketPage() {
                     <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
                     {isApiLoading && (
                         <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
-                            <Loader2 className="h-3 w-3 animate-spin" /> Veriler Güncelleniyor...
+                            <Loader2 className="h-3 w-3 animate-spin" /> API Verisi Bekleniyor...
                         </div>
                     )}
                 </div>
@@ -321,7 +310,7 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => {
-                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-');
+                        const isApiBrand = brand.agency !== undefined;
                         return (
                             <Fragment key={brand.id}>
                                 <Link 

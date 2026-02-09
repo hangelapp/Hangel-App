@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -203,11 +202,7 @@ export default function AppHeader() {
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
-            <Link href="/profile" passHref className='lg:hidden'>
-              <Button variant="ghost" size="icon">
-                  <UserAvatar />
-              </Button>
-            </Link>
+            <div className="hidden lg:block w-4" /> {/* Spacer instead of logo */}
           </div>
 
           <div className="flex items-center gap-1">
@@ -238,6 +233,11 @@ export default function AppHeader() {
                 <Button variant="ghost" size="icon">
                     <Bell className="h-5 w-5" />
                 </Button>
+            </Link>
+            <Link href="/profile" passHref className="lg:hidden ml-1">
+              <Button variant="ghost" size="icon">
+                  <UserAvatar />
+              </Button>
             </Link>
           </div>
         </div>
