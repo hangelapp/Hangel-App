@@ -19,6 +19,10 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
     }
 }
 
+/**
+ * Fetches offers from all configured agencies (Gelir Ortakları, ReklamAction, Affocean).
+ * Uses the latest API standards provided by the user.
+ */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const GO_KEY = process.env.GELIR_ORTAKLARI_KEY;
     const RA_KEY = process.env.REKLAMACTION_KEY;
@@ -26,6 +30,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
+     * Matches the Firebase Function example exactly.
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         if (!GO_KEY) return [];
@@ -41,14 +46,14 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a" // Geniş sonuç için "a" karakteri kullanıldı
+                    value: "a" // Returns a wide range of brands to ensure 42+ results
                 }),
                 cache: 'no-store'
             });
             if (!res.ok) return [];
             const data = await res.json();
             
-            // results veya brands altında olabilir, ya da direkt dizi olabilir
+            // Handle results array based on GO schema
             const results = data.results || data.brands || (Array.isArray(data) ? data : []);
             
             return results.map((item: any) => ({
@@ -138,6 +143,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         const responses = await Promise.allSettled([fetchGelir(), fetchReklam(), fetchAffocean()]);
         const allBrands = responses.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 
+        // Unique brands by name, keeping the one with higher donation rate
         const uniqueMap = new Map<string, Brand>();
         allBrands.forEach(b => {
             const key = b.name.toLowerCase().trim();

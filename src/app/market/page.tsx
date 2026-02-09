@@ -4,7 +4,7 @@
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Camera, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,6 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
@@ -32,6 +31,9 @@ import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getApiOffers } from '@/app/actions/market';
 
+/**
+ * Handles brand logo rendering with an automatic fallback to mark's initials.
+ */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
@@ -172,6 +174,7 @@ export default function MarketPage() {
         }
     });
 
+    // Ensure we list at least 42 brands if available by using a high limit for featured
     if (activeCategory === 'Öne çıkanlar') {
         return filteredList.slice(0, 100); 
     }
