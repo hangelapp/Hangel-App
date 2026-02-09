@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -207,7 +206,6 @@ export default function MarketPage() {
     <div className="flex flex-col h-full bg-secondary/30">
         <div className="p-2 space-y-2 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
             <div className="flex items-center gap-2">
-                <HangelLogo className="text-2xl" />
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
