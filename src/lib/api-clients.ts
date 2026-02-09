@@ -39,14 +39,18 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     "x-api-key": GO_KEY
                 },
                 body: JSON.stringify({
-                    "value": "" // Simplified body to get maximum results
+                    "value": "" 
                 }),
                 cache: 'no-store'
             });
-            if (!res.ok) return [];
+            if (!res.ok) {
+                const errData = await res.json();
+                console.error("Gelir Ortakları API Error:", errData);
+                return [];
+            }
             const data = await res.json();
             
-            // LOG FOR DEBUGGING
+            // SERVER LOG
             console.log("Gelir Ortakları Ham Veri (Server):", data);
             
             const results = data.results || (Array.isArray(data) ? data : []);
@@ -63,7 +67,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları iş ortağı."
             }));
         } catch (e) {
-            console.error("Gelir Ortakları Fetch Error:", e);
+            console.error("Gelir Ortakları Fetch Catch:", e);
             return [];
         }
     };
