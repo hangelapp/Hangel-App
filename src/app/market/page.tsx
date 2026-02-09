@@ -107,8 +107,6 @@ export default function MarketPage() {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
-                console.log("--- AJANS VERİ RAPORU ---");
-                console.table(data.map(b => ({ Marka: b.name, Oran: `%${b.donationRate}`, Kaynak: b.agency })));
             }
         } catch (e) {
             console.error("Market API error:", e);
@@ -121,16 +119,13 @@ export default function MarketPage() {
   }, [toast]);
 
   const brandsToShow = useMemo(() => {
-    // STATIK VERILERI KALDIRDIK - Sadece API'den gelen gerçek ajans verileri kullanılıyor.
     let combinedList: Brand[] = [...apiBrands];
 
-    // Search filter
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
         combinedList = combinedList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
-    // Category filter
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const mappedCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (mappedCategories && mappedCategories.length > 0) {
@@ -143,17 +138,14 @@ export default function MarketPage() {
       }
     }
 
-    // Entity type filter
     if (activeEntityType !== 'all') {
       combinedList = combinedList.filter(item => item.type === activeEntityType);
     }
 
-    // Optional donation filter
     if (onlyDonating) {
         combinedList = combinedList.filter(item => item.donationRate > 0);
     }
     
-    // Sort
     combinedList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
@@ -195,11 +187,27 @@ export default function MarketPage() {
   return (
     <div className="flex flex-col h-full bg-secondary/30">
         <div className="p-2 space-y-2 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
+            {/* DEBUG RAPOR KUTUSU (MAC İÇİN) */}
+            <div className="bg-white border-2 border-primary/20 rounded-2xl p-4 mb-2 grid grid-cols-3 gap-2 text-center shadow-lg animate-in slide-in-from-top duration-500">
+                <div className="flex flex-col">
+                    <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">Gelir Ortakları</p>
+                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency === 'Gelir Ortakları').length}</p>
+                </div>
+                <div className="flex flex-col border-x border-muted px-2">
+                    <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">Affocean</p>
+                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency === 'Affocean').length}</p>
+                </div>
+                <div className="flex flex-col">
+                    <p className="text-[9px] font-black uppercase text-muted-foreground leading-none mb-1">ReklamAction</p>
+                    <p className="text-2xl font-black text-primary">{apiBrands.filter(b => b.agency === 'ReklamAction').length}</p>
+                </div>
+            </div>
+
             <div className="flex items-center gap-2">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
-                        placeholder="Gerçek Ajans Verilerinde Ara"
+                        placeholder="Platformda Ara..."
                         className="pl-10 pr-12 h-10 rounded-xl border-none bg-muted/50 focus-visible:ring-1"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -301,7 +309,7 @@ export default function MarketPage() {
                     <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
                     {isApiLoading && (
                         <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
-                            <Loader2 className="h-3 w-3 animate-spin" /> API Verisi Bekleniyor...
+                            <Loader2 className="h-3 w-3 animate-spin" /> Veriler Güncelleniyor...
                         </div>
                     )}
                 </div>
@@ -309,7 +317,6 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => {
-                        const isApiBrand = true; // Artık hepsi API markası
                         return (
                             <Fragment key={brand.id}>
                                 <Link 
@@ -336,7 +343,7 @@ export default function MarketPage() {
                                             )}>
                                                 {brand.name}
                                             </p>
-                                            <p className="text-[8px] font-black uppercase text-primary tracking-tighter">
+                                            <p className="text-[8px] font-black uppercase text-primary/60 tracking-tighter">
                                                 {brand.agency}
                                             </p>
                                         </div>
@@ -352,7 +359,7 @@ export default function MarketPage() {
                             <WifiOff className="h-12 w-12 text-muted-foreground/20 mx-auto" />
                             <div className="text-center space-y-1">
                                 <p className="text-foreground font-bold text-sm">Şu an ajans bağlantısı kurulamıyor.</p>
-                                <p className="text-muted-foreground text-xs font-medium">Lütfen internet bağlantınızı kontrol edin veya daha sonra tekrar deneyin.</p>
+                                <p className="text-muted-foreground text-xs font-medium">Veriler yüklenemedi, lütfen daha sonra tekrar deneyin.</p>
                             </div>
                         </div>
                     )
