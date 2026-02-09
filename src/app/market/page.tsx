@@ -100,10 +100,10 @@ export default function MarketPage() {
             if (data && Array.isArray(data) && data.length > 0) {
                 setApiBrands(data);
             } else {
-                setApiBrands(allEntityLists);
+                setApiBrands([]);
             }
         } catch (e) {
-            setApiBrands(allEntityLists);
+            setApiBrands([]);
         } finally {
             setIsApiLoading(false);
         }
@@ -112,6 +112,7 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
+    // API'den veri geldiyse onu kullan, yoksa demo verileri (allEntityLists) kullan
     let combinedList: Brand[] = apiBrands.length > 0 ? [...apiBrands] : [...allEntityLists];
 
     if (searchTerm.trim()) {

@@ -1,14 +1,10 @@
 'use client';
 
 import { 
-    Award, Building, Calendar, CheckCircle, Dog, DollarSign, Download, Eye, Hand, Heart, 
-    HeartPulse, Home, Languages, Leaf, Linkedin, Mail, MapPin, Milestone, Pencil, QrCode, 
-    School, Share2, Shield, ShieldCheck, Sparkles, Star, Users, Utensils, PawPrint, Grape, 
-    Palette, Dumbbell, Siren, Briefcase, Handshake, Landmark, Plane, Cpu, Store, LayoutGrid, 
-    UserCircle, BookText, Settings2, HeartHandshake, Wallet, ShoppingBag, ShoppingCart, 
-    Newspaper, Megaphone, Smartphone, StarHalf
+    Leaf, Heart, HeartHandshake, ShoppingBag, Store, Globe, Users, 
+    Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign
 } from 'lucide-react';
-import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory } from './types';
+import type { Post, Brand, Event, Volunteering, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory } from './types';
 
 export const user: User = {
     id: '1',
@@ -97,80 +93,121 @@ export const timelinePosts: Post[] = [
 ];
 
 export const allEntityLists: Brand[] = [
-    // AYAKKABI
+    // --- AYAKKABI ---
     { id: 'ay-1', name: 'Ayakkabı Dünyası', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/ayakkabidunyasi.com.tr', type: 'brand' },
     { id: 'ay-2', name: 'Decathlon', category: 'Ayakkabı', donationRate: 4, logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', type: 'brand' },
     { id: 'ay-3', name: 'Sportstyle', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/sportstyle.com.tr', type: 'brand' },
     { id: 'ay-4', name: 'Sneakscloud', category: 'Ayakkabı', donationRate: 7, logoUrl: 'https://logo.clearbit.com/sneakscloud.com', type: 'brand' },
     { id: 'ay-5', name: 'Sportive', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/sportive.com.tr', type: 'brand' },
-    { id: 'ay-6', name: 'Skechers', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/skechers.com.tr', type: 'brand' },
-    { id: 'ay-7', name: 'Columbia', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/columbia.com.tr', type: 'brand' },
-    { id: 'ay-8', name: 'Converse', category: 'Ayakkabı', donationRate: 10, logoUrl: 'https://logo.clearbit.com/converse.com', type: 'brand' },
-    { id: 'ay-9', name: 'SuperStep', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', type: 'brand' },
-    { id: 'ay-10', name: 'PUMA', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/puma.com', type: 'brand' },
-    { id: 'ay-11', name: 'FLO', category: 'Ayakkabı', donationRate: 3, logoUrl: 'https://logo.clearbit.com/flo.com.tr', type: 'brand' },
+    { id: 'ay-6', name: 'FashFed', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/fashfed.com', type: 'brand' },
+    { id: 'ay-7', name: 'Skechers', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/skechers.com.tr', type: 'brand' },
+    { id: 'ay-8', name: 'MarkaStok', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/markastok.com', type: 'brand' },
+    { id: 'ay-9', name: 'Playsports', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/playsports.com.tr', type: 'brand' },
+    { id: 'ay-10', name: 'Columbia', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/columbia.com.tr', type: 'brand' },
+    { id: 'ay-11', name: 'Converse', category: 'Ayakkabı', donationRate: 10, logoUrl: 'https://logo.clearbit.com/converse.com', type: 'brand' },
+    { id: 'ay-12', name: 'Hotiç', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/hotic.com.tr', type: 'brand' },
+    { id: 'ay-13', name: 'SuperStep', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', type: 'brand' },
+    { id: 'ay-14', name: 'PUMA', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/puma.com', type: 'brand' },
+    { id: 'ay-15', name: 'Sporthink', category: 'Ayakkabı', donationRate: 7, logoUrl: 'https://logo.clearbit.com/sporthink.com.tr', type: 'brand' },
+    { id: 'ay-16', name: 'FLO', category: 'Ayakkabı', donationRate: 3, logoUrl: 'https://logo.clearbit.com/flo.com.tr', type: 'brand' },
+    { id: 'ay-17', name: 'Intersport', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/intersport.com.tr', type: 'brand' },
+    { id: 'ay-18', name: 'The Moose Bay', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/themoosebay.com', type: 'brand' },
+    { id: 'ay-19', name: 'Sporpark', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/sporpark.com.tr', type: 'brand' },
 
-    // KOZMETIK
+    // --- KOZMETIK & BAKIM ---
     { id: 'kz-1', name: 'Gratis', category: 'Kozmetik & Bakım', donationRate: 4, logoUrl: 'https://logo.clearbit.com/gratis.com', type: 'brand' },
-    { id: 'kz-2', name: 'Flormar', category: 'Kozmetik & Bakım', donationRate: 8, logoUrl: 'https://logo.clearbit.com/flormar.com.tr', type: 'brand' },
-    { id: 'kz-3', name: 'Cosmed', category: 'Kozmetik & Bakım', donationRate: 10, logoUrl: 'https://logo.clearbit.com/cosmed.com.tr', type: 'brand' },
-    { id: 'kz-4', name: 'Supplementler', category: 'Kozmetik & Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/supplementler.com', type: 'brand' },
-    { id: 'kz-5', name: 'Vitaminler', category: 'Kozmetik & Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/vitaminler.com', type: 'brand' },
+    { id: 'kz-2', name: 'Lona Cosmetics', category: 'Kozmetik & Bakım', donationRate: 12, logoUrl: 'https://logo.clearbit.com/lonacosmetics.com', type: 'brand' },
+    { id: 'kz-3', name: 'Arkopharma', category: 'Kozmetik & Bakım', donationRate: 8, logoUrl: 'https://logo.clearbit.com/arkopharma.com', type: 'brand' },
+    { id: 'kz-4', name: 'Flormar', category: 'Kozmetik & Bakım', donationRate: 8, logoUrl: 'https://logo.clearbit.com/flormar.com.tr', type: 'brand' },
+    { id: 'kz-5', name: 'Cosmed', category: 'Kozmetik & Bakım', donationRate: 10, logoUrl: 'https://logo.clearbit.com/cosmed.com.tr', type: 'brand' },
+    { id: 'kz-6', name: 'Supplementler', category: 'Kozmetik & Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/supplementler.com', type: 'brand' },
+    { id: 'kz-7', name: 'Vitaminler', category: 'Kozmetik & Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/vitaminler.com', type: 'brand' },
+    { id: 'kz-8', name: 'CocoBody', category: 'Kozmetik & Bakım', donationRate: 15, logoUrl: 'https://logo.clearbit.com/cocobody.com', type: 'brand' },
+    { id: 'kz-9', name: 'Recete', category: 'Kozmetik & Bakım', donationRate: 6, logoUrl: 'https://logo.clearbit.com/recete.com', type: 'brand' },
 
-    // TATIL
+    // --- TATIL & SEYAHAT ---
     { id: 'tt-1', name: 'Tatilbudur', category: 'Tatil & Seyahat', donationRate: 3, logoUrl: 'https://logo.clearbit.com/tatilbudur.com', type: 'brand' },
     { id: 'tt-2', name: 'Etstur', category: 'Tatil & Seyahat', donationRate: 2, logoUrl: 'https://logo.clearbit.com/etstur.com', type: 'brand' },
     { id: 'tt-3', name: 'Touristica', category: 'Tatil & Seyahat', donationRate: 4, logoUrl: 'https://logo.clearbit.com/touristica.com.tr', type: 'brand' },
     { id: 'tt-4', name: 'SETUR', category: 'Tatil & Seyahat', donationRate: 3, logoUrl: 'https://logo.clearbit.com/setur.com.tr', type: 'brand' },
-    { id: 'tt-5', name: 'Ucuzabilet', category: 'Tatil & Seyahat', donationRate: 2, logoUrl: 'https://logo.clearbit.com/ucuzabilet.com', type: 'brand' },
+    { id: 'tt-5', name: 'Miniyol', category: 'Tatil & Seyahat', donationRate: 10, logoUrl: 'https://logo.clearbit.com/miniyol.com', type: 'brand' },
+    { id: 'tt-6', name: 'Ucuzabilet', category: 'Tatil & Seyahat', donationRate: 2, logoUrl: 'https://logo.clearbit.com/ucuzabilet.com', type: 'brand' },
+    { id: 'tt-7', name: 'Tatildekirala', category: 'Tatil & Seyahat', donationRate: 5, logoUrl: 'https://logo.clearbit.com/tatildekirala.com', type: 'brand' },
+    { id: 'tt-8', name: 'Bilet.com', category: 'Tatil & Seyahat', donationRate: 4, logoUrl: 'https://logo.clearbit.com/bilet.com', type: 'brand' },
+    { id: 'tt-9', name: 'Samsonite', category: 'Tatil & Seyahat', donationRate: 6, logoUrl: 'https://logo.clearbit.com/samsonite.com.tr', type: 'brand' },
 
-    // GIYIM
+    // --- GIYIM ---
     { id: 'gy-1', name: 'Beymen', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/beymen.com', type: 'brand' },
     { id: 'gy-2', name: 'Suwen', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/suwen.com.tr', type: 'brand' },
-    { id: 'gy-3', name: 'İpekyol', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/ipekyol.com.tr', type: 'brand' },
-    { id: 'gy-4', name: 'Koton', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/koton.com', type: 'brand' },
-    { id: 'gy-5', name: 'H&M', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/hm.com', type: 'brand' },
-    { id: 'gy-6', name: 'Boyner', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/boyner.com.tr', type: 'brand' },
-    { id: 'gy-7', name: 'Mango', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/mango.com', type: 'brand' },
-    { id: 'gy-8', name: 'NetWork', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/network.com.tr', type: 'brand' },
-    { id: 'gy-9', name: 'Altınyıldız', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/altinyildizclassics.com', type: 'brand' },
-    { id: 'gy-10', name: 'Lacoste', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/lacoste.com.tr', type: 'brand' },
+    { id: 'gy-3', name: 'Aker', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/aker.com.tr', type: 'brand' },
+    { id: 'gy-4', name: 'Mizalle', category: 'Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/mizalle.com', type: 'brand' },
+    { id: 'gy-5', name: 'İpekyol', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/ipekyol.com.tr', type: 'brand' },
+    { id: 'gy-6', name: 'Twist', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/twist.com.tr', type: 'brand' },
+    { id: 'gy-7', name: 'Slazenger', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/slazenger.com.tr', type: 'brand' },
+    { id: 'gy-8', name: 'Koton', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/koton.com', type: 'brand' },
+    { id: 'gy-9', name: 'H&M', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/hm.com', type: 'brand' },
+    { id: 'gy-10', name: 'Machka', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/machka.com.tr', type: 'brand' },
+    { id: 'gy-11', name: 'Fitmoda', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/fitmoda.com', type: 'brand' },
+    { id: 'gy-12', name: 'Boyner', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/boyner.com.tr', type: 'brand' },
+    { id: 'gy-13', name: 'Dagi', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/dagi.com.tr', type: 'brand' },
+    { id: 'gy-14', name: 'Addax', category: 'Giyim', donationRate: 8, logoUrl: 'https://logo.clearbit.com/addax.com.tr', type: 'brand' },
+    { id: 'gy-15', name: 'Marks & Spencer', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/marksandspencer.com.tr', type: 'brand' },
+    { id: 'gy-16', name: 'GAP', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/gap.com.tr', type: 'brand' },
+    { id: 'gy-17', name: 'Mango', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/mango.com', type: 'brand' },
+    { id: 'gy-18', name: 'Divarese', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/divarese.com.tr', type: 'brand' },
+    { id: 'gy-19', name: 'LTB', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/ltbjeans.com', type: 'brand' },
+    { id: 'gy-20', name: 'Benetton', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/benetton.com', type: 'brand' },
+    { id: 'gy-21', name: 'Colins', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/colins.com.tr', type: 'brand' },
+    { id: 'gy-22', name: 'NetWork', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/network.com.tr', type: 'brand' },
+    { id: 'gy-23', name: 'DS Damat', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/dsdamat.com', type: 'brand' },
+    { id: 'gy-24', name: 'Altınyıldız', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/altinyildizclassics.com', type: 'brand' },
+    { id: 'gy-25', name: 'Yargıcı', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/yargici.com', type: 'brand' },
+    { id: 'gy-26', name: 'Lacoste', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/lacoste.com.tr', type: 'brand' },
+    { id: 'gy-27', name: 'US Polo', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/uspoloassn.com.tr', type: 'brand' },
 
-    // BEBEK & COCUK
-    { id: 'bc-1', name: 'E-bebek', category: 'Anne & Bebek', donationRate: 4, logoUrl: 'https://logo.clearbit.com/ebebek.com', type: 'brand' },
-    { id: 'bc-2', name: 'Toyzz Shop', category: 'Anne & Bebek', donationRate: 5, logoUrl: 'https://logo.clearbit.com/toyzzshop.com', type: 'brand' },
-    { id: 'bc-3', name: 'Carter’s', category: 'Anne & Bebek', donationRate: 6, logoUrl: 'https://logo.clearbit.com/carters.com', type: 'brand' },
+    // --- ANNE & BEBEK ---
+    { id: 'bc-1', name: 'Carter’s', category: 'Anne & Bebek', donationRate: 6, logoUrl: 'https://logo.clearbit.com/carters.com', type: 'brand' },
+    { id: 'bc-2', name: 'E-bebek', category: 'Anne & Bebek', donationRate: 4, logoUrl: 'https://logo.clearbit.com/ebebek.com', type: 'brand' },
+    { id: 'bc-3', name: 'Jacadi', category: 'Anne & Bebek', donationRate: 8, logoUrl: 'https://logo.clearbit.com/jacadi.com.tr', type: 'brand' },
+    { id: 'bc-4', name: 'Toyzz Shop', category: 'Anne & Bebek', donationRate: 5, logoUrl: 'https://logo.clearbit.com/toyzzshop.com', type: 'brand' },
 
-    // EV & YASAM
-    { id: 'ev-1', name: 'Koçtaş', category: 'Ev & Yaşam', donationRate: 3, logoUrl: 'https://logo.clearbit.com/koctas.com.tr', type: 'brand' },
-    { id: 'ev-2', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand' },
-    { id: 'ev-3', name: 'Arçelik', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/arcelik.com.tr', type: 'brand' },
-    { id: 'ev-4', name: 'Beko', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/beko.com.tr', type: 'brand' },
-    { id: 'ev-5', name: 'Taç', category: 'Ev & Yaşam', donationRate: 6, logoUrl: 'https://logo.clearbit.com/tac.com.tr', type: 'brand' },
+    // --- EV & YASAM ---
+    { id: 'ev-1', name: 'Doğtaş Home', category: 'Ev & Yaşam', donationRate: 3, logoUrl: 'https://logo.clearbit.com/dogtas.com', type: 'brand' },
+    { id: 'ev-2', name: 'Kelebek Mobilya', category: 'Ev & Yaşam', donationRate: 3, logoUrl: 'https://logo.clearbit.com/kelebek.com', type: 'brand' },
+    { id: 'ev-3', name: 'Koçtaş', category: 'Ev & Yaşam', donationRate: 3, logoUrl: 'https://logo.clearbit.com/koctas.com.tr', type: 'brand' },
+    { id: 'ev-4', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand' },
+    { id: 'ev-5', name: 'Arçelik', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/arcelik.com.tr', type: 'brand' },
+    { id: 'ev-6', name: 'Mudo', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/mudo.com.tr', type: 'brand' },
+    { id: 'ev-7', name: 'Beko', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/beko.com.tr', type: 'brand' },
+    { id: 'ev-8', name: 'Fakir', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/fakir.com.tr', type: 'brand' },
+    { id: 'ev-9', name: 'Taç', category: 'Ev & Yaşam', donationRate: 6, logoUrl: 'https://logo.clearbit.com/tac.com.tr', type: 'brand' },
+    { id: 'ev-10', name: 'Kütahya Porselen', category: 'Ev & Yaşam', donationRate: 7, logoUrl: 'https://logo.clearbit.com/kutahyaporselen.com.tr', type: 'brand' },
 
-    // SUPERMARKET & PLATFORM
+    // --- SÜPERMARKET ---
     { id: 'sm-1', name: 'A101', category: 'Süpermarket', donationRate: 2, logoUrl: 'https://logo.clearbit.com/a101.com.tr', type: 'brand' },
     { id: 'sm-2', name: 'Getir', category: 'Süpermarket', donationRate: 3, logoUrl: 'https://logo.clearbit.com/getir.com', type: 'brand' },
     { id: 'sm-3', name: 'CarrefourSA', category: 'Süpermarket', donationRate: 2, logoUrl: 'https://logo.clearbit.com/carrefoursa.com', type: 'brand' },
     { id: 'sm-4', name: 'Pazarama', category: 'Süpermarket', donationRate: 4, logoUrl: 'https://logo.clearbit.com/pazarama.com', type: 'brand' },
     { id: 'sm-5', name: 'n11', category: 'Süpermarket', donationRate: 3, logoUrl: 'https://logo.clearbit.com/n11.com', type: 'brand' },
 
-    // ELEKTRONIK
+    // --- ELEKTRONIK ---
     { id: 'el-1', name: 'Samsung', category: 'Elektronik', donationRate: 3, logoUrl: 'https://logo.clearbit.com/samsung.com', type: 'brand' },
-    { id: 'el-2', name: 'MediaMarkt', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/mediamarkt.com.tr', type: 'brand' },
-    { id: 'el-3', name: 'Teknosa', category: 'Elektronik', donationRate: 3, logoUrl: 'https://logo.clearbit.com/teknosa.com', type: 'brand' },
-    { id: 'el-4', name: 'Huawei', category: 'Elektronik', donationRate: 4, logoUrl: 'https://logo.clearbit.com/huawei.com', type: 'brand' },
+    { id: 'el-2', name: 'Xiaomi', category: 'Elektronik', donationRate: 4, logoUrl: 'https://logo.clearbit.com/mi.com', type: 'brand' },
+    { id: 'el-3', name: 'MediaMarkt', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/mediamarkt.com.tr', type: 'brand' },
+    { id: 'el-4', name: 'Teknosa', category: 'Elektronik', donationRate: 3, logoUrl: 'https://logo.clearbit.com/teknosa.com', type: 'brand' },
+    { id: 'el-5', name: 'Huawei', category: 'Elektronik', donationRate: 4, logoUrl: 'https://logo.clearbit.com/huawei.com', type: 'brand' },
 
-    // GIDA
+    // --- GIDA & ICECEK ---
     { id: 'gd-1', name: 'Tchibo', category: 'Gıda & İçecek', donationRate: 6, logoUrl: 'https://logo.clearbit.com/tchibo.com.tr', type: 'brand' },
     { id: 'gd-2', name: 'Little Caesars', category: 'Gıda & İçecek', donationRate: 8, logoUrl: 'https://logo.clearbit.com/littlecaesars.com.tr', type: 'brand' },
     { id: 'gd-3', name: 'Fellas', category: 'Gıda & İçecek', donationRate: 12, logoUrl: 'https://logo.clearbit.com/fellasfoods.com.tr', type: 'brand' },
 
-    // AKSESUAR
+    // --- AKSESUAR & TAKI ---
     { id: 'ak-1', name: 'Altınbaş', category: 'Aksesuar & Takı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/altinbas.com', type: 'brand' },
     { id: 'ak-2', name: 'Saat&Saat', category: 'Aksesuar & Takı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/saatvesaat.com.tr', type: 'brand' },
+    { id: 'ak-3', name: 'Lizay Pırlanta', category: 'Aksesuar & Takı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/lizaypirlanta.com', type: 'brand' },
 
-    // HOBI & HIZMET
+    // --- HOBI & HIZMET ---
     { id: 'hb-1', name: 'Idefix', category: 'Hobi & Hizmet', donationRate: 5, logoUrl: 'https://logo.clearbit.com/idefix.com', type: 'brand' },
     { id: 'hb-2', name: 'D&R', category: 'Hobi & Hizmet', donationRate: 4, logoUrl: 'https://logo.clearbit.com/dr.com.tr', type: 'brand' },
     { id: 'hb-3', name: 'Sosyopix', category: 'Hobi & Hizmet', donationRate: 10, logoUrl: 'https://logo.clearbit.com/sosyopix.com', type: 'brand' },
@@ -203,8 +240,8 @@ export const categoryMapping = {
     'Tatil & Seyahat': ['Tatil', 'Seyahat', 'Bilet'],
     'Anne & Bebek': ['Anne', 'Bebek', 'Çocuk'],
     'Gıda & İçecek': ['Gıda', 'İçecek', 'Kahve'],
-    'Aksesuar & Takı': ['Aksesuar', 'Takı', 'Saat'],
-    'Hobi & Hizmet': ['Hobi', 'Hizmet', 'Kitap', 'Pet']
+    'Aksesuar & Takı': ['Aksesuar', 'Takı', 'Saat', 'Pırlanta'],
+    'Hobi & Hizmet': ['Hobi', 'Hizmet', 'Kitap', 'Pet', 'Hizmetleri']
 };
 
 export const adBanners: AdBanner[] = [
