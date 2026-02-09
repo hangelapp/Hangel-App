@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 /**
  * Gelişmiş Sunucu Proxy: CORS engellerini aşar ve ajans özel başlıklarını yönetir.
+ * ReklamAction ve Gelir Ortakları için Bearer token desteği eklenmiştir.
  */
 export async function POST(request: Request) {
   try {
@@ -17,15 +18,9 @@ export async function POST(request: Request) {
       'Content-Type': 'application/json',
     };
 
-    // ReklamAction ve Affocean için Bearer token kontrolü (Python örneğine uygun)
-    if ((agency === 'ReklamAction' || agency === 'Affocean') && headers?.Authorization) {
+    // Python örneklerindeki Bearer Token yapısı aktarımı
+    if (headers?.Authorization) {
         finalHeaders['Authorization'] = headers.Authorization;
-    }
-
-    // Gelir Ortakları için sadece gerekli olanları bırak
-    if (agency === 'Gelir Ortakları') {
-      delete finalHeaders['Origin'];
-      delete finalHeaders['Referer'];
     }
 
     const response = await fetch(finalUrl, {

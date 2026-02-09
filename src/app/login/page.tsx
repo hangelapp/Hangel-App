@@ -225,7 +225,7 @@ const GridItem = ({
 const Footer = () => {
     const footerGroups = [
         { title: "Keşfedin", links: [{label: "Market", href: "/market"}, {label: "Gönüllülük", href: "/volunteering"}, {label: "STK'lar", href: "/ngos"}, {label: "Kulüpler", href: "/admin/clubs"}, {label: "Kütüphane", href: "/library"}] },
-        { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/social-impact"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/careers"}] },
+        { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/social-impact"}, {label: "Basın Odası", href: "/press"}, {label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri"}, {label: "Kariyer", href: "/careers"}] },
         { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}, {label: "Temsilci Ol", href: "/contact/universities"}, {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}, {label: "Kamu İşbirlikleri", href: "/corporate"}] },
         { title: "hangel Derneği", links: [{label: "Dernek Hakkında", href: "/hangelassociation/about"}, {label: "Dernek Etkinlikleri", href: "/hangelassociation/events"}, {label: "Uluslararası Çalıştay", href: "/hangelassociation/workshop"}, {label: "Mevzuat Taslağı", href: "/hangelassociation/legislation"}] },
         { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Kayıt Ol", href: "/login/selection?action=register"}, {label: "Destek Merkezi", href: "/support"}, {label: "Geri Bildirim", href: "/feedback"}] },

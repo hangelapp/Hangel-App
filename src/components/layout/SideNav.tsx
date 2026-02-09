@@ -54,6 +54,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: any)
   return (
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50 border-r bg-secondary/50">
       <div className="flex grow flex-col overflow-y-auto px-4 pb-4 pt-8">
+        <div className="h-12 mb-8" /> {/* Talebiniz üzerine boşaltılan logo alanı */}
         <nav className="flex flex-1 flex-col space-y-4">
             <ul className="bg-card rounded-xl border overflow-hidden">
                 {mainItems.map((item: any, i: number) => <NavLink key={i} item={item} isLast={i === mainItems.length - 1} />)}

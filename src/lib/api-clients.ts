@@ -30,7 +30,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       url: 'https://feed.gelirortaklari.com/api/v1/search',
       method: 'POST',
       body: { "value": "", "type": "advertiser" },
-      headers: { 'x-api-key': '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3' }
+      headers: { 'Authorization': 'Bearer 891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3' }
     },
     {
       id: 'ao',
@@ -61,7 +61,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         const resData = await response.json();
         let rawList = [];
 
-        // Dinamik dizi yakalama (offers, data, results veya direkt dizi)
         if (Array.isArray(resData)) rawList = resData;
         else if (Array.isArray(resData.data)) rawList = resData.data;
         else if (Array.isArray(resData.results)) rawList = resData.results;
@@ -90,7 +89,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  // Tekilleştirme (En yüksek oranlıyı tut)
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
     const key = brand.name.toLowerCase().trim();
