@@ -32,11 +32,6 @@ import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getApiOffers } from '@/app/actions/market';
 
-/**
- * Güvenli Logo Bileşeni (Fallback Destekli)
- * Proxy engellerini aşmak için yerel img etiketi kullanır.
- * Görsel yüklenemezse markanın baş harfini içeren şık bir yer tutucu gösterir.
- */
 const BrandLogo = ({ brand }: { brand: Brand }) => {
     const [hasError, setHasError] = useState(false);
 
@@ -68,10 +63,7 @@ const AdCarousel = () => {
     return (
         <Carousel
             plugins={[plugin.current]}
-            opts={{
-            align: 'start',
-            loop: true,
-            }}
+            opts={{ align: 'start', loop: true }}
             className="w-full"
         >
             <CarouselContent>
@@ -94,46 +86,6 @@ const AdCarousel = () => {
     );
 };
 
-const VisualAdCarousel = () => {
-    const plugin = useRef(
-        Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
-    )
-
-    return (
-         <Carousel
-            plugins={[plugin.current]}
-            opts={{
-            align: 'start',
-            loop: true,
-            }}
-            className="w-full rounded-lg overflow-hidden"
-        >
-            <CarouselContent>
-            {adBanners.map((ad) => (
-                <CarouselItem key={ad.id}>
-                    <Link href={ad.link} passHref>
-                        <div className="relative h-32">
-                            <Image
-                            src={ad.imageUrl}
-                            alt={ad.title}
-                            fill
-                            className="object-cover"
-                            priority
-                            />
-                            <div className="absolute inset-0 bg-black/40" />
-                            <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
-                                <h3 className="font-bold text-lg">{ad.title}</h3>
-                                <p className="text-sm">{ad.description}</p>
-                            </div>
-                        </div>
-                    </Link>
-                </CarouselItem>
-            ))}
-            </CarouselContent>
-        </Carousel>
-    )
-}
-
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
@@ -144,19 +96,11 @@ export default function MarketPage() {
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);
   const [isApiLoading, setIsApiLoading] = useState(true);
 
-  // AI Assistant State
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [assistantQuestion, setAssistantQuestion] = useState('');
   const [assistantResponse, setAssistantResponse] = useState('');
   const [isAssistantLoading, setIsAssistantLoading] = useState(false);
 
-  // Visual Search State
-  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
-  const [visualSearchImage, setVisualSearchImage] = useState<string | null>(null);
-  const [isVisualSearching, setIsVisualSearching] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // API Verilerini Çekme
   useEffect(() => {
     const fetchOffers = async () => {
         setIsApiLoading(true);
@@ -175,10 +119,8 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
-    // Statik ve API verilerini birleştir
     let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
 
-    // Tekilleştirme (İsim bazlı)
     const uniqueBrandsMap = new Map<string, Brand>();
     filteredList.forEach(item => {
         const key = item.name.toLowerCase().trim();
@@ -230,8 +172,9 @@ export default function MarketPage() {
         }
     });
 
+    // ÖNEMLİ: 'Öne çıkanlar' sekmesindeki 18 limitini kaldırdım veya artırdım.
     if (activeCategory === 'Öne çıkanlar') {
-        return filteredList.slice(0, 18);
+        return filteredList.slice(0, 100); 
     }
     
     return filteredList;
@@ -240,55 +183,22 @@ export default function MarketPage() {
   
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;
-
     setIsAssistantLoading(true);
     setAssistantResponse('');
-
     try {
         const brandsContext = brandsToShow.slice(0, 50).map(b => 
             `Marka: ${b.name}, Kategori: ${b.category}, Bağış: ${b.donationRateDisplay || '%' + b.donationRate}`
         ).join('\n---\n');
-
-      const result = await askMarketAssistant({
-        userQuestion: assistantQuestion,
-        brandsContext: brandsContext,
-      });
-
-      if (result.answer) {
-        setAssistantResponse(result.answer);
-      }
+      const result = await askMarketAssistant({ userQuestion: assistantQuestion, brandsContext });
+      if (result.answer) setAssistantResponse(result.answer);
     } catch (error) {
       console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Bir hata oluştu",
-        description: "Yapay zeka asistanı şu an yanıt veremiyor.",
-      });
+      toast({ variant: "destructive", title: "Hata", description: "Asistan şu an yanıt veremiyor." });
     } finally {
       setIsAssistantLoading(false);
       setAssistantQuestion('');
     }
   }, [assistantQuestion, brandsToShow, toast]);
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setVisualSearchImage(reader.result as string);
-        setIsVisualSearching(true);
-        setTimeout(() => {
-          setIsVisualSearching(false);
-          toast({
-            title: "Görsel Analiz Tamamlandı",
-            description: "Görseldeki ürüne en yakın bağışçı markalar listeleniyor.",
-          });
-        }, 2000); 
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
 
   return (
     <div className="flex flex-col h-full bg-secondary/30">
@@ -303,58 +213,6 @@ export default function MarketPage() {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
-                       <Dialog open={isVisualSearchOpen} onOpenChange={(open) => {
-                            setIsVisualSearchOpen(open);
-                            if (!open) {
-                                setVisualSearchImage(null);
-                                setIsVisualSearching(false);
-                            }
-                        }}>
-                            <DialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                                    <Camera className="h-5 w-5" />
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-md rounded-3xl">
-                                <DialogHeader>
-                                    <DialogTitle>Görselle Ara</DialogTitle>
-                                    <DialogDescription>
-                                        Bir ürünün fotoğrafını yükleyerek benzer ürünleri ve markaları bulun.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="py-4 text-center">
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        onChange={handleImageUpload}
-                                        className="hidden"
-                                        accept="image/*"
-                                    />
-                                    {!visualSearchImage && (
-                                        <div 
-                                            className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-[2rem] cursor-pointer hover:bg-accent transition-colors bg-muted/20"
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            <Camera className="h-12 w-12 text-primary/40 mb-2" />
-                                            <p className="text-sm font-medium text-muted-foreground">Fotoğraf yüklemek için tıklayın</p>
-                                        </div>
-                                    )}
-                                    {visualSearchImage && (
-                                        <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
-                                            <img src={visualSearchImage} alt="Yüklenen görsel" className="w-full h-full object-contain rounded-2xl shadow-xl" />
-                                            {isVisualSearching && (
-                                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center rounded-2xl backdrop-blur-sm">
-                                                    <Loader2 className="h-12 w-12 text-white animate-spin" />
-                                                    <p className="text-white mt-4 font-bold">Analiz ediliyor...</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
                 </div>
                 <Dialog open={isAssistantOpen} onOpenChange={setIsAssistantOpen}>
                     <DialogTrigger asChild>
@@ -365,28 +223,19 @@ export default function MarketPage() {
                     <DialogContent className="sm:max-w-[425px] rounded-3xl">
                         <DialogHeader>
                         <DialogTitle className="flex items-center gap-2"><Bot className="text-primary"/> Alışveriş Asistanı</DialogTitle>
-                        <DialogDescription>
-                            Ne aradığınızı yazın, size en uygun sosyal etki odaklı markaları bulalım.
-                        </DialogDescription>
+                        <DialogDescription>Ne aradığınızı yazın, size en uygun markaları bulalım.</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             {assistantResponse && !isAssistantLoading && (
                                 <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 border">
-                                       <AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback>
-                                    </Avatar>
+                                    <Avatar className="h-8 w-8 border"><AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback></Avatar>
                                     <div className="p-4 bg-muted rounded-2xl rounded-tl-none text-sm leading-relaxed">{assistantResponse}</div>
                                 </div>
                             )}
                              {isAssistantLoading && (
                                 <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 animate-pulse">
-                                       <AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback>
-                                    </Avatar>
-                                    <div className="space-y-2 p-2 w-full">
-                                        <Skeleton className="h-4 w-full" />
-                                        <Skeleton className="h-4 w-2/3" />
-                                    </div>
+                                    <Avatar className="h-8 w-8 animate-pulse"><AvatarFallback className="bg-primary/10 text-primary"><Bot className="h-4 w-4"/></AvatarFallback></Avatar>
+                                    <div className="space-y-2 p-2 w-full"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></div>
                                 </div>
                             )}
                             <div className="flex items-center gap-2">
@@ -396,7 +245,7 @@ export default function MarketPage() {
                                     onChange={(e) => setAssistantQuestion(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
                                     disabled={isAssistantLoading}
-                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                                 />
                                 <Button onClick={handleAskAssistant} disabled={isAssistantLoading || !assistantQuestion.trim()} className="rounded-xl h-11 px-6">Sor</Button>
                             </div>
@@ -405,23 +254,17 @@ export default function MarketPage() {
                 </Dialog>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                         <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl">
-                            <Filter className="h-5 w-5" />
-                        </Button>
+                         <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl"><Filter className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>
-                            Sadece Bağış Yapanlar
-                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem checked={onlyDonating} onCheckedChange={setOnlyDonating}>Sadece Bağış Yapanlar</DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl">
-                            <ArrowDownUp className="h-5 w-5" />
-                        </Button>
+                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl"><ArrowDownUp className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl">
                         <DropdownMenuItem onClick={() => setSortKey('followers')}>Popülerlik</DropdownMenuItem>
@@ -441,7 +284,7 @@ export default function MarketPage() {
                 </TabsList>
             </Tabs>
         </div>
-        <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="flex flex-1 overflow-hidden min-0">
             <aside className="w-[85px] sm:w-1/4 border-r overflow-y-auto bg-background/50 backdrop-blur-sm">
             <nav className="flex flex-col py-2">
                 {marketCategories.map((cat) => (
@@ -465,9 +308,7 @@ export default function MarketPage() {
             <main className="flex-1 overflow-y-auto p-3 sm:p-4">
             <div className="max-w-6xl mx-auto space-y-6">
                 <div className="flex items-center justify-between px-1">
-                    <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">
-                        {activeCategory}
-                    </h2>
+                    <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
                     {isApiLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
                 </div>
                 
@@ -498,23 +339,12 @@ export default function MarketPage() {
                                 </p>
                             </div>
                         </Link>
-                        {index === 5 && (
-                           <div className="col-span-full my-4">
-                               <AdCarousel />
-                           </div>
-                        )}
-                        {index >= 14 && (index - 14) % 24 === 0 && (
-                           <div className="col-span-full my-4">
-                               <VisualAdCarousel />
-                           </div>
-                        )}
+                        {index === 5 && <div className="col-span-full my-4"><AdCarousel /></div>}
                     </Fragment>
                 )}) : !isApiLoading && (
                     <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
-                        <div className="text-center space-y-2">
-                            <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-                            <p className="text-muted-foreground text-sm font-medium">Bu kategoride marka bulunamadı.</p>
-                        </div>
+                        <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+                        <p className="text-muted-foreground text-sm font-medium">Bu kategoride marka bulunamadı.</p>
                     </div>
                 )}
                 
