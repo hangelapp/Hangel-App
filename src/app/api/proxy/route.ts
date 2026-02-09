@@ -1,25 +1,29 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/next';
 
 /**
- * ZORUNLU DEBUG PROXY: Terminale detaylı log basar ve CORS engellerini aşar.
+ * Gelişmiş Sunucu Proxy: CORS engellerini aşar ve ajans özel başlıklarını yönetir.
  */
 export async function POST(request: Request) {
   try {
     const { agency, url, method, headers, body } = await request.json();
 
-    // URL Doğrulaması
     const finalUrl = url.startsWith('http') ? url : `https://${url}`;
 
-    // Gelir Ortakları için sadece x-api-key başlığını gönder, diğerlerini temizle
-    const isGO = agency === 'Gelir Ortakları';
-    const finalHeaders: Record<string, string> = isGO 
-      ? { ...headers } 
-      : {
-          ...headers,
-          'Origin': 'https://hangel.org',
-          'Referer': 'https://hangel.org',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        };
+    // Ajans bazlı header temizliği ve User-Agent ekleme
+    const finalHeaders: Record<string, string> = {
+      ...headers,
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json',
+    };
+
+    // Gelir Ortakları için sadece gerekli olanları bırak
+    if (agency === 'Gelir Ortakları') {
+      delete finalHeaders['Origin'];
+      delete finalHeaders['Referer'];
+    } else {
+      finalHeaders['Origin'] = 'https://hangel.org';
+      finalHeaders['Referer'] = 'https://hangel.org';
+    }
 
     const response = await fetch(finalUrl, {
       method: method || 'GET',
@@ -31,11 +35,10 @@ export async function POST(request: Request) {
     const status = response.status;
     const responseText = await response.text();
 
-    // ZORUNLU LOG SİSTEMİ (Terminalde görünecek)
-    console.log(`[Proxy Log] Agency: ${agency}, Status: ${status}, Message: ${responseText.slice(0, 300)}...`);
+    console.log(`[Proxy Log] Agency: ${agency}, Status: ${status}`);
 
     if (!response.ok) {
-        console.error(`[Proxy Error Body] ${agency}: ${responseText}`);
+      console.error(`[Proxy Error] ${agency}: ${status} - ${responseText.slice(0, 200)}`);
     }
 
     return new NextResponse(responseText, {
@@ -47,20 +50,17 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error("[Proxy Fatal Error]:", error.message);
-    return NextResponse.json({ error: error.message }, { 
-        status: 500,
-        headers: { 'Access-Control-Allow-Origin': '*' }
-    });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function OPTIONS() {
-    return new NextResponse(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key, api-key',
-        }
-    });
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key, api-key',
+    }
+  });
 }
