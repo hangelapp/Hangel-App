@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Gelişmiş Sunucu Proxy: Ajans özel başlıklarını yönetir ve terminale detaylı log basar.
+ * Gelişmiş Sunucu Proxy: CORS engellerini aşar ve ajans özel başlıklarını yönetir.
  */
 export async function POST(request: Request) {
   try {

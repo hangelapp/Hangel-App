@@ -22,6 +22,7 @@ const Header = () => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
+                {/* Logo alanı boşaltılmıştır */}
                 <div className="w-8 h-8" /> 
 
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
@@ -169,7 +170,7 @@ const Footer = () => {
         { title: "Kurumsal", links: [{label: "Biz Kimiz?", href: "/about"}, {label: "Sosyal Etkimiz", href: "/social-impact"}, {label: "Basın Odası", href: "/press"}, {label: "Kariyer", href: "/careers"}] },
         { title: "İşbirlikleri", links: [{label: "Üye İşyeri ol", href: "/merchant"}, {label: "STK Kaydı", href: "/ngo-onboarding"}] },
         { title: "hangel Derneği", links: [{label: "Dernek Hakkında", href: "/hangelassociation/about"}, {label: "Mevzuat Taslağı", href: "/hangelassociation/legislation"}] },
-        { title: "Hesabım", links: [{label: "Geniş Yap", href: "/login/selection?action=login"}, {label: "Destek Merkezi", href: "/support"}] },
+        { title: "Hesabım", links: [{label: "Giriş Yap", href: "/login/selection?action=login"}, {label: "Destek Merkezi", href: "/support"}] },
     ];
 
     return (
