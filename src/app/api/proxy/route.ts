@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/next';
+import { NextResponse } from 'next/server';
 
 /**
  * Gelişmiş Sunucu Proxy: CORS engellerini aşar ve ajans özel başlıklarını yönetir.

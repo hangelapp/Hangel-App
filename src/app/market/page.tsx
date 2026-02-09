@@ -1,15 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, Fragment } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, Bot, Sparkles, Loader2 } from 'lucide-react';
-import { marketCategories, categoryMapping } from '@/lib/data';
+import { Search, Filter, Loader2 } from 'lucide-react';
+import { marketCategories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from '@/hooks/use-toast';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
 import {
   Dialog,
@@ -18,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { fetchAllAgencyOffers } from '@/lib/api-clients';
+import { allEntityLists } from '@/lib/data';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -43,29 +41,10 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 };
 
 export default function MarketPage() {
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [brands, setBrands] = useState<Brand[]>(allEntityLists);
   const [activeCategory, setActiveCategory] = useState('Öne çıkanlar');
-  const [activeEntityType, setActiveEntityType] = useState('all');
-  const { toast } = useToast();
   const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Veri çekme motoru
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchAllAgencyOffers();
-        setBrands(data);
-      } catch (err) {
-        toast({ variant: 'destructive', title: 'Bağlantı Hatası', description: 'Veriler çekilemedi.' });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
 
   const brandsToShow = useMemo(() => {
     let list = [...brands];
@@ -76,10 +55,7 @@ export default function MarketPage() {
     }
 
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
-      const mapped = categoryMapping[activeCategory as keyof typeof categoryMapping];
-      if (mapped) {
-        list = list.filter(b => mapped.some(m => b.category.toLowerCase().includes(m.toLowerCase())));
-      }
+      list = list.filter(b => b.category === activeCategory);
     }
 
     list.sort((a, b) => sortKey === 'name' ? a.name.localeCompare(b.name, 'tr') : b.donationRate - a.donationRate);
@@ -133,29 +109,23 @@ export default function MarketPage() {
 
         <main className="flex-1 overflow-y-auto p-4">
           <div className="max-w-6xl mx-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-24">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {brandsToShow.map((brand) => (
-                  <Link href={`/market/${brand.id}`} key={brand.id} className="group">
-                    <div className="flex flex-col items-center text-center space-y-2">
-                      <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
-                          <BrandLogo brand={brand} />
-                        </div>
-                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
-                          %{brand.donationRate}
-                        </div>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {brandsToShow.map((brand) => (
+                <Link href={`/market/${brand.id}`} key={brand.id} className="group">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="relative w-full aspect-square">
+                      <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
+                        <BrandLogo brand={brand} />
                       </div>
-                      <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
+                      <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                        %{brand.donationRate}
+                      </div>
                     </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+                    <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </main>
       </div>

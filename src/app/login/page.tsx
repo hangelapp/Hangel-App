@@ -354,6 +354,8 @@ export default function LoginPage() {
         { url: PlaceHolderImages.find(img => img.id === 'campus-poster-5')?.imageUrl || '', hint: 'minimalist college hackathon banner' },
     ];
 
+    if (!mounted) return null;
+
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
             < Header />
@@ -431,7 +433,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tümünü Gör {mounted && `(${allEntityLists.length} Marka)`}</Link>
+                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
                         </Button>
                     </div>
                 </section>
@@ -483,7 +485,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/volunteering">Tümünü Gör {mounted && `(${volunteeringOpportunities.length} İlan)`}</Link>
+                            <Link href="/volunteering">Tümünü Gör ({volunteeringOpportunities.length} İlan)</Link>
                         </Button>
                     </div>
                 </section>
