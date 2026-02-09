@@ -108,6 +108,7 @@ export default function MarketPage() {
         setIsApiLoading(true);
         try {
             const data = await getApiOffers();
+            console.log("Market Page - API Verisi Alındı (Client):", data);
             if (data && Array.isArray(data)) {
                 setApiBrands(data);
             }

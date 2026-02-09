@@ -46,7 +46,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             if (!res.ok) return [];
             const data = await res.json();
             
-            // Handle various possible response structures
+            console.log("Gelir Ortakları Ham Veri (Server):", data);
+            
             const results = data.results || data.brands || (Array.isArray(data) ? data : []);
             
             return results.map((item: any) => ({
@@ -68,11 +69,11 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 2. AFFOCEAN (GET API)
-     * URL: https://api.affocean.com/v1/offers
+     * URL: https://affocean.com/api/v1/offers
      */
     const fetchAffocean = async (): Promise<Brand[]> => {
         try {
-            const res = await fetchWithTimeout("https://api.affocean.com/v1/offers", {
+            const res = await fetchWithTimeout("https://affocean.com/api/v1/offers", {
                 headers: { 
                     "Authorization": `Bearer ${AO_KEY}`,
                     "accept": "application/json"
@@ -81,6 +82,9 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             });
             if (!res.ok) return [];
             const data = await res.json();
+            
+            console.log("Affocean Ham Veri (Server):", data);
+            
             const results = Array.isArray(data) ? data : (data.results || []);
             
             return results.map((item: any) => ({
@@ -102,11 +106,11 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
     /**
      * 3. REKLAMACTION (GET API)
-     * URL: https://api.reklamaction.com/v1/offers
+     * URL: https://api.reklamaction.com/v1/offer?network=reklamaction
      */
     const fetchReklam = async (): Promise<Brand[]> => {
         try {
-            const res = await fetchWithTimeout("https://api.reklamaction.com/v1/offers", {
+            const res = await fetchWithTimeout("https://api.reklamaction.com/v1/offer?network=reklamaction", {
                 headers: { 
                     "Authorization": `Bearer ${RA_KEY}`,
                     "accept": "application/json"
@@ -115,6 +119,9 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             });
             if (!res.ok) return [];
             const data = await res.json();
+            
+            console.log("ReklamAction Ham Veri (Server):", data);
+            
             const results = Array.isArray(data) ? data : (data.results || []);
             
             return results.map((item: any) => ({
@@ -138,7 +145,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     
     const allBrands = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
     
-    console.log("Tüm Ajanslardan Gelen Toplam Veri:", allBrands);
+    console.log("Tüm Ajanslardan Gelen Toplam Veri (Merged):", allBrands.length);
 
     return allBrands;
 }
