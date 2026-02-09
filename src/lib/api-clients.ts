@@ -1,14 +1,14 @@
 import type { Brand } from './types';
 
 /**
- * Marka isimlerindeki teknik ibareleri ([CPS], [CPL], Mobil, Influencer vb.) temizler.
+ * Gelişmiş İsim Temizleme: [CPS], [CPL], Mobil gibi ibareleri siler.
  */
 const cleanBrandName = (name: string): string => {
   if (!name) return "Bilinmeyen Marka";
   return name
     .replace(/\[.*?\]/g, '') 
     .replace(/\(.*?\)/g, '')
-    .replace(/CPS|CPL|CPA|Mobil|Influencer|Offer|Kampanyası|Sale|İndirim|Online/gi, '') 
+    .replace(/CPS|CPL|CPA|Mobil|Influencer|Offer|Kampanyası|Sale|İndirim|Online|TR/gi, '') 
     .replace(/[\-\|]/g, '')
     .replace(/\s+/g, ' ') 
     .trim();
@@ -22,61 +22,26 @@ const parseRate = (rate: any): number => {
     return isNaN(parsed) ? 0 : parsed;
 };
 
-/**
- * Real Fallback Data: If APIs return empty, show these real brands from the user's list.
- */
 const fallbackBrands: Brand[] = [
-  {
-    id: 'fallback-converse',
-    name: 'Converse',
-    logoUrl: 'https://logo.clearbit.com/converse.com',
-    donationRate: 7,
-    type: 'brand',
-    agency: 'Affocean (Geçici Veri)',
-    category: 'Ayakkabı',
-    link: 'https://www.converse.com.tr'
-  },
-  {
-    id: 'fallback-teknosa',
-    name: 'Teknosa',
-    logoUrl: 'https://logo.clearbit.com/teknosa.com',
-    donationRate: 2,
-    type: 'brand',
-    agency: 'ReklamAction (Geçici Veri)',
-    category: 'Elektronik',
-    link: 'https://www.teknosa.com'
-  },
-  {
-    id: 'fallback-ebebek',
-    name: 'Ebebek',
-    logoUrl: 'https://logo.clearbit.com/ebebek.com',
-    donationRate: 5,
-    type: 'brand',
-    agency: 'Affocean (Geçici Veri)',
-    category: 'Anne & Bebek',
-    link: 'https://www.e-bebek.com'
-  }
+  { id: 'fb-1', name: 'Converse', donationRate: 7, logoUrl: 'https://logo.clearbit.com/converse.com', agency: 'Affocean (Geçici Veri)', type: 'brand', category: 'Ayakkabı' },
+  { id: 'fb-2', name: 'Ebebek', donationRate: 5, logoUrl: 'https://logo.clearbit.com/ebebek.com', agency: 'Affocean (Geçici Veri)', type: 'brand', category: 'Anne & Bebek' },
+  { id: 'fb-3', name: 'Teknosa', donationRate: 2, logoUrl: 'https://logo.clearbit.com/teknosa.com', agency: 'ReklamAction (Geçici Veri)', type: 'brand', category: 'Elektronik' }
 ];
 
-/**
- * Main Data Engine: Fetches and unifies data from 3 agencies.
- */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const agencies = [
     {
       id: 'go',
       name: 'Gelir Ortakları',
       url: 'https://feed.gelirortaklari.com/api/v1/search',
-      key: '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3',
       method: 'POST',
-      body: { "value": "", "type": "all" }, // REQUIRED TYPE PARAMETER
+      body: { "value": "", "type": "advertiser" }, // Updated type parameter
       headers: { 'x-api-key': '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3' }
     },
     {
       id: 'ao',
       name: 'Affocean',
       url: 'https://affocean.com/api/v1/offers',
-      key: '9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48',
       method: 'GET',
       headers: { 'Authorization': 'Bearer 9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48' }
     },
@@ -84,39 +49,33 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       id: 'ra',
       name: 'ReklamAction',
       url: 'https://api.reklamaction.com/v1/offers?network=reklamaction',
-      key: '2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54',
       method: 'GET',
       headers: { 'Authorization': 'Bearer 2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54' }
     }
   ];
 
+  const proxyUrl = 'https://' + (typeof window !== 'undefined' ? window.location.host : 'localhost:3000') + '/api/proxy';
+
   const results = await Promise.allSettled(
     agencies.map(async (agency) => {
       try {
-        const response = await fetch(agency.url, {
-          method: agency.method,
-          headers: {
-            ...agency.headers,
-            'Content-Type': 'application/json',
-            'Origin': 'https://hangel.org',
-            'Referer': 'https://hangel.org'
-          },
-          body: agency.method === 'POST' ? JSON.stringify(agency.body) : undefined,
+        const response = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(agency),
           cache: 'no-store'
         });
 
-        if (!response.ok) {
-            console.error(`[Server] ${agency.name} HTTP Error: ${response.status}`);
-            return [];
-        }
-
         const resData = await response.json();
         
-        // Scan for brand arrays in various common locations
-        const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
-        if (!Array.isArray(rawList)) return [];
+        // Scan for brand arrays with Array.isArray checks
+        let rawList = [];
+        if (Array.isArray(resData)) rawList = resData;
+        else if (resData.results && Array.isArray(resData.results)) rawList = resData.results;
+        else if (resData.data && Array.isArray(resData.data)) rawList = resData.data;
+        else if (resData.offers && Array.isArray(resData.offers)) rawList = resData.offers;
 
-        console.log(`[Server] ${agency.name} captured ${rawList.length} items.`);
+        console.log(`[Server] ${agency.name} found ${rawList.length} valid entries.`);
 
         return rawList.map((item: any) => ({
           id: `${agency.id}-${item.id || Math.random()}`,
@@ -129,7 +88,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           category: item.category || "Genel"
         }));
       } catch (err: any) {
-        console.error(`[Server] ${agency.name} Connection Error:`, err.message);
+        console.error(`[Server] ${agency.name} Fetch Error:`, err.message);
         return [];
       }
     })
@@ -137,7 +96,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   let combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
   
-  // Deduplicate and select best rates
+  // Deduplicate
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
       const key = brand.name.toLowerCase().trim();
@@ -149,11 +108,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   const finalResults = Array.from(uniqueMap.values());
 
-  // IF ALL APIS EMPTY -> INJECT FALLBACKS
+  // Disable fallback if real data is present
   if (finalResults.length === 0) {
-      console.warn("[Server] All APIs returned empty. Injecting Fallback Data.");
+      console.warn("[Server] No real data. Using fallbacks.");
       return fallbackBrands;
   }
 
+  console.log(`[Server] Total unique brands identified: ${finalResults.length}`);
   return finalResults;
 }

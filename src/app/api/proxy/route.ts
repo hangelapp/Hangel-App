@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Enhanced Server-side Proxy Route with CORS headers and Auth error logging.
+ * Enhanced Server-side Proxy Route with detailed error logging and no-cache settings.
  */
 export async function POST(request: Request) {
   try {
     const { agency, url, method, headers, body } = await request.json();
 
-    console.log(`[Proxy] Initiating request for ${agency} at ${url}`);
+    // Ensure URL has protocol
+    const finalUrl = url.startsWith('http') ? url : `https://${url}`;
 
-    const response = await fetch(url, {
+    console.log(`[Proxy] Requesting ${agency} via Server: ${finalUrl}`);
+
+    const response = await fetch(finalUrl, {
       method: method || 'GET',
       headers: {
         ...headers,
@@ -22,15 +25,15 @@ export async function POST(request: Request) {
     });
 
     const status = response.status;
-    
-    // Log specific authentication errors to terminal
-    if (status === 401 || status === 403) {
-        console.error(`\x1b[31m[API AUTH ERROR]\x1b[0m ${agency} returned HTTP ${status}. Check your API Key/Token.`);
+    const responseText = await response.text();
+
+    if (!response.ok) {
+        console.error(`\x1b[31m[API ERROR]\x1b[0m ${agency} returned HTTP ${status}. Message: ${responseText}`);
+    } else {
+        console.log(`\x1b[32m[API SUCCESS]\x1b[0m ${agency} returned HTTP ${status}`);
     }
 
-    const text = await response.text();
-
-    return new NextResponse(text, {
+    return new NextResponse(responseText, {
       status: status,
       headers: { 
         'Content-Type': 'application/json',
@@ -43,9 +46,7 @@ export async function POST(request: Request) {
     console.error("\x1b[31m[Proxy Fatal Error]:\x1b[0m", error.message);
     return NextResponse.json({ error: error.message }, { 
         status: 500,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-        }
+        headers: { 'Access-Control-Allow-Origin': '*' }
     });
   }
 }
