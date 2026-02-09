@@ -1,3 +1,4 @@
+
 import type { Brand } from './types';
 
 const FETCH_TIMEOUT = 15000;
@@ -27,7 +28,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const AO_KEY = process.env.AFFOCEAN_KEY || "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48";
 
     /**
-     * 1. GELİR ORTAKLARI (POST Search API)
+     * 1. GELİR ORTAKLARE (POST Search API)
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         try {
@@ -38,22 +39,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     "Content-Type": "application/json",
                     "x-api-key": GO_KEY
                 },
-                body: JSON.stringify({
-                    "value": "" 
-                }),
+                body: JSON.stringify({ "value": "" }),
                 cache: 'no-store'
             });
-            if (!res.ok) {
-                const errData = await res.json();
-                console.error("Gelir Ortakları API Error:", errData);
-                return [];
-            }
+            if (!res.ok) return [];
             const data = await res.json();
-            
-            // SERVER LOG
-            console.log("Gelir Ortakları Ham Veri (Server):", data);
-            
-            const results = data.results || (Array.isArray(data) ? data : []);
+            const results = data.results || [];
             
             return results.map((item: any) => ({
                 id: `go-${item.id || Math.random().toString(36).substr(2, 9)}`,
@@ -67,7 +58,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları iş ortağı."
             }));
         } catch (e) {
-            console.error("Gelir Ortakları Fetch Catch:", e);
+            console.error("Gelir Ortakları Fetch Error:", e);
             return [];
         }
     };
@@ -92,9 +83,9 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 name: item.name || "Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo || "",
-                donationRate: parseFloat(String(item.commission || "0")),
-                link: item.tracking_url || item.link || "#",
+                logoUrl: item.logo || item.image || "",
+                donationRate: parseFloat(String(item.commission || item.commission_rate || "0")),
+                link: item.tracking_url || item.link || item.click_url || "#",
                 followers: Math.floor(Math.random() * 4000) + 800,
                 about: "ReklamAction iş ortağı."
             }));
@@ -124,9 +115,9 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 name: item.name || "Marka",
                 category: item.category || "Genel",
                 type: 'brand' as const,
-                logoUrl: item.logo || "",
-                donationRate: parseFloat(String(item.commission || "0")),
-                link: item.tracking_url || item.link || "#",
+                logoUrl: item.logo || item.image || "",
+                donationRate: parseFloat(String(item.commission || item.commission_rate || "0")),
+                link: item.tracking_url || item.link || item.click_url || "#",
                 followers: Math.floor(Math.random() * 3000) + 500,
                 about: "Affocean iş ortağı."
             }));
@@ -139,13 +130,5 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const results = await Promise.allSettled([fetchGelir(), fetchReklam(), fetchAffocean()]);
     const allBrands = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 
-    const uniqueMap = new Map<string, Brand>();
-    allBrands.forEach(b => {
-        const key = b.name.toLowerCase().trim();
-        if (!uniqueMap.has(key) || b.donationRate > (uniqueMap.get(key)?.donationRate || 0)) {
-            uniqueMap.set(key, b);
-        }
-    });
-
-    return Array.from(uniqueMap.values());
+    return allBrands;
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -108,8 +109,6 @@ export default function MarketPage() {
         try {
             const data = await getApiOffers();
             if (data && Array.isArray(data)) {
-                // CLIENT LOG
-                console.log("Gelir Ortakları Ham Veri (Client):", data.filter(b => b.id.startsWith('go-')));
                 setApiBrands(data);
             }
         } catch (e) {
@@ -122,48 +121,47 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
-    let filteredList: Brand[] = [...allEntityLists, ...apiBrands];
+    let combinedList: Brand[] = [...allEntityLists, ...apiBrands];
 
+    // Deduplicate and select best commission
     const uniqueBrandsMap = new Map<string, Brand>();
-    filteredList.forEach(item => {
+    combinedList.forEach(item => {
         const key = item.name.toLowerCase().trim();
-        if (!uniqueBrandsMap.has(key)) {
+        const existing = uniqueBrandsMap.get(key);
+        if (!existing || item.donationRate > (existing.donationRate || 0)) {
             uniqueBrandsMap.set(key, item);
-        } else {
-            const existing = uniqueBrandsMap.get(key)!;
-            if (item.donationRate > (existing.donationRate || 0)) {
-                uniqueBrandsMap.set(key, item);
-            }
         }
     });
-    filteredList = Array.from(uniqueBrandsMap.values());
+    combinedList = Array.from(uniqueBrandsMap.values());
 
+    // Filter Logic
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
-        filteredList = filteredList.filter(brand => brand.name.toLowerCase().includes(lowercased));
+        combinedList = combinedList.filter(brand => brand.name.toLowerCase().includes(lowercased));
     }
 
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const brandCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (brandCategories && brandCategories.length > 0) {
-        filteredList = filteredList.filter(brand => {
+        combinedList = combinedList.filter(brand => {
             const catLower = brand.category.toLowerCase();
             return brandCategories.some(cat => catLower.includes(cat.toLowerCase()));
         });
       } else {
-        filteredList = filteredList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
+        combinedList = combinedList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
     }
 
     if (activeEntityType !== 'all') {
-      filteredList = filteredList.filter(item => item.type === activeEntityType);
+      combinedList = combinedList.filter(item => item.type === activeEntityType);
     }
 
     if (onlyDonating) {
-        filteredList = filteredList.filter(item => (item.donationRate || 0) > 0);
+        combinedList = combinedList.filter(item => (item.donationRate || 0) > 0);
     }
     
-    filteredList.sort((a, b) => {
+    // Sort Logic
+    combinedList.sort((a, b) => {
         switch(sortKey) {
             case 'donationRate':
                 return (b.donationRate || 0) - (a.donationRate || 0);
@@ -175,11 +173,13 @@ export default function MarketPage() {
         }
     });
 
+    console.log("Tüm Ajanslardan Gelen Toplam Veri:", combinedList);
+
     if (activeCategory === 'Öne çıkanlar') {
-        return filteredList.slice(0, 100); 
+        return combinedList.slice(0, 100); 
     }
     
-    return filteredList;
+    return combinedList;
 
   }, [activeCategory, activeEntityType, sortKey, onlyDonating, searchTerm, apiBrands]);
   
@@ -189,7 +189,7 @@ export default function MarketPage() {
     setAssistantResponse('');
     try {
         const brandsContext = brandsToShow.slice(0, 50).map(b => 
-            `Marka: ${b.name}, Kategori: ${b.category}, Bağış: ${b.donationRateDisplay || '%' + b.donationRate}`
+            `Marka: ${b.name}, Kategori: ${b.category}, Bağış: %${b.donationRate}`
         ).join('\n---\n');
       const result = await askMarketAssistant({ userQuestion: assistantQuestion, brandsContext });
       if (result.answer) setAssistantResponse(result.answer);
@@ -331,9 +331,9 @@ export default function MarketPage() {
                                     <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0">
                                         <BrandLogo brand={brand} />
                                     </div>
-                                    {(brand.donationRate > 0 || brand.donationRateDisplay) && (
+                                    {(brand.donationRate > 0) && (
                                         <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
-                                            {brand.donationRateDisplay || `%${brand.donationRate}`}
+                                            %{brand.donationRate}
                                         </div>
                                     )}
                                 </div>
@@ -347,7 +347,7 @@ export default function MarketPage() {
                 )}) : !isApiLoading && (
                     <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
                         <ShoppingBag className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-                        <p className="text-muted-foreground text-sm font-medium">Bu kategoride marka bulunamadı.</p>
+                        <p className="text-muted-foreground text-sm font-medium">Bu kriterlere uygun marka bulunamadı.</p>
                     </div>
                 )}
                 
