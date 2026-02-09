@@ -8,7 +8,7 @@ import {
     UserCircle, BookText, Settings2, HeartHandshake, Wallet, ShoppingBag, ShoppingCart, 
     Newspaper, Megaphone, Smartphone, StarHalf
 } from 'lucide-react';
-import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, Notification, ManagedItem, NGO, AdBanner, HelpTopic, MarketCategory } from './types';
+import type { Post, Brand, Event, Volunteering, Campaign, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory } from './types';
 
 export const user: User = {
     id: '1',
@@ -91,47 +91,106 @@ export const user: User = {
 
 export const timelinePosts: Post[] = [
     { id: '1', author: { name: 'TEMA Vakfı', avatarUrl: 'https://logo.clearbit.com/tema.org.tr' }, content: 'Bugün Balıkesir fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 Gelecek nesillere daha yeşil bir dünya bırakmak için var gücümüzle çalışıyoruz. #Doğaİçin #TEMA', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
-    { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #Ahbap #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' },
+    { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #Ahbap #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' },
     { id: '3', author: { name: 'Patagonia', avatarUrl: 'https://logo.clearbit.com/patagonia.com' }, content: 'Her alışverişin %10\'u okyanuslarımızı temizlemek ve deniz ekosistemini korumak için ayrılıyor. 🌊 Bilinçli tüketin, geleceği koruyun. #SustainableFashion #OceanGuardians', timestamp: '1 gün önce', likes: 850, comments: 12, imageUrl: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?q=80&w=1920&auto=format&fit=crop', imageHint: 'sea turtle', sponsored: true },
-    { id: '4', author: { name: 'LÖSEV', avatarUrl: 'https://logo.clearbit.com/losev.org.tr' }, content: 'Kanserle mücadele eden minik kahramanlarımızın eğitim hayatlarına destek olmak için yeni bir burs fonu açtık. Her tuğla bir umut! 💖 #LÖSEV #UmudunRengi', timestamp: '2 gün önce', likes: 2100, comments: 88, imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2070&auto=format&fit=crop', imageHint: 'happy school children' },
-    { id: '5', author: { name: 'Nike', avatarUrl: 'https://logo.clearbit.com/nike.com' }, content: 'Sporun birleştirici gücüne inanıyoruz. Dezavantajlı bölgelerdeki okullara spor ekipmanları ulaştırarak gençlerin hayallerine ortak oluyoruz. 🏀 #JustDoIt #SocialImpact', timestamp: '3 gün önce', likes: 12500, comments: 340, imageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=2090&auto=format&fit=crop', imageHint: 'basketball court kids', sponsored: true }
+    { id: '4', author: { name: 'LÖSEV', avatarUrl: 'https://logo.clearbit.com/losev.org.tr' }, content: 'Kanserle mücadele eden minik kahramanlarımızın eğitim hayatlarına destek olmak için yeni bir burs fonu açtık. Her tuğla bir umut! 💖 #LÖSEV #UmudunRengi', timestamp: '2 gün önce', likes: 2100, comments: 88, imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2070&auto=format&fit=crop', imageHint: 'happy school children' }
 ];
 
 export const allEntityLists: Brand[] = [
-    // GİYİM
-    { id: 'b1', name: 'Nike', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/nike.com', type: 'brand', followers: 12000000, about: "Sporun geleceğini şekillendiriyoruz." },
-    { id: 'b2', name: 'Adidas', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/adidas.com', type: 'brand', followers: 10000000 },
-    { id: 'b3', name: 'Patagonia', category: 'Giyim', donationRate: 10, logoUrl: 'https://logo.clearbit.com/patagonia.com', type: 'brand', followers: 5000000, about: "İşimizi evimizi kurtarmak için yapıyoruz." },
-    { id: 'b4', name: 'Mavi', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/mavi.com', type: 'brand', followers: 2000000 },
-    { id: 'b5', name: 'Boyner', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/boyner.com.tr', type: 'brand', followers: 3500000 },
-    
     // AYAKKABI
-    { id: 'b8', name: 'New Balance', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/newbalance.com', type: 'brand', followers: 4500000 },
-    { id: 'b9', name: 'Converse', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/converse.com', type: 'brand', followers: 3000000 },
-    { id: 'b10', name: 'Skechers', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/skechers.com.tr', type: 'brand', followers: 2500000 },
-    
+    { id: 'ay-1', name: 'Ayakkabı Dünyası', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/ayakkabidunyasi.com.tr', type: 'brand' },
+    { id: 'ay-2', name: 'Decathlon', category: 'Ayakkabı', donationRate: 4, logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', type: 'brand' },
+    { id: 'ay-3', name: 'Sportstyle', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/sportstyle.com.tr', type: 'brand' },
+    { id: 'ay-4', name: 'Sneakscloud', category: 'Ayakkabı', donationRate: 7, logoUrl: 'https://logo.clearbit.com/sneakscloud.com', type: 'brand' },
+    { id: 'ay-5', name: 'Sportive', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/sportive.com.tr', type: 'brand' },
+    { id: 'ay-6', name: 'Skechers', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/skechers.com.tr', type: 'brand' },
+    { id: 'ay-7', name: 'Columbia', category: 'Ayakkabı', donationRate: 8, logoUrl: 'https://logo.clearbit.com/columbia.com.tr', type: 'brand' },
+    { id: 'ay-8', name: 'Converse', category: 'Ayakkabı', donationRate: 10, logoUrl: 'https://logo.clearbit.com/converse.com', type: 'brand' },
+    { id: 'ay-9', name: 'SuperStep', category: 'Ayakkabı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/superstep.com.tr', type: 'brand' },
+    { id: 'ay-10', name: 'PUMA', category: 'Ayakkabı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/puma.com', type: 'brand' },
+    { id: 'ay-11', name: 'FLO', category: 'Ayakkabı', donationRate: 3, logoUrl: 'https://logo.clearbit.com/flo.com.tr', type: 'brand' },
+
+    // KOZMETIK
+    { id: 'kz-1', name: 'Gratis', category: 'Kozmetik & Bakım', donationRate: 4, logoUrl: 'https://logo.clearbit.com/gratis.com', type: 'brand' },
+    { id: 'kz-2', name: 'Flormar', category: 'Kozmetik & Bakım', donationRate: 8, logoUrl: 'https://logo.clearbit.com/flormar.com.tr', type: 'brand' },
+    { id: 'kz-3', name: 'Cosmed', category: 'Kozmetik & Bakım', donationRate: 10, logoUrl: 'https://logo.clearbit.com/cosmed.com.tr', type: 'brand' },
+    { id: 'kz-4', name: 'Supplementler', category: 'Kozmetik & Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/supplementler.com', type: 'brand' },
+    { id: 'kz-5', name: 'Vitaminler', category: 'Kozmetik & Bakım', donationRate: 5, logoUrl: 'https://logo.clearbit.com/vitaminler.com', type: 'brand' },
+
+    // TATIL
+    { id: 'tt-1', name: 'Tatilbudur', category: 'Tatil & Seyahat', donationRate: 3, logoUrl: 'https://logo.clearbit.com/tatilbudur.com', type: 'brand' },
+    { id: 'tt-2', name: 'Etstur', category: 'Tatil & Seyahat', donationRate: 2, logoUrl: 'https://logo.clearbit.com/etstur.com', type: 'brand' },
+    { id: 'tt-3', name: 'Touristica', category: 'Tatil & Seyahat', donationRate: 4, logoUrl: 'https://logo.clearbit.com/touristica.com.tr', type: 'brand' },
+    { id: 'tt-4', name: 'SETUR', category: 'Tatil & Seyahat', donationRate: 3, logoUrl: 'https://logo.clearbit.com/setur.com.tr', type: 'brand' },
+    { id: 'tt-5', name: 'Ucuzabilet', category: 'Tatil & Seyahat', donationRate: 2, logoUrl: 'https://logo.clearbit.com/ucuzabilet.com', type: 'brand' },
+
+    // GIYIM
+    { id: 'gy-1', name: 'Beymen', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/beymen.com', type: 'brand' },
+    { id: 'gy-2', name: 'Suwen', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/suwen.com.tr', type: 'brand' },
+    { id: 'gy-3', name: 'İpekyol', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/ipekyol.com.tr', type: 'brand' },
+    { id: 'gy-4', name: 'Koton', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/koton.com', type: 'brand' },
+    { id: 'gy-5', name: 'H&M', category: 'Giyim', donationRate: 4, logoUrl: 'https://logo.clearbit.com/hm.com', type: 'brand' },
+    { id: 'gy-6', name: 'Boyner', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/boyner.com.tr', type: 'brand' },
+    { id: 'gy-7', name: 'Mango', category: 'Giyim', donationRate: 6, logoUrl: 'https://logo.clearbit.com/mango.com', type: 'brand' },
+    { id: 'gy-8', name: 'NetWork', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/network.com.tr', type: 'brand' },
+    { id: 'gy-9', name: 'Altınyıldız', category: 'Giyim', donationRate: 7, logoUrl: 'https://logo.clearbit.com/altinyildizclassics.com', type: 'brand' },
+    { id: 'gy-10', name: 'Lacoste', category: 'Giyim', donationRate: 5, logoUrl: 'https://logo.clearbit.com/lacoste.com.tr', type: 'brand' },
+
+    // BEBEK & COCUK
+    { id: 'bc-1', name: 'E-bebek', category: 'Anne & Bebek', donationRate: 4, logoUrl: 'https://logo.clearbit.com/ebebek.com', type: 'brand' },
+    { id: 'bc-2', name: 'Toyzz Shop', category: 'Anne & Bebek', donationRate: 5, logoUrl: 'https://logo.clearbit.com/toyzzshop.com', type: 'brand' },
+    { id: 'bc-3', name: 'Carter’s', category: 'Anne & Bebek', donationRate: 6, logoUrl: 'https://logo.clearbit.com/carters.com', type: 'brand' },
+
+    // EV & YASAM
+    { id: 'ev-1', name: 'Koçtaş', category: 'Ev & Yaşam', donationRate: 3, logoUrl: 'https://logo.clearbit.com/koctas.com.tr', type: 'brand' },
+    { id: 'ev-2', name: 'Karaca', category: 'Ev & Yaşam', donationRate: 5, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand' },
+    { id: 'ev-3', name: 'Arçelik', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/arcelik.com.tr', type: 'brand' },
+    { id: 'ev-4', name: 'Beko', category: 'Ev & Yaşam', donationRate: 4, logoUrl: 'https://logo.clearbit.com/beko.com.tr', type: 'brand' },
+    { id: 'ev-5', name: 'Taç', category: 'Ev & Yaşam', donationRate: 6, logoUrl: 'https://logo.clearbit.com/tac.com.tr', type: 'brand' },
+
+    // SUPERMARKET & PLATFORM
+    { id: 'sm-1', name: 'A101', category: 'Süpermarket', donationRate: 2, logoUrl: 'https://logo.clearbit.com/a101.com.tr', type: 'brand' },
+    { id: 'sm-2', name: 'Getir', category: 'Süpermarket', donationRate: 3, logoUrl: 'https://logo.clearbit.com/getir.com', type: 'brand' },
+    { id: 'sm-3', name: 'CarrefourSA', category: 'Süpermarket', donationRate: 2, logoUrl: 'https://logo.clearbit.com/carrefoursa.com', type: 'brand' },
+    { id: 'sm-4', name: 'Pazarama', category: 'Süpermarket', donationRate: 4, logoUrl: 'https://logo.clearbit.com/pazarama.com', type: 'brand' },
+    { id: 'sm-5', name: 'n11', category: 'Süpermarket', donationRate: 3, logoUrl: 'https://logo.clearbit.com/n11.com', type: 'brand' },
+
     // ELEKTRONIK
-    { id: 'b12', name: 'Apple', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/apple.com', type: 'brand', followers: 50000000 },
-    { id: 'b13', name: 'Samsung', category: 'Elektronik', donationRate: 3, logoUrl: 'https://logo.clearbit.com/samsung.com', type: 'brand', followers: 40000000 },
-    { id: 'b14', name: 'Teknosa', category: 'Elektronik', donationRate: 4, logoUrl: 'https://logo.clearbit.com/teknosa.com', type: 'brand', followers: 2000000 },
-    { id: 'b15', name: 'Trendyol', category: 'Pazaryeri', donationRate: 3, logoUrl: 'https://logo.clearbit.com/trendyol.com', type: 'brand', followers: 25000000 },
-    { id: 'b16', name: 'Hepsiburada', category: 'Pazaryeri', donationRate: 3, logoUrl: 'https://logo.clearbit.com/hepsiburada.com', type: 'brand', followers: 15000000 },
-    
-    // KOOPERATİF & SOSYAL
-    { id: 'b17', name: 'Tire Süt Kooperatifi', category: 'Gıda', donationRate: 12, logoUrl: 'https://logo.clearbit.com/tiresutkooperatifi.com.tr', type: 'cooperative', followers: 50000 },
-    { id: 'b18', name: 'Kadın Emeği', category: 'El Sanatları', donationRate: 15, logoUrl: 'https://logo.clearbit.com/kedv.org.tr', type: 'social', followers: 120000 },
+    { id: 'el-1', name: 'Samsung', category: 'Elektronik', donationRate: 3, logoUrl: 'https://logo.clearbit.com/samsung.com', type: 'brand' },
+    { id: 'el-2', name: 'MediaMarkt', category: 'Elektronik', donationRate: 2, logoUrl: 'https://logo.clearbit.com/mediamarkt.com.tr', type: 'brand' },
+    { id: 'el-3', name: 'Teknosa', category: 'Elektronik', donationRate: 3, logoUrl: 'https://logo.clearbit.com/teknosa.com', type: 'brand' },
+    { id: 'el-4', name: 'Huawei', category: 'Elektronik', donationRate: 4, logoUrl: 'https://logo.clearbit.com/huawei.com', type: 'brand' },
+
+    // GIDA
+    { id: 'gd-1', name: 'Tchibo', category: 'Gıda & İçecek', donationRate: 6, logoUrl: 'https://logo.clearbit.com/tchibo.com.tr', type: 'brand' },
+    { id: 'gd-2', name: 'Little Caesars', category: 'Gıda & İçecek', donationRate: 8, logoUrl: 'https://logo.clearbit.com/littlecaesars.com.tr', type: 'brand' },
+    { id: 'gd-3', name: 'Fellas', category: 'Gıda & İçecek', donationRate: 12, logoUrl: 'https://logo.clearbit.com/fellasfoods.com.tr', type: 'brand' },
+
+    // AKSESUAR
+    { id: 'ak-1', name: 'Altınbaş', category: 'Aksesuar & Takı', donationRate: 5, logoUrl: 'https://logo.clearbit.com/altinbas.com', type: 'brand' },
+    { id: 'ak-2', name: 'Saat&Saat', category: 'Aksesuar & Takı', donationRate: 6, logoUrl: 'https://logo.clearbit.com/saatvesaat.com.tr', type: 'brand' },
+
+    // HOBI & HIZMET
+    { id: 'hb-1', name: 'Idefix', category: 'Hobi & Hizmet', donationRate: 5, logoUrl: 'https://logo.clearbit.com/idefix.com', type: 'brand' },
+    { id: 'hb-2', name: 'D&R', category: 'Hobi & Hizmet', donationRate: 4, logoUrl: 'https://logo.clearbit.com/dr.com.tr', type: 'brand' },
+    { id: 'hb-3', name: 'Sosyopix', category: 'Hobi & Hizmet', donationRate: 10, logoUrl: 'https://logo.clearbit.com/sosyopix.com', type: 'brand' },
+    { id: 'hb-4', name: 'Petzzshop', category: 'Hobi & Hizmet', donationRate: 7, logoUrl: 'https://logo.clearbit.com/petzzshop.com', type: 'brand' },
 ];
 
 export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Öne çıkanlar', subCategories: [] },
     { mainCategory: 'Tümü', subCategories: [] },
-    { mainCategory: 'Pazaryeri', subCategories: [] },
     { mainCategory: 'Giyim', subCategories: [] },
     { mainCategory: 'Ayakkabı', subCategories: [] },
-    { mainCategory: 'Kişisel Bakım', subCategories: [] },
     { mainCategory: 'Elektronik', subCategories: [] },
+    { mainCategory: 'Kozmetik & Bakım', subCategories: [] },
+    { mainCategory: 'Tatil & Seyahat', subCategories: [] },
+    { mainCategory: 'Anne & Bebek', subCategories: [] },
     { mainCategory: 'Ev & Yaşam', subCategories: [] },
-    { mainCategory: 'Gıda', subCategories: [] },
+    { mainCategory: 'Süpermarket', subCategories: [] },
+    { mainCategory: 'Gıda & İçecek', subCategories: [] },
+    { mainCategory: 'Aksesuar & Takı', subCategories: [] },
+    { mainCategory: 'Hobi & Hizmet', subCategories: [] },
 ];
 
 export const categoryMapping = {
@@ -139,9 +198,13 @@ export const categoryMapping = {
     'Ayakkabı': ['Ayakkabı', 'Shoe'],
     'Elektronik': ['Elektronik', 'Technology'],
     'Ev & Yaşam': ['Ev', 'Yaşam', 'Home'],
-    'Süpermarket': ['Süpermarket', 'Market', 'Gıda'],
-    'Kişisel Bakım': ['Kozmetik', 'Bakım'],
-    'Pazaryeri': ['Pazaryeri', 'Marketplace']
+    'Süpermarket': ['Süpermarket', 'Market'],
+    'Kozmetik & Bakım': ['Kozmetik', 'Bakım', 'Bakımı'],
+    'Tatil & Seyahat': ['Tatil', 'Seyahat', 'Bilet'],
+    'Anne & Bebek': ['Anne', 'Bebek', 'Çocuk'],
+    'Gıda & İçecek': ['Gıda', 'İçecek', 'Kahve'],
+    'Aksesuar & Takı': ['Aksesuar', 'Takı', 'Saat'],
+    'Hobi & Hizmet': ['Hobi', 'Hizmet', 'Kitap', 'Pet']
 };
 
 export const adBanners: AdBanner[] = [
@@ -224,21 +287,6 @@ export const events: Event[] = [
     imageHint: 'conference auditorium',
     description: 'Türkiye\'nin önde gelen girişimcilerini bir araya getiren en büyük öğrenci zirvesi.',
     providesCertificate: true
-  },
-  {
-    id: '2',
-    name: 'SivilFest Karşıyaka',
-    organizer: 'Karşıyaka Belediyesi',
-    type: 'Festival',
-    date: '1-7 Aralık 2024',
-    time: '09:00 - 20:00',
-    location: 'Karşıyaka Sahil',
-    capacity: { current: 500, max: 1000 },
-    tags: ['Sivil Toplum', 'Festival', 'Dayanışma'],
-    imageUrl: 'https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop',
-    imageHint: 'festival crowd',
-    description: 'Sivil toplum kuruluşlarının projelerini sergilediği dev festival.',
-    providesCertificate: true
   }
 ];
 
@@ -252,8 +300,7 @@ export const schoolRepresentatives: SchoolRepresentative[] = [
 ];
 
 export const volunteeringOpportunities: Volunteering[] = [
-    { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Ahbap Derneği', ngoId: '2', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 50, applications: 120 }, dates: { applicationStart: '2024-07-01', applicationEnd: '2024-07-25', eventStart: '2024-08-01', eventEnd: '2024-08-08' }, hours: { start: '09:00', end: '18:00', total: 56 }, socialArea: 'Afet', points: 1500, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Afet Kahramanı'], hasPreTraining: true, description: 'Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz.', amenities: { transport: true, food: true, accommodation: true } },
-    { id: '2', title: 'Çocuklara Kodlama Eğitimi', organization: 'TEGV', ngoId: '3', location: { city: 'Online', district: '', type: 'Online' }, commitment: 'Sürekli', volunteerCount: { needed: 20, applications: 45 }, dates: { applicationStart: '2024-07-10', applicationEnd: '2024-08-10', eventStart: '2024-09-01', eventEnd: '2024-12-30' }, hours: { start: '18:00', end: '20:00', total: 40 }, socialArea: 'Eğitim', points: 800, ngoTransparencyScore: 90, taskType: 'Sürekli', providesCertificate: true, earnedBadges: ['Eğitim Gönüllüsü'], hasPreTraining: true, description: 'İlkokul seviyesindeki çocuklara Scratch üzerinden temel kodlama mantığını öğretecek eğitmenler.', amenities: { transport: false, food: false, accommodation: false } }
+    { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Ahbap Derneği', ngoId: '2', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 50, applications: 120 }, dates: { applicationStart: '2024-07-01', applicationEnd: '2024-07-25', eventStart: '2024-08-01', eventEnd: '2024-08-08' }, hours: { start: '09:00', end: '18:00', total: 56 }, socialArea: 'Afet', points: 1500, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Afet Kahramanı'], hasPreTraining: true, description: 'Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz.', amenities: { transport: true, food: true, accommodation: true } }
 ];
 
 export const applications: Application[] = [
@@ -261,23 +308,19 @@ export const applications: Application[] = [
 ];
 
 export const donationTransactions: DonationTransaction[] = [
-    { id: '1', type: 'expense', brand: 'Patagonia', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA'], date: '2024-07-21', time: '14:32' },
-    { id: '2', type: 'income', brand: 'Bakiye Yükleme', purchaseAmount: '500.00', donationAmount: '0.00', ngo: [], date: '2024-07-20', time: '10:00' }
+    { id: '1', type: 'expense', brand: 'Patagonia', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA'], date: '2024-07-21', time: '14:32' }
 ];
 
 export const badges: Badge[] = [
-    { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 },
-    { id: '2', name: 'Hayvan Dostu', iconName: Dog, level: 'Gümüş', socialArea: 'Hayvan Hakları', pointsRequired: 1000, currentPoints: 1200 }
+    { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 }
 ];
 
 export const certificates: Certificate[] = [
-    { id: '1', title: 'Afet Gönüllülüğü Başarı Belgesi', organization: 'Ahbap', date: '15.07.2024', linkedinUrl: '#' },
-    { id: '2', title: 'Dijital Mentorluk Sertifikası', organization: 'Hangel A.Ş.', date: '01.06.2024', linkedinUrl: '#' }
+    { id: '1', title: 'Afet Gönüllülüğü Başarı Belgesi', organization: 'Ahbap', date: '15.07.2024', linkedinUrl: '#' }
 ];
 
 export const helpTopics: HelpTopic[] = [
-    { icon: 'Info', title: 'Genel Bilgiler', slug: 'genel', description: 'Platformun işleyişi hakkında temel bilgiler.', subtopics: [{ title: 'hangel Nedir?', link: '#', content: 'Hangel, alışverişi iyiliğe dönüştüren bir sosyal girişimdir.' }] },
-    { icon: 'DollarSign', title: 'Bağış ve Ödemeler', slug: 'bagis', description: 'Bağış süreçleri ve cüzdan kullanımı.', subtopics: [{ title: 'Nasıl bağış yaparım?', link: '#', content: 'Anlaşmalı markalardan alışveriş yaparak bağış yapabilirsiniz.' }] }
+    { icon: 'Info', title: 'Genel Bilgiler', slug: 'genel', description: 'Platformun işleyişi hakkında temel bilgiler.', subtopics: [{ title: 'hangel Nedir?', link: '#', content: 'Hangel, alışverişi iyiliğe dönüştüren bir sosyal girişimdir.' }] }
 ];
 
 export const ngoHelpTopics = helpTopics;

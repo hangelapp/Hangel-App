@@ -193,6 +193,7 @@ export default function AppHeader() {
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
+            {/* Left side is intentionally empty for minimalist look */}
             <div className="hidden lg:block w-4" /> 
           </div>
 

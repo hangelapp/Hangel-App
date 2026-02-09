@@ -100,11 +100,9 @@ export default function MarketPage() {
             if (data && Array.isArray(data) && data.length > 0) {
                 setApiBrands(data);
             } else {
-                // If API returns 0 or error, use enriched demo data
                 setApiBrands(allEntityLists);
             }
         } catch (e) {
-            console.error("Market fetch error:", e);
             setApiBrands(allEntityLists);
         } finally {
             setIsApiLoading(false);
@@ -114,7 +112,7 @@ export default function MarketPage() {
   }, []);
 
   const brandsToShow = useMemo(() => {
-    let combinedList: Brand[] = [...apiBrands];
+    let combinedList: Brand[] = apiBrands.length > 0 ? [...apiBrands] : [...allEntityLists];
 
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
@@ -124,7 +122,9 @@ export default function MarketPage() {
     if (activeCategory !== 'Tümü' && activeCategory !== 'Öne çıkanlar') {
       const mappedCategories = categoryMapping[activeCategory as keyof typeof categoryMapping];
       if (mappedCategories) {
-        combinedList = combinedList.filter(brand => mappedCategories.some(cat => brand.category.toLowerCase().includes(cat.toLowerCase())));
+        combinedList = combinedList.filter(brand => 
+            mappedCategories.some(cat => brand.category.toLowerCase().includes(cat.toLowerCase()))
+        );
       } else {
         combinedList = combinedList.filter(brand => brand.category.toLowerCase().includes(activeCategory.toLowerCase()));
       }
@@ -162,7 +162,7 @@ export default function MarketPage() {
     <div className="flex flex-col h-full bg-secondary/30">
         <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
             
-            {/* LIVE DATA STATUS BOX */}
+            {/* LIVE DATA STATUS BOX (MAC DEBUG) */}
             <div className="bg-white border-2 border-primary/20 rounded-[2rem] p-6 mb-4 grid grid-cols-3 gap-4 text-center shadow-lg animate-in slide-in-from-top duration-500">
                 <div className="flex flex-col justify-center">
                     <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Gelir Ortakları</p>
@@ -310,12 +310,12 @@ export default function MarketPage() {
                     !isApiLoading && (
                         <div className="col-span-full py-24 flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-[2.5rem] bg-muted/10">
                             <AlertCircle className="h-12 w-12 text-primary/40" />
-                            <p className="text-foreground font-bold text-sm">Şu an ajans bağlantısı kurulamıyor.</p>
+                            <p className="text-foreground font-bold text-sm">Şu an marka bulunamadı.</p>
                         </div>
                     )
                 )}
                 
-                {isApiLoading && (
+                {isApiLoading && apiBrands.length === 0 && (
                     Array.from({ length: 12 }).map((_, i) => (
                         <div key={i} className="space-y-2">
                             <Skeleton className="aspect-square w-full rounded-[1.5rem]" />
