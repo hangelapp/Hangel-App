@@ -1,7 +1,7 @@
 
 import type { Brand } from './types';
 
-const FETCH_TIMEOUT = 8000; // 5 seconds timeout
+const FETCH_TIMEOUT = 10000; // 10 saniye timeout
 
 async function fetchWithTimeout(url: string, options: RequestInit) {
     const controller = new AbortController();
@@ -25,6 +25,9 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const AFFOCEAN_KEY = process.env.AFFOCEAN_KEY;
     const REKLAMACTION_KEY = process.env.REKLAMACTION_KEY;
 
+    /**
+     * GELİR ORTAKLARI - POST Search API
+     */
     const fetchGelirOrtaklari = async (): Promise<Brand[]> => {
         if (!GELIR_ORTAKLARI_KEY) return [];
         try {
@@ -39,7 +42,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                     limit: 100,
                     page: 1,
                     type: "text",
-                    value: "a"
+                    value: " " // Boşluk karakteri genellikle tüm sonuçları getirir
                 }),
                 cache: 'no-store'
             });
@@ -48,24 +51,33 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             const data = await response.json();
             const results = data.results || [];
 
-            return results.map((m: any) => ({
-                id: `go-${m.id || Math.random().toString(36).substring(2, 9)}`,
-                name: m.name || "Marka",
-                category: m.category || "Genel",
-                type: 'brand' as const,
-                logoUrl: m.logo || "",
-                donationRate: parseFloat(String(m.commission || 0)),
-                donationRateDisplay: m.commission ? `%${m.commission}` : '',
-                followers: Math.floor(Math.random() * 5000) + 1000,
-                about: m.description || "Sosyal etki odaklı marka.",
-                link: m.tracking_url || "#"
-            }));
+            return results.map((m: any) => {
+                // Komisyon oranını temizle
+                const rawComm = String(m.commission || "0");
+                const cleanComm = parseFloat(rawComm.replace(/[^0-9.]/g, '') || "0");
+
+                return {
+                    id: `go-${m.id || Math.random().toString(36).substring(2, 9)}`,
+                    name: m.name || "Marka",
+                    category: m.category || "Genel",
+                    type: 'brand' as const,
+                    logoUrl: m.logo || "",
+                    donationRate: cleanComm,
+                    donationRateDisplay: `%${cleanComm}`,
+                    followers: Math.floor(Math.random() * 5000) + 1000,
+                    about: m.description || "Sosyal etki odaklı marka.",
+                    link: m.tracking_url || "#"
+                };
+            });
         } catch (e) {
-            console.error("Gelir Ortakları fetch error:", e);
+            console.error("Gelir Ortakları fetch hatası:", e);
             return [];
         }
     };
 
+    /**
+     * DİĞER AJANSLAR (AFFOCEAN, REKLAMACTION) - GET Offer API
+     */
     const fetchAgency = async (key: string | undefined, domain: string, network: string): Promise<Brand[]> => {
         if (!key) return [];
         try {
@@ -100,7 +112,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 };
             });
         } catch (e) {
-            console.error(`${network} fetch error:`, e);
+            console.error(`${network} fetch hatası:`, e);
             return [];
         }
     };
@@ -121,7 +133,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 uniqueItemsMap.set(key, brand);
             } else {
                 const existing = uniqueItemsMap.get(key)!;
-                if (brand.donationRate > existing.donationRate) {
+                // Daha yüksek bağış oranı olan ajans teklifini tercih et
+                if (brand.donationRate > (existing.donationRate || 0)) {
                     uniqueItemsMap.set(key, brand);
                 }
             }
@@ -129,7 +142,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
         return Array.from(uniqueItemsMap.values());
     } catch (e) {
-        console.error("Global API processing failed:", e);
+        console.error("Global API işleme hatası:", e);
         return [];
     }
 }

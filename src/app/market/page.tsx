@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { HangelLogo } from '@/components/icons';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
@@ -32,6 +31,34 @@ import {
 import { askMarketAssistant } from '@/ai/flows/marketplace-ai-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getApiOffers } from '@/app/actions/market';
+
+/**
+ * Güvenli Logo Bileşeni (Fallback Destekli)
+ * Proxy engellerini aşmak için yerel img etiketi kullanır.
+ * Görsel yüklenemezse markanın baş harfini içeren şık bir yer tutucu gösterir.
+ */
+const BrandLogo = ({ brand }: { brand: Brand }) => {
+    const [hasError, setHasError] = useState(false);
+
+    if (hasError || !brand.logoUrl || brand.logoUrl === "") {
+        return (
+            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex flex-col items-center justify-center border shadow-inner p-2">
+                <span className="text-primary font-black text-2xl uppercase">{brand.name.charAt(0)}</span>
+                <span className="text-[7px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center px-1">{brand.name}</span>
+            </div>
+        );
+    }
+
+    return (
+        <img 
+            src={brand.logoUrl} 
+            alt={brand.name} 
+            className="w-full h-full object-contain p-3 transition-opacity duration-300"
+            onError={() => setHasError(true)}
+            loading="lazy"
+        />
+    );
+};
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -107,33 +134,6 @@ const VisualAdCarousel = () => {
     )
 }
 
-/**
- * Güvenli Logo Bileşeni (Fallback Destekli)
- * Proxy engellerini aşmak için yerel img etiketi kullanır.
- */
-const BrandLogo = ({ brand }: { brand: Brand }) => {
-    const [hasError, setHasError] = useState(false);
-
-    if (hasError || !brand.logoUrl) {
-        return (
-            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 flex flex-col items-center justify-center border shadow-inner p-2">
-                <span className="text-primary font-black text-2xl uppercase">{brand.name.charAt(0)}</span>
-                <span className="text-[7px] font-bold text-primary/40 uppercase tracking-tighter truncate w-full text-center px-1">{brand.name}</span>
-            </div>
-        );
-    }
-
-    return (
-        <img 
-            src={brand.logoUrl} 
-            alt={brand.name} 
-            className="w-full h-full object-contain p-3 transition-opacity duration-300"
-            onError={() => setHasError(true)}
-            loading="lazy"
-        />
-    );
-};
-
 export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [activeEntityType, setActiveEntityType] = useState('all');
@@ -186,7 +186,6 @@ export default function MarketPage() {
             uniqueBrandsMap.set(key, item);
         } else {
             const existing = uniqueBrandsMap.get(key)!;
-            // Daha yüksek bağış oranı olanı tercih et
             if (item.donationRate > (existing.donationRate || 0)) {
                 uniqueBrandsMap.set(key, item);
             }
@@ -474,7 +473,7 @@ export default function MarketPage() {
                 
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? brandsToShow.map((brand, index) => {
-                    const isApiBrand = brand.id.startsWith('agency-') || brand.id.startsWith('go-');
+                    const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('agency-');
                     return (
                     <Fragment key={brand.id}>
                         <Link 
