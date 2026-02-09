@@ -173,8 +173,6 @@ export default function MarketPage() {
         }
     });
 
-    console.log("Tüm Ajanslardan Gelen Toplam Veri:", combinedList);
-
     if (activeCategory === 'Öne çıkanlar') {
         return combinedList.slice(0, 100); 
     }
@@ -195,7 +193,7 @@ export default function MarketPage() {
       if (result.answer) setAssistantResponse(result.answer);
     } catch (error) {
       console.error(error);
-      toast({ variant: "destructive", title: "Hata", description: "Asistan şu an yanıt veremiyor." });
+      toast({ variant: "destructive", title: "Hapi hatası", description: "Asistan şu an yanıt veremiyor." });
     } finally {
       setIsAssistantLoading(false);
       setAssistantQuestion('');
