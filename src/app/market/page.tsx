@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag, AlertCircle } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -105,26 +104,13 @@ export default function MarketPage() {
         setIsApiLoading(true);
         try {
             const data = await getApiOffers();
-            if (data && Array.isArray(data) && data.length > 0) {
+            if (data && Array.isArray(data)) {
                 setApiBrands(data);
-                console.log("Market Page - API Verisi Alındı (Client):", data.length);
-                console.table(data.slice(0, 20));
-            } else {
-                // FALLBACK: If real APIs return empty, show the error dummy data
-                setApiBrands([{
-                    id: 'test-error',
-                    name: 'HATA: API Bos Donuyor',
-                    category: 'Sistem Testi',
-                    type: 'brand',
-                    logoUrl: '',
-                    donationRate: 0,
-                    followers: 0,
-                    about: 'Bu kart, sunucu bağlantısının başarılı olduğunu ancak API kaynaklarından veri dönmediğini belirtir.'
-                }]);
+                console.log(`Market - Toplam ${data.length} ajans teklifi yüklendi.`);
             }
         } catch (e) {
             console.error("Market API load error:", e);
-            toast({ variant: 'destructive', title: 'Bağlantı Hatası', description: 'Ajans servislerine ulaşılamadı.' });
+            toast({ variant: 'destructive', title: 'Hata', description: 'Ajans servislerinden veri alınamadı.' });
         } finally {
             setIsApiLoading(false);
         }
@@ -319,7 +305,7 @@ export default function MarketPage() {
                     <h2 className="font-black text-xs sm:text-lg uppercase tracking-tight text-foreground/80">{activeCategory}</h2>
                     {isApiLoading && (
                         <div className="flex items-center gap-2 text-[10px] font-bold text-primary animate-pulse">
-                            <Loader2 className="h-3 w-3 animate-spin" /> API Verisi Bekleniyor...
+                            <Loader2 className="h-3 w-3 animate-spin" /> Veriler Güncelleniyor...
                         </div>
                     )}
                 </div>
@@ -327,7 +313,7 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => {
-                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-') || brand.id === 'test-error';
+                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-');
                         return (
                             <Fragment key={brand.id}>
                                 <Link 
@@ -339,10 +325,9 @@ export default function MarketPage() {
                                     <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                         <div className="relative w-full aspect-square">
                                             <div className={cn(
-                                                "w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0",
-                                                brand.id === 'test-error' && "bg-red-50 border-red-200"
+                                                "w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0"
                                             )}>
-                                                {brand.id === 'test-error' ? <AlertCircle className="h-8 w-8 text-red-400" /> : <BrandLogo brand={brand} />}
+                                                <BrandLogo brand={brand} />
                                             </div>
                                             {(brand.donationRate > 0) && (
                                                 <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
@@ -352,7 +337,7 @@ export default function MarketPage() {
                                         </div>
                                         <p className={cn(
                                             "text-[10px] sm:text-xs font-bold leading-tight transition-colors px-1 line-clamp-2 mt-1",
-                                            brand.id === 'test-error' ? "text-red-600" : "text-foreground group-hover:text-primary"
+                                            "text-foreground group-hover:text-primary"
                                         )}>
                                             {brand.name}
                                         </p>

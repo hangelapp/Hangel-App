@@ -20,13 +20,20 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
 
 /**
  * Server-side function to fetch offers from all configured agencies.
- * Acts as a proxy to bypass CORS and hide API keys from the browser.
+ * Uses domain headers (hangel.org) to satisfy API restrictions.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
-    // API Keys sanitized with trim() to avoid hidden spaces
     const GO_KEY = (process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3").trim();
     const AO_KEY = (process.env.AFFOCEAN_KEY || "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48").trim();
     const RA_KEY = (process.env.REKLAMACTION_KEY || "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54").trim();
+
+    // Standard headers for all requests to ensure domain verification
+    const standardHeaders = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+        "Origin": "https://hangel.org",
+        "Referer": "https://hangel.org"
+    };
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
@@ -36,23 +43,22 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             const res = await fetchWithTimeout("https://feed.gelirortaklari.com/api/v1/search", {
                 method: "POST",
                 headers: {
-                    "accept": "application/json",
-                    "Content-Type": "application/json",
+                    ...standardHeaders,
                     "x-api-key": GO_KEY
                 },
                 body: JSON.stringify({ "value": "" }),
                 cache: 'no-store'
             });
             
-            console.log("Gelir Ortakları HTTP Status:", res.status);
-            if (!res.ok) return [];
+            if (!res.ok) {
+                console.error(`Gelir Ortakları Error: ${res.status}`);
+                return [];
+            }
 
             const raw = await res.json();
-            // Deep Scanning for results array
+            // Gelir Ortakları mapping from 'results' array
             const items = raw.results || raw.data || (Array.isArray(raw) ? raw : []);
             
-            if (items.length === 0) console.warn("Gelir Ortakları API'den boş dizi döndü.");
-
             return items.map((item: any) => ({
                 id: `go-${item.id || Math.random()}`,
                 name: item.advertiser_name || item.name || "Bilinmeyen Marka",
@@ -65,7 +71,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("Gelir Ortakları Sunucu Hatası:", e);
+            console.error("Gelir Ortakları Fetch Failed:", e);
             return [];
         }
     };
@@ -77,14 +83,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         try {
             const res = await fetchWithTimeout("https://affocean.com/api/v1/offers", {
                 headers: { 
-                    "Authorization": `Bearer ${AO_KEY}`,
-                    "accept": "application/json",
-                    "Content-Type": "application/json"
+                    ...standardHeaders,
+                    "Authorization": `Bearer ${AO_KEY}`
                 },
                 cache: 'no-store'
             });
             
-            console.log("Affocean HTTP Status:", res.status);
             if (!res.ok) return [];
 
             const raw = await res.json();
@@ -102,7 +106,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Affocean sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("Affocean Sunucu Hatası:", e);
+            console.error("Affocean Fetch Failed:", e);
             return [];
         }
     };
@@ -114,14 +118,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
         try {
             const res = await fetchWithTimeout("https://api.reklamaction.com/v1/offer?network=reklamaction", {
                 headers: { 
-                    "Authorization": `Bearer ${RA_KEY}`,
-                    "accept": "application/json",
-                    "Content-Type": "application/json"
+                    ...standardHeaders,
+                    "Authorization": `Bearer ${RA_KEY}`
                 },
                 cache: 'no-store'
             });
             
-            console.log("ReklamAction HTTP Status:", res.status);
             if (!res.ok) return [];
 
             const raw = await res.json();
@@ -139,7 +141,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "ReklamAction sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("ReklamAction Sunucu Hatası:", e);
+            console.error("ReklamAction Fetch Failed:", e);
             return [];
         }
     };
@@ -147,6 +149,5 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const results = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
     const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
     
-    console.log("Toplam Birleştirilen Marka Sayısı:", combined.length);
     return combined;
 }
