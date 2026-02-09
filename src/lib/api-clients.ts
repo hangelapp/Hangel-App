@@ -2,7 +2,7 @@
 import type { Brand } from './types';
 
 /**
- * Domain Headers: Bazı API'ler güvenli istek için Origin ve Referer bilgilerini zorunlu tutar.
+ * Domain Headers: API'lerin domain doğrulaması için gerekli başlıklar.
  */
 const DOMAIN_HEADERS = {
   'Origin': 'https://hangel.org',
@@ -36,7 +36,7 @@ const parseRate = (rate: any): number => {
 };
 
 /**
- * Üç ajansın verilerini sunucu tarafında çeker, birleştirir ve tekilleştirir.
+ * Üç ajansın verilerini sunucu tarafında çeker, birleştirir ve loglar.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const agencies = [
@@ -69,7 +69,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
       try {
         const headers: any = { ...DOMAIN_HEADERS };
         
-        // Ajansa özel yetkilendirme yöntemi
         if (agency.authHeader === 'x-api-key') {
             headers['x-api-key'] = agency.key;
         } else {
@@ -90,17 +89,15 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
         const resData = await response.json();
         
-        // KRİTİK: Her ajansın JSON hiyerarşisini derinlemesine tara
+        // Hiyerarşik veri taraması
         const rawList = resData.results || resData.data || resData.offers || (Array.isArray(resData) ? resData : []);
 
         if (!Array.isArray(rawList)) {
-            console.warn(`[Server] ${agency.name} geçersiz liste döndürdü.`);
+            console.warn(`[Server] ${agency.name} geçerli bir liste döndürmedi.`);
             return [];
         }
 
-        console.log(`[Server] ${agency.name} başarıyla bağlandı. Marka sayısı: ${rawList.length}`);
-
-        return rawList.map((item: any) => ({
+        const mapped = rawList.map((item: any) => ({
           id: `${agency.name.toLowerCase().replace(/\s/g, '-')}-${item.id || Math.random().toString(36).substr(2, 9)}`,
           name: cleanBrandName(item.advertiser_name || item.name || item.title),
           logoUrl: item.logo_url || item.logo || item.image || item.preview_url || "",
@@ -110,6 +107,11 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
           agency: agency.name,
           category: item.category || "Genel"
         }));
+
+        // AJANS BAZLI SAYI RAPORU
+        console.log(`[Server] ${agency.name} yakalanan marka sayısı: ${mapped.length}`);
+        
+        return mapped;
       } catch (err) {
         console.error(`[Server] ${agency.name} Bağlantı Hatası:`, err);
         return [];
