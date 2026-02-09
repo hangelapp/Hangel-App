@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -100,7 +101,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: { ma
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50">
       <div className="flex grow flex-col overflow-y-auto bg-secondary border-r px-4 pb-4 pt-12">
         <nav className="flex flex-1 flex-col space-y-4">
-            <div className="h-8" />
+            <div className="h-12" /> {/* Space for where logo used to be */}
             {mainItems.length > 0 && <NavList items={mainItems} />}
             {navItems.length > 0 && <NavList items={navItems} />}
             {userItems.length > 0 && <NavList items={userItems} />}

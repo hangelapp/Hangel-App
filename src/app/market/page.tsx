@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
@@ -158,7 +159,7 @@ export default function MarketPage() {
     <div className="flex flex-col h-full bg-secondary/30">
         <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
             
-            {/* MAC DEBUG RAPORU (ZORUNLU) */}
+            {/* MAC DEBUG RAPORU */}
             <div className="bg-white border-4 border-red-600 rounded-[2rem] p-6 mb-4 grid grid-cols-3 gap-4 text-center shadow-2xl animate-in zoom-in duration-500">
                 <div className="flex flex-col">
                     <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mb-2">Gelir Ortakları</p>
