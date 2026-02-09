@@ -55,9 +55,8 @@ const Header = () => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
-                <Link href="/login" className="hover:opacity-70 transition-opacity shrink-0">
-                    <HangelLogo className="text-xl text-primary" />
-                </Link>
+                {/* Minimalist Header - No Logo */}
+                <div className="w-8 h-8" /> 
 
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
                     <Link href="/market" className="hover:text-primary transition-colors uppercase tracking-tight">Bağış</Link>
@@ -237,10 +236,6 @@ const Footer = () => {
         <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-8 pb-12 px-4 sm:px-6 border-t border-black/5 font-sans">
             <div className="container mx-auto max-w-5xl">
                 <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-6 px-1">
-                    <Link href="/login" className="hover:text-[#1d1d1f] transition-colors">
-                        <HangelLogo className="text-base scale-90 grayscale opacity-70" />
-                    </Link>
-                    <ChevronRight className="h-3 w-3" />
                     <span className="text-[#1d1d1f]/80">Anasayfa</span>
                 </div>
 
@@ -315,8 +310,8 @@ const Footer = () => {
                         Diğer alışveriş seçenekleri: Yakınınızda bir <Link href="/market" className="text-primary hover:underline font-medium">hangel destek</Link> bulun veya <span className="whitespace-nowrap">0554 700 70 07</span> numaralı telefonu arayın.
                     </p>
                     
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-black/10 pt-4">
-                        <div className="flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-black/10">
+                        <div className="flex flex-col md:flex-row items-center gap-x-6 gap-y-2 text-[12px] text-[#1d1d1f]/50">
                             <span className="whitespace-nowrap">Telif Hakkı © 2024 hangel A.Ş. Tüm hakları saklıdır.</span>
                         </div>
                         <div className="text-[12px] font-medium text-[#1d1d1f]/70 hover:text-[#1d1d1f] cursor-pointer transition-colors shrink-0">
@@ -338,8 +333,10 @@ const typeLabels: Record<string, string> = {
 
 export default function LoginPage() {
     const [displayBrands, setDisplayBrands] = useState<Brand[]>([]);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         const shuffled = [...allEntityLists]
             .sort(() => Math.random() - 0.5)
             .slice(0, 21);
@@ -438,7 +435,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tümünü Gör ({allEntityLists.length} Marka)</Link>
+                            <Link href="/market">Tümünü Gör {mounted && `(${allEntityLists.length} Marka)`}</Link>
                         </Button>
                     </div>
                 </section>
@@ -491,7 +488,7 @@ export default function LoginPage() {
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/volunteering">Tümünü Gör ({volunteeringOpportunities.length} İlan)</Link>
+                            <Link href="/volunteering">Tümünü Gör {mounted && `(${volunteeringOpportunities.length} İlan)`}</Link>
                         </Button>
                     </div>
                 </section>

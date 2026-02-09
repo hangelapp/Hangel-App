@@ -120,7 +120,7 @@ export default function MarketPage() {
   const handleAskAssistant = useCallback(async () => {
     if (!assistantQuestion.trim()) return;
     setIsAssistantLoading(true);
-    // Simulate AI response for this turn to keep UI functional while we fix logic
+    // Simulate AI response
     setTimeout(() => {
         setAssistantResponse("Size en uygun markaları buldum! Sürdürülebilir ürünler için 'Doğa Dostu Giyim' veya 'Patagonia' markalarını inceleyebilirsiniz.");
         setIsAssistantLoading(false);

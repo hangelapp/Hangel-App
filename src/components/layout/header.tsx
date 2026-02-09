@@ -146,7 +146,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
             <MobileNavList items={group1Items} />
             <MobileNavList items={group2Items} />
             <MobileNavList items={group3Items} />
-            <MobileNavList archetype="secondary" items={group4Items} />
+            <MobileNavList items={group4Items} />
         </div>
          <div className='p-4 border-t bg-secondary'>
             <ul role="list" className="bg-card rounded-lg overflow-hidden border">
