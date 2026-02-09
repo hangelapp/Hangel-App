@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
-import { fetchAllAgencyOffers } from '@/lib/api-clients';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Bot } from 'lucide-react';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -37,36 +38,9 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
-  const [dynamicBrands, setDynamicBrands] = useState<Brand[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadBrands = async () => {
-      try {
-        const apiData = await fetchAllAgencyOffers();
-        // Merge API data with the hardcoded list, prioritizing higher rates for duplicates
-        const combined = [...apiData, ...allEntityLists];
-        const uniqueMap = new Map<string, Brand>();
-        combined.forEach(brand => {
-          const key = brand.name.toLowerCase().trim();
-          const existing = uniqueMap.get(key);
-          if (!existing || brand.donationRate > existing.donationRate) {
-            uniqueMap.set(key, brand);
-          }
-        });
-        setDynamicBrands(Array.from(uniqueMap.values()));
-      } catch (err) {
-        console.error("Market fetch error:", err);
-        setDynamicBrands(allEntityLists);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadBrands();
-  }, []);
 
   const brandsToShow = useMemo(() => {
-    let list = [...dynamicBrands];
+    let list = [...allEntityLists];
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -85,7 +59,7 @@ export default function MarketPage() {
     });
     
     return list;
-  }, [activeCategory, sortKey, searchTerm, dynamicBrands]);
+  }, [activeCategory, sortKey, searchTerm]);
 
   return (
     <div className="flex flex-col h-full bg-secondary/30 relative">
@@ -151,12 +125,7 @@ export default function MarketPage() {
 
         <main className="flex-1 overflow-y-auto p-4">
           <div className="max-w-6xl mx-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12 gap-2 text-primary font-bold">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Kampanyalar Hazırlanıyor...</span>
-              </div>
-            ) : brandsToShow.length === 0 ? (
+            {brandsToShow.length === 0 ? (
               <div className="text-center py-20 text-muted-foreground italic">
                 Aramanızla eşleşen marka bulunamadı.
               </div>

@@ -8,9 +8,7 @@ import { cn } from '@/lib/utils';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
-import { fetchAllAgencyOffers } from '@/lib/api-clients';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { allEntityLists } from '@/lib/data';
 import type { Brand } from '@/lib/types';
 
@@ -88,6 +86,8 @@ const Header = () => {
         </header>
     );
 };
+
+const PlaceHolderImages: any[] = [];
 
 const GridItem = ({ 
     title, 
@@ -222,29 +222,6 @@ const Footer = () => {
 };
 
 export default function LoginPage() {
-    const [displayBrands, setDisplayBrands] = useState<Brand[]>([]);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        const loadPreviewBrands = async () => {
-            try {
-                const apiData = await fetchAllAgencyOffers();
-                if (apiData.length > 0) {
-                    setDisplayBrands(apiData.slice(0, 10));
-                } else {
-                    setDisplayBrands(allEntityLists.slice(0, 10));
-                }
-            } catch (err) {
-                console.error("Preview load error:", err);
-                setDisplayBrands(allEntityLists.slice(0, 10));
-            }
-        };
-        loadPreviewBrands();
-    }, []);
-
-    if (!mounted) return <div className="min-h-screen bg-[#f5f5f7]" />;
-
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
             <Header />
@@ -274,7 +251,7 @@ export default function LoginPage() {
                     
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
-                            {displayBrands.length > 0 ? displayBrands.map((brand) => (
+                            {allEntityLists.slice(0, 10).map((brand) => (
                                 <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
                                     <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <ShoppingBag className="h-6 w-6" />
@@ -289,9 +266,7 @@ export default function LoginPage() {
                                         <div className="text-2xl font-black text-primary">%{brand.donationRate}</div>
                                     </div>
                                 </Link>
-                            )) : (
-                                <div className="w-full py-12 text-muted-foreground italic">Markalar listeleniyor...</div>
-                            )}
+                            ))}
                         </div>
                     </div>
 
