@@ -146,7 +146,7 @@ function SideMenu({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (op
             <MobileNavList items={group1Items} />
             <MobileNavList items={group2Items} />
             <MobileNavList items={group3Items} />
-            <MobileNavList items={group4Items} />
+            <MobileNavList archetype="secondary" items={group4Items} />
         </div>
          <div className='p-4 border-t bg-secondary'>
             <ul role="list" className="bg-card rounded-lg overflow-hidden border">
@@ -193,7 +193,6 @@ export default function AppHeader() {
             <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
-            {/* Left side is intentionally empty for minimalist look */}
             <div className="hidden lg:block w-4" /> 
           </div>
 
