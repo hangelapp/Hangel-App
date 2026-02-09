@@ -4,7 +4,7 @@
 import { useState, useMemo, useRef, Fragment, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, Bot, Loader2, ShoppingBag, AlertCircle } from 'lucide-react';
 import { marketCategories, allEntityLists, adBanners, categoryMapping } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -108,23 +108,23 @@ export default function MarketPage() {
             if (data && Array.isArray(data) && data.length > 0) {
                 setApiBrands(data);
                 console.log("Market Page - API Verisi Alındı (Client):", data.length);
-                console.table(data.slice(0, 50));
+                console.table(data.slice(0, 20));
             } else {
-                // Dummy data fallback for testing connection
+                // FALLBACK: If real APIs return empty, show the error dummy data
                 setApiBrands([{
-                    id: 'test-1',
-                    name: 'API BAGLANTISI BASARILI',
-                    category: 'Test',
+                    id: 'test-error',
+                    name: 'HATA: API Bos Donuyor',
+                    category: 'Sistem Testi',
                     type: 'brand',
                     logoUrl: '',
-                    donationRate: 10,
-                    followers: 999,
-                    about: 'Bu bir test kaydıdır. API bağlantısının sağlandığını ancak veri dönmediğini gösterir.'
+                    donationRate: 0,
+                    followers: 0,
+                    about: 'Bu kart, sunucu bağlantısının başarılı olduğunu ancak API kaynaklarından veri dönmediğini belirtir.'
                 }]);
             }
         } catch (e) {
             console.error("Market API load error:", e);
-            toast({ variant: 'destructive', title: 'Veri Hatası', description: 'Ajans verileri çekilemedi.' });
+            toast({ variant: 'destructive', title: 'Bağlantı Hatası', description: 'Ajans servislerine ulaşılamadı.' });
         } finally {
             setIsApiLoading(false);
         }
@@ -327,7 +327,7 @@ export default function MarketPage() {
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 {brandsToShow.length > 0 ? (
                     brandsToShow.map((brand, index) => {
-                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-') || brand.id === 'test-1';
+                        const isApiBrand = brand.id.startsWith('go-') || brand.id.startsWith('ra-') || brand.id.startsWith('ao-') || brand.id === 'test-error';
                         return (
                             <Fragment key={brand.id}>
                                 <Link 
@@ -338,8 +338,11 @@ export default function MarketPage() {
                                 >
                                     <div className="flex flex-col items-center text-center space-y-2 p-1 transition-all duration-300">
                                         <div className="relative w-full aspect-square">
-                                            <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0">
-                                                <BrandLogo brand={brand} />
+                                            <div className={cn(
+                                                "w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:border-primary/20 group-hover:shadow-xl transition-all p-0",
+                                                brand.id === 'test-error' && "bg-red-50 border-red-200"
+                                            )}>
+                                                {brand.id === 'test-error' ? <AlertCircle className="h-8 w-8 text-red-400" /> : <BrandLogo brand={brand} />}
                                             </div>
                                             {(brand.donationRate > 0) && (
                                                 <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[9px] font-black text-white shadow-lg border-2 border-white transform transition-transform group-hover:scale-110">
@@ -347,7 +350,10 @@ export default function MarketPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <p className="text-[10px] sm:text-xs font-bold text-foreground leading-tight group-hover:text-primary transition-colors px-1 line-clamp-2 mt-1">
+                                        <p className={cn(
+                                            "text-[10px] sm:text-xs font-bold leading-tight transition-colors px-1 line-clamp-2 mt-1",
+                                            brand.id === 'test-error' ? "text-red-600" : "text-foreground group-hover:text-primary"
+                                        )}>
                                             {brand.name}
                                         </p>
                                     </div>

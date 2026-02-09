@@ -1,4 +1,3 @@
-
 import type { Brand } from './types';
 
 const FETCH_TIMEOUT = 15000;
@@ -24,13 +23,13 @@ async function fetchWithTimeout(url: string, options: RequestInit) {
  * Acts as a proxy to bypass CORS and hide API keys from the browser.
  */
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
-    const GO_KEY = process.env.GELIR_ORTAKLARI_KEY;
-    const AO_KEY = process.env.AFFOCEAN_KEY;
-    const RA_KEY = process.env.REKLAMACTION_KEY;
+    // API Keys sanitized with trim() to avoid hidden spaces
+    const GO_KEY = (process.env.GELIR_ORTAKLARI_KEY || "891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3").trim();
+    const AO_KEY = (process.env.AFFOCEAN_KEY || "9421478cae5d673deb12bf1fade2021da06b019654808fddf1ef568569234d48").trim();
+    const RA_KEY = (process.env.REKLAMACTION_KEY || "2ae3a9b86708162dc059e78b6a8de2b4dee5444d13bb985b93340bdb6094bb54").trim();
 
     /**
      * 1. GELİR ORTAKLARI (POST Search API)
-     * Deep Scan: results -> data
      */
     const fetchGelir = async (): Promise<Brand[]> => {
         try {
@@ -39,20 +38,20 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 headers: {
                     "accept": "application/json",
                     "Content-Type": "application/json",
-                    "x-api-key": GO_KEY || ""
+                    "x-api-key": GO_KEY
                 },
                 body: JSON.stringify({ "value": "" }),
                 cache: 'no-store'
             });
             
-            console.log("Gelir Ortakları Status:", res.status);
+            console.log("Gelir Ortakları HTTP Status:", res.status);
             if (!res.ok) return [];
 
             const raw = await res.json();
-            // Deep Scanning for results
+            // Deep Scanning for results array
             const items = raw.results || raw.data || (Array.isArray(raw) ? raw : []);
             
-            if (items.length === 0) console.error("Hangi Ajans Boş Döndü: Gelir Ortakları");
+            if (items.length === 0) console.warn("Gelir Ortakları API'den boş dizi döndü.");
 
             return items.map((item: any) => ({
                 id: `go-${item.id || Math.random()}`,
@@ -66,26 +65,26 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Gelir Ortakları sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("Gelir Ortakları Fetch Hatası:", e);
+            console.error("Gelir Ortakları Sunucu Hatası:", e);
             return [];
         }
     };
 
     /**
-     * 2. AFFOCEAN
-     * Deep Scan: offers -> results -> data
+     * 2. AFFOCEAN (GET API)
      */
     const fetchAffocean = async (): Promise<Brand[]> => {
         try {
             const res = await fetchWithTimeout("https://affocean.com/api/v1/offers", {
                 headers: { 
                     "Authorization": `Bearer ${AO_KEY}`,
-                    "accept": "application/json"
+                    "accept": "application/json",
+                    "Content-Type": "application/json"
                 },
                 cache: 'no-store'
             });
             
-            console.log("Affocean Status:", res.status);
+            console.log("Affocean HTTP Status:", res.status);
             if (!res.ok) return [];
 
             const raw = await res.json();
@@ -103,25 +102,26 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "Affocean sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("Affocean Fetch Hatası:", e);
+            console.error("Affocean Sunucu Hatası:", e);
             return [];
         }
     };
 
     /**
-     * 3. REKLAMACTION
+     * 3. REKLAMACTION (GET API)
      */
     const fetchReklam = async (): Promise<Brand[]> => {
         try {
             const res = await fetchWithTimeout("https://api.reklamaction.com/v1/offer?network=reklamaction", {
                 headers: { 
                     "Authorization": `Bearer ${RA_KEY}`,
-                    "accept": "application/json"
+                    "accept": "application/json",
+                    "Content-Type": "application/json"
                 },
                 cache: 'no-store'
             });
             
-            console.log("ReklamAction Status:", res.status);
+            console.log("ReklamAction HTTP Status:", res.status);
             if (!res.ok) return [];
 
             const raw = await res.json();
@@ -139,7 +139,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
                 about: "ReklamAction sosyal fayda ortağı."
             }));
         } catch (e) {
-            console.error("ReklamAction Fetch Hatası:", e);
+            console.error("ReklamAction Sunucu Hatası:", e);
             return [];
         }
     };
@@ -147,6 +147,6 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     const results = await Promise.allSettled([fetchGelir(), fetchAffocean(), fetchReklam()]);
     const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
     
-    console.log("Sunucu: Toplam Birleştirilen Veri:", combined.length);
+    console.log("Toplam Birleştirilen Marka Sayısı:", combined.length);
     return combined;
 }
