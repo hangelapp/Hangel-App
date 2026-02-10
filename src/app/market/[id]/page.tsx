@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -23,8 +24,8 @@ const StatRow = ({ label, value }: { label: string, value: string | number }) =>
 export default function BrandProfilePage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
-  const brand = allEntityLists.find(b => b.id === id);
+  const slug = params.id as string;
+  const brand = allEntityLists.find(b => b.slug === slug);
   const [profileUrl, setProfileUrl] = useState('');
 
   useEffect(() => {

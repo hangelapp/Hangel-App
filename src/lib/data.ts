@@ -1,7 +1,25 @@
+
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign } from 'lucide-react';
 import type { Post, Brand, Event, Volunteering, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory } from './types';
+
+const slugify = (str: string) => {
+  if (!str) return '';
+  return str.toString()
+    .toLowerCase()
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+}
 
 export const user: User = {
     id: '1',
@@ -213,70 +231,70 @@ export const qrPaymentCardData = [
 
 export const allEntityLists: Brand[] = [
   { 
-    id: 'go-1', name: 'Trip.com', donationRate: 2.1, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', agency: 'GelirOrtaklari',
+    id: 'go-1', name: 'Trip.com', slug: 'trip-com', donationRate: 2.1, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', agency: 'GelirOrtaklari',
     about: 'Trip.com, dünya genelinde milyonlarca gezginin otel, uçak bileti ve tur rezervasyonlarını kolayca yapabildiği lider bir online seyahat acentesidir. Sürdürülebilir turizmi destekleyerek, her seyahatinizi toplumsal bir faydaya dönüştürmenize olanak tanıyoruz.',
     stats: { supporters: 12500, totalDonation: 75000, monthlyFollowerGrowth: 15, profileViews: 88000, profileShares: 2300 },
     followers: 12500,
     donationByCategory: [ { category: 'Otel', rate: 2.5 }, { category: 'Uçak Bileti', rate: 1.5 }, { category: 'Tur', rate: 3.0 }, { category: 'Araç Kiralama', rate: 2.0 }]
   },
   { 
-    id: 'go-2', name: 'Pazarama', donationRate: 2.8, logoUrl: 'https://logo.clearbit.com/pazarama.com', type: 'brand', category: 'Pazar Yeri', agency: 'GelirOrtaklari',
+    id: 'go-2', name: 'Pazarama', slug: 'pazarama', donationRate: 2.8, logoUrl: 'https://logo.clearbit.com/pazarama.com', type: 'brand', category: 'Pazar Yeri', agency: 'GelirOrtaklari',
     about: 'Pazarama, elektronikten modaya, süpermarketten ev yaşamına kadar yüz binlerce ürünü bir araya getiren online bir pazar yeridir. Her alışverişinizde, seçtiğiniz sosyal fayda projelerine destek olmanızı sağlıyoruz.',
     stats: { supporters: 25000, totalDonation: 120000, monthlyFollowerGrowth: 22, profileViews: 150000, profileShares: 4500 },
     followers: 25000,
     donationByCategory: [ { category: 'Elektronik', rate: 1.5 }, { category: 'Moda', rate: 4.0 }, { category: 'Süpermarket', rate: 2.0 }, { category: 'Ev & Yaşam', rate: 3.5 }]
   },
   { 
-    id: 'go-3', name: 'Karaca', donationRate: 3.5, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand', category: 'Ev & Yaşam', agency: 'GelirOrtaklari',
+    id: 'go-3', name: 'Karaca', slug: 'karaca', donationRate: 3.5, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand', category: 'Ev & Yaşam', agency: 'GelirOrtaklari',
     about: 'Karaca, sofra ve mutfak ürünlerinden ev tekstiline kadar geniş bir ürün yelpazesi sunan köklü bir markadır. Estetik ve kaliteyi bir araya getirirken, toplumsal projelere verdiğimiz destekle evlerinize iyilik taşıyoruz.',
     stats: { supporters: 18000, totalDonation: 95000, monthlyFollowerGrowth: 18, profileViews: 110000, profileShares: 3200 },
     followers: 18000,
     donationByCategory: [ { category: 'Sofra Grubu', rate: 4.0 }, { category: 'Mutfak Gereçleri', rate: 3.0 }, { category: 'Ev Tekstili', rate: 3.5 }, { category: 'Elektrikli Aletler', rate: 2.5 }]
   },
   { 
-    id: 'go-4', name: 'Yalıspor', donationRate: 2.5, logoUrl: 'https://logo.clearbit.com/yalispor.com.tr', type: 'brand', category: 'Giyim', agency: 'GelirOrtaklari',
+    id: 'go-4', name: 'Yalıspor', slug: 'yalispor', donationRate: 2.5, logoUrl: 'https://logo.clearbit.com/yalispor.com.tr', type: 'brand', category: 'Giyim', agency: 'GelirOrtaklari',
     about: 'Yalıspor, dünyaca ünlü spor markalarını bir araya getiren, spor giyim ve ekipmanları konusunda uzman bir perakendecidir. Aktif yaşamı desteklerken, sporun birleştirici gücünü sosyal projelere aktarıyoruz.',
     stats: { supporters: 9800, totalDonation: 45000, monthlyFollowerGrowth: 12, profileViews: 65000, profileShares: 1800 },
     followers: 9800,
     donationByCategory: [ { category: 'Koşu', rate: 3.0 }, { category: 'Futbol', rate: 2.5 }, { category: 'Basketbol', rate: 2.5 }, { category: 'Outdoor', rate: 3.5 }]
   },
   { 
-    id: 'go-5', name: 'Mango', donationRate: 2.2, logoUrl: 'https://logo.clearbit.com/mango.com', type: 'brand', category: 'Giyim', agency: 'GelirOrtaklari',
+    id: 'go-5', name: 'Mango', slug: 'mango', donationRate: 2.2, logoUrl: 'https://logo.clearbit.com/mango.com', type: 'brand', category: 'Giyim', agency: 'GelirOrtaklari',
     about: 'Mango, modern ve şehirli kadın, erkek ve çocuklar için uluslararası bir moda markasıdır. Sürdürülebilir materyaller kullanarak ve sosyal projelere destek vererek modayı daha bilinçli bir hale getiriyoruz.',
     stats: { supporters: 35000, totalDonation: 150000, monthlyFollowerGrowth: 25, profileViews: 220000, profileShares: 6000 },
     followers: 35000,
     donationByCategory: [ { category: 'Kadın Giyim', rate: 2.5 }, { category: 'Erkek Giyim', rate: 2.0 }, { category: 'Çocuk Giyim', rate: 3.0 }, { category: 'Aksesuar', rate: 2.0 }]
   },
   { 
-    id: 'go-6', name: 'Getir', donationRate: 1.5, logoUrl: 'https://logo.clearbit.com/getir.com', type: 'brand', category: 'Süpermarket', agency: 'GelirOrtaklari',
+    id: 'go-6', name: 'Getir', slug: 'getir', donationRate: 1.5, logoUrl: 'https://logo.clearbit.com/getir.com', type: 'brand', category: 'Süpermarket', agency: 'GelirOrtaklari',
     about: 'Getir, binlerce market ürününü dakikalar içinde kapınıza getiren hızlı teslimat uygulamasıdır. Günlük ihtiyaçlarınızı karşılarken, toplumsal dayanışma ağlarına katkıda bulunmanızı sağlıyoruz.',
     stats: { supporters: 55000, totalDonation: 250000, monthlyFollowerGrowth: 30, profileViews: 400000, profileShares: 8000 },
     followers: 55000,
     donationByCategory: [ { category: 'GetirYemek', rate: 1.0 }, { category: 'GetirBüyük', rate: 1.8 }, { category: 'GetirSu', rate: 2.0 }, { category: 'GetirÇarşı', rate: 1.5 }]
   },
   { 
-    id: 'go-7', name: 'Tatilbudur', donationRate: 3.2, logoUrl: 'https://logo.clearbit.com/tatilbudur.com', type: 'brand', category: 'Seyahat', agency: 'GelirOrtaklari',
+    id: 'go-7', name: 'Tatilbudur', slug: 'tatilbudur', donationRate: 3.2, logoUrl: 'https://logo.clearbit.com/tatilbudur.com', type: 'brand', category: 'Seyahat', agency: 'GelirOrtaklari',
     about: 'Tatilbudur, yurt içi ve yurt dışı otel, tur ve uçak bileti rezervasyonları için Türkiye\'nin önde gelen turizm portallarından biridir. Tatil yaparken, yerel toplulukların ve çevrenin korunmasına destek olabilirsiniz.',
     stats: { supporters: 22000, totalDonation: 110000, monthlyFollowerGrowth: 19, profileViews: 180000, profileShares: 4100 },
     followers: 22000,
     donationByCategory: [ { category: 'Yurt İçi Oteller', rate: 3.5 }, { category: 'Kültür Turları', rate: 4.0 }, { category: 'Yurt Dışı Turlar', rate: 2.5 }, { category: 'Uçak Bileti', rate: 1.0 }]
   },
   { 
-    id: 'go-8', name: 'CarrefourSA', donationRate: 2.0, logoUrl: 'https://logo.clearbit.com/carrefoursa.com', type: 'brand', category: 'Süpermarket', agency: 'GelirOrtaklari',
+    id: 'go-8', name: 'CarrefourSA', slug: 'carrefoursa', donationRate: 2.0, logoUrl: 'https://logo.clearbit.com/carrefoursa.com', type: 'brand', category: 'Süpermarket', agency: 'GelirOrtaklari',
     about: 'CarrefourSA, geniş ürün yelpazesi ve uygun fiyatlarıyla Türkiye\'nin en büyük süpermarket zincirlerinden biridir. Gıda israfını önleme ve yerel üreticileri destekleme projelerimizle topluma değer katıyoruz.',
     stats: { supporters: 48000, totalDonation: 180000, monthlyFollowerGrowth: 28, profileViews: 350000, profileShares: 7500 },
     followers: 48000,
     donationByCategory: [ { category: 'Taze Gıda', rate: 2.2 }, { category: 'Temizlik', rate: 1.8 }, { category: 'Elektronik', rate: 1.5 }, { category: 'Tekstil', rate: 2.5 }]
   },
   { 
-    id: 'go-9', name: 'Boyner', donationRate: 2.5, logoUrl: 'https://logo.clearbit.com/boyner.com.tr', type: 'brand', category: 'Giyim', agency: 'GelirOrtaklari',
+    id: 'go-9', name: 'Boyner', slug: 'boyner', donationRate: 2.5, logoUrl: 'https://logo.clearbit.com/boyner.com.tr', type: 'brand', category: 'Giyim', agency: 'GelirOrtaklari',
     about: 'Boyner, moda, kozmetik ve ev ürünlerinde yüzlerce markayı bir araya getiren Türkiye\'nin lider çok katlı mağazalarından biridir. "İyiliğe Dönüşen Alışveriş" mottomuzla, her harcamanızın bir kısmını sosyal projelere aktarıyoruz.',
     stats: { supporters: 41000, totalDonation: 165000, monthlyFollowerGrowth: 24, profileViews: 300000, profileShares: 6800 },
     followers: 41000,
     donationByCategory: [ { category: 'Kadın Giyim', rate: 3.0 }, { category: 'Kozmetik', rate: 2.0 }, { category: 'Erkek Giyim', rate: 2.5 }, { category: 'Ev', rate: 2.8 }]
   },
   { 
-    id: 'go-10', name: 'Ucuzabilet', donationRate: 1.8, logoUrl: 'https://logo.clearbit.com/ucuzabilet.com', type: 'brand', category: 'Seyahat', agency: 'GelirOrtaklari',
+    id: 'go-10', name: 'Ucuzabilet', slug: 'ucuzabilet', donationRate: 1.8, logoUrl: 'https://logo.clearbit.com/ucuzabilet.com', type: 'brand', category: 'Seyahat', agency: 'GelirOrtaklari',
     about: 'Ucuzabilet, en uygun uçak bileti ve otel rezervasyonlarını bulmanızı sağlayan bir online seyahat platformudur. Seyahat ederken karbon ayak izinizi dengelemek ve ekolojik projelere destek olmak için bizimle uçun.',
     stats: { supporters: 31000, totalDonation: 85000, monthlyFollowerGrowth: 21, profileViews: 250000, profileShares: 5500 },
     followers: 31000,

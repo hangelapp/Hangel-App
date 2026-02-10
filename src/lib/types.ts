@@ -50,6 +50,7 @@ export type Post = {
 
 export type Brand = {
   id: string;
+  slug: string;
   name: string;
   category: string;
   type: 'brand' | 'cooperative' | 'social' | 'economic';

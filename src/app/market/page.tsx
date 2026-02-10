@@ -133,7 +133,7 @@ export default function MarketPage() {
               ) : (
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {brandsToShow.map((brand) => (
-                    <Link href={`/market/${brand.id}`} key={brand.id} className="group">
+                    <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
                       <div className="flex flex-col items-center text-center space-y-2">
                         <div className="relative w-full aspect-square">
                           <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
