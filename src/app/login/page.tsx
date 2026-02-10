@@ -240,10 +240,6 @@ const Footer = () => {
 
 
 export default function LoginPage() {
-    const plugin = React.useRef(
-        Autoplay({ delay: 2500, stopOnInteraction: true })
-    )
-
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <Header />
@@ -274,7 +270,12 @@ export default function LoginPage() {
                 >
                     <div className="w-full max-w-7xl mx-auto px-4 mt-16">
                         <Carousel 
-                            plugins={[plugin.current]}
+                            plugins={[
+                                Autoplay({
+                                  delay: 2500,
+                                  stopOnInteraction: true,
+                                }),
+                              ]}
                             opts={{ align: "start", loop: true }} 
                             className="w-full"
                         >
