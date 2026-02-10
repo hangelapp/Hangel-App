@@ -37,40 +37,33 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 
 // New component for the large feature cards
-const FeatureShowcaseCard = ({ 
-    title, 
-    description, 
-    icon: Icon,
-    imageUrl,
-    imageHint
-}: { 
-    title: string, 
-    description: string, 
-    icon: any, 
-    imageUrl: string,
-    imageHint: string
+const FeatureShowcaseCard = ({
+  title,
+  description,
+  icon: Icon
+}: {
+  title: string;
+  description: string;
+  icon: any;
 }) => (
-    <div className="group relative bg-[#f5f5f7] rounded-[2.5rem] p-8 md:p-12 transition-all hover:shadow-2xl border border-black/5 overflow-hidden flex flex-col justify-end min-h-[500px]">
-        <div className="absolute inset-0 z-0">
-            <Image src={imageUrl} alt={title} fill className="object-cover" data-ai-hint={imageHint} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
-        </div>
-        <div className="relative z-10 text-white">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-white/10 backdrop-blur-md border border-white/10 text-white">
-                <Icon className="h-8 w-8" />
-            </div>
-            <div className="space-y-3">
-                <h3 className="text-3xl font-bold tracking-tight">{title}</h3>
-                <p className="text-lg text-white/80 leading-relaxed font-medium max-w-md">{description}</p>
-            </div>
-            <div className="pt-8">
-                <span className="text-white font-bold flex items-center text-base">
-                    Daha Fazla Bilgi <ChevronRight className="h-4 w-4 ml-1" />
-                </span>
-            </div>
-        </div>
+  <div className="group relative bg-white rounded-[2.5rem] p-8 md:p-12 transition-all hover:shadow-2xl border border-black/5 overflow-hidden flex flex-col justify-between min-h-[450px]">
+    <div className="relative z-10">
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-[#f5f5f7] border shadow-sm">
+        <Icon className="h-8 w-8 text-primary" />
+      </div>
+      <div className="space-y-3">
+        <h3 className="text-3xl font-bold tracking-tight text-foreground">{title}</h3>
+        <p className="text-lg text-muted-foreground leading-relaxed font-medium max-w-md">{description}</p>
+      </div>
     </div>
+    <div className="relative z-10 pt-8">
+      <span className="text-primary font-bold flex items-center text-base opacity-70 group-hover:opacity-100 transition-opacity">
+        Daha Fazla Bilgi <ChevronRight className="h-4 w-4 ml-1" />
+      </span>
+    </div>
+  </div>
 );
+
 
 // New component for smaller feature items
 const ToolGridItem = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
@@ -91,29 +84,21 @@ export default function NgoOnboardingPage() {
             icon: ShieldCheck,
             title: "Şeffaflık Endeksi",
             description: "Kurumsal güveninizi dijital ortamda tescilleyin. Şeffaflık puanınızla bağışçıların ve gönüllülerin öncelikli tercihi olun.",
-            imageUrl: "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "person scanning secure payment"
         },
         { 
             icon: HeartHandshake,
             title: "Gönüllülük Yönetimi",
             description: "Yetenek bazlı ilanlar oluşturun, binlerce hevesli gönüllüye ulaşın ve tüm başvuru süreçlerini profesyonelce koordine edin.",
-            imageUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "group happy volunteers"
         },
         { 
             icon: HandCoins,
             title: "hangel Bağışı",
             description: "Sürdürülebilir kaynak yaratın. Destekçilerinizin anlaşmalı markalardan yaptığı alışverişleri kurumunuz için ek fona dönüştürün.",
-            imageUrl: "https://images.unsplash.com/photo-1579621970795-87f54d5921ba?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "growing plant coins"
         },
         { 
             icon: BarChart3,
             title: "Demografi Analizi",
             description: "Topluluğunuzu verilerle tanıyın. Destekçilerinizin yaş, şehir ve ilgi alanı dağılımlarını analiz ederek stratejinizi güçlendirin.",
-            imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "data visualization charts"
         }
     ];
 
@@ -174,7 +159,7 @@ export default function NgoOnboardingPage() {
             </section>
             
             {/* Main Features Grid */}
-            <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-24">
+            <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-24 bg-[#f5f5f7] p-6 rounded-[3rem]">
                 {mainFeatures.map(feature => <FeatureShowcaseCard key={feature.title} {...feature} />)}
             </section>
 
