@@ -245,21 +245,21 @@ const Footer = () => {
 const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     return (
         <Link href={`/volunteering/${opportunity.id}`} className="group block h-full">
-            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full flex flex-col p-6">
+            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-black/50 backdrop-blur-sm border-white/10 h-full flex flex-col p-6 text-white">
                 <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-black/5 rounded-xl text-black/40">
+                    <div className="p-3 bg-white/10 rounded-xl text-white/80">
                          <HeartHandshake className="h-6 w-6" />
                     </div>
                     <div className="text-right">
-                         <p className="font-bold text-lg text-primary">{opportunity.points} Puan</p>
-                         <p className="text-xs text-muted-foreground">Etki Puanı</p>
+                         <p className="font-bold text-lg">{opportunity.points} Puan</p>
+                         <p className="text-xs text-white/70">Etki Puanı</p>
                     </div>
                 </div>
                 <div className="flex-1">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{opportunity.organization}</p>
+                    <p className="text-xs font-bold text-white/70 uppercase tracking-wider">{opportunity.organization}</p>
                     <h4 className="font-bold text-lg leading-tight mt-1">{opportunity.title}</h4>
                 </div>
-                <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 pt-4 mt-4 border-t">
+                <div className="text-xs font-medium text-white/70 flex items-center gap-1.5 pt-4 mt-4 border-t border-white/20">
                     <MapPin className="h-4 w-4" />
                     <span>{opportunity.location.city} ({opportunity.location.type})</span>
                 </div>
@@ -310,32 +310,30 @@ export default function LoginPage() {
                     description="Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu."
                     cta1="Markaları Keşfet"
                     cta1Href="/market"
-                    cta2={`Tümünü Gör (${allEntityLists.length} Marka)`}
-                    cta2Href="/market"
                 >
                     <div className="w-full max-w-7xl mx-auto px-4 mt-16">
-                        <Carousel 
-                             plugins={[
+                        <Carousel
+                            plugins={[
                                 Autoplay({
                                   delay: 2500,
                                   stopOnInteraction: true,
                                 }),
                               ]}
-                            opts={{ align: "start", loop: true }} 
+                            opts={{ align: "start", loop: true }}
                             className="w-full"
                         >
                             <CarouselContent className="-ml-4">
                                 {allEntityLists.slice(0, 12).map((brand) => (
-                                    <CarouselItem key={brand.id} className="pl-4 basis-2/5 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                                    <CarouselItem key={brand.id} className="pl-4 basis-2/5 sm:basis-1/3 md:basis-1/4 lg:basis-[12rem]">
                                         <Link href={`/market/${brand.slug}`} className="group block h-full">
-                                            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full">
+                                            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full flex flex-col">
                                                 <CardContent className="p-4 text-center flex flex-col h-full">
                                                     <div className="w-full flex justify-start mb-4">
                                                         <div className="p-1.5 bg-black/5 rounded-lg">
                                                             <ShoppingBag className="h-4 w-4 text-black/40" />
                                                         </div>
                                                     </div>
-                                                    <div className="h-12 flex items-center justify-center my-4 flex-grow">
+                                                    <div className="h-16 flex items-center justify-center my-4 flex-grow">
                                                         <div className="relative h-full w-full max-w-[8rem]">
                                                             <BrandLogo brand={brand} />
                                                         </div>
@@ -352,6 +350,13 @@ export default function LoginPage() {
                                 ))}
                             </CarouselContent>
                         </Carousel>
+                        <div className="text-center mt-8">
+                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-white">
+                                <Link href="/market">
+                                    Tümünü Gör ({allEntityLists.length} Marka)
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
                 </ProductShowcaseSection>
                 <ProductShowcaseSection
@@ -378,17 +383,24 @@ export default function LoginPage() {
                         >
                             <CarouselContent className="-ml-4">
                                 {volunteeringOpportunities.slice(0, 10).map((opp) => (
-                                    <CarouselItem key={opp.id} className="pl-4 basis-3/5 sm:basis-1/2 md:basis-1/3">
+                                    <CarouselItem key={opp.id} className="pl-4 basis-4/5 sm:basis-1/2 md:basis-[22rem]">
                                         <VolunteeringCard opportunity={opp} />
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
                         </Carousel>
+                        <div className="text-center mt-8">
+                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-white/20 text-white bg-transparent hover:bg-white/10 hover:text-white">
+                                <Link href="/volunteering">
+                                    Tümünü Gör ({volunteeringOpportunities.length} İlan)
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
                 </ProductShowcaseSection>
                 <ProductShowcaseSection
                     id="kurumlar"
-                    title="Kurumlar İçin."
+                    title="Kurumlar İçin"
                     subtitle="STK, Marka, Kulüp & Kütüphane"
                     description="Kuruluşunuzun dijitalleşmesini sağlayın, operasyonlarınızı tek bir panelden yönetin, etki raporları oluşturun ve daha geniş kitlelere ulaşın."
                     cta1="Tüm Kurumsal Çözümler"
