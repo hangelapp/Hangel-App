@@ -23,7 +23,7 @@ const Header = () => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
-                <div className="w-8 h-8" /> 
+                <HangelLogo />
 
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
                     <Link href="/market" className="hover:text-primary transition-colors uppercase tracking-tight">Bağış</Link>
@@ -83,7 +83,6 @@ const Header = () => {
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80 md:hidden">
                         <Menu className="h-5 w-5" />
                     </Button>
-                    <HangelLogo className="ml-4"/>
                 </div>
             </div>
         </header>
@@ -335,12 +334,12 @@ export default function LoginPage() {
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
                             {volunteeringOpportunities.slice(0, 10).map((opp) => (
-                                <Link href={`/volunteering/${opp.id}`} key={opp.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
+                                <Link href={`/volunteering/${opp.id}`} key={opp.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-96 transition-all hover:shadow-2xl group border border-black/5">
                                     <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                         <HeartHandshake className="h-6 w-6" />
                                     </div>
                                     <div className="space-y-1 mb-4 flex-1">
-                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f] line-clamp-3">{opp.title}</h4>
+                                        <h4 className="font-bold text-lg leading-tight text-[#1d1d1f] line-clamp-3">{opp.title}</h4>
                                         <p className="text-sm text-muted-foreground">{opp.organization}</p>
                                     </div>
                                      <div className="space-y-2 text-xs text-muted-foreground w-full">
