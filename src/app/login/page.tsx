@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -122,8 +121,6 @@ const Header = () => {
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#1d1d1f]/80">
                     <Link href="#bagis" className="hover:text-primary transition-colors">Bağış</Link>
                     <Link href="#gonulluluk" className="hover:text-primary transition-colors">Gönüllülük</Link>
-                    <Link href="/about" className="hover:text-primary transition-colors">Hakkımızda</Link>
-                    <Link href="/support" className="hover:text-primary transition-colors">Destek</Link>
                 </nav>
                 <div className="flex items-center gap-2">
                     <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold bg-[#0071e3] hover:bg-[#0077ed]">
@@ -371,6 +368,8 @@ export default function LoginPage() {
                                 subtitle="Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin." 
                                 cta1="Daha Fazla Bilgi"
                                 cta1Href="/library"
+                                cta2="Şimdi Katıl"
+                                cta2Href="/login/selection?action=register"
                                 imageUrl="https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
                                 imageHint="charcoal library drawing"
                                 theme="dark"
