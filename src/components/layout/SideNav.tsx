@@ -13,15 +13,18 @@ const iconColorMap: { [key: string]: string } = {
   'dollar-sign': 'bg-green-600',
   'file-text': 'bg-sky-500',
   award: 'bg-amber-500',
-  'heart-handshake': 'bg-red-500',
+  'message-square': 'bg-blue-400',
   'bar-chart-3': 'bg-indigo-500',
   send: 'bg-cyan-500',
   sparkles: 'bg-purple-500',
+  library: 'bg-amber-700',
+  'layout-grid': 'bg-slate-500',
+  shield: 'bg-red-600',
   settings: 'bg-gray-500',
   info: 'bg-blue-400',
+  zap: 'bg-yellow-500',
+  'HeartHandshake': 'bg-rose-500',
   'help-circle': 'bg-teal-500',
-  'layout-grid': 'bg-slate-500',
-  library: 'bg-amber-700',
 };
 
 const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {

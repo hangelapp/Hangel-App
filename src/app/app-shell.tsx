@@ -6,6 +6,13 @@ import AppHeader from '@/components/layout/header';
 import AppBottomNav from '@/components/layout/bottom-nav';
 import { SideNav } from '@/components/layout/SideNav';
 import type { SideNavItem } from '@/lib/types';
+import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
+import Link from 'next/link';
+import { HangelLogo } from '@/components/icons';
+import { UserAvatar } from '@/components/shared/user-avatar';
+import * as Icons from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { user } from '@/lib/data';
 
 
 const group1Items: SideNavItem[] = [
@@ -38,7 +45,49 @@ const group4Items: SideNavItem[] = [
   { href: '/support', label: 'Destek', icon: 'help-circle' },
 ];
 
+const iconColorMap: { [key: string]: string } = {
+  store: 'bg-green-500',
+  building: 'bg-orange-500',
+  users: 'bg-blue-500',
+  'dollar-sign': 'bg-green-600',
+  'file-text': 'bg-sky-500',
+  award: 'bg-amber-500',
+  'message-square': 'bg-blue-400',
+  'bar-chart-3': 'bg-indigo-500',
+  send: 'bg-cyan-500',
+  sparkles: 'bg-purple-500',
+  library: 'bg-amber-700',
+  'layout-grid': 'bg-slate-500',
+  shield: 'bg-red-600',
+  settings: 'bg-gray-500',
+  info: 'bg-blue-400',
+  zap: 'bg-yellow-500',
+  'HeartHandshake': 'bg-rose-500',
+  'help-circle': 'bg-teal-500',
+};
+
+const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => void }) => {
+    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('') as keyof typeof Icons] || Icons.HelpCircle;
+    const color = iconColorMap[item.icon] || 'bg-gray-500';
+
+    return (
+        <SheetClose asChild>
+            <Link href={item.href} className='group flex items-center justify-between p-3 hover:bg-accent/50 transition-colors'>
+                <div className="flex items-center gap-4">
+                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', color)}>
+                        <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <span className='text-sm font-semibold text-foreground'>{item.label}</span>
+                </div>
+                <Icons.ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+            </Link>
+        </SheetClose>
+    );
+};
+
+
 export function AppShell({ children }: { children: React.ReactNode }) {
+    const [isDrawerOpen, setDrawerOpen] = React.useState(false);
     const pathname = usePathname();
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');
@@ -64,8 +113,44 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             userItems={group3Items}
             secondaryItems={group4Items}
           />
+           <Sheet open={isDrawerOpen} onOpenChange={setDrawerOpen}>
+              <SheetContent side="left" className="w-full max-w-sm p-0">
+                   <div className="flex h-full flex-col overflow-y-auto bg-secondary/30">
+                        <div className="p-4 bg-background border-b sticky top-0 z-10">
+                            <div className="flex justify-between items-center mb-6">
+                                <HangelLogo className="text-2xl" />
+                                <SheetClose>
+                                    <Icons.X className="h-6 w-6 text-muted-foreground" />
+                                </SheetClose>
+                            </div>
+                            <Link href="/profile" className="flex items-center gap-3">
+                                <UserAvatar className="h-12 w-12" />
+                                <div>
+                                    <p className="font-bold">{user.name}</p>
+                                    <p className="text-sm text-muted-foreground">{user.username}</p>
+                                </div>
+                            </Link>
+                        </div>
+                        <nav className="flex-1 space-y-4 p-4">
+                            <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                                {group1Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                            </ul>
+                            <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                                {group2Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                            </ul>
+                             <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                                {group3Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                            </ul>
+                            <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                                {group4Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                            </ul>
+                        </nav>
+                   </div>
+              </SheetContent>
+          </Sheet>
+
           <div className="lg:pl-64 flex flex-col flex-1">
-            <AppHeader />
+            <AppHeader onMenuClick={() => setDrawerOpen(true)} />
             <main className="flex-1 pt-12 pb-24 lg:pb-8">{children}</main>
           </div>
           <AppBottomNav />

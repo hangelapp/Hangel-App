@@ -1,23 +1,18 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren, Globe, Megaphone, ChevronRight
+  Menu, Bell, Siren, Globe, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { usePathname } from 'next/navigation';
-import { user } from '@/lib/data';
-import { SideNavItem } from '@/lib/types';
 import * as Icons from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export default function AppHeader() {
+export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) {
   const { language, changeLanguage } = useTranslation();
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
@@ -25,11 +20,10 @@ export default function AppHeader() {
   if (['/ngo-admin', '/admin'].some(p => pathname.startsWith(p))) return null;
 
   return (
-    <>
       <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64">
         <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => setDrawerOpen(true)} className="lg:hidden">
+            <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
             <div className="w-8 h-8" /> {/* Logo alanı talebiniz üzerine boşaltılmıştır */}
@@ -58,6 +52,5 @@ export default function AppHeader() {
           </div>
         </div>
       </header>
-    </>
   );
 }
