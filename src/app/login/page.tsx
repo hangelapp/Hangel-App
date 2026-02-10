@@ -3,13 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { allEntityLists } from '@/lib/data';
 import type { Brand } from '@/lib/types';
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-react";
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -236,6 +240,10 @@ const Footer = () => {
 
 
 export default function LoginPage() {
+    const plugin = React.useRef(
+        Autoplay({ delay: 2500, stopOnInteraction: true })
+    )
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <Header />
@@ -264,16 +272,40 @@ export default function LoginPage() {
                     imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
                     imageHint="contactless payment store"
                 >
-                    <div className="relative z-10 w-full max-w-5xl mx-auto px-4 mt-12">
-                        <div className="flex justify-center items-center gap-4 md:gap-6 flex-wrap">
-                            {allEntityLists.slice(0, 10).map((brand) => (
-                                <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
-                                    <div className="w-20 h-20 sm:w-24 sm:h-24 p-2 rounded-2xl bg-white/60 backdrop-blur-sm border border-black/5 shadow-md flex items-center justify-center hover:scale-105 hover:shadow-xl transition-all">
-                                        <BrandLogo brand={brand} />
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                    <div className="w-full max-w-7xl mx-auto px-4 mt-16">
+                        <Carousel 
+                            plugins={[plugin.current]}
+                            opts={{ align: "start", loop: true }} 
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-4">
+                                {allEntityLists.slice(0, 12).map((brand) => (
+                                    <CarouselItem key={brand.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-[15%]">
+                                        <Link href={`/market/${brand.slug}`} className="group block h-full">
+                                            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full">
+                                                <CardContent className="p-4 text-center flex flex-col h-full">
+                                                    <div className="w-full flex justify-start mb-4">
+                                                        <div className="p-1.5 bg-black/5 rounded-lg">
+                                                            <ShoppingBag className="h-4 w-4 text-black/40" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="h-12 flex items-center justify-center my-4 flex-grow">
+                                                        <div className="relative h-full w-full max-w-[8rem]">
+                                                            <BrandLogo brand={brand} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-auto w-full">
+                                                        <p className="font-semibold text-sm truncate text-foreground">{brand.name}</p>
+                                                        <Separator className="my-2"/>
+                                                        <p className="font-extrabold text-primary text-xl">%{brand.donationRate}</p>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </Link>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                        </Carousel>
                     </div>
                 </ProductShowcaseSection>
                 <ProductShowcaseSection
