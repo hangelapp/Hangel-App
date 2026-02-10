@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ChevronRight, Menu } from 'lucide-react';
@@ -8,6 +8,34 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { allEntityLists } from '@/lib/data';
+import type { Brand } from '@/lib/types';
+
+const BrandLogo = ({ brand }: { brand: Brand }) => {
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false); // Reset error state when brand changes
+  }, [brand]);
+
+  if (hasError || !brand.logoUrl) {
+    return (
+      <div className="w-full h-full rounded-lg bg-white flex items-center justify-center p-1">
+        <span className="text-muted-foreground font-bold text-sm">{brand.name.charAt(0)}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img 
+      src={brand.logoUrl} 
+      alt={brand.name} 
+      className="w-full h-full object-contain p-2"
+      onError={() => setHasError(true)}
+      loading="lazy"
+    />
+  );
+};
 
 
 const ProductShowcaseSection = ({
@@ -22,7 +50,8 @@ const ProductShowcaseSection = ({
     imageUrl,
     imageHint,
     id,
-    className
+    className,
+    children
 }: {
     title: string,
     subtitle?: string,
@@ -35,7 +64,8 @@ const ProductShowcaseSection = ({
     imageUrl: string,
     imageHint: string,
     id?: string;
-    className?: string
+    className?: string;
+    children?: React.ReactNode;
 }) => (
     <section id={id} className={cn(
         "relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 text-center overflow-hidden border-b border-black/5",
@@ -58,6 +88,8 @@ const ProductShowcaseSection = ({
                 )}
             </div>
         </div>
+
+        {children}
         
         <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
             <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
@@ -227,11 +259,23 @@ export default function LoginPage() {
                     description="Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu."
                     cta1="Markaları Keşfet"
                     cta1Href="/market"
-                    cta2="Nasıl Çalışır?"
-                    cta2Href="/support"
+                    cta2={`Tümünü Gör (${allEntityLists.length} Marka)`}
+                    cta2Href="/market"
                     imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
                     imageHint="contactless payment store"
-                />
+                >
+                    <div className="relative z-10 w-full max-w-5xl mx-auto px-4 mt-12">
+                        <div className="flex justify-center items-center gap-4 md:gap-6 flex-wrap">
+                            {allEntityLists.slice(0, 10).map((brand) => (
+                                <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 p-2 rounded-2xl bg-white/60 backdrop-blur-sm border border-black/5 shadow-md flex items-center justify-center hover:scale-105 hover:shadow-xl transition-all">
+                                        <BrandLogo brand={brand} />
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </ProductShowcaseSection>
                 <ProductShowcaseSection
                     id="gonulluluk"
                     theme="dark"
