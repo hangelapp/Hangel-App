@@ -69,7 +69,6 @@ export type Brand = {
   about?: string;
   joinDate?: string;
   donationByCategory?: { category: string; rate: number }[];
-  sustainabilityReports?: { title: string; url: string }[];
   contact?: {
     email: string;
     website: string;
@@ -83,6 +82,8 @@ export type Brand = {
   posts?: Post[];
   link?: string;
   followers?: number;
+  agency?: string;
+  sustainabilityReports?: { title: string; url: string }[];
 };
 
 export type NGO = {
