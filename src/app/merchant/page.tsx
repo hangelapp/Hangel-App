@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -24,6 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PublicFooter } from '@/components/layout/public-footer';
 
 const ProductSection = ({ 
     title, 
@@ -138,80 +140,7 @@ export default function MerchantAdvantagesPage() {
                 imageHint="sleek minimalist dashboard on tablet screen"
             />
 
-            {/* Detailed Info Footer - Apple Style */}
-            <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-20 pb-12 px-4 sm:px-6">
-                <div className="container mx-auto max-w-4xl space-y-12">
-                    <div className="space-y-4 text-center">
-                        <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Sıkça Sorulan Sorular</h3>
-                        <p className="text-muted-foreground font-medium">Üye işyeri süreçleri hakkında detaylı bilgiler.</p>
-                    </div>
-
-                    <Accordion type="single" collapsible className="w-full border-t border-black/10">
-                        <AccordionItem value="item-1" className="border-b border-black/10">
-                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
-                                hangel üye işyeri olmak ücretli mi?
-                            </AccordionTrigger>
-                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
-                                Hayır, hangel üye işyeri programına dahil olmak tamamen ücretsizdir. Herhangi bir aylık sabit ücret veya üyelik bedeli bulunmamaktadır. Sadece gerçekleşen işlemler üzerinden sektörel bazda belirlenen düşük komisyon oranları uygulanır.
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-2" className="border-b border-black/10">
-                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
-                                Bağış oranlarını kim belirliyor?
-                            </AccordionTrigger>
-                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
-                                Bağış oranları, markanızın kurumsal sosyal sorumluluk hedefleri doğrultusunda sizin tarafınızdan belirlenir. Bu oranlar kategori bazlı olarak farklılık gösterebilir ve dilediğiniz zaman yönetim panelinden güncellenebilir.
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-3" className="border-b border-black/10">
-                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
-                                Ödemeler ne zaman hesabıma geçer?
-                            </AccordionTrigger>
-                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
-                                QR ödeme sistemi ile gerçekleşen satışlarınızın tutarı, yasal mutabakat süreleri (genellikle ertesi iş günü) içerisinde banka hesabınıza aktarılır. Bağış payları sistem tarafından otomatik olarak ayrıştırılır ve ilgili STK havuzuna yönlendirilir.
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-4" className="border-b border-black/10">
-                            <AccordionTrigger className="text-sm font-bold py-6 hover:no-underline uppercase tracking-tight">
-                                Teknik entegrasyon gerekiyor mu?
-                            </AccordionTrigger>
-                            <AccordionContent className="text-sm text-muted-foreground pb-6 leading-relaxed">
-                                Fiziksel mağazalar için herhangi bir teknik entegrasyon gerekmez. Size özel tanımlanan QR kodlu stickerları kasanıza yerleştirmeniz yeterlidir. Online pazar yeri satıcıları için ise XML veya API entegrasyonu seçeneklerimiz mevcuttur.
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-
-                    <div className="pt-12 border-t border-black/10 flex flex-col md:flex-row justify-between items-start gap-8">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <Zap className="h-5 w-5 text-primary" />
-                                <span className="font-bold text-xl tracking-tight">hangel A.Ş.</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
-                                2024 hangel A.Ş. Üye İşyeri Çözüm Merkezi. Tüm hakları saklıdır. Veriler PCI-DSS standartlarında şifrelenmektedir.
-                            </p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Kurumsal</h4>
-                                <nav className="flex flex-col gap-2">
-                                    <Link href="/about" className="text-xs font-medium hover:underline">Hakkımızda</Link>
-                                    <Link href="/corporate" className="text-xs font-medium hover:underline">Kamu İlişkileri</Link>
-                                    <Link href="/press" className="text-xs font-medium hover:underline">Basın Odası</Link>
-                                </nav>
-                            </div>
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Destek</h4>
-                                <nav className="flex flex-col gap-2">
-                                    <Link href="/support" className="text-xs font-medium hover:underline">Yardım Merkezi</Link>
-                                    <Link href="/bilgi-toplumu-hizmetleri" className="text-xs font-medium hover:underline">Bilgi Toplumu</Link>
-                                    <Link href="/settings/contracts" className="text-xs font-medium hover:underline">Yasal Metinler</Link>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <PublicFooter currentPageLabel="Üye İşyeri" />
         </div>
     );
 }

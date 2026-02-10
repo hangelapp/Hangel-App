@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -21,6 +22,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { PublicFooter } from '@/components/layout/public-footer';
 
 const AdvantageCard = ({ 
     title, 
@@ -196,9 +198,7 @@ export default function CampusAdvantagesPage() {
                 </div>
             </section>
 
-            <footer className="container mx-auto px-4 text-center text-[12px] text-muted-foreground font-medium pt-8">
-                <p>&copy; 2024 hangel A.Ş. Kampüs Gelişim Merkezi.</p>
-            </footer>
+            <PublicFooter currentPageLabel="Kampüs Avantajları" />
         </div>
     );
 }
