@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -267,6 +267,23 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     );
 };
 
+const FeatureCard = ({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ElementType }) => (
+    <Link href={href} className="group block h-full">
+        <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full flex flex-col p-6 text-left">
+            <div className="p-3 bg-black/5 rounded-xl text-black/40 w-fit mb-4 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                <Icon className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+                <h4 className="font-bold text-lg leading-tight mt-1">{title}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-2">{description}</p>
+            </div>
+            <div className="pt-4 mt-4 border-t text-primary font-bold text-sm flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                Daha Fazla Bilgi <ChevronRight className="ml-1 h-4 w-4" />
+            </div>
+        </Card>
+    </Link>
+);
+
 
 export default function LoginPage() {
     return (
@@ -371,13 +388,40 @@ export default function LoginPage() {
                 <ProductShowcaseSection
                     id="kurumlar"
                     title="Kurumlar İçin."
-                    subtitle="STK, Marka veya Öğrenci Kulübü"
-                    description="Kuruluşunuzun dijitalleşmesini sağlayın, operasyonlarınızı tek bir panelden yönetin, etki raporları oluşturun ve daha geniş kitlelere ulaşın."
-                    cta1="STK Başvurusu"
-                    cta1Href="/ngo-onboarding"
-                    cta2="Üye İşyeri Ol"
-                    cta2Href="/merchant"
-                />
+                    subtitle="STK, Marka, Kulüp & Kütüphane"
+                    description="Dijital dönüşüm araçlarımız, kurumsal destek programlarımız ve bilgi kaynaklarımızla tanışın."
+                    cta1="Tüm Kurumsal Çözümler"
+                    cta1Href="/corporate"
+                >
+                    <div className="w-full max-w-5xl mx-auto px-4 mt-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FeatureCard 
+                                title="hangel STK" 
+                                description="Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın." 
+                                href="/ngo-onboarding" 
+                                icon={HeartHandshake} 
+                            />
+                            <FeatureCard 
+                                title="hangel Marka" 
+                                description="Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın." 
+                                href="/merchant" 
+                                icon={ShoppingBag} 
+                            />
+                            <FeatureCard 
+                                title="hangel Clubs" 
+                                description="Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin." 
+                                href="/campus-advantages" 
+                                icon={Award} 
+                            />
+                            <FeatureCard 
+                                title="Kütüphane" 
+                                description="Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin." 
+                                href="/library" 
+                                icon={BookOpen}
+                            />
+                        </div>
+                    </div>
+                </ProductShowcaseSection>
             </main>
             <Footer />
         </div>
