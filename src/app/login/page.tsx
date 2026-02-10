@@ -268,7 +268,14 @@ export default function LoginPage() {
                                                     <div className="mt-auto w-full">
                                                         <p className="font-semibold text-sm truncate text-foreground">{brand.name}</p>
                                                         <Separator className="my-2"/>
-                                                        <p className="font-extrabold text-primary text-xl">%{brand.donationRate}</p>
+                                                        <p className="font-extrabold text-primary text-xl">%
+                                                          {
+                                                            brand.donationRate.toLocaleString('en-US', {
+                                                              minimumFractionDigits: 0,
+                                                              maximumFractionDigits: 2,
+                                                            })
+                                                          }
+                                                        </p>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -368,8 +375,6 @@ export default function LoginPage() {
                                 subtitle="Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin." 
                                 cta1="Daha Fazla Bilgi"
                                 cta1Href="/library"
-                                cta2="Şimdi Katıl"
-                                cta2Href="/login/selection?action=register"
                                 imageUrl="https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
                                 imageHint="charcoal library drawing"
                                 theme="dark"
