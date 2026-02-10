@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen } from 'lucide-react';
@@ -314,7 +315,7 @@ export default function LoginPage() {
                 >
                     <div className="w-full max-w-7xl mx-auto px-4 mt-16">
                         <Carousel 
-                            plugins={[
+                             plugins={[
                                 Autoplay({
                                   delay: 2500,
                                   stopOnInteraction: true,
@@ -325,7 +326,7 @@ export default function LoginPage() {
                         >
                             <CarouselContent className="-ml-4">
                                 {allEntityLists.slice(0, 12).map((brand) => (
-                                    <CarouselItem key={brand.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-[15%]">
+                                    <CarouselItem key={brand.id} className="pl-4 basis-2/5 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                                         <Link href={`/market/${brand.slug}`} className="group block h-full">
                                             <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full">
                                                 <CardContent className="p-4 text-center flex flex-col h-full">
@@ -377,7 +378,7 @@ export default function LoginPage() {
                         >
                             <CarouselContent className="-ml-4">
                                 {volunteeringOpportunities.slice(0, 10).map((opp) => (
-                                    <CarouselItem key={opp.id} className="pl-4 basis-4/5 sm:basis-2/3 md:basis-1/2 lg:basis-1/3">
+                                    <CarouselItem key={opp.id} className="pl-4 basis-3/5 sm:basis-1/2 md:basis-1/3">
                                         <VolunteeringCard opportunity={opp} />
                                     </CarouselItem>
                                 ))}
@@ -389,7 +390,7 @@ export default function LoginPage() {
                     id="kurumlar"
                     title="Kurumlar İçin."
                     subtitle="STK, Marka, Kulüp & Kütüphane"
-                    description="Dijital dönüşüm araçlarımız, kurumsal destek programlarımız ve bilgi kaynaklarımızla tanışın."
+                    description="Kuruluşunuzun dijitalleşmesini sağlayın, operasyonlarınızı tek bir panelden yönetin, etki raporları oluşturun ve daha geniş kitlelere ulaşın."
                     cta1="Tüm Kurumsal Çözümler"
                     cta1Href="/corporate"
                 >
