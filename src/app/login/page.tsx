@@ -1,18 +1,22 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Search, ChevronRight, Globe, ShoppingBag, HeartHandshake, Check, Siren, ChevronDown, Menu, MapPin, Calendar } from 'lucide-react';
+import { Search, ChevronRight, Globe, ShoppingBag, HeartHandshake, Check, Siren, ChevronDown, Menu, MapPin, Calendar, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { allEntityLists, volunteeringOpportunities } from '@/lib/data';
+import { volunteeringOpportunities } from '@/lib/data';
 import type { Brand } from '@/lib/types';
 import { HangelLogo } from '@/components/icons';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { getApiOffers } from '@/app/actions/market';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const languages = ["Türkçe", "English", "Mandarin Chinese", "Español", "Français"];
 
@@ -23,14 +27,14 @@ const Header = () => {
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-[#f5f5f7]/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl relative">
-                <HangelLogo />
+                <HangelLogo className="absolute left-4 top-1/2 -translate-y-1/2" />
 
                 <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-[12px] font-medium text-[#1d1d1f]/80">
                     <Link href="/market" className="hover:text-primary transition-colors uppercase tracking-tight">Bağış</Link>
                     <Link href="/volunteering" className="hover:text-primary transition-colors uppercase tracking-tight">Gönüllülük</Link>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-auto">
                     <Button 
                         variant="ghost" 
                         size="icon" 
@@ -270,6 +274,23 @@ const Footer = () => {
 };
 
 export default function LoginPage() {
+    const [brands, setBrands] = useState<Brand[]>([]);
+    const [isLoadingBrands, setIsLoadingBrands] = useState(true);
+
+    useEffect(() => {
+        async function fetchBrands() {
+          try {
+            const data = await getApiOffers();
+            setBrands(data);
+          } catch (error) {
+            console.error("Failed to fetch brands for login page", error);
+          } finally {
+            setIsLoadingBrands(false);
+          }
+        }
+        fetchBrands();
+    }, []);
+
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
             <Header />
@@ -299,28 +320,43 @@ export default function LoginPage() {
                     
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
-                            {allEntityLists.slice(0, 10).map((brand) => (
-                                <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
-                                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                                        <ShoppingBag className="h-6 w-6" />
-                                    </div>
-                                    <div className="relative w-24 h-24 mb-6">
-                                        <img src={brand.logoUrl} alt={brand.name} className="w-full h-full object-contain" />
-                                    </div>
-                                    <div className="space-y-1 mb-4">
-                                        <h4 className="font-bold text-xl leading-tight text-[#1d1d1f]">{brand.name}</h4>
-                                    </div>
-                                    <div className="mt-auto pt-4 border-t border-black/5 w-full">
-                                        <div className="text-2xl font-black text-primary">%{brand.donationRate}</div>
-                                    </div>
-                                </Link>
-                            ))}
+                            {isLoadingBrands ? (
+                                Array.from({length: 10}).map((_, i) => (
+                                     <div key={i} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start w-64 h-80 border border-black/5">
+                                         <Skeleton className="w-12 h-12 rounded-xl mb-6" />
+                                         <Skeleton className="w-24 h-24 mb-6" />
+                                         <div className="w-full space-y-2">
+                                            <Skeleton className="h-6 w-3/4" />
+                                         </div>
+                                         <div className="mt-auto pt-4 border-t border-black/5 w-full">
+                                            <Skeleton className="h-8 w-16" />
+                                         </div>
+                                     </div>
+                                ))
+                            ) : (
+                                brands.slice(0, 10).map((brand) => (
+                                    <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
+                                        <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                            <ShoppingBag className="h-6 w-6" />
+                                        </div>
+                                        <div className="relative w-24 h-24 mb-6">
+                                            <img src={brand.logoUrl} alt={brand.name} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.src = 'https://logo.clearbit.com/hangel.org'; }} />
+                                        </div>
+                                        <div className="space-y-1 mb-4">
+                                            <h4 className="font-bold text-xl leading-tight text-[#1d1d1f]">{brand.name}</h4>
+                                        </div>
+                                        <div className="mt-auto pt-4 border-t border-black/5 w-full">
+                                            <div className="text-2xl font-black text-primary">%{brand.donationRate}</div>
+                                        </div>
+                                    </Link>
+                                ))
+                            )}
                         </div>
                     </div>
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tüm ({allEntityLists.length}) Markayı Gör</Link>
+                            <Link href="/market">Tüm ({isLoadingBrands ? '...' : brands.length}) Markayı Gör</Link>
                         </Button>
                     </div>
                 </section>

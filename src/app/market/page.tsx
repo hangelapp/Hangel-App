@@ -1,16 +1,17 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Loader2, ArrowDownUp } from 'lucide-react';
-import { marketCategories, allEntityLists } from '@/lib/data';
+import { marketCategories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Bot } from 'lucide-react';
+import { getApiOffers } from '@/app/actions/market';
+import { useToast } from '@/hooks/use-toast';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -38,9 +39,31 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchBrands() {
+      try {
+        const data = await getApiOffers();
+        setBrands(data);
+      } catch (error) {
+        console.error("Failed to fetch brands", error);
+        toast({
+          variant: "destructive",
+          title: "Markalar yüklenemedi",
+          description: "API'den veri alınırken bir sorun oluştu."
+        })
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchBrands();
+  }, [toast]);
 
   const brandsToShow = useMemo(() => {
-    let list = [...allEntityLists];
+    let list = [...brands];
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -59,11 +82,11 @@ export default function MarketPage() {
     });
     
     return list;
-  }, [activeCategory, sortKey, searchTerm]);
+  }, [activeCategory, sortKey, searchTerm, brands]);
 
   return (
     <div className="flex flex-col h-full bg-secondary/30 relative">
-      <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
+      <div className="p-4 space-y-4 border-b bg-background/80 backdrop-blur-xl sticky top-12 z-20 shrink-0">
         <div className="flex items-center gap-2">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -124,31 +147,37 @@ export default function MarketPage() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4">
-          <div className="max-w-6xl mx-auto">
-            {brandsToShow.length === 0 ? (
-              <div className="text-center py-20 text-muted-foreground italic">
-                Aramanızla eşleşen marka bulunamadı.
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {brandsToShow.map((brand) => (
-                  <Link href={`/market/${brand.id}`} key={brand.id} className="group">
-                    <div className="flex flex-col items-center text-center space-y-2">
-                      <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
-                          <BrandLogo brand={brand} />
+           {isLoading ? (
+             <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             </div>
+          ) : (
+            <div className="max-w-6xl mx-auto">
+              {brandsToShow.length === 0 ? (
+                <div className="text-center py-20 text-muted-foreground italic">
+                  Aramanızla eşleşen marka bulunamadı.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {brandsToShow.map((brand) => (
+                    <Link href={`/market/${brand.id}`} key={brand.id} className="group">
+                      <div className="flex flex-col items-center text-center space-y-2">
+                        <div className="relative w-full aspect-square">
+                          <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
+                            <BrandLogo brand={brand} />
+                          </div>
+                          <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                            %{brand.donationRate}
+                          </div>
                         </div>
-                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
-                          %{brand.donationRate}
-                        </div>
+                        <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
                       </div>
-                      <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
     </div>
