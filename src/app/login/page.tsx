@@ -66,8 +66,8 @@ const ProductShowcaseSection = ({
     cta2?: string,
     cta2Href?: string,
     theme?: 'light' | 'dark',
-    imageUrl: string,
-    imageHint: string,
+    imageUrl?: string,
+    imageHint?: string,
     id?: string;
     className?: string;
     children?: React.ReactNode;
@@ -96,17 +96,19 @@ const ProductShowcaseSection = ({
 
         {children}
         
-        <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
-            <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
-                <Image 
-                    src={imageUrl} 
-                    alt={title} 
-                    fill 
-                    className="object-cover" 
-                    data-ai-hint={imageHint}
-                />
+        {imageUrl && (
+            <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
+                <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
+                    <Image 
+                        src={imageUrl} 
+                        alt={title} 
+                        fill 
+                        className="object-cover" 
+                        data-ai-hint={imageHint}
+                    />
+                </div>
             </div>
-        </div>
+        )}
     </section>
 );
 
@@ -332,8 +334,6 @@ export default function LoginPage() {
                     cta1Href="/ngo-onboarding"
                     cta2="Üye İşyeri Ol"
                     cta2Href="/merchant"
-                    imageUrl="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="corporate meeting discussion"
                 />
             </main>
             <Footer />
