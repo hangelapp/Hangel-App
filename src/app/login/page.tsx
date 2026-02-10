@@ -10,11 +10,10 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { volunteeringOpportunities } from '@/lib/data';
+import { volunteeringOpportunities, allEntityLists } from '@/lib/data';
 import type { Brand } from '@/lib/types';
 import { HangelLogo } from '@/components/icons';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { getApiOffers } from '@/app/actions/market';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
@@ -274,22 +273,7 @@ const Footer = () => {
 };
 
 export default function LoginPage() {
-    const [brands, setBrands] = useState<Brand[]>([]);
-    const [isLoadingBrands, setIsLoadingBrands] = useState(true);
-
-    useEffect(() => {
-        async function fetchBrands() {
-          try {
-            const data = await getApiOffers();
-            setBrands(data);
-          } catch (error) {
-            console.error("Failed to fetch brands for login page", error);
-          } finally {
-            setIsLoadingBrands(false);
-          }
-        }
-        fetchBrands();
-    }, []);
+    const brands = allEntityLists;
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] selection:bg-primary/30 font-sans">
@@ -320,21 +304,7 @@ export default function LoginPage() {
                     
                     <div className="relative w-full overflow-x-auto no-scrollbar pb-8">
                         <div className="flex gap-6 px-8 md:justify-start min-w-max">
-                            {isLoadingBrands ? (
-                                Array.from({length: 10}).map((_, i) => (
-                                     <div key={i} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start w-64 h-80 border border-black/5">
-                                         <Skeleton className="w-12 h-12 rounded-xl mb-6" />
-                                         <Skeleton className="w-24 h-24 mb-6" />
-                                         <div className="w-full space-y-2">
-                                            <Skeleton className="h-6 w-3/4" />
-                                         </div>
-                                         <div className="mt-auto pt-4 border-t border-black/5 w-full">
-                                            <Skeleton className="h-8 w-16" />
-                                         </div>
-                                     </div>
-                                ))
-                            ) : (
-                                brands.slice(0, 10).map((brand) => (
+                            {brands.slice(0, 10).map((brand) => (
                                     <Link href={`/market/${brand.id}`} key={brand.id} className="relative bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col items-start text-left w-64 h-80 transition-all hover:shadow-2xl group border border-black/5">
                                         <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                             <ShoppingBag className="h-6 w-6" />
@@ -350,13 +320,13 @@ export default function LoginPage() {
                                         </div>
                                     </Link>
                                 ))
-                            )}
+                            }
                         </div>
                     </div>
 
                     <div className="flex justify-center mt-8">
                         <Button asChild variant="outline" className="rounded-full px-10 h-12 text-base font-bold border-black/10 hover:bg-black/5">
-                            <Link href="/market">Tüm ({isLoadingBrands ? '...' : brands.length}) Markayı Gör</Link>
+                            <Link href="/market">Tüm ({brands.length}) Markayı Gör</Link>
                         </Button>
                     </div>
                 </section>

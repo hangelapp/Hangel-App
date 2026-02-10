@@ -5,12 +5,11 @@ import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Loader2, ArrowDownUp } from 'lucide-react';
-import { marketCategories } from '@/lib/data';
+import { marketCategories, allEntityLists } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
-import { getApiOffers } from '@/app/actions/market';
 import { useToast } from '@/hooks/use-toast';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -39,31 +38,10 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    async function fetchBrands() {
-      try {
-        const data = await getApiOffers();
-        setBrands(data);
-      } catch (error) {
-        console.error("Failed to fetch brands", error);
-        toast({
-          variant: "destructive",
-          title: "Markalar yüklenemedi",
-          description: "API'den veri alınırken bir sorun oluştu."
-        })
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchBrands();
-  }, [toast]);
-
   const brandsToShow = useMemo(() => {
-    let list = [...brands];
+    let list = [...allEntityLists];
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -82,7 +60,7 @@ export default function MarketPage() {
     });
     
     return list;
-  }, [activeCategory, sortKey, searchTerm, brands]);
+  }, [activeCategory, sortKey, searchTerm]);
 
   return (
     <div className="flex flex-col h-full bg-secondary/30 relative">
@@ -147,11 +125,6 @@ export default function MarketPage() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4">
-           {isLoading ? (
-             <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-             </div>
-          ) : (
             <div className="max-w-6xl mx-auto">
               {brandsToShow.length === 0 ? (
                 <div className="text-center py-20 text-muted-foreground italic">
@@ -177,7 +150,6 @@ export default function MarketPage() {
                 </div>
               )}
             </div>
-          )}
         </main>
       </div>
     </div>
