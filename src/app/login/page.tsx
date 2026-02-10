@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Search, ChevronRight, Globe, ShoppingBag, HeartHandshake, Check, Siren, ChevronDown, Menu, MapPin, Calendar } from 'lucide-react';
@@ -366,6 +366,8 @@ export default function LoginPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-3 pb-3 bg-[#f5f5f7]">
                     <GridItem title="hangel STK" subtitle="Dijitalleşen sivil toplum araçları." theme="dark" cta1="Kuruluşunu Kaydet" cta1Href="/ngo-onboarding" imageUrl={PlaceHolderImages.find(img => img.id === 'stk-illustration')?.imageUrl} imageHint="charcoal charity drawing" />
                     <GridItem title="hangel Kampüs" subtitle="Üniversiteler için sosyal etki ağı." cta1="Avantajları Gör" cta1Href="/campus-advantages" theme="dark" imageUrl={PlaceHolderImages.find(img => img.id === 'campus-poster-1')?.imageUrl} imageHint="minimalist university conference poster" />
+                    <GridItem title="hangel Marka" subtitle="İşletmenizi iyiliğe açın." theme="dark" cta1="Üye İşyeri Ol" cta1Href="/merchant" imageUrl={PlaceHolderImages.find(img => img.id === 'merchant-illustration')?.imageUrl} imageHint="charcoal merchant store drawing" />
+                    <GridItem title="hangel Kütüphane" subtitle="Sosyal etki bilgi merkezi." cta1="Kütüphaneyi Keşfet" cta1Href="/library" theme="dark" imageUrl={PlaceHolderImages.find(img => img.id === 'library-illustration')?.imageUrl} imageHint="charcoal library drawing" />
                 </div>
             </main>
 
