@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -13,7 +14,7 @@ import type { Brand } from '@/lib/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
