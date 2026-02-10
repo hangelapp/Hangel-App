@@ -1,21 +1,22 @@
-
 'use client';
 
 import { librarySections } from '@/lib/library';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-export default function LibraryItemPage({ params }: { params: { slug: string } }) {
+export default function LibraryItemPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const { toast } = useToast();
   
   const itemWithSection = librarySections.flatMap(section => 
     section.items.map(item => ({ ...item, sectionSlug: section.slug }))
-  ).find(i => i.slug === params.slug);
+  ).find(i => i.slug === slug);
 
   const item = itemWithSection;
 

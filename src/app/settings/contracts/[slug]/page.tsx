@@ -1,13 +1,15 @@
 'use client';
 
 import { contractsData } from '@/lib/contracts';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function ContractDetailPage({ params }: { params: { slug: string } }) {
+export default function ContractDetailPage() {
   const router = useRouter();
-  const contract = contractsData.find(c => c.slug === params.slug);
+  const params = useParams();
+  const slug = params.slug as string;
+  const contract = contractsData.find(c => c.slug === slug);
 
   if (!contract) {
     notFound();
