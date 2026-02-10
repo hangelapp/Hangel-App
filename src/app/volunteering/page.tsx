@@ -60,13 +60,22 @@ export default function VolunteeringPage() {
 
         // Sorting
         opportunities.sort((a, b) => {
+            let comparison = 0;
             if (sortKey === 'points') {
-                return b.points - a.points;
+                comparison = b.points - a.points;
+            } else if (sortKey === 'date') {
+                const refDate = new Date(0); // Use a static date for hydration safety
+                const timeA = parse(a.dates.applicationEnd, 'yyyy-MM-dd', refDate).getTime();
+                const timeB = parse(b.dates.applicationEnd, 'yyyy-MM-dd', refDate).getTime();
+                comparison = timeA - timeB;
             }
-            if (sortKey === 'date') {
-                return parse(a.dates.applicationEnd, 'yyyy-MM-dd', new Date()).getTime() - parse(b.dates.applicationEnd, 'yyyy-MM-dd', new Date()).getTime();
+
+            // If primary sort is equal, use a secondary sort for stability
+            if (comparison === 0) {
+                return a.id.localeCompare(b.id);
             }
-            return 0;
+            
+            return comparison;
         });
 
         return opportunities;
