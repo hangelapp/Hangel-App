@@ -268,22 +268,29 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     );
 };
 
-const FeatureCard = ({ title, description, href, icon: Icon }: { title: string, description: string, href: string, icon: React.ElementType }) => (
-    <Link href={href} className="group block h-full">
-        <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full flex flex-col p-6 text-left">
-            <div className="p-3 bg-black/5 rounded-xl text-black/40 w-fit mb-4 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                <Icon className="h-6 w-6" />
+const ShowcaseGridCard = ({ title, subtitle, href, imageUrl, imageHint, theme = 'light' }: { title:string, subtitle:string, href:string, imageUrl:string, imageHint:string, theme?:'light'|'dark' }) => {
+    return (
+        <div className={cn(
+            "rounded-3xl p-8 flex flex-col text-center",
+            theme === 'dark' ? 'bg-black text-white' : 'bg-[#f5f5f7] text-[#1d1d1f]'
+        )}>
+            <div className="space-y-2">
+                <h3 className="text-4xl font-bold tracking-tight">{title}</h3>
+                <p className="text-base max-w-xs mx-auto opacity-80">{subtitle}</p>
             </div>
-            <div className="flex-1">
-                <h4 className="font-bold text-lg leading-tight mt-1">{title}</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed mt-2">{description}</p>
+            <div className="mt-4">
+                <Button asChild className="rounded-full font-bold px-6">
+                    <Link href={href}>Keşfet</Link>
+                </Button>
             </div>
-            <div className="pt-4 mt-4 border-t text-primary font-bold text-sm flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                Daha Fazla Bilgi <ChevronRight className="ml-1 h-4 w-4" />
+            <div className="flex-1 flex items-end justify-center mt-8">
+                <div className="relative w-full aspect-video">
+                    <Image src={imageUrl} alt={title} fill className="object-contain" data-ai-hint={imageHint} />
+                </div>
             </div>
-        </Card>
-    </Link>
-);
+        </div>
+    );
+};
 
 
 export default function LoginPage() {
@@ -324,7 +331,7 @@ export default function LoginPage() {
                         >
                             <CarouselContent className="-ml-4">
                                 {allEntityLists.slice(0, 12).map((brand) => (
-                                    <CarouselItem key={brand.id} className="pl-4 basis-2/5 sm:basis-1/3 md:basis-1/4 lg:basis-[12rem]">
+                                    <CarouselItem key={brand.id} className="pl-4 basis-[10rem] md:basis-[12rem]">
                                         <Link href={`/market/${brand.slug}`} className="group block h-full">
                                             <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full flex flex-col">
                                                 <CardContent className="p-4 text-center flex flex-col h-full">
@@ -383,7 +390,7 @@ export default function LoginPage() {
                         >
                             <CarouselContent className="-ml-4">
                                 {volunteeringOpportunities.slice(0, 10).map((opp) => (
-                                    <CarouselItem key={opp.id} className="pl-4 basis-4/5 sm:basis-1/2 md:basis-[22rem]">
+                                    <CarouselItem key={opp.id} className="pl-4 basis-full sm:basis-1/2 md:basis-[22rem]">
                                         <VolunteeringCard opportunity={opp} />
                                     </CarouselItem>
                                 ))}
@@ -398,43 +405,46 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </ProductShowcaseSection>
-                <ProductShowcaseSection
-                    id="kurumlar"
-                    title="Kurumlar İçin"
-                    subtitle="STK, Marka, Kulüp & Kütüphane"
-                    description="Kuruluşunuzun dijitalleşmesini sağlayın, operasyonlarınızı tek bir panelden yönetin, etki raporları oluşturun ve daha geniş kitlelere ulaşın."
-                    cta1="Tüm Kurumsal Çözümler"
-                    cta1Href="/corporate"
-                >
-                    <div className="w-full max-w-5xl mx-auto px-4 mt-16">
+                <section id="kurumlar" className="scroll-mt-24 py-16">
+                    <div className="container mx-auto px-4 max-w-7xl">
+                        <div className="text-center mb-12 space-y-4">
+                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Kurumlar İçin.</h2>
+                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Kuruluşunuzun dijitalleşmesini sağlayın, operasyonlarınızı tek bir panelden yönetin, etki raporları oluşturun ve daha geniş kitlelere ulaşın.</p>
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FeatureCard 
+                            <ShowcaseGridCard 
                                 title="hangel STK" 
-                                description="Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın." 
+                                subtitle="Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın." 
                                 href="/ngo-onboarding" 
-                                icon={HeartHandshake} 
+                                imageUrl="https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                                imageHint="charcoal charity drawing"
+                                theme="dark"
                             />
-                            <FeatureCard 
+                            <ShowcaseGridCard 
                                 title="hangel Marka" 
-                                description="Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın." 
+                                subtitle="Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın." 
                                 href="/merchant" 
-                                icon={ShoppingBag} 
+                                imageUrl="https://picsum.photos/seed/merc-char/1080/1080"
+                                imageHint="charcoal merchant store drawing"
                             />
-                            <FeatureCard 
+                            <ShowcaseGridCard 
                                 title="hangel Clubs" 
-                                description="Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin." 
+                                subtitle="Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin." 
                                 href="/campus-advantages" 
-                                icon={Award} 
+                                imageUrl="https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtaW5pbWFsaXN0JTIwdW5pdmVyc2l0eSUyMGNvbmZlcmVuY2UlMjBwb3N0ZXJ8ZW58MHx8fHwxNzcwMjY4MTI1fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                                imageHint="minimalist university poster"
                             />
-                            <FeatureCard 
+                            <ShowcaseGridCard 
                                 title="Kütüphane" 
-                                description="Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin." 
+                                subtitle="Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin." 
                                 href="/library" 
-                                icon={BookOpen}
+                                imageUrl="https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                                imageHint="charcoal library drawing"
+                                theme="dark"
                             />
                         </div>
                     </div>
-                </ProductShowcaseSection>
+                </section>
             </main>
             <Footer />
         </div>
