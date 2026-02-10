@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const RequirementRow = ({ label, value, isMet }: { label: string; value: string | string[] | undefined; isMet: boolean }) => {
     if (!value || (Array.isArray(value) && value.length === 0)) {
