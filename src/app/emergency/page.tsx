@@ -18,6 +18,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
 
 const initialActiveCalls = [
     { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '5 dk önce' },
@@ -30,11 +50,81 @@ const initialPastApplications = [
     { id: 100, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
 ];
 
+const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOpenChange: (open: boolean) => void, onSubmit: (data: any) => void }) => {
+    const [formData, setFormData] = useState({
+        hospital: '',
+        bloodType: '',
+        contactName: '',
+        contactPhone: '',
+        notes: ''
+    });
+
+    const bloodTypes = ["A Rh+", "A Rh-", "B Rh+", "B Rh-", "AB Rh+", "AB Rh-", "0 Rh+", "0 Rh-", "Bilinmiyor"];
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSubmit(formData);
+        onOpenChange(false); // Close dialog on submit
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="rounded-3xl sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                        <Droplets className="h-5 w-5 text-red-600" />
+                        Kan İhtiyacı Bildirimi
+                    </DialogTitle>
+                    <DialogDescription>
+                        Lütfen acil kan ihtiyacı ile ilgili detayları eksiksiz doldurun. Bu bilgiler ilgili birimlere ve gönüllülere iletilecektir.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="hospital">Hastane Adı</Label>
+                        <Input id="hospital" value={formData.hospital} onChange={e => setFormData({...formData, hospital: e.target.value})} placeholder="Örn: Ankara Şehir Hastanesi" required />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="blood-type">Kan Grubu</Label>
+                            <Select required onValueChange={value => setFormData({...formData, bloodType: value})}>
+                                <SelectTrigger id="blood-type">
+                                    <SelectValue placeholder="Seçiniz" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {bloodTypes.map(bt => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                             <Label htmlFor="contact-phone">İrtibat Telefon</Label>
+                            <Input id="contact-phone" type="tel" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} placeholder="5XX XXX XX XX" required />
+                        </div>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="contact-name">İrtibat Kişisi Adı</Label>
+                        <Input id="contact-name" value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})} placeholder="Örn: Ahmet Yılmaz" required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="notes">Özel Durumlar (İsteğe Bağlı)</Label>
+                        <Textarea id="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="Hasta durumu, aciliyet seviyesi veya diğer önemli notlar..." />
+                    </div>
+                     <DialogFooter className="pt-4">
+                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Vazgeç</Button>
+                        <Button type="submit" className="bg-red-600 hover:bg-red-700">Bildirimi Gönder</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function EmergencyPage() {
     const { toast } = useToast();
     const [activeCalls, setActiveCalls] = useState(initialActiveCalls);
     const [pastApplications, setPastApplications] = useState(initialPastApplications);
     const [isReporting, setIsReporting] = useState<string | null>(null);
+    const [isBloodDialogOpen, setIsBloodDialogOpen] = useState(false);
     
     const handleReportClick = (type: string, details: string) => {
         setIsReporting(details);
@@ -46,6 +136,13 @@ export default function EmergencyPage() {
             });
             setIsReporting(null);
         }, 2000);
+    };
+
+    const handleBloodNeedSubmit = (data: any) => {
+        toast({
+            title: 'Kan İhtiyacı Bildirimi Alındı',
+            description: `${data.hospital} için ${data.bloodType} kan ihtiyacı bildirimi yapıldı.`,
+        });
     };
 
     const handleHelpClick = (call: typeof initialActiveCalls[0]) => {
@@ -121,12 +218,17 @@ export default function EmergencyPage() {
                     <EmergencyTile icon={Flame} label="Yangın" onClick={() => handleReportClick('fire', 'Yangın')} />
                     <EmergencyTile icon={Ambulance} label="Kaza" onClick={() => handleReportClick('accident', 'Kaza')} />
                     <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('missing', 'Kayıp')} />
-                    <EmergencyTile 
-                        icon={Droplets} 
-                        label="Kan İhtiyacı" 
-                        color="bg-red-600"
-                        onClick={() => handleReportClick('blood', 'Kan İhtiyacı')} 
-                    />
+                    
+                    <button 
+                        disabled={!!isReporting}
+                        onClick={() => setIsBloodDialogOpen(true)}
+                        className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group disabled:opacity-50"
+                    >
+                        <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110 flex items-center justify-center", "bg-red-600")}>
+                            {isReporting === 'Kan İhtiyacı' ? <Loader2 className="h-7 w-7 animate-spin" /> : <Droplets className="h-7 w-7" />}
+                        </div>
+                        <span className="text-[13px] font-bold tracking-tight text-center leading-tight">Kan İhtiyacı</span>
+                    </button>
                 </div>
 
                 <div className="p-4 bg-muted/50 rounded-2xl border border-dashed flex items-start gap-3">
@@ -224,6 +326,8 @@ export default function EmergencyPage() {
                 </TabsContent>
             </Tabs>
         </div>
+
+        <BloodNeedDialog open={isBloodDialogOpen} onOpenChange={setIsBloodDialogOpen} onSubmit={handleBloodNeedSubmit} />
 
         <div className="fixed bottom-24 left-4 right-4 z-10">
             <div className="p-4 bg-slate-900/90 backdrop-blur-lg text-white rounded-2xl shadow-2xl flex items-center gap-4 border border-white/10">
