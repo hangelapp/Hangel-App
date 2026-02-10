@@ -6,7 +6,7 @@ import AppHeader from '@/components/layout/header';
 import AppBottomNav from '@/components/layout/bottom-nav';
 import { SideNav } from '@/components/layout/SideNav';
 import type { SideNavItem } from '@/lib/types';
-import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
@@ -115,6 +115,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
            <Sheet open={isDrawerOpen} onOpenChange={setDrawerOpen}>
               <SheetContent side="left" className="w-full max-w-sm p-0">
+                   <SheetHeader>
+                       <SheetTitle className="sr-only">Ana Menü</SheetTitle>
+                       <SheetDescription className="sr-only">Uygulama ana navigasyon menüsü</SheetDescription>
+                   </SheetHeader>
                    <div className="flex h-full flex-col overflow-y-auto bg-secondary/30">
                         <div className="p-4 bg-background border-b sticky top-0 z-10">
                             <div className="flex justify-between items-center mb-6">
