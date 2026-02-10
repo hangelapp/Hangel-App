@@ -1,20 +1,20 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { allEntityLists } from '@/lib/data';
-import type { Brand } from '@/lib/types';
-import { Card, CardContent } from "@/components/ui/card";
+import { allEntityLists, volunteeringOpportunities } from '@/lib/data';
+import type { Brand, Volunteering } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { Badge } from '@/components/ui/badge';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -241,6 +241,32 @@ const Footer = () => {
     );
 };
 
+const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
+    return (
+        <Link href={`/volunteering/${opportunity.id}`} className="group block h-full">
+            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full flex flex-col p-6">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 bg-black/5 rounded-xl text-black/40">
+                         <HeartHandshake className="h-6 w-6" />
+                    </div>
+                    <div className="text-right">
+                         <p className="font-bold text-lg text-primary">{opportunity.points} Puan</p>
+                         <p className="text-xs text-muted-foreground">Etki Puanı</p>
+                    </div>
+                </div>
+                <div className="flex-1">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{opportunity.organization}</p>
+                    <h4 className="font-bold text-lg leading-tight mt-1">{opportunity.title}</h4>
+                </div>
+                <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 pt-4 mt-4 border-t">
+                    <MapPin className="h-4 w-4" />
+                    <span>{opportunity.location.city} ({opportunity.location.type})</span>
+                </div>
+            </Card>
+        </Link>
+    );
+};
+
 
 export default function LoginPage() {
     return (
@@ -268,8 +294,6 @@ export default function LoginPage() {
                     cta1Href="/market"
                     cta2={`Tümünü Gör (${allEntityLists.length} Marka)`}
                     cta2Href="/market"
-                    imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="contactless payment store"
                 >
                     <div className="w-full max-w-7xl mx-auto px-4 mt-16">
                         <Carousel 
@@ -322,9 +346,28 @@ export default function LoginPage() {
                     cta1Href="/volunteering"
                     cta2="Gönüllü Ol"
                     cta2Href="/login/selection?action=register"
-                    imageUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="volunteers classroom students"
-                />
+                >
+                    <div className="w-full max-w-7xl mx-auto px-4 mt-16">
+                        <Carousel
+                            plugins={[
+                                Autoplay({
+                                  delay: 3000,
+                                  stopOnInteraction: true,
+                                }),
+                              ]}
+                            opts={{ align: "start", loop: true }}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-4">
+                                {volunteeringOpportunities.slice(0, 10).map((opp) => (
+                                    <CarouselItem key={opp.id} className="pl-4 basis-4/5 sm:basis-2/3 md:basis-1/2 lg:basis-1/3">
+                                        <VolunteeringCard opportunity={opp} />
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                        </Carousel>
+                    </div>
+                </ProductShowcaseSection>
                 <ProductShowcaseSection
                     id="kurumlar"
                     title="Kurumlar İçin."
