@@ -1,9 +1,10 @@
+
 'use client';
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle, FileText, XCircle, Plane } from 'lucide-react';
+import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle, FileText, XCircle, Plane, ChevronRight } from 'lucide-react';
 import { volunteeringOpportunities, user } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -13,15 +14,61 @@ import { useToast } from '@/hooks/use-toast';
 import { useState, useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { parse } from 'date-fns';
+import { Progress } from '@/components/ui/progress';
 
 
-const RequirementRow = ({ label, value, isMet }: { label: string, value: string, isMet: boolean }) => (
-    <div className="flex items-center text-xs">
-        {isMet ? <CheckCircle className="h-3.5 w-3.5 mr-2 text-green-600" /> : <XCircle className="h-3.5 w-3.5 mr-2 text-red-600" />}
-        <span className="font-medium mr-1">{label}:</span>
-        <span className="text-muted-foreground">{value}</span>
-    </div>
-);
+const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) => {
+    
+    const userAbilities = [
+        ...user.volunteerInfo.skills,
+        ...user.volunteerInfo.dailySkills,
+        ...user.volunteerInfo.languages,
+        ...user.volunteerInfo.programs,
+        ...user.volunteerInfo.licenses,
+        ...user.volunteerInfo.documents,
+    ];
+    
+    const requiredAbilities = [
+        ...(opp.skills || []),
+        ...(opp.languages || []),
+        ...(opp.programs || []),
+        ...(opp.requirements || []),
+    ];
+
+    const matchedAbilitiesCount = requiredAbilities.filter(req => userAbilities.includes(req)).length;
+    const matchPercentage = requiredAbilities.length > 0 ? (matchedAbilitiesCount / requiredAbilities.length) * 100 : 100;
+
+    return (
+        <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20">
+            <Link href={`/volunteering/${opp.id}`} className="block">
+                <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                            <p className="text-xs font-medium text-muted-foreground">{opp.organization}</p>
+                            <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors">{opp.title}</h3>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                            <p className="font-bold text-primary">{opp.points} Puan</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4">
+                        <span className="flex items-center gap-1.5"><MapPin size={14} /> {opp.location.city} ({opp.location.type})</span>
+                        <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
+                    </div>
+                     {requiredAbilities.length > 0 && (
+                        <div className="mt-4 space-y-1.5">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="font-medium">Profil Uygunluğu</span>
+                                <span className="font-bold">{Math.round(matchPercentage)}%</span>
+                            </div>
+                            <Progress value={matchPercentage} className="h-1.5" />
+                        </div>
+                    )}
+                </CardContent>
+            </Link>
+        </Card>
+    );
+};
 
 
 export default function VolunteeringPage() {
@@ -68,6 +115,16 @@ export default function VolunteeringPage() {
                 const timeA = parse(a.dates.applicationEnd, 'yyyy-MM-dd', refDate).getTime();
                 const timeB = parse(b.dates.applicationEnd, 'yyyy-MM-dd', refDate).getTime();
                 comparison = timeA - timeB;
+            } else if (sortKey === 'match') {
+                 const requiredA = [...(a.skills || []), ...(a.languages || []), ...(a.programs || []), ...(a.requirements || [])];
+                 const matchedA = requiredA.filter(req => userAbilities.includes(req)).length;
+                 const matchPercentageA = requiredA.length > 0 ? (matchedA / requiredA.length) : 1;
+
+                 const requiredB = [...(b.skills || []), ...(b.languages || []), ...(b.programs || []), ...(b.requirements || [])];
+                 const matchedB = requiredB.filter(req => userAbilities.includes(req)).length;
+                 const matchPercentageB = requiredB.length > 0 ? (matchedB / requiredB.length) : 1;
+
+                 comparison = matchPercentageB - matchPercentageA;
             }
 
             // If primary sort is equal, use a secondary sort for stability
@@ -79,11 +136,11 @@ export default function VolunteeringPage() {
         });
 
         return opportunities;
-    }, [sortKey, filters, searchTerm]);
+    }, [sortKey, filters, searchTerm, userAbilities]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
-      <div className="space-y-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-4">
+      <div className="space-y-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-4 -mx-4 px-4 border-b">
         <div className="space-y-1">
             <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
             <p className="text-muted-foreground text-sm">Topluma katkıda bulun ve etki yarat.</p>
@@ -125,14 +182,15 @@ export default function VolunteeringPage() {
                     </Button>
                  </DropdownMenuTrigger>
                  <DropdownMenuContent>
+                     <DropdownMenuItem onClick={() => setSortKey('match')}>Bana En Uygun</DropdownMenuItem>
                      <DropdownMenuItem onClick={() => setSortKey('points')}>Puan (Yüksekten Düşüğe)</DropdownMenuItem>
                      <DropdownMenuItem onClick={() => setSortKey('date')}>Son Başvuru Tarihi (En Yakın)</DropdownMenuItem>
                  </DropdownMenuContent>
             </DropdownMenu>
       </div>
          <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1">
-            <AccordionTrigger>
+          <AccordionItem value="item-1" className="border-b-0">
+            <AccordionTrigger className="hover:no-underline">
               <div className='flex items-center gap-2 text-sm font-medium'>
                 <Bot />
                 Yapay Zeka ile Öneri Al
@@ -156,44 +214,17 @@ export default function VolunteeringPage() {
         </Accordion>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {sortedAndFilteredOpportunities.map((opp) => (
-              <Card key={opp.id}>
-                <CardHeader>
-                  <CardTitle className="text-base">{opp.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground font-medium">{opp.organization}</p>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center text-muted-foreground gap-2"><MapPin className="h-4 w-4" />{`${opp.location.city}${opp.location.type !== 'Online' ? `, ${opp.location.district}` : ''} (${opp.location.type})`}</div>
-                    <div className="flex items-center text-muted-foreground gap-2"><Calendar className="h-4 w-4" />{opp.commitment}</div>
-                    <div className="flex flex-wrap gap-2 pt-2">
-                        {(opp.skills ?? []).map(skill => (
-                            <Badge
-                                key={skill}
-                                variant="outline"
-                                className={cn(
-                                    userAbilities.includes(skill) && "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/40 dark:text-green-300"
-                                )}
-                            >
-                                {userAbilities.includes(skill) && <CheckCircle className="h-3 w-3 mr-1" />}
-                                {skill}
-                            </Badge>
-                        ))}
-                    </div>
-                </CardContent>
-                <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
-                     <div className="flex items-center gap-2">
-                        <Award className="h-5 w-5 text-primary" />
-                        <span className="text-sm font-semibold">{opp.points} Puan</span>
-                     </div>
-                  <Button asChild variant="secondary">
-                    <Link href={`/volunteering/${opp.id}`}>Detayları Gör</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            )
+            <OpportunityCard key={opp.id} opp={opp} />
+        ))}
+        {sortedAndFilteredOpportunities.length === 0 ? (
+            <div className="text-center text-muted-foreground py-16">
+                <p>Aradığınız kriterlere uygun ilan bulunamadı.</p>
+            </div>
+        ) : (
+            <Button variant="outline" className="w-full">Daha Fazla Yükle</Button>
         )}
-        <Button variant="outline" className="w-full">Daha Fazla Yükle</Button>
       </div>
     </div>
   );
