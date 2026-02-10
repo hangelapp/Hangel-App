@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -165,14 +166,34 @@ export default function NgoOnboardingPage() {
 
             {/* Toolset Section */}
             <section className="container mx-auto px-4 space-y-16">
-                <div className="text-center space-y-2 max-w-3xl mx-auto">
+                <div className="text-center space-y-4 max-w-3xl mx-auto">
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Eksiksiz Bir Yönetim Paneli.</h2>
                     <p className="text-lg text-muted-foreground font-medium">İhtiyacınız olan her araç, profesyonel standartlarda elinizin altında.</p>
+                    <p className="text-base text-muted-foreground max-w-2xl mx-auto">SMS ve e-posta gibi iletişim araçlarından CRM ve muhasebe gibi profesyonel çözümlere kadar tüm operasyonel ihtiyaçlarınızı Hangel'in entegre ekosistemi üzerinden yönetin.</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {toolsetFeatures.map(tool => <ToolGridItem key={tool.title} {...tool} />)}
                 </div>
             </section>
+
+            {/* Become a Partner CTA */}
+            <section className="container mx-auto px-4 pt-24">
+                <div className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-[3rem] p-12 text-center space-y-8">
+                    <Sparkles className="h-12 w-12 text-primary mx-auto" />
+                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight relative z-10">İş Ortağımız Olun</h2>
+                    <p className="text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto relative z-10">
+                        Sivil Toplum kuruluşlarına ürün ve hizmetlerinizi paylaşmak ve iş ortağımız olmak ister misiniz? 
+                        hangel altyapısını kullanan <strong className="text-primary">18.000+ aktif sivil toplum kuruluşuna</strong> kendi uzmanlık alanınızdaki ürün ve hizmetleri sunarak, 
+                        <strong className="text-primary uppercase"> sosyal sorunlarla mücadelelerine ortak olarak </strong> uygulamalarınızla fayda sağlayın.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
+                        <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold">
+                            <Link href="/contact/companies">İletişime Geçin</Link>
+                        </Button>
+                    </div>
+                </div>
+            </section>
+
 
             {/* Final CTA */}
             <section className="container mx-auto px-4 pt-24 pb-12">
