@@ -268,7 +268,27 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     );
 };
 
-const ShowcaseGridCard = ({ title, subtitle, href, imageUrl, imageHint, theme = 'light' }: { title:string, subtitle:string, href:string, imageUrl:string, imageHint:string, theme?:'light'|'dark' }) => {
+const ShowcaseGridCard = ({ 
+    title, 
+    subtitle, 
+    imageUrl, 
+    imageHint, 
+    cta1, 
+    cta1Href, 
+    cta2, 
+    cta2Href, 
+    theme = 'light' 
+}: { 
+    title:string, 
+    subtitle:string, 
+    imageUrl:string, 
+    imageHint:string, 
+    cta1: string,
+    cta1Href: string,
+    cta2?: string,
+    cta2Href?: string,
+    theme?:'light'|'dark' 
+}) => {
     return (
         <div className={cn(
             "rounded-3xl p-8 flex flex-col text-center",
@@ -278,10 +298,15 @@ const ShowcaseGridCard = ({ title, subtitle, href, imageUrl, imageHint, theme = 
                 <h3 className="text-4xl font-bold tracking-tight">{title}</h3>
                 <p className="text-base max-w-xs mx-auto opacity-80">{subtitle}</p>
             </div>
-            <div className="mt-4">
-                <Button asChild className="rounded-full font-bold px-6">
-                    <Link href={href}>Keşfet</Link>
-                </Button>
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-2">
+                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm font-medium">
+                    {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
+                </Link>
+                {cta2 && cta2Href && (
+                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm font-medium">
+                        {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
+                    </Link>
+                )}
             </div>
             <div className="flex-1 flex items-end justify-center mt-8">
                 <div className="relative w-full aspect-video">
@@ -415,7 +440,10 @@ export default function LoginPage() {
                             <ShowcaseGridCard 
                                 title="hangel STK" 
                                 subtitle="Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın." 
-                                href="/ngo-onboarding" 
+                                cta1="Şimdi Katıl"
+                                cta1Href="/ngo-onboarding"
+                                cta2="Daha Fazla Bilgi"
+                                cta2Href="/ngo-onboarding"
                                 imageUrl="https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
                                 imageHint="charcoal charity drawing"
                                 theme="dark"
@@ -423,21 +451,30 @@ export default function LoginPage() {
                             <ShowcaseGridCard 
                                 title="hangel Marka" 
                                 subtitle="Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın." 
-                                href="/merchant" 
+                                cta1="Şimdi Katıl"
+                                cta1Href="/merchant"
+                                cta2="Daha Fazla Bilgi"
+                                cta2Href="/merchant"
                                 imageUrl="https://picsum.photos/seed/merc-char/1080/1080"
                                 imageHint="charcoal merchant store drawing"
                             />
                             <ShowcaseGridCard 
                                 title="hangel Clubs" 
                                 subtitle="Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin." 
-                                href="/campus-advantages" 
+                                cta1="Şimdi Katıl"
+                                cta1Href="/login/selection?action=register&type=corporate"
+                                cta2="Daha Fazla Bilgi"
+                                cta2Href="/campus-advantages"
                                 imageUrl="https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtaW5pbWFsaXN0JTIwdW5pdmVyc2l0eSUyMGNvbmZlcmVuY2UlMjBwb3N0ZXJ8ZW58MHx8fHwxNzcwMjY4MTI1fDA&ixlib=rb-4.1.0&q=80&w=1080"
                                 imageHint="minimalist university poster"
                             />
                             <ShowcaseGridCard 
                                 title="Kütüphane" 
                                 subtitle="Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin." 
-                                href="/library" 
+                                cta1="Şimdi Katıl"
+                                cta1Href="/login/selection?action=register"
+                                cta2="Daha Fazla Bilgi"
+                                cta2Href="/library"
                                 imageUrl="https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
                                 imageHint="charcoal library drawing"
                                 theme="dark"
