@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -10,22 +11,14 @@ import {
     Type,
     Copy,
     DownloadCloud,
-    Mic
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
-
-const XIcon = (props: any) => (
-    <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
-        <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-    </svg>
-);
-
+import { cn } from '@/lib/utils';
 
 const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
     <div className="border rounded-2xl bg-white/50 text-center flex flex-col">
@@ -45,7 +38,7 @@ const LogoDisplayCard = ({ title, description, children, onDownload }: { title: 
 const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
     <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50">
         <p className="text-xs font-bold text-muted-foreground">{title}</p>
-        <p className={fontName.includes('Bold') ? 'font-bold text-3xl' : 'text-3xl'}>Aa</p>
+        <p className={cn("text-3xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
         <p className="text-lg font-semibold">{fontName}</p>
         <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
     </div>
@@ -55,10 +48,11 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
     <div className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer" onClick={onCopy}>
         <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
         <p className="font-bold text-sm">{name}</p>
-        <p className="text-xs font-mono text-muted-foreground">{hex}</p>
+        <div className="flex items-center justify-center gap-1 text-xs font-mono text-muted-foreground">
+            {hex} <Copy className="w-3 h-3" />
+        </div>
     </div>
 );
-
 
 export default function LogoUsagePage() {
     const router = useRouter();
@@ -105,21 +99,19 @@ export default function LogoUsagePage() {
                     </div>
                 </section>
 
-                <section className="container mx-auto px-4 mb-24">
-                     <Tabs defaultValue="logos" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto h-14 mb-12">
-                            <TabsTrigger value="logos" className="h-12 text-sm"><Palette className="mr-2"/>Logolar</TabsTrigger>
-                            <TabsTrigger value="fonts" className="h-12 text-sm"><Type className="mr-2"/>Yazı Tipleri</TabsTrigger>
-                            <TabsTrigger value="colors" className="h-12 text-sm"><Palette className="mr-2"/>Renkler</TabsTrigger>
-                             <TabsTrigger value="guide" className="h-12 text-sm"><FileText className="mr-2"/>Kimlik Klavuzu</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="logos">
-                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <section className="container mx-auto px-4 mb-24 space-y-16">
+                    {/* Media Kit Section */}
+                    <div className='space-y-12'>
+                        <h2 className="text-3xl font-bold text-center tracking-tight">Medya Kiti</h2>
+                        
+                        {/* Logos Subsection */}
+                        <div className='space-y-6'>
+                            <h3 className="text-xl font-semibold border-b pb-2">Logolar</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('birincil-logo.png')}>
                                     <HangelLogo className="text-5xl text-primary" />
                                 </LogoDisplayCard>
-                                 <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
+                                <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
                                     <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
                                 </LogoDisplayCard>
                                 <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (PNG) (Zorunlu hallerde)" onDownload={() => handleDownload('beyaz-logo.png')}>
@@ -128,67 +120,72 @@ export default function LogoUsagePage() {
                                     </div>
                                 </LogoDisplayCard>
                                 <LogoDisplayCard title="App Icon" description="(PNG)" onDownload={() => handleDownload('app-icon.png')}>
-                                   <div className="p-4 bg-primary rounded-2xl"><Mic className="h-10 w-10 text-white" /></div>
+                                   <div className="p-4 bg-primary rounded-2xl w-full h-full flex items-center justify-center">
+                                       <span className="text-4xl font-black text-white">h</span>
+                                   </div>
                                 </LogoDisplayCard>
                             </div>
-                        </TabsContent>
+                        </div>
 
-                        <TabsContent value="fonts">
-                           <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
-                               <CardHeader className="text-center">
-                                   <CardTitle>Font Kullanım Yönergesi</CardTitle>
-                               </CardHeader>
-                               <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                                   <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                   <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
-                                   <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
-                               </CardContent>
-                           </Card>
-                        </TabsContent>
-                        
-                        <TabsContent value="colors">
+                        {/* Fonts Subsection */}
+                        <div className='space-y-6'>
+                           <h3 className="text-xl font-semibold border-b pb-2">Yazı Tipleri</h3>
+                            <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                                <CardHeader className="text-center p-0">
+                                    <CardTitle>Font Kullanım Yönergesi</CardTitle>
+                                </CardHeader>
+                                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-0">
+                                    <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                    <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                    <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Colors Subsection */}
+                        <div className='space-y-6'>
+                            <h3 className="text-xl font-semibold border-b pb-2">Renkler</h3>
                              <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
-                               <CardHeader className="text-center">
+                               <CardHeader className="text-center p-0">
                                    <CardTitle>Renk Kullanım Yönergesi</CardTitle>
                                </CardHeader>
-                               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 p-0">
                                    <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
                                    <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
                                    <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
                                    <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
                                </CardContent>
                            </Card>
-                        </TabsContent>
-                        
-                        <TabsContent value="guide">
-                           <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
-                               <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
-                               <div className="space-y-1">
-                                   <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
-                                   <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
-                               </div>
-                               <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
-                                    PDF Olarak İndir
-                               </Button>
-                           </Card>
-                        </TabsContent>
-                    </Tabs>
-                </section>
-                
-                <section className="container mx-auto px-4 mb-24 space-y-10">
-                    <Card className="bg-white rounded-3xl p-10 shadow-lg border">
-                         <CardHeader>
-                            <CardTitle>hangel Canva Marka Kiti</CardTitle>
-                            <CardDescription>Logo kullanımları, renk pantoneleri, yazı fontları, görseller için tıklatınız ve tasarımlarında kulanınız.</CardDescription>
-                         </CardHeader>
-                         <CardContent>
-                             <Button asChild>
-                                 <a href="#" target="_blank" rel="noopener noreferrer">Canva Marka Kiti için tıklayınız</a>
-                             </Button>
-                         </CardContent>
-                    </Card>
+                        </div>
+                    </div>
 
-                    <div className="prose prose-sm md:prose-base max-w-4xl mx-auto text-foreground/80">
+                    {/* Brand Kit & Guide Section */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <Card className="bg-white rounded-3xl p-10 shadow-lg border text-center">
+                             <CardHeader>
+                                <CardTitle>hangel Canva Marka Kiti</CardTitle>
+                                <CardDescription>Logo kullanımları, renk pantoneleri, yazı fontları, görseller için tıklatınız ve tasarımlarında kulanınız.</CardDescription>
+                             </CardHeader>
+                             <CardContent>
+                                 <Button asChild>
+                                     <a href="#" target="_blank" rel="noopener noreferrer">Canva Marka Kiti için tıklayınız</a>
+                                 </Button>
+                             </CardContent>
+                        </Card>
+                        <Card className="bg-white rounded-3xl text-center p-12 space-y-6 shadow-xl">
+                           <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
+                           <div className="space-y-1">
+                               <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
+                               <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
+                           </div>
+                           <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
+                                PDF Olarak İndir
+                           </Button>
+                       </Card>
+                    </div>
+
+                    {/* Usage Rules Section */}
+                    <div className="prose prose-sm md:prose-base max-w-4xl mx-auto text-foreground/80 pt-16">
                         <h3>hangel marka kullanım izni</h3>
                         <p>hangel’in varlıklarını kullanan kişi ve kurumlar yalnızca tarafımızca belirlenen ve sitemizde bulunan logoları ve ekran görüntülerini kullanmalı ve bu yönergeleri izlemelidir.</p>
                         <p>Yalnızca hangel’in varlıklarını herhangi bir yayında, radyoda, ev dışı reklamda veya 8,5 x 11 inçten (A4 boyutu) daha büyük baskıda kullanmayı planlayanların izin istemesi gerekir. Yazılı olarak talepte bulunulan bu izin ekinde logoyu nasıl kullanmayı planladığınıza dair bir taslak içermelidir.</p>
