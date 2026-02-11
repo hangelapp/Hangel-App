@@ -1,8 +1,9 @@
+
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Globe, Instagram, Linkedin, MessageSquare } from 'lucide-react';
+import { ChevronRight, Globe } from 'lucide-react';
 import { HangelLogo } from '@/components/icons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -15,69 +16,61 @@ const XIcon = (props: any) => (
 export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }) {
     const footerGroups = [
         { 
-            title: "KEŞFEDİN", 
+            title: "Keşfet", 
             links: [
                 {label: "Market", href: "/market"}, 
                 {label: "Gönüllülük", href: "/volunteering"}, 
-                {label: "STK'lar", href: "/ngos"}, 
-                {label: "Kulüpler", href: "/admin/clubs"}, 
-                {label: "Kütüphane", href: "/library"}
+                {label: "Zaman Tüneli", href: "/timeline"},
+                {label: "Kütüphane", href: "/library"}, 
             ] 
         },
         { 
-            title: "KURUMSAL", 
+            title: "Kurumsal", 
             links: [
                 {label: "Biz Kimiz?", href: "/about"}, 
                 {label: "Sosyal Etkimiz", href: "/social-impact"}, 
                 {label: "Basın Odası", href: "/press"}, 
-                {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, 
-                {label: "Kariyer", href: "/careers"}
+                {label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri"}, 
+                {label: "Kariyer", href: "/careers"},
+                {label: "Logo Kullanımı", href: "/logo-usage"}, 
             ] 
         },
         { 
-            title: "İŞBİRLİKLERİ", 
+            title: "İşbirlikleri", 
             links: [
-                {label: "Üye İşyeri ol", href: "/merchant"}, 
+                {label: "Üye İşyeri Ol", href: "/merchant"}, 
                 {label: "STK Kaydı", href: "/ngo-onboarding"}, 
-                {label: "Temsilci Ol", href: "/contact/universities"}, 
-                {label: "Kulüp Kaydı", href: "/login/selection?action=register&type=corporate"}, 
+                {label: "Kampüs Avantajları", href: "/campus-advantages"},
                 {label: "Kamu İşbirlikleri", href: "/corporate"}
             ] 
         },
         { 
-            title: "HANGEL DERNEĞİ", 
+            title: "Hangel Derneği", 
             links: [
-                {label: "Hakkında", href: "/hangelassociation/about"}, 
-                {label: "Etkinlikler", href: "/hangelassociation/events"}, 
+                {label: "Dernek Ana Sayfa", href: "/hangelassociation"}, 
+                {label: "Dernek Hakkında", href: "/hangelassociation/about"}, 
                 {label: "Uluslararası Çalıştay", href: "/hangelassociation/workshop"}, 
                 {label: "Mevzuat Taslağı", href: "/hangelassociation/legislation"}
             ] 
         },
         { 
-            title: "HESABIM", 
+            title: "Hesabım ve Destek", 
             links: [
                 {label: "Giriş Yap", href: "/login/selection?action=login"}, 
                 {label: "Kayıt Ol", href: "/login/selection?action=register"}, 
+                {label: "Cüzdanım", href: "/qr-payment"},
+                {label: "Profilim", href: "/profile"},
                 {label: "Destek Merkezi", href: "/support"}, 
                 {label: "Geri Bildirim", href: "/feedback"}
             ] 
         },
     ];
-
-    const storeLinks = ["App Store", "Google Play", "Huawei Store", "Chrome Store", "Opera Store"];
-    const socialLinks = [
-        { name: "Instagram", icon: Instagram },
-        { name: "Facebook", icon: null },
-        { name: "X (Twitter)", icon: XIcon },
-        { name: "LinkedIn", icon: Linkedin },
-        { name: "YouTube", icon: null },
-    ];
+    
     const policyLinks = [
         { label: "Politikalar", href: "/settings/contracts" },
-        { label: "Çerezlerin Kullanımı", href: "/settings/contracts/cerez-politikasi" },
-        { label: "Sözleşmeler", href: "/settings/contracts" },
+        { label: "Kullanım Koşulları", href: "/settings/contracts/kullanici-sozlesmesi" },
+        { label: "Gizlilik Politikası", href: "/settings/contracts/gizlilik-politikasi" },
         { label: "Site Haritası", href: "/sitemap" },
-        { label: "Logo Kullanım", href: "/logo-usage" },
         { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
         { label: "Erişilebilirlik", href: "/accessibility" },
     ];
@@ -135,18 +128,17 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     <p className="text-[12px] text-[#1d1d1f]/70">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
                      <div className="h-px bg-black/10 w-full" />
                     
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
-                        {policyLinks.map((link, index) => (
-                            <React.Fragment key={link.label}>
-                                <Link href={link.href} className="hover:underline">{link.label}</Link>
-                                {index < policyLinks.length - 1 && <span className="text-black/10">|</span>}
-                            </React.Fragment>
-                        ))}
-                    </div>
-
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-black/10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="text-[11px] text-[#1d1d1f]/50">
                             Telif Hakkı © {new Date().getFullYear()} hangel A.Ş. Tüm hakları saklıdır.
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
+                            {policyLinks.map((link, index) => (
+                                <React.Fragment key={link.label}>
+                                    <Link href={link.href} className="hover:underline">{link.label}</Link>
+                                    {index < policyLinks.length - 1 && <span className="text-black/10">|</span>}
+                                </React.Fragment>
+                            ))}
                         </div>
                         <div className="text-[11px] font-bold text-[#1d1d1f]/70 flex items-center gap-2">
                             <Globe className="h-3 w-3" />
