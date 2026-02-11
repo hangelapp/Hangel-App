@@ -78,6 +78,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "Çerezlerin Kullanımı", href: "/settings/contracts/cerez-politikasi" },
         { label: "Sözleşmeler", href: "/settings/contracts" },
         { label: "Site Haritası", href: "/sitemap" },
+        { label: "Logo Kullanım", href: "/logo-usage" },
         { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
         { label: "Erişilebilirlik", href: "/accessibility" },
     ];
