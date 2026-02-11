@@ -36,6 +36,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { Badge } from '@/components/ui/badge';
 
 // New component for the large feature cards
 const FeatureShowcaseCard = ({
@@ -49,7 +50,7 @@ const FeatureShowcaseCard = ({
 }) => (
   <div className="group relative bg-white rounded-[2.5rem] p-8 md:p-12 transition-all hover:shadow-2xl border border-black/5 overflow-hidden flex flex-col justify-between min-h-[450px]">
     <div className="relative z-10">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-[#f5f5f7] border shadow-sm">
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-white border shadow-sm">
         <Icon className="h-8 w-8 text-primary" />
       </div>
       <div className="space-y-3">
@@ -67,8 +68,11 @@ const FeatureShowcaseCard = ({
 
 
 // New component for smaller feature items
-const ToolGridItem = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
-    <div className="flex flex-col items-center text-center gap-4 p-6 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all">
+const ToolGridItem = ({ icon: Icon, title, description, tag }: { icon: any, title: string, description: string, tag?: string }) => (
+    <div className="relative flex flex-col items-center text-center gap-4 p-6 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all">
+        {tag && (
+            <Badge className="absolute -top-2 right-4">{tag}</Badge>
+        )}
         <div className="p-4 bg-[#f5f5f7] rounded-2xl text-primary">
             <Icon className="h-7 w-7" />
         </div>
@@ -109,18 +113,18 @@ export default function NgoOnboardingPage() {
         { icon: Globe, title: "Web Sitesi Yönetimi", description: "Kurumsal kimliğinize özel web sitesi scriptlerini kolayca yönetin." },
         { icon: MessageSquare, title: "SMS Gönderimi", description: "Önemli duyurularınızı gönüllülerinize SMS ile anında ulaştırın." },
         { icon: Mail, title: "Mail Gönderimi", description: "E-bültenlerinizle bağışçılarınızı düzenli olarak bilgilendirin." },
-        { icon: Megaphone, title: "Reklam Yönetimi", description: "Platform içi görünürlüğünüzü artırın, hedef kitleye doğrudan ulaşın." },
+        { icon: Megaphone, title: "Reklam Yönetimi", description: "Platform içi görünürlüğünüzü artırın, hedef kitleye doğrudan ulaşın.", tag: "Yeni" },
         { icon: Calendar, title: "Etkinlik Yönetimi", description: "Saha veya online etkinliklerinizi planlayın, kayıtları takip edin." },
         { icon: Video, title: "Online Eğitim & Toplantı", description: "Gönüllülerinize uzaktan eğitimler verin, toplantılar düzenleyin." },
         { icon: Palette, title: "Tasarım Programları", description: "Görsel materyalleriniz için profesyonel tasarım araçlarına erişin." },
         { icon: CreditCard, title: "Pos & Ödeme Sistemleri", description: "Kurumsal ödeme altyapınızı platform ile entegre edin." },
         { icon: Target, title: "Pazarlama İletişimi", description: "Topluluğunuzla kurduğunuz bağı profesyonel araçlarla büyütün." },
-        { icon: Calculator, title: "Ön Muhasebe Yönetimi", description: "Finansal hareketlerinizi ve hak edişlerinizi şeffafça izleyin." },
+        { icon: Calculator, title: "Ön Muhasebe Yönetimi", description: "Finansal hareketlerinizi ve hak edişlerinizi şeffafça izleyin.", tag: "Beta" },
         { icon: Database, title: "CRM Yönetimi", description: "Bağışçı ve gönüllü veri tabanınızı modern bir yapıda tutun." },
         { icon: PhoneCall, title: "Sanal Santral Yönetimi", description: "Kurumsal iletişim numaranızı bulut tabanlı sistemle yönetin." },
         { icon: Building2, title: "Sanal ve Fiziki Ofis", description: "İşbirliği ağımızdaki ofis ve toplantı alanlarından faydalanın." },
         { icon: GraduationCap, title: "Üniversite Gönüllük Dersi", description: "Akademik kredi kapsamında binlerce öğrenciye kapılarınızı açın." },
-        { icon: MapPin, title: "Saha Ekip Yönetimi", description: "Saha operasyonlarınızı canlı harita ve araçlarla takip edin." },
+        { icon: MapPin, title: "Saha Ekip Yönetimi", description: "Saha operasyonlarınızı canlı harita ve araçlarla takip edin.", tag: "Yeni" },
         { icon: MessageCircle, title: "DM Mesajlaşma Merkezi", description: "Destekçilerinizle anlık ve kurumsal bir dille mesajlaşın." },
         { icon: ShoppingCart, title: "İktisadi İşletme Yönetimi", description: "Kurumsal ürünlerinizin satış süreçlerini dijitalleştirin." },
     ];
@@ -176,7 +180,7 @@ export default function NgoOnboardingPage() {
                 </div>
             </section>
 
-            {/* Become a Partner CTA */}
+             {/* Become a Partner CTA */}
             <section className="container mx-auto px-4 pt-24">
                 <div className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-[3rem] p-12 text-center space-y-8">
                     <Sparkles className="h-12 w-12 text-primary mx-auto" />
