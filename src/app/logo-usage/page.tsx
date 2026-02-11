@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -10,7 +9,8 @@ import {
     Palette, 
     Type,
     Copy,
-    DownloadCloud
+    DownloadCloud,
+    Mic
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -224,6 +224,7 @@ export default function LogoUsagePage() {
                         <p>hangel’ı yayıncılık alanında kullanırken en önemli şey, topluluğumuzdaki marka ve STK’ların içeriklerine uygun atıflarda bulunmaktır.</p>
                         <p>Bir hangel markası veta STK’sı ile çalışıyorsanız, ilgiliden lütfen hangel profilinizi ekran görüntülerini kullanmak için izin alın.</p>
                         <p>hangel platformundaki tüm STK ve markaların marka kullanım izinleri ilgililerine aittir.</p>
+
 
                         <h3>Yasal</h3>
                         <p>hangel, fikri mülkiyetinin geliştirilmesi ve korunması için önemli kaynaklar ayırır. hangel, ticari markalarının ve logolarının dünya çapında tescilini talep etmenin yanı sıra, ticari markalarını kötüye kullanan kişilere karşı haklarını uygular.</p>
