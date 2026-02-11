@@ -31,8 +31,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 {label: "Sosyal Etkimiz", href: "/social-impact"}, 
                 {label: "Basın Odası", href: "/press"}, 
                 {label: "Yatırımcılar", href: "/yatirimci-iliskileri"}, 
-                {label: "Kariyer", href: "/careers"},
-                {label: "Logo Kullanımı", href: "/logo-usage"}
+                {label: "Kariyer", href: "/careers"}
             ] 
         },
         { 
