@@ -4,7 +4,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-    ChevronRight, ArrowLeft, Download, FileText, Image as ImageIcon, Video, Palette, Mic, Rss, Users, Globe, BarChart3, TrendingUp
+    ChevronRight, ArrowLeft, Download, FileText, Image as ImageIcon, Video, Palette, Mic, Rss, Users, Globe, BarChart3, TrendingUp, DownloadCloud, Type
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -24,18 +24,38 @@ const StatCard = ({ icon: Icon, value, label }: { icon: any, value: string, labe
     </div>
 );
 
-const LogoCard = ({ title, children, svgAction, pngAction }: { title: string, children: React.ReactNode, svgAction: () => void, pngAction: () => void }) => (
-    <div className="border rounded-2xl p-6 text-center space-y-4 bg-white/50">
-        <div className="h-24 w-full flex items-center justify-center p-4">
+const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
+    <div className="border rounded-2xl bg-white/50 text-center flex flex-col">
+        <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
             {children}
         </div>
-        <h4 className="font-bold text-sm pt-2">{title}</h4>
-        <div className="flex gap-2 justify-center">
-            <Button size="sm" variant="ghost" className="text-xs" onClick={svgAction}>SVG İndir</Button>
-            <Button size="sm" variant="ghost" className="text-xs" onClick={pngAction}>PNG İndir</Button>
+        <div className="p-4 flex-1 flex flex-col">
+            <h4 className="font-bold text-sm">{title}</h4>
+            <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
+            <Button size="sm" variant="outline" className="text-xs mt-4 w-full" onClick={onDownload}>
+                <Download className="mr-2 h-3.5 w-3.5"/> PNG İndir
+            </Button>
         </div>
     </div>
 );
+
+const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
+    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50">
+        <p className="text-xs font-bold text-muted-foreground">{title}</p>
+        <p className={cn("text-3xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
+        <p className="text-lg font-semibold">{fontName}</p>
+        <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
+    </div>
+);
+
+const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
+    <div className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer" onClick={onCopy}>
+        <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
+        <p className="font-bold text-sm">{name}</p>
+        <p className="text-xs font-mono text-muted-foreground">{hex}</p>
+    </div>
+);
+
 
 export default function PressPage() {
     const router = useRouter();
@@ -47,6 +67,14 @@ export default function PressPage() {
             description: `${file} indiriliyor...`,
         });
     };
+    
+    const copyColor = (hex: string) => {
+        navigator.clipboard.writeText(hex);
+        toast({
+            title: "Renk Kodu Kopyalandı",
+            description: `${hex} panoya kopyalandı.`,
+        });
+    };
 
     const pressReleases = [
         { date: '25.07.2024', title: 'Hangel, Sosyal Etki Raporu 2024\'ü Yayınladı', lang: 'TR' },
@@ -54,13 +82,6 @@ export default function PressPage() {
         { date: '01.05.2024', title: 'Yeni İşbirliği: Hangel ve Türkiye\'nin Önde Gelen 50 Markası Güçlerini Birleştirdi', lang: 'TR' }
     ];
     
-    const corporatePhotos = [
-        { src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop", alt: "Ekip Toplantısı", hint: "diverse team meeting" },
-        { src: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2070&auto=format&fit=crop", alt: "Ofis Ortamı", hint: "modern office workspace" },
-        { src: "https://images.unsplash.com/photo-1573496545738-604081fb7c2c?q=80&w=2070&auto=format&fit=crop", alt: "Kurucu Portresi", hint: "ceo portrait professional" },
-        { src: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop", alt: "Gönüllülük Etkinliği", hint: "volunteers working community" }
-    ];
-
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30">
             {/* Nav */}
@@ -71,7 +92,7 @@ export default function PressPage() {
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight uppercase">Basın Odası</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                        <Link href="/support">İletişime Geç</Link>
+                        <a href="mailto:press@hangel.org">İletişime Geç</a>
                     </Button>
                 </div>
             </header>
@@ -125,56 +146,66 @@ export default function PressPage() {
                     <Tabs defaultValue="logos" className="w-full">
                         <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto h-14 mb-12">
                             <TabsTrigger value="logos" className="h-12 text-sm"><Palette className="mr-2"/>Logolar</TabsTrigger>
-                            <TabsTrigger value="photos" className="h-12 text-sm"><ImageIcon className="mr-2"/>Fotoğraflar</TabsTrigger>
-                            <TabsTrigger value="videos" className="h-12 text-sm"><Video className="mr-2"/>Videolar</TabsTrigger>
-                            <TabsTrigger value="guide" className="h-12 text-sm"><FileText className="mr-2"/>Kimlik Klavuzu</TabsTrigger>
+                            <TabsTrigger value="fonts" className="h-12 text-sm"><Type className="mr-2"/>Yazı Tipleri</TabsTrigger>
+                            <TabsTrigger value="colors" className="h-12 text-sm"><Palette className="mr-2"/>Renkler</TabsTrigger>
+                             <TabsTrigger value="guide" className="h-12 text-sm"><FileText className="mr-2"/>Kimlik Klavuzu</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="logos">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <LogoCard title="Primary Logo" svgAction={() => handleDownload('logo-primary.svg')} pngAction={() => handleDownload('logo-primary.png')}>
-                                    <HangelLogo className="text-5xl" />
-                                </LogoCard>
-                                <LogoCard title="Siyah Logo" svgAction={() => handleDownload('logo-black.svg')} pngAction={() => handleDownload('logo-black.png')}>
-                                    <HangelLogo className="text-5xl text-[#1d1d1f]" />
-                                </LogoCard>
-                                <LogoCard title="Beyaz Logo" svgAction={() => handleDownload('logo-white.svg')} pngAction={() => handleDownload('logo-white.png')}>
-                                    <div className="bg-black rounded-lg p-2 flex-1 flex items-center justify-center">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('birincil-logo.png')}>
+                                    <HangelLogo className="text-5xl text-primary" />
+                                </LogoDisplayCard>
+                                 <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
+                                    <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
+                                </LogoDisplayCard>
+                                <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (PNG) (Zorunlu hallerde)" onDownload={() => handleDownload('beyaz-logo.png')}>
+                                    <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
                                        <HangelLogo className="text-5xl text-white" />
                                     </div>
-                                </LogoCard>
-                                <LogoCard title="Sembol" svgAction={() => handleDownload('symbol.svg')} pngAction={() => handleDownload('symbol.png')}>
+                                </LogoDisplayCard>
+                                <LogoDisplayCard title="App Icon" description="(PNG)" onDownload={() => handleDownload('app-icon.png')}>
                                    <div className="p-4 bg-primary rounded-2xl"><Mic className="h-10 w-10 text-white" /></div>
-                                </LogoCard>
+                                </LogoDisplayCard>
                             </div>
                         </TabsContent>
-                        <TabsContent value="photos">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {corporatePhotos.map((photo, i) => (
-                                    <div key={i} className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
-                                        <Image src={photo.src} alt={photo.alt} fill className="object-cover" data-ai-hint={photo.hint} />
-                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button onClick={() => handleDownload(`${photo.alt}.jpg`)}><Download className="mr-2"/>İndir</Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+
+                        <TabsContent value="fonts">
+                           <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                               <CardHeader className="text-center">
+                                   <CardTitle>Font Kullanım Yönergesi</CardTitle>
+                               </CardHeader>
+                               <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                                   <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                   <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                   <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                               </CardContent>
+                           </Card>
                         </TabsContent>
-                        <TabsContent value="videos">
-                             <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-3xl">
-                                <Video className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                                <p>Video arşivi yakında burada olacak.</p>
-                            </div>
+                        
+                        <TabsContent value="colors">
+                             <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                               <CardHeader className="text-center">
+                                   <CardTitle>Renk Kullanım Yönergesi</CardTitle>
+                               </CardHeader>
+                               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                                   <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
+                                   <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
+                                   <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
+                                   <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
+                               </CardContent>
+                           </Card>
                         </TabsContent>
+                        
                         <TabsContent value="guide">
-                           <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl">
-                               <FileText className="h-16 w-16 mx-auto text-primary" />
+                           <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
+                               <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
                                <div className="space-y-1">
                                    <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
                                    <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
                                </div>
                                <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
-                                    Hemen İndir
+                                    PDF Olarak İndir
                                </Button>
                            </Card>
                         </TabsContent>
@@ -187,7 +218,7 @@ export default function PressPage() {
                         <h3 className="text-3xl font-bold mb-2">Medya İletişim</h3>
                         <p className="text-white/70 mb-6">Basın ve medya talepleriniz için bize ulaşın.</p>
                         <Button asChild variant="secondary" size="lg" className="rounded-full h-14 px-10 text-lg font-bold">
-                            <a href="mailto:press@hangel.com">press@hangel.com</a>
+                            <a href="mailto:press@hangel.org">press@hangel.org</a>
                         </Button>
                      </Card>
                 </section>
