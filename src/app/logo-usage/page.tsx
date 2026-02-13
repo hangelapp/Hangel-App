@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -25,7 +24,9 @@ import {
     Users,
     Brain,
     BookCopy,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Building,
+    HandCoins
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -136,7 +137,7 @@ const appArchitecture = [
     { href: "/market", icon: HandCoins, label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
     { href: "/admin/clubs", icon: School, label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
     { href: "/merchant", icon: Store, label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
-    { href: "/ngo-onboarding", icon: Building2, label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
+    { href: "/ngo-onboarding", icon: Building, label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
     { href: "/library", icon: Library, label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
 ];
 
@@ -190,16 +191,13 @@ export default function LogoUsagePage() {
                     <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed mt-8">
                        hangel logosu yalnızca bir görsel kimlik unsuru değildir. Ortak değerlerimizin, kolektif üretim anlayışımızın ve toplumsal sorunlara karşı geliştirdiğimiz dayanışma kültürünün kurumsal temsildir.
                     </p>
-                    <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed mt-4">
-                        Bu logo; eşit mesafede duran, tarafsız, şeffaf ve kolektif iyiliği önceleyen bir yapının sembolüdür. Logonun doğru, tutarlı ve mevzuata uygun biçimde kullanımı; marka bütünlüğünün korunmasını, kamusal algının netliğini ve hukuki güvenliğin sürdürülmesini sağlar.
-                    </p>
-                     <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed mt-4">
-                        Logomuzu her doğru kullanımınız, dayanışma zincirine eklenen yeni bir halkadır.
+                    <p className="text-base text-muted-foreground max-w-2xl mx-auto mt-4">
+                        Bu logo; eşit mesafede duran, tarafsız, şeffaf ve kolektif iyiliği önceleyen bir yapının sembolüdür. Logonun doğru, tutarlı ve mevzuata uygun biçimde kullanımı; marka bütünlüğünün korunmasını, kamusal algının netliğini ve hukuki güvenliğin sürdürülmesini sağlar. Logomuzu her doğru kullanımınız, dayanışma zincirine eklenen yeni bir halkadır.
                     </p>
                 </Section>
                 
                 <Section id="mimari" className="bg-white">
-                    <SectionTitle>Marka Mimarisi ve Kategori Yapısı</SectionTitle>
+                    <SectionTitle>Marka Mimarisi</SectionTitle>
                     <div className="space-y-12 mt-16">
                         <div className="text-center space-y-2">
                              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Ana Marka</h3>
@@ -246,16 +244,17 @@ export default function LogoUsagePage() {
                                 </LogoDisplayCard>
                             </div>
                         </div>
-
-                         <div className="space-y-8">
+                        
+                        <div className="space-y-8">
                             <h3 className="text-2xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
                              <div className="max-w-4xl mx-auto">
                                 <div className="text-center mb-6">
                                     <h4 className="font-bold text-lg">Font Kullanım Yönergesi</h4>
                                     <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur.</p>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                    <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
                                     <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                 </div>
                             </div>
@@ -298,49 +297,34 @@ export default function LogoUsagePage() {
                 
                  <Section id="kullanim-kurallari" className="bg-white">
                     <div className="text-center mb-16 space-y-4">
-                        <SectionTitle>Değerlerimizle Fark Oluşturuyoruz</SectionTitle>
-                        <p className="text-lg text-muted-foreground">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
+                        <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InfoCard icon={Ruler} title="Temel Logo Kuralları">
-                            <h4>LOGO MİNİMUM BOYUT KURALI</h4>
-                            <p>Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:</p>
-                            <ul><li><strong>Dijital Ortam:</strong> Minimum genişlik: 120 px, App icon minimum: 32 px</li><li><strong>Basılı Materyal:</strong> Minimum genişlik: 25 mm</li></ul>
-                            <p>Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır.</p>
-                            <h4>BOŞLUK (CLEAR SPACE) KURALI</h4>
-                            <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
-                            <h4>Değişiklik Yasağı</h4>
-                            <p>Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
+                        <InfoCard icon={Ruler} title="Temel Kurallar">
+                           <h4>BOŞLUK (CLEAR SPACE) KURALI</h4>
+                           <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
+                           <h4>Değişiklik Yasağı</h4>
+                           <p>Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
                         </InfoCard>
-                        <InfoCard icon={Handshake} title="Marka İlişkileri">
-                             <h4>HİYERARŞİ PRENSİBİ</h4>
-                            <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır. Logo hiçbir koşulda en baskın görsel unsur olarak konumlandırılamaz.</p>
-                            <h4>CO-BRANDING (ORTAK MARKALAMA) KURALLARI</h4>
-                            <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:</p>
-                            <ul>
-                                <li>Logo eşit ölçekli kullanılmalıdır.</li>
-                                <li>İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.</li>
-                                <li>Logolar yatay hizalı olmalıdır.</li>
-                                <li>Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</li>
-                                <li>Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur.</li>
-                            </ul>
+                         <InfoCard icon={Handshake} title="Marka İlişkileri">
+                           <h4>HİYERARŞİ PRENSİBİ</h4>
+                           <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır.</p>
+                           <h4>CO-BRANDING (ORTAK MARKALAMA) KURALLARI</h4>
+                           <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır: logo eşit ölçekli kullanılmalıdır, iki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır, logolar yatay hizalı olmalıdır, birleşik tek bir görsel kilit (lock-up) oluşturulamaz, ve basılı büyük mecralarda yazılı izin zorunludur.</p>
                         </InfoCard>
                         <InfoCard icon={Mic} title="İsim ve Kanal Kullanımı">
                             <h4>İSİM VE METİN KULLANIM STANDARTLARI</h4>
-                            <p>“hangel” kelimesinde “h” harfi büyük yazılamaz. Alan adı, şirket adı veya ürün adına entegre edilemez.</p>
-                            <p>İzin verilen kullanım: “hangel için geliştirilmiştir”, “hangel ile uyumludur”</p>
+                            <p>"hangel" kelimesinde "h" harfi büyük yazılamaz. Başka dile çevrilemez, kısaltılamaz veya alan adı, şirket adı gibi yerlere entegre edilemez.</p>
                             <h4>ÜRÜN İKONLARI</h4>
-                            <p>Eğitim, bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz veya ana marka kimliğinin yerine geçemez.</p>
-                            <h4>SOSYAL MEDYA</h4>
-                            <p>Resmi hesap algısı yaratacak kullanım yasaktır. Örn: "hangel Haber".</p>
-                            <h4>TV, FİLM VE YAYINCILIK</h4>
-                            <p>Yayınlarda doğru atıf esastır. Ekran görüntüleri için izin alınmalıdır.</p>
+                            <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.</p>
+                            <h4>SOSYAL MEDYA VE DİJİTAL MECRALAR</h4>
+                            <p>Resmi hesap algısı yaratacak kullanım yasaktır. Örnek; Yanlış: "hangel Haber", Doğru: "hangel hakkında haberler".</p>
                         </InfoCard>
                         <InfoCard icon={Scale} title="İzinler ve Yasal Çerçeve">
                             <h4>MARKA KULLANIM İZNİ</h4>
-                            <p>Büyük ölçekli yayın ve baskı materyallerinde hangel varlıklarını kullanmak isteyenler yazılı izin almak zorundadır.</p>
+                            <p>Yayın, radyo, TV, açık hava reklamı gibi büyük ölçekli mecralarda hangel varlıklarını kullanmak isteyenler yazılı izin almak zorundadır.</p>
                             <h4>YASAL ÇERÇEVE</h4>
-                            <p>hangel, fikri mülkiyet haklarını korumaktadır. Ticari markalarımız izinsiz tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ile çelişen kullanımlar yasaktır.</p>
+                            <p>hangel, fikri mülkiyet haklarını korumaktadır. Ticari markalarımız izinsiz tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
                         </InfoCard>
                     </div>
                 </Section>
@@ -357,7 +341,7 @@ export default function LogoUsagePage() {
                 </Section>
             </main>
 
-            <PublicFooter currentPageLabel="Basın Kiti" />
+            <PublicFooter currentPageLabel="Basın Kiti & Marka Yönergesi" />
         </div>
     );
 }
