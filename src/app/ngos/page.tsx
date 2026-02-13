@@ -5,24 +5,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Heart, Users, Percent, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Search, ArrowDownUp, Filter, Heart, Users, ChevronRight, ShieldCheck, X } from 'lucide-react';
 import Link from 'next/link';
 import { ngos, timelinePosts, user, volunteeringOpportunities } from '@/lib/data';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ShareButtons } from '@/components/shared/share-buttons';
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
+import { ShareButtons } from '@/components/shared/share-buttons';
+
 
 type NgoType = NGO['type'] | 'Tümü';
 type LocationFilter = 'global' | 'country' | 'city';
 
-const NgoDetailView = ({ ngo, onClose }: { ngo: NGO; onClose: () => void; }) => {
+const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
     const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name);
     const ngoOpps = volunteeringOpportunities.filter(o => o.ngoId === ngo.id);
     const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/ngos/${ngo.id}` : '';
@@ -103,9 +102,7 @@ export default function NgosPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
-    const [selectedNgos, setSelectedNgos] = useState<string[]>([]);
     const [viewingNgo, setViewingNgo] = useState<NGO | null>(null);
-    const { toast } = useToast();
     
     const allCategories = useMemo(() => Array.from(new Set(ngos.map(n => n.category))), []);
 
@@ -140,7 +137,7 @@ export default function NgosPage() {
 
         // Sorting
         filtered.sort((a, b) => {
-            let valA, valB;
+            let valA: string | number, valB: string | number;
             switch(sortConfig.key) {
                 case 'followers': valA = a.stats.followers; valB = b.stats.followers; break;
                 case 'volunteers': valA = a.stats.volunteers; valB = b.stats.volunteers; break;
@@ -148,19 +145,14 @@ export default function NgosPage() {
                 default: // name
                     return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
             }
-            return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+            if(typeof valA === 'number' && typeof valB === 'number') {
+                return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+            }
+            return 0;
         });
 
         return filtered;
     }, [typeFilter, locationFilter, searchTerm, sortConfig, categoryFilter]);
-
-    const handleSelectNgo = (ngoId: string) => {
-        setSelectedNgos(prev => 
-            prev.includes(ngoId) 
-                ? prev.filter(id => id !== ngoId) 
-                : [...prev, ngoId]
-        );
-    };
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -237,31 +229,21 @@ export default function NgosPage() {
 
       <div className="space-y-3">
         {filteredNgos.length > 0 ? filteredNgos.map((ngo) => (
-            <Card key={ngo.id} className="transition-colors hover:bg-accent/50">
+            <Card key={ngo.id} className="transition-colors hover:bg-accent/50 cursor-pointer" onClick={() => setViewingNgo(ngo)}>
                 <div className="p-3 flex gap-3 items-center">
-                    <div onClick={() => setViewingNgo(ngo)} className="flex-1 flex gap-3 items-center cursor-pointer">
-                        <Avatar className="h-12 w-12">
-                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                            <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="font-semibold text-sm truncate">{ngo.name}</p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                                <span className="truncate">{ngo.category}</span>
-                                <Separator orientation="vertical" className="h-3" />
-                                <span className="flex items-center gap-1 flex-shrink-0"><ShieldCheck className="h-3 w-3" /> {ngo.transparencyScore}</span>
-                                <span className="flex items-center gap-1 flex-shrink-0"><Heart className="h-3 w-3" /> {ngo.stats.followers / 1000}k</span>
-                                <span className="flex items-center gap-1 flex-shrink-0"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
-                            </div>
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
+                        <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 overflow-hidden">
+                        <p className="font-semibold text-sm truncate">{ngo.name}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                            <span className="truncate">{ngo.category}</span>
+                            <Separator orientation="vertical" className="h-3" />
+                            <span className="flex items-center gap-1 flex-shrink-0"><ShieldCheck className="h-3 w-3" /> {ngo.transparencyScore}</span>
+                            <span className="flex items-center gap-1 flex-shrink-0"><Heart className="h-3 w-3" /> {ngo.stats.followers / 1000}k</span>
+                            <span className="flex items-center gap-1 flex-shrink-0"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
                         </div>
-                    </div>
-                    <div className="px-2" onClick={(e) => e.stopPropagation()}>
-                         <input 
-                            type="checkbox" 
-                            className="h-5 w-5 rounded-full"
-                            checked={selectedNgos.includes(ngo.id)}
-                            onChange={() => handleSelectNgo(ngo.id)}
-                        />
                     </div>
                 </div>
             </Card>
@@ -273,8 +255,13 @@ export default function NgosPage() {
       </div>
 
        <Dialog open={!!viewingNgo} onOpenChange={(isOpen) => !isOpen && setViewingNgo(null)}>
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto p-0">
-          {viewingNgo && <NgoDetailView ngo={viewingNgo} onClose={() => setViewingNgo(null)} />}
+        <DialogContent className="max-w-md w-full max-h-[90vh] overflow-y-auto p-0 border-0 rounded-2xl">
+            <div className="absolute top-4 right-4 z-20">
+                <Button variant="ghost" size="icon" className="rounded-full bg-black/30 hover:bg-black/50 text-white" onClick={() => setViewingNgo(null)}>
+                    <X className="h-5 w-5" />
+                </Button>
+            </div>
+          {viewingNgo && <NgoDetailView ngo={viewingNgo} />}
         </DialogContent>
       </Dialog>
     </div>
