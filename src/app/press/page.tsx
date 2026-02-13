@@ -83,6 +83,19 @@ export default function PressPage() {
         { date: '15.06.2024', title: 'Hangel Launches "Campus Ambassador" Program Across 21 Countries', lang: 'EN' },
         { date: '01.05.2024', title: 'Yeni İşbirliği: Hangel ve Türkiye\'nin Önde Gelen 50 Markası Güçlerini Birleştirdi', lang: 'TR' }
     ];
+
+    const photos = [
+        { id: 1, src: 'https://storage.googleapis.com/project-123-bucket/image.jpg', alt: 'Kurucu Sosyal Girişimci', hint: 'founder portrait' },
+        { id: 2, src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', alt: 'Ofiste çalışan ekip', hint: 'office team working' },
+        { id: 3, src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop', alt: 'Toplantı odasında beyin fırtınası', hint: 'meeting brainstorming' },
+        { id: 4, src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop', alt: 'Gönüllüler bir araya geliyor', hint: 'volunteers meeting' },
+        { id: 5, src: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?q=80&w=2070&auto=format&fit=crop', alt: 'Uygulama Arayüzü', hint: 'app ui design' },
+        { id: 6, src: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1974&auto=format&fit=crop', alt: 'Mobil Uygulama Ekranı', hint: 'mobile app screen' },
+        { id: 7, src: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?q=80&w=2070&auto=format&fit=crop', alt: 'Telefon Ekranı', hint: 'phone screen' },
+        { id: 8, src: 'https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop', alt: 'Dayanışma içinde insanlar', hint: 'people solidarity' },
+        { id: 9, src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', alt: 'Kurumsal sunum', hint: 'corporate presentation' },
+        { id: 10, src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop', alt: 'Mutlu ve çeşitli bir topluluk', hint: 'happy diverse community' },
+    ];
     
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30">
@@ -202,14 +215,7 @@ export default function PressPage() {
                         
                         <TabsContent value="photos">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {[
-                                    { id: 1, src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', alt: 'Ofiste çalışan ekip', hint: 'office team working' },
-                                    { id: 2, src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop', alt: 'Toplantı odasında beyin fırtınası', hint: 'meeting brainstorming' },
-                                    { id: 3, src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop', alt: 'Gönüllüler bir araya geliyor', hint: 'volunteers meeting' },
-                                    { id: 4, src: 'https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop', alt: 'Dayanışma içinde insanlar', hint: 'people solidarity' },
-                                    { id: 5, src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', alt: 'Kurumsal sunum', hint: 'corporate presentation' },
-                                    { id: 6, src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop', alt: 'Mutlu ve çeşitli bir topluluk', hint: 'happy diverse community' },
-                                ].map((photo) => (
+                                {photos.map((photo) => (
                                     <Card key={photo.id} className="rounded-2xl overflow-hidden group">
                                         <CardContent className="p-0">
                                             <div className="relative aspect-[4/3] w-full">
