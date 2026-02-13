@@ -424,7 +424,7 @@ export default function LoginPage() {
                 <ProductShowcaseSection
                     id="gonulluluk"
                     theme="dark"
-                    className="bg-primary"
+                    className="bg-[#042654]"
                     title="hangel İmece"
                     subtitle="Zamanınız en değerli bağış."
                     description="Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Çevreden eğitime, hayvan haklarından sanata, size en uygun gönüllülük fırsatını bulun."
