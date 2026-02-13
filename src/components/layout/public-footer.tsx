@@ -128,19 +128,14 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 <div className="pt-10 space-y-6">
                     <div className="text-center mb-8 border-b border-black/10 pb-8">
                         <p className="font-semibold text-sm mb-4">hangel uygulamasını indirin.</p>
-                        <div className="flex justify-center items-center flex-wrap gap-4">
-                            <a href="#" className="inline-block hover:opacity-80 transition-opacity">
-                                <Image src="https://picsum.photos/seed/app-store-badge/240/80" alt="App Store'dan indirin" width={120} height={40} data-ai-hint="app store badge" />
-                            </a>
-                            <a href="#" className="inline-block hover:opacity-80 transition-opacity">
-                                <Image src="https://picsum.photos/seed/google-play-badge/270/80" alt="Google Play'den alın" width={135} height={40} data-ai-hint="google play badge" />
-                            </a>
-                             <a href="#" className="inline-block hover:opacity-80 transition-opacity">
-                                <Image src="https://picsum.photos/seed/appgallery-badge/270/80" alt="AppGallery'den keşfedin" width={135} height={40} data-ai-hint="appgallery badge" />
-                            </a>
-                             <a href="#" className="inline-block hover:opacity-80 transition-opacity">
-                                <Image src="https://picsum.photos/seed/chrome-store-badge/270/80" alt="Chrome Web Mağazası'ndan edinin" width={135} height={40} data-ai-hint="chrome store badge" />
-                            </a>
+                        <div className="flex justify-center items-center flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
+                            <a href="#" className="text-primary hover:underline">App Store</a>
+                            <span className="text-black/20">|</span>
+                            <a href="#" className="text-primary hover:underline">Google Play</a>
+                            <span className="text-black/20">|</span>
+                            <a href="#" className="text-primary hover:underline">AppGallery</a>
+                            <span className="text-black/20">|</span>
+                            <a href="#" className="text-primary hover:underline">Chrome Store</a>
                         </div>
                     </div>
                     <p className="text-[12px] text-[#1d1d1f]/70">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
