@@ -46,6 +46,19 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
   );
 };
 
+const BrandCard = ({ brand }: { brand: Brand }) => (
+    <Link href={`/market/${brand.slug}`} className="group block h-full">
+      <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white border border-gray-100 h-full flex flex-col p-6 items-center text-center">
+        <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border">
+          <BrandLogo brand={brand} />
+        </div>
+        <h4 className="font-bold text-lg leading-tight flex-1">{brand.name}</h4>
+        <Badge variant="secondary" className="mt-2 bg-primary/10 text-primary border-none text-base font-bold">
+          %{brand.donationRate} Bağış
+        </Badge>
+      </Card>
+    </Link>
+);
 
 const ProductShowcaseSection = ({
     title,
@@ -59,7 +72,8 @@ const ProductShowcaseSection = ({
     imageUrl,
     imageHint,
     id,
-    className
+    className,
+    children
 }: {
     title: string,
     subtitle?: string,
@@ -69,10 +83,11 @@ const ProductShowcaseSection = ({
     cta2?: string,
     cta2Href?: string,
     theme?: 'light' | 'dark',
-    imageUrl: string,
-    imageHint: string,
+    imageUrl?: string,
+    imageHint?: string,
     id?: string;
     className?: string;
+    children?: React.ReactNode;
 }) => (
     <section id={id} className={cn(
         "relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 text-center overflow-hidden border-b border-black/5",
@@ -101,22 +116,22 @@ const ProductShowcaseSection = ({
             </div>
         </div>
         
-        <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
-            <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
-                <Image 
-                    src={imageUrl} 
-                    alt={title} 
-                    fill 
-                    className="object-cover" 
-                    data-ai-hint={imageHint}
-                />
-            </div>
-        </div>
+        {children ? (
+            <div className="w-full mt-16">{children}</div>
+        ) : (
+            imageUrl && (
+                <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
+                    <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-25px_rgba(0,0,0,0.1)]">
+                        <Image src={imageUrl} alt={title} fill className="object-cover" data-ai-hint={imageHint} />
+                    </div>
+                </div>
+            )
+        )}
     </section>
 );
 
 const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: any) => (
-    <Link href={ctaHref} className="block group h-full">
+    <Link href={ctaHref} className="group block h-full">
         <div className={cn(
             "relative rounded-[1.75rem] p-6 text-left flex flex-col overflow-hidden h-[450px] text-white",
         )}>
@@ -196,7 +211,7 @@ const Header = () => {
                 <div className="flex items-center gap-2">
                     <Select value={language} onValueChange={changeLanguage}>
                         <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-8 px-2 text-xs font-normal text-[#1d1d1f]/80 hover:text-primary transition-colors focus:ring-0">
-                            <Icons.Globe className="h-4 w-4" />
+                            <Icons.Globe className="h-3.5 w-3.5" />
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent align="end">
@@ -338,9 +353,27 @@ export default function LoginPage() {
                     cta1Href="/market"
                     cta2="Daha Fazla Bilgi"
                     cta2Href="/social-impact"
-                    imageUrl="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="contactless payment"
-                />
+                >
+                     <Carousel
+                        opts={{
+                        align: "start",
+                        loop: true,
+                        }}
+                        className="w-full max-w-7xl mx-auto"
+                    >
+                        <CarouselContent className="-ml-4">
+                            {allEntityLists.slice(0, 15).map((brand) => (
+                                <CarouselItem key={brand.id} className="pl-4 md:basis-1/3 lg:basis-1/5">
+                                    <div className="h-[350px] p-1">
+                                        <BrandCard brand={brand} />
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="ml-16" />
+                        <CarouselNext className="mr-16" />
+                    </Carousel>
+                </ProductShowcaseSection>
                 <ProductShowcaseSection
                     id="gonulluluk"
                     theme="dark"
@@ -351,9 +384,27 @@ export default function LoginPage() {
                     cta1Href="/volunteering"
                     cta2="Gönüllü Ol"
                     cta2Href="/login/selection?action=register"
-                    imageUrl="https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?q=80&w=2070&auto=format&fit=crop"
-                    imageHint="volunteers meeting"
-                />
+                >
+                    <Carousel
+                        opts={{
+                        align: "start",
+                        loop: true,
+                        }}
+                        className="w-full max-w-7xl mx-auto"
+                    >
+                        <CarouselContent className="-ml-4">
+                            {volunteeringOpportunities.slice(0, 15).map((opp) => (
+                                <CarouselItem key={opp.id} className="pl-4 md:basis-1/3 lg:basis-1/5">
+                                     <div className="h-[350px] p-1">
+                                        <VolunteeringCard opportunity={opp} />
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="ml-16" />
+                        <CarouselNext className="mr-16" />
+                    </Carousel>
+                </ProductShowcaseSection>
                 
                 <section id="kurumlar-carousel" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
