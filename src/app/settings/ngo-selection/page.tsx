@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, ChevronRight, X, Info, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -168,7 +169,7 @@ export default function NgoSelectionPage() {
     const handleNgoSelect = (ngoId: string) => {
         const isCurrentlySelected = selectedNgos.includes(ngoId);
         if (selectedNgos.length >= 2 && !isCurrentlySelected) {
-            setToastInfo({
+             setToastInfo({
                 variant: 'destructive',
                 title: "Limit Aşıldı",
                 description: "En fazla 2 varsayılan STK seçebilirsiniz.",
@@ -318,6 +319,11 @@ export default function NgoSelectionPage() {
 
             <Dialog open={!!viewingNgo} onOpenChange={(isOpen) => !isOpen && setViewingNgo(null)}>
                 <DialogContent className="max-w-md w-full max-h-[90vh] overflow-y-auto p-0 border-0 rounded-2xl">
+                    {viewingNgo && (
+                        <DialogHeader className="sr-only">
+                            <DialogTitle>{viewingNgo.name}</DialogTitle>
+                        </DialogHeader>
+                    )}
                     <div className="absolute top-4 right-4 z-20">
                         <Button variant="ghost" size="icon" className="rounded-full bg-black/30 hover:bg-black/50 text-white" onClick={() => setViewingNgo(null)}>
                             <X className="h-5 w-5" />
