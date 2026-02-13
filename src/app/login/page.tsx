@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -247,6 +247,20 @@ const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 
 
 
 export default function LoginPage() {
+    const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
+        <div className="bg-[#f5f5f7] rounded-3xl p-8 flex flex-col h-full text-left">
+            <div className="p-3 bg-white rounded-2xl w-fit shadow-sm mb-6">
+                <Icon className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold text-xl text-[#1d1d1f]">{title}</h3>
+            <p className="text-sm text-[#1d1d1f]/80 mt-3 flex-grow">{description}</p>
+            <div className="mt-10">
+                <Link href={link} className="text-sm font-semibold text-primary hover:underline flex items-center group">
+                    {linkText} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+                </Link>
+            </div>
+        </div>
+    );
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <Header />
@@ -416,64 +430,45 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                <section id="kurumsal-bilgiler" className="py-16 md:py-24 bg-white">
+                <section id="kurumsal-degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <Link href="/social-impact" className="block">
-                                <Card className="rounded-2xl h-full hover:shadow-xl transition-shadow">
-                                    <CardHeader>
-                                        <CardTitle className="text-xl">Sürdürülebilirlik</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground">Toplumsal ve çevresel etkimizi nasıl yönettiğimizi ve pozitif değişime nasıl liderlik ettiğimizi keşfedin.</p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-
-                            <Link href="/accessibility" className="block">
-                                <Card className="rounded-2xl h-full hover:shadow-xl transition-shadow">
-                                    <CardHeader>
-                                        <CardTitle className="text-xl">Erişilebilirlik</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground">Teknolojiyi herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin.</p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-
-                            <Link href="/bilgi-toplumu-hizmetleri" className="block">
-                                <Card className="rounded-2xl h-full hover:shadow-xl transition-shadow">
-                                    <CardHeader>
-                                        <CardTitle className="text-xl">Bilgi Toplumu Hizmetleri</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground">5651 sayılı kanun kapsamındaki yasal bilgilendirmelerimize ve kurumsal şeffaflık belgelerimize ulaşın.</p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
+                        <div className="text-center mb-16 space-y-4">
+                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Yaratıyoruz.</h2>
+                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi inşa ediyoruz.</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <InfoCard 
+                                icon={TrendingUp}
+                                title="Sürdürülebilirlik"
+                                description="Toplumsal ve çevresel etkimizi nasıl yönettiğimizi ve pozitif değişime nasıl liderlik ettiğimizi keşfedin."
+                                link="/social-impact"
+                                linkText="Etkimizi Görün"
+                            />
+                            <InfoCard 
+                                icon={Users}
+                                title="Erişilebilirlik"
+                                description="Teknolojiyi herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin."
+                                link="/accessibility"
+                                linkText="Standartları İnceleyin"
+                            />
+                            <InfoCard 
+                                icon={ShieldCheck}
+                                title="Güvenlik"
+                                description="Verilerinizi nasıl koruduğumuzu ve platformumuzun güvenliğini nasıl sağladığımızı öğrenin."
+                                link="/settings/contracts/gizlilik-politikasi"
+                                linkText="Daha Fazla Bilgi"
+                            />
+                            <InfoCard 
+                                icon={FileText}
+                                title="Yasal Bilgiler"
+                                description="Yasal bilgilendirmelerimize ve kurumsal şeffaflık belgelerimize ulaşın."
+                                link="/bilgi-toplumu-hizmetleri"
+                                linkText="Belgeleri Görüntüleyin"
+                            />
                         </div>
                     </div>
                 </section>
                 
-                <section id="accessibility" className="py-12 md:py-16 bg-white">
-                    <div className="container mx-auto px-4 max-w-4xl text-center">
-                        <h2 className="text-xl font-bold tracking-tight">Herkes İçin İyilik.</h2>
-                        <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-                            hangel, erişilebilirliği temel ilkesi olarak benimser.
-                            hangel uygulaması, WCAG 2.2 AA kriterleri esas alınarak geliştirilmiştir ve farklı engel gruplarının ihtiyaçlarını karşılayacak erişim seçenekleri sunar. Erişilebilirlik uyumluluğu sürekli olarak değerlendirilmektedir.
-                            <br/><br/>
-                            Amacımız, erişilebilirliği bir özellik değil, standart bir deneyim haline getirmektir.
-                        </p>
-                        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Button variant="outline" size="sm">Açık Kaynak Kodlara Erişim</Button>
-                            <Button asChild variant="link" size="sm" className="text-primary font-bold">
-                                <Link href="/accessibility">
-                                    Daha Fazla Bilgi <ChevronRight className="ml-1 h-4 w-4" />
-                                </Link>
-                            </Button>
-                        </div>
-                    </div>
-                </section>
             </main>
             <PublicFooter currentPageLabel="Anasayfa" />
         </div>
