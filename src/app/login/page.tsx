@@ -430,7 +430,7 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                <section id="kurumsal-degerler" className="py-16 md:py-24 bg-white">
+                <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
                             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz.</h2>
@@ -474,4 +474,3 @@ export default function LoginPage() {
         </div>
     );
 }
-
