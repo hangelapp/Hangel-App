@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -443,6 +443,10 @@ export default function LoginPage() {
                 </section>
 
                 <section id="projeler" className="py-16 md:py-24 bg-white">
+                    <div className="container mx-auto max-w-7xl text-center mb-12">
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">hangel Association</h2>
+                        <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
+                    </div>
                     <Carousel
                         opts={{ align: "start" }}
                         className="w-full"
