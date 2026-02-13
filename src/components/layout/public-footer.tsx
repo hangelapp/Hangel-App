@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronRight, Globe } from 'lucide-react';
 import { HangelLogo } from '@/components/icons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import Image from 'next/image';
 
 const XIcon = (props: any) => (
     <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -32,7 +33,6 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 {label: "Basın Odası", href: "/press"}, 
                 {label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri"}, 
                 {label: "Kariyer", href: "/careers"},
-                {label: "Logo Kullanımı", href: "/logo-usage"}, 
             ] 
         },
         { 
@@ -45,7 +45,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
             ] 
         },
         { 
-            title: "Hangel Derneği", 
+            title: "hangel Derneği", 
             links: [
                 {label: "Dernek Ana Sayfa", href: "/hangelassociation"}, 
                 {label: "Dernek Hakkında", href: "/hangelassociation/about"}, 
@@ -73,6 +73,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "Site Haritası", href: "/sitemap" },
         { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
         { label: "Erişilebilirlik", href: "/accessibility" },
+        { label: "Logo Kullanımı", href: "/logo-usage" }
     ];
 
 
@@ -125,6 +126,17 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 </div>
                 
                 <div className="pt-10 space-y-6">
+                    <div className="text-center mb-8 border-b border-black/10 pb-8">
+                        <p className="font-semibold text-sm mb-4">hangel uygulamasını indirin.</p>
+                        <div className="flex justify-center items-center gap-4">
+                            <a href="#" className="inline-block hover:opacity-80 transition-opacity">
+                                <Image src="https://picsum.photos/seed/app-store-badge/240/80" alt="App Store'dan indirin" width={120} height={40} data-ai-hint="app store badge" />
+                            </a>
+                            <a href="#" className="inline-block hover:opacity-80 transition-opacity">
+                                <Image src="https://picsum.photos/seed/google-play-badge/270/80" alt="Google Play'den alın" width={135} height={40} data-ai-hint="google play badge" />
+                            </a>
+                        </div>
+                    </div>
                     <p className="text-[12px] text-[#1d1d1f]/70">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
                      <div className="h-px bg-black/10 w-full" />
                     
