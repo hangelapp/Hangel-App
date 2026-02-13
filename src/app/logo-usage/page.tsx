@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -34,7 +33,8 @@ import {
     Tv,
     Landmark,
     Shield,
-    HandCoins
+    HandCoins,
+    ChevronRight
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import * as Icons from 'lucide-react';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -101,44 +102,21 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
     </button>
 );
 
-const ArchitectureCard = ({ icon: Icon, label, description, href, iconBgClass, category }: { icon: React.ElementType, label: string, description: string, href: string, iconBgClass?: string, category: string }) => (
-    <Link href={href} className="group block">
-        <Card className="relative h-full text-left p-6 space-y-4 hover:shadow-xl transition-shadow rounded-2xl overflow-hidden bg-background">
-             <div className={cn(
-                "absolute top-3 right-3 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-sm",
-                iconBgClass === 'bg-primary' ? 'bg-black/20' : 'bg-white/20'
-            )}>
-                <HangelLogo className="text-[10px] opacity-80" />
-                <span>{category}</span>
-            </div>
-            
-            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", iconBgClass)}>
-                <Icon className="h-6 w-6 text-white" />
-            </div>
-            <div>
-                <h4 className="font-bold text-base text-foreground">{label}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{description}</p>
-            </div>
-        </Card>
-    </Link>
-);
-
-
 const appArchitecture = [
-    { href: "/volunteering", icon: HeartHandshake, label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
-    { href: "/market", icon: HandCoins, label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
-    { href: "/admin/clubs", icon: School, label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
-    { href: "/merchant", icon: Store, label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
-    { href: "/ngo-onboarding", icon: Building2, label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
-    { href: "/library", icon: Library, label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
+    { href: "/volunteering", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
+    { href: "/market", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
+    { href: "/admin/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
+    { href: "/merchant", icon: 'Store', label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
+    { href: "/ngo-onboarding", icon: 'Building2', label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
+    { href: "/library", icon: 'Library', label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
 ];
 
 const associationArchitecture = [
-    { href: "/hangelassociation/projects/sosyal-inovasyon", icon: Sparkles, label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
-    { href: "/hangelassociation/projects/sanat", icon: Palette, label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
-    { href: "/hangelassociation/projects/etki-atlasi", icon: Globe, label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
-    { href: "/hangelassociation/workshop", icon: BookCopy, label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
-    { href: "/hangelassociation/workshop", icon: Users, label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
+    { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
+    { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
+    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
+    { href: "/hangelassociation/workshop", icon: 'BookCopy', label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
+    { href: "/hangelassociation/workshop", icon: 'Users', label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
 ];
 
 const LogoShowcaseCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
@@ -155,6 +133,34 @@ const LogoShowcaseCard = ({ title, description, children, onDownload }: { title:
         </CardContent>
     </Card>
 );
+
+const SubBrandCard = ({ item, iconBgClass }: { item: {href: string, icon: any, label: string, description: string}, iconBgClass: string }) => {
+    const Icon = Icons[item.icon as keyof typeof Icons] || Icons.HelpCircle;
+    return (
+        <div className="pl-4 h-full">
+            <Link href={item.href} className="block h-full">
+                <Card className="h-full flex flex-col rounded-3xl overflow-hidden bg-white hover:shadow-2xl transition-shadow duration-300">
+                    <CardContent className="p-0 flex-1 flex flex-col">
+                        <div className={cn("relative aspect-video w-full flex items-center justify-center", iconBgClass)}>
+                             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                             <Icon className="h-16 w-16 text-white opacity-90" />
+                        </div>
+                        <div className="p-6 space-y-2 flex-1 flex flex-col text-left">
+                            <h4 className="font-bold text-lg">{item.label}</h4>
+                            <p className="text-sm text-muted-foreground flex-1">{item.description}</p>
+                            <div className="pt-2">
+                                <span className="text-primary font-semibold text-sm flex items-center">
+                                    Daha Fazla Bilgi <ChevronRight className="h-4 w-4 ml-1" />
+                                </span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </Link>
+        </div>
+    );
+};
+
 
 export default function LogoUsagePage() {
     const router = useRouter();
@@ -268,22 +274,44 @@ export default function LogoUsagePage() {
                 
                 <Section id="mimari" className="bg-white">
                     <SectionTitle>Marka Mimarisi</SectionTitle>
-                    <div className="space-y-12 mt-16">
+                    <div className="space-y-16 mt-16">
                          <div className="text-center space-y-2">
                              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Ana Marka</h3>
                              <HangelLogo className="text-5xl" />
                         </div>
-                        <div className="space-y-6">
-                            <h3 className="text-2xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                                {appArchitecture.map(item => <ArchitectureCard key={item.label} {...item} iconBgClass="bg-primary" category="App" />)}
-                            </div>
+                        <div className="space-y-8">
+                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
+                             <Carousel
+                                opts={{ align: "start" }}
+                                className="w-full max-w-6xl mx-auto"
+                            >
+                                <CarouselContent className="-ml-4">
+                                    {appArchitecture.map((item, index) => (
+                                        <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                                            <SubBrandCard item={item} iconBgClass="bg-primary" />
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious className="ml-[-24px] hidden lg:flex" />
+                                <CarouselNext className="mr-[-24px] hidden lg:flex" />
+                            </Carousel>
                         </div>
-                        <div className="space-y-6">
-                            <h3 className="text-2xl font-bold tracking-tight text-center" style={{color: '#042654'}}>hangel Derneği Alt Markaları</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                                {associationArchitecture.map(item => <ArchitectureCard key={item.label} {...item} iconBgClass="bg-[#042654]" category="Dernek" />)}
-                            </div>
+                        <div className="space-y-8">
+                            <h3 className="text-3xl font-bold tracking-tight text-center" style={{color: '#042654'}}>hangel Derneği Alt Markaları</h3>
+                             <Carousel
+                                opts={{ align: "start" }}
+                                className="w-full max-w-6xl mx-auto"
+                            >
+                                <CarouselContent className="-ml-4">
+                                    {associationArchitecture.map((item, index) => (
+                                        <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                                            <SubBrandCard item={item} iconBgClass="bg-[#042654]" />
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious className="ml-[-24px] hidden lg:flex" />
+                                <CarouselNext className="mr-[-24px] hidden lg:flex" />
+                            </Carousel>
                         </div>
                     </div>
                      <div className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
