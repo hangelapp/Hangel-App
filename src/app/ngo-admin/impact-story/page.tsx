@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 import type { UseEmblaCarouselType } from "embla-carousel-react"
@@ -197,50 +197,49 @@ function StoryViewer() {
         }
     }, [category]);
 
-    const nextSlide = React.useCallback(() => {
-        if (currentIndex < stories.length - 1) {
-            setCurrentIndex(prev => prev + 1);
-            setProgress(0);
-        } else {
-            router.back();
-        }
-    }, [currentIndex, stories.length, router]);
-    
-    const prevSlide = React.useCallback(() => {
-        if (currentIndex > 0) {
-            setCurrentIndex(prev => prev - 1);
-            setProgress(0);
-        }
-    }, [currentIndex]);
-    
     const handleClose = React.useCallback(() => {
         router.back();
     }, [router]);
+
+    const nextSlide = React.useCallback(() => {
+        if (api?.canScrollNext()) {
+            api.scrollNext();
+        } else {
+            handleClose();
+        }
+    }, [api, handleClose]);
+
+    const prevSlide = React.useCallback(() => {
+        api?.scrollPrev();
+    }, [api]);
 
     React.useEffect(() => {
         if (!api) return;
 
         const handleSelect = () => {
-            setCurrentIndex(api.selectedScrollSnap());
-            setProgress(0);
+            if (api.selectedScrollSnap() !== currentIndex) {
+                setCurrentIndex(api.selectedScrollSnap());
+                setProgress(0);
+            }
         };
+        
         api.on("select", handleSelect);
 
         const progressInterval = setInterval(() => {
-            setProgress(p => {
-                if (p >= 100) {
-                    api.scrollNext();
-                    return 0;
-                }
-                return p + (100 / (STORY_DURATION / 50));
-            });
+            setProgress(p => p + (100 / (STORY_DURATION / 50)));
         }, 50);
 
         return () => {
             clearInterval(progressInterval);
             api.off("select", handleSelect);
         };
-    }, [api]);
+    }, [api, currentIndex]);
+
+    React.useEffect(() => {
+        if (progress >= 100) {
+            nextSlide();
+        }
+    }, [progress, nextSlide]);
 
     const currentSlide = stories[currentIndex];
 
