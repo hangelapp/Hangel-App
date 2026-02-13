@@ -76,6 +76,15 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "Logo Kullanımı", href: "/logo-usage" }
     ];
 
+    const socialLinks = [
+        { name: 'Facebook', href: '#' },
+        { name: 'Instagram', href: '#' },
+        { name: 'Twitter', href: '#' },
+        { name: 'YouTube', href: '#' },
+        { name: 'LinkedIn', href: '#' },
+        { name: 'TikTok', href: '#' }
+    ];
+
 
     return (
         <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-8 pb-12 px-4 sm:px-6 border-t border-black/5 font-sans">
@@ -126,7 +135,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 </div>
                 
                 <div className="pt-10 space-y-6">
-                    <div className="text-left mb-8 border-b border-black/10 pb-8">
+                    <div className="text-left mb-8 border-b border-black/10 pb-8 space-y-6">
                         <div className="flex justify-start items-center flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
                             <a href="#" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">App Store</a>
                             <span className="text-black/20">|</span>
@@ -135,6 +144,14 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                             <a href="#" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">AppGallery</a>
                             <span className="text-black/20">|</span>
                             <a href="#" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">Chrome Store</a>
+                        </div>
+                        <div className="flex justify-start items-center flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
+                            {socialLinks.map((link, index) => (
+                                <React.Fragment key={link.name}>
+                                    <a href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.name}</a>
+                                    {index < socialLinks.length - 1 && <span className="text-black/20">|</span>}
+                                </React.Fragment>
+                            ))}
                         </div>
                     </div>
                     <p className="text-[12px] text-[#1d1d1f]/70">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
