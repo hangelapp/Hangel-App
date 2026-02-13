@@ -13,7 +13,6 @@ import {
     DownloadCloud,
     Ruler,
     Handshake,
-    Mic,
     Scale,
     Sparkles,
     Building2,
@@ -27,13 +26,17 @@ import {
     BookOpen,
     Link as LinkIcon,
     Building,
-    HandCoins,
-    BookCopy,
-    Landmark
+    Maximize,
+    XCircle,
+    Layers,
+    FileCheck,
+    Package,
+    Share2,
+    Tv
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -129,7 +132,7 @@ const appArchitecture = [
     { href: "/market", icon: HandCoins, label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
     { href: "/admin/clubs", icon: School, label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
     { href: "/merchant", icon: Store, label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
-    { href: "/ngo-onboarding", icon: Building, label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
+    { href: "/ngo-onboarding", icon: Building2, label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
     { href: "/library", icon: Library, label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
 ];
 
@@ -140,6 +143,16 @@ const associationArchitecture = [
     { href: "/hangelassociation/workshop", icon: BookCopy, label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
     { href: "/hangelassociation/workshop", icon: Users, label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
 ];
+
+const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, title: string, children: React.ReactNode }) => (
+    <div className="bg-white rounded-3xl p-8 shadow-lg border border-black/5 text-left h-full">
+        <Icon className="h-10 w-10 text-primary mb-4" />
+        <h4 className="font-bold text-lg text-foreground mb-2">{title}</h4>
+        <div className="text-sm text-muted-foreground space-y-2">
+            {children}
+        </div>
+    </div>
+);
 
 
 export default function LogoUsagePage() {
@@ -210,7 +223,7 @@ export default function LogoUsagePage() {
                     </div>
                      <div className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
                         <h4 className="font-bold text-foreground mb-2">Daha fazla ürün</h4>
-                         <p>Aradığınız bir alt marka veya ürün için özel bir kullanım yönergesi bulamıyorsanız, bu sayfadaki genel marka kullanım ilkelerine başvurabilir veya destek merkezimizden yardım alabilirsiniz. Doğru kullanım hakkında bilgi edinmek için genel kılavuzlarımızı, API ve ürün entegrasyonu yönergelerimizi veya ticari marka kurallarımızı inceleyebilirsiniz.</p>
+                        <p>Aradığınız bir alt marka veya ürün için özel bir kullanım yönergesi bulamıyorsanız, bu sayfadaki genel marka kullanım ilkelerine başvurabilir veya destek merkezimizden yardım alabilirsiniz. Doğru kullanım hakkında bilgi edinmek için genel kılavuzlarımızı, API ve ürün entegrasyonu yönergelerimizi veya ticari marka kurallarımızı inceleyebilirsiniz.</p>
                     </div>
                 </Section>
                 
@@ -226,7 +239,7 @@ export default function LogoUsagePage() {
                                 <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
                                     <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
                                 </LogoDisplayCard>
-                                <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (PNG) – (Zorunlu hallerde kullanılmalıdır.)" onDownload={() => handleDownload('beyaz-logo.png')}>
+                                <LogoDisplayCard title="Üçüncül Logo" description="Beyaz Logo (PNG) – (Zorunlu hallerde kullanılmalıdır.)" onDownload={() => handleDownload('beyaz-logo.png')}>
                                     <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
                                         <HangelLogo className="text-5xl text-white" />
                                     </div>
@@ -246,6 +259,7 @@ export default function LogoUsagePage() {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
                                     <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                    <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
                                 </div>
                             </div>
                         </div>
@@ -287,46 +301,90 @@ Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez
                 </Section>
                 
                  <Section id="kullanim-kurallari" className="bg-white">
-                    <div className="text-center mb-16 space-y-4">
-                        <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="rounded-2xl p-6">
-                            <CardHeader className="p-0">
-                                <CardTitle className="flex items-center gap-2 text-lg"><Ruler className="h-5 w-5 text-primary"/>Temel Kurallar</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
-                                <p><strong>BOŞLUK (CLEAR SPACE) KURALI:</strong> Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
-                                <p><strong>Değişiklik Yasağı:</strong> Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="rounded-2xl p-6">
-                             <CardHeader className="p-0">
-                                <CardTitle className="flex items-center gap-2 text-lg"><Handshake className="h-5 w-5 text-primary"/>Marka İlişkileri</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
-                                <p><strong>HİYERARŞİ PRENSİBİ:</strong> hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır.</p>
-                                <p><strong>CO-BRANDING (ORTAK MARKALAMA) KURALLARI:</strong> Logo eşit ölçekli kullanılmalıdır. İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır. Logolar yatay hizalı olmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="rounded-2xl p-6">
-                            <CardHeader className="p-0">
-                                <CardTitle className="flex items-center gap-2 text-lg"><Mic className="h-5 w-5 text-primary"/>İsim ve Kanal Kullanımı</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
-                                <p><strong>İSİM STANDARTLARI:</strong> "hangel" kelimesinde “h” harfi büyük yazılamaz, başka dile çevrilemez, kısaltılamaz, alan adı veya şirket adına entegre edilemez. İzin verilen kullanım: "hangel için geliştirilmiştir", "hangel ile uyumludur".</p>
-                                <p><strong>SOSYAL MEDYA:</strong> Resmi hesap algısı yaratacak kullanım yasaktır. Yanlış: "hangel Haber". Doğru: "hangel hakkında haberler".</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="rounded-2xl p-6">
-                            <CardHeader className="p-0">
-                                <CardTitle className="flex items-center gap-2 text-lg"><Scale className="h-5 w-5 text-primary"/>İzinler ve Yasal Çerçeve</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
-                                <p><strong>MARKA KULLANIM İZNİ:</strong> Yayın, radyo, TV, açık hava reklamı gibi büyük ölçekli mecralarda hangel varlıklarını kullanmak için yazılı izin alınmalıdır.</p>
-                                <p><strong>YASAL ÇERÇEVE:</strong> hangel, fikri mülkiyet haklarını korumaktadır. Ticari markalarımız izinsiz tescil ettirilemez veya benzer şekilde kullanılamaz. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
-                            </CardContent>
-                        </Card>
+                    <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
+                        <RuleCard icon={Ruler} title="LOGO MİNİMUM BOYUT KURALI">
+                            <p>Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:</p>
+                            <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li><strong>Dijital Ortam:</strong> Minimum genişlik: 120 px, App icon minimum: 32 px</li>
+                                <li><strong>Basılı Materyal:</strong> Minimum genişlik: 25 mm</li>
+                            </ul>
+                            <p className="mt-2">Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır.</p>
+                        </RuleCard>
+                        <RuleCard icon={Maximize} title="BOŞLUK (CLEAR SPACE) KURALI">
+                            <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine aşağıdakiler yerleştirilemez:</p>
+                            <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>Metin</li>
+                                <li>Görsel</li>
+                                <li>Grafik öğe</li>
+                                <li>Çerçeve</li>
+                                <li>İkon</li>
+                            </ul>
+                        </RuleCard>
+                        <RuleCard icon={XCircle} title="DEĞİŞİKLİK YASAĞI">
+                            <p>Logo sabittir. Yeniden yorumlanamaz. Aşağıdaki müdahaleler yapılamaz:</p>
+                             <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>Oranları bozmak</li>
+                                <li>Renkleri değiştirmek</li>
+                                <li>Eğmek</li>
+                                <li>Efekt, gölge veya desen eklemek</li>
+                                <li>Başka grafik unsurlarla birleştirmek</li>
+                            </ul>
+                        </RuleCard>
+                        <RuleCard icon={Layers} title="HİYERARŞİ PRENSİBİ">
+                            <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır.</p>
+                            <p className="mt-2">Logo hiçbir koşulda en baskın görsel unsur olarak konumlandırılamaz.</p>
+                        </RuleCard>
+                        <RuleCard icon={Handshake} title="CO-BRANDING (ORTAK MARKALAMA)">
+                             <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:</p>
+                            <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>Logo eşit ölçekli kullanılmalıdır.</li>
+                                <li>İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.</li>
+                                <li>Logolar yatay hizalı olmalıdır.</li>
+                                <li>Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</li>
+                                <li>Büyük ölçekli mecralarda yazılı izin zorunludur.</li>
+                            </ul>
+                        </RuleCard>
+                         <RuleCard icon={FileCheck} title="MARKA KULLANIM İZNİ">
+                            <p>hangel varlıklarını aşağıdaki mecralarda kullanmak isteyenler yazılı izin almak zorundadır:</p>
+                             <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>Yayın</li>
+                                <li>Radyo</li>
+                                <li>Açık hava reklamı</li>
+                                <li>TV</li>
+                                <li>A4’ten büyük baskı materyali</li>
+                            </ul>
+                            <p className="mt-2">Talep dosyasında kullanım taslağı sunulmalıdır.</p>
+                        </RuleCard>
+                         <RuleCard icon={Type} title="İSİM VE METİN STANDARTLARI">
+                            <p>“hangel” kelimesi küçük harfle başlar, değiştirilemez veya başka kelimelerle birleştirilemez.</p>
+                            <p className="mt-2"><strong>Yasaklı Örnekler:</strong> hangelPro, hangelClubX, Bağışhangel</p>
+                            <p className="mt-2"><strong>İzin Verilen Kullanım:</strong> “hangel için geliştirilmiştir”, “hangel ile uyumludur”</p>
+                        </RuleCard>
+                        <RuleCard icon={Package} title="ÜRÜN İKONLARI">
+                             <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak:</p>
+                             <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>Resmi ortaklık algısı oluşturamaz.</li>
+                                <li>Ana marka kimliğinin yerine geçemez.</li>
+                                <li>Tekil görsel kilit oluşturamaz.</li>
+                            </ul>
+                        </RuleCard>
+                         <RuleCard icon={Share2} title="SOSYAL MEDYA">
+                            <p>Resmi hesap algısı yaratacak kullanım yasaktır.</p>
+                            <p className="mt-2"><strong>Yanlış:</strong> “hangel Haber”<br/><strong>Doğru:</strong> “hangel hakkında haberler”</p>
+                            <p className="mt-2">Hashtag üzerinde hak iddia edilemez.</p>
+                        </RuleCard>
+                        <RuleCard icon={Tv} title="TV, FİLM VE YAYINCILIK">
+                            <p>Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır.</p>
+                        </RuleCard>
+                         <RuleCard icon={Scale} title="YASAL ÇERÇEVE">
+                            <p>hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. Ticari markalarımız:</p>
+                            <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>Tescil ettirilemez</li>
+                                <li>Benzer şekilde kullanılamaz</li>
+                            </ul>
+                             <p className="mt-2">hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
+                        </RuleCard>
                     </div>
                 </Section>
                 
@@ -345,5 +403,4 @@ Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez
             <PublicFooter currentPageLabel="Basın Kiti & Marka Yönergesi" />
         </div>
     );
-
-    
+}
