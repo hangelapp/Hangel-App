@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -21,6 +20,7 @@ const ProductSection = ({
     theme = 'light',
     imageUrl,
     imageHint,
+    id,
     className
 }: { 
     title: string, 
@@ -33,9 +33,10 @@ const ProductSection = ({
     theme?: 'light' | 'dark',
     imageUrl: string,
     imageHint: string,
+    id?: string;
     className?: string
 }) => (
-    <section className={cn(
+    <section id={id} className={cn(
         "relative min-h-screen flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
@@ -91,12 +92,27 @@ export default function CorporateShowcasePage() {
                 </div>
             </header>
 
+            {/* Hero Section */}
+            <ProductSection 
+                title="Kamu ve Özel Sektör için Değer Yaratıyoruz."
+                subtitle="hangel Kurumsal Çözümler"
+                description="Teknoloji, veri ve geniş topluluk ağımızı kullanarak kurumunuzun sosyal etki hedeflerine ulaşmasını sağlıyoruz. Üniversiteler, belediyeler, bakanlıklar ve şirketler için sürdürülebilir işbirliği modelleri sunuyoruz."
+                cta1="İşbirliği Başlat"
+                cta1Href="/contact/companies"
+                cta2="Tüm Çözümler"
+                cta2Href="#universiteler"
+                imageUrl="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
+                imageHint="corporate team working"
+            />
+
             {/* Üniversiteler için */}
             <ProductSection 
+                id="universiteler"
                 theme="dark"
                 title="Üniversiteler için."
                 subtitle="Kampüsün sosyal etki merkezi olun."
                 description="Hangel Kampüs Programı ile öğrenci kulüplerinizi dijitalleştirin, gönüllülüğü akademik krediye dönüştürün ve öğrencilerinize sosyal sorumluluk alanında kariyer fırsatları sunun. Etkiyi ölçün, raporlayın ve üniversitenizin toplumsal fayda liderliğini pekiştirin."
+                cta1="Kampüs Avantajları"
                 cta1Href="/campus-advantages"
                 cta2="İşbirliği Başlat"
                 cta2Href="/contact/universities"
@@ -109,6 +125,7 @@ export default function CorporateShowcasePage() {
                 title="Liseler için."
                 subtitle="Geleceğin liderlerini bugünden yetiştirin."
                 description="Öğrenci kulüplerinizi Hangel platformuna taşıyarak sosyal sorumluluk projelerini hayata geçirmelerini sağlayın. Öğrencilerinize erken yaşta gönüllülük bilinci kazandırın, etki puanları ve rozetlerle başarılarını ödüllendirin."
+                cta1="Kampüs Avantajları"
                 cta1Href="/campus-advantages"
                 cta2="Bize Ulaşın"
                 cta2Href="/support"
