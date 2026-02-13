@@ -1,135 +1,265 @@
-
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { X, ChevronLeft, ChevronRight, Share2, TrendingUp, Users, Award, ShieldCheck, Store, Globe, Heart, Rocket, MapPin, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { HangelLogo } from '@/components/icons';
+import Image from 'next/image';
 
+const STORY_DURATION = 5000; // 5 seconds
 
-interface FeatureCardProps {
-  category: string;
+type ImpactSlide = {
+  id: number;
   title: string;
-  description?: string;
-  imageUrl: string;
+  subtitle: string;
+  content: string;
+  icon: any;
+  image: string;
   imageHint: string;
-  theme: 'light' | 'dark';
-  className?: string;
-  children?: React.ReactNode;
-  href: string;
-}
-
-const FeatureCard: React.FC<FeatureCardProps> = ({ category, title, description, imageUrl, imageHint, theme, className, children, href }) => {
-  return (
-    <Link href={href} className="block h-full">
-        <div className={cn(
-            "relative aspect-[3/4] w-full rounded-[2rem] p-6 flex flex-col justify-between overflow-hidden group transition-transform hover:scale-[1.02]",
-            theme === 'dark' ? 'bg-black text-white' : 'bg-gray-100 text-black',
-            className
-        )}>
-            <div className="absolute inset-0 z-0">
-                <Image src={imageUrl} alt={title} fill className="object-cover opacity-80" data-ai-hint={imageHint} />
-                <div className={cn("absolute inset-0", theme === 'dark' ? 'bg-gradient-to-t from-black/80 via-black/40 to-transparent' : 'bg-gradient-to-t from-white/70 via-white/30 to-transparent')} />
-            </div>
-
-            <div className="relative z-10 space-y-1">
-                <p className={cn("font-semibold text-xs uppercase tracking-wider", theme === 'dark' ? 'text-primary' : 'text-primary')}>{category}</p>
-                <h3 className="text-2xl font-bold leading-tight">{title}</h3>
-                {description && <p className="text-sm opacity-80">{description}</p>}
-            </div>
-
-            <div className="relative z-10">
-                {children}
-            </div>
-
-             <div className="absolute bottom-6 right-6 z-20 h-10 w-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-black group-hover:bg-white transition-colors">
-                <Plus />
-            </div>
-        </div>
-    </Link>
-  );
+  stat?: string;
 };
 
-
-const storiesData = [
+const impactStories: ImpactSlide[] = [
   {
-    category: "Genel Bakış",
-    title: "Hangel'in Etki Hikayesi",
-    description: "Topluluğumuzun bugüne kadar yarattığı kolektif etkiyi keşfedin.",
-    imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop",
-    imageHint: "network connections people",
-    theme: 'dark' as 'dark',
-    href: '/impact-story'
+    id: 1,
+    title: "2024 Sosyal Etki Raporu",
+    subtitle: "hangel A.Ş.",
+    content: "Birlikte büyüttüğümüz iyilik hareketinin somut sonuçlarını keşfedin. Her adımda daha güçlüyüz.",
+    icon: TrendingUp,
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
+    imageHint: "data charts analysis"
   },
   {
-    category: "Kişisel Etkin",
-    title: "Senin Hikayen, Senin Başarın",
-    description: "Profilinize giderek sosyal etki puanınızı ve kazandığınız rozetleri görün.",
-    imageUrl: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop",
-    imageHint: "colorful abstract gradient",
-    theme: 'light' as 'light',
-    href: '/profile',
-    children: (
-        <div className="space-y-1">
-            <p className="text-xs font-semibold text-foreground/70">Etki Puanın</p>
-            <p className="text-5xl font-bold tracking-tighter">15,750</p>
-        </div>
-    )
+    id: 2,
+    title: "1 Milyon+ Hayata Dokunduk",
+    subtitle: "Toplumsal Erişim",
+    content: "Türkiye'nin dört bir yanında projelerimizle umudu yeşerttik. Bu başarı hepimizin.",
+    stat: "1.240.000",
+    icon: Users,
+    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
+    imageHint: "happy group people"
   },
   {
-    category: "Gönüllülük",
-    title: "Yeni Fırsatları Keşfet",
-    description: "Yetkinliklerinize ve ilgi alanlarınıza uygun en yeni gönüllülük ilanlarına göz atın.",
-    imageUrl: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
-    imageHint: "volunteers working together",
-    theme: 'dark' as 'dark',
-    href: '/volunteering'
+    id: 3,
+    title: "500.000 ₺+ Aktarılan Bağış",
+    subtitle: "Finansal Katkı",
+    content: "Alışverişlerinizden doğan ek ödemesiz bağışlar, STK'larımız için can suyu oldu.",
+    stat: "₺524.850",
+    icon: Award,
+    image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop",
+    imageHint: "coins money donation"
   },
   {
-    category: "Bağış",
-    title: "Alışverişi İyiliğe Dönüştür",
-    description: "Yüzlerce markadan yaptığınız alışverişlerle STK'lara destek olun.",
-    imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-    imageHint: "modern retail store",
-    theme: 'light' as 'light',
-    href: '/market'
+    id: 4,
+    title: "12.000+ Saat Gönüllülük",
+    subtitle: "İmece Gücü",
+    content: "Zamanını ve yeteneklerini toplumsal fayda için seferber eden binlerce gönüllümüzle sahadayız.",
+    stat: "12.450 Saat",
+    icon: Heart,
+    image: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
+    imageHint: "volunteers working together"
+  },
+  {
+    id: 5,
+    title: "128 Şeffaf STK Ortağı",
+    subtitle: "Kurumsal Güven",
+    content: "Şeffaflık endeksimize katılan ve hesap verebilirliği önceliğine alan dev ağımız.",
+    icon: ShieldCheck,
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "modern building glass"
+  },
+  {
+    id: 6,
+    title: "542 Bilinçli Marka",
+    subtitle: "İş Birliği",
+    content: "Satışlarını sosyal faydaya dönüştüren vizyoner markalarla alışverişi iyiliğe dönüştürüyoruz.",
+    icon: Store,
+    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "clothing store interior"
+  },
+  {
+    id: 7,
+    title: "Gelirlerin %85'i Faydaya",
+    subtitle: "Sosyal Girişim",
+    content: "Operasyonel gelirlerimizin büyük kısmını platformu geliştirmek ve sosyal etkiyi büyütmek için kullanıyoruz.",
+    stat: "%85",
+    icon: Globe,
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "network connections digital"
+  },
+  {
+    id: 8,
+    title: "21 Şehirde Aktif Etki",
+    subtitle: "Yerel Yayılım",
+    content: "Sadece merkezde değil, Anadolu'nun her köşesinde yerel sorunlara dijital çözümler üretiyoruz.",
+    icon: MapPin,
+    image: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?q=80&w=2071&auto=format&fit=crop",
+    imageHint: "city view turkey"
+  },
+  {
+    id: 9,
+    title: "21 Üniversite Temsilciliği",
+    subtitle: "Gençlik Hareketi",
+    content: "Geleceğin liderleri kampüslerinde sosyal etkiyi örgütlüyor, kulüplerini iyiliğe dahil ediyor.",
+    icon: School,
+    image: "https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "university campus students"
+  },
+  {
+    id: 10,
+    title: "Seninle Daha Güçlüyüz",
+    subtitle: "Birlikte Başaralım",
+    content: "Bu başarı hikayesinin en önemli parçası sensin. İyiliği paylaşmaya ve büyütmeye devam edelim.",
+    icon: Rocket,
+    image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "team high five"
   }
 ];
 
-
 export default function StoriesPage() {
+  const router = useRouter();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  const nextSlide = useCallback(() => {
+    if (currentIndex < impactStories.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setProgress(0);
+    } else {
+      router.back();
+    }
+  }, [currentIndex, router]);
+
+  const prevSlide = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+      setProgress(0);
+    }
+  }, [currentIndex]);
+
+  const handleClose = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          nextSlide();
+          return 0;
+        }
+        return prev + (100 / (STORY_DURATION / 50));
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [nextSlide]);
+
+  const currentSlide = impactStories[currentIndex];
+
+  if (!currentSlide) return null;
+
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-        <div className="space-y-4 mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Hangel'i Keşfedin.</h1>
-            <p className="text-muted-foreground">Platformun öne çıkan özelliklerini ve yaratabileceğiniz etkiyi yakından tanıyın.</p>
-        </div>
+    <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden touch-none">
+      <div className="relative w-full max-w-[450px] h-full max-h-[850px] bg-white md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col animate-in fade-in duration-500">
         
-        <Carousel
-            opts={{
-                align: "start",
-            }}
-            className="w-full"
-        >
-            <CarouselContent className="-ml-4">
-                {storiesData.map((story, index) => (
-                    <CarouselItem key={index} className="pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                        <FeatureCard {...story} />
-                    </CarouselItem>
-                ))}
-            </CarouselContent>
-            <CarouselPrevious className="ml-16 hidden lg:flex" />
-            <CarouselNext className="mr-16 hidden lg:flex" />
-        </Carousel>
+        {/* Progress Bars */}
+        <div className="absolute top-4 inset-x-0 px-4 flex gap-1 z-50">
+          {impactStories.map((s, idx) => (
+            <div key={s.id} className="h-1 flex-1 bg-black/10 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-[#f34723] transition-all duration-50 ease-linear"
+                style={{ 
+                  width: idx < currentIndex ? '100%' : idx === currentIndex ? `${progress}%` : '0%' 
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Header */}
+        <div className="absolute top-8 inset-x-0 px-6 flex justify-between items-center z-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center border border-black/5 shadow-sm">
+              <HangelLogo className="text-[10px] scale-75" />
+            </div>
+            <div className="text-left drop-shadow-sm">
+              <p className="text-black font-black text-xs uppercase tracking-widest">{currentSlide.subtitle}</p>
+              <p className="text-black/40 text-[10px] font-bold">ETKİ RAPORU 2024</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" className="text-black hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/20" onClick={handleClose}>
+            <X className="h-6 w-6" />
+          </Button>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 relative flex flex-col">
+          
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <Image 
+              src={currentSlide.image} 
+              alt={currentSlide.title} 
+              fill 
+              className="object-cover transition-transform ease-linear scale-110" 
+              style={{ 
+                transform: `scale(${1 + (progress / 1000)})`,
+                transitionDuration: '5000ms'
+              }}
+              data-ai-hint={currentSlide.imageHint}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-white/90" />
+          </div>
+
+          {/* Touch Zones */}
+          <div className="absolute inset-0 z-30 flex">
+            <div className="w-1/3 h-full cursor-pointer" onClick={prevSlide} />
+            <div className="w-2/3 h-full cursor-pointer" onClick={nextSlide} />
+          </div>
+
+          {/* Slide Text Content */}
+          <div className="relative z-10 flex-1 flex flex-col justify-end p-8 pb-32 space-y-6">
+            <div className="animate-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
+              <div className="w-14 h-14 rounded-2xl bg-[#f34723] flex items-center justify-center text-white mb-6 shadow-xl shadow-[#f34723]/30">
+                <currentSlide.icon className="h-8 w-8" />
+              </div>
+              
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-black leading-[1.1] mb-4">
+                {currentSlide.title}
+              </h2>
+              
+              <p className="text-base text-black/70 font-medium leading-relaxed max-w-sm">
+                {currentSlide.content}
+              </p>
+
+              {currentSlide.stat && (
+                <div className="mt-8">
+                  <div className="inline-flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f34723] mb-1">Güncel Veri</span>
+                    <span className="text-5xl font-black text-black tracking-tighter">{currentSlide.stat}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="absolute bottom-0 inset-x-0 p-8 z-50 bg-white/80 backdrop-blur-2xl border-t border-black/5">
+          <div className="flex gap-3 items-center">
+            <Button className="flex-1 h-12 rounded-full bg-[#f34723] hover:bg-[#d63a1a] text-white font-bold text-sm shadow-lg shadow-[#f34723]/20">
+              Etkiyi Paylaş
+            </Button>
+            <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-black/10 hover:bg-black/5">
+              <Share2 className="h-5 w-5 text-black" />
+            </Button>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
