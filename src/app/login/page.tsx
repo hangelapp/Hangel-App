@@ -283,9 +283,6 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }
 
 export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const discoveryCarouselPlugin = useRef(
-        Autoplay({ delay: 4000, stopOnInteraction: true })
-    );
 
     const publicNavItems = [
       { href: '#bagis', label: 'Bağış Yap' },
@@ -375,8 +372,8 @@ export default function LoginPage() {
                  <ProductShowcaseSection
                     id="bagis"
                     theme="light"
-                    title="Alışverişi iyiliğe dönüştürün."
-                    subtitle="hangel Bağış"
+                    title="hangel Bağış"
+                    subtitle="Alışverişi iyiliğe dönüştürün."
                     description="Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu."
                     cta1="Markaları Keşfet"
                     cta1Href="/market"
@@ -406,8 +403,8 @@ export default function LoginPage() {
                 <ProductShowcaseSection
                     id="gonulluluk"
                     theme="dark"
-                    title="Zamanınız en değerli bağış."
-                    subtitle="hangel İmece"
+                    title="hangel İmece"
+                    subtitle="Zamanınız en değerli bağış."
                     description="Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Çevreden eğitime, hayvan haklarından sanata, size en uygun gönüllülük fırsatını bulun."
                     cta1="İlanları Gör"
                     cta1Href="/volunteering"
@@ -435,53 +432,32 @@ export default function LoginPage() {
                     </Carousel>
                 </ProductShowcaseSection>
                 
-                <section id="kurumlar-carousel" className="py-16 md:py-24 bg-white">
+                <section id="kurumlar-grid" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-12 space-y-2">
                             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel'i Keşfedin</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Kurumlar ve bireyler için sunduğumuz çözümlerle tanışın.</p>
                         </div>
-                        <Carousel
-                            opts={{ align: "start", loop: true }}
-                            plugins={[discoveryCarouselPlugin.current]}
-                            onMouseEnter={discoveryCarouselPlugin.current.stop}
-                            onMouseLeave={discoveryCarouselPlugin.current.reset}
-                            className="w-full"
-                        >
-                            <CarouselContent className="-ml-6">
-                                {discoveryItems.map((item, index) => (
-                                    <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                                        <DiscoveryCarouselCard {...item} />
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious className="ml-14 hidden sm:flex" />
-                            <CarouselNext className="mr-14 hidden sm:flex" />
-                        </Carousel>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {discoveryItems.map((item, index) => (
+                                <DiscoveryCarouselCard key={index} {...item} />
+                            ))}
+                        </div>
                     </div>
                 </section>
 
                 <section id="projeler" className="py-16 md:py-24 bg-white">
-                    <div className="container mx-auto max-w-7xl text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel Association</h2>
-                        <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
-                    </div>
-                    <Carousel
-                        opts={{ align: "start" }}
-                        className="w-full"
-                    >
-                        <CarouselContent className="-ml-4 container mx-auto px-4 max-w-7xl">
-                            {projectCardsData.map((card, index) => (
-                                <CarouselItem key={index} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-[22rem]">
-                                    <ProjectCard {...card} />
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <div className="container mx-auto max-w-7xl px-4 mt-8 flex justify-end">
-                            <CarouselPrevious className="static -translate-x-1" />
-                            <CarouselNext className="static" />
+                    <div className="container mx-auto max-w-7xl">
+                        <div className="text-center mb-12">
+                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel Association</h2>
+                            <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
                         </div>
-                    </Carousel>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                            {projectCardsData.map((card, index) => (
+                                <ProjectCard key={index} {...card} />
+                            ))}
+                        </div>
+                    </div>
                 </section>
 
                 <section id="degerler" className="py-16 md:py-24 bg-white">
@@ -490,7 +466,7 @@ export default function LoginPage() {
                             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz</h2>
                             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <InfoCard 
                                 icon={TrendingUp}
                                 title="Sürdürülebilirlik"
