@@ -269,7 +269,7 @@ export default function LoginPage() {
                     theme="dark"
                     title="Yok öyle yalnız başına mücadele etmek."
                     subtitle="#wearehangel"
-                    description=""
+                    description="Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz."
                     cta1="Şimdi Katıl"
                     cta1Href="/login/selection?action=register"
                     cta2="Daha Fazla Bilgi"
@@ -433,7 +433,7 @@ export default function LoginPage() {
                 <section id="kurumsal-degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Yaratıyoruz.</h2>
+                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz.</h2>
                             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi inşa ediyoruz.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -474,3 +474,4 @@ export default function LoginPage() {
         </div>
     );
 }
+
