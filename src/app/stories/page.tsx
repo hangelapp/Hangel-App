@@ -1,202 +1,135 @@
+
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { X, Share2, Info, Megaphone, Users, Award, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { HangelLogo } from '@/components/icons';
+import React from 'react';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
-const STORY_DURATION = 5000; // 5 seconds
 
-type StorySlide = {
-  id: number;
+interface FeatureCardProps {
+  category: string;
   title: string;
-  subtitle: string;
-  description: string;
-  image: string;
+  description?: string;
+  imageUrl: string;
   imageHint: string;
-  ctaText: string;
-  accentColor: string;
+  theme: 'light' | 'dark';
+  className?: string;
+  children?: React.ReactNode;
+  href: string;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ category, title, description, imageUrl, imageHint, theme, className, children, href }) => {
+  return (
+    <Link href={href} className="block h-full">
+        <div className={cn(
+            "relative aspect-[3/4] w-full rounded-[2rem] p-6 flex flex-col justify-between overflow-hidden group transition-transform hover:scale-[1.02]",
+            theme === 'dark' ? 'bg-black text-white' : 'bg-gray-100 text-black',
+            className
+        )}>
+            <div className="absolute inset-0 z-0">
+                <Image src={imageUrl} alt={title} fill className="object-cover opacity-80" data-ai-hint={imageHint} />
+                <div className={cn("absolute inset-0", theme === 'dark' ? 'bg-gradient-to-t from-black/80 via-black/40 to-transparent' : 'bg-gradient-to-t from-white/70 via-white/30 to-transparent')} />
+            </div>
+
+            <div className="relative z-10 space-y-1">
+                <p className={cn("font-semibold text-xs uppercase tracking-wider", theme === 'dark' ? 'text-primary' : 'text-primary')}>{category}</p>
+                <h3 className="text-2xl font-bold leading-tight">{title}</h3>
+                {description && <p className="text-sm opacity-80">{description}</p>}
+            </div>
+
+            <div className="relative z-10">
+                {children}
+            </div>
+
+             <div className="absolute bottom-6 right-6 z-20 h-10 w-10 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-black group-hover:bg-white transition-colors">
+                <Plus />
+            </div>
+        </div>
+    </Link>
+  );
 };
 
-const stories: StorySlide[] = [
+
+const storiesData = [
   {
-    id: 1,
-    title: "Geleceğin Sosyal Etki Lideri Olun.",
-    subtitle: "Üniversite Temsilciliği 2026",
-    description: "Kampüsünüzde iyilik hareketini başlatın. Kulüpler, akademisyenler ve STK'lar arasında köprü kurun.",
-    image: "https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop",
-    imageHint: "university students on campus",
-    ctaText: "Hemen Başvur",
-    accentColor: "#f34723"
-  },
-  {
-    id: 2,
-    title: "Alışverişi İyiliğe Dönüştürün.",
-    subtitle: "Hangel Bağış Ekosistemi",
-    description: "Ek bir masraf ödemeden, her harcamanızla seçtiğiniz bir sivil toplum kuruluşuna destek olun.",
-    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-    imageHint: "modern retail store interior",
-    ctaText: "Markaları Keşfet",
-    accentColor: "#0066cc"
-  },
-  {
-    id: 3,
-    title: "Zamanınız En Değerli Bağış.",
-    subtitle: "Hangel İmece Modülü",
-    description: "Yetkinliklerinizi toplumsal sorunların çözümü için kullanın. Binlerce gönüllülük ilanı sizi bekliyor.",
-    image: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
+    category: "Gönüllülük",
+    title: "Zamanınız en değerli bağış.",
+    description: "Yetkinliklerinize uygun fırsatlarla topluma değer katın.",
+    imageUrl: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
     imageHint: "volunteers working together",
-    ctaText: "İlanları Gör",
-    accentColor: "#10b981"
+    theme: 'dark' as 'dark',
+    href: '/volunteering'
+  },
+  {
+    category: "Bağış",
+    title: "Alışverişi iyiliğe dönüştürün.",
+    description: "Yüzlerce markadan yaptığınız alışverişlerle STK'lara destek olun.",
+    imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "modern retail store",
+    theme: 'light' as 'light',
+    href: '/market'
+  },
+  {
+    category: "Etki",
+    title: "Katkılarınızı ölçün.",
+    description: "Puanlar, rozetler ve sertifikalarla gelişiminizi takip edin.",
+    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "data charts dashboard",
+    theme: 'dark' as 'dark',
+    href: '/my-badges',
+    children: (
+        <div className="space-y-1">
+            <p className="text-xs font-semibold text-white/70">Toplam Puan</p>
+            <p className="text-5xl font-bold tracking-tighter">15,750</p>
+        </div>
+    )
+  },
+  {
+    category: "Topluluk",
+    title: "Birlikte daha güçlüyüz.",
+    description: "STK'lar, markalar ve gönüllülerle etkileşime geçin.",
+    imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
+    imageHint: "happy group people",
+    theme: 'light' as 'light',
+    href: '/timeline'
   }
 ];
 
+
 export default function StoriesPage() {
-  const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-
-  const nextStory = useCallback(() => {
-    if (currentIndex < stories.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setProgress(0);
-    } else {
-      router.back();
-    }
-  }, [currentIndex, router]);
-
-  const prevStory = useCallback(() => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-      setProgress(0);
-    }
-  }, [currentIndex]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          nextStory();
-          return 0;
-        }
-        return prev + (100 / (STORY_DURATION / 50));
-      });
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, [nextStory]);
-
-  const currentSlide = stories[currentIndex];
-
-  if (!currentSlide) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden touch-none selection:bg-primary/30">
-      <div className="relative w-full max-w-[450px] h-full max-h-[850px] bg-black md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col animate-in fade-in duration-700">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
+        <div className="space-y-4 mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Hangel'i Keşfedin.</h1>
+            <p className="text-muted-foreground">Platformun öne çıkan özelliklerini ve yaratabileceğiniz etkiyi yakından tanıyın.</p>
+        </div>
         
-        {/* Progress Bars (iOS Style) */}
-        <div className="absolute top-4 inset-x-0 px-4 flex gap-1.5 z-50">
-          {stories.map((s, idx) => (
-            <div key={s.id} className="h-1 flex-1 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
-              <div 
-                className="h-full bg-white transition-all duration-50 ease-linear shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                style={{ 
-                  width: idx < currentIndex ? '100%' : idx === currentIndex ? `${progress}%` : '0%' 
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Dynamic Header */}
-        <div className="absolute top-8 inset-x-0 px-6 flex justify-between items-center z-50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-2xl flex items-center justify-center border border-white/10 shadow-lg">
-              <HangelLogo className="text-[10px] scale-75 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-black text-xs uppercase tracking-[0.15em] drop-shadow-md">Öne Çıkanlar</p>
-              <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest drop-shadow-sm">hangel A.Ş.</p>
-            </div>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-white hover:bg-white/10 rounded-full h-10 w-10 backdrop-blur-2xl bg-white/5 border border-white/5 shadow-lg" 
-            onClick={() => router.back()}
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Visual Content Area */}
-        <div className="flex-1 relative flex flex-col">
-          
-          {/* Background with Apple-style Ken Burns effect */}
-          <div className="absolute inset-0 z-0">
-            <Image 
-              src={currentSlide.image} 
-              alt={currentSlide.title} 
-              fill 
-              priority
-              className="object-cover transition-transform ease-linear"
-              style={{ 
-                transform: `scale(${1.1 + (progress / 1000)})`,
-                transitionDuration: '5000ms'
-              }}
-              data-ai-hint={currentSlide.imageHint}
-            />
-            {/* Dynamic Gradients for Typography Readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90" />
-          </div>
-
-          {/* Invisible Touch Navigation Zones */}
-          <div className="absolute inset-0 z-30 flex">
-            <div className="w-1/3 h-full cursor-pointer" onClick={prevStory} />
-            <div className="w-2/3 h-full cursor-pointer" onClick={nextStory} />
-          </div>
-
-          {/* Typography Layer (Apple Editorial Style) */}
-          <div className="relative z-10 flex-1 flex flex-col justify-end p-8 pb-32 space-y-6">
-            <div className="animate-in slide-in-from-bottom-8 duration-1000 fill-mode-both">
-              <p className="text-[11px] font-black uppercase tracking-[0.3em] text-white/60 mb-2 drop-shadow-md">
-                {currentSlide.subtitle}
-              </p>
-              
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white leading-[1.05] mb-6 drop-shadow-2xl">
-                {currentSlide.title}
-              </h2>
-              
-              <p className="text-base text-white/80 font-medium leading-relaxed max-w-sm drop-shadow-lg">
-                {currentSlide.description}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Global Action Footer (Glassmorphism) */}
-        <div className="absolute bottom-0 inset-x-0 p-8 z-50 bg-white/5 backdrop-blur-3xl border-t border-white/10">
-          <div className="flex gap-3 items-center">
-            <Button 
-              className="flex-1 h-14 rounded-2xl bg-white text-black hover:bg-white/90 font-black text-base shadow-2xl transition-all active:scale-[0.98]"
-              style={{ color: currentSlide.accentColor }}
-            >
-              {currentSlide.ctaText}
-            </Button>
-            <Button 
-              size="icon" 
-              variant="ghost" 
-              className="rounded-2xl h-14 w-14 bg-white/10 text-white hover:bg-white/20 border border-white/10 shadow-xl"
-            >
-              <Share2 className="h-6 w-6" />
-            </Button>
-          </div>
-        </div>
-
-      </div>
+        <Carousel
+            opts={{
+                align: "start",
+            }}
+            className="w-full"
+        >
+            <CarouselContent className="-ml-4">
+                {storiesData.map((story, index) => (
+                    <CarouselItem key={index} className="pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                        <FeatureCard {...story} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="ml-16 hidden lg:flex" />
+            <CarouselNext className="mr-16 hidden lg:flex" />
+        </Carousel>
     </div>
   );
 }
