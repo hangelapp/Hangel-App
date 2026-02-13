@@ -138,38 +138,46 @@ const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: any
 );
 
 const projectCardsData = [
-  { 
+    { 
+      title: "Sosyal Şirket Mevzuatı",
+      subtitle: "Sosyal faydayı yasal statüye kavuşturan kanun teklifi.",
+      cta: "Taslağı İncele",
+      ctaHref: "/hangelassociation/legislation",
+      imageUrl: "https://picsum.photos/seed/legislation/600/800",
+      imageHint: "legal document gavel",
+    },
+    { 
       title: "Etki Odaklı İstihdam",
       subtitle: "Gönüllülüğü kariyere dönüştüren ilk model.",
       cta: "Protokolü İncele",
       ctaHref: "/hangelassociation/projects/istihdam-protokolu",
       imageUrl: "https://picsum.photos/seed/protocol/600/800",
       imageHint: "handshake meeting",
-  },
-  { 
+    },
+    { 
       title: "Akademik Programlar",
       subtitle: "Üniversitelerde sosyal inovasyon müfredatı.",
       cta: "Programları Gör",
       ctaHref: "/hangelassociation/workshop",
       imageUrl: "https://picsum.photos/seed/academy/600/800",
       imageHint: "university graduation",
-  },
-  { 
+    },
+    { 
       title: "Sosyal Etki Atlası",
       subtitle: "Türkiye'nin iyilik haritasını çiziyoruz.",
       cta: "Atlası Keşfet",
       ctaHref: "/hangelassociation/projects/etki-atlasi",
       imageUrl: "https://picsum.photos/seed/atlas/600/800",
       imageHint: "digital map",
-  },
-  { 
+    },
+    { 
       title: "Girişimcilik Kütüphanesi",
       subtitle: "21 merkezde bilgi ve tecrübe temelli yol haritaları.",
       cta: "Kütüphaneye Git",
       ctaHref: "/hangelassociation/workshop",
       imageUrl: "https://picsum.photos/seed/library/600/800",
       imageHint: "library books",
-  }
+    }
 ];
 
 
@@ -435,29 +443,29 @@ export default function LoginPage() {
                 </section>
 
                 <section id="projeler" className="py-16 md:py-24 bg-white">
-                    <div className="container mx-auto px-4 max-w-7xl">
-                        <Carousel
-                            opts={{ align: "start" }}
-                            className="w-full"
-                        >
-                            <CarouselContent className="-ml-4">
-                                {projectCardsData.map((card, index) => (
-                                    <CarouselItem key={index} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-[22rem]">
-                                        <ProjectCard {...card} />
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious className="ml-14 hidden sm:flex" />
-                            <CarouselNext className="mr-14 hidden sm:flex" />
-                        </Carousel>
-                    </div>
+                    <Carousel
+                        opts={{ align: "start" }}
+                        className="w-full"
+                    >
+                        <CarouselContent className="-ml-4 container mx-auto px-4 max-w-7xl">
+                            {projectCardsData.map((card, index) => (
+                                <CarouselItem key={index} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-[22rem]">
+                                    <ProjectCard {...card} />
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <div className="container mx-auto max-w-7xl px-4 mt-8 flex justify-end">
+                            <CarouselPrevious className="static -translate-x-1" />
+                            <CarouselNext className="static" />
+                        </div>
+                    </Carousel>
                 </section>
 
                 <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
                             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz.</h2>
-                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi inşa ediyoruz.</p>
+                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi oluşturuyoruz.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <InfoCard 
