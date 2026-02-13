@@ -44,6 +44,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -79,21 +80,6 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
             {children}
         </CardContent>
     </Card>
-);
-
-const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
-    <div className="border rounded-2xl bg-white/50 text-center flex flex-col shadow-sm hover:shadow-lg transition-shadow">
-        <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
-            {children}
-        </div>
-        <div className="p-4 flex-1 flex flex-col">
-            <h4 className="font-semibold text-sm">{title}</h4>
-            <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
-            <Button size="sm" variant="outline" className="text-xs mt-4 w-full" onClick={onDownload}>
-                <Download className="mr-2 h-3.5 w-3.5"/> PNG İndir
-            </Button>
-        </div>
-    </div>
 );
 
 const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
@@ -155,6 +141,21 @@ const associationArchitecture = [
     { href: "/hangelassociation/workshop", icon: Users, label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
 ];
 
+const LogoShowcaseCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
+    <Card className="rounded-[1.75rem] h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-xl transition-shadow group">
+        <div className="relative aspect-video w-full flex items-center justify-center p-6 bg-muted/30">
+            {children}
+        </div>
+        <CardContent className="p-6 flex-1 flex flex-col">
+            <h4 className="font-semibold text-base">{title}</h4>
+            <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
+            <Button size="sm" variant="ghost" className="text-xs mt-4 p-0 h-auto self-start text-primary hover:text-primary group-hover:underline" onClick={onDownload}>
+                PNG İndir <Download className="ml-1.5 h-3.5 w-3.5"/>
+            </Button>
+        </CardContent>
+    </Card>
+);
+
 export default function LogoUsagePage() {
     const router = useRouter();
     const { toast } = useToast();
@@ -173,95 +174,72 @@ export default function LogoUsagePage() {
             description: `${hex} panoya kopyalandı.`,
         });
     };
+    
+    const asLogos = [
+        {
+            title: "Birincil Logo",
+            description: "Zeminsiz Logo (PNG)",
+            onDownload: () => handleDownload('birincil-logo.png'),
+            content: <HangelLogo className="text-5xl text-primary" />
+        },
+        {
+            title: "İkincil Logo",
+            description: "Zeminli Logo (PNG)",
+            onDownload: () => handleDownload('ikincil-logo.png'),
+            content: <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
+        },
+        {
+            title: "Üçüncül Logo",
+            description: "Beyaz Logo (PNG) – (Zorunlu hallerde)",
+            onDownload: () => handleDownload('beyaz-logo.png'),
+            content: <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center"><HangelLogo className="text-5xl text-white" /></div>
+        },
+        {
+            title: "App Icon",
+            description: "Mobil Uygulama Simgesi (PNG)",
+            onDownload: () => handleDownload('app-icon.png'),
+            content: <div className="p-4 bg-primary rounded-3xl"><span className="text-5xl font-black text-white">h</span></div>
+        },
+    ];
+
+    const dernekLogos = [
+        {
+            title: "Birincil Logo",
+            description: "Zeminsiz Logo (PNG)",
+            onDownload: () => handleDownload('dernek-birincil-logo.png'),
+            content: <HangelLogo className="text-5xl" style={{color: '#042654'}} />
+        },
+        {
+            title: "İkincil Logo",
+            description: "Zeminli Logo (PNG)",
+            onDownload: () => handleDownload('dernek-ikincil-logo.png'),
+            content: <div className="p-4 rounded-2xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-5xl text-white" /></div>
+        },
+        {
+            title: "Üçüncül Logo",
+            description: "Beyaz Logo (PNG)",
+            onDownload: () => handleDownload('dernek-beyaz-logo.png'),
+            content: <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center"><HangelLogo className="text-5xl text-white" /></div>
+        },
+        {
+            title: "Dernek Icon",
+            description: "Mobil Uygulama Simgesi (PNG)",
+            onDownload: () => handleDownload('dernek-app-icon.png'),
+            content: <div className="p-4 rounded-3xl" style={{backgroundColor: '#042654'}}><span className="text-5xl font-black text-white">h</span></div>
+        },
+    ];
 
     const rules = [
-        {
-            icon: Ruler,
-            title: "LOGO MİNİMUM BOYUT KURALI",
-            content: [
-                "Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:",
-                "<strong>Dijital Ortam:</strong> Minimum genişlik: 120 px, App icon minimum: 32 px",
-                "<strong>Basılı Materyal:</strong> Minimum genişlik: 25 mm",
-                "Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır."
-            ]
-        },
-        {
-            icon: Maximize,
-            title: "BOŞLUK (CLEAR SPACE) KURALI",
-            content: [
-                "Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır.",
-                "Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez."
-            ]
-        },
-        {
-            icon: XCircle,
-            title: "Değişiklik Yasağı",
-            content: [
-                "Logo sabittir. Yeniden yorumlanamaz.",
-                "Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez."
-            ]
-        },
-        {
-            icon: Handshake,
-            title: "CO-BRANDING (ORTAK MARKALAMA) KURALLARI",
-            content: [
-                "Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:",
-                "• Logo eşit ölçekli kullanılmalıdır.",
-                "• İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.",
-                "• Logolar yatay hizalı olmalıdır.",
-                "• Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.",
-                "• Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur."
-            ]
-        },
-        {
-            icon: FileCheck,
-            title: "MARKA KULLANIM İZNİ",
-            content: [
-                "hangel varlıklarını (Yayın, Radyo, Açık hava reklamı, TV, A4’ten büyük baskı materyali) içinde kullanmak isteyen kişi ve kurumlar yazılı izin almak zorundadır.",
-                "Talep dosyasında kullanım taslağı sunulmalıdır.",
-                "hangel marka ekibi, uygun bulmadığı kullanımları reddetme veya iptal etme hakkını saklı tutar."
-            ]
-        },
-        {
-            icon: Type,
-            title: "İSİM VE METİN KULLANIM STANDARTLARI",
-            content: [
-                "“hangel” kelimesinde “h” harfi büyük yazılamaz.",
-                "Yasaklı örnekler: hangelPro, hangelClubX",
-                "İzin verilen kullanım: “hangel için geliştirilmiştir”, “hangel ile uyumludur”"
-            ]
-        },
-        {
-            icon: Package,
-            title: "ÜRÜN İKONLARI",
-            content: [
-                 "Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez."
-            ]
-        },
-        {
-            icon: Share2,
-            title: "SOSYAL MEDYA VE DİJİTAL MECRALAR",
-            content: [
-                "Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez."
-            ]
-        },
-        {
-            icon: Tv,
-            title: "TV, FİLM VE YAYINCILIK",
-            content: [
-                 "Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır."
-            ]
-        },
-        {
-            icon: Shield,
-            title: "YASAL ÇERÇEVE",
-            content: [
-                "hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür.",
-                "Ticari markalarımız tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz.",
-                "Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır.",
-                "hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar."
-            ]
-        }
+        { icon: Ruler, title: "LOGO MİNİMUM BOYUT KURALI", content: [ "Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:", "<strong>Dijital Ortam:</strong><br/>Minimum genişlik: 120 px<br/>App icon minimum: 32 px", "<strong>Basılı Materyal:</strong><br/>Minimum genişlik: 25 mm", "Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır." ] },
+        { icon: Maximize, title: "BOŞLUK (CLEAR SPACE) KURALI", content: [ "Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır.", "Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez." ] },
+        { icon: XCircle, title: "Değişiklik Yasağı", content: [ "Logo sabittir. Yeniden yorumlanamaz.", "Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez." ] },
+        { icon: Package, title: "ÜRÜN İKONLARI", content: [ "Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez." ] },
+        { icon: Share2, title: "SOSYAL MEDYA VE DİJİTAL MECRALAR", content: [ "Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez." ] },
+        { icon: Tv, title: "TV, FİLM VE YAYINCILIK", content: [ "Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır." ] },
+        { icon: Handshake, title: "CO-BRANDING (ORTAK MARKALAMA) KURALLARI", content: [ "Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:", "• Logo eşit ölçekli kullanılmalıdır.", "• İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.", "• Logolar yatay hizalı olmalıdır.", "• Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.", "• Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur." ] },
+        { icon: FileCheck, title: "MARKA KULLANIM İZNİ", content: [ "hangel varlıklarını (Yayın, Radyo, Açık hava reklamı, TV, A4’ten büyük baskı materyali) içinde kullanmak isteyen kişi ve kurumlar yazılı izin almak zorundadır.", "Talep dosyasında kullanım taslağı sunulmalıdır.", "hangel marka ekibi, uygun bulmadığı kullanımları reddetme veya iptal etme hakkını saklı tutar." ] },
+        { icon: Type, title: "İSİM VE METİN KULLANIM STANDARTLARI", content: [ "“hangel” kelimesinde “h” harfi büyük yazılamaz.", "Farklı yazı tipi veya ölçekte manipüle edilemez.", "Başka dile çevrilemez.", "Kısaltılamaz.", "Alan adı, şirket adı veya ürün adına entegre edilemez.", "<strong>Yasaklı örnekler:</strong> hangelPro, hangelClubX, Bağışhangel", "<strong>İzin verilen kullanım:</strong> “hangel için geliştirilmiştir”, “hangel ile uyumludur”, “hangel platformunda yer alır”" ] },
+        { icon: Shield, title: "YASAL ÇERÇEVE", content: [ "hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür.", "Ticari markalarımız tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz.", "Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır.", "hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar." ] }
     ];
 
     return (
@@ -315,46 +293,43 @@ export default function LogoUsagePage() {
                 </Section>
                 
                 <Section id="medya-kiti">
+                    <SectionTitle>Medya Kiti</SectionTitle>
                     <div className="mt-16 space-y-20">
                         
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Logolar</h3>
-                            <div className="space-y-8">
-                                <h3 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel A.Ş. Logoları</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('birincil-logo.png')}>
-                                        <HangelLogo className="text-5xl text-primary" />
-                                    </LogoDisplayCard>
-                                    <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
-                                        <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
-                                    </LogoDisplayCard>
-                                    <LogoDisplayCard title="Üçüncül Logo" description="Beyaz Logo (PNG) – (Zorunlu hallerde kullanılmalıdır.)" onDownload={() => handleDownload('beyaz-logo.png')}>
-                                        <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
-                                            <HangelLogo className="text-5xl text-white" />
-                                        </div>
-                                    </LogoDisplayCard>
-                                    <LogoDisplayCard title="App Icon" description="(PNG)" onDownload={() => handleDownload('app-icon.png')}>
-                                        <div className="p-4 bg-primary rounded-3xl"><span className="text-5xl font-black text-white">h</span></div>
-                                    </LogoDisplayCard>
+                            <div className="space-y-12">
+                                <div className='space-y-6'>
+                                    <h3 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel A.Ş. Logoları</h3>
+                                    <Carousel opts={{ align: "start" }} className="w-full">
+                                        <CarouselContent className="-ml-6">
+                                            {asLogos.map((logo, index) => (
+                                                <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                                                    <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
+                                                        {logo.content}
+                                                    </LogoShowcaseCard>
+                                                </CarouselItem>
+                                            ))}
+                                        </CarouselContent>
+                                        <CarouselPrevious className="left-[-50px] hidden xl:flex" />
+                                        <CarouselNext className="right-[-50px] hidden xl:flex" />
+                                    </Carousel>
                                 </div>
-                            </div>
-                            <div className="space-y-8 mt-16">
-                                <h3 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel Derneği Logoları</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('dernek-birincil-logo.png')}>
-                                        <HangelLogo className="text-5xl" style={{color: '#042654'}} />
-                                    </LogoDisplayCard>
-                                    <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('dernek-ikincil-logo.png')}>
-                                        <div className="p-4 rounded-2xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-5xl text-white" /></div>
-                                    </LogoDisplayCard>
-                                    <LogoDisplayCard title="Üçüncül Logo" description="Beyaz Logo (PNG)" onDownload={() => handleDownload('dernek-beyaz-logo.png')}>
-                                        <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
-                                            <HangelLogo className="text-5xl text-white" />
-                                        </div>
-                                    </LogoDisplayCard>
-                                    <LogoDisplayCard title="Dernek Icon" description="(PNG)" onDownload={() => handleDownload('dernek-app-icon.png')}>
-                                        <div className="p-4 rounded-3xl" style={{backgroundColor: '#042654'}}><span className="text-5xl font-black text-white">h</span></div>
-                                    </LogoDisplayCard>
+                                <div className='space-y-6'>
+                                    <h3 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel Derneği Logoları</h3>
+                                     <Carousel opts={{ align: "start" }} className="w-full">
+                                        <CarouselContent className="-ml-6">
+                                            {dernekLogos.map((logo, index) => (
+                                                <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                                                    <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
+                                                        {logo.content}
+                                                    </LogoShowcaseCard>
+                                                </CarouselItem>
+                                            ))}
+                                        </CarouselContent>
+                                        <CarouselPrevious className="left-[-50px] hidden xl:flex" />
+                                        <CarouselNext className="right-[-50px] hidden xl:flex" />
+                                    </Carousel>
                                 </div>
                             </div>
                         </div>
@@ -445,5 +420,3 @@ Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez
         </div>
     );
 }
-    
-    
