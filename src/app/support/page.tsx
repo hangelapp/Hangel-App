@@ -16,7 +16,8 @@ import {
   Settings,
   Library,
   Video,
-  Users as CommunityIcon
+  Users as CommunityIcon,
+  FileText
 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
