@@ -444,7 +444,7 @@ export default function LoginPage() {
 
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">hangel Association</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel Association</h2>
                         <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
                     </div>
                     <Carousel
@@ -469,7 +469,7 @@ export default function LoginPage() {
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
                             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz.</h2>
-                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi oluşturuyoruz.</p>
+                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <InfoCard 
@@ -486,7 +486,7 @@ export default function LoginPage() {
                                 link="/accessibility"
                                 linkText="Standartları İnceleyin"
                             />
-                            <InfoCard 
+                             <InfoCard 
                                 icon={ShieldCheck}
                                 title="Güvenlik"
                                 description="Verilerinizi nasıl koruduğumuzu ve platformumuzun güvenliğini nasıl sağladığımızı öğrenin."
