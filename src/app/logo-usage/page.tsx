@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -23,10 +24,12 @@ import {
     Library,
     Users,
     Brain,
-    BookCopy,
+    BookOpen,
     Link as LinkIcon,
     Building,
-    HandCoins
+    HandCoins,
+    BookCopy,
+    Landmark
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -63,6 +66,29 @@ const SectionTitle = ({ children, className, ...props }: React.HTMLAttributes<HT
     </h2>
 );
 
+const ArchitectureCard = ({ icon: Icon, label, description, href, iconBgClass, category }: { icon: React.ElementType, label: string, description: string, href: string, iconBgClass?: string, category: string }) => (
+    <Link href={href} className="group block">
+        <Card className="relative h-full text-left p-6 space-y-4 hover:shadow-xl transition-shadow rounded-2xl overflow-hidden bg-background">
+             <div className={cn(
+                "absolute top-3 right-3 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-sm",
+                iconBgClass === 'bg-primary' ? 'bg-black/20' : 'bg-white/20'
+            )}>
+                <HangelLogo className="text-[10px] opacity-80" />
+                <span>{category}</span>
+            </div>
+            
+            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", iconBgClass)}>
+                <Icon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+                <h4 className="font-bold text-base text-foreground">{label}</h4>
+                <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            </div>
+        </Card>
+    </Link>
+);
+
+
 const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
     <div className="border rounded-2xl bg-white/50 text-center flex flex-col shadow-sm hover:shadow-lg transition-shadow">
         <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
@@ -96,40 +122,6 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
             {hex} <Copy className="w-3 h-3" />
         </div>
     </button>
-);
-
-const InfoCard = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
-    <div className="bg-white rounded-3xl p-8 flex flex-col h-full text-left border shadow-sm">
-        <div className="p-3 bg-muted rounded-2xl w-fit shadow-sm mb-6">
-            <Icon className="h-6 w-6 text-primary" />
-        </div>
-        <h3 className="font-semibold text-xl text-[#1d1d1f] mb-4">{title}</h3>
-        <div className="prose prose-sm text-foreground/80 max-w-none">
-            {children}
-        </div>
-    </div>
-);
-
-const ArchitectureCard = ({ icon: Icon, label, description, href, iconBgClass, category }: { icon: React.ElementType, label: string, description: string, href: string, iconBgClass?: string, category: string }) => (
-    <Link href={href} className="group block">
-        <Card className="relative h-full text-left p-6 space-y-4 hover:shadow-xl transition-shadow rounded-2xl overflow-hidden bg-background">
-             <div className={cn(
-                "absolute top-3 right-3 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-sm",
-                iconBgClass === 'bg-primary' ? 'bg-black/20' : 'bg-white/20'
-            )}>
-                <HangelLogo className="text-[10px] opacity-80" />
-                <span>{category}</span>
-            </div>
-            
-            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", iconBgClass)}>
-                <Icon className="h-6 w-6 text-white" />
-            </div>
-            <div>
-                <h4 className="font-bold text-base text-foreground">{label}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{description}</p>
-            </div>
-        </Card>
-    </Link>
 );
 
 const appArchitecture = [
@@ -246,15 +238,13 @@ export default function LogoUsagePage() {
                         </div>
                         
                         <div className="space-y-8">
-                            <h3 className="text-2xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
                              <div className="max-w-4xl mx-auto">
                                 <div className="text-center mb-6">
-                                    <h4 className="font-bold text-lg">Font Kullanım Yönergesi</h4>
+                                    <h3 className="text-2xl font-bold tracking-tight">Yazı Tipleri</h3>
                                     <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur.</p>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                    <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                    <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
                                     <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                 </div>
                             </div>
@@ -273,7 +263,8 @@ export default function LogoUsagePage() {
                                     <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
                                     <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
                                 </CardContent>
-                                 <p className="text-center text-xs text-muted-foreground mt-8">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır. Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez. Marka renkleri yalnızca onaylı logo, ikon ve resmi rozetlerde kullanılabilir.</p>
+                                 <p className="text-center text-xs text-muted-foreground mt-8">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır.
+Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez. Marka renkleri yalnızca onaylı logo, ikon ve resmi rozetlerde kullanılabilir.</p>
                                </Card>
                             </div>
                         </div>
@@ -300,36 +291,46 @@ export default function LogoUsagePage() {
                         <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InfoCard icon={Ruler} title="Temel Kurallar">
-                           <h4>BOŞLUK (CLEAR SPACE) KURALI</h4>
-                           <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
-                           <h4>Değişiklik Yasağı</h4>
-                           <p>Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
-                        </InfoCard>
-                         <InfoCard icon={Handshake} title="Marka İlişkileri">
-                           <h4>HİYERARŞİ PRENSİBİ</h4>
-                           <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır.</p>
-                           <h4>CO-BRANDING (ORTAK MARKALAMA) KURALLARI</h4>
-                           <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır: logo eşit ölçekli kullanılmalıdır, iki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır, logolar yatay hizalı olmalıdır, birleşik tek bir görsel kilit (lock-up) oluşturulamaz, ve basılı büyük mecralarda yazılı izin zorunludur.</p>
-                        </InfoCard>
-                        <InfoCard icon={Mic} title="İsim ve Kanal Kullanımı">
-                            <h4>İSİM VE METİN KULLANIM STANDARTLARI</h4>
-                            <p>"hangel" kelimesinde "h" harfi büyük yazılamaz. Başka dile çevrilemez, kısaltılamaz veya alan adı, şirket adı gibi yerlere entegre edilemez.</p>
-                            <h4>ÜRÜN İKONLARI</h4>
-                            <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.</p>
-                            <h4>SOSYAL MEDYA VE DİJİTAL MECRALAR</h4>
-                            <p>Resmi hesap algısı yaratacak kullanım yasaktır. Örnek; Yanlış: "hangel Haber", Doğru: "hangel hakkında haberler".</p>
-                        </InfoCard>
-                        <InfoCard icon={Scale} title="İzinler ve Yasal Çerçeve">
-                            <h4>MARKA KULLANIM İZNİ</h4>
-                            <p>Yayın, radyo, TV, açık hava reklamı gibi büyük ölçekli mecralarda hangel varlıklarını kullanmak isteyenler yazılı izin almak zorundadır.</p>
-                            <h4>YASAL ÇERÇEVE</h4>
-                            <p>hangel, fikri mülkiyet haklarını korumaktadır. Ticari markalarımız izinsiz tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
-                        </InfoCard>
+                        <Card className="rounded-2xl p-6">
+                            <CardHeader className="p-0">
+                                <CardTitle className="flex items-center gap-2 text-lg"><Ruler className="h-5 w-5 text-primary"/>Temel Kurallar</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
+                                <p><strong>BOŞLUK (CLEAR SPACE) KURALI:</strong> Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
+                                <p><strong>Değişiklik Yasağı:</strong> Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="rounded-2xl p-6">
+                             <CardHeader className="p-0">
+                                <CardTitle className="flex items-center gap-2 text-lg"><Handshake className="h-5 w-5 text-primary"/>Marka İlişkileri</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
+                                <p><strong>HİYERARŞİ PRENSİBİ:</strong> hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır.</p>
+                                <p><strong>CO-BRANDING (ORTAK MARKALAMA) KURALLARI:</strong> Logo eşit ölçekli kullanılmalıdır. İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır. Logolar yatay hizalı olmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="rounded-2xl p-6">
+                            <CardHeader className="p-0">
+                                <CardTitle className="flex items-center gap-2 text-lg"><Mic className="h-5 w-5 text-primary"/>İsim ve Kanal Kullanımı</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
+                                <p><strong>İSİM STANDARTLARI:</strong> "hangel" kelimesinde “h” harfi büyük yazılamaz, başka dile çevrilemez, kısaltılamaz, alan adı veya şirket adına entegre edilemez. İzin verilen kullanım: "hangel için geliştirilmiştir", "hangel ile uyumludur".</p>
+                                <p><strong>SOSYAL MEDYA:</strong> Resmi hesap algısı yaratacak kullanım yasaktır. Yanlış: "hangel Haber". Doğru: "hangel hakkında haberler".</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="rounded-2xl p-6">
+                            <CardHeader className="p-0">
+                                <CardTitle className="flex items-center gap-2 text-lg"><Scale className="h-5 w-5 text-primary"/>İzinler ve Yasal Çerçeve</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0 mt-4 space-y-4 text-sm text-muted-foreground">
+                                <p><strong>MARKA KULLANIM İZNİ:</strong> Yayın, radyo, TV, açık hava reklamı gibi büyük ölçekli mecralarda hangel varlıklarını kullanmak için yazılı izin alınmalıdır.</p>
+                                <p><strong>YASAL ÇERÇEVE:</strong> hangel, fikri mülkiyet haklarını korumaktadır. Ticari markalarımız izinsiz tescil ettirilemez veya benzer şekilde kullanılamaz. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
+                            </CardContent>
+                        </Card>
                     </div>
                 </Section>
                 
-                <Section>
+                <Section className="text-left">
                     <div className="text-left text-sm text-muted-foreground max-w-3xl space-y-4">
                         <p>
                            hangel, fikri mülkiyet haklarının korunması amacıyla ulusal ve uluslararası düzeyde tescil süreçlerini yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
@@ -344,4 +345,5 @@ export default function LogoUsagePage() {
             <PublicFooter currentPageLabel="Basın Kiti & Marka Yönergesi" />
         </div>
     );
-}
+
+    
