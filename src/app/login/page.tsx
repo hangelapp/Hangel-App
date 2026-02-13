@@ -385,6 +385,12 @@ export default function LoginPage() {
                         align: "start",
                         loop: true,
                         }}
+                        plugins={[
+                            Autoplay({
+                                delay: 5000,
+                                stopOnInteraction: true,
+                            }),
+                        ]}
                         className="w-full max-w-7xl mx-auto"
                     >
                         <CarouselContent className="-ml-4">
@@ -416,6 +422,12 @@ export default function LoginPage() {
                         align: "start",
                         loop: true,
                         }}
+                         plugins={[
+                            Autoplay({
+                                delay: 5500,
+                                stopOnInteraction: true,
+                            }),
+                        ]}
                         className="w-full max-w-7xl mx-auto"
                     >
                         <CarouselContent className="-ml-4">
@@ -435,7 +447,7 @@ export default function LoginPage() {
                 <section id="kurumlar-grid" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-12 space-y-2">
-                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel'i Keşfedin</h2>
+                            <h2 className="text-4xl font-bold tracking-tight">hangel'i Keşfedin</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Kurumlar ve bireyler için sunduğumuz çözümlerle tanışın.</p>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -449,21 +461,39 @@ export default function LoginPage() {
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center mb-12">
-                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel Association</h2>
+                            <h2 className="text-4xl font-bold tracking-tight">hangel Association</h2>
                             <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                            {projectCardsData.map((card, index) => (
-                                <ProjectCard key={index} {...card} />
-                            ))}
-                        </div>
+                        <Carousel
+                            opts={{
+                                align: "start",
+                                loop: true,
+                            }}
+                            plugins={[
+                                Autoplay({
+                                    delay: 4500,
+                                    stopOnInteraction: true,
+                                })
+                            ]}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-4">
+                                {projectCardsData.map((card, index) => (
+                                    <CarouselItem key={index} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                                        <ProjectCard {...card} />
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="ml-16 hidden md:flex" />
+                            <CarouselNext className="mr-16 hidden md:flex" />
+                        </Carousel>
                     </div>
                 </section>
 
                 <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz</h2>
+                            <h2 className="text-4xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz</h2>
                             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
