@@ -29,7 +29,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
             title: "Kurumsal", 
             links: [
                 {label: "Biz Kimiz?", href: "/about"}, 
-                {label: "Sosyal Etkimiz", href: "/social-impact"}, 
+                {label: "Sürdürülebilirlik", href: "/social-impact"}, 
                 {label: "Basın Odası", href: "/press"}, 
                 {label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri"}, 
                 {label: "Kariyer", href: "/careers"},

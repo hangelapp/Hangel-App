@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Zap } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Zap, FileText, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -66,7 +66,7 @@ export default function SocialImpactPage() {
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight">Sosyal Etkimiz</span>
+                    <span className="text-[12px] font-bold tracking-tight">Sürdürülebilirlik</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
                         <Link href="/impact-story">Etkiyi Gör</Link>
                     </Button>
@@ -114,7 +114,34 @@ export default function SocialImpactPage() {
                 imageHint="world connection data visualization"
             />
 
-            <PublicFooter currentPageLabel="Sosyal Etkimiz" />
+            <section className="py-24 bg-[#f5f5f7]">
+                <div className="container mx-auto px-6 max-w-4xl space-y-12">
+                    <div className="text-center space-y-3">
+                        <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Raporlarımız</h2>
+                        <p className="text-lg text-muted-foreground">Şeffaflık ilkemiz gereği, etkimizi düzenli olarak raporluyoruz.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        {[
+                            { year: '2026', link: '#' },
+                            { year: '2025', link: '#' },
+                            { year: '2024', link: '#' },
+                        ].map((report) => (
+                            <div key={report.year} className="flex flex-col items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
+                                <FileText className="h-10 w-10 text-primary" />
+                                <div className="text-center">
+                                    <h3 className="font-bold text-lg">{report.year} Sürdürülebilirlik Raporu</h3>
+                                    <p className="text-xs text-muted-foreground">PDF - 5.2MB</p>
+                                </div>
+                                <Button asChild variant="outline" className="w-full">
+                                    <Link href={report.link}>İndir <Download className="h-4 w-4 ml-2"/></Link>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <PublicFooter currentPageLabel="Sürdürülebilirlik" />
         </div>
     );
 }

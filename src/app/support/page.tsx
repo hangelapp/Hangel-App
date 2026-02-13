@@ -1,7 +1,7 @@
 
 'use client';
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
-import { helpTopics, user, badges } from '@/lib/data';
+import { helpTopics, ngoFaqArticles as popularArticles, user, badges } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import {
   Dialog,
@@ -25,13 +25,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
-const popularArticles = [
-    { title: 'hangel Etki Puanı nasıl hesaplanır?', link: '#' },
-    { title: 'Bir bağışın STK\'ya ulaşma süreci nedir?', link: '#' },
-    { title: 'Gönüllülük başvurum neden reddedildi?', link: '#' },
-    { title: 'Şifremi nasıl sıfırlarım?', link: '#' }
-];
 
 export default function SupportPage() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -77,26 +70,26 @@ export default function SupportPage() {
 
       <div>
         <h2 className="text-xl font-bold mb-4">Yardım Konuları</h2>
-        <Card>
-            <CardContent className='p-0 divide-y'>
-                {filteredHelpTopics.map((topic) => {
-                    // @ts-ignore
-                    const Icon = Icons[topic.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
-                    return (
-                        <Link href={`/support/${topic.slug}`} key={topic.slug} className="block">
-                            <div className="flex items-center justify-between p-4 hover:bg-accent transition-colors">
-                                <div className="flex items-center gap-4">
-                                     <Icon className="h-6 w-6 text-primary" />
-                                    <p className="font-semibold">{topic.title}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredHelpTopics.map((topic) => {
+                // @ts-ignore
+                const Icon = Icons[topic.icon] || Icons.HelpCircle;
+                return (
+                    <Link href={`/support/${topic.slug}`} key={topic.slug} className="block">
+                        <Card className="h-full hover:border-primary hover:bg-primary/5 transition-all">
+                            <CardHeader className="flex flex-row items-center gap-4">
+                                <Icon className="h-8 w-8 text-primary" />
+                                <div>
+                                    <CardTitle>{topic.title}</CardTitle>
+                                    <CardDescription>{topic.description}</CardDescription>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                        </Link>
-                    );
-                })}
-                 {filteredHelpTopics.length === 0 && <p className="p-4 text-center text-muted-foreground">Aramanızla eşleşen konu bulunamadı.</p>}
-            </CardContent>
-        </Card>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+                );
+            })}
+        </div>
+        {filteredHelpTopics.length === 0 && <p className="p-4 text-center text-muted-foreground">Aramanızla eşleşen konu bulunamadı.</p>}
       </div>
       
       <div>
@@ -106,69 +99,20 @@ export default function SupportPage() {
                 <Accordion type="single" collapsible className="w-full">
                   {filteredFaqArticles.map((article, index) => (
                       <AccordionItem value={`faq-${index}`} key={article.title} className="px-4">
-                          <AccordionTrigger className="py-4 text-sm font-medium hover:no-underline">
+                          <AccordionTrigger className="py-4 text-sm font-medium hover:no-underline text-left">
                                {article.title}
                           </AccordionTrigger>
                           <AccordionContent>
-                            <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground pt-2 space-y-4">
-                              {article.title === 'hangel Etki Puanı nasıl hesaplanır?' ? (
-                                <>
-                                  <p>hangel Etki Puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Puanları şu şekillerde kazanırsınız:</p>
-                                  <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
-                                      <li>Anlaşmalı markalardan yaptığın her alışverişle.</li>
-                                      <li>Gönüllülük faaliyetlerini tamamlayarak.</li>
-                                      <li>Platforma yeni arkadaşlarını davet ederek.</li>
-                                      <li>Rozetler kazanarak ve seviye atlayarak.</li>
-                                  </ul>
-                                  <Accordion type="single" collapsible className="w-full mt-4">
-                                      <AccordionItem value="puan-cetveli" className="border-t">
-                                          <AccordionTrigger className="text-sm">Puan Cetvelini Gör</AccordionTrigger>
-                                          <AccordionContent>
-                                              <div className="space-y-3 text-sm pt-2">
-                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                      <div>
-                                                          <p className="font-semibold">Alışverişle Bağış</p>
-                                                          <p className="text-xs text-muted-foreground">Her 1₺ bağış için <strong>1 Puan</strong></p>
-                                                      </div>
-                                                      <p className="font-bold text-base text-primary">{(user.stats.totalDonation).toLocaleString('tr-TR')} Puan</p>
-                                                  </div>
-                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                      <div>
-                                                          <p className="font-semibold">Gönüllülük</p>
-                                                          <p className="text-xs text-muted-foreground">Her 1 saat için <strong>10 Puan</strong></p>
-                                                      </div>
-                                                      <p className="font-bold text-base text-primary">{(user.stats.volunteerHours * 10).toLocaleString('tr-TR')} Puan</p>
-                                                  </div>
-                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                      <div>
-                                                          <p className="font-semibold">Arkadaş Daveti</p>
-                                                          <p className="text-xs text-muted-foreground">Her başarılı davet için <strong>100 Puan</strong></p>
-                                                      </div>
-                                                      <p className="font-bold text-base text-primary">{(5 * 100).toLocaleString('tr-TR')} Puan</p>
-                                                  </div>
-                                                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                                      <div>
-                                                          <p className="font-semibold">Rozet Kazanımı</p>
-                                                          <p className="text-xs text-muted-foreground">Her rozet için <strong>250 Puan</strong></p>
-                                                      </div>
-                                                      <p className="font-bold text-base text-primary">{(badges.filter(b => b.currentPoints >= b.pointsRequired).length * 250).toLocaleString('tr-TR')} Puan</p>
-                                                  </div>
-                                              </div>
-                                          </AccordionContent>
-                                      </AccordionItem>
-                                  </Accordion>
-                                </>
-                              ) : (
+                              <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground pt-2 space-y-4">
                                 <p>Bu sorunun cevabı yakında burada olacak. Anlayışınız için teşekkür ederiz.</p>
-                              )}
-                              <div className="mt-6 border-t pt-4 text-center">
-                                  <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
-                                  <div className="flex justify-center gap-2">
-                                      <Button variant="outline" size="sm">Evet</Button>
-                                      <Button variant="outline" size="sm">Hayır</Button>
-                                  </div>
+                                <div className="mt-6 border-t pt-4 text-center">
+                                    <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
+                                    <div className="flex justify-center gap-2">
+                                        <Button variant="outline" size="sm">Evet</Button>
+                                        <Button variant="outline" size="sm">Hayır</Button>
+                                    </div>
+                                </div>
                               </div>
-                            </div>
                           </AccordionContent>
                       </AccordionItem>
                   ))}
@@ -211,7 +155,7 @@ export default function SupportPage() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="support-message">Mesajınız</Label>
-                          <Textarea id="support-message" placeholder="Lütfen mesajınızı buraya yazın..." rows={6} />
+                          <Textarea id="support-message" placeholder="Lütfen talebinizi detaylı bir şekilde açıklayın..." rows={6} />
                         </div>
                         <Button type="submit" className="w-full">Gönder</Button>
                     </form>

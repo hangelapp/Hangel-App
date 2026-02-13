@@ -2,7 +2,7 @@
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign } from 'lucide-react';
-import type { Post, Brand, Event, Volunteering, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory } from './types';
+import type { Post, Brand, Event, Volunteering, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory, HelpTopic } from './types';
 
 const slugify = (str: string) => {
   if (!str) return '';
@@ -740,9 +740,107 @@ export const applications: Application[] = [];
 export const donationTransactions: DonationTransaction[] = [];
 export const badges: Badge[] = [];
 export const certificates: Certificate[] = [];
-export const helpTopics: any[] = [];
+
+export const helpTopics: HelpTopic[] = [
+    {
+        icon: 'User',
+        title: "Bireysel Kullanıcılar",
+        slug: "bireysel-kullanicilar",
+        description: "Profil, bağış, gönüllülük ve puan sistemi hakkında her şey.",
+        subtopics: [
+            {
+                title: "hangel Etki Puanı nasıl hesaplanır?",
+                content: "hangel Etki Puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Puanları şu şekillerde kazanırsınız: <ul><li>Anlaşmalı markalardan yaptığın her alışverişle.</li><li>Gönüllülük faaliyetlerini tamamlayarak.</li><li>Platforma yeni arkadaşlarını davet ederek.</li><li>Rozetler kazanarak ve seviye atlayarak.</li></ul>"
+            },
+            {
+                title: "Bir bağışın STK'ya ulaşma süreci nedir?",
+                content: "Alışverişiniz sonrası marka tarafından onaylanan bağış tutarı, yasal kesintiler ve Hangel hizmet bedeli düşüldükten sonra takip eden ayın sonunda seçtiğiniz STK'nın hesabına aktarılır. Tüm süreci 'Bağışlarım' sayfasından şeffaf bir şekilde takip edebilirsiniz."
+            },
+            {
+                title: "Gönüllülük başvurum neden reddedildi?",
+                content: "Başvurunuzun reddedilme nedenleri arasında; ilanın kontenjanının dolması, aranan yetkinliklere tam olarak uymamanız veya STK'nın kendi iç değerlendirme kriterleri bulunabilir. Reddedilme nedeni genellikle STK tarafından size bir mesaj ile bildirilir."
+            },
+            {
+                title: "QR Kod ile nasıl ödeme yaparım?",
+                content: "Cüzdanım sayfasındaki 'QR Tara' özelliğini kullanarak üye işyerlerindeki QR kodları okutabilirsiniz. Ayrıca 'QR Kodum' bölümündeki kişisel kodunuzu göstererek de ödeme alabilirsiniz."
+            }
+        ]
+    },
+    {
+        icon: 'Building',
+        title: "STK Yöneticileri",
+        slug: "stk-yoneticileri",
+        description: "Yönetim paneli, gönüllü yönetimi ve kaynak geliştirme araçları.",
+        subtopics: [
+            {
+                title: "Şeffaflık Puanımı nasıl artırabilirim?",
+                content: "Şeffaflık puanınızı artırmak için yönetim panelinizdeki 'Şeffaflık Endeksi' sayfasındaki tüm kriterleri (faaliyet raporu, tüzük, denetim raporu, finansal tablolar vb.) eksiksiz olarak yüklemeniz gerekmektedir. Yüklediğiniz her doğrulanmış belge, puanınızı olumlu etkileyecektir."
+            },
+            {
+                title: "Gönüllülük ilanı nasıl oluşturulur?",
+                content: "Yönetim panelinizdeki 'Gönüllülük Yönetimi' sekmesine gidin ve 'Yeni İlan Oluştur' butonuna tıklayın. Açılan formda ilanın başlığını, açıklamasını, aranan yetkinlikleri, konum, zamanlama ve diğer detayları eksiksiz doldurarak ilanınızı yayına alabilirsiniz."
+            },
+            {
+                title: "Hakediş ödemeleri ne zaman yapılır?",
+                content: "Marka alışverişlerinden doğan ve kesinleşen bağışlar, ilgili ayı takip eden ayın son iş gününde kayıtlı banka hesabınıza aktarılır. Tüm detayları 'Bağış Takibi' sayfanızdan inceleyebilirsiniz."
+            },
+            {
+                title: "Web sitemi nasıl yönetirim?",
+                content: "Yönetim panelindeki 'Web Sitesi Yönetimi' bölümünden, sitenizde görünecek modülleri (Hakkımızda, İstatistikler, Haberler vb.) aktif/pasif hale getirebilir, kurumsal renginizi seçebilir ve banner görsellerinizi yönetebilirsiniz."
+            }
+        ]
+    },
+    {
+        icon: 'Store',
+        title: "Marka Yöneticileri",
+        slug: "marka-yoneticileri",
+        description: "İşbirliği süreci, komisyon oranları ve raporlama.",
+        subtopics: [
+            {
+                title: "Bağış oranlarını nasıl belirleyebilirim?",
+                content: "Marka başvurusu sırasında veya marka yönetim panelinizden farklı ürün kategorileri için farklı bağış oranları tanımlayabilirsiniz. Belirlediğiniz oranlar, kullanıcı alışveriş yaptığında otomatik olarak uygulanır."
+            },
+            {
+                title: "Hangi verileri takip edebilirim?",
+                content: "Marka panelinizden, Hangel üzerinden gelen trafik sayısını, gerçekleşen alışveriş adedini, oluşturulan toplam bağış tutarını ve desteklenen STK'ların dağılımını takip edebilirsiniz. Bu veriler pazarlama stratejinizi optimize etmenize yardımcı olur."
+            },
+            {
+                title: "Mutabakat süreci nasıl işliyor?",
+                content: "Her ayın sonunda, Hangel sistemi üzerinden gerçekleşen ve iade edilmeyen tüm başarılı işlemler raporlanır. Raporlanan tutar üzerinden anlaşılan bağış oranı hesaplanır ve faturalandırma işlemi yapılır. Ödemeniz sonrası bağışlar STK'lara aktarılır."
+            }
+        ]
+    },
+    {
+        icon: 'School',
+        title: "Kulüp Yöneticileri",
+        slug: "kulup-yoneticileri",
+        description: "Kulüp yönetimi, etkinlik oluşturma ve üye takibi.",
+        subtopics: [
+            {
+                title: "Kulübüme nasıl üye alabilirim?",
+                content: "Kulüp profil sayfanızda bulunan 'Kulübe Katıl' butonu aracılığıyla öğrenciler başvuruda bulunabilir. Gelen başvuruları yönetim panelinizden onaylayabilir veya reddedebilirsiniz."
+            },
+            {
+                title: "Etkinlik nasıl oluşturulur?",
+                content: "Yönetim panelinizdeki 'Etkinlikler' sekmesinden yeni bir etkinlik oluşturabilir, tarih, konum ve içerik gibi detayları girerek platformda yayınlayabilirsiniz."
+            },
+            {
+                title: "Etki Puanı kulüpler için ne anlama geliyor?",
+                content: "Kulübünüzün düzenlediği etkinliklere katılım, tamamlanan sosyal sorumluluk projeleri ve platforma kazandırdığınız yeni üyeler kulübünüze Etki Puanı kazandırır. Bu puanlar, 'Öğrenci Kulüpleri Liderlik Tablosu'nda sıralamanızı belirler."
+            }
+        ]
+    }
+];
+
 export const ngoHelpTopics = helpTopics;
-export const ngoFaqArticles = [];
+
+export const ngoFaqArticles = [
+    { title: 'Şeffaflık Puanım neden düşük?', content: '...' },
+    { title: 'Gönüllü başvurularını nasıl filtreleyebilirim?', content: '...' },
+    { title: 'Aylık hakedişim neden beklediğimden az geldi?', content: '...' },
+    { title: 'Web sitemde hangi bölümleri özelleştirebilirim?', content: '...' },
+];
+
 export const pastVolunteering = [];
 export const managedItems: ManagedItem[] = [
     { name: 'Ahbap Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/ahbap.org' }

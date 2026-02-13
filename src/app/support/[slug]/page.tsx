@@ -1,14 +1,17 @@
+
 'use client';
 
 import { helpTopics } from '@/lib/data';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-export default function SupportTopicPage({ params }: { params: { slug: string } }) {
+export default function SupportTopicPage() {
   const router = useRouter();
-  const topic = helpTopics.find(t => t.slug === params.slug);
+  const params = useParams();
+  const slug = params.slug as string;
+  const topic = helpTopics.find(t => t.slug === slug);
 
   if (!topic) {
     notFound();
