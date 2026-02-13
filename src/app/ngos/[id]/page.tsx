@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Twitter, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2, CreditCard } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2, CreditCard } from 'lucide-react';
 import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +18,18 @@ import { useToast } from '@/hooks/use-toast';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+const XIcon = (props: React.ComponentProps<'svg'>) => (
+    <svg
+      role="img"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+);
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -92,7 +104,7 @@ export default function NgoProfilePage() {
   useEffect(() => {
     setProfileUrl(window.location.href);
   }, []);
-
+  
   if (!ngo) {
     notFound();
   }
@@ -253,7 +265,7 @@ export default function NgoProfilePage() {
                      )}
                     <Separator className="my-4" />
                     <div className="flex gap-4">
-                        <a href={`https://twitter.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><Twitter className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
+                        <a href={`https://x.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><XIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
                         <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
                         <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer"><Facebook className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
                         <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer"><Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
