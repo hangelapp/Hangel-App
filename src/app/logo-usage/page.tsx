@@ -115,8 +115,8 @@ const ShowcaseCard = ({
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
         <div className="pt-8">
-          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.label}</h3>
-          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</p>
+          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.description}</h3>
+          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.label}</p>
           <div className="mt-4">
              <span className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
@@ -133,6 +133,20 @@ const ShowcaseCard = ({
   );
 };
 
+const LogoShowcaseCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
+    <Card className="rounded-[1.75rem] h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-xl transition-shadow group">
+        <div className="relative aspect-video w-full flex items-center justify-center p-6 bg-muted/30">
+            {children}
+        </div>
+        <CardContent className="p-6 flex-1 flex flex-col">
+            <h4 className="font-semibold text-base">{title}</h4>
+            <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
+            <Button size="sm" variant="ghost" className="text-xs mt-4 p-0 h-auto self-start text-primary hover:text-primary group-hover:underline" onClick={onDownload}>
+                PNG İndir <Download className="ml-1.5 h-3.5 w-3.5"/>
+            </Button>
+        </CardContent>
+    </Card>
+);
 
 export default function LogoUsagePage() {
     const router = useRouter();
@@ -266,7 +280,7 @@ export default function LogoUsagePage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {appArchitecture.map((item, index) => (
                                     <ShowcaseCard 
-                                        key={index} 
+                                        key={item.href} 
                                         item={item} 
                                         themeConfig={themeConfigs[index % themeConfigs.length]}
                                     />

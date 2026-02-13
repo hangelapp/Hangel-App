@@ -115,8 +115,8 @@ const ShowcaseCard = ({
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
         <div className="pt-8">
-          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.label}</h3>
-          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</p>
+          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.description}</h3>
+          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.label}</p>
           <div className="mt-4">
              <span className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
@@ -280,7 +280,7 @@ export default function LogoPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {appArchitecture.map((item, index) => (
                                     <ShowcaseCard 
-                                        key={index} 
+                                        key={item.href} 
                                         item={item} 
                                         themeConfig={themeConfigs[index % themeConfigs.length]}
                                     />
