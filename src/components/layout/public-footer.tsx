@@ -84,6 +84,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
 
     const policyLinks = [
         { label: "Sözleşmeler", href: "/settings/contracts" },
+        { label: "Politikalar", href: "/settings/contracts" },
         { label: "Site Haritası", href: "/sitemap" },
         { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
         { label: "Erişilebilirlik", href: "/accessibility" },
@@ -138,7 +139,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     ))}
                 </div>
                 
-                <div className="pt-6 space-y-2">
+                <div className="pt-6 space-y-3">
                     <div className="flex justify-start items-center flex-wrap gap-x-2 gap-y-1 text-[12px] text-[#1d1d1f]/70 font-normal">
                         {appStoreLinks.map((link, index) => (
                             <React.Fragment key={link.label}>
@@ -148,23 +149,23 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                         ))}
                     </div>
                     <div className="h-px bg-black/10 w-full" />
-                    <div className="flex justify-start items-center flex-wrap gap-x-2 gap-y-1 text-[12px] text-[#1d1d1f]/70 font-normal">
+                    <div className="flex justify-start items-center flex-wrap gap-x-1 gap-y-1 text-[12px] text-[#1d1d1f]/70 font-normal">
                         {socialLinks.map((link, index) => (
                             <React.Fragment key={link.label}>
                                 <a href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.label}</a>
-                                {index < socialLinks.length - 1 && <span className="text-black/20 mx-1">|</span>}
+                                {index < socialLinks.length - 1 && <span className="text-black/20 mx-0.5">|</span>}
                             </React.Fragment>
                         ))}
                     </div>
                     <p className="text-[12px] text-[#1d1d1f]/70 pt-2">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
                      
                     
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3">
-                         <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4">
+                         <div className="flex flex-wrap gap-x-1 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
                             {policyLinks.map((link, index) => (
                                 <React.Fragment key={link.label}>
                                     <Link href={link.href} className="hover:underline">{link.label}</Link>
-                                    {index < policyLinks.length - 1 && <span className="text-black/10 mx-1">|</span>}
+                                    {index < policyLinks.length - 1 && <span className="text-black/10 mx-0.5">|</span>}
                                 </React.Fragment>
                             ))}
                         </div>
