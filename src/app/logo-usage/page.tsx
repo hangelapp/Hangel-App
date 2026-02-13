@@ -22,7 +22,7 @@ import {
     Library,
     Users,
     Brain,
-    BookOpen,
+    BookCopy,
     Link as LinkIcon,
     Building,
     Maximize,
@@ -33,7 +33,8 @@ import {
     Share2,
     Tv,
     Landmark,
-    Shield
+    Shield,
+    HandCoins
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -453,3 +454,5 @@ export default function LogoUsagePage() {
     );
 
 }
+
+    
