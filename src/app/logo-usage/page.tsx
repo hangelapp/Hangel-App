@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -34,7 +33,8 @@ import {
     Share2,
     Tv,
     Landmark,
-    HandCoins
+    HandCoins,
+    BookCopy
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -149,13 +149,13 @@ const associationArchitecture = [
 ];
 
 const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, title: string, children: React.ReactNode }) => (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-black/5 text-left h-full">
+    <Card className="bg-white rounded-3xl p-8 shadow-lg border border-black/5 text-left h-full">
         <Icon className="h-10 w-10 text-primary mb-4" />
-        <h4 className="font-bold text-lg text-foreground mb-2">{title}</h4>
-        <div className="text-sm text-muted-foreground space-y-2">
+        <CardHeader className="p-0"><CardTitle className="text-lg text-foreground mb-2">{title}</CardTitle></CardHeader>
+        <CardContent className="p-0 text-sm text-muted-foreground space-y-2">
             {children}
-        </div>
-    </div>
+        </CardContent>
+    </Card>
 );
 
 
@@ -286,9 +286,9 @@ export default function LogoUsagePage() {
                                        <CardTitle>Yazı Tipleri Font Kullanım Yönergesi</CardTitle>
                                    </CardHeader>
                                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                                       <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                       <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                       <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
                                        <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                       <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                    </CardContent>
                                </Card>
                             </TabsContent>
@@ -327,27 +327,22 @@ export default function LogoUsagePage() {
                 
                  <Section id="kullanim-kurallari" className="bg-white">
                     <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-                        <RuleCard icon={Ruler} title="BOŞLUK (CLEAR SPACE) KURALI">
-                            <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
+                        <RuleCard icon={Ruler} title="Temel Kurallar">
+                            <p><strong>BOŞLUK (CLEAR SPACE):</strong> Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar olmalıdır. Bu alana metin, görsel veya ikon yerleştirilemez.</p>
+                            <p><strong>DEĞİŞİKLİK YASAĞI:</strong> Logo sabittir; oranları, renkleri değiştirilemez, eğilemez veya üzerine efekt eklenemez.</p>
                         </RuleCard>
-                        <RuleCard icon={XCircle} title="DEĞİŞİKLİK YASAĞI">
-                           <p>Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
+                        <RuleCard icon={Handshake} title="Marka İlişkileri">
+                           <p><strong>CO-BRANDING:</strong> Logolar eşit ölçekli ve yatay hizalı kullanılmalıdır. İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.</p>
+                           <p><strong>HİYERARŞİ:</strong> Hangel logosu, ana markayı destekleyici rolde konumlandırılır, hiçbir zaman en baskın görsel unsur olamaz.</p>
                         </RuleCard>
-                        <RuleCard icon={Package} title="ÜRÜN İKONLARI">
-                            <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.</p>
+                        <RuleCard icon={Package} title="İsim ve Kanal Kullanımı">
+                            <p><strong>İSİM STANDARTLARI:</strong> "hangel" ismi küçük harfle başlar, değiştirilemez. “hangelPro”, “hangelClubX” gibi birleştirmeler yasaktır. İzin verilen kullanım: “hangel için geliştirildi.”</p>
+                            <p><strong>SOSYAL MEDYA:</strong> Resmi hesap algısı yaratacak (“hangel Haber”) kullanım yasaktır. Doğrusu: “hangel hakkında haberler”.</p>
                         </RuleCard>
-                        <RuleCard icon={Share2} title="SOSYAL MEDYA VE DİJİTAL MECRALAR">
-                            <p>Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez.</p>
-                        </RuleCard>
-                        <RuleCard icon={Tv} title="TV, FİLM VE YAYINCILIK">
-                            <p>Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır.</p>
-                        </RuleCard>
-                        <RuleCard icon={Handshake} title="CO-BRANDING (ORTAK MARKALAMA) KURALLARI">
-                             <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır: Logo eşit ölçekli kullanılmalıdır. İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır. Logolar yatay hizalı olmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz. Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur.</p>
-                        </RuleCard>
-                        <RuleCard icon={Scale} title="YASAL ÇERÇEVE">
-                             <p>hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. Ticari markalarımız tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
+                        <RuleCard icon={FileCheck} title="İzinler ve Yasal Çerçeve">
+                            <p><strong>MARKA KULLANIM İZNİ:</strong> TV, radyo, açık hava reklamı gibi büyük ölçekli mecralarda kullanım için yazılı izin alınması zorunludur.</p>
+                            <p><strong>YASAL ÇERÇEVE:</strong> Ticari markalarımız tescil ettirilemez veya benzer şekilde kullanılamaz. Hangel, marka kullanım iznini tek taraflı iptal etme hakkını saklı tutar.</p>
                         </RuleCard>
                     </div>
                 </Section>
@@ -368,4 +363,4 @@ export default function LogoUsagePage() {
         </div>
     );
 
-    
+}
