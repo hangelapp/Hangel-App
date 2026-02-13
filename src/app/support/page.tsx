@@ -25,6 +25,7 @@ import { helpTopics } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
+import { PublicFooter } from '@/components/layout/public-footer';
 
 const CategoryLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
     <Link href={href} className="group flex flex-col items-center gap-2 text-center">
@@ -166,7 +167,7 @@ export default function SupportPage() {
                         </div>
                         <div className="p-6 space-y-2">
                             <h4 className="font-bold text-xl">Video Rehberler</h4>
-                            <p className="text-sm text-muted-foreground">Platformu nasıl daha etkili kullanacağınızı anlatan kısa ve eğitici videolarımızı izleyin.</p>
+                            <p className="text-sm text-muted-foreground">Platformu nasıl daha etkili kullanabileceğinizi anlatan kısa ve eğitici videolarımızı izleyin.</p>
                              <Button asChild variant="link" className="px-0">
                                 <Link href="#">Yakında...</Link>
                             </Button>
@@ -198,6 +199,7 @@ export default function SupportPage() {
         </section>
 
       </main>
+      <PublicFooter currentPageLabel="Destek Merkezi" />
     </div>
   );
 }
