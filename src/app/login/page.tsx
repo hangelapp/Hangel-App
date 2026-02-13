@@ -283,6 +283,16 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }
 
 export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    
+    const pluginBagis = useRef(
+        Autoplay({ delay: 5000, stopOnInteraction: true })
+    );
+    const pluginImece = useRef(
+        Autoplay({ delay: 5500, stopOnInteraction: true })
+    );
+    const pluginAssociation = useRef(
+        Autoplay({ delay: 4500, stopOnInteraction: true })
+    );
 
     const publicNavItems = [
       { href: '#bagis', label: 'Bağış Yap' },
@@ -385,12 +395,7 @@ export default function LoginPage() {
                         align: "start",
                         loop: true,
                         }}
-                        plugins={[
-                            Autoplay({
-                                delay: 5000,
-                                stopOnInteraction: true,
-                            }),
-                        ]}
+                        plugins={[pluginBagis.current]}
                         className="w-full max-w-7xl mx-auto"
                     >
                         <CarouselContent className="-ml-4">
@@ -422,12 +427,7 @@ export default function LoginPage() {
                         align: "start",
                         loop: true,
                         }}
-                         plugins={[
-                            Autoplay({
-                                delay: 5500,
-                                stopOnInteraction: true,
-                            }),
-                        ]}
+                         plugins={[pluginImece.current]}
                         className="w-full max-w-7xl mx-auto"
                     >
                         <CarouselContent className="-ml-4">
@@ -469,12 +469,7 @@ export default function LoginPage() {
                                 align: "start",
                                 loop: true,
                             }}
-                            plugins={[
-                                Autoplay({
-                                    delay: 4500,
-                                    stopOnInteraction: true,
-                                })
-                            ]}
+                            plugins={[pluginAssociation.current]}
                             className="w-full"
                         >
                             <CarouselContent className="-ml-4">
