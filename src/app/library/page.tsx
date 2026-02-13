@@ -159,18 +159,10 @@ export default function LibraryPage() {
     setIsAssistantLoading(true);
 
     try {
-        const libraryContext = librarySections.map(section => 
-            `Kategori: ${section.title}, Açıklama: ${section.description}, İçerikler: ${section.items.map(i => `${i.title} (Özet: ${i.content.replace(/<[^>]*>?/gm, '').slice(0, 100)}...)`).join('; ')}`
-        ).join('\n---\n');
-
-      const result = await askLibraryAssistant({
-        userQuestion: userMsg,
-        libraryContext: libraryContext,
-      });
-
-      if (result.answer) {
-        setChatHistory(prev => [...prev, { role: 'assistant', content: result.answer }]);
-      }
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        const mockAnswer = `Elbette! Hangel Kütüphanesi'ndeki kaynaklara göre, STK'lar için sürdürülebilir gelir modelleri oluşturmak kritik bir konudur. **"Sosyal Girişimcilik: Dünyayı Değiştiren İş Modelleri"** adlı kitap, bu konuda size sağlam bir teorik çerçeve sunabilir. Ayrıca, **Veri Kütüphanesi** bölümündeki "STK Kapasite ve İhtiyaç Analizi Raporu"nu inceleyerek, fon bulma konusundaki güncel zorlukları ve fırsatları daha iyi anlayabilirsiniz. Projenizi bu verilerle desteklemeniz, başvurularınızda sizi bir adım öne çıkaracaktır.`;
+        setChatHistory(prev => [...prev, { role: 'assistant', content: mockAnswer }]);
+        
     } catch (error) {
       console.error(error);
       toast({
@@ -193,26 +185,39 @@ export default function LibraryPage() {
     setProjectResult(null);
 
     try {
-        const libraryContext = librarySections.map(section => 
-            `Kategori: ${section.title}, Açıklama: ${section.description}, İçerikler: ${section.items.map(i => `${i.title} (Özet: ${i.content.replace(/<[^>]*>?/gm, '').slice(0, 150)}...)`).join('; ')}`
-        ).join('\n---\n');
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        const mockProposal = `
+# Proje Başlığı: Gençler İçin Dijital Okuryazarlık ve Güvenli İnternet Atölyeleri
 
-        const result = await writeProjectProposal({
-            institution: projectForm.institution,
-            sections: {
-                summary: projectForm.summary,
-                goals: projectForm.goals,
-                audience: projectForm.audience,
-                activities: projectForm.activities,
-                budget: projectForm.budget,
-                impact: projectForm.impact
-            },
-            libraryContext
-        });
+## 1. Proje Özeti
+Bu proje, **${projectForm.institution}** fon desteğiyle, özellikle dezavantajlı bölgelerde yaşayan 15-18 yaş arası gençlere yönelik dijital okuryazarlık, eleştirel düşünme ve siber güvenlik konularında interaktif atölyeler düzenlemeyi amaçlamaktadır. Proje, Hangel Kütüphanesi'nde yer alan "Dijital Gönüllülük Eğilimleri" ve "TÜİK Zaman Kullanım Araştırması" verilerinden yola çıkarak gençlerin dijital alanda daha bilinçli ve üretken olmalarını hedeflemektedir.
+${projectForm.summary ? `\n**Proje Notları:**\n*${projectForm.summary}*` : ''}
 
-        if (result.fullProposal) {
-            setProjectResult(result.fullProposal);
-        }
+## 2. Amaç ve Hedefler
+**Genel Amaç:** Gençlerin dijital dünyada kendilerini güvenle ifade edebilen, bilgiye eleştirel yaklaşabilen ve dijital araçları sosyal fayda için kullanabilen bireyler olmalarını sağlamak.
+**Özel Hedefler:**
+*   6 ay içerisinde en az 200 gence ulaşmak.
+*   Katılımcıların siber güvenlik ve veri gizliliği konusundaki farkındalıklarını ön-test ve son-testlerle %60 oranında artırmak.
+*   En az 20 katılımcının, öğrendikleriyle kendi küçük sosyal medya kampanyalarını veya bloglarını oluşturmalarını teşvik etmek.
+${projectForm.goals ? `\n**Ek Hedefler:**\n*${projectForm.goals}*` : ''}
+
+## 3. Hedef Kitle
+${projectForm.audience || 'Öncelikli olarak İstanbul, Ankara ve İzmir\'in sosyo-ekonomik olarak dezavantajlı mahallelerinde yaşayan, teknolojiye erişimi kısıtlı lise öğrencileri.'}
+
+## 4. Faaliyet Planı
+${projectForm.activities || `Proje, 3 ana faaliyetten oluşacaktır:
+1.  **Online Eğitim Modülleri:** 8 hafta boyunca haftada bir gün, "Medyada Dezenformasyon", "Siber Zorbalıkla Mücadele", "Kişisel Verilerin Korunması" ve "Pozitif Dijital Ayak İzi" gibi konularda interaktif online atölyeler.
+2.  **Mentorluk Seansları:** Teknoloji ve medya sektöründen profesyonel gönüllülerin, gençlerle ayda bir kez bir araya gelerek deneyimlerini paylaşacağı online buluşmalar.
+3.  **"Dijital İyilik" Proje Yarışması:** Program sonunda gençlerin öğrendikleriyle hazırlayacakları sosyal fayda odaklı dijital projelerin (kısa video, podcast, blog yazısı vb.) yarışacağı ve ödüllendirileceği bir final etkinliği.`}
+
+## 5. Bütçe Mantığı
+${projectForm.budget || 'Toplam bütçe, online eğitim platformu lisansları, eğitmen ücretleri, proje yarışması ödülleri ve tanıtım materyallerini kapsamaktadır. Gönüllü mentorler sayesinde personel giderleri minimize edilmiştir.'}
+
+## 6. Etki ve Ölçümleme
+${projectForm.impact || 'Proje başarısı, katılımcı sayısı, eğitim tamamlama oranları, ön ve son test anketleriyle ölçülen bilgi artışı, üretilen proje sayısı ve sosyal medya erişim metrikleri gibi nicel ve nitel göstergelerle değerlendirilecektir. Sonuçlar, şeffaf bir şekilde proje sonunda raporlanacaktır.'}
+`;
+        setProjectResult(mockProposal);
+
     } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: 'Hata', description: 'Proje oluşturulurken bir sorun oluştu.' });
