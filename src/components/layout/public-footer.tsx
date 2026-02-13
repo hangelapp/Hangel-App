@@ -158,10 +158,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                      <div className="h-px bg-black/10 w-full" />
                     
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="text-[11px] text-[#1d1d1f]/50">
-                            Telif Hakkı © {new Date().getFullYear()} hangel A.Ş. Tüm hakları saklıdır.
-                        </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
+                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
                             {policyLinks.map((link, index) => (
                                 <React.Fragment key={link.label}>
                                     <Link href={link.href} className="hover:underline">{link.label}</Link>
@@ -169,10 +166,13 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                                 </React.Fragment>
                             ))}
                         </div>
-                        <div className="text-[11px] font-bold text-[#1d1d1f]/70 flex items-center gap-2">
+                        <div className="text-[11px] font-bold text-[#1d1d1f]/70 flex items-center gap-2 self-start md:self-center">
                             <Globe className="h-3 w-3" />
                             Türkiye
                         </div>
+                    </div>
+                     <div className="text-center text-[11px] text-[#1d1d1f]/50 pt-8">
+                        Telif Hakkı © {new Date().getFullYear()} hangel A.Ş. Tüm hakları saklıdır.
                     </div>
                 </div>
             </div>
