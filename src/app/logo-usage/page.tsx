@@ -19,18 +19,21 @@ import {
     Mic,
     Newspaper,
     Landmark,
-    TrendingUp,
-    Users,
-    ShieldCheck,
-    ChevronRight,
     HeartHandshake,
-    BookCopy,
     Globe,
     Sparkles,
-    HandCoins,
-    School,
-    Building,
+    Briefcase,
+    Brain,
+    UserCheck,
+    Map as MapIcon,
+    BookOpen,
+    DollarSign,
+    Users,
+    Plane,
+    ChevronRight,
+    Building2,
     Store,
+    School,
     Library
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -84,14 +87,13 @@ const LogoDisplayCard = ({ title, description, children, onDownload }: { title: 
 );
 
 const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
-    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50 shadow-inner">
+    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50 shadow-inner h-full flex flex-col justify-center">
         <p className="text-xs font-bold text-muted-foreground">{title}</p>
-        <p className={cn("text-3xl", fontName.includes('Bold') ? 'font-bold' : 'font-semibold')}>Aa</p>
+        <p className={cn("text-3xl", fontName.includes('Bold') ? 'font-bold' : fontName.includes('SemiBold') ? 'font-semibold' : 'font-normal')}>Aa</p>
         <p className="text-lg font-semibold">{fontName}</p>
         <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
     </div>
 );
-
 
 const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
     <button className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer shadow-sm hover:shadow-lg transition-all group w-full" onClick={onCopy}>
@@ -101,21 +103,6 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
             {hex} <Copy className="w-3 h-3" />
         </div>
     </button>
-);
-
-const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
-    <div className="bg-white rounded-3xl p-8 flex flex-col h-full text-left border shadow-sm hover:shadow-xl transition-shadow">
-        <div className="p-3 bg-muted rounded-2xl w-fit shadow-sm mb-6">
-            <Icon className="h-6 w-6 text-primary" />
-        </div>
-        <h3 className="font-semibold text-xl text-[#1d1d1f]">{title}</h3>
-        <p className="text-sm text-[#1d1d1f]/80 mt-3 flex-grow">{description}</p>
-        <div className="mt-10">
-            <Link href={link} className="text-sm font-semibold text-primary hover:underline flex items-center group">
-                {linkText} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
-            </Link>
-        </div>
-    </div>
 );
 
 const appArchitecture = [
@@ -156,6 +143,19 @@ const ArchitectureCard = ({ icon: Icon, label, description, href, iconBgClass, c
         </Card>
     </Link>
 );
+
+const InfoCard = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
+    <div className="bg-white rounded-3xl p-8 flex flex-col h-full text-left border shadow-sm">
+        <div className="p-3 bg-muted rounded-2xl w-fit shadow-sm mb-6">
+            <Icon className="h-6 w-6 text-primary" />
+        </div>
+        <h3 className="font-semibold text-xl text-[#1d1d1f] mb-4">{title}</h3>
+        <div className="prose prose-sm text-foreground/80 max-w-none">
+            {children}
+        </div>
+    </div>
+);
+
 
 export default function LogoUsagePage() {
     const router = useRouter();
@@ -257,9 +257,10 @@ export default function LogoUsagePage() {
                                         <CardTitle>Font Kullanım Yönergesi</CardTitle>
                                         <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur.</p>
                                     </CardHeader>
-                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 p-0">
-                                         <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                         <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-0">
+                                        <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                        <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                        <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                     </CardContent>
                                 </Card>
                             </div>
@@ -278,7 +279,7 @@ export default function LogoUsagePage() {
                                     <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
                                     <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
                                 </CardContent>
-                                 <p className="text-center text-xs text-muted-foreground mt-8">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır. Ton, gölge veya gradyan uygulamaları marka bütünlüğünü bozacak şekilde değiştirilmemelidir. Marka renkleri yalnızca onaylı logo, ikon ve resmi rozetlerde kullanılabilir.</p>
+                                 <p className="text-center text-xs text-muted-foreground mt-8">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır. Ton, gölge veya gradyan uygulamaları marka bütünlüğünü bozacak şekilde değiştirilmemelidir.</p>
                                </Card>
                             </div>
                         </div>
@@ -300,46 +301,67 @@ export default function LogoUsagePage() {
                     </div>
                 </Section>
                 
-                 <Section id="degerler" className="bg-white">
+                 <Section id="kullanim-kurallari" className="bg-white">
                     <div className="text-center mb-16 space-y-4">
-                        <SectionTitle>Değerlerimizle Fark Oluşturuyoruz</SectionTitle>
+                        <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <InfoCard 
-                            icon={TrendingUp}
-                            title="Sürdürülebilirlik"
-                            description="Toplumsal ve çevresel etkimizi nasıl yönettiğimizi ve pozitif değişime nasıl liderlik ettiğimizi keşfedin."
-                            link="/social-impact"
-                            linkText="Etkimizi Görün"
-                        />
-                        <InfoCard 
-                            icon={Users}
-                            title="Erişilebilirlik"
-                            description="Teknolojiyi herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin."
-                            link="/accessibility"
-                            linkText="Standartları İnceleyin"
-                        />
-                        <InfoCard 
-                            icon={ShieldCheck}
-                            title="Güvenlik"
-                            description="Verilerinizi nasıl koruduğumuzu ve platformumuzun güvenliğini nasıl sağladığımızı öğrenin."
-                            link="/settings/contracts/gizlilik-politikasi"
-                            linkText="Daha Fazla Bilgi"
-                        />
-                        <InfoCard 
-                            icon={FileText}
-                            title="Yasal Bilgiler"
-                            description="Yasal bilgilendirmelerimize ve kurumsal şeffaflık belgelerimize ulaşın."
-                            link="/bilgi-toplumu-hizmetleri"
-                            linkText="Belgeleri Görüntüleyin"
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InfoCard icon={Ruler} title="Temel Logo Kuralları">
+                            <h4>LOGO MİNİMUM BOYUT KURALI</h4>
+                            <p>Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:</p>
+                            <ul>
+                                <li><strong>Dijital Ortam:</strong> Minimum genişlik: 120 px, App icon minimum: 32 px</li>
+                                <li><strong>Basılı Materyal:</strong> Minimum genişlik: 25 mm</li>
+                            </ul>
+                            <p>Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır.</p>
+                            
+                            <h4>BOŞLUK (CLEAR SPACE) KURALI</h4>
+                            <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
+
+                            <h4>Değişiklik Yasağı</h4>
+                            <p>Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
+                        </InfoCard>
+                        <InfoCard icon={Handshake} title="Marka İlişkileri">
+                            <h4>HİYERARŞİ PRENSİBİ</h4>
+                            <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır. Logo hiçbir koşulda en baskın görsel unsur olarak konumlandırılamaz.</p>
+                            
+                            <h4>CO-BRANDING (ORTAK MARKALAMA) KURALLARI</h4>
+                            <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:</p>
+                            <ul>
+                                <li>Logo eşit ölçekli kullanılmalıdır.</li>
+                                <li>İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.</li>
+                                <li>Logolar yatay hizalı olmalıdır.</li>
+                                <li>Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</li>
+                            </ul>
+                            <p>Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur.</p>
+                        </InfoCard>
+                         <InfoCard icon={Mic} title="İsim ve Kanal Kullanımı">
+                            <h4>İSİM VE METİN KULLANIM STANDARTLARI</h4>
+                            <p>“hangel” kelimesinde “h” harfi büyük yazılamaz ve farklı yazı tiplerinde manipüle edilemez. Alan adı, şirket adı veya ürün adına entegre edilemez (Örn: hangelPro). İzin verilen kullanım: "hangel için geliştirilmiştir" gibi açıklayıcı ifadelerdir.</p>
+                            
+                            <h4>ÜRÜN İKONLARI</h4>
+                            <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.</p>
+                            
+                            <h4>SOSYAL MEDYA VE DİJİTAL MECRALAR</h4>
+                            <p>Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez.</p>
+                            
+                            <h4>TV, FİLM VE YAYINCILIK</h4>
+                            <p>Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır.</p>
+                        </InfoCard>
+                        <InfoCard icon={Scale} title="İzinler ve Yasal Çerçeve">
+                            <h4>MARKA KULLANIM İZNİ</h4>
+                            <p>Yayın, radyo, açık hava reklamı, TV veya A4’ten büyük baskı materyallerinde hangel varlıklarını kullanmak isteyenler yazılı izin almak zorundadır. Talep, kullanım taslağını içermelidir.</p>
+                            
+                            <h4>YASAL ÇERÇEVE</h4>
+                            <p>hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. Ticari markalarımız tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
+                        </InfoCard>
                     </div>
                 </Section>
                 
                 <Section>
                     <div className="text-left text-sm text-muted-foreground max-w-3xl space-y-4">
                         <p>
-                            hangel, fikri mülkiyet haklarının korunması amacıyla ulusal ve uluslararası düzeyde tescil süreçlerini yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
+                           hangel, fikri mülkiyet haklarının korunması amacıyla ulusal ve uluslararası düzeyde tescil süreçlerini yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
                         </p>
                          <p>
                             <strong>hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar. Marka, bir görselden ibaret değildir. Marka, bir taahhüttür.</strong>
@@ -352,5 +374,3 @@ export default function LogoUsagePage() {
         </div>
     );
 }
-
-    
