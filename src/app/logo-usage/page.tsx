@@ -29,8 +29,9 @@ import {
     School,
     Building,
     Sparkles,
-    ChevronRight,
-    Store
+    Store,
+    BookOpen,
+    Library
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -52,7 +53,6 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
       <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
     </svg>
 );
-
 
 const Section = ({ children, className, ...props }: React.HTMLAttributes<HTMLElement>) => (
   <section className={cn("py-20 md:py-28", className)} {...props}>
@@ -89,6 +89,15 @@ const LogoDisplayCard = ({ title, description, children, onDownload }: { title: 
     </div>
 );
 
+const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
+    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50 shadow-inner">
+        <p className="text-xs font-bold text-muted-foreground">{title}</p>
+        <p className={cn("text-3xl", fontName.includes('Bold') ? 'font-bold' : 'font-semibold')}>Aa</p>
+        <p className="text-lg font-semibold">{fontName}</p>
+        <Button size="sm" variant="link" className="text-primary p-0 h-auto" onClick={onDownload}>Fontu tıkla ve indir</Button>
+    </div>
+);
+
 const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
     <button className="border rounded-[1.5rem] p-4 text-center space-y-4 bg-white cursor-pointer shadow-sm hover:shadow-xl transition-all group w-full" onClick={onCopy}>
         <div className="h-24 w-full rounded-xl" style={{ backgroundColor: hex }} />
@@ -113,26 +122,18 @@ const RuleCard = ({ title, icon: Icon, children }: { title: string, icon: React.
     </div>
 );
 
-const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
-    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50 shadow-inner">
-        <p className="text-xs font-bold text-muted-foreground">{title}</p>
-        <p className={cn("text-3xl", fontName.includes('Bold') ? 'font-bold' : 'font-semibold')}>Aa</p>
-        <p className="text-lg font-semibold">{fontName}</p>
-        <Button size="sm" variant="link" className="text-primary p-0 h-auto" onClick={onDownload}>Fontu indir</Button>
-    </div>
-);
-
 const ArchitectureCard = ({ icon: Icon, title, description, href, iconBgClass }: { icon: React.ElementType, title: string, description: string, href: string, iconBgClass?: string }) => (
-    <div className="text-center flex flex-col items-center">
-        <div className={cn("w-16 h-16 rounded-[1.25rem] flex items-center justify-center mb-4", iconBgClass)}>
-            <Icon className="h-8 w-8 text-white" />
-        </div>
-        <h3 className="font-semibold text-lg">{title}</h3>
-        <p className="text-sm text-muted-foreground mt-1 flex-1">{description}</p>
-        <Button asChild variant="link" className="mt-2 p-0 text-primary">
-            <Link href={href}>Daha fazla bilgi <ChevronRight className="h-4 w-4" /></Link>
-        </Button>
-    </div>
+    <Link href={href} className="group block">
+        <Card className="h-full text-left p-6 space-y-4 hover:shadow-xl transition-shadow rounded-2xl">
+            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", iconBgClass)}>
+                <Icon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+                <h4 className="font-bold text-base text-foreground">{title}</h4>
+                <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            </div>
+        </Card>
+    </Link>
 );
 
 export default function LogoUsagePage() {
@@ -154,49 +155,21 @@ export default function LogoUsagePage() {
         });
     };
 
-    const architectureItems = [
-        {
-            icon: HeartHandshake,
-            title: "hangel İmece",
-            description: "Yeteneklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Size en uygun gönüllülük fırsatlarını keşfedin.",
-            href: "/volunteering",
-            iconBgClass: "bg-red-500"
-        },
-        {
-            icon: HandCoins,
-            title: "hangel Bağış",
-            description: "Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun.",
-            href: "/market",
-            iconBgClass: "bg-green-500"
-        },
-        {
-            icon: School,
-            title: "hangel Clubs",
-            description: "Üniversite ve lise kulüplerinin sosyal etki projelerini yönetmesi, fon bulması ve network oluşturması için dijital merkez.",
-            href: "/admin/clubs",
-            iconBgClass: "bg-blue-500"
-        },
-        {
-            icon: Building,
-            title: "hangel Kurumsal",
-            description: "STK'lar ve markalar için dijital dönüşüm araçları. Şeffaflık, kaynak geliştirme ve topluluk yönetimi çözümleri.",
-            href: "/ngo-onboarding",
-            iconBgClass: "bg-orange-500"
-        },
-        {
-            icon: Palette,
-            title: "hangel Sanat",
-            description: "Sanatın birleştirici gücüyle toplumsal farkındalık yaratan projeler, sergiler ve atölyeler.",
-            href: "/hangelassociation/about", // Placeholder link
-            iconBgClass: "bg-purple-500"
-        },
-        {
-            icon: Sparkles,
-            title: "Sosyal İnovasyon",
-            description: "Veriye dayalı araştırmalar, küresel işbirlikleri ve çalıştaylar ile toplumsal sorunlara sürdürülebilir çözümler geliştirir.",
-            href: "/hangelassociation/workshop",
-            iconBgClass: "bg-indigo-500"
-        },
+    const appArchitecture = [
+        { icon: HeartHandshake, title: "hangel imece", description: "Yetenek bazlı gönüllülük platformu.", href: "/volunteering" },
+        { icon: HandCoins, title: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli.", href: "/market" },
+        { icon: School, title: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi.", href: "/admin/clubs" },
+        { icon: Store, title: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler.", href: "/merchant" },
+        { icon: Building, title: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları.", href: "/ngo-onboarding" },
+        { icon: Library, title: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi.", href: "/library" },
+    ];
+
+    const associationArchitecture = [
+        { icon: Sparkles, title: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir.", href: "/hangelassociation/projects/sosyal-inovasyon" },
+        { icon: Palette, title: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri.", href: "/hangelassociation/projects/sanat" },
+        { icon: Globe, title: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar.", href: "/hangelassociation/projects/etki-atlasi" },
+        { icon: BookOpen, title: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi.", href: "/hangelassociation/workshop" },
+        { icon: Users, title: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir.", href: "/hangelassociation/workshop" },
     ];
 
     return (
@@ -228,10 +201,19 @@ export default function LogoUsagePage() {
                     <SectionDescription>
                         Tüm alt markalar, ana marka olan hangel çatısı altında konumlanır ve marka hiyerarşisine uygun olarak destekleyici rol üstlenir.
                     </SectionDescription>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16 mt-16 max-w-6xl mx-auto">
-                        {architectureItems.map((item) => (
-                            <ArchitectureCard key={item.title} {...item} />
-                        ))}
+                    <div className="space-y-16 mt-16">
+                        <div className="space-y-8">
+                            <h3 className="text-2xl font-bold tracking-tight text-center text-primary">hangel App</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                                {appArchitecture.map(item => <ArchitectureCard key={item.title} {...item} iconBgClass="bg-primary" />)}
+                            </div>
+                        </div>
+                        <div className="space-y-8">
+                            <h3 className="text-2xl font-bold tracking-tight text-center text-[#042654]">hangel Derneği</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                                {associationArchitecture.map(item => <ArchitectureCard key={item.title} {...item} iconBgClass="bg-[#042654]" />)}
+                            </div>
+                        </div>
                     </div>
                 </Section>
                 
