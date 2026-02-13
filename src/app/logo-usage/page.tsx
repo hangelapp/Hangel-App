@@ -32,11 +32,13 @@ import {
     FileCheck,
     Package,
     Share2,
-    Tv
+    Tv,
+    Landmark,
+    HandCoins
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -140,7 +142,7 @@ const associationArchitecture = [
     { href: "/hangelassociation/projects/sosyal-inovasyon", icon: Sparkles, label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
     { href: "/hangelassociation/projects/sanat", icon: Palette, label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
     { href: "/hangelassociation/projects/etki-atlasi", icon: Globe, label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
-    { href: "/hangelassociation/workshop", icon: BookCopy, label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
+    { href: "/hangelassociation/workshop", icon: BookOpen, label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
     { href: "/hangelassociation/workshop", icon: Users, label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
 ];
 
@@ -303,87 +305,35 @@ Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez
                  <Section id="kullanim-kurallari" className="bg-white">
                     <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
-                        <RuleCard icon={Ruler} title="LOGO MİNİMUM BOYUT KURALI">
-                            <p>Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:</p>
-                            <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li><strong>Dijital Ortam:</strong> Minimum genişlik: 120 px, App icon minimum: 32 px</li>
-                                <li><strong>Basılı Materyal:</strong> Minimum genişlik: 25 mm</li>
-                            </ul>
-                            <p className="mt-2">Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır.</p>
-                        </RuleCard>
-                        <RuleCard icon={Maximize} title="BOŞLUK (CLEAR SPACE) KURALI">
-                            <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine aşağıdakiler yerleştirilemez:</p>
-                            <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li>Metin</li>
-                                <li>Görsel</li>
-                                <li>Grafik öğe</li>
-                                <li>Çerçeve</li>
-                                <li>İkon</li>
-                            </ul>
+                        <RuleCard icon={Ruler} title="BOŞLUK (CLEAR SPACE) KURALI">
+                            <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
                         </RuleCard>
                         <RuleCard icon={XCircle} title="DEĞİŞİKLİK YASAĞI">
-                            <p>Logo sabittir. Yeniden yorumlanamaz. Aşağıdaki müdahaleler yapılamaz:</p>
-                             <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li>Oranları bozmak</li>
-                                <li>Renkleri değiştirmek</li>
-                                <li>Eğmek</li>
-                                <li>Efekt, gölge veya desen eklemek</li>
-                                <li>Başka grafik unsurlarla birleştirmek</li>
-                            </ul>
+                           <p>Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
                         </RuleCard>
                         <RuleCard icon={Layers} title="HİYERARŞİ PRENSİBİ">
                             <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır.</p>
-                            <p className="mt-2">Logo hiçbir koşulda en baskın görsel unsur olarak konumlandırılamaz.</p>
                         </RuleCard>
-                        <RuleCard icon={Handshake} title="CO-BRANDING (ORTAK MARKALAMA)">
-                             <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:</p>
-                            <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li>Logo eşit ölçekli kullanılmalıdır.</li>
-                                <li>İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.</li>
-                                <li>Logolar yatay hizalı olmalıdır.</li>
-                                <li>Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</li>
-                                <li>Büyük ölçekli mecralarda yazılı izin zorunludur.</li>
-                            </ul>
+                         <RuleCard icon={Handshake} title="CO-BRANDING KURALLARI">
+                             <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır: Logo eşit ölçekli kullanılmalıdır. İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır. Logolar yatay hizalı olmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz. Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur.</p>
                         </RuleCard>
-                         <RuleCard icon={FileCheck} title="MARKA KULLANIM İZNİ">
-                            <p>hangel varlıklarını aşağıdaki mecralarda kullanmak isteyenler yazılı izin almak zorundadır:</p>
-                             <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li>Yayın</li>
-                                <li>Radyo</li>
-                                <li>Açık hava reklamı</li>
-                                <li>TV</li>
-                                <li>A4’ten büyük baskı materyali</li>
-                            </ul>
-                            <p className="mt-2">Talep dosyasında kullanım taslağı sunulmalıdır.</p>
+                        <RuleCard icon={FileCheck} title="MARKA KULLANIM İZNİ">
+                            <p>hangel varlıklarını yayın, radyo, açık hava reklamı, TV, A4’ten büyük baskı materyali içinde kullanmak isteyenler yazılı izin almak zorundadır. Talep dosyasında kullanım taslağı sunulmalıdır.</p>
                         </RuleCard>
-                         <RuleCard icon={Type} title="İSİM VE METİN STANDARTLARI">
-                            <p>“hangel” kelimesi küçük harfle başlar, değiştirilemez veya başka kelimelerle birleştirilemez.</p>
-                            <p className="mt-2"><strong>Yasaklı Örnekler:</strong> hangelPro, hangelClubX, Bağışhangel</p>
-                            <p className="mt-2"><strong>İzin Verilen Kullanım:</strong> “hangel için geliştirilmiştir”, “hangel ile uyumludur”</p>
+                        <RuleCard icon={Type} title="İSİM VE METİN STANDARTLARI">
+                             <p>“hangel” kelimesi küçük harfle başlar, değiştirilemez veya başka kelimelerle birleştirilemez (Yasak: hangelPro, Doğru: “hangel için”).</p>
                         </RuleCard>
                         <RuleCard icon={Package} title="ÜRÜN İKONLARI">
-                             <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak:</p>
-                             <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li>Resmi ortaklık algısı oluşturamaz.</li>
-                                <li>Ana marka kimliğinin yerine geçemez.</li>
-                                <li>Tekil görsel kilit oluşturamaz.</li>
-                            </ul>
+                            <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.</p>
                         </RuleCard>
                          <RuleCard icon={Share2} title="SOSYAL MEDYA">
-                            <p>Resmi hesap algısı yaratacak kullanım yasaktır.</p>
-                            <p className="mt-2"><strong>Yanlış:</strong> “hangel Haber”<br/><strong>Doğru:</strong> “hangel hakkında haberler”</p>
-                            <p className="mt-2">Hashtag üzerinde hak iddia edilemez.</p>
+                            <p>Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez.</p>
                         </RuleCard>
                         <RuleCard icon={Tv} title="TV, FİLM VE YAYINCILIK">
                             <p>Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır.</p>
                         </RuleCard>
                          <RuleCard icon={Scale} title="YASAL ÇERÇEVE">
-                            <p>hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. Ticari markalarımız:</p>
-                            <ul className="list-disc pl-5 mt-2 space-y-1">
-                                <li>Tescil ettirilemez</li>
-                                <li>Benzer şekilde kullanılamaz</li>
-                            </ul>
-                             <p className="mt-2">hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
+                            <p>hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. Ticari markalarımız tescil ettirilemez veya benzer şekilde kullanılamaz. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
                         </RuleCard>
                     </div>
                 </Section>
@@ -403,4 +353,5 @@ Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez
             <PublicFooter currentPageLabel="Basın Kiti & Marka Yönergesi" />
         </div>
     );
-}
+
+    
