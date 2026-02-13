@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText } from 'lucide-react';
@@ -12,7 +12,7 @@ import { allEntityLists, volunteeringOpportunities } from '@/lib/data';
 import type { Brand, Volunteering } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { Badge } from '@/components/ui/badge';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -162,57 +162,6 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     );
 };
 
-const ShowcaseGridCard = ({ 
-    title, 
-    subtitle, 
-    imageUrl, 
-    imageHint, 
-    cta1, 
-    cta1Href, 
-    cta2, 
-    cta2Href, 
-    theme = 'light' 
-}: { 
-    title:string, 
-    subtitle:string, 
-    imageUrl:string, 
-    imageHint:string, 
-    cta1?: string,
-    cta1Href?: string,
-    cta2?: string,
-    cta2Href?: string,
-    theme?:'light'|'dark' 
-}) => {
-    return (
-        <div className={cn(
-            "rounded-3xl p-8 flex flex-col text-center",
-            theme === 'dark' ? 'bg-black text-white' : 'bg-[#f5f5f7] text-[#1d1d1f]'
-        )}>
-            <div className="space-y-2">
-                <h3 className="text-4xl font-bold tracking-tight">{title}</h3>
-                <p className="text-base max-w-xs mx-auto opacity-80">{subtitle}</p>
-            </div>
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-2">
-                {cta1 && cta1Href && (
-                    <Link href={cta1Href} className="text-primary hover:underline flex items-center text-sm font-medium">
-                        {cta1} <ChevronRight className="h-4 w-4 ml-0.5" />
-                    </Link>
-                )}
-                {cta2 && cta2Href && (
-                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-sm font-medium">
-                        {cta2} <ChevronRight className="h-4 w-4 ml-0.5" />
-                    </Link>
-                )}
-            </div>
-            <div className="flex-1 flex items-end justify-center mt-8">
-                <div className="relative w-full aspect-video">
-                    <Image src={imageUrl} alt={title} fill className="object-contain" data-ai-hint={imageHint} />
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const GridSection = ({ children, className }: { children: React.ReactNode, className?: string }) => (
     <section className={cn("py-16 md:py-24 px-4 bg-white", className)}>
         <div className="container mx-auto max-w-7xl">
@@ -245,8 +194,60 @@ const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 
     </div>
 );
 
+const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }: { title: string, description: string, href: string, imageUrl: string, imageHint: string }) => (
+    <div className="h-full rounded-2xl bg-[#f5f5f7] overflow-hidden group flex flex-col shadow-lg hover:shadow-xl transition-shadow">
+        <div className="relative w-full aspect-video">
+            <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
+        </div>
+        <div className="p-6 text-left flex flex-col flex-1">
+            <h3 className="font-semibold text-lg">{title}</h3>
+            <p className="text-sm text-muted-foreground mt-2 flex-1">{description}</p>
+            <div className="mt-4">
+                <Link href={href} className="text-sm font-semibold text-primary hover:underline flex items-center">
+                    Daha Fazla Bilgi <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+            </div>
+        </div>
+    </div>
+);
+
 
 export default function LoginPage() {
+    const discoveryCarouselPlugin = useRef(
+        Autoplay({ delay: 4000, stopOnInteraction: true })
+    );
+
+    const discoveryItems = [
+        { 
+            title: "hangel STK", 
+            description: "Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın.", 
+            href: "/ngo-onboarding",
+            imageUrl: "https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+            imageHint: "charcoal charity drawing"
+        },
+        { 
+            title: "hangel Marka", 
+            description: "Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın.", 
+            href: "/merchant",
+            imageUrl: "https://picsum.photos/seed/merc-char/1080/1080",
+            imageHint: "charcoal merchant store drawing"
+        },
+        { 
+            title: "hangel Clubs", 
+            description: "Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin.", 
+            href: "/campus-advantages",
+            imageUrl: "https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtaW5pbWFsaXN0JTIwdW5pdmVyc2l0eSUyMGNvbmZlcmVuY2UlMjBwb3N0ZXJ8ZW58MHx8fHwxNzcwMjY4MTI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+            imageHint: "minimalist university poster"
+        },
+        { 
+            title: "Kütüphane", 
+            description: "Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin.", 
+            href: "/library",
+            imageUrl: "https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+            imageHint: "charcoal library drawing"
+        }
+    ];
+
     const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
         <div className="bg-[#f5f5f7] rounded-3xl p-8 flex flex-col h-full text-left">
             <div className="p-3 bg-white rounded-2xl w-fit shadow-sm mb-6">
@@ -268,8 +269,8 @@ export default function LoginPage() {
                 <ProductShowcaseSection
                     theme="dark"
                     title="Yok öyle yalnız başına mücadele etmek."
-                    subtitle="#wearehangel"
-                    description="Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz."
+                    subtitle="Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz."
+                    description="#wearehangel"
                     cta1="Şimdi Katıl"
                     cta1Href="/login/selection?action=register"
                     cta2="Daha Fazla Bilgi"
@@ -379,56 +380,69 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </ProductShowcaseSection>
-                <section id="kurumlar" className="scroll-mt-24 py-16">
+                
+                <section id="kurumlar-carousel" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
-                        <div className="text-center mb-12 space-y-4">
-                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Kurumlar İçin.</h2>
-                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Kuruluşunuzun dijitalleşmesini sağlayın, operasyonlarınızı tek bir panelden yönetin, etki raporları oluşturun ve daha geniş kitlelere ulaşın.</p>
+                        <div className="text-center mb-12 space-y-2">
+                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel'i Keşfedin</h2>
+                            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Kurumlar ve bireyler için sunduğumuz çözümlerle tanışın.</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <ShowcaseGridCard 
-                                title="hangel STK" 
-                                subtitle="Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın." 
-                                cta1="Şimdi Katıl"
-                                cta1Href="/ngo-onboarding"
-                                cta2="Daha Fazla Bilgi"
-                                cta2Href="/ngo-onboarding"
-                                imageUrl="https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                                imageHint="charcoal charity drawing"
-                                theme="dark"
-                            />
-                            <ShowcaseGridCard 
-                                title="hangel Marka" 
-                                subtitle="Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın." 
-                                cta1="Şimdi Katıl"
-                                cta1Href="/merchant"
-                                cta2="Daha Fazla Bilgi"
-                                cta2Href="/merchant"
-                                imageUrl="https://picsum.photos/seed/merc-char/1080/1080"
-                                imageHint="charcoal merchant store drawing"
-                            />
-                            <ShowcaseGridCard 
-                                title="hangel Clubs" 
-                                subtitle="Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin." 
-                                cta1="Şimdi Katıl"
-                                cta1Href="/login/selection?action=register&type=corporate"
-                                cta2="Daha Fazla Bilgi"
-                                cta2Href="/campus-advantages"
-                                imageUrl="https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtaW5pbWFsaXN0JTIwdW5pdmVyc2l0eSUyMGNvbmZlcmVuY2UlMjBwb3N0ZXJ8ZW58MHx8fHwxNzcwMjY4MTI1fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                                imageHint="minimalist university poster"
-                            />
-                            <ShowcaseGridCard 
-                                title="Kütüphane" 
-                                subtitle="Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin." 
-                                cta1="Daha Fazla Bilgi"
-                                cta1Href="/library"
-                                imageUrl="https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                                imageHint="charcoal library drawing"
-                                theme="dark"
-                            />
-                        </div>
+                        <Carousel
+                            opts={{ align: "start", loop: true }}
+                            plugins={[discoveryCarouselPlugin.current]}
+                            onMouseEnter={discoveryCarouselPlugin.current.stop}
+                            onMouseLeave={discoveryCarouselPlugin.current.reset}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-6">
+                                {discoveryItems.map((item, index) => (
+                                    <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                                        <DiscoveryCarouselCard {...item} />
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="ml-14 hidden sm:flex" />
+                            <CarouselNext className="mr-14 hidden sm:flex" />
+                        </Carousel>
                     </div>
                 </section>
+
+                <GridSection>
+                    <GridCard 
+                        title="Etki Odaklı İstihdam"
+                        subtitle="Gönüllülüğü kariyere dönüştüren ilk model."
+                        cta="Protokolü İncele"
+                        ctaHref="/hangelassociation/projects/istihdam-protokolu"
+                        imageUrl="https://picsum.photos/seed/protocol/600/400"
+                        imageHint="handshake meeting"
+                    />
+                     <GridCard 
+                        title="Akademik Programlar"
+                        subtitle="Üniversitelerde sosyal inovasyon müfredatı."
+                        cta="Programları Gör"
+                        ctaHref="/hangelassociation/workshop"
+                        imageUrl="https://picsum.photos/seed/academy/600/400"
+                        imageHint="university graduation"
+                        theme="dark"
+                    />
+                     <GridCard 
+                        title="Sosyal Etki Atlası"
+                        subtitle="Türkiye'nin iyilik haritasını çiziyoruz."
+                        cta="Atlası Keşfet"
+                        ctaHref="/hangelassociation/projects/etki-atlasi"
+                        imageUrl="https://picsum.photos/seed/atlas/600/400"
+                        imageHint="digital map"
+                        theme="dark"
+                    />
+                     <GridCard 
+                        title="Girişimcilik Kütüphanesi"
+                        subtitle="21 merkezde bilgi ve tecrübe temelli yol haritaları."
+                        cta="Kütüphaneye Git"
+                        ctaHref="/hangelassociation/workshop"
+                        imageUrl="https://picsum.photos/seed/library/600/400"
+                        imageHint="library books"
+                    />
+                </GridSection>
 
                 <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
