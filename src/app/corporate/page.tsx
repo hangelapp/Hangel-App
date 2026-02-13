@@ -37,7 +37,7 @@ const ProductSection = ({
     className?: string
 }) => (
     <section id={id} className={cn(
-        "relative min-h-screen flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
+        "relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 text-center overflow-hidden border-b border-black/5",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
@@ -115,7 +115,7 @@ export default function CorporateShowcasePage() {
                 cta1="Kampüs Avantajları"
                 cta1Href="/campus-advantages"
                 cta2="İşbirliği Başlat"
-                cta2Href="/contact/universities"
+                cta2Href="/contact"
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                 imageHint="university students collaborating"
             />
@@ -140,9 +140,9 @@ export default function CorporateShowcasePage() {
                 subtitle="Akıllı şehir, duyarlı toplum."
                 description="Vatandaş katılımını dijital araçlarla artırın. Şehrinizdeki STK'ları ve gönüllü ağlarını Hangel altyapısı ile güçlendirin. Sosyal yardım ve gönüllülük süreçlerini tek bir merkezden yöneterek kaynaklarınızı verimli kullanın."
                 cta1="Çözümleri Keşfet"
-                cta1Href="/contact/municipalities"
+                cta1Href="/contact"
                 cta2="Partner Olun"
-                cta2Href="/contact/municipalities"
+                cta2Href="/contact"
                 imageUrl="https://images.unsplash.com/photo-1577086664693-894d8405334a?q=80&w=2071&auto=format&fit=crop"
                 imageHint="modern city hall building architecture"
             />
