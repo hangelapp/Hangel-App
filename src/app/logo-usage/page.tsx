@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -11,15 +10,15 @@ import {
     Type,
     Copy,
     DownloadCloud,
+    Star,
+    CheckCircle,
+    Landmark,
     Ruler,
     Scale,
     Handshake,
     Mic,
     Newspaper,
-    Tv,
-    Landmark,
-    Eye,
-    Sparkles
+    Tv
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -74,6 +73,15 @@ const LogoDisplayCard = ({ title, description, children, onDownload }: { title: 
                 <Download className="mr-2 h-4 w-4"/> PNG İndir
             </Button>
         </div>
+    </div>
+);
+
+const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
+    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50">
+        <p className="text-xs font-bold text-muted-foreground">{title}</p>
+        <p className={cn("text-3xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
+        <p className="text-lg font-semibold">{fontName}</p>
+        <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
     </div>
 );
 
@@ -140,11 +148,11 @@ export default function LogoUsagePage() {
                        Dayanışmayı Görünür Kılalım.
                     </h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed mt-8">
-                        Hangel logosu yalnızca bir görsel kimlik değildir. Ortak değerlerimizin, kolektif üretim anlayışımızın ve toplumsal sorunlara karşı geliştirdiğimiz dayanışma kültürünün kurumsal temsilidir.
+                        hangel logosu yalnızca bir görsel kimlik unsuru değildir. Ortak değerlerimizin, kolektif üretim anlayışımızın ve toplumsal sorunlara karşı geliştirdiğimiz dayanışma kültürünün kurumsal temsildir.
                     </p>
                 </Section>
                 
-                <Section className="bg-white">
+                 <Section className="bg-white">
                     <SectionTitle>Marka Mimarisi</SectionTitle>
                     <SectionDescription>
                         Tüm alt markalar, ana marka olan hangel çatısı altında konumlanır ve marka hiyerarşisine uygun olarak destekleyici rol üstlenir.
@@ -220,7 +228,7 @@ export default function LogoUsagePage() {
                         {/* Kılavuzlar */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-12 border-t">
                             <Card className="bg-white rounded-3xl p-8 text-center shadow-lg">
-                                <Sparkles className="h-10 w-10 text-primary mx-auto mb-4"/>
+                                <Landmark className="h-10 w-10 text-primary mx-auto mb-4"/>
                                 <CardHeader className="p-0"><CardTitle>hangel Canva Marka Kiti</CardTitle></CardHeader>
                                 <CardContent className="p-0 mt-2"><CardDescription>Logo, renk, yazı tipi ve görsellere Canva üzerinden erişin.</CardDescription></CardContent>
                                 <CardFooter className="p-0 mt-6 justify-center"><Button asChild><a href="#" target="_blank" rel="noopener noreferrer">Canva Marka Kitine Git</a></Button></CardFooter>
@@ -228,7 +236,7 @@ export default function LogoUsagePage() {
                             <Card className="bg-white rounded-3xl p-8 text-center shadow-lg">
                                 <DownloadCloud className="h-10 w-10 text-primary mx-auto mb-4"/>
                                 <CardHeader className="p-0"><CardTitle>Kurumsal Kimlik Kılavuzu</CardTitle></CardHeader>
-                                <CardContent className="p-0 mt-2"><CardDescription>Marka değerleri, logo standartları ve iletişim dili rehberi.</CardDescription></CardContent>
+                                <CardContent className="p-0 mt-2"><CardDescription>Marka değerleri, logo kullanım standartları ve iletişim dili rehberi.</CardDescription></CardContent>
                                 <CardFooter className="p-0 mt-6 justify-center"><Button onClick={() => handleDownload('kurumsal-kimlik.pdf')}>PDF Olarak İndir</Button></CardFooter>
                             </Card>
                         </div>
