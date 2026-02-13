@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles, Megaphone, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -16,6 +16,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import Autoplay from "embla-carousel-autoplay";
 import { Badge } from '@/components/ui/badge';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { languages, useTranslation } from '@/components/providers/language-provider';
+import * as Icons from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -139,7 +142,7 @@ const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: any
 
 const projectCardsData = [
     { 
-      title: "Sosyal Şirket Mevzuatı",
+      title: "Sosyal Şirket Mevzuatı (taslağı)",
       subtitle: "Sosyal faydayı yasal statüye kavuşturan kanun teklifi.",
       cta: "Taslağı İncele",
       ctaHref: "/hangelassociation/legislation",
@@ -149,7 +152,7 @@ const projectCardsData = [
     { 
       title: "Etki Odaklı İstihdam",
       subtitle: "Gönüllülüğü kariyere dönüştüren ilk model.",
-      cta: "Protokolü İncele",
+      cta: "Protokolü İncele, imzala",
       ctaHref: "/hangelassociation/projects/istihdam-protokolu",
       imageUrl: "https://picsum.photos/seed/protocol/600/800",
       imageHint: "handshake meeting",
@@ -164,7 +167,7 @@ const projectCardsData = [
     },
     { 
       title: "Sosyal Etki Atlası",
-      subtitle: "Türkiye'nin iyilik haritasını çiziyoruz.",
+      subtitle: "Türkiye'nin iyilik haritasını, 54 ülkeden 639 örnek ile çiziyoruz.",
       cta: "Atlası Keşfet",
       ctaHref: "/hangelassociation/projects/etki-atlasi",
       imageUrl: "https://picsum.photos/seed/atlas/600/800",
@@ -182,6 +185,7 @@ const projectCardsData = [
 
 
 const Header = () => {
+    const { language, changeLanguage } = useTranslation();
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
@@ -191,10 +195,23 @@ const Header = () => {
                     <Link href="#gonulluluk" className="hover:text-primary transition-colors">Gönüllülük</Link>
                 </nav>
                 <div className="flex items-center gap-2">
+                    <Select value={language} onValueChange={changeLanguage}>
+                        <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-8 px-2 text-xs font-normal text-[#1d1d1f]/80 hover:text-primary transition-colors focus:ring-0">
+                            <Icons.Globe className="h-4 w-4" />
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent align="end">
+                            {languages.map(lang => (
+                                <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
                     <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold bg-[#0071e3] hover:bg-[#0077ed]">
                         <Link href="/login/selection?action=login">Giriş Yap</Link>
                     </Button>
-                    <Button variant="ghost" size="icon" className="md:hidden">
+                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8">
                         <Menu className="h-5 w-5" />
                     </Button>
                 </div>
@@ -301,18 +318,17 @@ export default function LoginPage() {
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <Header />
             <main>
-                <ProductShowcaseSection
-                    theme="dark"
-                    title="Yok öyle yalnız başına mücadele etmek."
-                    subtitle="Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz."
-                    description="#wearehangel"
-                    cta1="Şimdi Katıl"
-                    cta1Href="/login/selection?action=register"
-                    cta2="Daha Fazla Bilgi"
-                    cta2Href="/about"
-                    imageUrl="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
-                    imageHint="diverse group people"
-                />
+                <section className="h-screen flex flex-col justify-center items-center text-center p-6 bg-white border-b border-black/5">
+                    <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</h2>
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">Yok öyle yalnız başına mücadele etmek.</h1>
+                    <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">#wearehangel</p>
+                    <div className="mt-12">
+                        <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
+                            <Link href="/login/selection?action=register">Hemen Katıl</Link>
+                        </Button>
+                    </div>
+                </section>
+
                 <ProductShowcaseSection
                     id="bagis"
                     title="Alışverişi iyiliğe dönüştürün."
@@ -444,7 +460,7 @@ export default function LoginPage() {
 
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel Association</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Hangel Association</h2>
                         <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
                     </div>
                     <Carousel
@@ -468,7 +484,7 @@ export default function LoginPage() {
                 <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz.</h2>
+                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz</h2>
                             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

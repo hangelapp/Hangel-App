@@ -144,7 +144,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                         {appStoreLinks.map((link, index) => (
                             <React.Fragment key={link.label}>
                                 <Link href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.label}</Link>
-                                {index < appStoreLinks.length - 1 && <span className="text-black/20 mx-1">|</span>}
+                                {index < appStoreLinks.length - 1 && <span className="text-black/20 mx-0.5">|</span>}
                             </React.Fragment>
                         ))}
                     </div>
@@ -157,6 +157,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                             </React.Fragment>
                         ))}
                     </div>
+                     <div className="h-px bg-black/10 w-full" />
                     <p className="text-[12px] text-[#1d1d1f]/70 pt-2">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
                      
                     
