@@ -220,7 +220,9 @@ export const timelinePosts: Post[] = [
 ];
 
 export const adBanners: AdBanner[] = [
-    { id: '1', title: 'Okul Alışverişiyle Destek Ol!', description: 'Kırtasiye ihtiyaçlarınızla TEGV\'e bağış yapın.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop', link: '/market' }
+    { id: '1', title: 'Okul Alışverişiyle Destek Ol!', description: 'Kırtasiye ihtiyaçlarınızla TEGV\'e bağış yapın.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop', link: '/market?category=Kırtasiye' },
+    { id: '2', title: 'Yaz Tatili Fırsatları', description: 'Tatil rezervasyonlarınızla sokak hayvanlarına umut olun.', imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723a9ce6890?q=80&w=2070&auto=format&fit=crop', link: '/market?category=Seyahat' },
+    { id: '3', title: 'Teknolojide İyilik Var', description: 'Elektronik alışverişlerinizle LÖSEV\'e destek olun.', imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop', link: '/market?category=Elektronik' },
 ];
 
 export const ngos: NGO[] = [
@@ -632,7 +634,7 @@ export const volunteeringOpportunities: Volunteering[] = [
         commitment: 'Sürekli',
         volunteerCount: { needed: 3, applications: 22 },
         dates: { applicationStart: '2024-08-01', applicationEnd: '2024-08-31', eventStart: '2024-09-01', eventEnd: '2025-09-01' },
-        hours: { start: '10:00', end: '17:00', total: 100 },
+        hours: { start: '10:00', end: '18:00', total: 100 },
         socialArea: 'Kadın Hakları',
         points: 2800,
         ngoTransparencyScore: 91,
@@ -749,4 +751,3 @@ export const managedItems: ManagedItem[] = [
 export const qrPaymentCardData = [
     { id: 'bireysel', type: 'Bireysel', bgColor: 'bg-primary', number: '5549601000001234', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '12/28', balance: '1.250,75 ₺', ngoId: '1', cvv: '123' }
 ];
-
