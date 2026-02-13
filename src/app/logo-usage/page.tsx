@@ -148,8 +148,8 @@ const ShowcaseCard = ({
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
         <div className="pt-8">
-          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.label}</h3>
-          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</p>
+          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.description}</h3>
+          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.label}</p>
           <div className="mt-4">
              <span className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
@@ -245,11 +245,11 @@ export default function LogoUsagePage() {
             content: <div className="p-4 rounded-3xl" style={{backgroundColor: '#042654'}}><span className="text-5xl font-black text-white">h</span></div>
         },
     ];
-
+    
     const rules = [
         { icon: FileCheck, title: "MARKA KULLANIM İZNİ", content: [ "hangel varlıklarını (Yayın, Radyo, Açık hava reklamı, TV, A4’ten büyük baskı materyali) içinde kullanmak isteyen kişi ve kurumlar yazılı izin almak zorundadır.", "Talep dosyasında kullanım taslağı sunulmalıdır.", "hangel marka ekibi, uygun bulmadığı kullanımları reddetme veya iptal etme hakkını saklı tutar." ] },
-        { icon: Type, title: "İSİM VE METİN KULLANIM STANDARTLARI", content: [ "“hangel” kelimesinde “h” harfi büyük yazılamaz.", "Farklı yazı tipi veya ölçekte manipüle edilemez.", "Başka dile çevrilemez.", "Kısaltılamaz.", "Alan adı, şirket adı veya ürün adına entegre edilemez.", "<strong>Yasaklı örnekler:</strong> hangelPro, hangelClubX, Bağışhangel", "<strong>İzin verilen kullanım:</strong> “hangel için geliştirilmiştir”, “hangel ile uyumludur”, “hangel platformunda yer alır”" ] },
-        { icon: Maximize, title: "BOŞLUK (CLEAR SPACE) KURALI", content: [ "Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır.", "Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez." ] },
+        { icon: Type, title: "İSİM VE METİN KULLANIM STANDARTLARI", content: [ "“hangel” kelimesinde “h” harfi büyük yazılamaz.", "Farklı yazı tipi veya ölçekte manipüle edilemez.", "Başka dile çevrilemez.", "Kısaltılamaz.", "Alan adı, şirket adı veya ürün adına entegre edilemez. <br/><br/> <strong>Yasaklı örnekler:</strong> hangelPro, hangelClubX, Bağışhangel <br/> <strong>İzin verilen kullanım:</strong> “hangel için geliştirilmiştir”, “hangel ile uyumludur”, “hangel platformunda yer alır”" ] },
+        { icon: Maximize, title: "BOŞLUK (CLEAR SPACE) KURALI", content: [ "Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez." ] },
         { icon: XCircle, title: "Değişiklik Yasağı", content: [ "Logo sabittir. Yeniden yorumlanamaz.", "Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez." ] },
         { icon: Ruler, title: "LOGO MİNİMUM BOYUT KURALI", content: [ "Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:", "<strong>Dijital Ortam:</strong><br/>Minimum genişlik: 120 px<br/>App icon minimum: 32 px", "<strong>Basılı Materyal:</strong><br/>Minimum genişlik: 25 mm", "Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır." ] },
         { icon: Package, title: "ÜRÜN İKONLARI", content: [ "Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez." ] },
@@ -302,6 +302,18 @@ export default function LogoUsagePage() {
                                 ))}
                             </div>
                         </div>
+                         <div className="space-y-8">
+                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel Derneği Alt Markaları</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {associationArchitecture.map((item, index) => (
+                                    <ShowcaseCard 
+                                        key={item.href} 
+                                        item={item} 
+                                        themeConfig={themeConfigs[index % themeConfigs.length]}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                     </div>
                      <div className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
                         <h4 className="font-bold text-foreground mb-2">Daha fazla ürün</h4>
@@ -310,6 +322,7 @@ export default function LogoUsagePage() {
                 </Section>
                 
                 <Section id="medya-kiti">
+                    <SectionTitle>Medya Kiti</SectionTitle>
                     <div className="mt-16 space-y-20">
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Logolar</h3>
