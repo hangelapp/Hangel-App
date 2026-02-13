@@ -62,9 +62,33 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ category, title, description,
 
 const storiesData = [
   {
+    category: "Genel Bakış",
+    title: "Hangel'in Etki Hikayesi",
+    description: "Topluluğumuzun bugüne kadar yarattığı kolektif etkiyi keşfedin.",
+    imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "network connections people",
+    theme: 'dark' as 'dark',
+    href: '/impact-story'
+  },
+  {
+    category: "Kişisel Etkin",
+    title: "Senin Hikayen, Senin Başarın",
+    description: "Profilinize giderek sosyal etki puanınızı ve kazandığınız rozetleri görün.",
+    imageUrl: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop",
+    imageHint: "colorful abstract gradient",
+    theme: 'light' as 'light',
+    href: '/profile',
+    children: (
+        <div className="space-y-1">
+            <p className="text-xs font-semibold text-foreground/70">Etki Puanın</p>
+            <p className="text-5xl font-bold tracking-tighter">15,750</p>
+        </div>
+    )
+  },
+  {
     category: "Gönüllülük",
-    title: "Zamanınız en değerli bağış.",
-    description: "Yetkinliklerinize uygun fırsatlarla topluma değer katın.",
+    title: "Yeni Fırsatları Keşfet",
+    description: "Yetkinliklerinize ve ilgi alanlarınıza uygun en yeni gönüllülük ilanlarına göz atın.",
     imageUrl: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
     imageHint: "volunteers working together",
     theme: 'dark' as 'dark',
@@ -72,36 +96,12 @@ const storiesData = [
   },
   {
     category: "Bağış",
-    title: "Alışverişi iyiliğe dönüştürün.",
+    title: "Alışverişi İyiliğe Dönüştür",
     description: "Yüzlerce markadan yaptığınız alışverişlerle STK'lara destek olun.",
     imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
     imageHint: "modern retail store",
     theme: 'light' as 'light',
     href: '/market'
-  },
-  {
-    category: "Etki",
-    title: "Katkılarınızı ölçün.",
-    description: "Puanlar, rozetler ve sertifikalarla gelişiminizi takip edin.",
-    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
-    imageHint: "data charts dashboard",
-    theme: 'dark' as 'dark',
-    href: '/my-badges',
-    children: (
-        <div className="space-y-1">
-            <p className="text-xs font-semibold text-white/70">Toplam Puan</p>
-            <p className="text-5xl font-bold tracking-tighter">15,750</p>
-        </div>
-    )
-  },
-  {
-    category: "Topluluk",
-    title: "Birlikte daha güçlüyüz.",
-    description: "STK'lar, markalar ve gönüllülerle etkileşime geçin.",
-    imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
-    imageHint: "happy group people",
-    theme: 'light' as 'light',
-    href: '/timeline'
   }
 ];
 
