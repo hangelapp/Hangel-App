@@ -64,7 +64,7 @@ export default function CareersPage() {
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight">Kariyer</span>
-                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
+                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
                         <Link href="/login/selection?action=register">İlana Başvur</Link>
                     </Button>
                 </div>

@@ -97,10 +97,10 @@ export default function CampusAdvantagesPage() {
                     Üniversite kulübünüzü dijital dünyaya taşıyın. Hangel Kampüs, sosyal etki odaklı kulüplerin büyümesi, yönetilmesi ve değer oluşturması için tasarlandı.
                 </p>
                 <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
+                    <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
                         <Link href="/login/selection?action=register&type=corporate">Kulübünü Kaydet</Link>
                     </Button>
-                    <Button asChild variant="ghost" size="lg" className="rounded-full px-10 h-14 text-lg font-bold border border-black/10 hover:bg-white">
+                    <Button asChild variant="outline" size="lg" className="rounded-full px-10 h-14 text-lg font-bold">
                         <Link href="/support">Bilgi Al</Link>
                     </Button>
                 </div>
@@ -188,10 +188,10 @@ export default function CampusAdvantagesPage() {
                         Hangel Kampüs Programı'na hemen başvurun, kulübünüzün etkisini teknolojiyle katlayın.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
-                        <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold bg-white text-black hover:bg-white/90">
+                        <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold">
                             <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
                         </Button>
-                        <Button asChild variant="ghost" size="lg" className="rounded-full px-12 h-14 text-lg font-bold text-white hover:bg-white/10">
+                        <Button asChild variant="ghost" size="lg" className="rounded-full px-12 h-14 text-lg font-bold">
                             <Link href="/support">Destek Al</Link>
                         </Button>
                     </div>

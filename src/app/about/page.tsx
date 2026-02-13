@@ -42,7 +42,7 @@ const AppleSection = ({
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
             
             <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href={cta1Href} className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
+                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-lg font-medium">
                     {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
                 </Link>
             </div>
@@ -74,7 +74,7 @@ export default function AboutPage() {
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight">Biz Kimiz?</span>
-                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
+                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
                         <Link href="/login/selection?action=register">Şimdi Katıl</Link>
                     </Button>
                 </div>

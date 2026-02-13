@@ -47,11 +47,11 @@ const ProductSection = ({
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
             
             <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href={cta1Href} className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
+                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-lg font-medium">
                     {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
                 </Link>
                 {cta2 && cta2Href && (
-                    <Link href={cta2Href} className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
+                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-lg font-medium">
                         {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
                     </Link>
                 )}
@@ -85,7 +85,7 @@ export default function CorporateShowcasePage() {
                     </Button>
                     <div className="flex items-center gap-6 text-[12px] font-medium text-[#1d1d1f]/80">
                         <span className="hidden sm:inline">Kamu İşbirliği Programları</span>
-                        <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
+                        <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
                             <Link href="/login/selection?action=register&type=corporate">Şimdi Katıl</Link>
                         </Button>
                     </div>

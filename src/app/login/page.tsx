@@ -102,15 +102,14 @@ const ProductShowcaseSection = ({
             {description && <p className="text-lg md:text-xl opacity-80 max-w-3xl mx-auto leading-relaxed font-medium">{description}</p>}
             
              <div className="flex items-center justify-center gap-4 pt-4">
-                <Button asChild size="lg" className="rounded-full px-6 bg-[#0071e3] hover:bg-[#0077ed]">
+                <Button asChild size="lg" className="rounded-full px-6">
                     <Link href={cta1Href!}>{cta1}</Link>
                 </Button>
                 {cta2 && cta2Href && (
                     <Button asChild size="lg" variant="outline" className={cn(
-                        "rounded-full px-6", 
+                        "rounded-full px-6",
                         theme === 'dark' 
-                            ? "border-white/50 text-white bg-transparent hover:bg-white hover:text-black"
-                            : "border-[#0071e3] text-[#0071e3] hover:bg-[#0071e3] hover:text-white"
+                            && "border-white/50 text-white bg-transparent hover:bg-white hover:text-black"
                     )}>
                         <Link href={cta2Href}>{cta2}</Link>
                     </Button>
@@ -229,7 +228,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                     </Select>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
-                    <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold bg-[#0071e3] hover:bg-[#0077ed]">
+                    <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
                         <Link href="/login/selection?action=login">Giriş Yap</Link>
                     </Button>
                 </div>
@@ -374,7 +373,7 @@ export default function LoginPage() {
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">Yok öyle yalnız başına mücadele etmek.</h1>
                     <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">#wearehangel</p>
                     <div className="mt-12">
-                        <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
+                        <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
                             <Link href="/login/selection?action=register">Hemen Katıl</Link>
                         </Button>
                     </div>
@@ -413,7 +412,7 @@ export default function LoginPage() {
                             <CarouselNext className="mr-16 hidden md:flex" />
                         </Carousel>
                         <div className="text-center mt-8">
-                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-black hover:text-white">
+                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-primary/20 text-primary hover:bg-primary/5">
                                 <Link href="/market">
                                     Tüm Markaları Gör ({allEntityLists.length} Marka)
                                 </Link>
