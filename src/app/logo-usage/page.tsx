@@ -148,6 +148,25 @@ const LogoShowcaseCard = ({ title, description, children, onDownload }: { title:
     </Card>
 );
 
+const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
+    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50">
+        <p className="text-xs font-bold text-muted-foreground">{title}</p>
+        <p className={cn("text-3xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
+        <p className="text-lg font-semibold">{fontName}</p>
+        <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
+    </div>
+);
+
+const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
+    <div className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer" onClick={onCopy}>
+        <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
+        <p className="font-bold text-sm">{name}</p>
+        <div className="flex items-center justify-center gap-1 text-xs font-mono text-muted-foreground">
+            {hex} <Copy className="w-3 h-3" />
+        </div>
+    </div>
+);
+
 export default function LogoUsagePage() {
     const router = useRouter();
     const { toast } = useToast();
@@ -277,7 +296,7 @@ export default function LogoUsagePage() {
                         </div>
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                                 {appArchitecture.map((item, index) => (
                                     <ShowcaseCard 
                                         key={item.href} 
@@ -289,7 +308,7 @@ export default function LogoUsagePage() {
                         </div>
                          <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel Derneği Alt Markaları</h3>
-                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                                 {associationArchitecture.map((item, index) => (
                                     <ShowcaseCard 
                                         key={index} 
@@ -319,7 +338,7 @@ export default function LogoUsagePage() {
                                     <Carousel opts={{ align: "start" }} className="w-full">
                                         <CarouselContent className="-ml-6">
                                             {asLogos.map((logo, index) => (
-                                                <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                                                <CarouselItem key={index} className="pl-6 basis-1/2 md:basis-1/3 lg:basis-1/4">
                                                     <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
                                                         {logo.content}
                                                     </LogoShowcaseCard>
@@ -335,7 +354,7 @@ export default function LogoUsagePage() {
                                      <Carousel opts={{ align: "start" }} className="w-full">
                                         <CarouselContent className="-ml-6">
                                             {dernekLogos.map((logo, index) => (
-                                                <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                                                <CarouselItem key={index} className="pl-6 basis-1/2 md:basis-1/3 lg:basis-1/4">
                                                     <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
                                                         {logo.content}
                                                     </LogoShowcaseCard>
@@ -351,17 +370,45 @@ export default function LogoUsagePage() {
 
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
-                            {/* Yazı Tipleri Kartı... */}
+                            <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                               <CardHeader className="text-center">
+                                   <CardTitle>Font Kullanım Yönergesi</CardTitle>
+                               </CardHeader>
+                               <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                                   <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                   <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                   <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                               </CardContent>
+                           </Card>
                         </div>
                         
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Renkler</h3>
-                            {/* Renkler Kartı... */}
+                             <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                               <CardHeader className="text-center">
+                                   <CardTitle>Renk Kullanım Yönergesi</CardTitle>
+                               </CardHeader>
+                               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                                   <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
+                                   <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
+                                   <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
+                                   <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
+                               </CardContent>
+                           </Card>
                         </div>
                         
                         <div className="space-y-8">
                            <h3 className="text-3xl font-bold tracking-tight text-center">Kimlik Kılavuzu</h3>
-                           {/* Kimlik Kılavuzu Kartları... */}
+                           <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
+                               <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
+                               <div className="space-y-1">
+                                   <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
+                                   <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
+                               </div>
+                               <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
+                                    PDF Olarak İndir
+                               </Button>
+                           </Card>
                         </div>
                     </div>
                 </Section>
