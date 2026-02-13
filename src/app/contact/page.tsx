@@ -1,17 +1,41 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Briefcase, ArrowLeft } from 'lucide-react';
+import { Briefcase, ArrowLeft, Building, School, Store, User, DollarSign, Landmark, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
+import Link from 'next/link';
+
+const ContactCard = ({ href, icon: Icon, title, description }: { href: string; icon: React.ElementType; title: string; description: string; }) => (
+    <Link href={href} className="block group">
+        <Card className="h-full hover:border-primary transition-all hover:shadow-lg">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                        <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg">{title}</CardTitle>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">{description}</p>
+            </CardContent>
+            <CardFooter>
+                 <span className="text-sm font-bold text-primary flex items-center">
+                    Devam Et <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </span>
+            </CardFooter>
+        </Card>
+    </Link>
+);
+
 
 export default function ContactPage() {
     const router = useRouter();
@@ -41,29 +65,70 @@ export default function ContactPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div className="text-center space-y-4">
-                <div className="inline-block bg-primary/10 p-4 rounded-full">
-                    <Briefcase className="h-10 w-10 text-primary" />
-                </div>
-                <h1 className="text-3xl font-bold font-headline">Kuruluşunuza özel bir plan oluşturalım.</h1>
+                <h1 className="text-3xl font-bold font-headline">İletişim Merkezi</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Öncelikle lütfen birkaç kısa soruyu yanıtlayın, ardından bir hangel iş geliştirme ekibi üyesi sizi arayarak size uygun ürünler, yazılımlar ve hizmetler hakkında bilgi verecektir.
+                    Doğru departmana daha hızlı ulaşmak için aşağıdaki kategorilerden birini seçin veya genel talepler için formu doldurun.
                 </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <ContactCard 
+                    href="/support"
+                    icon={User}
+                    title="Bireysel Destek"
+                    description="Uygulama kullanımı, puanlar ve genel sorularınız için yardım merkezimizi ziyaret edin."
+                />
+                 <ContactCard 
+                    href="/ngo-onboarding"
+                    icon={Building}
+                    title="STK Başvurusu"
+                    description="Kuruluşunuzu hangel'e dahil etmek ve dijital araçlardan faydalanmak için başvurun."
+                />
+                 <ContactCard 
+                    href="/merchant"
+                    icon={Store}
+                    title="Marka & İşletme İşbirliği"
+                    description="Markanızla sosyal etki yaratmak veya QR ödeme sistemine dahil olmak için bize ulaşın."
+                />
+                 <ContactCard 
+                    href="/contact/universities"
+                    icon={School}
+                    title="Üniversiteler için"
+                    description="Kampüs programları, öğrenci kulübü yönetimi ve akademik işbirlikleri için bu formu kullanın."
+                />
+                 <ContactCard 
+                    href="/contact/municipalities"
+                    icon={Landmark}
+                    title="Belediyeler için"
+                    description="Akıllı şehir çözümleri, vatandaş katılımı ve yerel STK işbirlikleri hakkında bilgi alın."
+                />
+                 <ContactCard 
+                    href="/contact/funds"
+                    icon={DollarSign}
+                    title="Uluslararası Fonlar"
+                    description="Türkiye'deki sosyal etki ekosistemine yatırım ve fon desteği sağlamak için iletişime geçin."
+                />
             </div>
 
             <Card className="max-w-4xl mx-auto">
                 <CardHeader>
-                    <CardTitle>hangel Kamu Politikası Departmanı İletişim Formu</CardTitle>
-                    <CardDescription>
-                        E-posta için kurumsal bir e-posta adresi gereklidir.
-                    </CardDescription>
+                    <div className="flex items-center gap-4">
+                         <div className="p-3 bg-primary/10 rounded-xl">
+                            <Briefcase className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle>Genel Kurumsal İletişim Formu</CardTitle>
+                            <CardDescription>
+                                Yukarıdaki kategorilere uymayan genel kurumsal talepleriniz için formu doldurun.
+                            </CardDescription>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {error && (
-                        <Alert variant="destructive" className="mb-6">
-                            <AlertDescription>
-                                Gönderiminizde bir sorun oluştu. Lütfen tüm bilgilerin doğru olduğundan emin olmak için aşağıdaki alanları kontrol edin.
-                            </AlertDescription>
-                        </Alert>
+                        <div className="mb-6 p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg text-sm">
+                            Gönderiminizde bir sorun oluştu. Lütfen tüm bilgilerin doğru olduğundan emin olmak için aşağıdaki alanları kontrol edin.
+                        </div>
                     )}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
