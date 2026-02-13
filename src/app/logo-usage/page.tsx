@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -13,7 +12,7 @@ import {
     DownloadCloud,
     Star,
     CheckCircle,
-    Architecture,
+    Landmark,
     Ruler,
     Scale,
     Handshake,
@@ -45,7 +44,7 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
 
 const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
     <div className="border rounded-2xl bg-white/50 text-center flex flex-col shadow-sm hover:shadow-lg transition-shadow">
-        <div className="h-36 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
+        <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
             {children}
         </div>
         <div className="p-4 flex-1 flex flex-col">
@@ -127,7 +126,7 @@ export default function LogoUsagePage() {
                         </CardHeader>
                         <CardContent className="p-0">
                             <Tabs defaultValue="logos" className="w-full">
-                                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 max-w-4xl mx-auto h-auto md:h-14 mb-12">
+                                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-4xl mx-auto h-auto md:h-14 mb-12">
                                     <TabsTrigger value="logos" className="h-14 text-sm"><Palette className="mr-2"/>Logolar</TabsTrigger>
                                     <TabsTrigger value="fonts" className="h-14 text-sm"><Type className="mr-2"/>Yazı Tipleri</TabsTrigger>
                                     <TabsTrigger value="colors" className="h-14 text-sm"><Palette className="mr-2"/>Renkler</TabsTrigger>
@@ -210,7 +209,7 @@ export default function LogoUsagePage() {
                         <CardContent className="p-0">
                             <Accordion type="single" collapsible className="w-full space-y-3">
                                 <AccordionItem value="item-1" className="border rounded-2xl px-6 bg-muted/30">
-                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Architecture className="mr-3 h-5 w-5 text-primary" />Marka Mimarisi ve Hiyerarşi</AccordionTrigger>
+                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Landmark className="mr-3 h-5 w-5 text-primary" />Marka Mimarisi ve Hiyerarşi</AccordionTrigger>
                                     <AccordionContent className="pt-2 border-t text-muted-foreground prose prose-sm max-w-none">
                                         <p><strong>Ana Marka:</strong> hangel</p>
                                         <p><strong>Alt Markalar:</strong> hangel imece, hangel bağış, hangel clubs, Sosyal İnovasyon Merkezi vb. tüm alt markalar ana marka çatısı altındadır.</p>
