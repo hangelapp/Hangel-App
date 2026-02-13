@@ -47,6 +47,7 @@ import Link from 'next/link';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import * as Icons from 'lucide-react';
 
+
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
       role="img"
@@ -134,32 +135,41 @@ const LogoShowcaseCard = ({ title, description, children, onDownload }: { title:
     </Card>
 );
 
-const SubBrandCard = ({ item, iconBgClass }: { item: {href: string, icon: any, label: string, description: string}, iconBgClass: string }) => {
-    const Icon = Icons[item.icon as keyof typeof Icons] || Icons.HelpCircle;
-    return (
-        <div className="pl-4 h-full">
-            <Link href={item.href} className="block h-full">
-                <Card className="h-full flex flex-col rounded-3xl overflow-hidden bg-white hover:shadow-2xl transition-shadow duration-300">
-                    <CardContent className="p-0 flex-1 flex flex-col">
-                        <div className={cn("relative aspect-video w-full flex items-center justify-center", iconBgClass)}>
-                             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-                             <Icon className="h-16 w-16 text-white opacity-90" />
-                        </div>
-                        <div className="p-6 space-y-2 flex-1 flex flex-col text-left">
-                            <h4 className="font-bold text-lg">{item.label}</h4>
-                            <p className="text-sm text-muted-foreground flex-1">{item.description}</p>
-                            <div className="pt-2">
-                                <span className="text-primary font-semibold text-sm flex items-center">
-                                    Daha Fazla Bilgi <ChevronRight className="h-4 w-4 ml-1" />
-                                </span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </Link>
+const ShowcaseCard = ({
+  item,
+  themeConfig,
+}: {
+  item: { href: string; icon: keyof typeof Icons; label: string; description: string };
+  themeConfig: { bg: string; subtitleColor: string; titleColor: string; linkColor: string; iconColor: string };
+}) => {
+  const Icon = Icons[item.icon] || Icons.HelpCircle;
+  return (
+    <Link href={item.href} className="group block h-full">
+      <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
+        <div className="pt-8">
+          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.label}</h3>
+          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</p>
+          <div className="mt-4">
+             <a href={item.href} className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
+                Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
+             </a>
+          </div>
         </div>
-    );
+        <div className="mt-8 flex-1 flex items-end justify-center">
+            <div className="w-32 h-32 relative">
+                <Icon className={cn("w-full h-full", themeConfig.iconColor)} />
+            </div>
+        </div>
+      </div>
+    </Link>
+  );
 };
+
+const themeConfigs = [
+    { bg: 'bg-[#f5f5f7]', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/20' },
+    { bg: 'bg-white', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/20' },
+    { bg: 'bg-black', subtitleColor: 'text-white/60', titleColor: 'text-white', linkColor: 'text-blue-500', iconColor: 'text-white/20' },
+];
 
 
 export default function LogoUsagePage() {
@@ -281,37 +291,15 @@ export default function LogoUsagePage() {
                         </div>
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
-                             <Carousel
-                                opts={{ align: "start" }}
-                                className="w-full max-w-6xl mx-auto"
-                            >
-                                <CarouselContent className="-ml-4">
-                                    {appArchitecture.map((item, index) => (
-                                        <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                                            <SubBrandCard item={item} iconBgClass="bg-primary" />
-                                        </CarouselItem>
-                                    ))}
-                                </CarouselContent>
-                                <CarouselPrevious className="ml-[-24px] hidden lg:flex" />
-                                <CarouselNext className="mr-[-24px] hidden lg:flex" />
-                            </Carousel>
-                        </div>
-                        <div className="space-y-8">
-                            <h3 className="text-3xl font-bold tracking-tight text-center" style={{color: '#042654'}}>hangel Derneği Alt Markaları</h3>
-                             <Carousel
-                                opts={{ align: "start" }}
-                                className="w-full max-w-6xl mx-auto"
-                            >
-                                <CarouselContent className="-ml-4">
-                                    {associationArchitecture.map((item, index) => (
-                                        <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                                            <SubBrandCard item={item} iconBgClass="bg-[#042654]" />
-                                        </CarouselItem>
-                                    ))}
-                                </CarouselContent>
-                                <CarouselPrevious className="ml-[-24px] hidden lg:flex" />
-                                <CarouselNext className="mr-[-24px] hidden lg:flex" />
-                            </Carousel>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {appArchitecture.map((item, index) => (
+                                    <ShowcaseCard 
+                                        key={item.href} 
+                                        item={item} 
+                                        themeConfig={themeConfigs[index % themeConfigs.length]}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
                      <div className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
@@ -323,7 +311,6 @@ export default function LogoUsagePage() {
                 <Section id="medya-kiti">
                     <SectionTitle>Medya Kiti</SectionTitle>
                     <div className="mt-16 space-y-20">
-                        
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Logolar</h3>
                             <div className="space-y-12">
@@ -435,7 +422,7 @@ Ton değişimi, degrade, gölge, transparan müdahale veya varyasyon üretilemez
                 <Section className="text-left">
                     <div className="text-sm text-muted-foreground max-w-3xl space-y-4">
                         <p>
-                           hangel, fikri mülkiyet haklarının korunması amacıyla ulusal ve uluslararası düzeyde tescil süreçlerini yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
+                           hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
                         </p>
                          <p>
                             <strong>hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar. Marka, bir görselden ibaret değildir. Marka, bir taahhüttür.</strong>
