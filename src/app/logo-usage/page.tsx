@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -12,7 +13,6 @@ import {
     DownloadCloud,
     Ruler,
     Handshake,
-    Scale,
     Sparkles,
     Building2,
     Globe,
@@ -120,7 +120,6 @@ const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: st
     </div>
 );
 
-
 const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
     <button className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer shadow-sm hover:shadow-lg transition-all group w-full" onClick={onCopy}>
         <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
@@ -157,7 +156,6 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
         </CardContent>
     </Card>
 );
-
 
 export default function LogoUsagePage() {
     const router = useRouter();
@@ -205,7 +203,7 @@ export default function LogoUsagePage() {
                 <Section id="mimari" className="bg-white">
                     <SectionTitle>Marka Mimarisi</SectionTitle>
                     <div className="space-y-12 mt-16">
-                        <div className="text-center space-y-2">
+                         <div className="text-center space-y-2">
                              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Ana Marka</h3>
                              <HangelLogo className="text-5xl" />
                         </div>
@@ -282,10 +280,10 @@ export default function LogoUsagePage() {
 
                             <TabsContent value="fonts">
                                <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
-                                   <CardHeader className="text-center">
+                                   <CardHeader className="text-center p-0">
                                        <CardTitle>Yazı Tipleri Font Kullanım Yönergesi</CardTitle>
                                    </CardHeader>
-                                   <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                                   <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-0">
                                        <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
                                        <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
                                        <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
@@ -295,10 +293,10 @@ export default function LogoUsagePage() {
                             
                             <TabsContent value="colors">
                                  <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
-                                   <CardHeader className="text-center">
+                                   <CardHeader className="text-center p-0">
                                        <CardTitle>Renk Kullanım Yönergesi</CardTitle>
                                    </CardHeader>
-                                   <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                                   <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 p-0">
                                        <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
                                        <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
                                        <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
@@ -311,14 +309,18 @@ export default function LogoUsagePage() {
                             
                             <TabsContent value="guide">
                                <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
-                                   <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
-                                   <div className="space-y-1">
+                                   <CardHeader className="p-0">
+                                     <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
+                                   </CardHeader>
+                                   <CardContent className="p-0 space-y-1">
                                        <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
                                        <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
-                                   </div>
-                                   <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
-                                        PDF Olarak İndir
-                                   </Button>
+                                   </CardContent>
+                                   <CardFooter className="p-0 justify-center">
+                                     <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
+                                            PDF Olarak İndir
+                                     </Button>
+                                   </CardFooter>
                                </Card>
                             </TabsContent>
                         </Tabs>
@@ -329,20 +331,56 @@ export default function LogoUsagePage() {
                     <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
                         <RuleCard icon={Ruler} title="Temel Kurallar">
-                            <p><strong>BOŞLUK (CLEAR SPACE):</strong> Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar olmalıdır. Bu alana metin, görsel veya ikon yerleştirilemez.</p>
-                            <p><strong>DEĞİŞİKLİK YASAĞI:</strong> Logo sabittir; oranları, renkleri değiştirilemez, eğilemez veya üzerine efekt eklenemez.</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-bold text-foreground">BOŞLUK (CLEAR SPACE) KURALI</h4>
+                                    <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-foreground">DEĞİŞİKLİK YASAĞI</h4>
+                                    <p>Logo sabittir. Yeniden yorumlanamaz. Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez.</p>
+                                </div>
+                            </div>
                         </RuleCard>
-                        <RuleCard icon={Handshake} title="Marka İlişkileri">
-                           <p><strong>CO-BRANDING:</strong> Logolar eşit ölçekli ve yatay hizalı kullanılmalıdır. İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.</p>
-                           <p><strong>HİYERARŞİ:</strong> Hangel logosu, ana markayı destekleyici rolde konumlandırılır, hiçbir zaman en baskın görsel unsur olamaz.</p>
+                        <RuleCard icon={Handshake} title="Ortak Markalama & Hiyerarşi">
+                             <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-bold text-foreground">CO-BRANDING KURALLARI</h4>
+                                    <p>Ortak kampanya ve sponsorluk durumlarında logolar eşit ölçekli, yatay hizalı ve aralarında “h yüksekliği” kadar boşluk bırakılarak kullanılmalıdır. Birleşik bir görsel kilit (lock-up) oluşturulamaz.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-foreground">HİYERARŞİ PRENSİBİ</h4>
+                                    <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. Logo hiçbir koşulda en baskın görsel unsur olarak konumlandırılamaz.</p>
+                                </div>
+                            </div>
                         </RuleCard>
                         <RuleCard icon={Package} title="İsim ve Kanal Kullanımı">
-                            <p><strong>İSİM STANDARTLARI:</strong> "hangel" ismi küçük harfle başlar, değiştirilemez. “hangelPro”, “hangelClubX” gibi birleştirmeler yasaktır. İzin verilen kullanım: “hangel için geliştirildi.”</p>
-                            <p><strong>SOSYAL MEDYA:</strong> Resmi hesap algısı yaratacak (“hangel Haber”) kullanım yasaktır. Doğrusu: “hangel hakkında haberler”.</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-bold text-foreground">ÜRÜN İKONLARI</h4>
+                                    <p>Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-foreground">SOSYAL MEDYA</h4>
+                                    <p>Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-foreground">TV, FİLM VE YAYINCILIK</h4>
+                                    <p>Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır.</p>
+                                </div>
+                            </div>
                         </RuleCard>
                         <RuleCard icon={FileCheck} title="İzinler ve Yasal Çerçeve">
-                            <p><strong>MARKA KULLANIM İZNİ:</strong> TV, radyo, açık hava reklamı gibi büyük ölçekli mecralarda kullanım için yazılı izin alınması zorunludur.</p>
-                            <p><strong>YASAL ÇERÇEVE:</strong> Ticari markalarımız tescil ettirilemez veya benzer şekilde kullanılamaz. Hangel, marka kullanım iznini tek taraflı iptal etme hakkını saklı tutar.</p>
+                           <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-bold text-foreground">MARKA KULLANIM İZNİ</h4>
+                                    <p>Büyük ölçekli basılı mecralarda, açık hava reklamlarında, TV ve dijital yayınlarda kullanım için yazılı izin alınması zorunludur.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-foreground">YASAL ÇERÇEVE</h4>
+                                    <p>hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. Ticari markalarımız tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.</p>
+                                </div>
+                            </div>
                         </RuleCard>
                     </div>
                 </Section>
