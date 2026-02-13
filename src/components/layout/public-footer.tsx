@@ -65,7 +65,23 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
             ] 
         },
     ];
+
+    const appStoreLinks = [
+        { label: "App Store", href: "#" },
+        { label: "Google Play", href: "#" },
+        { label: "AppGallery", href: "#" },
+        { label: "Chrome Store", href: "#" },
+    ];
     
+    const socialLinks = [
+        { label: 'Facebook', href: '#' },
+        { label: 'Instagram', href: '#' },
+        { label: 'Twitter', href: '#' },
+        { label: 'YouTube', href: '#' },
+        { label: 'LinkedIn', href: '#' },
+        { label: 'TikTok', href: '#' }
+    ];
+
     const policyLinks = [
         { label: "Politikalar", href: "/settings/contracts" },
         { label: "Kullanım Koşulları", href: "/settings/contracts/kullanici-sozlesmesi" },
@@ -75,16 +91,6 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "Erişilebilirlik", href: "/accessibility" },
         { label: "Logo Kullanımı", href: "/logo-usage" }
     ];
-
-    const socialLinks = [
-        { name: 'Facebook', href: '#' },
-        { name: 'Instagram', href: '#' },
-        { name: 'Twitter', href: '#' },
-        { name: 'YouTube', href: '#' },
-        { name: 'LinkedIn', href: '#' },
-        { name: 'TikTok', href: '#' }
-    ];
-
 
     return (
         <footer className="bg-[#f5f5f7] text-[#1d1d1f] pt-8 pb-12 px-4 sm:px-6 border-t border-black/5 font-sans">
@@ -134,21 +140,20 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     ))}
                 </div>
                 
-                <div className="pt-10 space-y-6">
-                    <div className="text-left mb-8 border-b border-black/10 pb-8 space-y-6">
+                <div className="pt-6 space-y-3">
+                    <div className="text-left mb-4 border-b border-black/10 pb-4 space-y-3">
                         <div className="flex justify-start items-center flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
-                            <a href="#" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">App Store</a>
-                            <span className="text-black/20">|</span>
-                            <a href="#" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">Google Play</a>
-                            <span className="text-black/20">|</span>
-                            <a href="#" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">AppGallery</a>
-                            <span className="text-black/20">|</span>
-                            <a href="#" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">Chrome Store</a>
+                            {appStoreLinks.map((link, index) => (
+                                <React.Fragment key={link.label}>
+                                    <Link href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.label}</Link>
+                                    {index < appStoreLinks.length - 1 && <span className="text-black/20">|</span>}
+                                </React.Fragment>
+                            ))}
                         </div>
                         <div className="flex justify-start items-center flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
                             {socialLinks.map((link, index) => (
-                                <React.Fragment key={link.name}>
-                                    <a href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.name}</a>
+                                <React.Fragment key={link.label}>
+                                    <a href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.label}</a>
                                     {index < socialLinks.length - 1 && <span className="text-black/20">|</span>}
                                 </React.Fragment>
                             ))}
@@ -171,7 +176,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                             Türkiye
                         </div>
                     </div>
-                     <div className="text-center text-[11px] text-[#1d1d1f]/50 pt-8">
+                     <div className="text-center text-[11px] text-[#1d1d1f]/50 pt-4">
                         Telif Hakkı © {new Date().getFullYear()} hangel A.Ş. Tüm hakları saklıdır.
                     </div>
                 </div>
