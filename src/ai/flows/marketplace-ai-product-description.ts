@@ -9,6 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
 
 const GetProductDescriptionInputSchema = z.object({
@@ -50,7 +51,7 @@ const getProductDescriptionFlow = ai.defineFlow(
     outputSchema: GetProductDescriptionOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(input, {model: googleAI.model('gemini-1.5-flash-latest')});
     return output!;
   }
 );
