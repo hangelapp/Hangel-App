@@ -7,10 +7,10 @@ import type { UseEmblaCarouselType } from "embla-carousel-react"
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { 
     TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
-    ShoppingBag, Leaf
+    ShoppingBag, Leaf, Megaphone
 } from 'lucide-react';
 import { user } from '@/lib/data';
 
@@ -213,10 +213,9 @@ function StoryViewer() {
     const searchParams = useSearchParams();
     const category = searchParams.get('category');
     
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [api, setApi] = useState<CarouselApi>()
+    const [current, setCurrent] = useState(0)
     const [progress, setProgress] = useState(0);
-    const [api, setApi] = useState<CarouselApi>();
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const stories: ImpactSlide[] = React.useMemo(() => {
         switch (category) {
@@ -231,82 +230,71 @@ function StoryViewer() {
                 return hangelImpactStories;
         }
     }, [category]);
-
-    const handleClose = React.useCallback(() => {
-        router.back();
-    }, [router]);
-
-    const nextSlide = React.useCallback(() => {
-        if (api?.canScrollNext()) {
-            api.scrollNext();
-        } else {
-            handleClose();
-        }
-    }, [api, handleClose]);
-
-    const prevSlide = React.useCallback(() => {
-        api?.scrollPrev();
-    }, [api]);
+    
+    const handleClose = useCallback(() => router.back(), [router]);
 
     const startTimer = useCallback(() => {
-        if (timerRef.current) clearInterval(timerRef.current);
-        setProgress(0);
-        timerRef.current = setInterval(() => {
-            setProgress(prev => {
-                const nextProgress = prev + (100 / (STORY_DURATION / 50));
-                if (nextProgress >= 100) {
-                    if (timerRef.current) clearInterval(timerRef.current);
+        const timer = setInterval(() => {
+            setProgress(p => {
+                if (p >= 100) {
+                    clearInterval(timer);
                     return 100;
                 }
-                return nextProgress;
+                return p + 100 / (STORY_DURATION / 50);
             });
         }, 50);
+        return () => clearInterval(timer);
     }, []);
 
     useEffect(() => {
         if (!api) return;
-
-        const handleSelect = () => {
-            setCurrentIndex(api.selectedScrollSnap());
-            startTimer();
-        };
         
-        api.on("select", handleSelect);
-        startTimer(); // Start timer for the initial slide
+        const onSelect = () => {
+            setCurrent(api.selectedScrollSnap());
+            setProgress(0); // Reset progress on slide change
+        };
+
+        api.on("select", onSelect);
+        onSelect(); // Initial call
 
         return () => {
-            if (timerRef.current) clearInterval(timerRef.current);
-            api.off("select", handleSelect);
+            api.off("select", onSelect);
         };
-    }, [api, startTimer]);
+    }, [api]);
+    
+    useEffect(() => {
+        const clearTimer = startTimer();
+        return clearTimer;
+    }, [current, startTimer]);
+
 
     useEffect(() => {
         if (progress >= 100) {
-            nextSlide();
+            if (current === stories.length - 1) {
+                handleClose();
+            } else {
+                api?.scrollNext();
+            }
         }
-    }, [progress, nextSlide]);
+    }, [progress, current, stories.length, api, handleClose]);
 
-    const currentSlide = stories[currentIndex];
 
-    if (!currentSlide) {
-        return (
-            <div className="flex items-center justify-center h-full bg-black text-white">
-                Hikaye bulunamadı.
-            </div>
-        );
-    }
-    const Icon = currentSlide.icon;
-    
+    const prevSlide = useCallback(() => api?.scrollPrev(), [api]);
+    const nextSlide = useCallback(() => api?.scrollNext(), [api]);
+
+    const currentSlide = stories[current];
+    if (!currentSlide) return <div className="h-full w-full bg-black" />;
+
     return (
-         <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
+        <div className="relative w-full h-full bg-black md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
             {/* Progress Bars */}
-            <div className="absolute top-4 inset-x-0 px-4 flex gap-1 z-50">
+            <div className="absolute top-4 inset-x-4 flex gap-1 z-50">
                 {stories.map((s, idx) => (
-                    <div key={s.id} className="h-1 flex-1 bg-black/10 rounded-full overflow-hidden">
+                    <div key={s.id} className="h-0.5 flex-1 bg-white/20 rounded-full overflow-hidden">
                         <div
-                            className="h-full bg-[#f34723] transition-all duration-50 ease-linear"
+                            className="h-full bg-white transition-all duration-50 ease-linear"
                             style={{
-                                width: idx < currentIndex ? '100%' : (idx === currentIndex ? `${progress}%` : '0%')
+                                width: idx < current ? '100%' : (idx === current ? `${progress}%` : '0%')
                             }}
                         />
                     </div>
@@ -314,17 +302,16 @@ function StoryViewer() {
             </div>
 
             {/* Header */}
-            <div className="absolute top-8 inset-x-0 px-6 flex justify-between items-center z-50">
+            <div className="absolute top-8 inset-x-4 px-2 flex justify-between items-center z-50 text-white">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center border border-black/5 shadow-sm">
-                        <HangelLogo className="text-[10px] scale-75" />
+                    <div className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-sm">
+                        <HangelLogo className="text-lg text-white" />
                     </div>
-                    <div className="text-left drop-shadow-sm">
-                        <p className="text-black font-black text-xs uppercase tracking-widest">{currentSlide.subtitle}</p>
-                        <p className="text-black/40 text-[10px] font-bold">ETKİ HİKAYESİ</p>
+                    <div className="text-left drop-shadow-lg">
+                        <p className="font-bold text-xs">{currentSlide.subtitle}</p>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" className="text-black hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/20" onClick={handleClose}>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full h-10 w-10 backdrop-blur-md bg-black/20" onClick={handleClose}>
                     <X className="h-6 w-6" />
                 </Button>
             </div>
@@ -335,8 +322,8 @@ function StoryViewer() {
                         const CurrentIcon = slide.icon;
                         return (
                             <CarouselItem key={slide.id}>
-                                <div className="flex-1 relative flex flex-col h-full">
-                                    <div className="absolute inset-0 z-0">
+                                <div className="w-full h-full flex flex-col bg-black">
+                                    <div className="relative flex-1 w-full min-h-0">
                                         <Image
                                             src={slide.image}
                                             alt={slide.title}
@@ -345,25 +332,20 @@ function StoryViewer() {
                                             priority={slide.id === stories[0].id}
                                             data-ai-hint={slide.imageHint}
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-white/90" />
                                     </div>
-                                    <div className="relative z-10 flex-1 flex flex-col justify-end p-8 pb-32 space-y-6">
-                                        <div className="animate-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
-                                            <div className="w-14 h-14 rounded-2xl bg-[#f34723] flex items-center justify-center text-white mb-6 shadow-xl shadow-[#f34723]/30">
-                                                <CurrentIcon className="h-8 w-8" />
+                                    <div className="p-8 md:p-10 text-white bg-black">
+                                        <div className="animate-in fade-in-0 slide-in-from-bottom-5 duration-700">
+                                            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white mb-5">
+                                                <CurrentIcon className="h-7 w-7" />
                                             </div>
-                                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-black leading-[1.1] mb-4">
+                                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
                                                 {slide.title}
                                             </h2>
-                                            <p className="text-base text-black/70 font-medium leading-relaxed max-w-sm">
+                                            <p className="mt-3 text-base md:text-lg text-white/70 leading-relaxed max-w-sm">
                                                 {slide.content}
                                             </p>
                                             {slide.stat && (
-                                                <div className="mt-8">
-                                                    <div className="inline-flex flex-col">
-                                                        <span className="text-5xl font-black text-black tracking-tighter">{slide.stat}</span>
-                                                    </div>
-                                                </div>
+                                                <p className="text-6xl font-bold tracking-tighter mt-6">{slide.stat}</p>
                                             )}
                                         </div>
                                     </div>
@@ -372,8 +354,9 @@ function StoryViewer() {
                         )
                     })}
                 </CarouselContent>
-                 <CarouselPrevious onClick={prevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
-                 <CarouselNext onClick={nextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
+                {/* Navigation Overlays */}
+                <div className="absolute inset-y-0 left-0 w-1/4 z-20" onClick={prevSlide} />
+                <div className="absolute inset-y-0 right-0 w-3/4 z-20" onClick={nextSlide} />
             </Carousel>
         </div>
     );
