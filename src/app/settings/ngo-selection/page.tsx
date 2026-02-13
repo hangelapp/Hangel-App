@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, ChevronRight, X, Info, Handshake, Award, Calendar, MapPin, Store, CreditCard, Globe, Mail, Phone, Linkedin, Facebook, Eye } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, ChevronRight, X, Info, Handshake, Award, Calendar, MapPin, Store, CreditCard, Globe, Mail, Phone, Linkedin, Facebook, Eye, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ngos, user, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -170,11 +170,18 @@ export default function NgoSelectionPage() {
         return filtered;
     }, [typeFilter, locationFilter, searchTerm, sortConfig, categoryFilter]);
 
+    const [toastInfo, setToastInfo] = useState<{variant?: 'destructive', title: string, description: string} | null>(null);
+    useEffect(() => {
+        if (toastInfo) {
+            toast(toastInfo);
+            setToastInfo(null);
+        }
+    }, [toastInfo, toast]);
 
     const handleNgoSelect = (ngoId: string) => {
         const isCurrentlySelected = selectedNgos.includes(ngoId);
         if (selectedNgos.length >= 2 && !isCurrentlySelected) {
-            toast({
+            setToastInfo({
                 variant: 'destructive',
                 title: "Limit Aşıldı",
                 description: "En fazla 2 varsayılan STK seçebilirsiniz.",
