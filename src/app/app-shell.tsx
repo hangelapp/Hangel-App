@@ -3,7 +3,6 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import AppHeader from '@/components/layout/header';
-import AppBottomNav from '@/components/layout/bottom-nav';
 import { SideNav } from '@/components/layout/SideNav';
 import type { SideNavItem } from '@/lib/types';
 import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -89,20 +88,37 @@ const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => vo
 export function AppShell({ children }: { children: React.ReactNode }) {
     const [isDrawerOpen, setDrawerOpen] = React.useState(false);
     const pathname = usePathname();
+
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');
-    const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
-    
-    // Landing pages that should not have the side menu or app shell wrapping
-    const isLandingPage = [
-        '/about', '/social-impact', '/press', '/yatirimci-iliskileri', '/careers',
-        '/corporate', '/feedback', '/accessibility', '/sitemap', '/bilgi-toplumu-hizmetleri',
-        '/campus-advantages', '/merchant', '/ngo-onboarding', '/association', '/hangelassociation',
-        '/logo-usage'
-    ].some(path => pathname === path || pathname.startsWith(path + '/'));
+
+    const publicWebsitePaths = [
+        '/',
+        '/login',
+        '/onboarding',
+        '/about',
+        '/press',
+        '/yatirimci-iliskileri',
+        '/careers',
+        '/corporate',
+        '/feedback',
+        '/accessibility',
+        '/sitemap',
+        '/bilgi-toplumu-hizmetleri',
+        '/campus-advantages',
+        '/merchant',
+        '/ngo-onboarding',
+        '/hangelassociation',
+        '/logo-usage',
+        '/support',
+        '/settings/contracts',
+        '/contact',
+    ];
+
+    const isPublicPage = publicWebsitePaths.some(path => pathname === path || pathname.startsWith(path + '/'));
 
 
-    if (isPreviewPage || isSuperAdminPage || isAuthPage || isLandingPage) {
+    if (isPreviewPage || isSuperAdminPage || isPublicPage) {
         return <>{children}</>;
     }
 
@@ -156,9 +172,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
-            <main className="flex-1 pt-12 pb-24 lg:pb-8">{children}</main>
+            <main className="flex-1 pt-12 pb-8">{children}</main>
           </div>
-          <AppBottomNav />
         </div>
     );
 }
