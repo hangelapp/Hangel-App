@@ -46,6 +46,7 @@ export default function NgoSelectionPage() {
             title: "Tercihler Kaydedildi",
             description: "Varsayılan STK seçimleriniz başarıyla güncellendi.",
         });
+        router.push('/settings/profile');
     };
 
     return (

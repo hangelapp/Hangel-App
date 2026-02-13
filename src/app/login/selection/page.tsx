@@ -79,7 +79,7 @@ const districts: { [key: string]: string[] } = {
     'Şanlıurfa': ['Akçakale', 'Birecik', 'Bozova', 'Ceylanpınar', 'Eyyübiye', 'Halfeti', 'Haliliye', 'Harran', 'Hilvan', 'Karaköprü', 'Siverek', 'Suruç', 'Viranşehir'],
     'Siirt': ['Merkez', 'Baykan', 'Eruh', 'Kurtalan', 'Pervari', 'Şirvan', 'Tillo'],
     'Sinop': ['Merkez', 'Ayancık', 'Boyabat', 'Dikmen', 'Durağan', 'Erfelek', 'Gerze', 'Saraydüzü', 'Türkeli'],
-    'Sivas': ['Merkez', 'Akıncılar', 'Altınyayla', 'Divriği', 'Doğanşar', 'Gemerek', 'Gölova', 'Gürün', 'Hafik', 'İmranlı', 'Kangal', 'Koyulhisar', 'Şarkışla', 'Suşehri', 'Ulaş', 'Yıldızeli', 'Zara'],
+    'Sivas': ['Merkez', 'Akıncılar', 'Altınyayla', 'Divriği', 'Doğanşar', 'Gemerek', 'Gölova', 'Gürün', 'Hafik', 'İmranlı', 'Kangal', 'Koyulhisar', 'Suşehri', 'Şarkışla', 'Ulaş', 'Yıldızeli', 'Zara'],
     'Şırnak': ['Merkez', 'Beytüşşebap', 'Cizre', 'Güçlükonak', 'İdil', 'Silopi', 'Uludere'],
     'Tekirdağ': ['Çerkezköy', 'Çorlu', 'Ergene', 'Hayrabolu', 'Kapaklı', 'Malkara', 'Marmaraereğlisi', 'Muratlı', 'Saray', 'Şarköy', 'Süleymanpaşa'],
     'Tokat': ['Merkez', 'Almus', 'Artova', 'Başçiftlik', 'Erbaa', 'Niksar', 'Pazar', 'Reşadiye', 'Sulusaray', 'Turhal', 'Yeşilyurt', 'Zile'],
@@ -90,6 +90,7 @@ const districts: { [key: string]: string[] } = {
     'Yalova': ['Merkez', 'Altınova', 'Armutlu', 'Çınarcık', 'Çiftlikköy', 'Termal'],
     'Yozgat': ['Merkez', 'Akdağmadeni', 'Aydıncık', 'Boğazlıyan', 'Çandır', 'Çayıralan', 'Çekerek', 'Kadışehri', 'Saraykent', 'Sarıkaya', 'Sorgun', 'Şefaatli', 'Yenifakılı', 'Yerköy'],
     'Zonguldak': ['Merkez', 'Alaplı', 'Çaycuma', 'Devrek', 'Ereğli', 'Gökçebey', 'Kilimli', 'Kozlu'],
+    'Aksaray': ['Merkez', 'Ağaçören', 'Eskil', 'Gülağaç', 'Güzelyurt', 'Ortaköy', 'Sarıyahşi', 'Sultanhanı'],
     'Bayburt': ['Merkez', 'Aydıntepe', 'Demirözü'],
     'Karaman': ['Merkez', 'Ayrancı', 'Başyayla', 'Ermenek', 'Kazımkarabekir', 'Sarıveliler'],
     'Kırıkkale': ['Merkez', 'Bahşılı', 'Balışeyh', 'Çelebi', 'Delice', 'Karakeçili', 'Keskin', 'Sulakyurt', 'Yahşihan'],
@@ -274,17 +275,55 @@ function IndividualLogin({ onLogin }: { onLogin: (e: React.FormEvent) => void })
   );
 }
 
-function IndividualRegister({ onRegister }: { onRegister: (e: React.FormEvent) => void }) {
+function IndividualRegister() {
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
+
+  const handleRegisterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const phoneInput = e.currentTarget.elements.namedItem('phone-register') as HTMLInputElement;
+    setPhoneNumber(phoneInput.value);
+    setStep(2);
+  };
+
+  const handleOtpSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // In a real app, we'd verify the OTP here.
+    // On success, redirect to the next step of onboarding.
+    router.push('/settings/ngo-selection');
+  };
+
+  if (step === 2) {
+    return (
+      <div className="space-y-6">
+        <form className="space-y-6" onSubmit={handleOtpSubmit}>
+          <p className="text-sm text-center text-muted-foreground">{`+90 ${phoneNumber} numarasına gönderilen 6 haneli kodu girin.`}</p>
+          <div>
+            <Label htmlFor="otp">Doğrulama Kodu</Label>
+            <Input id="otp" type="text" required className="text-center tracking-[0.5em]" placeholder="------" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value)} />
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <Button variant="link" onClick={() => setStep(1)} className="p-0 text-primary">Numarayı Değiştir</Button>
+            <Button variant="link" className="p-0 text-primary">Kodu Tekrar Gönder</Button>
+          </div>
+          <Button type="submit" className="w-full">Doğrula ve Devam Et</Button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <form className="space-y-6" onSubmit={onRegister}>
+      <form className="space-y-6" onSubmit={handleRegisterSubmit}>
         <div className="space-y-2">
           <Label htmlFor="name-register">Ad Soyad</Label>
           <Input id="name-register" type="text" required placeholder="Adınız Soyadınız" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone-register">Telefon Numarası</Label>
-          <Input id="phone-register" type="tel" required placeholder="5XX XXX XX XX" />
+          <Input name="phone-register" id="phone-register" type="tel" required placeholder="5XX XXX XX XX" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email-register">E-posta Adresi (İsteğe Bağlı)</Label>
@@ -612,11 +651,6 @@ function SelectionContent() {
     router.push('/market');
   };
 
-  const handleIndividualRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push('/market');
-  };
-
   const handleCorporateLogin = (e: React.FormEvent) => {
     e.preventDefault();
     router.push('/admin');
@@ -648,7 +682,7 @@ function SelectionContent() {
             {action === 'login' ? (
                 <IndividualLogin onLogin={handleIndividualLogin} />
             ) : (
-                <IndividualRegister onRegister={handleIndividualRegister} />
+                <IndividualRegister />
             )}
           </TabsContent>
           
