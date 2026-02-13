@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -13,14 +12,22 @@ import {
     DownloadCloud,
     Star,
     CheckCircle,
+    Landmark,
     Ruler,
     Scale,
     Handshake,
     Mic,
     Newspaper,
-    Landmark,
-    HeartHandshake,
+    Users,
     Globe,
+    BarChart3,
+    TrendingUp,
+    Shield,
+    HeartHandshake, 
+    School, 
+    Store,
+    Building,
+    Library,
     Sparkles,
     Briefcase,
     Brain,
@@ -28,13 +35,9 @@ import {
     Map as MapIcon,
     BookOpen,
     DollarSign,
-    Users,
     Plane,
     ChevronRight,
-    Building2,
-    Store,
-    School,
-    Library
+    HandCoins
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -104,6 +107,7 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
         </div>
     </button>
 );
+
 
 const appArchitecture = [
     { href: "/volunteering", icon: HeartHandshake, label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
@@ -200,7 +204,7 @@ export default function LogoUsagePage() {
                     </p>
                 </Section>
                 
-                 <Section id="mimari" className="bg-white">
+                <Section id="mimari" className="bg-white">
                     <SectionTitle>Marka Mimarisi</SectionTitle>
                     <div className="space-y-12 mt-16">
                         <div className="text-center space-y-2">
@@ -249,7 +253,7 @@ export default function LogoUsagePage() {
                             </div>
                         </div>
 
-                        <div className="space-y-8">
+                         <div className="space-y-8">
                             <h3 className="text-2xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
                              <div className="max-w-4xl mx-auto">
                                 <Card className="rounded-3xl p-10 bg-white/50 text-center">
@@ -258,14 +262,14 @@ export default function LogoUsagePage() {
                                         <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur.</p>
                                     </CardHeader>
                                     <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-0">
-                                        <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                        <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
-                                        <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                         <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                         <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                         <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                     </CardContent>
                                 </Card>
                             </div>
                         </div>
-
+                        
                         <div className="space-y-8">
                             <h3 className="text-2xl font-bold tracking-tight text-center">Marka Renkleri</h3>
                             <div className="max-w-4xl mx-auto">
@@ -294,7 +298,7 @@ export default function LogoUsagePage() {
                             <Card className="bg-white rounded-3xl p-8 text-center shadow-lg">
                                 <DownloadCloud className="h-10 w-10 text-primary mx-auto mb-4"/>
                                 <CardHeader className="p-0"><CardTitle>Kurumsal Kimlik Kılavuzu</CardTitle></CardHeader>
-                                <CardContent className="p-0 mt-2"><CardDescription>Marka değerleri, logo kullanım standartları ve iletişim dilimizi içeren rehber.</CardDescription></CardContent>
+                                <CardContent className="p-0 mt-2"><CardDescription>Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</CardDescription></CardContent>
                                 <CardFooter className="p-0 mt-6 justify-center"><Button onClick={() => handleDownload('kurumsal-kimlik.pdf')}>PDF olarak indir.</Button></CardFooter>
                             </Card>
                         </div>
@@ -306,7 +310,7 @@ export default function LogoUsagePage() {
                         <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InfoCard icon={Ruler} title="Temel Logo Kuralları">
+                         <InfoCard icon={Ruler} title="Temel Logo Kuralları">
                             <h4>LOGO MİNİMUM BOYUT KURALI</h4>
                             <p>Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:</p>
                             <ul>
