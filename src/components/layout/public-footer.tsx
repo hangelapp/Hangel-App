@@ -128,12 +128,18 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 <div className="pt-10 space-y-6">
                     <div className="text-center mb-8 border-b border-black/10 pb-8">
                         <p className="font-semibold text-sm mb-4">hangel uygulamasını indirin.</p>
-                        <div className="flex justify-center items-center gap-4">
+                        <div className="flex justify-center items-center flex-wrap gap-4">
                             <a href="#" className="inline-block hover:opacity-80 transition-opacity">
                                 <Image src="https://picsum.photos/seed/app-store-badge/240/80" alt="App Store'dan indirin" width={120} height={40} data-ai-hint="app store badge" />
                             </a>
                             <a href="#" className="inline-block hover:opacity-80 transition-opacity">
                                 <Image src="https://picsum.photos/seed/google-play-badge/270/80" alt="Google Play'den alın" width={135} height={40} data-ai-hint="google play badge" />
+                            </a>
+                             <a href="#" className="inline-block hover:opacity-80 transition-opacity">
+                                <Image src="https://picsum.photos/seed/appgallery-badge/270/80" alt="AppGallery'den keşfedin" width={135} height={40} data-ai-hint="appgallery badge" />
+                            </a>
+                             <a href="#" className="inline-block hover:opacity-80 transition-opacity">
+                                <Image src="https://picsum.photos/seed/chrome-store-badge/270/80" alt="Chrome Web Mağazası'ndan edinin" width={135} height={40} data-ai-hint="chrome store badge" />
                             </a>
                         </div>
                     </div>
