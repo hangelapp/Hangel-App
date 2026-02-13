@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
@@ -103,7 +103,7 @@ export default function PressPage() {
                 {/* Hero */}
                 <section className="container mx-auto px-4 pt-16 pb-24 text-center space-y-6">
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                        hangel'in Hikayesi. <br /> Dünyayla Paylaşın.
+                       hangel'in Hikayesi. <br /> Dünyayla Paylaşın.
                     </h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                         Resmi duyurular, medya kaynakları ve kurumsal kimlik materyallerimiz.
@@ -146,11 +146,12 @@ export default function PressPage() {
                 {/* Media Kit */}
                 <section className="container mx-auto px-4 mb-24">
                     <Tabs defaultValue="logos" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto h-14 mb-12">
+                        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 max-w-4xl mx-auto h-auto mb-12">
                             <TabsTrigger value="logos" className="h-12 text-sm"><Palette className="mr-2"/>Logolar</TabsTrigger>
                             <TabsTrigger value="fonts" className="h-12 text-sm"><Type className="mr-2"/>Yazı Tipleri</TabsTrigger>
                             <TabsTrigger value="colors" className="h-12 text-sm"><Palette className="mr-2"/>Renkler</TabsTrigger>
-                             <TabsTrigger value="guide" className="h-12 text-sm"><FileText className="mr-2"/>Kimlik Klavuzu</TabsTrigger>
+                            <TabsTrigger value="photos" className="h-12 text-sm"><ImageIcon className="mr-2"/>Kurumsal Fotoğraflar</TabsTrigger>
+                            <TabsTrigger value="guide" className="h-12 text-sm"><FileText className="mr-2"/>Kimlik Klavuzu</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="logos">
@@ -199,6 +200,37 @@ export default function PressPage() {
                            </Card>
                         </TabsContent>
                         
+                        <TabsContent value="photos">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {[
+                                    { id: 1, src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', alt: 'Ofiste çalışan ekip', hint: 'office team working' },
+                                    { id: 2, src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop', alt: 'Toplantı odasında beyin fırtınası', hint: 'meeting brainstorming' },
+                                    { id: 3, src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop', alt: 'Gönüllüler bir araya geliyor', hint: 'volunteers meeting' },
+                                    { id: 4, src: 'https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop', alt: 'Dayanışma içinde insanlar', hint: 'people solidarity' },
+                                    { id: 5, src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', alt: 'Kurumsal sunum', hint: 'corporate presentation' },
+                                    { id: 6, src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop', alt: 'Mutlu ve çeşitli bir topluluk', hint: 'happy diverse community' },
+                                ].map((photo) => (
+                                    <Card key={photo.id} className="rounded-2xl overflow-hidden group">
+                                        <CardContent className="p-0">
+                                            <div className="relative aspect-[4/3] w-full">
+                                                <Image src={photo.src} alt={photo.alt} fill className="object-cover" data-ai-hint={photo.hint} />
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter className="p-3 bg-muted/50">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="w-full text-xs"
+                                                onClick={() => handleDownload(`kurumsal-fotograf-${photo.id}.jpg`)}
+                                            >
+                                                <Download className="mr-2 h-4 w-4" /> Yüksek Çözünürlüklü İndir
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
+                                ))}
+                            </div>
+                        </TabsContent>
+
                         <TabsContent value="guide">
                            <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
                                <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
