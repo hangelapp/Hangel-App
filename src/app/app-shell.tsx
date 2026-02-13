@@ -97,7 +97,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const isLandingPage = [
         '/about', '/social-impact', '/press', '/yatirimci-iliskileri', '/careers',
         '/corporate', '/feedback', '/accessibility', '/sitemap', '/bilgi-toplumu-hizmetleri',
-        '/campus-advantages', '/merchant', '/ngo-onboarding', '/association', '/hangelassociation'
+        '/campus-advantages', '/merchant', '/ngo-onboarding', '/association', '/hangelassociation',
+        '/logo-usage'
     ].some(path => pathname === path || pathname.startsWith(path + '/'));
 
 

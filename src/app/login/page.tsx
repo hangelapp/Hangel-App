@@ -222,8 +222,8 @@ export default function LoginPage() {
                 <ProductShowcaseSection
                     theme="dark"
                     title="Yok öyle yalnız başına mücadele etmek."
-                    subtitle="Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz."
-                    description="#wearehangel"
+                    subtitle="#wearehangel"
+                    description=""
                     cta1="Şimdi Katıl"
                     cta1Href="/login/selection?action=register"
                     cta2="Daha Fazla Bilgi"
@@ -383,20 +383,20 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </section>
-                <section id="accessibility" className="py-16 md:py-24 bg-white">
+                <section id="accessibility" className="py-12 md:py-16 bg-white">
                     <div className="container mx-auto px-4 max-w-4xl text-center">
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Herkes İçin İyilik.</h2>
-                        <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
+                        <h2 className="text-xl font-bold tracking-tight">Herkes İçin İyilik.</h2>
+                        <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-2xl mx-auto">
                             hangel, erişilebilirliği temel ilkesi olarak benimser.
                             hangel uygulaması, WCAG 2.2 AA kriterleri esas alınarak geliştirilmiştir ve farklı engel gruplarının ihtiyaçlarını karşılayacak erişim seçenekleri sunar. Erişilebilirlik uyumluluğu sürekli olarak değerlendirilmektedir.
                             <br/><br/>
                             Amacımız, erişilebilirliği bir özellik değil, standart bir deneyim haline getirmektir.
                         </p>
-                        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Button variant="outline" className="h-12 px-8 font-bold">Açık Kaynak Kodlara Erişim</Button>
-                            <Button asChild variant="link" className="text-lg text-primary font-bold">
+                        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Button variant="outline" size="sm">Açık Kaynak Kodlara Erişim</Button>
+                            <Button asChild variant="link" size="sm" className="text-primary font-bold">
                                 <Link href="/accessibility">
-                                    Daha Fazla Bilgi <ChevronRight className="ml-1 h-5 w-5" />
+                                    Daha Fazla Bilgi <ChevronRight className="ml-1 h-4 w-4" />
                                 </Link>
                             </Button>
                         </div>
