@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -26,7 +27,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -74,6 +74,7 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
         </div>
     </div>
 );
+
 
 const RuleCard = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
     <Card className="rounded-2xl bg-muted/30 border-none">
@@ -131,88 +132,90 @@ export default function LogoUsagePage() {
                     </p>
                 </section>
                 
-                <section className="container mx-auto px-4 mb-24">
+                 <section className="container mx-auto px-4 mb-24">
                     <Card className="rounded-[2.5rem] border-none shadow-xl bg-white p-6 md:p-10">
-                        <CardHeader className="p-0 mb-8">
+                        <CardHeader className="p-0 mb-12 text-center">
                             <CardTitle className="text-3xl font-bold tracking-tight">Medya Kiti</CardTitle>
+                            <CardDescription>Logolar, yazı tipleri, renkler ve rehberler.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-0">
-                            <Tabs defaultValue="logos" className="w-full">
-                                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-4xl mx-auto h-auto md:h-14 mb-12">
-                                    <TabsTrigger value="logos" className="h-14 text-sm"><Palette className="mr-2"/>Logolar</TabsTrigger>
-                                    <TabsTrigger value="fonts" className="h-14 text-sm"><Type className="mr-2"/>Yazı Tipleri</TabsTrigger>
-                                    <TabsTrigger value="colors" className="h-14 text-sm"><Palette className="mr-2"/>Renkler</TabsTrigger>
-                                    <TabsTrigger value="guides" className="h-14 text-sm"><FileText className="mr-2"/>Rehberler</TabsTrigger>
-                                </TabsList>
+                        <CardContent className="p-0 space-y-16">
+                            
+                            {/* --- LOGOLAR --- */}
+                            <div className="space-y-8">
+                                <h3 className="text-center text-xl font-bold tracking-tight">Logolar</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('birincil-logo.png')}>
+                                        <HangelLogo className="text-5xl text-primary" />
+                                    </LogoDisplayCard>
+                                    <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
+                                        <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
+                                    </LogoDisplayCard>
+                                    <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (PNG) (Zorunlu hallerde)" onDownload={() => handleDownload('beyaz-logo.png')}>
+                                        <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
+                                            <HangelLogo className="text-5xl text-white" />
+                                        </div>
+                                    </LogoDisplayCard>
+                                    <LogoDisplayCard title="App Icon" description="(PNG)" onDownload={() => handleDownload('app-icon.png')}>
+                                        <div className="p-4 bg-primary rounded-2xl"><span className="text-4xl font-black text-white">h</span></div>
+                                    </LogoDisplayCard>
+                                </div>
+                            </div>
 
-                                <TabsContent value="logos">
-                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('birincil-logo.png')}>
-                                            <HangelLogo className="text-5xl text-primary" />
-                                        </LogoDisplayCard>
-                                         <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
-                                            <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
-                                        </LogoDisplayCard>
-                                        <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (PNG) (Zorunlu hallerde)" onDownload={() => handleDownload('beyaz-logo.png')}>
-                                            <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
-                                               <HangelLogo className="text-5xl text-white" />
-                                            </div>
-                                        </LogoDisplayCard>
-                                        <LogoDisplayCard title="App Icon" description="(PNG)" onDownload={() => handleDownload('app-icon.png')}>
-                                           <div className="p-4 bg-primary rounded-2xl"><span className="text-4xl font-black text-white">h</span></div>
-                                        </LogoDisplayCard>
-                                    </div>
-                                </TabsContent>
+                            {/* --- YAZI TİPLERİ --- */}
+                            <div className="space-y-8 pt-12 border-t">
+                                <h3 className="text-center text-xl font-bold tracking-tight">Yazı Tipleri</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                    <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                    <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                </div>
+                                <p className="text-center text-xs text-muted-foreground max-w-xl mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur. Farklı font kullanımı marka tutarlılığını zedeler.</p>
+                            </div>
 
-                                <TabsContent value="fonts">
-                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                       <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                       <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
-                                       <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
-                                   </div>
-                                    <p className="text-center text-xs text-muted-foreground mt-8">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur. Farklı font kullanımı marka tutarlılığını zedeler.</p>
-                                </TabsContent>
-                                
-                                <TabsContent value="colors">
-                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                       <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
-                                       <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
-                                       <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
-                                       <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
-                                   </div>
-                                   <p className="text-center text-xs text-muted-foreground mt-8">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır. Ton, gölge veya gradyan uygulamaları marka bütünlüğünü bozacak şekilde değiştirilmemelidir.</p>
-                                </TabsContent>
-                                
-                                <TabsContent value="guides">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <Card className="bg-muted/30 rounded-3xl p-8 text-center shadow-none border-dashed border-2">
-                                            <CardHeader className="p-0">
-                                                <CardTitle>hangel Canva Marka Kiti</CardTitle>
-                                                <CardDescription>Logo, renk, yazı tipi ve görsellere Canva üzerinden erişin.</CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="p-0 mt-6">
-                                                <Button asChild>
-                                                    <a href="#" target="_blank" rel="noopener noreferrer">Canva Marka Kitine Git</a>
-                                                </Button>
-                                            </CardContent>
-                                        </Card>
-                                        <Card className="bg-muted/30 rounded-3xl text-center p-8 shadow-none border-dashed border-2">
-                                            <CardHeader className="p-0">
-                                                <CardTitle>Kurumsal Kimlik Kılavuzu</CardTitle>
-                                                <CardDescription>Marka değerleri, logo standartları ve iletişim dili rehberi.</CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="p-0 mt-6">
-                                                <Button onClick={() => handleDownload('hangel-brand-guide.pdf')}>PDF Olarak İndir</Button>
-                                            </CardContent>
-                                        </Card>
-                                    </div>
-                                </TabsContent>
-                            </Tabs>
+                            {/* --- RENKLER --- */}
+                            <div className="space-y-8 pt-12 border-t">
+                                <h3 className="text-center text-xl font-bold tracking-tight">Renkler</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
+                                <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
+                                <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
+                                <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
+                                </div>
+                                <p className="text-center text-xs text-muted-foreground max-w-xl mx-auto">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır. Ton, gölge veya gradyan uygulamaları marka bütünlüğünü bozacak şekilde değiştirilmemelidir.</p>
+                            </div>
+
+                            {/* --- REHBERLER --- */}
+                            <div className="space-y-8 pt-12 border-t">
+                                <h3 className="text-center text-xl font-bold tracking-tight">Rehberler</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <Card className="bg-muted/30 rounded-3xl p-8 text-center shadow-none border-dashed border-2">
+                                        <CardHeader className="p-0">
+                                            <CardTitle>hangel Canva Marka Kiti</CardTitle>
+                                            <CardDescription>Logo, renk, yazı tipi ve görsellere Canva üzerinden erişin.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="p-0 mt-6">
+                                            <Button asChild>
+                                                <a href="#" target="_blank" rel="noopener noreferrer">Canva Marka Kitine Git</a>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="bg-muted/30 rounded-3xl text-center p-8 shadow-none border-dashed border-2">
+                                        <CardHeader className="p-0">
+                                            <CardTitle>Kurumsal Kimlik Kılavuzu</CardTitle>
+                                            <CardDescription>Marka değerleri, logo standartları ve iletişim dili rehberi.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="p-0 mt-6">
+                                            <Button onClick={() => handleDownload('hangel-brand-guide.pdf')}>PDF Olarak İndir</Button>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+
                         </CardContent>
                     </Card>
                 </section>
                 
-                <section className="container mx-auto px-4 mb-24">
+                 <section className="container mx-auto px-4 mb-24">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-bold tracking-tight">Kullanım Kuralları</h2>
                         <p className="text-muted-foreground mt-2">Marka varlıklarımızın doğru kullanımı için lütfen bu yönergeleri izleyin.</p>
