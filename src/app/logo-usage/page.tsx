@@ -19,12 +19,23 @@ import {
     Mic,
     Newspaper,
     Landmark,
-    HeartHandshake, HandCoins, School, Store, Building, Library, Sparkles, Globe, BookOpen, Users,
-    TrendingUp, ShieldCheck, ChevronRight,
+    TrendingUp,
+    Users,
+    ShieldCheck,
+    ChevronRight,
+    HeartHandshake,
+    BookCopy,
+    Globe,
+    Sparkles,
+    HandCoins,
+    School,
+    Building,
+    Store,
+    Library
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -57,46 +68,6 @@ const SectionTitle = ({ children, className, ...props }: React.HTMLAttributes<HT
     </h2>
 );
 
-const appArchitecture = [
-    { icon: HeartHandshake, title: "hangel imece", description: "Yetenek bazlı gönüllülük platformu.", href: "/volunteering" },
-    { icon: HandCoins, title: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli.", href: "/market" },
-    { icon: School, title: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi.", href: "/admin/clubs" },
-    { icon: Store, title: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler.", href: "/merchant" },
-    { icon: Building, title: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları.", href: "/ngo-onboarding" },
-    { icon: Library, title: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi.", href: "/library" },
-];
-
-const associationArchitecture = [
-    { icon: Sparkles, title: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir.", href: "/hangelassociation/projects/sosyal-inovasyon" },
-    { icon: Palette, title: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri.", href: "/hangelassociation/projects/sanat" },
-    { icon: Globe, title: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar.", href: "/hangelassociation/projects/etki-atlasi" },
-    { icon: BookOpen, title: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi.", href: "/hangelassociation/workshop" },
-    { icon: Users, title: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir.", href: "/hangelassociation/workshop" },
-];
-
-const ArchitectureCard = ({ icon: Icon, title, description, href, iconBgClass, category }: { icon: React.ElementType, title: string, description: string, href: string, iconBgClass?: string, category: string }) => (
-    <Link href={href} className="group block">
-        <Card className="relative h-full text-left p-6 space-y-4 hover:shadow-xl transition-shadow rounded-2xl overflow-hidden">
-            <div className={cn(
-                "absolute top-3 right-3 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-sm",
-                iconBgClass === 'bg-primary' ? 'bg-black/20' : 'bg-white/20'
-            )}>
-                <HangelLogo className="text-[10px] opacity-80" />
-                <span>{category}</span>
-            </div>
-            
-            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", iconBgClass)}>
-                <Icon className="h-6 w-6 text-white" />
-            </div>
-            <div>
-                <h4 className="font-bold text-base text-foreground">{title}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{description}</p>
-            </div>
-        </Card>
-    </Link>
-);
-
-
 const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
     <div className="border rounded-2xl bg-white/50 text-center flex flex-col shadow-sm hover:shadow-lg transition-shadow">
         <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
@@ -120,6 +91,7 @@ const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: st
         <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
     </div>
 );
+
 
 const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
     <button className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer shadow-sm hover:shadow-lg transition-all group w-full" onClick={onCopy}>
@@ -146,6 +118,44 @@ const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: s
     </div>
 );
 
+const appArchitecture = [
+    { href: "/volunteering", icon: HeartHandshake, label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
+    { href: "/market", icon: HandCoins, label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
+    { href: "/admin/clubs", icon: School, label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
+    { href: "/merchant", icon: Store, label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
+    { href: "/ngo-onboarding", icon: Building, label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
+    { href: "/library", icon: Library, label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
+];
+
+const associationArchitecture = [
+    { href: "/hangelassociation/projects/sosyal-inovasyon", icon: Sparkles, label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
+    { href: "/hangelassociation/projects/sanat", icon: Palette, label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
+    { href: "/hangelassociation/projects/etki-atlasi", icon: Globe, label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
+    { href: "/hangelassociation/workshop", icon: BookCopy, label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
+    { href: "/hangelassociation/workshop", icon: Users, label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
+];
+
+const ArchitectureCard = ({ icon: Icon, label, description, href, iconBgClass, category }: { icon: React.ElementType, label: string, description: string, href: string, iconBgClass?: string, category: string }) => (
+    <Link href={href} className="group block">
+        <Card className="relative h-full text-left p-6 space-y-4 hover:shadow-xl transition-shadow rounded-2xl overflow-hidden">
+            <div className={cn(
+                "absolute top-3 right-3 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-sm",
+                iconBgClass === 'bg-primary' ? 'bg-black/20' : 'bg-white/20'
+            )}>
+                <HangelLogo className="text-[10px] opacity-80" />
+                <span>{category}</span>
+            </div>
+            
+            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", iconBgClass)}>
+                <Icon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+                <h4 className="font-bold text-base text-foreground">{label}</h4>
+                <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            </div>
+        </Card>
+    </Link>
+);
 
 export default function LogoUsagePage() {
     const router = useRouter();
@@ -200,26 +210,25 @@ export default function LogoUsagePage() {
                         <div className="space-y-6">
                             <h3 className="text-2xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                                {appArchitecture.map(item => <ArchitectureCard key={item.title} {...item} iconBgClass="bg-primary" category="App" />)}
+                                {appArchitecture.map(item => <ArchitectureCard key={item.label} {...item} iconBgClass="bg-primary" category="App" />)}
                             </div>
                         </div>
                         <div className="space-y-6">
                             <h3 className="text-2xl font-bold tracking-tight text-center text-[#042654]">hangel Derneği Alt Markaları</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                                {associationArchitecture.map(item => <ArchitectureCard key={item.title} {...item} iconBgClass="bg-[#042654]" category="Dernek" />)}
+                                {associationArchitecture.map(item => <ArchitectureCard key={item.label} {...item} iconBgClass="bg-[#042654]" category="Dernek" />)}
                             </div>
                         </div>
                     </div>
                      <div className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
                         <h4 className="font-bold text-foreground mb-2">Aradığınızı Bulamadınız mı?</h4>
-                        <p>Aradığınız bir alt marka veya ürün için özel bir kullanım yönergesi bulamıyorsanız, bu sayfadaki genel marka kullanım ilkelerine başvurabilir veya destek merkezimizden yardım alabilirsiniz. Doğru kullanım hakkında bilgi edinmek için genel kılavuzlarımızı, API ve ürün entegrasyonu yönergelerimizi veya ticari marka kurallarımızı inceleyebilirsiniz.</p>
+                         <p>Aradığınız bir alt marka veya ürün için özel bir kullanım yönergesi bulamıyorsanız, bu sayfadaki genel marka kullanım ilkelerine başvurabilir veya destek merkezimizden yardım alabilirsiniz. Doğru kullanım hakkında bilgi edinmek için genel kılavuzlarımızı, API ve ürün entegrasyonu yönergelerimizi veya ticari marka kurallarımızı inceleyebilirsiniz.</p>
                     </div>
                 </Section>
                 
                 <Section id="medya-kiti">
                     <SectionTitle>Medya Kiti</SectionTitle>
                     <div className="mt-16 space-y-20">
-                        {/* Logolar */}
                         <div className="space-y-8">
                             <h3 className="text-2xl font-bold tracking-tight text-center">Logolar</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -239,24 +248,23 @@ export default function LogoUsagePage() {
                                 </LogoDisplayCard>
                             </div>
                         </div>
-                        {/* Yazı Tipleri */}
+
                         <div className="space-y-8">
                             <h3 className="text-2xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
-                             <div className="max-w-6xl mx-auto">
+                             <div className="max-w-4xl mx-auto">
                                 <Card className="rounded-3xl p-10 bg-white/50 text-center">
                                     <CardHeader className="p-0">
                                         <CardTitle>Font Kullanım Yönergesi</CardTitle>
                                         <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur.</p>
                                     </CardHeader>
-                                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-0">
-                                         <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                         <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 p-0">
+                                         <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
                                          <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                     </CardContent>
                                 </Card>
                             </div>
                         </div>
-                        {/* Renkler */}
+
                         <div className="space-y-8">
                             <h3 className="text-2xl font-bold tracking-tight text-center">Marka Renkleri</h3>
                             <div className="max-w-4xl mx-auto">
@@ -274,7 +282,7 @@ export default function LogoUsagePage() {
                                </Card>
                             </div>
                         </div>
-                        {/* Kılavuzlar */}
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-12 border-t">
                             <Card className="bg-white rounded-3xl p-8 text-center shadow-lg">
                                 <Landmark className="h-10 w-10 text-primary mx-auto mb-4"/>
@@ -285,17 +293,16 @@ export default function LogoUsagePage() {
                             <Card className="bg-white rounded-3xl p-8 text-center shadow-lg">
                                 <DownloadCloud className="h-10 w-10 text-primary mx-auto mb-4"/>
                                 <CardHeader className="p-0"><CardTitle>Kurumsal Kimlik Kılavuzu</CardTitle></CardHeader>
-                                <CardContent className="p-0 mt-2"><CardDescription>Marka değerleri, iletişim dili ve görsel standartları içeren rehber.</CardDescription></CardContent>
+                                <CardContent className="p-0 mt-2"><CardDescription>Marka değerleri, logo kullanım standartları ve iletişim dilimizi içeren rehber.</CardDescription></CardContent>
                                 <CardFooter className="p-0 mt-6 justify-center"><Button onClick={() => handleDownload('kurumsal-kimlik.pdf')}>PDF olarak indir.</Button></CardFooter>
                             </Card>
                         </div>
                     </div>
                 </Section>
-
+                
                  <Section id="degerler" className="bg-white">
                     <div className="text-center mb-16 space-y-4">
                         <SectionTitle>Değerlerimizle Fark Oluşturuyoruz</SectionTitle>
-                        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <InfoCard 
@@ -330,11 +337,14 @@ export default function LogoUsagePage() {
                 </Section>
                 
                 <Section>
-                    <p className="text-left text-sm text-muted-foreground max-w-3xl">
-                        hangel, fikri mülkiyet haklarının korunması amacıyla ulusal ve uluslararası düzeyde tescil süreçlerini yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
-                        <br/><br/>
-                        <strong>hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar. Marka, bir görselden ibaret değildir. Marka, bir taahhüttür.</strong>
-                    </p>
+                    <div className="text-left text-sm text-muted-foreground max-w-3xl space-y-4">
+                        <p>
+                            hangel, fikri mülkiyet haklarının korunması amacıyla ulusal ve uluslararası düzeyde tescil süreçlerini yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
+                        </p>
+                         <p>
+                            <strong>hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar. Marka, bir görselden ibaret değildir. Marka, bir taahhüttür.</strong>
+                        </p>
+                    </div>
                 </Section>
             </main>
 
@@ -342,3 +352,5 @@ export default function LogoUsagePage() {
         </div>
     );
 }
+
+    
