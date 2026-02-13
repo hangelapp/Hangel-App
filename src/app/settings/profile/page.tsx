@@ -63,6 +63,7 @@ export default function ProfileSettingsPage() {
       title: "Profil Güncellendi",
       description: "Kişisel bilgileriniz başarıyla kaydedildi.",
     });
+    router.push('/settings/volunteer');
   };
 
   return (

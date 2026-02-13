@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -122,6 +123,7 @@ export default function VolunteerSettingsPage() {
             title: "Gönüllülük Bilgileri Güncellendi",
             description: "Bilgileriniz başarıyla kaydedildi.",
         });
+        router.push('/market');
     };
 
     return (
