@@ -113,6 +113,65 @@ const ProductShowcaseSection = ({
     </section>
 );
 
+const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: any) => (
+    <Link href={ctaHref} className="block group h-full">
+        <div className={cn(
+            "relative rounded-[1.75rem] p-6 text-left flex flex-col overflow-hidden h-[450px] text-white",
+        )}>
+            <div className="absolute inset-0 z-0">
+                 <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" data-ai-hint={imageHint} />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"/>
+            </div>
+            <div className="relative z-10 flex-1 flex flex-col justify-end">
+                 <div className="space-y-1">
+                    <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
+                    <p className="text-sm opacity-80 max-w-xs">{subtitle}</p>
+                </div>
+                <div className="mt-4">
+                    <span className="text-white hover:underline flex items-center text-sm font-semibold">
+                        {cta} <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </span>
+                </div>
+            </div>
+        </div>
+    </Link>
+);
+
+const projectCardsData = [
+  { 
+      title: "Etki Odaklı İstihdam",
+      subtitle: "Gönüllülüğü kariyere dönüştüren ilk model.",
+      cta: "Protokolü İncele",
+      ctaHref: "/hangelassociation/projects/istihdam-protokolu",
+      imageUrl: "https://picsum.photos/seed/protocol/600/800",
+      imageHint: "handshake meeting",
+  },
+  { 
+      title: "Akademik Programlar",
+      subtitle: "Üniversitelerde sosyal inovasyon müfredatı.",
+      cta: "Programları Gör",
+      ctaHref: "/hangelassociation/workshop",
+      imageUrl: "https://picsum.photos/seed/academy/600/800",
+      imageHint: "university graduation",
+  },
+  { 
+      title: "Sosyal Etki Atlası",
+      subtitle: "Türkiye'nin iyilik haritasını çiziyoruz.",
+      cta: "Atlası Keşfet",
+      ctaHref: "/hangelassociation/projects/etki-atlasi",
+      imageUrl: "https://picsum.photos/seed/atlas/600/800",
+      imageHint: "digital map",
+  },
+  { 
+      title: "Girişimcilik Kütüphanesi",
+      subtitle: "21 merkezde bilgi ve tecrübe temelli yol haritaları.",
+      cta: "Kütüphaneye Git",
+      ctaHref: "/hangelassociation/workshop",
+      imageUrl: "https://picsum.photos/seed/library/600/800",
+      imageHint: "library books",
+  }
+];
+
 
 const Header = () => {
     return (
@@ -161,38 +220,6 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
         </Link>
     );
 };
-
-const GridSection = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-    <section className={cn("py-16 md:py-24 px-4 bg-white", className)}>
-        <div className="container mx-auto max-w-7xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {children}
-            </div>
-        </div>
-    </section>
-);
-
-const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 'light' }: any) => (
-    <div className={cn(
-        "relative rounded-[2.5rem] p-10 text-center flex flex-col overflow-hidden min-h-[550px]",
-        theme === 'dark' ? 'bg-black text-white' : 'bg-[#f5f5f7] text-[#1d1d1f]'
-    )}>
-        <div className="space-y-2 z-10">
-            <h3 className="text-4xl font-bold tracking-tight">{title}</h3>
-            <p className="text-lg max-w-xs mx-auto opacity-80">{subtitle}</p>
-        </div>
-        <div className="mt-4 z-10">
-            <Link href={ctaHref} className={cn("text-primary hover:underline flex items-center text-sm font-medium justify-center", theme === 'dark' && 'text-[#2997ff]')}>
-                {cta} <ChevronRight className="h-4 w-4 ml-0.5" />
-            </Link>
-        </div>
-        <div className="relative flex-1 flex items-end justify-center mt-8 z-10 -mx-10 -mb-10">
-            <div className="relative w-full aspect-[4/3]">
-                <Image src={imageUrl} alt={title} fill className="object-contain" data-ai-hint={imageHint} />
-            </div>
-        </div>
-    </div>
-);
 
 const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }: { title: string, description: string, href: string, imageUrl: string, imageHint: string }) => (
     <div className="h-full rounded-2xl bg-[#f5f5f7] overflow-hidden group flex flex-col shadow-lg hover:shadow-xl transition-shadow">
@@ -407,42 +434,24 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                <GridSection>
-                    <GridCard 
-                        title="Etki Odaklı İstihdam"
-                        subtitle="Gönüllülüğü kariyere dönüştüren ilk model."
-                        cta="Protokolü İncele"
-                        ctaHref="/hangelassociation/projects/istihdam-protokolu"
-                        imageUrl="https://picsum.photos/seed/protocol/600/400"
-                        imageHint="handshake meeting"
-                    />
-                     <GridCard 
-                        title="Akademik Programlar"
-                        subtitle="Üniversitelerde sosyal inovasyon müfredatı."
-                        cta="Programları Gör"
-                        ctaHref="/hangelassociation/workshop"
-                        imageUrl="https://picsum.photos/seed/academy/600/400"
-                        imageHint="university graduation"
-                        theme="dark"
-                    />
-                     <GridCard 
-                        title="Sosyal Etki Atlası"
-                        subtitle="Türkiye'nin iyilik haritasını çiziyoruz."
-                        cta="Atlası Keşfet"
-                        ctaHref="/hangelassociation/projects/etki-atlasi"
-                        imageUrl="https://picsum.photos/seed/atlas/600/400"
-                        imageHint="digital map"
-                        theme="dark"
-                    />
-                     <GridCard 
-                        title="Girişimcilik Kütüphanesi"
-                        subtitle="21 merkezde bilgi ve tecrübe temelli yol haritaları."
-                        cta="Kütüphaneye Git"
-                        ctaHref="/hangelassociation/workshop"
-                        imageUrl="https://picsum.photos/seed/library/600/400"
-                        imageHint="library books"
-                    />
-                </GridSection>
+                <section id="projeler" className="py-16 md:py-24 bg-white">
+                    <div className="container mx-auto px-4 max-w-7xl">
+                        <Carousel
+                            opts={{ align: "start" }}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-4">
+                                {projectCardsData.map((card, index) => (
+                                    <CarouselItem key={index} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-[22rem]">
+                                        <ProjectCard {...card} />
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="ml-14 hidden sm:flex" />
+                            <CarouselNext className="mr-14 hidden sm:flex" />
+                        </Carousel>
+                    </div>
+                </section>
 
                 <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
