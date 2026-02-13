@@ -87,20 +87,20 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
 );
 
 const appArchitecture = [
-    { href: "/volunteering", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
-    { href: "/market", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
-    { href: "/admin/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
-    { href: "/merchant", icon: 'Store', label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
-    { href: "/ngo-onboarding", icon: 'Building2', label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
-    { href: "/library", icon: 'Library', label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
+    { href: "/volunteering", icon: 'HeartHandshake', label: "Yetenek bazlı gönüllülük platformu.", description: "hangel imece" },
+    { href: "/market", icon: 'HandCoins', label: "Alışverişle sosyal fayda yaratma modeli.", description: "hangel bağış" },
+    { href: "/admin/clubs", icon: 'School', label: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi.", description: "hangel clubs" },
+    { href: "/merchant", icon: 'Store', label: "Sosyal fayda odaklı markalar ve işletmeler.", description: "hangel marka" },
+    { href: "/ngo-onboarding", icon: 'Building2', label: "Sivil toplum kuruluşları için dijital dönüşüm araçları.", description: "hangel STK" },
+    { href: "/library", icon: 'Library', label: "Sosyal etki ve sivil toplum kaynak merkezi.", description: "hangel kütüphane" },
 ];
 
 const associationArchitecture = [
-    { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
-    { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
-    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
-    { href: "/hangelassociation/workshop", icon: 'BookCopy', label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
-    { href: "/hangelassociation/workshop", icon: 'Users', label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
+    { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Toplumsal sorunlara yenilikçi çözümler geliştirir.", description: "Sosyal İnovasyon Merkezi" },
+    { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "Sanatın birleştirici gücüyle farkındalık projeleri.", description: "hangel Sanat" },
+    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Dünya genelindeki sosyal girişimleri haritalar.", description: "Global Sosyal Girişim Atlası" },
+    { href: "/hangelassociation/workshop", icon: 'BookCopy', label: "Sosyal girişimciler için bilgi ve kaynak merkezi.", description: "Girişimcilik Kütüphanesi" },
+    { href: "/hangelassociation/workshop", icon: 'Users', label: "Küresel sorunlara kolektif çözümler üretir.", description: "Uluslararası Sosyal Girişimcilik Çalıştayı" },
 ];
 
 const ShowcaseCard = ({
@@ -115,8 +115,8 @@ const ShowcaseCard = ({
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
         <div className="pt-8">
-          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.label}</h3>
-          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</p>
+          <h3 className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</h3>
+          <p className={cn("font-semibold text-base mt-2", themeConfig.subtitleColor)}>{item.label}</p>
           <div className="mt-4">
              <span className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
@@ -158,13 +158,25 @@ const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: st
 );
 
 const ColorCard = ({ hex, name, rgb, cmyk, onCopy }: { hex: string, name: string, rgb: string, cmyk: string, onCopy: () => void }) => (
-    <div className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer group" onClick={onCopy}>
-        <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
-        <p className="font-bold text-sm">{name}</p>
-        <div className="text-xs font-mono text-muted-foreground space-y-1">
-            <p className="flex items-center justify-center gap-1">HEX: {hex} <Copy className="w-3 h-3 opacity-50 group-hover:opacity-100" /></p>
-            <p>RGB: {rgb}</p>
-            <p>CMYK: {cmyk}</p>
+    <div 
+        className="group cursor-pointer bg-white rounded-3xl shadow-sm overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-[400px]"
+        onClick={onCopy}
+    >
+        <div className="relative w-full h-40" style={{ backgroundColor: hex }}>
+            {/* A subtle pattern or icon could be added here for visual interest */}
+        </div>
+        <div className="p-6 flex-1 flex flex-col">
+            <h4 className="font-bold text-lg text-foreground">{name}</h4>
+            <div className="mt-4 text-xs text-muted-foreground space-y-2 font-mono flex-1">
+                <p>HEX: {hex}</p>
+                <p>RGB: {rgb}</p>
+                <p>CMYK: {cmyk}</p>
+            </div>
+            <div className="mt-4 pt-4 border-t border-black/5">
+                <span className="text-primary text-sm font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Copy className="w-4 h-4" /> Kodu Kopyala
+                </span>
+            </div>
         </div>
     </div>
 );
@@ -260,6 +272,13 @@ export default function LogoUsagePage() {
         { bg: 'bg-[#f5f5f7]', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/20' },
         { bg: 'bg-white', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/20' },
         { bg: 'bg-black', subtitleColor: 'text-white/60', titleColor: 'text-white', linkColor: 'text-blue-500', iconColor: 'text-white/20' },
+    ];
+    
+     const colors = [
+        { hex: '#f34723', name: 'hangel Mercan', rgb: '243, 71, 35', cmyk: '0, 71, 86, 5' },
+        { hex: '#1f1f1f', name: 'Gece Siyahı', rgb: '31, 31, 31', cmyk: '0, 0, 0, 88' },
+        { hex: '#f1f1f1', name: 'Açık Gri', rgb: '241, 241, 241', cmyk: '0, 0, 0, 5' },
+        { hex: '#042654', name: 'Lacivert', rgb: '4, 38, 84', cmyk: '95, 55, 0, 67' }
     ];
 
 
@@ -370,7 +389,7 @@ export default function LogoUsagePage() {
                             </div>
                         </div>
 
-                        <div className="space-y-8">
+                        <div className="space-y-12">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
                             <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
                                <CardHeader className="text-center">
@@ -384,19 +403,19 @@ export default function LogoUsagePage() {
                            </Card>
                         </div>
                         
-                        <div className="space-y-8">
+                        <div className="space-y-12">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Renkler</h3>
-                             <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
-                               <CardHeader className="text-center">
-                                   <CardTitle>Renk Kullanım Yönergesi</CardTitle>
-                               </CardHeader>
-                               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-                                   <ColorCard hex="#f34723" name="hangel Mercan" rgb="243, 71, 35" cmyk="0, 71, 86, 5" onCopy={() => copyColor('#f34723')} />
-                                   <ColorCard hex="#1f1f1f" name="Gece Siyahı" rgb="31, 31, 31" cmyk="0, 0, 0, 88" onCopy={() => copyColor('#1f1f1f')} />
-                                   <ColorCard hex="#f1f1f1" name="Açık Gri" rgb="241, 241, 241" cmyk="0, 0, 0, 5" onCopy={() => copyColor('#f1f1f1')} />
-                                   <ColorCard hex="#042654" name="Lacivert" rgb="4, 38, 84" cmyk="95, 55, 0, 67" onCopy={() => copyColor('#042654')} />
-                               </CardContent>
-                           </Card>
+                             <Carousel opts={{ align: "start" }} className="w-full">
+                                <CarouselContent className="-ml-6">
+                                    {colors.map((color, index) => (
+                                        <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                                            <ColorCard {...color} onCopy={() => copyColor(color.hex)} />
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious className="left-[-50px] hidden xl:flex" />
+                                <CarouselNext className="right-[-50px] hidden xl:flex" />
+                            </Carousel>
                         </div>
                         
                         <div className="space-y-8">
