@@ -1,9 +1,9 @@
+
 'use client';
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
-import type { UseEmblaCarouselType } from "embla-carousel-react"
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
@@ -13,6 +13,7 @@ import {
     ShoppingBag, Leaf, Megaphone
 } from 'lucide-react';
 import { user } from '@/lib/data';
+import { cn } from '@/lib/utils';
 
 // --- Story Data ---
 export type ImpactSlide = {
@@ -215,7 +216,8 @@ function StoryViewer() {
     
     const [api, setApi] = useState<CarouselApi>()
     const [current, setCurrent] = useState(0)
-    const [progress, setProgress] = useState(0);
+    const [count, setCount] = useState(0)
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const stories: ImpactSlide[] = React.useMemo(() => {
         switch (category) {
@@ -234,84 +236,87 @@ function StoryViewer() {
     const handleClose = useCallback(() => router.back(), [router]);
 
     const startTimer = useCallback(() => {
-        const timer = setInterval(() => {
-            setProgress(p => {
-                if (p >= 100) {
-                    clearInterval(timer);
-                    return 100;
-                }
-                return p + 100 / (STORY_DURATION / 50);
-            });
-        }, 50);
-        return () => clearInterval(timer);
-    }, []);
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+        timerRef.current = setInterval(() => {
+            api?.scrollNext();
+        }, STORY_DURATION);
+    }, [api]);
+
 
     useEffect(() => {
         if (!api) return;
         
-        const onSelect = () => {
-            setCurrent(api.selectedScrollSnap());
-            setProgress(0); // Reset progress on slide change
-        };
+        setCount(api.scrollSnapList().length)
+        setCurrent(api.selectedScrollSnap() + 1)
+        startTimer();
 
-        api.on("select", onSelect);
-        onSelect(); // Initial call
+        api.on("select", () => {
+            setCurrent(api.selectedScrollSnap() + 1);
+            startTimer();
+        });
+        
+        api.on('pointerDown', () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+        });
+        
+        api.on('pointerUp', () => {
+            startTimer();
+        });
 
         return () => {
-            api.off("select", onSelect);
-        };
-    }, [api]);
-    
-    useEffect(() => {
-        const clearTimer = startTimer();
-        return clearTimer;
-    }, [current, startTimer]);
-
-
-    useEffect(() => {
-        if (progress >= 100) {
-            if (current === stories.length - 1) {
-                handleClose();
-            } else {
-                api?.scrollNext();
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
             }
         }
-    }, [progress, current, stories.length, api, handleClose]);
+
+    }, [api, startTimer]);
 
 
     const prevSlide = useCallback(() => api?.scrollPrev(), [api]);
     const nextSlide = useCallback(() => api?.scrollNext(), [api]);
 
-    const currentSlide = stories[current];
-    if (!currentSlide) return <div className="h-full w-full bg-black" />;
+    const currentSlide = stories[current -1];
+    if (!currentSlide) return <div className="h-full w-full bg-background" />;
 
     return (
-        <div className="relative w-full h-full bg-black md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
+        <div className="relative w-full h-full bg-background md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
             {/* Progress Bars */}
             <div className="absolute top-4 inset-x-4 flex gap-1 z-50">
-                {stories.map((s, idx) => (
-                    <div key={s.id} className="h-0.5 flex-1 bg-white/20 rounded-full overflow-hidden">
+                {Array.from({ length: count }).map((_, idx) => (
+                    <div key={idx} className="h-0.5 flex-1 bg-muted rounded-full overflow-hidden">
                         <div
-                            className="h-full bg-white transition-all duration-50 ease-linear"
-                            style={{
-                                width: idx < current ? '100%' : (idx === current ? `${progress}%` : '0%')
-                            }}
+                            className={cn(
+                                "h-full bg-primary transition-all duration-[50ms] ease-linear",
+                                idx < current -1 && "w-full",
+                                idx === current -1 && "w-0 animate-[progress_5s_linear_forwards]",
+                                idx > current -1 && "w-0"
+                            )}
                         />
                     </div>
                 ))}
+                 <style jsx>{`
+                    @keyframes progress {
+                        from { width: 0%; }
+                        to { width: 100%; }
+                    }
+                `}</style>
             </div>
 
             {/* Header */}
-            <div className="absolute top-8 inset-x-4 px-2 flex justify-between items-center z-50 text-white">
+            <div className="absolute top-8 inset-x-4 px-2 flex justify-between items-center z-50 text-foreground">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-sm">
-                        <HangelLogo className="text-lg text-white" />
+                    <div className="w-10 h-10 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center border shadow-sm">
+                        <HangelLogo className="text-lg text-primary" />
                     </div>
-                    <div className="text-left drop-shadow-lg">
+                    <div className="text-left">
                         <p className="font-bold text-xs">{currentSlide.subtitle}</p>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full h-10 w-10 backdrop-blur-md bg-black/20" onClick={handleClose}>
+                <Button variant="ghost" size="icon" className="text-foreground hover:bg-background/50 rounded-full h-10 w-10 backdrop-blur-md bg-background/20" onClick={handleClose}>
                     <X className="h-6 w-6" />
                 </Button>
             </div>
@@ -322,7 +327,7 @@ function StoryViewer() {
                         const CurrentIcon = slide.icon;
                         return (
                             <CarouselItem key={slide.id}>
-                                <div className="w-full h-full flex flex-col bg-black">
+                                <div className="w-full h-full flex flex-col bg-background">
                                     <div className="relative flex-1 w-full min-h-0">
                                         <Image
                                             src={slide.image}
@@ -333,19 +338,19 @@ function StoryViewer() {
                                             data-ai-hint={slide.imageHint}
                                         />
                                     </div>
-                                    <div className="p-8 md:p-10 text-white bg-black">
+                                    <div className="p-8 md:p-10 text-foreground bg-background/80 backdrop-blur-lg border-t">
                                         <div className="animate-in fade-in-0 slide-in-from-bottom-5 duration-700">
-                                            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white mb-5">
+                                            <div className="w-14 h-14 rounded-2xl bg-muted border flex items-center justify-center text-primary mb-5">
                                                 <CurrentIcon className="h-7 w-7" />
                                             </div>
                                             <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
                                                 {slide.title}
                                             </h2>
-                                            <p className="mt-3 text-base md:text-lg text-white/70 leading-relaxed max-w-sm">
+                                            <p className="mt-3 text-base md:text-lg text-muted-foreground leading-relaxed max-w-sm">
                                                 {slide.content}
                                             </p>
                                             {slide.stat && (
-                                                <p className="text-6xl font-bold tracking-tighter mt-6">{slide.stat}</p>
+                                                <p className="text-6xl font-bold tracking-tighter mt-6 text-primary">{slide.stat}</p>
                                             )}
                                         </div>
                                     </div>
@@ -364,8 +369,8 @@ function StoryViewer() {
 
 export default function ImpactStoryPage() {
     return (
-        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-            <div className="relative w-full max-w-[450px] h-full max-h-[800px] aspect-[9/16] bg-card rounded-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-0 md:p-8">
+            <div className="relative w-full max-w-[450px] h-full max-h-full md:max-h-[800px] aspect-[9/16] bg-card rounded-none md:rounded-[2.5rem] overflow-hidden">
                 <Suspense fallback={<div className="flex items-center justify-center h-full">Yükleniyor...</div>}>
                     <StoryViewer />
                 </Suspense>
@@ -373,3 +378,4 @@ export default function ImpactStoryPage() {
         </div>
     );
 }
+

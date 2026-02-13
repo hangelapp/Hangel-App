@@ -361,6 +361,26 @@ export const ngos: NGO[] = [
         contact: { email: 'kedv@kedv.org.tr', phone: '0212 244 17 64', website: 'https://www.kedv.org.tr', social: { twitter: 'kedv', instagram: 'kedv', facebook: 'kedv', linkedin: 'kedv' } },
         posts: [],
         opportunities: []
+    },
+    {
+        id: '8',
+        name: 'Hangel Derneği',
+        shortName: 'Hangel',
+        foundationYear: 2020,
+        category: 'Sosyal İnovasyon',
+        type: 'Dernek',
+        avatarUrl: '',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop',
+        stats: { followers: 15000, donors: 5000, volunteers: 2000, volunteerHours: 10000, projects: 15, totalDonation: 250000, donationCount: 1000, avgDonation: 250, highestSingleDonation: 5000, peopleReached: 50000 },
+        transparencyScore: 98,
+        about: "Hangel Derneği, sosyal fayda odaklı teknoloji ve inovasyon projeleri geliştirerek, bireylerin ve kurumların sosyal etki potansiyelini en üst düzeye çıkarmayı hedefler. Sürdürülebilir ve ölçülebilir çözümlerle toplumsal sorunlara kalıcı çözümler üretmek için çalışır.",
+        joinDate: "2023-01-01",
+        supportedSDGs: ['Amaçlar için Ortaklıklar', 'Sanayi, Yenilikçilik ve Altyapı', 'Nitelikli Eğitim'],
+        beneficiaryGroups: ['Girişimciler', 'Gençler', 'Sivil Toplum', 'Öğrenciler'],
+        memberOf: ['Açık Açık', 'Afet Platformu'],
+        contact: { email: 'dernek@hangel.org', phone: '0850 123 45 67', website: 'https://hangelassociation.org', social: { twitter: 'hangel', instagram: 'hangel', facebook: 'hangel', linkedin: 'hangel' } },
+        posts: [],
+        opportunities: []
     }
 ];
 
@@ -493,7 +513,7 @@ export const volunteeringOpportunities: Volunteering[] = [
         earnedBadges: ['Dayanışma Elçisi'],
         hasPreTraining: true,
         description: 'Ankara\'daki aşevimizde, ihtiyaç sahiplerine günlük sıcak yemek dağıtımında yardımcı olacak, haftada en az bir gün destek verebilecek gönüllüler arıyoruz.',
-        amenities: { transport: false, food: true, accommodation: false },
+        amenities: { transport: false, food: false, accommodation: false },
         skills: ['Yemek Yapma', 'İletişim'],
         requirements: ['Hijyen Belgesi']
     },
@@ -730,6 +750,28 @@ export const volunteeringOpportunities: Volunteering[] = [
         amenities: { transport: false, food: false, accommodation: false },
         skills: ['İletişim'],
         programs: ['Google Workspace']
+    },
+    {
+        id: '22',
+        title: 'Üniversite Sosyal Etki Temsilcisi',
+        organization: 'Hangel Derneği',
+        ngoId: '8',
+        location: { city: 'Online', district: 'Türkiye Geneli', type: 'Online' },
+        commitment: 'Sürekli',
+        volunteerCount: { needed: 25, applications: 0 },
+        dates: { applicationStart: '2024-08-01', applicationEnd: '2025-08-01', eventStart: '2024-09-01', eventEnd: '2025-09-01' },
+        hours: { start: '10:00', end: '18:00', total: 0 },
+        socialArea: 'Sosyal Girişimcilik',
+        points: 5000,
+        ngoTransparencyScore: 98,
+        taskType: 'Sürekli',
+        providesCertificate: true,
+        earnedBadges: ['Liderlik Rozeti', 'Topluluk Yöneticisi'],
+        hasPreTraining: true,
+        description: 'Kampüsünüzde sosyal etki rüzgarı estirin! Hangel\'in üniversite temsilcisi olarak etkinlikler düzenleyin, sosyal sorumluluk projeleri geliştirin ve kendi topluluğunuzun değişim lideri olun. Bu rol, size liderlik, proje yönetimi ve ağ kurma becerileri kazandıracak.',
+        amenities: { transport: false, food: false, accommodation: false },
+        skills: ['Proje Yönetimi', 'Organizasyon', 'İletişim', 'Sunum Becerileri'],
+        education: 'Üniversite'
     }
 ];
 
