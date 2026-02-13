@@ -115,8 +115,8 @@ const ShowcaseCard = ({
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
         <div className="pt-8">
-          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.description}</h3>
-          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.label}</p>
+          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.label}</h3>
+          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</p>
           <div className="mt-4">
              <span className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
@@ -157,12 +157,14 @@ const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: st
     </div>
 );
 
-const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
-    <div className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer" onClick={onCopy}>
+const ColorCard = ({ hex, name, rgb, cmyk, onCopy }: { hex: string, name: string, rgb: string, cmyk: string, onCopy: () => void }) => (
+    <div className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer group" onClick={onCopy}>
         <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
         <p className="font-bold text-sm">{name}</p>
-        <div className="flex items-center justify-center gap-1 text-xs font-mono text-muted-foreground">
-            {hex} <Copy className="w-3 h-3" />
+        <div className="text-xs font-mono text-muted-foreground space-y-1">
+            <p className="flex items-center justify-center gap-1">HEX: {hex} <Copy className="w-3 h-3 opacity-50 group-hover:opacity-100" /></p>
+            <p>RGB: {rgb}</p>
+            <p>CMYK: {cmyk}</p>
         </div>
     </div>
 );
@@ -246,7 +248,7 @@ export default function LogoPage() {
       { id: 'bosluk', icon: Maximize, title: "BOŞLUK (CLEAR SPACE) KURALI", content: ["Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez."] },
       { id: 'degisiklik', icon: XCircle, title: "Değişiklik Yasağı", content: ["Logo sabittir. Yeniden yorumlanamaz.", "Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez."] },
       { id: 'boyut', icon: Ruler, title: "LOGO MİNİMUM BOYUT KURALI", content: ["Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:", "<strong>Dijital Ortam:</strong><br/>Minimum genişlik: 120 px<br/>App icon minimum: 32 px", "<strong>Basılı Materyal:</strong><br/>Minimum genişlik: 25 mm", "Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır."] },
-      { id: 'ikonlar', icon: Package, title: "ÜRÜN İKONLARI", content: ["Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.", "Ancak: Resmi ortaklık algısı oluşturamaz.", "Ana marka kimliğinin yerine geçemez.", "Tekil görsel kilit oluşturamaz."] },
+      { id: 'ikonlar', icon: Package, title: "ÜRÜN İKONLARI", content: ["Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.", "Ancak:", "Resmi ortaklık algısı oluşturamaz.", "Ana marka kimliğinin yerine geçemez.", "Tekil görsel kilit oluşturamaz."] },
       { id: 'sosyal-medya', icon: Share2, title: "SOSYAL MEDYA VE DİJİTAL MECRALAR", content: ["Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez."] },
       { id: 'tv', icon: Tv, title: "TV, FİLM VE YAYINCILIK", content: ["Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır."] },
       { id: 'cobranding', icon: Handshake, title: "CO-BRANDING (ORTAK MARKALAMA) KURALLARI", content: ["Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:", "• Logo eşit ölçekli kullanılmalıdır.", "• İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.", "• Logolar yatay hizalı olmalıdır.", "• Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.", "• Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur."] },
@@ -301,7 +303,7 @@ export default function LogoPage() {
                                     <ShowcaseCard 
                                         key={item.href} 
                                         item={item} 
-                                        themeConfig={themeConfigs[index % themeConfigs.length]}
+                                        themeConfig={themeConfigs[0]}
                                     />
                                 ))}
                             </div>
@@ -313,7 +315,7 @@ export default function LogoPage() {
                                     <ShowcaseCard 
                                         key={index} 
                                         item={item} 
-                                        themeConfig={themeConfigs[index % themeConfigs.length]}
+                                        themeConfig={themeConfigs[0]}
                                     />
                                 ))}
                             </div>
@@ -327,9 +329,8 @@ export default function LogoPage() {
                 
                  <Section id="medya-kiti">
                     <div className="space-y-20">
-                        <div className="space-y-8">
-                            <SectionTitle>Medya Kiti</SectionTitle>
-                        </div>
+                        <SectionTitle>Medya Kiti</SectionTitle>
+                        
                         <div className="space-y-12">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Logolar</h3>
                             <div className="space-y-12">
@@ -338,7 +339,7 @@ export default function LogoPage() {
                                     <Carousel opts={{ align: "start" }} className="w-full">
                                         <CarouselContent className="-ml-6">
                                             {asLogos.map((logo, index) => (
-                                                <CarouselItem key={index} className="pl-6 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/4">
                                                     <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
                                                         {logo.content}
                                                     </LogoShowcaseCard>
@@ -354,7 +355,7 @@ export default function LogoPage() {
                                      <Carousel opts={{ align: "start" }} className="w-full">
                                         <CarouselContent className="-ml-6">
                                             {dernekLogos.map((logo, index) => (
-                                                <CarouselItem key={index} className="pl-6 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/4">
                                                     <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
                                                         {logo.content}
                                                     </LogoShowcaseCard>
@@ -389,26 +390,38 @@ export default function LogoPage() {
                                    <CardTitle>Renk Kullanım Yönergesi</CardTitle>
                                </CardHeader>
                                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-                                   <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
-                                   <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
-                                   <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
-                                   <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
+                                   <ColorCard hex="#f34723" name="hangel Mercan" rgb="243, 71, 35" cmyk="0, 71, 86, 5" onCopy={() => copyColor('#f34723')} />
+                                   <ColorCard hex="#1f1f1f" name="Gece Siyahı" rgb="31, 31, 31" cmyk="0, 0, 0, 88" onCopy={() => copyColor('#1f1f1f')} />
+                                   <ColorCard hex="#f1f1f1" name="Açık Gri" rgb="241, 241, 241" cmyk="0, 0, 0, 5" onCopy={() => copyColor('#f1f1f1')} />
+                                   <ColorCard hex="#042654" name="Lacivert" rgb="4, 38, 84" cmyk="95, 55, 0, 67" onCopy={() => copyColor('#042654')} />
                                </CardContent>
                            </Card>
                         </div>
                         
                         <div className="space-y-8">
-                           <h3 className="text-3xl font-bold tracking-tight text-center">Kimlik Kılavuzu</h3>
-                           <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
-                               <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
-                               <div className="space-y-1">
-                                   <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
-                                   <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
-                               </div>
-                               <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
-                                    PDF Olarak İndir
-                               </Button>
-                           </Card>
+                            <h3 className="text-3xl font-bold tracking-tight text-center">Kurumsal Kimlik</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                                 <Card className="rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
+                                     <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
+                                     <div className="space-y-1">
+                                         <h3 className="text-2xl font-bold">Kimlik Kılavuzu</h3>
+                                         <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
+                                     </div>
+                                     <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
+                                         PDF Olarak İndir
+                                     </Button>
+                                 </Card>
+                                 <Card className="rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
+                                     <Image src="https://logo.clearbit.com/canva.com" alt="Canva Logo" width={64} height={64} className="mx-auto h-16 w-16" />
+                                     <div className="space-y-1">
+                                         <h3 className="text-2xl font-bold">hangel Canva Marka Kiti</h3>
+                                         <p className="text-muted-foreground max-w-md mx-auto">Logo kullanımları, renk paletleri, yazı fontları ve görseller için tasarımlarınızda kullanın.</p>
+                                     </div>
+                                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold">
+                                         <a href="https://www.canva.com/" target="_blank" rel="noopener noreferrer">Canva Marka Kiti için tıklayınız</a>
+                                     </Button>
+                                 </Card>
+                             </div>
                         </div>
                     </div>
                 </Section>
