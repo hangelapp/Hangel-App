@@ -236,7 +236,7 @@ export default function LogoUsagePage() {
         icon: Package,
         title: "ÜRÜN İKONLARI",
         content: [
-            "Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez."
+             "Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez."
         ]
     },
     {
@@ -251,7 +251,7 @@ export default function LogoUsagePage() {
         icon: Tv,
         title: "TV, FİLM VE YAYINCILIK",
         content: [
-            "Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır."
+             "Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır."
         ]
     },
     {
