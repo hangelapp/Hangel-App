@@ -208,6 +208,45 @@ export const adStories: ImpactSlide[] = [
     },
 ];
 
+export const opportunityStories: ImpactSlide[] = [
+    {
+        id: 1,
+        title: "Afet Bölgesi Lojistik Destek",
+        subtitle: "Ahbap Derneği",
+        content: "Hatay ve Adıyaman'da yardım kolilerinin dağıtımında görev alacak gönüllüler arıyoruz.",
+        icon: HeartHandshake,
+        image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
+        imageHint: "food donation"
+    },
+    {
+        id: 2,
+        title: "Fidan Dikme Etkinliği",
+        subtitle: "TEMA Vakfı",
+        content: "Geleceğe nefes olmak için Balıkesir'deki ağaçlandırma sahamızda bize katılın.",
+        icon: Leaf,
+        image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop",
+        imageHint: "planting trees"
+    },
+    {
+        id: 3,
+        title: "Barınak Ziyareti ve Bakım",
+        subtitle: "HAYTAP",
+        content: "Ankara'daki barınağımızda dostlarımızın bakımına yardımcı olacak hayvanseverler arıyoruz.",
+        icon: Heart,
+        image: "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?q=80&w=1974&auto=format&fit=crop",
+        imageHint: "cat looking at camera"
+    },
+    {
+        id: 4,
+        title: 'Yaz Kampı Liderliği',
+        subtitle: 'TEGV',
+        content: 'Dezavantajlı bölgelerden gelen çocuklar için düzenlediğimiz yaz kampında, onlara rol model olacak enerjik kamp liderleri arıyoruz.',
+        icon: Users,
+        image: 'https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop',
+        imageHint: 'university students'
+    }
+];
+
 const STORY_DURATION = 5000;
 
 function StoryViewer() {
@@ -227,6 +266,8 @@ function StoryViewer() {
                 return communityImpactStories;
             case 'ads':
                 return adStories;
+            case 'opportunities':
+                return opportunityStories;
             case 'hangel':
             default:
                 return hangelImpactStories;
@@ -235,42 +276,34 @@ function StoryViewer() {
     
     const handleClose = useCallback(() => router.back(), [router]);
 
-    const handleAnimationEnd = () => {
-        if (current === count) {
-            handleClose();
-        } else {
-            api?.scrollNext();
-        }
-    };
-
-    const prevSlide = useCallback(() => {
-        api?.scrollPrev()
-    }, [api]);
-
-    const nextSlide = useCallback(() => {
-        api?.scrollNext()
-    }, [api]);
-
     useEffect(() => {
-        if (!api) {
-          return;
-        }
-    
+        if (!api) return;
+
         const onSelect = (api: CarouselApi) => {
-          setCurrent(api.selectedScrollSnap() + 1);
+            setCurrent(api.selectedScrollSnap() + 1);
         };
-    
+
+        const onAnimationEnd = (e: AnimationEvent) => {
+            if (e.animationName === 'story-progress' && api) {
+                if (api.selectedScrollSnap() === api.scrollSnapList().length - 1) {
+                    handleClose();
+                } else {
+                    api.scrollNext();
+                }
+            }
+        };
+        
         api.on("select", onSelect);
-        api.on("reInit", onSelect);
+        document.addEventListener('animationend', onAnimationEnd);
         
         setCount(api.scrollSnapList().length);
         setCurrent(api.selectedScrollSnap() + 1);
     
         return () => {
           api.off("select", onSelect);
-          api.off("reInit", onSelect);
+          document.removeEventListener('animationend', onAnimationEnd);
         };
-    }, [api]);
+    }, [api, handleClose]);
 
     const currentSlide = stories[current - 1];
     if (!currentSlide) return <div className="h-full w-full bg-background" />;
@@ -280,16 +313,14 @@ function StoryViewer() {
             {/* Progress Bars */}
             <div className="absolute top-4 inset-x-4 flex gap-1 z-50">
                 {Array.from({ length: count }).map((_, idx) => (
-                    <div key={idx} className="h-0.5 flex-1 bg-black/10 rounded-full overflow-hidden">
+                    <div key={`${current}-${idx}`} className="h-0.5 flex-1 bg-black/10 rounded-full overflow-hidden">
                         <div
-                            key={current} // Using key to re-mount and restart animation
                             className={cn(
                                 "h-full bg-white",
                                 idx < current - 1 && "w-full",
                                 idx === current - 1 && "animate-story-progress"
                             )}
                             style={{ animationDuration: `${STORY_DURATION}ms` }}
-                            onAnimationEnd={handleAnimationEnd}
                         />
                     </div>
                 ))}
@@ -332,9 +363,6 @@ function StoryViewer() {
                                             priority={slide.id === stories[0].id}
                                             data-ai-hint={slide.imageHint}
                                         />
-                                        {/* Invisible click areas for navigation */}
-                                        <div className="absolute left-0 top-0 h-full w-1/2 z-20" onClick={prevSlide}></div>
-                                        <div className="absolute right-0 top-0 h-full w-1/2 z-20" onClick={nextSlide}></div>
                                     </div>
                                     <div className="p-8 md:p-10 text-foreground bg-white">
                                         <div className="animate-in fade-in-0 slide-in-from-bottom-5 duration-700">
@@ -357,6 +385,8 @@ function StoryViewer() {
                         )
                     })}
                 </CarouselContent>
+                 <CarouselPrevious onClick={() => api?.scrollPrev()} className="absolute left-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
+                 <CarouselNext onClick={() => api?.scrollNext()} className="absolute right-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
             </Carousel>
         </div>
     );

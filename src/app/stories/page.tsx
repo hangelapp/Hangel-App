@@ -57,7 +57,7 @@ export default function StoriesPage() {
       category: "Hangel Etkisi",
       title: "Rakamlarla İyilik",
       description: "Platformun toplumsal etkisini ve başarılarını keşfedin.",
-      imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format=fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
       imageHint: "happy group people",
       href: "/ngo-admin/impact-story?category=hangel",
       bgColor: "bg-black",
@@ -74,20 +74,20 @@ export default function StoriesPage() {
       textColor: "text-white"
     },
     {
-      category: "Kampanyalar",
-      title: "Markaların Etkisi",
-      description: "Alışverişle yaratılan farkı ve güncel kampanyaları keşfet.",
-      imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format=fit=crop",
-      imageHint: "clothing store interior",
-      href: "/ngo-admin/impact-story?category=ads",
-      bgColor: "bg-gray-100",
-      textColor: "text-black"
+      category: "İlanlar",
+      title: "Fırsatları Keşfet",
+      description: "Marka kampanyaları ve gönüllülük ilanlarına göz at.",
+      imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
+      imageHint: "volunteers hands",
+      href: "/ngo-admin/impact-story?category=opportunities",
+      bgColor: "bg-teal-600",
+      textColor: "text-white"
     },
     {
       category: "Topluluk",
       title: "İlham Veren Anlar",
       description: "Gönüllülerin ve STK'ların sahadan hikayelerini dinle.",
-      imageUrl: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format=fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
       imageHint: "volunteers working together",
       href: "/ngo-admin/impact-story?category=community",
       bgColor: "bg-orange-500",
