@@ -27,7 +27,6 @@ import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs';
-import { Accordion, AccordionTrigger, AccordionItem, AccordionContent } from '@/components/ui/accordion';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -74,6 +73,19 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
             {hex} <Copy className="w-3 h-3" />
         </div>
     </div>
+);
+
+const RuleCard = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
+    <Card className="rounded-2xl bg-muted/30 border-none">
+        <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-lg"><Icon className="h-5 w-5 text-primary" />{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+            <div className="prose prose-sm max-w-none text-muted-foreground border-t pt-4">
+                {children}
+            </div>
+        </CardContent>
+    </Card>
 );
 
 export default function LogoUsagePage() {
@@ -201,65 +213,43 @@ export default function LogoUsagePage() {
                 </section>
                 
                 <section className="container mx-auto px-4 mb-24">
-                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-white p-6 md:p-10">
-                        <CardHeader className="mb-4 p-0">
-                            <CardTitle className="text-3xl font-bold tracking-tight">Kullanım Kuralları</CardTitle>
-                            <CardDescription>Marka varlıklarımızın doğru kullanımı için lütfen bu yönergeleri izleyin.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <Accordion type="single" collapsible className="w-full space-y-3">
-                                <AccordionItem value="item-1" className="border rounded-2xl px-6 bg-muted/30">
-                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Landmark className="mr-3 h-5 w-5 text-primary" />Marka Mimarisi ve Hiyerarşi</AccordionTrigger>
-                                    <AccordionContent className="pt-2 border-t text-muted-foreground prose prose-sm max-w-none">
-                                        <p><strong>Ana Marka:</strong> hangel</p>
-                                        <p><strong>Alt Markalar:</strong> hangel imece, hangel bağış, hangel clubs, Sosyal İnovasyon Merkezi vb. tüm alt markalar ana marka çatısı altındadır.</p>
-                                        <p><strong>Hiyerarşi:</strong> hangel logosu destekleyici bir unsur olarak konumlandırılmalıdır. Ana marka her zaman iş birliği yapan kurumun kendi markasıdır. Logo, en baskın görsel öğe olarak kullanılmamalıdır.</p>
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="item-2" className="border rounded-2xl px-6 bg-muted/30">
-                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Ruler className="mr-3 h-5 w-5 text-primary" />Logo Boyut ve Boşluk Kuralları</AccordionTrigger>
-                                    <AccordionContent className="pt-2 border-t text-muted-foreground prose prose-sm max-w-none">
-                                        <h4>Minimum Boyut Kuralı</h4>
-                                        <ul>
-                                            <li><strong>Dijital Ortam:</strong> Minimum genişlik: 120px</li>
-                                            <li><strong>Basılı Materyal:</strong> Minimum genişlik: 25mm</li>
-                                        </ul>
-                                        <h4>Boşluk (Clear Space) Kuralı</h4>
-                                        <p>Logonun etrafındaki minimum güvenli alan, logo içindeki "h" harfinin yüksekliği kadar olmalıdır. Bu alana metin, görsel veya başka bir grafik öğe yerleştirilemez.</p>
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="item-3" className="border rounded-2xl px-6 bg-muted/30">
-                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Handshake className="mr-3 h-5 w-5 text-primary" />Ortak Markalama (Co-Branding)</AccordionTrigger>
-                                    <AccordionContent className="pt-2 border-t text-muted-foreground prose prose-sm max-w-none">
-                                        <p>Ortak kampanya ve sponsorluk durumlarında logolar eşit ölçekte, yatay hizada ve aralarında minimum "h yüksekliği" kadar boşluk bırakılarak kullanılmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</p>
-                                    </AccordionContent>
-                                </AccordionItem>
-                                 <AccordionItem value="item-4" className="border rounded-2xl px-6 bg-muted/30">
-                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Newspaper className="mr-3 h-5 w-5 text-primary" />İsim ve Metin Kullanımı</AccordionTrigger>
-                                    <AccordionContent className="pt-2 border-t text-muted-foreground prose prose-sm max-w-none">
-                                        <ul>
-                                            <li>"hangel" kelimesinde "h" harfi büyük yazılamaz.</li>
-                                            <li>İzin verilen kullanım: “hangel için geliştirilmiştir”, “hangel ile uyumludur”, “hangel platformunda yer alır”.</li>
-                                            <li>Yasaklı kullanım: “hangelPro”, “hangelClubX” gibi birleştirmeler yapılamaz.</li>
-                                            <li>Sosyal medya hesap isimleri resmi bir hesap algısı yaratmamalıdır. (Örn: "hangel Haber" yerine "hangel hakkında haberler")</li>
-                                        </ul>
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="item-5" className="border rounded-2xl px-6 bg-muted/30">
-                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Tv className="mr-3 h-5 w-5 text-primary" />Medya ve Yayın Kullanımı</AccordionTrigger>
-                                    <AccordionContent className="pt-2 border-t text-muted-foreground prose prose-sm max-w-none">
-                                         <p>TV, film, radyo, açık hava reklamları ve A4 boyutundan büyük baskı materyallerinde kullanım için yazılı izin alınması zorunludur. Yayın içeriklerinde, platformdaki marka ve STK'lara doğru atıf yapılması esastır. Ekran görüntüleri kullanımı için ilgili kurumdan izin alınmalıdır.</p>
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="item-6" className="border rounded-2xl px-6 bg-muted/30">
-                                    <AccordionTrigger className="hover:no-underline py-4 font-bold"><Scale className="mr-3 h-5 w-5 text-primary" />Yasal Çerçeve</AccordionTrigger>
-                                    <AccordionContent className="pt-2 border-t text-muted-foreground prose prose-sm max-w-none">
-                                        <p>hangel ticari markaları hangel'e aittir ve yalnızca bu yönergelerde belirtildiği şekilde veya yazılı izinle kullanılabilir. hangel'in ticari markalarını kullanarak herhangi bir hak iddia edemezsiniz. Marka değerleriyle tutarsız olduğu düşünülen içeriklere onay vermeme ve marka kullanım iznini dilediği zaman tek taraflı olarak iptal etme hakkı saklıdır.</p>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        </CardContent>
-                    </Card>
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold tracking-tight">Kullanım Kuralları</h2>
+                        <p className="text-muted-foreground mt-2">Marka varlıklarımızın doğru kullanımı için lütfen bu yönergeleri izleyin.</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <RuleCard title="Marka Mimarisi ve Hiyerarşi" icon={Landmark}>
+                            <p><strong>Ana Marka:</strong> hangel</p>
+                            <p><strong>Alt Markalar:</strong> hangel imece, hangel bağış, hangel clubs, Sosyal İnovasyon Merkezi vb. tüm alt markalar ana marka çatısı altındadır.</p>
+                            <p><strong>Hiyerarşi:</strong> hangel logosu destekleyici bir unsur olarak konumlandırılmalıdır. Ana marka her zaman iş birliği yapan kurumun kendi markasıdır. Logo, en baskın görsel öğe olarak kullanılmamalıdır.</p>
+                        </RuleCard>
+                         <RuleCard title="Logo Boyut ve Boşluk Kuralları" icon={Ruler}>
+                            <h4>Minimum Boyut Kuralı</h4>
+                            <ul>
+                                <li><strong>Dijital Ortam:</strong> Minimum genişlik: 120px</li>
+                                <li><strong>Basılı Materyal:</strong> Minimum genişlik: 25mm</li>
+                            </ul>
+                            <h4>Boşluk (Clear Space) Kuralı</h4>
+                            <p>Logonun etrafındaki minimum güvenli alan, logo içindeki "h" harfinin yüksekliği kadar olmalıdır. Bu alana metin, görsel veya başka bir grafik öğe yerleştirilemez.</p>
+                        </RuleCard>
+                        <RuleCard title="Ortak Markalama (Co-Branding)" icon={Handshake}>
+                             <p>Ortak kampanya ve sponsorluk durumlarında logolar eşit ölçekte, yatay hizada ve aralarında minimum "h yüksekliği" kadar boşluk bırakılarak kullanılmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</p>
+                        </RuleCard>
+                        <RuleCard title="İsim ve Metin Kullanımı" icon={Newspaper}>
+                            <ul>
+                                <li>"hangel" kelimesinde "h" harfi büyük yazılamaz.</li>
+                                <li>İzin verilen kullanım: “hangel için geliştirilmiştir”, “hangel ile uyumludur”, “hangel platformunda yer alır”.</li>
+                                <li>Yasaklı kullanım: “hangelPro”, “hangelClubX” gibi birleştirmeler yapılamaz.</li>
+                                <li>Sosyal medya hesap isimleri resmi bir hesap algısı yaratmamalıdır. (Örn: "hangel Haber" yerine "hangel hakkında haberler")</li>
+                            </ul>
+                        </RuleCard>
+                         <RuleCard title="Medya ve Yayın Kullanımı" icon={Tv}>
+                             <p>TV, film, radyo, açık hava reklamları ve A4 boyutundan büyük baskı materyallerinde kullanım için yazılı izin alınması zorunludur. Yayın içeriklerinde, platformdaki marka ve STK'lara doğru atıf yapılması esastır. Ekran görüntüleri kullanımı için ilgili kurumdan izin alınmalıdır.</p>
+                        </RuleCard>
+                        <RuleCard title="Yasal Çerçeve" icon={Scale}>
+                            <p>hangel ticari markaları hangel'e aittir ve yalnızca bu yönergelerde belirtildiği şekilde veya yazılı izinle kullanılabilir. hangel'in ticari markalarını kullanarak herhangi bir hak iddia edemezsiniz. Marka değerleriyle tutarsız olduğu düşünülen içeriklere onay vermeme ve marka kullanım iznini dilediği zaman tek taraflı olarak iptal etme hakkı saklı tutar.</p>
+                        </RuleCard>
+                    </div>
                 </section>
                 
                 <section className="container mx-auto px-4 my-24 text-center">
