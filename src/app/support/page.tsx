@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 
-const CategoryLink = ({ href, icon, label }: { href: string; icon: React.ElementType; label: string }) => (
+const CategoryLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
     <Link href={href} className="group flex flex-col items-center gap-2 text-center">
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
             <Icon className="h-8 w-8 text-primary" />
