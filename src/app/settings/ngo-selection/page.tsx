@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, ShieldAlert, Filter, ArrowDownUp } from 'lucide-react';
@@ -16,29 +16,34 @@ export default function NgoSelectionPage() {
     const [selectedNgos, setSelectedNgos] = useState(['1', '2']); 
     const [searchTerm, setSearchTerm] = useState('');
     const { toast } = useToast();
+    const [showLimitToast, setShowLimitToast] = useState(false);
 
     const filteredNgos = ngos.filter(ngo => 
         ngo.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    useEffect(() => {
+        if (showLimitToast) {
+            toast({
+                variant: 'destructive',
+                title: "Limit Aşıldı",
+                description: "En fazla 2 varsayılan STK seçebilirsiniz.",
+            });
+            setShowLimitToast(false);
+        }
+    }, [showLimitToast, toast]);
+
     const handleNgoSelect = (ngoId: string) => {
-        setSelectedNgos(prev => {
-            const isSelected = prev.includes(ngoId);
-            if (isSelected) {
-                return prev.filter(id => id !== ngoId);
-            } else {
-                if (prev.length < 2) {
-                    return [...prev, ngoId];
-                } else {
-                    toast({
-                        variant: 'destructive',
-                        title: "Limit Aşıldı",
-                        description: "En fazla 2 varsayılan STK seçebilirsiniz.",
-                    });
-                    return prev;
-                }
-            }
-        });
+        if (selectedNgos.length >= 2 && !selectedNgos.includes(ngoId)) {
+            setShowLimitToast(true);
+            return;
+        }
+
+        setSelectedNgos(prev => 
+            prev.includes(ngoId) 
+                ? prev.filter(id => id !== ngoId) 
+                : [...prev, ngoId]
+        );
     };
 
     const handleSave = () => {
