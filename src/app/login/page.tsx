@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -423,6 +424,7 @@ export default function LoginPage() {
                 <ProductShowcaseSection
                     id="gonulluluk"
                     theme="dark"
+                    className="bg-primary"
                     title="hangel İmece"
                     subtitle="Zamanınız en değerli bağış."
                     description="Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Çevreden eğitime, hayvan haklarından sanata, size en uygun gönüllülük fırsatını bulun."
