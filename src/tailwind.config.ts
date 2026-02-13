@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -96,9 +97,10 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'story-progress': 'story-progress 5s linear forwards',
+        'story-progress': 'story-progress var(--story-duration, 5s) linear forwards',
       },
     },
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+

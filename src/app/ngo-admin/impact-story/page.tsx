@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay"
 import { 
     TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
@@ -240,25 +240,34 @@ function StoryViewer() {
     
     const handleClose = useCallback(() => router.back(), [router]);
 
-    useEffect(() => {
-        if (!api) return;
-        
-        setCount(api.scrollSnapList().length)
-        setCurrent(api.selectedScrollSnap() + 1)
-
-        api.on("select", () => {
-            setCurrent(api.selectedScrollSnap() + 1);
-        });
-
+    const prevSlide = useCallback(() => {
+        api?.scrollPrev()
     }, [api]);
-    
-    useEffect(() => {
-        // This effect will run when the current slide changes, restarting the animation.
-        // It's a bit of a hack to force a re-render of the progress bar animation.
-    }, [current]);
 
-    const prevSlide = useCallback(() => api?.scrollPrev(), [api]);
-    const nextSlide = useCallback(() => api?.scrollNext(), [api]);
+    const nextSlide = useCallback(() => {
+        api?.scrollNext()
+    }, [api]);
+
+    useEffect(() => {
+        if (!api) {
+          return;
+        }
+    
+        const onSelect = () => {
+          setCurrent(api.selectedScrollSnap() + 1);
+        };
+    
+        setCount(api.scrollSnapList().length);
+        setCurrent(api.selectedScrollSnap() + 1);
+    
+        api.on("select", onSelect);
+        api.on("reInit", onSelect);
+    
+        return () => {
+          api.off("select", onSelect);
+          api.off("reInit", onSelect);
+        };
+    }, [api]);
 
     const currentSlide = stories[current - 1];
     if (!currentSlide) return <div className="h-full w-full bg-background" />;
@@ -270,8 +279,9 @@ function StoryViewer() {
                 {Array.from({ length: count }).map((_, idx) => (
                     <div key={idx} className="h-0.5 flex-1 bg-black/10 rounded-full overflow-hidden">
                         <div
+                            key={current}
                             className={cn(
-                                "h-full bg-black/80",
+                                "h-full bg-white",
                                 idx === current - 1 && "animate-story-progress"
                             )}
                             style={{ animationDuration: `${STORY_DURATION}ms` }}
@@ -339,9 +349,8 @@ function StoryViewer() {
                         )
                     })}
                 </CarouselContent>
-                {/* Navigation Overlays */}
-                <div className="absolute inset-y-0 left-0 w-1/4 z-20" onClick={prevSlide} />
-                <div className="absolute inset-y-0 right-0 w-3/4 z-20" onClick={nextSlide} />
+                 <CarouselPrevious onClick={prevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
+                 <CarouselNext onClick={nextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
             </Carousel>
         </div>
     );
@@ -358,3 +367,4 @@ export default function ImpactStoryPage() {
         </div>
     );
 }
+
