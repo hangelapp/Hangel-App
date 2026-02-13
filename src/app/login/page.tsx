@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -213,6 +213,38 @@ const ShowcaseGridCard = ({
     );
 };
 
+const GridSection = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+    <section className={cn("py-16 md:py-24 px-4 bg-white", className)}>
+        <div className="container mx-auto max-w-7xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {children}
+            </div>
+        </div>
+    </section>
+);
+
+const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 'light' }: any) => (
+    <div className={cn(
+        "relative rounded-[2.5rem] p-10 text-center flex flex-col overflow-hidden min-h-[550px]",
+        theme === 'dark' ? 'bg-black text-white' : 'bg-[#f5f5f7] text-[#1d1d1f]'
+    )}>
+        <div className="space-y-2 z-10">
+            <h3 className="text-4xl font-bold tracking-tight">{title}</h3>
+            <p className="text-lg max-w-xs mx-auto opacity-80">{subtitle}</p>
+        </div>
+        <div className="mt-4 z-10">
+            <Link href={ctaHref} className={cn("text-primary hover:underline flex items-center text-sm font-medium justify-center", theme === 'dark' && 'text-[#2997ff]')}>
+                {cta} <ChevronRight className="h-4 w-4 ml-0.5" />
+            </Link>
+        </div>
+        <div className="relative flex-1 flex items-end justify-center mt-8 z-10 -mx-10 -mb-10">
+            <div className="relative w-full aspect-[4/3]">
+                <Image src={imageUrl} alt={title} fill className="object-contain" data-ai-hint={imageHint} />
+            </div>
+        </div>
+    </div>
+);
+
 
 export default function LoginPage() {
     return (
@@ -383,6 +415,46 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </section>
+
+                <section id="kurumsal-bilgiler" className="py-16 md:py-24 bg-white">
+                    <div className="container mx-auto px-4 max-w-7xl">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <Link href="/social-impact" className="block">
+                                <Card className="rounded-2xl h-full hover:shadow-xl transition-shadow">
+                                    <CardHeader>
+                                        <CardTitle className="text-xl">Sürdürülebilirlik</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground">Toplumsal ve çevresel etkimizi nasıl yönettiğimizi ve pozitif değişime nasıl liderlik ettiğimizi keşfedin.</p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
+                            <Link href="/accessibility" className="block">
+                                <Card className="rounded-2xl h-full hover:shadow-xl transition-shadow">
+                                    <CardHeader>
+                                        <CardTitle className="text-xl">Erişilebilirlik</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground">Teknolojiyi herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin.</p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
+                            <Link href="/bilgi-toplumu-hizmetleri" className="block">
+                                <Card className="rounded-2xl h-full hover:shadow-xl transition-shadow">
+                                    <CardHeader>
+                                        <CardTitle className="text-xl">Bilgi Toplumu Hizmetleri</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground">5651 sayılı kanun kapsamındaki yasal bilgilendirmelerimize ve kurumsal şeffaflık belgelerimize ulaşın.</p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+                
                 <section id="accessibility" className="py-12 md:py-16 bg-white">
                     <div className="container mx-auto px-4 max-w-4xl text-center">
                         <h2 className="text-xl font-bold tracking-tight">Herkes İçin İyilik.</h2>
