@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -198,7 +199,7 @@ export default function ContactPage() {
                     </TabsList>
                     <TabsContent value="individual">
                         <CardHeader>
-                            <CardTitle>Bireysel Destek Talebi</CardTitle>
+                            <CardTitle>Kullanıcı İletişim Departmanı</CardTitle>
                             <CardDescription>Uygulama kullanımı, puanlar ve genel sorularınız için bize yazın.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -207,7 +208,7 @@ export default function ContactPage() {
                     </TabsContent>
                     <TabsContent value="ngo">
                         <CardHeader>
-                            <CardTitle>STK İşbirliği Formu</CardTitle>
+                            <CardTitle>STK İlişkileri Departmanı</CardTitle>
                             <CardDescription>Kuruluşunuzu hangel'e dahil etmek veya işbirliği için bize ulaşın.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -216,7 +217,7 @@ export default function ContactPage() {
                     </TabsContent>
                     <TabsContent value="brand">
                          <CardHeader>
-                            <CardTitle>Marka & İşletme İşbirliği Formu</CardTitle>
+                            <CardTitle>Üye İşletme İlişkileri Departmanı</CardTitle>
                             <CardDescription>Markanızla sosyal etki yaratmak veya QR ödeme sistemine dahil olmak için bize ulaşın.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -225,7 +226,7 @@ export default function ContactPage() {
                     </TabsContent>
                     <TabsContent value="corporate">
                         <CardHeader>
-                            <CardTitle>Genel Kurumsal İletişim Formu</CardTitle>
+                            <CardTitle>Kamu Politikası Departmanı</CardTitle>
                             <CardDescription>
                                 Kamu kurumları veya diğer kurumsal talepleriniz için bu formu kullanın.
                             </CardDescription>
