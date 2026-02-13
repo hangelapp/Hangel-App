@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
 
-export default function CompaniesPage() {
+export default function ContactPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [error, setError] = useState(false);
@@ -27,7 +27,7 @@ export default function CompaniesPage() {
         if (!hasError) {
             toast({
                 title: "Mesajınız Gönderildi",
-                description: "Ekibimiz en kısa sürede sizinle iletişime geçecektir.",
+                description: "hangel iş geliştirme ekibi en kısa sürede sizinle iletişime geçecektir.",
             });
         }
     };

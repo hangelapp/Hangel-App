@@ -98,7 +98,7 @@ export default function CorporateShowcasePage() {
                 subtitle="hangel Kurumsal Çözümler"
                 description="Teknoloji, veri ve geniş topluluk ağımızı kullanarak kurumunuzun sosyal etki hedeflerine ulaşmasını sağlıyoruz. Üniversiteler, belediyeler, bakanlıklar ve şirketler için sürdürülebilir işbirliği modelleri sunuyoruz."
                 cta1="İşbirliği Başlat"
-                cta1Href="/contact/companies"
+                cta1Href="/contact"
                 cta2="Tüm Çözümler"
                 cta2Href="#universiteler"
                 imageUrl="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
