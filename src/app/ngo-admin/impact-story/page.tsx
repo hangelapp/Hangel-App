@@ -1,20 +1,18 @@
-
 'use client';
 
-import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { 
     TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
-    ShoppingBag, Leaf, Megaphone
+    ShoppingBag, Leaf, Sparkles
 } from 'lucide-react';
 import { user } from '@/lib/data';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 
 // --- Story Data ---
 export type ImpactSlide = {
@@ -22,7 +20,7 @@ export type ImpactSlide = {
   title: string;
   subtitle: string;
   content: string;
-  icon: any; // Using any to avoid LucideIcon type issues in this context
+  icon: any;
   image: string;
   imageHint: string;
   stat?: string;
@@ -49,72 +47,6 @@ export const hangelImpactStories: ImpactSlide[] = [
         imageHint: "happy group people"
     },
     {
-        id: 3,
-        title: "500.000 ₺+ Aktarılan Bağış",
-        subtitle: "Finansal Katkı",
-        content: "Alışverişlerinizden doğan ek ödemesiz bağışlar, STK'larımız için can suyu oldu.",
-        stat: "₺524.850",
-        icon: Award,
-        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop",
-        imageHint: "coins money donation"
-    },
-    {
-        id: 4,
-        title: "12.000+ Saat Gönüllülük",
-        subtitle: "İmece Gücü",
-        content: "Zamanını ve yeteneklerini toplumsal fayda için seferber eden binlerce gönüllümüzle sahadayız.",
-        stat: "12.450 Saat",
-        icon: Heart,
-        image: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
-        imageHint: "volunteers working together"
-    },
-    {
-        id: 5,
-        title: "128 Şeffaf STK Ortağı",
-        subtitle: "Kurumsal Güven",
-        content: "Şeffaflık endeksimize katılan ve hesap verebilirliği önceliğine alan dev ağımız.",
-        icon: ShieldCheck,
-        image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "modern building glass"
-    },
-    {
-        id: 6,
-        title: "542 Bilinçli Marka",
-        subtitle: "İş Birliği",
-        content: "Satışlarını sosyal faydaya dönüştüren vizyoner markalarla alışverişi iyiliğe dönüştürüyoruz.",
-        icon: Store,
-        image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "clothing store interior"
-    },
-    {
-        id: 7,
-        title: "Gelirlerin %85'i Faydaya",
-        subtitle: "Sosyal Girişim",
-        content: "Operasyonel gelirlerimizin büyük kısmını platformu geliştirmek ve sosyal etkiyi büyütmek için kullanıyoruz.",
-        stat: "%85",
-        icon: Globe,
-        image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "network connections digital"
-    },
-    {
-        id: 8,
-        title: "21 Şehirde Aktif Etki",
-        subtitle: "Yerel Yayılım",
-        content: "Sadece merkezde değil, Anadolu'nun her köşesinde yerel sorunlara dijital çözümler üretiyoruz.",
-        icon: MapPin,
-        image: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?q=80&w=2071&auto=format&fit=crop",
-        imageHint: "city view turkey"
-    },
-    {
-        id: 9,
-        title: "21 Üniversite Temsilciliği",
-        subtitle: "Gençlik Hareketi",
-        content: "Geleceğin liderleri kampüslerinde sosyal etkiyi örgütlüyor, kulüplerini iyiliğe dahil ediyor.",
-        icon: School,
-        image: "https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "university campus students"
-    },
-    {
         id: 10,
         title: "Seninle Daha Güçlüyüz",
         subtitle: "Birlikte Başaralım",
@@ -137,20 +69,20 @@ export const userImpactStories: ImpactSlide[] = [
     },
     {
         id: 2,
-        title: user.stats.totalDonation.toLocaleString('tr-TR') + ' ₺ Bağış Yaptın',
+        title: "1.250 ₺ Bağış Yaptın",
         subtitle: "Finansal Destek",
-        content: 'Yaptığın alışverişlerle ' + user.stats.mostSupportedNgo + ' gibi kurumlara destek oldun.',
-        stat: '₺' + user.stats.totalDonation.toLocaleString('tr-TR'),
+        content: "Yaptığın alışverişlerle TEMA Vakfı gibi kurumlara destek oldun.",
+        stat: "₺1.250",
         icon: Heart,
         image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
         imageHint: "donation concept"
     },
     {
         id: 3,
-        title: user.stats.volunteerHours + ' Saat Gönüllülük Yaptın',
+        title: "48 Saat Gönüllülük Yaptın",
         subtitle: "Zamanın Değeri",
-        content: 'En çok ' + user.stats.mostActiveVolunteerArea + ' alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.',
-        stat: user.stats.volunteerHours + ' Saat',
+        content: "En çok Hayvan Hakları alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.",
+        stat: "48 Saat",
         icon: HeartHandshake,
         image: "https://images.unsplash.com/photo-1618423417959-c8c7f9c73331?q=80&w=1974&auto=format&fit=crop",
         imageHint: "volunteers hands"
@@ -178,39 +110,27 @@ export const communityImpactStories: ImpactSlide[] = [
     },
 ];
 
-export const adStories: ImpactSlide[] = [
-    {
-        id: 1,
-        title: "Okul Alışverişiyle Destek Ol!",
-        subtitle: "TEGV & Hepsiburada",
-        content: "Kırtasiye ihtiyaçlarınızı Hepsiburada'dan alın, her alışverişinizle Türkiye Eğitim Gönüllüleri Vakfı'na bağış yapın. Eğitime bir ışık da siz yakın!",
-        icon: ShoppingBag,
-        image: "https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop",
-        imageHint: "school supplies student"
-    },
-    {
-        id: 2,
-        title: "Patili Dostlarımıza Umut Ol",
-        subtitle: "HAYTAP & Petzzshop",
-        content: "Petzzshop'tan yapacağınız mama ve bakım ürünü alışverişlerinizle, HAYTAP aracılığıyla barınaklardaki dostlarımıza destek olun.",
-        icon: Heart,
-        image: "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?q=80&w=1974&auto=format&fit=crop",
-        imageHint: "cat looking at camera"
-    },
-    {
-        id: 3,
-        title: "Yeni Sezon, Yeni Bir Başlangıç",
-        subtitle: "Doğa Dostu Giyim & TEMA Vakfı",
-        content: "Sürdürülebilir yeni sezon koleksiyonumuzu keşfedin. Her parçayla hem stilinizi yenileyin hem de TEMA Vakfı'nın ağaçlandırma çalışmalarına katkıda bulunun.",
-        icon: Leaf,
-        image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "clothing store interior"
-    },
-];
-
 export const opportunityStories: ImpactSlide[] = [
     {
         id: 1,
+        title: "Sosyal Etki Temsilcisi Ol",
+        subtitle: "hangel Kampüs",
+        content: "Kampüsünde sosyal etki rüzgarı estir. Üniversite temsilcimiz olarak liderlik yeteneklerini geliştir.",
+        icon: School,
+        image: "https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop",
+        imageHint: "university students"
+    },
+    {
+        id: 2,
+        title: "Okul Alışverişiyle Destek Ol",
+        subtitle: "TEGV & Hepsiburada",
+        content: "Kırtasiye ihtiyaçlarınızı Hepsiburada'dan alın, TEGV'e bağış yapın. Eğitime bir ışık da siz yakın!",
+        icon: ShoppingBag,
+        image: "https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop",
+        imageHint: "student school supplies"
+    },
+    {
+        id: 3,
         title: "Afet Bölgesi Lojistik Destek",
         subtitle: "Ahbap Derneği",
         content: "Hatay ve Adıyaman'da yardım kolilerinin dağıtımında görev alacak gönüllüler arıyoruz.",
@@ -218,33 +138,6 @@ export const opportunityStories: ImpactSlide[] = [
         image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
         imageHint: "food donation"
     },
-    {
-        id: 2,
-        title: "Fidan Dikme Etkinliği",
-        subtitle: "TEMA Vakfı",
-        content: "Geleceğe nefes olmak için Balıkesir'deki ağaçlandırma sahamızda bize katılın.",
-        icon: Leaf,
-        image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop",
-        imageHint: "planting trees"
-    },
-    {
-        id: 3,
-        title: "Barınak Ziyareti ve Bakım",
-        subtitle: "HAYTAP",
-        content: "Ankara'daki barınağımızda dostlarımızın bakımına yardımcı olacak hayvanseverler arıyoruz.",
-        icon: Heart,
-        image: "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?q=80&w=1974&auto=format&fit=crop",
-        imageHint: "cat looking at camera"
-    },
-    {
-        id: 4,
-        title: 'Yaz Kampı Liderliği',
-        subtitle: 'TEGV',
-        content: 'Dezavantajlı bölgelerden gelen çocuklar için düzenlediğimiz yaz kampında, onlara rol model olacak enerjik kamp liderleri arıyoruz.',
-        icon: Users,
-        image: 'https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop',
-        imageHint: 'university students'
-    }
 ];
 
 const STORY_DURATION = 5000;
@@ -254,23 +147,17 @@ function StoryViewer() {
     const searchParams = useSearchParams();
     const category = searchParams.get('category');
     
-    const [api, setApi] = useState<CarouselApi>()
-    const [current, setCurrent] = useState(0)
-    const [count, setCount] = useState(0)
+    const [api, setApi] = useState<CarouselApi>();
+    const [current, setCurrent] = useState(0);
+    const [count, setCount] = useState(0);
 
     const stories: ImpactSlide[] = React.useMemo(() => {
         switch (category) {
-            case 'user':
-                return userImpactStories;
-            case 'community':
-                return communityImpactStories;
-            case 'ads':
-                return adStories;
-            case 'opportunities':
-                return opportunityStories;
+            case 'user': return userImpactStories;
+            case 'community': return communityImpactStories;
+            case 'opportunities': return opportunityStories;
             case 'hangel':
-            default:
-                return hangelImpactStories;
+            default: return hangelImpactStories;
         }
     }, [category]);
     
@@ -278,105 +165,116 @@ function StoryViewer() {
 
     useEffect(() => {
         if (!api) return;
-
-        const onSelect = (api: CarouselApi) => {
-            setCurrent(api.selectedScrollSnap() + 1);
-        };
-
-        const onAnimationEnd = (e: AnimationEvent) => {
-            if (e.animationName === 'story-progress' && api) {
-                if (api.selectedScrollSnap() === api.scrollSnapList().length - 1) {
-                    handleClose();
-                } else {
-                    api.scrollNext();
-                }
-            }
-        };
-        
-        api.on("select", onSelect);
-        document.addEventListener('animationend', onAnimationEnd);
-        
         setCount(api.scrollSnapList().length);
         setCurrent(api.selectedScrollSnap() + 1);
-    
-        return () => {
-          api.off("select", onSelect);
-          document.removeEventListener('animationend', onAnimationEnd);
-        };
+
+        api.on("select", () => {
+            setCurrent(api.selectedScrollSnap() + 1);
+        });
+    }, [api]);
+
+    const handleNext = useCallback(() => {
+        if (!api) return;
+        if (api.canScrollNext()) {
+            api.scrollNext();
+        } else {
+            handleClose();
+        }
     }, [api, handleClose]);
 
-    const currentSlide = stories[current - 1];
-    if (!currentSlide) return <div className="h-full w-full bg-background" />;
+    const handlePrev = useCallback(() => {
+        if (!api) return;
+        api.scrollPrev();
+    }, [api]);
 
     return (
-        <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col">
+        <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-500">
             {/* Progress Bars */}
-            <div className="absolute top-4 inset-x-4 flex gap-1 z-50">
-                {Array.from({ length: count }).map((_, idx) => (
-                    <div key={`${current}-${idx}`} className="h-0.5 flex-1 bg-black/10 rounded-full overflow-hidden">
+            <div className="absolute top-4 inset-x-4 flex gap-1.5 z-50">
+                {Array.from({ length: stories.length }).map((_, idx) => (
+                    <div key={`${idx}-${current === idx + 1}`} className="h-1 flex-1 bg-black/5 rounded-full overflow-hidden">
                         <div
                             className={cn(
-                                "h-full bg-white",
+                                "h-full bg-primary transition-all",
                                 idx < current - 1 && "w-full",
                                 idx === current - 1 && "animate-story-progress"
                             )}
                             style={{ animationDuration: `${STORY_DURATION}ms` }}
+                            onAnimationEnd={(e) => {
+                                if (e.animationName === 'story-progress') {
+                                    handleNext();
+                                }
+                            }}
                         />
                     </div>
                 ))}
             </div>
 
             {/* Header */}
-            <div className="absolute top-8 inset-x-4 px-2 flex justify-between items-center z-50 text-foreground">
+            <div className="absolute top-10 inset-x-4 px-2 flex justify-between items-center z-50">
                 <div className="flex items-center gap-3">
-                     <Link href={category === 'user' ? '/profile' : '/about'}>
-                        <div className="w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center border shadow-sm">
-                           {category === 'user' ? (
-                                <Image src={user.avatarUrl} alt={user.name} width={40} height={40} className="rounded-full object-cover" />
-                           ) : (
-                                <HangelLogo className="text-lg text-primary" />
-                           )}
-                        </div>
-                    </Link>
-                    <div className="text-left">
-                        <p className="font-bold text-xs">{currentSlide.subtitle}</p>
+                    <div className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur-xl flex items-center justify-center border shadow-sm overflow-hidden">
+                        {category === 'user' ? (
+                            <Image src={user.avatarUrl} alt={user.name} width={40} height={40} className="object-cover h-full w-full" />
+                        ) : (
+                            <HangelLogo className="text-xl" />
+                        )}
+                    </div>
+                    <div className="text-left drop-shadow-sm">
+                        <p className="font-black text-xs uppercase tracking-widest text-foreground">
+                            {stories[current - 1]?.subtitle || 'hangel'}
+                        </p>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" className="text-foreground hover:bg-black/10 rounded-full h-10 w-10 backdrop-blur-md bg-white/20" onClick={handleClose}>
-                    <X className="h-6 w-6" />
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm" 
+                    onClick={handleClose}
+                >
+                    <X className="h-5 w-5" />
                 </Button>
             </div>
             
+            {/* Click Nav Regions */}
+            <div className="absolute inset-0 z-30 flex">
+                <div className="w-1/3 h-full cursor-pointer" onClick={handlePrev} />
+                <div className="w-2/3 h-full cursor-pointer" onClick={handleNext} />
+            </div>
+
             <Carousel setApi={setApi} className="w-full h-full">
-                <CarouselContent>
+                <CarouselContent className="h-full">
                     {stories.map((slide) => {
-                        const CurrentIcon = slide.icon;
+                        const Icon = slide.icon;
                         return (
-                            <CarouselItem key={slide.id}>
+                            <CarouselItem key={slide.id} className="h-full">
                                 <div className="w-full h-full flex flex-col bg-white">
-                                    <div className="relative flex-1 w-full min-h-0">
+                                    <div className="relative flex-1 w-full min-h-0 bg-[#f5f5f7]">
                                         <Image
                                             src={slide.image}
                                             alt={slide.title}
                                             fill
                                             className="object-cover"
-                                            priority={slide.id === stories[0].id}
+                                            priority
                                             data-ai-hint={slide.imageHint}
                                         />
+                                        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white" />
                                     </div>
-                                    <div className="p-8 md:p-10 text-foreground bg-white">
-                                        <div className="animate-in fade-in-0 slide-in-from-bottom-5 duration-700">
-                                            <div className="w-14 h-14 rounded-2xl bg-muted border flex items-center justify-center text-primary mb-5">
-                                                <CurrentIcon className="h-7 w-7" />
+                                    <div className="p-8 md:p-12 text-foreground bg-white border-t border-black/5 relative z-10">
+                                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6">
+                                                <Icon className="h-7 w-7" />
                                             </div>
-                                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                                            <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-[0.95] mb-4">
                                                 {slide.title}
                                             </h2>
-                                            <p className="mt-3 text-base md:text-lg text-muted-foreground leading-relaxed max-w-sm">
+                                            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium max-w-sm">
                                                 {slide.content}
                                             </p>
                                             {slide.stat && (
-                                                <p className="text-6xl font-bold tracking-tighter mt-6 text-primary">{slide.stat}</p>
+                                                <div className="mt-8 pt-8 border-t border-black/5">
+                                                    <p className="text-6xl md:text-7xl font-black tracking-tighter text-primary">{slide.stat}</p>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -385,8 +283,6 @@ function StoryViewer() {
                         )
                     })}
                 </CarouselContent>
-                 <CarouselPrevious onClick={() => api?.scrollPrev()} className="absolute left-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
-                 <CarouselNext onClick={() => api?.scrollNext()} className="absolute right-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
             </Carousel>
         </div>
     );
@@ -394,12 +290,20 @@ function StoryViewer() {
 
 export default function ImpactStoryPage() {
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-0 md:p-8">
-            <div className="relative w-full max-w-[450px] h-full max-h-full md:max-h-[800px] aspect-[9/16] bg-card rounded-none md:rounded-[2.5rem] overflow-hidden">
-                <Suspense fallback={<div className="flex items-center justify-center h-full">Yükleniyor...</div>}>
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-0 md:p-8 backdrop-blur-sm">
+            <div className="relative w-full max-w-[450px] h-full max-h-full md:max-h-[850px] aspect-[9/16] bg-white rounded-none md:rounded-[3rem] overflow-hidden">
+                <Suspense fallback={<div className="flex items-center justify-center h-full bg-white"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                     <StoryViewer />
                 </Suspense>
             </div>
         </div>
+    );
+}
+
+function Loader2({ className }: { className?: string }) {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
     );
 }
