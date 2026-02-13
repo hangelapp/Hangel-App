@@ -150,6 +150,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                                 </React.Fragment>
                             ))}
                         </div>
+                        <div className="h-px bg-black/10 w-full" />
                         <div className="flex justify-start items-center flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
                             {socialLinks.map((link, index) => (
                                 <React.Fragment key={link.label}>
@@ -176,8 +177,8 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                             Türkiye
                         </div>
                     </div>
-                     <div className="text-center text-[11px] text-[#1d1d1f]/50 pt-4">
-                        Telif Hakkı © {new Date().getFullYear()} hangel A.Ş. Tüm hakları saklıdır.
+                     <div className="text-left text-[11px] text-[#1d1d1f]/50 pt-4">
+                        Telif Hakkı © 2026 hangel A.Ş. Tüm hakları saklıdır.
                     </div>
                 </div>
             </div>
