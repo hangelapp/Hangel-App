@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -31,7 +32,6 @@ const prompt = ai.definePrompt({
   name: 'getLibraryAnswerPrompt',
   input: {schema: AskLibraryAssistantInputSchema},
   output: {schema: AskLibraryAssistantOutputSchema},
-  model: googleAI.model('gemini-1.5-flash-latest'),
   prompt: `You are the "Hangel Kütüphane Asistanı" (Library Assistant). Your goal is to help users navigate and understand the resources available in the Hangel Library.
 
   CRITICAL RULE: Answer questions based ONLY on the provided Library Context. If the information is not in the context, politely state that you can only answer questions about the resources available in the library.
@@ -51,7 +51,7 @@ const getLibraryAnswerFlow = ai.defineFlow(
     outputSchema: AskLibraryAssistantOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(input, {model: googleAI.model('gemini-1.5-flash-latest')});
     return output!;
   }
 );
