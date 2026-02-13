@@ -138,8 +138,8 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     ))}
                 </div>
                 
-                <div className="pt-6 space-y-3">
-                    <div className="flex justify-start items-center flex-wrap gap-x-4 gap-y-2 text-[12px] text-[#1d1d1f]/70">
+                <div className="pt-6 space-y-2">
+                    <div className="flex justify-start items-center flex-wrap gap-x-2 gap-y-2 text-[12px] text-[#1d1d1f]/70">
                         {appStoreLinks.map((link, index) => (
                             <React.Fragment key={link.label}>
                                 <Link href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.label}</Link>
@@ -148,7 +148,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                         ))}
                     </div>
                     <div className="h-px bg-black/10 w-full" />
-                    <div className="flex justify-start items-center flex-wrap gap-x-4 gap-y-2 text-[12px] text-[#1d1d1f]/70">
+                    <div className="flex justify-start items-center flex-wrap gap-x-2 gap-y-2 text-[12px] text-[#1d1d1f]/70">
                         {socialLinks.map((link, index) => (
                             <React.Fragment key={link.label}>
                                 <a href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.label}</a>
@@ -161,7 +161,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                      <div className="h-px bg-black/10 w-full" />
                     
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3">
-                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
+                         <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
                             {policyLinks.map((link, index) => (
                                 <React.Fragment key={link.label}>
                                     <Link href={link.href} className="hover:underline">{link.label}</Link>
