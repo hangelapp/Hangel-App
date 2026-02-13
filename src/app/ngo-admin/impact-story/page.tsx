@@ -1,15 +1,17 @@
-
 'use client';
 
-import React, { Suspense, useCallback } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 import type { UseEmblaCarouselType } from "embla-carousel-react"
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import { TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake } from 'lucide-react';
+import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { 
+    TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
+    ShoppingBag, Leaf
+} from 'lucide-react';
 import { user } from '@/lib/data';
 
 // --- Story Data ---
@@ -174,6 +176,36 @@ export const communityImpactStories: ImpactSlide[] = [
     },
 ];
 
+export const adStories: ImpactSlide[] = [
+    {
+        id: 1,
+        title: "Okul Alışverişiyle Destek Ol!",
+        subtitle: "TEGV & Hepsiburada",
+        content: "Kırtasiye ihtiyaçlarınızı Hepsiburada'dan alın, her alışverişinizle Türkiye Eğitim Gönüllüleri Vakfı'na bağış yapın. Eğitime bir ışık da siz yakın!",
+        icon: ShoppingBag,
+        image: "https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop",
+        imageHint: "school supplies student"
+    },
+    {
+        id: 2,
+        title: "Patili Dostlarımıza Umut Ol",
+        subtitle: "HAYTAP & Petzzshop",
+        content: "Petzzshop'tan yapacağınız mama ve bakım ürünü alışverişlerinizle, HAYTAP aracılığıyla barınaklardaki dostlarımıza destek olun.",
+        icon: Heart,
+        image: "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?q=80&w=1974&auto=format&fit=crop",
+        imageHint: "cat looking at camera"
+    },
+    {
+        id: 3,
+        title: "Yeni Sezon, Yeni Bir Başlangıç",
+        subtitle: "Doğa Dostu Giyim & TEMA Vakfı",
+        content: "Sürdürülebilir yeni sezon koleksiyonumuzu keşfedin. Her parçayla hem stilinizi yenileyin hem de TEMA Vakfı'nın ağaçlandırma çalışmalarına katkıda bulunun.",
+        icon: Leaf,
+        image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+        imageHint: "clothing store interior"
+    },
+];
+
 const STORY_DURATION = 5000;
 
 function StoryViewer() {
@@ -181,9 +213,10 @@ function StoryViewer() {
     const searchParams = useSearchParams();
     const category = searchParams.get('category');
     
-    const [currentIndex, setCurrentIndex] = React.useState(0);
-    const [progress, setProgress] = React.useState(0);
-    const [api, setApi] = React.useState<UseEmblaCarouselType[1]>();
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [progress, setProgress] = useState(0);
+    const [api, setApi] = useState<CarouselApi>();
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const stories: ImpactSlide[] = React.useMemo(() => {
         switch (category) {
@@ -191,6 +224,8 @@ function StoryViewer() {
                 return userImpactStories;
             case 'community':
                 return communityImpactStories;
+            case 'ads':
+                return adStories;
             case 'hangel':
             default:
                 return hangelImpactStories;
@@ -213,29 +248,39 @@ function StoryViewer() {
         api?.scrollPrev();
     }, [api]);
 
-    React.useEffect(() => {
+    const startTimer = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setProgress(0);
+        timerRef.current = setInterval(() => {
+            setProgress(prev => {
+                const nextProgress = prev + (100 / (STORY_DURATION / 50));
+                if (nextProgress >= 100) {
+                    if (timerRef.current) clearInterval(timerRef.current);
+                    return 100;
+                }
+                return nextProgress;
+            });
+        }, 50);
+    }, []);
+
+    useEffect(() => {
         if (!api) return;
 
         const handleSelect = () => {
-            if (api.selectedScrollSnap() !== currentIndex) {
-                setCurrentIndex(api.selectedScrollSnap());
-                setProgress(0);
-            }
+            setCurrentIndex(api.selectedScrollSnap());
+            startTimer();
         };
         
         api.on("select", handleSelect);
-
-        const progressInterval = setInterval(() => {
-            setProgress(p => p + (100 / (STORY_DURATION / 50)));
-        }, 50);
+        startTimer(); // Start timer for the initial slide
 
         return () => {
-            clearInterval(progressInterval);
+            if (timerRef.current) clearInterval(timerRef.current);
             api.off("select", handleSelect);
         };
-    }, [api, currentIndex]);
+    }, [api, startTimer]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (progress >= 100) {
             nextSlide();
         }

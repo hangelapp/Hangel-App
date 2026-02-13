@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, TrendingUp, User, Users } from 'lucide-react';
+import { ArrowLeft, TrendingUp, User, Users, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ export default function StoriesPage() {
                 <h1 className="text-3xl font-bold font-headline">Hikayeler</h1>
                 <p className="text-muted-foreground">Etkinin farklı yönlerini keşfet.</p>
             </div>
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <StoryCategoryCard 
                     title="Hangel'in Etki Hikayesi"
                     description="Platformun genel başarıları ve toplumsal etki raporu."
@@ -55,6 +55,13 @@ export default function StoriesPage() {
                     icon={Users}
                     href="/ngo-admin/impact-story?category=community"
                     color="bg-gradient-to-br from-teal-500 to-green-600"
+                />
+                <StoryCategoryCard
+                    title="Sosyal Medya İlanları"
+                    description="Markaların ve STK'ların öne çıkan kampanyalarını ve ilanlarını keşfedin."
+                    icon={Megaphone}
+                    href="/ngo-admin/impact-story?category=ads"
+                    color="bg-gradient-to-br from-blue-500 to-cyan-600"
                 />
             </div>
         </div>
