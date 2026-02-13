@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -222,7 +223,7 @@ export default function LoginPage() {
                     theme="dark"
                     title="Yok öyle yalnız başına mücadele etmek."
                     subtitle="Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz."
-                    description="Türkiye'nin en kapsamlı sosyal etki platformu Hangel ile tanışın."
+                    description="#wearehangel"
                     cta1="Şimdi Katıl"
                     cta1Href="/login/selection?action=register"
                     cta2="Daha Fazla Bilgi"
@@ -379,6 +380,25 @@ export default function LoginPage() {
                                 imageHint="charcoal library drawing"
                                 theme="dark"
                             />
+                        </div>
+                    </div>
+                </section>
+                <section id="accessibility" className="py-16 md:py-24 bg-white">
+                    <div className="container mx-auto px-4 max-w-4xl text-center">
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Herkes İçin İyilik.</h2>
+                        <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
+                            hangel, erişilebilirliği temel ilkesi olarak benimser.
+                            hangel uygulaması, WCAG 2.2 AA kriterleri esas alınarak geliştirilmiştir ve farklı engel gruplarının ihtiyaçlarını karşılayacak erişim seçenekleri sunar. Erişilebilirlik uyumluluğu sürekli olarak değerlendirilmektedir.
+                            <br/><br/>
+                            Amacımız, erişilebilirliği bir özellik değil, standart bir deneyim haline getirmektir.
+                        </p>
+                        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Button variant="outline" className="h-12 px-8 font-bold">Açık Kaynak Kodlara Erişim</Button>
+                            <Button asChild variant="link" className="text-lg text-primary font-bold">
+                                <Link href="/accessibility">
+                                    Daha Fazla Bilgi <ChevronRight className="ml-1 h-5 w-5" />
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                 </section>
