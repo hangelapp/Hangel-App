@@ -59,8 +59,7 @@ const ProductShowcaseSection = ({
     imageUrl,
     imageHint,
     id,
-    className,
-    children
+    className
 }: {
     title: string,
     subtitle?: string,
@@ -70,11 +69,10 @@ const ProductShowcaseSection = ({
     cta2?: string,
     cta2Href?: string,
     theme?: 'light' | 'dark',
-    imageUrl?: string,
-    imageHint?: string,
+    imageUrl: string,
+    imageHint: string,
     id?: string;
     className?: string;
-    children?: React.ReactNode;
 }) => (
     <section id={id} className={cn(
         "relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 text-center overflow-hidden border-b border-black/5",
@@ -82,37 +80,38 @@ const ProductShowcaseSection = ({
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
-            {subtitle && <p className="text-xl md:text-2xl font-semibold opacity-90 tracking-tight" style={{color: theme === 'dark' ? '#00A8E8' : 'var(--primary)'}}>{subtitle}</p>}
+            {subtitle && <p className={cn("text-xl md:text-2xl font-semibold opacity-90 tracking-tight", theme === 'dark' ? "text-[#00A8E8]" : "text-primary")}>{subtitle}</p>}
             <h2 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">{title}</h2>
             {description && <p className="text-lg md:text-xl opacity-80 max-w-3xl mx-auto leading-relaxed font-medium">{description}</p>}
             
-            <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href={cta1Href} className={cn("hover:underline flex items-center text-lg font-medium", theme === 'dark' ? 'text-[#2997ff]' : 'text-primary')}>
-                    {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
-                </Link>
+             <div className="flex items-center justify-center gap-4 pt-4">
+                <Button asChild size="lg" className="rounded-full px-6 bg-[#0071e3] hover:bg-[#0077ed]">
+                    <Link href={cta1Href!}>{cta1}</Link>
+                </Button>
                 {cta2 && cta2Href && (
-                    <Link href={cta2Href} className={cn("hover:underline flex items-center text-lg font-medium", theme === 'dark' ? 'text-[#2997ff]' : 'text-primary')}>
-                        {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
-                    </Link>
+                    <Button asChild size="lg" variant="outline" className={cn(
+                        "rounded-full px-6", 
+                        theme === 'dark' 
+                            ? "border-white/50 text-white bg-transparent hover:bg-white hover:text-black"
+                            : "border-[#0071e3] text-[#0071e3] hover:bg-[#0071e3] hover:text-white"
+                    )}>
+                        <Link href={cta2Href}>{cta2}</Link>
+                    </Button>
                 )}
             </div>
         </div>
-
-        {children}
         
-        {imageUrl && (
-            <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
-                <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
-                    <Image 
-                        src={imageUrl} 
-                        alt={title} 
-                        fill 
-                        className="object-cover" 
-                        data-ai-hint={imageHint}
-                    />
-                </div>
+        <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
+            <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
+                <Image 
+                    src={imageUrl} 
+                    alt={title} 
+                    fill 
+                    className="object-cover" 
+                    data-ai-hint={imageHint}
+                />
             </div>
-        )}
+        </div>
     </section>
 );
 
@@ -167,7 +166,7 @@ const projectCardsData = [
     },
     { 
       title: "Sosyal Etki Atlası",
-      subtitle: "Türkiye'nin iyilik haritasını, 54 ülkeden 639 örnek ile çiziyoruz.",
+      subtitle: "Türkiye'nin iyilik haritasını 54 ülkeden 639 örnek ile çiziyoruz.",
       cta: "Atlası Keşfet",
       ctaHref: "/hangelassociation/projects/etki-atlasi",
       imageUrl: "https://picsum.photos/seed/atlas/600/800",
@@ -329,69 +328,19 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                <ProductShowcaseSection
+                 <ProductShowcaseSection
                     id="bagis"
+                    theme="light"
                     title="Alışverişi iyiliğe dönüştürün."
                     subtitle="hangel Bağış"
                     description="Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu."
                     cta1="Markaları Keşfet"
                     cta1Href="/market"
-                >
-                    <div className="w-full max-w-7xl mx-auto px-4 mt-16">
-                        <Carousel
-                            plugins={[
-                                Autoplay({
-                                  delay: 2500,
-                                  stopOnInteraction: true,
-                                }),
-                              ]}
-                            opts={{ align: "start", loop: true }}
-                            className="w-full"
-                        >
-                            <CarouselContent className="-ml-4">
-                                {allEntityLists.slice(0, 12).map((brand) => (
-                                    <CarouselItem key={brand.id} className="pl-4 basis-[10rem] md:basis-[12rem]">
-                                        <Link href={`/market/${brand.slug}`} className="group block h-full">
-                                            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white/50 backdrop-blur-sm border-black/5 h-full flex flex-col">
-                                                <CardContent className="p-4 text-center flex flex-col h-full">
-                                                    <div className="w-full flex justify-start mb-4">
-                                                        <div className="p-1.5 bg-black/5 rounded-lg">
-                                                            <ShoppingBag className="h-4 w-4 text-black/40" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="h-16 flex items-center justify-center my-4 flex-grow">
-                                                        <div className="relative h-full w-full max-w-[8rem]">
-                                                            <BrandLogo brand={brand} />
-                                                        </div>
-                                                    </div>
-                                                    <div className="mt-auto w-full">
-                                                        <p className="font-semibold text-sm truncate text-foreground">{brand.name}</p>
-                                                        <Separator className="my-2"/>
-                                                        <p className="font-extrabold text-primary text-xl">%
-                                                          {
-                                                            brand.donationRate.toLocaleString('en-US', {
-                                                              minimumFractionDigits: 0,
-                                                              maximumFractionDigits: 2,
-                                                            })
-                                                          }
-                                                        </p>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </Link>
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                        </Carousel>
-                        <div className="text-center mt-8">
-                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-white">
-                                <Link href="/market">
-                                    Tümünü Gör ({allEntityLists.length} Marka)
-                                </Link>
-                            </Button>
-                        </div>
-                    </div>
-                </ProductShowcaseSection>
+                    cta2="Daha Fazla Bilgi"
+                    cta2Href="/social-impact"
+                    imageUrl="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop"
+                    imageHint="contactless payment"
+                />
                 <ProductShowcaseSection
                     id="gonulluluk"
                     theme="dark"
@@ -402,35 +351,9 @@ export default function LoginPage() {
                     cta1Href="/volunteering"
                     cta2="Gönüllü Ol"
                     cta2Href="/login/selection?action=register"
-                >
-                    <div className="w-full max-w-7xl mx-auto px-4 mt-16">
-                        <Carousel
-                            plugins={[
-                                Autoplay({
-                                  delay: 3000,
-                                  stopOnInteraction: true,
-                                }),
-                              ]}
-                            opts={{ align: "start", loop: true }}
-                            className="w-full"
-                        >
-                            <CarouselContent className="-ml-4">
-                                {volunteeringOpportunities.slice(0, 10).map((opp) => (
-                                    <CarouselItem key={opp.id} className="pl-4 basis-full sm:basis-1/2 md:basis-[22rem]">
-                                        <VolunteeringCard opportunity={opp} />
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                        </Carousel>
-                        <div className="text-center mt-8">
-                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-white/20 text-white bg-transparent hover:bg-white/10 hover:text-white">
-                                <Link href="/volunteering">
-                                    Tümünü Gör ({volunteeringOpportunities.length} İlan)
-                                </Link>
-                            </Button>
-                        </div>
-                    </div>
-                </ProductShowcaseSection>
+                    imageUrl="https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?q=80&w=2070&auto=format&fit=crop"
+                    imageHint="volunteers meeting"
+                />
                 
                 <section id="kurumlar-carousel" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
