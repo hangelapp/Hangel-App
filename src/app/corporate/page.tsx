@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Zap } from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -16,8 +16,8 @@ const ProductSection = ({
     description, 
     cta1 = "Daha Fazla Bilgi", 
     cta1Href = "#",
-    cta2 = "Hemen Başvur", 
-    cta2Href = "/login/selection?action=register",
+    cta2, 
+    cta2Href,
     theme = 'light',
     imageUrl,
     imageHint,
@@ -49,9 +49,11 @@ const ProductSection = ({
                 <Link href={cta1Href} className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
                     {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
                 </Link>
-                <Link href={cta2Href} className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
-                    {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
-                </Link>
+                {cta2 && cta2Href && (
+                    <Link href={cta2Href} className="text-[#0066cc] hover:underline flex items-center text-lg font-medium">
+                        {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
+                    </Link>
+                )}
             </div>
         </div>
         
@@ -89,36 +91,70 @@ export default function CorporateShowcasePage() {
                 </div>
             </header>
 
-            {/* Belediyeler Bölümü */}
+            {/* Üniversiteler için */}
+            <ProductSection 
+                theme="dark"
+                title="Üniversiteler için."
+                subtitle="Kampüsün sosyal etki merkezi olun."
+                description="Hangel Kampüs Programı ile öğrenci kulüplerinizi dijitalleştirin, gönüllülüğü akademik krediye dönüştürün ve öğrencilerinize sosyal sorumluluk alanında kariyer fırsatları sunun. Etkiyi ölçün, raporlayın ve üniversitenizin toplumsal fayda liderliğini pekiştirin."
+                cta1Href="/campus-advantages"
+                cta2="İşbirliği Başlat"
+                cta2Href="/contact/universities"
+                imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                imageHint="university students collaborating"
+            />
+
+            {/* Liseler için */}
+            <ProductSection 
+                title="Liseler için."
+                subtitle="Geleceğin liderlerini bugünden yetiştirin."
+                description="Öğrenci kulüplerinizi Hangel platformuna taşıyarak sosyal sorumluluk projelerini hayata geçirmelerini sağlayın. Öğrencilerinize erken yaşta gönüllülük bilinci kazandırın, etki puanları ve rozetlerle başarılarını ödüllendirin."
+                cta1Href="/campus-advantages"
+                cta2="Bize Ulaşın"
+                cta2Href="/support"
+                imageUrl="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=2070&auto=format&fit=crop"
+                imageHint="high school students classroom"
+            />
+
+            {/* Belediyeler için */}
             <ProductSection 
                 theme="dark"
                 title="Belediyeler için."
-                subtitle="Şehrinizdeki sosyal etkiyi dijitalleştirin."
-                description="Vatandaş katılımını artırın, STK'ları güçlendirin ve akıllı şehir çözümlerini Hangel altyapısıyla entegre edin."
+                subtitle="Akıllı şehir, duyarlı toplum."
+                description="Vatandaş katılımını dijital araçlarla artırın. Şehrinizdeki STK'ları ve gönüllü ağlarını Hangel altyapısı ile güçlendirin. Sosyal yardım ve gönüllülük süreçlerini tek bir merkezden yöneterek kaynaklarınızı verimli kullanın."
+                cta1="Çözümleri Keşfet"
                 cta1Href="/contact/municipalities"
+                cta2="Partner Olun"
+                cta2Href="/contact/municipalities"
                 imageUrl="https://images.unsplash.com/photo-1577086664693-894d8405334a?q=80&w=2071&auto=format&fit=crop"
                 imageHint="modern city hall building architecture"
             />
 
-            {/* Üniversiteler Bölümü */}
+            {/* Hükümetler için */}
             <ProductSection 
-                title="Üniversiteler için."
-                subtitle="Kampüsün değişim lideri olun."
-                description="Öğrenci kulüplerinizi dijital yönetim araçlarıyla güçlendirin. Gönüllülüğü akademik kredi ve sertifikasyonla taçlandırın."
-                cta1Href="/contact/universities"
-                imageUrl="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
-                imageHint="university campus campus students"
+                title="Hükümetler için."
+                subtitle="Ulusal sosyal etki stratejisi."
+                description="Ülke genelindeki sivil toplum kapasitesini ölçün, sosyal ihtiyaç haritaları oluşturun ve kaynakları en doğru alanlara yönlendirin. Hangel'in sunduğu veri altyapısı ve teknolojik çözümlerle ulusal sosyal politikaları güçlendirin."
+                cta1="Veri Altyapısı"
+                cta1Href="/hangelassociation/projects/etki-atlasi"
+                cta2="Stratejik Ortaklık"
+                cta2Href="/support"
+                imageUrl="https://images.unsplash.com/photo-1561574564-8a5f8b7a6fae?q=80&w=2070&auto=format&fit=crop"
+                imageHint="government building flag"
             />
-
-            {/* Fonlar Bölümü */}
+            
+            {/* Bakanlıklar için */}
             <ProductSection 
                 theme="dark"
-                title="Uluslararası Fonlar."
-                subtitle="Ölçülebilir ve şeffaf yatırım."
-                description="Türkiye'deki sivil toplum ekosistemine yatırım yapın. SROI analizi ve şeffaflık endeksi ile etkinizi verilerle takip edin."
-                cta1Href="/contact/funds"
-                imageUrl="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
-                imageHint="world map data visualization digital"
+                title="Bakanlıklar için."
+                subtitle="Politika ve uygulama arasında dijital köprü."
+                description="Gençlik ve Spor Bakanlığı'ndan İçişleri Bakanlığı'na, sosyal politikalarınızı sahada uygulayacak dijital araçlar sunuyoruz. Gönüllülük yasası, istihdam protokolleri ve sosyal girişimcilik mevzuatı gibi yapısal dönüşümler için veri ve teknoloji desteği sağlıyoruz."
+                cta1="Mevzuat Çalışmaları"
+                cta1Href="/hangelassociation/legislation"
+                cta2="Bize Ulaşın"
+                cta2Href="/support"
+                imageUrl="https://images.unsplash.com/photo-1589943534882-620436d41c97?q=80&w=2070&auto=format&fit=crop"
+                imageHint="official meeting government"
             />
 
             <PublicFooter currentPageLabel="Kamu İşbirlikleri" />
