@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -34,10 +33,7 @@ export default function CompaniesPage() {
     };
     
     const countryOptions = ["Türkiye", "ABD", "Almanya", "İngiltere"];
-    const companySizeOptions = ["1-99", "100-499", "500-999", "1000-4999", "5000+"];
-    const industryOptions = ["Eğitim", "Teknoloji", "Sağlık", "Finans", "Kamu", "Perakende"];
-    const jobRoleOptions = ["Yönetici", "Bilgi İşlem", "Pazarlama", "Satış", "Finans", "İK"];
-    const inquiryOptions = ["Cihaz satın alma", "Uygulama geliştirme", "İşbirliği olanakları", "Diğer"];
+    const institutionTypeOptions = ["Belediye", "Bakanlık", "Üniversite", "Lise", "Şirket", "Diğer"];
 
     return (
         <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
@@ -50,7 +46,7 @@ export default function CompaniesPage() {
                 </div>
                 <h1 className="text-3xl font-bold font-headline">Kuruluşunuza özel bir plan oluşturalım.</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Öncelikle lütfen birkaç kısa soruyu yanıtlayın, ardından bir Hangel İş Geliştirme ekibi üyesi sizi arayarak size uygun ürünler, yazılımlar ve hizmetler hakkında bilgi verecektir.
+                    Öncelikle lütfen birkaç kısa soruyu yanıtlayın, ardından bir hangel iş geliştirme ekibi üyesi sizi arayarak size uygun ürünler, yazılımlar ve hizmetler hakkında bilgi verecektir.
                 </p>
             </div>
 
@@ -70,15 +66,23 @@ export default function CompaniesPage() {
                         </Alert>
                     )}
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="inquiry-topic">Girişim</Label>
-                                <Select required><SelectTrigger id="inquiry-topic"><SelectValue placeholder="Birini seçin" /></SelectTrigger>
-                                <SelectContent>{inquiryOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="institution-type">Kurum Türü</Label>
+                            <Select required>
+                                <SelectTrigger id="institution-type">
+                                    <SelectValue placeholder="Birini seçin" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {institutionTypeOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
 
+                        <div className="space-y-2">
+                            <Label htmlFor="purpose">İşbirliği Amacı</Label>
+                            <Textarea id="purpose" placeholder="Kurmak istediğiniz işbirliğinin amacını kısaca açıklayınız..." required />
+                        </div>
+                        
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="first-name">İlk adı</Label>
@@ -104,53 +108,24 @@ export default function CompaniesPage() {
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="country">Ülke</Label>
-                                <Select required><SelectTrigger id="country"><SelectValue placeholder="Birini seçin" /></SelectTrigger>
-                                <SelectContent>{countryOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                                <Select required>
+                                    <SelectTrigger id="country">
+                                        <SelectValue placeholder="Birini seçin" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {countryOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                    </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="company-name">Firma Adı</Label>
+                                <Label htmlFor="company-name">Firma/Kurum Adı</Label>
                                 <Input id="company-name" required />
                             </div>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="company-size">Şirket Büyüklüğü</Label>
-                                <Select><SelectTrigger id="company-size"><SelectValue placeholder="Birini seçin" /></SelectTrigger>
-                                <SelectContent>{companySizeOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="industry">Sanayi</Label>
-                                <Select><SelectTrigger id="industry"><SelectValue placeholder="Birini seçin" /></SelectTrigger>
-                                <SelectContent>{industryOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                        </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="job-role">İşlev</Label>
-                                <Select><SelectTrigger id="job-role"><SelectValue placeholder="Birini seçin" /></SelectTrigger>
-                                <SelectContent>{jobRoleOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="looking-for">Arıyorum</Label>
-                                <Select><SelectTrigger id="looking-for"><SelectValue placeholder="Birini seçin" /></SelectTrigger>
-                                <SelectContent><SelectItem value="info">Bilgi</SelectItem><SelectItem value="purchase">Satın Alma</SelectItem></SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
                         <div className="space-y-2">
-                            <Label htmlFor="comments">Yorumlar (isteğe bağlı)</Label>
+                            <Label htmlFor="comments">Ek Yorumlar (isteğe bağlı)</Label>
                             <Textarea id="comments" placeholder="İşbirliği yapmak istediğiniz alanlar, sorularınız veya önerileriniz..." />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="partner">Tercih Edilen Partner (isteğe bağlı)</Label>
-                            <Input id="partner" />
                         </div>
                         
                         <div className="space-y-4 pt-4">
@@ -163,9 +138,6 @@ export default function CompaniesPage() {
                              <Button type="submit" className="w-full">Gönder</Button>
                               <p className="text-xs text-muted-foreground">
                                 “Gönder” düğmesine tıklayarak, talebinizi karşılamak için bilgilerinizi yetkili ortaklarımız ve bayilerimizle paylaşmayı kabul ediyorsunuz. Bilgileriniz yalnızca gerekli operasyonel ve işlemsel iletişimler için kullanılacaktır.
-                            </p>
-                             <p className="text-xs text-muted-foreground pt-4 border-t">
-                                Hangel cihazları veya satın alma süreciyle ilgili sorular için, ilgili kurumlar <a href="mailto:kurumsal@hangel.org" className='underline'>kurumsal@hangel.org</a> adresine başvurabilirler.
                             </p>
                         </div>
                     </form>
