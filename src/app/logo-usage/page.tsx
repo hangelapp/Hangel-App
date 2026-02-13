@@ -1,6 +1,7 @@
+
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     Download, 
@@ -22,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -204,25 +205,37 @@ export default function LogoUsagePage() {
                                 </LogoDisplayCard>
                             </div>
                         </div>
-                        {/* Yazı Tipleri ve Renkler */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="space-y-6">
-                               <h3 className="text-2xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
-                               <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur.</p>
-                                <div className="grid grid-cols-1 gap-6">
-                                    <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                    <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
-                                </div>
+                        {/* Yazı Tipleri */}
+                        <div className="space-y-8">
+                            <h3 className="text-2xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
+                            <div className="max-w-4xl mx-auto">
+                                <Card className="rounded-3xl p-10 bg-white">
+                                    <CardHeader className="text-center p-0">
+                                        <CardTitle>Font Kullanım Yönergesi</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 p-0">
+                                         <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                         <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                    </CardContent>
+                                </Card>
                             </div>
-                             <div className="space-y-6">
-                                <h3 className="text-2xl font-bold tracking-tight text-center">Renk Paleti</h3>
-                                <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır.</p>
-                                <div className="grid grid-cols-2 gap-4">
-                                   <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
-                                   <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
-                                   <ColorCard hex="#f5f5f7" name="Açık Gri" onCopy={() => copyColor('#f5f5f7')} />
-                                   <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
-                                </div>
+                        </div>
+                        {/* Renkler */}
+                        <div className="space-y-8">
+                            <h3 className="text-2xl font-bold tracking-tight text-center">Renk Paleti</h3>
+                            <div className="max-w-4xl mx-auto">
+                               <Card className="rounded-3xl p-10 bg-white">
+                                <CardHeader className="text-center p-0">
+                                    <CardTitle>Renk Kullanım Yönergesi</CardTitle>
+                                    <CardDescription className="mt-2">Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 p-0">
+                                    <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
+                                    <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
+                                    <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
+                                    <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
+                                </CardContent>
+                               </Card>
                             </div>
                         </div>
                         {/* Kılavuzlar */}
@@ -252,8 +265,9 @@ export default function LogoUsagePage() {
                         <RuleCard title="Değişiklik Yasağı" icon={Ruler}>
                             <ul><li>Oranları bozulamaz</li><li>Renkleri değiştirilemez</li><li>Eğilemez</li><li>Üzerine efekt, gölge veya desen eklenemez</li><li>Başka grafik unsurlarla birleştirilemez</li><li>Logo sabittir. Yeniden yorumlanamaz.</li></ul>
                         </RuleCard>
-                        <RuleCard title="Logo Boyut ve Boşluk Kuralları" icon={Ruler}>
-                             <h4>Minimum Boyut</h4><ul><li><strong>Dijital:</strong> Minimum 120px genişlik</li><li><strong>Baskı:</strong> Minimum 25mm genişlik</li></ul><h4>Güvenli Alan</h4><p>Logonun etrafındaki minimum boşluk, "h" harfinin yüksekliği kadar olmalıdır. Bu alana metin, görsel veya başka bir grafik öğe yerleştirilemez.</p>
+                        <RuleCard title="Hiyerarşi Prensibi" icon={Ruler}>
+                             <h4>hangel logosu destekleyici marka unsuru olarak konumlandırılır.</h4>
+                             <p>Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır. Logo hiçbir koşulda en baskın görsel unsur olarak konumlandırılamaz.</p>
                         </RuleCard>
                         <RuleCard title="Ortak Markalama (Co-Branding)" icon={Handshake}>
                              <p>Ortak kampanya ve sponsorluk durumlarında logolar eşit ölçekte, yatay hizada ve aralarında minimum "h yüksekliği" kadar boşluk bırakılarak kullanılmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.</p>
