@@ -115,8 +115,8 @@ const ShowcaseCard = ({
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
         <div className="pt-8">
-          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.label}</h3>
-          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</p>
+          <h3 className={cn("font-semibold text-base", themeConfig.subtitleColor)}>{item.description}</h3>
+          <p className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.label}</p>
           <div className="mt-4">
              <span className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
@@ -296,7 +296,7 @@ export default function LogoPage() {
                         </div>
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {appArchitecture.map((item, index) => (
                                     <ShowcaseCard 
                                         key={item.href} 
@@ -308,7 +308,7 @@ export default function LogoPage() {
                         </div>
                          <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel Derneği Alt Markaları</h3>
-                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {associationArchitecture.map((item, index) => (
                                     <ShowcaseCard 
                                         key={index} 
@@ -429,7 +429,7 @@ export default function LogoPage() {
                 <Section className="text-left">
                     <div className="text-sm text-muted-foreground max-w-3xl space-y-4">
                         <p>
-                           hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
+                           hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
                         </p>
                          <p>
                             <strong>hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar. Marka, bir görselden ibaret değildir. Marka, bir taahhüttür.</strong>

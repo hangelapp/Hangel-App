@@ -87,20 +87,20 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
 );
 
 const appArchitecture = [
-    { href: "/volunteering", icon: 'HeartHandshake', label: "Yetenek bazlı gönüllülük platformu.", description: "hangel imece" },
-    { href: "/market", icon: 'HandCoins', label: "Alışverişle sosyal fayda yaratma modeli.", description: "hangel bağış" },
-    { href: "/admin/clubs", icon: 'School', label: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi.", description: "hangel clubs" },
-    { href: "/merchant", icon: 'Store', label: "Sosyal fayda odaklı markalar ve işletmeler.", description: "hangel marka" },
-    { href: "/ngo-onboarding", icon: 'Building2', label: "Sivil toplum kuruluşları için dijital dönüşüm araçları.", description: "hangel STK" },
-    { href: "/library", icon: 'Library', label: "Sosyal etki ve sivil toplum kaynak merkezi.", description: "hangel kütüphane" },
+    { href: "/volunteering", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
+    { href: "/market", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
+    { href: "/admin/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
+    { href: "/merchant", icon: 'Store', label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
+    { href: "/ngo-onboarding", icon: 'Building2', label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
+    { href: "/library", icon: 'Library', label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
 ];
 
 const associationArchitecture = [
-    { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Toplumsal sorunlara yenilikçi çözümler geliştirir.", description: "Sosyal İnovasyon Merkezi" },
-    { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "Sanatın birleştirici gücüyle farkındalık projeleri.", description: "hangel Sanat" },
-    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Dünya genelindeki sosyal girişimleri haritalar.", description: "Global Sosyal Girişim Atlası" },
-    { href: "/hangelassociation/workshop", icon: 'BookCopy', label: "Sosyal girişimciler için bilgi ve kaynak merkezi.", description: "Girişimcilik Kütüphanesi" },
-    { href: "/hangelassociation/workshop", icon: 'Users', label: "Küresel sorunlara kolektif çözümler üretir.", description: "Uluslararası Sosyal Girişimcilik Çalıştayı" },
+    { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
+    { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
+    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
+    { href: "/hangelassociation/workshop", icon: 'BookCopy', label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
+    { href: "/hangelassociation/workshop", icon: 'Users', label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
 ];
 
 const ShowcaseCard = ({
@@ -296,7 +296,7 @@ export default function LogoUsagePage() {
                         </div>
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {appArchitecture.map((item, index) => (
                                     <ShowcaseCard 
                                         key={item.href} 
@@ -308,7 +308,7 @@ export default function LogoUsagePage() {
                         </div>
                          <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel Derneği Alt Markaları</h3>
-                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {associationArchitecture.map((item, index) => (
                                     <ShowcaseCard 
                                         key={index} 
@@ -429,7 +429,7 @@ export default function LogoUsagePage() {
                 <Section className="text-left">
                     <div className="text-sm text-muted-foreground max-w-3xl space-y-4">
                         <p>
-                           hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
+                           hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
                         </p>
                          <p>
                             <strong>hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar. Marka, bir görselden ibaret değildir. Marka, bir taahhüttür.</strong>
