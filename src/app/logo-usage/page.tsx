@@ -11,6 +11,8 @@ import {
     Type,
     Copy,
     DownloadCloud,
+    Star,
+    CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -19,6 +21,21 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsTrigger, TabsList, TabsContent } from '@/components/ui/tabs';
+import { Accordion, AccordionTrigger, AccordionItem, AccordionContent } from '@/components/ui/accordion';
+
+const XIcon = (props: React.ComponentProps<'svg'>) => (
+    <svg
+      role="img"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+);
+
 
 const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
     <div className="border rounded-2xl bg-white/50 text-center flex flex-col">
@@ -88,30 +105,30 @@ export default function LogoUsagePage() {
             </header>
 
             <main className="pt-24">
-                 <section className="container mx-auto px-4 pt-16 pb-20 text-center space-y-6">
+                 <section className="container mx-auto px-4 pt-16 pb-24 text-center space-y-6">
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
                        Dayanışmayı Görünür Kılalım.
                     </h1>
-                    <div className="text-lg md:text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed space-y-4">
-                        <p>hangel logosu, tüm Sivil Toplum Kuruluşlarına eşit mesafede, kolektif iyiliğin ve dayanışmanın simgesidir.</p>
-                        <p>Bu simge, sadece bir görsel kimlik değil; hepimizin ortak değeri, toplumsal sorunlara karşı omuz omuza verdiğimiz inancı temsil eder. Logomuzun doğru ve tutarlı kullanımı, bu ortak iradenin görünür hale gelmesini ve birlikte attığımız adımların daha güçlü duyulmasını sağlar. Siz değerli paydaşlarımız, logomuzu her kullandığınızda, aslında bir dayanışma zincirine yeni bir halka eklemiş oluyorsunuz.</p>
-                        <p>Bu sayfada logoyu farklı formatlarda indirebilir, kullanım kurallarını inceleyebilir ve ilham verici örnekleri keşfedebilirsiniz. Gelin, kolektif umudu birlikte büyütelim.</p>
-                    </div>
+                    <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
+                        hangel logosu yalnızca bir görsel kimlik değil; ortak değerlerimizin, birlikte üretme inancımızın ve toplumsal sorunlara karşı omuz omuza verdiğimiz mücadelenin simgesidir. Logomuzu doğru kullanarak bu ortak iradenin daha güçlü duyulmasına katkı sağlayın.
+                    </p>
                 </section>
 
-                <section className="container mx-auto px-4 mb-24 space-y-16">
-                    {/* Media Kit Section */}
-                    <div className='space-y-12'>
-                        <h2 className="text-3xl font-bold text-center tracking-tight">Medya Kiti</h2>
-                        
-                        {/* Logos Subsection */}
-                        <div className='space-y-6'>
-                            <h3 className="text-xl font-semibold border-b pb-2">Logolar</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <section className="container mx-auto px-4 mb-24">
+                     <Tabs defaultValue="logos" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-3xl mx-auto h-auto md:h-14 mb-12">
+                            <TabsTrigger value="logos" className="h-14 text-sm"><Palette className="mr-2"/>Logolar</TabsTrigger>
+                            <TabsTrigger value="fonts" className="h-14 text-sm"><Type className="mr-2"/>Yazı Tipleri</TabsTrigger>
+                            <TabsTrigger value="colors" className="h-14 text-sm"><Palette className="mr-2"/>Renkler</TabsTrigger>
+                             <TabsTrigger value="guide" className="h-14 text-sm"><FileText className="mr-2"/>Kimlik Kılavuzu</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="logos">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('birincil-logo.png')}>
                                     <HangelLogo className="text-5xl text-primary" />
                                 </LogoDisplayCard>
-                                <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
+                                 <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
                                     <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
                                 </LogoDisplayCard>
                                 <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (PNG) (Zorunlu hallerde)" onDownload={() => handleDownload('beyaz-logo.png')}>
@@ -125,109 +142,109 @@ export default function LogoUsagePage() {
                                    </div>
                                 </LogoDisplayCard>
                             </div>
-                        </div>
+                        </TabsContent>
 
-                        {/* Fonts Subsection */}
-                        <div className='space-y-6'>
-                           <h3 className="text-xl font-semibold border-b pb-2">Yazı Tipleri</h3>
-                            <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
-                                <CardHeader className="text-center p-0">
-                                    <CardTitle>Font Kullanım Yönergesi</CardTitle>
-                                </CardHeader>
-                                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-0">
-                                    <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                    <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
-                                    <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Colors Subsection */}
-                        <div className='space-y-6'>
-                            <h3 className="text-xl font-semibold border-b pb-2">Renkler</h3>
-                             <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
-                               <CardHeader className="text-center p-0">
-                                   <CardTitle>Renk Kullanım Yönergesi</CardTitle>
+                        <TabsContent value="fonts">
+                           <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                               <CardHeader className="text-center p-0 mb-8">
+                                   <CardTitle>Font Kullanım Yönergesi</CardTitle>
                                </CardHeader>
-                               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 p-0">
+                               <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 p-0">
+                                   <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                   <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                   <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                               </CardContent>
+                           </Card>
+                        </TabsContent>
+                        
+                        <TabsContent value="colors">
+                             <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                               <CardHeader className="text-center p-0 mb-8">
+                                   <CardTitle>Renk Kullanım Yönergesi</CardTitle>
+                                    <CardDescription>Renkler yalnızca belirtilen HEX değerleriyle kullanılmalıdır.</CardDescription>
+                               </CardHeader>
+                               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 p-0">
                                    <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
                                    <ColorCard hex="#1f1f1f" name="Gece Siyahı" onCopy={() => copyColor('#1f1f1f')} />
                                    <ColorCard hex="#f1f1f1" name="Açık Gri" onCopy={() => copyColor('#f1f1f1')} />
                                    <ColorCard hex="#042654" name="Lacivert" onCopy={() => copyColor('#042654')} />
                                </CardContent>
                            </Card>
-                        </div>
-                    </div>
-
-                    {/* Brand Kit & Guide Section */}
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <Card className="bg-white rounded-3xl p-10 shadow-lg border text-center">
-                             <CardHeader>
-                                <CardTitle>hangel Canva Marka Kiti</CardTitle>
-                                <CardDescription>Logo kullanımları, renk pantoneleri, yazı fontları, görseller için tıklatınız ve tasarımlarında kulanınız.</CardDescription>
-                             </CardHeader>
-                             <CardContent>
-                                 <Button asChild>
-                                     <a href="#" target="_blank" rel="noopener noreferrer">Canva Marka Kiti için tıklayınız</a>
-                                 </Button>
-                             </CardContent>
-                        </Card>
-                        <Card className="bg-white rounded-3xl text-center p-12 space-y-6 shadow-xl">
-                           <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
-                           <div className="space-y-1">
-                               <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
-                               <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
-                           </div>
-                           <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
-                                PDF Olarak İndir
-                           </Button>
-                       </Card>
-                    </div>
-
-                    {/* Usage Rules Section */}
-                    <div className="prose prose-sm md:prose-base max-w-4xl mx-auto text-foreground/80 pt-16">
-                        <h3>hangel marka kullanım izni</h3>
-                        <p>hangel’in varlıklarını kullanan kişi ve kurumlar yalnızca tarafımızca belirlenen ve sitemizde bulunan logoları ve ekran görüntülerini kullanmalı ve bu yönergeleri izlemelidir.</p>
-                        <p>Yalnızca hangel’in varlıklarını herhangi bir yayında, radyoda, ev dışı reklamda veya 8,5 x 11 inçten (A4 boyutu) daha büyük baskıda kullanmayı planlayanların izin istemesi gerekir. Yazılı olarak talepte bulunulan bu izin ekinde logoyu nasıl kullanmayı planladığınıza dair bir taslak içermelidir.</p>
+                        </TabsContent>
                         
-                        <h3>hangel markasını kullanma</h3>
-                        <p>hangel markasını markanızla dengeleyin. Ne kendi markanızadan büyük ne de küçük olmalı.</p>
-                        <p>hangel markasını şu şekilde temsil etmekten kaçının:</p>
-                        <ul>
-                            <li>Ortaklık, sponsorluk veya temsilciliği eklinde,</li>
-                            <li>Bir senaryo veya hikaye örgüsünün parçası olarak hangel markasını kullanmak için yazılı izne ihtiyacınız var.</li>
-                        </ul>
-                        
-                        <h3>hangel kelimesini tutarlı tutun</h3>
-                        <p>hangel markasını şu şekilde temsil etmekten kaçının:</p>
-                        <ul>
-                            <li>hangel ‘da “h” harfini büyük harfle yazmayın ve etrafındaki içerikle aynı yazı tipi ve boyutunu kullanın.</li>
-                            <li>hangel API’lerini kullanan veya başka şekillerde hangel ile uyumlu veya ilgili olan bir uygulama, web sitesi veya ürün ya da hizmet sunuyorsanız, hangel’e yalnızca uygulamanızın “hangel için” olduğunu veya kampanyanızın adının “hangel ‘da” olduğunu açıklayıcı bir şekilde söylemek için kullanabilirsiniz.</li>
-                            <li>hangel kelimesini başka bir dile çevirmeyin, kısaltmayın, farklı bir alfabe karakterleri kullanmayın.</li>
-                            <li>“han” veya “gel”ı kendi markanızla birleştirmeyin.</li>
-                            <li>hangel markasının hiçbir bölümünü bir STK veya şirket adı, diğer ticari markalar veya genel terimlerle birleştirmeyin.</li>
-                        </ul>
-
-                        <h3>hangel’i diğer sosyal ağlarda kullanımı</h3>
-                        <ul>
-                           <li>hangel’de yer alana STK’lar, Markalar ve kullanıcılar sadece kendi alanları ile diğer sosyal medya alanlarında bahsedebilirler.</li>
-                           <li>Farklı marka, kullnıcı ve STK’ların görsellerini, verilerini ve/veya bilgilerini kullanım telifine sahip ilgili kişi ve kurumlardan izin almadıkça kullanmayın.</li>
-                           <li>hangel, Facebook, X.com veya diğer sosyal medya şirketleriyle yapılacak bir televizyon reklamında anılabilir.</li>
-                           <li>Genel bir “Bizi takip edin…” harekete geçirici mesajı olmadığı sürece, ortağız, birlikteyiz vb. ifadeler ile bahsetmeyin.</li>
-                           <li>Eğer hangel kelimesini içeren bir hashtag oluşturduysanız, o hashtag üzerinde hak elde etmeye çalışmamalısınız.</li>
-                        </ul>
-                        
-                        <h3>hangel markasının TV ve filmde kullanımı</h3>
-                        <p>hangel’ı yayıncılık alanında kullanırken en önemli şey, topluluğumuzdaki marka ve STK’ların içeriklerine uygun atıflarda bulunmaktır.</p>
-                        <p>Bir hangel markası veta STK’sı ile çalışıyorsanız, ilgiliden lütfen hangel profilinizi ekran görüntülerini kullanmak için izin alın.</p>
-                        <p>hangel platformundaki tüm STK ve markaların marka kullanım izinleri ilgililerine aittir.</p>
-
-
-                        <h3>Yasal</h3>
-                        <p>hangel, fikri mülkiyetinin geliştirilmesi ve korunması için önemli kaynaklar ayırır. hangel, ticari markalarının ve logolarının dünya çapında tescilini talep etmenin yanı sıra, ticari markalarını kötüye kullanan kişilere karşı haklarını uygular.</p>
-                        <p>hangel’nın ticari markaları hangel’a aittir ve yalnızca bu yönergelerde belirtildiği şekilde veya hangel’lin izniyle kullanılabilir. Herhangi bir ticari marka, hizmet markası, şirket adı, ticari ad, kullanıcı adı veya alan adı kaydı dahil olmak üzere herhangi bir hangel ticari markasını kullanamaz, tescil ettiremez veya başka bir şekilde hak iddia edemezsiniz. Herhangi bir ticari markayı, hangel’lin ticari markalarına kafa karıştırıcı derecede benzer veya onları zayıflatacak şekilde, ticari marka olarak veya ticari markanın herhangi bir parçası olarak kullanmamalı veya hak iddia etmemelisiniz. hangel’lin ticari markalarını hangel’lin Hizmet Şartları veya Topluluk Standartları ile tutarsız olacak herhangi bir şey için kullanmayın .</p>
-                        <p>hangel’nın ticari markalarını kullanma iznini herhangi bir zamanda iptal edebiliriz. hangel markasıyla tutarsız olduğunu düşündüğü içeriklerin onayını vermeme hakkını saklı tutar.</p>
-                    </div>
+                        <TabsContent value="guide">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <Card className="bg-white rounded-3xl p-10 shadow-lg border text-center">
+                                    <CardHeader>
+                                        <CardTitle>hangel Canva Marka Kiti</CardTitle>
+                                        <CardDescription>Logo kullanımları, renk pantoneleri, yazı tipleri, görseller için tıklatınız ve tasarımlarında kulanınız.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Button asChild>
+                                            <a href="#" target="_blank" rel="noopener noreferrer">Canva Marka Kiti için tıklayınız</a>
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                                <Card className="bg-white rounded-3xl text-center p-12 space-y-6 shadow-xl">
+                                <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
+                                <div className="space-y-1">
+                                    <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
+                                    <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
+                                </div>
+                                <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
+                                        PDF Olarak İndir
+                                </Button>
+                            </Card>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </section>
+                
+                {/* Usage Rules Section */}
+                <section className="max-w-4xl mx-auto px-4 mb-24">
+                     <Accordion type="single" collapsible className="w-full space-y-4">
+                        <AccordionItem value="item-1" className="border rounded-2xl px-6 bg-white shadow-sm">
+                            <AccordionTrigger className="hover:no-underline py-6 font-bold text-lg">Marka Kullanım İzni ve Genel Kurallar</AccordionTrigger>
+                            <AccordionContent className="pt-2 border-t">
+                                <div className="prose prose-sm max-w-none text-muted-foreground py-4">
+                                     <p>hangel’in varlıklarını kullanan kişi ve kurumlar yalnızca tarafımızca belirlenen ve sitemizde bulunan logoları ve ekran görüntülerini kullanmalı ve bu yönergeleri izlemelidir. Yalnızca hangel’in varlıklarını herhangi bir yayında, radyoda, ev dışı reklamda veya A4 boyutundan daha büyük baskıda kullanmayı planlayanların izin istemesi gerekir. Yazılı olarak talepte bulunulan bu izin ekinde logoyu nasıl kullanmayı planladığınıza dair bir taslak içermelidir.</p>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-2" className="border rounded-2xl px-6 bg-white shadow-sm">
+                            <AccordionTrigger className="hover:no-underline py-6 font-bold text-lg">İsim ve İkon Kullanımı</AccordionTrigger>
+                            <AccordionContent className="pt-2 border-t">
+                                <div className="prose prose-sm max-w-none text-muted-foreground py-4">
+                                    <ul>
+                                        <li>"hangel" kelimesinde "h" harfini büyük yazmayın.</li>
+                                        <li>hangel API’lerini kullanan bir ürün sunuyorsanız, yalnızca açıklayıcı bir ifade ile “hangel için” ya da “hangel’da” şeklinde kullanabilirsiniz.</li>
+                                        <li>"han" veya "gel" ifadelerini kendi markanızla birleştirmeyin.</li>
+                                        <li>hangel markasının hiçbir bölümünü bir şirket adı, diğer ticari markalar ya da genel terimlerle birleştirmeyin.</li>
+                                        <li>Sosyal medya hesapları veya içerik başlıkları, resmi bir hangel hesabı gibi algılanmamalıdır.</li>
+                                    </ul>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-3" className="border rounded-2xl px-6 bg-white shadow-sm">
+                            <AccordionTrigger className="hover:no-underline py-6 font-bold text-lg">Logo Kullanım Kuralları</AccordionTrigger>
+                            <AccordionContent className="pt-2 border-t">
+                                <div className="prose prose-sm max-w-none text-muted-foreground py-4">
+                                    <p><strong>Denge:</strong> hangel logosu, kendi markanızla dengeli kullanılmalı; ne daha büyük ne de daha küçük olmalıdır.</p>
+                                    <p><strong>Boşluk Kuralı:</strong> Logonun etrafındaki minimum boşluk, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alana metin veya başka bir görsel öğe yerleştirmeyin.</p>
+                                    <p><strong>Değişiklik Yapmayın:</strong> Logonun oranları, renkleri veya yapısı değiştirilemez. Üzerine efekt veya gölge eklenemez.</p>
+                                    <p><strong>Hiyerarşi:</strong> Logo, ana marka sizin markanız olacak şekilde, destekleyici bir unsur olarak konumlandırılmalıdır.</p>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                         <AccordionItem value="item-4" className="border rounded-2xl px-6 bg-white shadow-sm">
+                            <AccordionTrigger className="hover:no-underline py-6 font-bold text-lg">Yasal Sorumluluklar</AccordionTrigger>
+                            <AccordionContent className="pt-2 border-t">
+                                <div className="prose prose-sm max-w-none text-muted-foreground py-4">
+                                    <p>hangel, fikri mülkiyetinin geliştirilmesi ve korunması için önemli kaynaklar ayırır. hangel'in ticari markaları yalnızca bu yönergelerde belirtildiği şekilde veya hangel’in yazılı izniyle kullanılabilir. hangel ticari markalarını kafa karıştırıcı derecede benzer veya zayıflatacak şekilde kullanamaz, tescil ettiremez veya hak iddia edemezsiniz. hangel, marka kullanım iznini dilediği zaman iptal etme ve marka değerleriyle tutarsız bulduğu içeriklere onay vermeme hakkını saklı tutar.</p>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
                 </section>
             </main>
 
