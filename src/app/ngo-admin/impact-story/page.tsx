@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay"
 import { 
     TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { user } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 // --- Story Data ---
 export type ImpactSlide = {
@@ -137,20 +138,20 @@ export const userImpactStories: ImpactSlide[] = [
     },
     {
         id: 2,
-        title: \`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺ Bağış Yaptın\`,
+        title: user.stats.totalDonation.toLocaleString('tr-TR') + ' ₺ Bağış Yaptın',
         subtitle: "Finansal Destek",
-        content: \`Yaptığın alışverişlerle ${user.stats.mostSupportedNgo} gibi kurumlara destek oldun.\`,
-        stat: \`₺${user.stats.totalDonation.toLocaleString('tr-TR')}\`,
+        content: 'Yaptığın alışverişlerle ' + user.stats.mostSupportedNgo + ' gibi kurumlara destek oldun.',
+        stat: '₺' + user.stats.totalDonation.toLocaleString('tr-TR'),
         icon: Heart,
         image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
         imageHint: "donation concept"
     },
     {
         id: 3,
-        title: \`${user.stats.volunteerHours} Saat Gönüllülük Yaptın\`,
+        title: user.stats.volunteerHours + ' Saat Gönüllülük Yaptın',
         subtitle: "Zamanın Değeri",
-        content: \`En çok ${user.stats.mostActiveVolunteerArea} alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.\`,
-        stat: \`${user.stats.volunteerHours} Saat\`,
+        content: 'En çok ' + user.stats.mostActiveVolunteerArea + ' alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.',
+        stat: user.stats.volunteerHours + ' Saat',
         icon: HeartHandshake,
         image: "https://images.unsplash.com/photo-1618423417959-c8c7f9c73331?q=80&w=1974&auto=format&fit=crop",
         imageHint: "volunteers hands"
@@ -219,7 +220,7 @@ function StoryViewer() {
     const [current, setCurrent] = useState(0)
     const [count, setCount] = useState(0)
     
-    const plugin = React.useRef(
+    const plugin = useRef(
         Autoplay({ delay: STORY_DURATION, stopOnInteraction: true, stopOnMouseEnter: true })
     )
 
@@ -250,6 +251,11 @@ function StoryViewer() {
         });
 
     }, [api]);
+    
+    useEffect(() => {
+        // This effect will run when the current slide changes, restarting the animation.
+        // It's a bit of a hack to force a re-render of the progress bar animation.
+    }, [current]);
 
     const prevSlide = useCallback(() => api?.scrollPrev(), [api]);
     const nextSlide = useCallback(() => api?.scrollNext(), [api]);
@@ -258,16 +264,17 @@ function StoryViewer() {
     if (!currentSlide) return <div className="h-full w-full bg-background" />;
 
     return (
-        <div className="relative w-full h-full bg-background md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
+        <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
             {/* Progress Bars */}
-            <div className="absolute top-4 inset-x-4 flex gap-1 z-50" key={current}>
+            <div className="absolute top-4 inset-x-4 flex gap-1 z-50">
                 {Array.from({ length: count }).map((_, idx) => (
-                    <div key={idx} className="h-0.5 flex-1 bg-muted rounded-full overflow-hidden">
+                    <div key={idx} className="h-0.5 flex-1 bg-black/10 rounded-full overflow-hidden">
                         <div
                             className={cn(
-                                "h-full bg-primary",
+                                "h-full bg-black/80",
                                 idx === current - 1 && "animate-story-progress"
                             )}
+                            style={{ animationDuration: `${STORY_DURATION}ms` }}
                         />
                     </div>
                 ))}
@@ -276,14 +283,20 @@ function StoryViewer() {
             {/* Header */}
             <div className="absolute top-8 inset-x-4 px-2 flex justify-between items-center z-50 text-foreground">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center border shadow-sm">
-                        <HangelLogo className="text-lg text-primary" />
-                    </div>
+                     <Link href={category === 'user' ? '/profile' : '/about'}>
+                        <div className="w-10 h-10 rounded-full bg-white/50 backdrop-blur-md flex items-center justify-center border shadow-sm">
+                           {category === 'user' ? (
+                                <Image src={user.avatarUrl} alt={user.name} width={40} height={40} className="rounded-full object-cover" />
+                           ) : (
+                                <HangelLogo className="text-lg text-primary" />
+                           )}
+                        </div>
+                    </Link>
                     <div className="text-left">
                         <p className="font-bold text-xs">{currentSlide.subtitle}</p>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" className="text-foreground hover:bg-background/50 rounded-full h-10 w-10 backdrop-blur-md bg-background/20" onClick={handleClose}>
+                <Button variant="ghost" size="icon" className="text-foreground hover:bg-black/10 rounded-full h-10 w-10 backdrop-blur-md bg-white/20" onClick={handleClose}>
                     <X className="h-6 w-6" />
                 </Button>
             </div>
@@ -294,7 +307,7 @@ function StoryViewer() {
                         const CurrentIcon = slide.icon;
                         return (
                             <CarouselItem key={slide.id}>
-                                <div className="w-full h-full flex flex-col bg-background">
+                                <div className="w-full h-full flex flex-col bg-white">
                                     <div className="relative flex-1 w-full min-h-0">
                                         <Image
                                             src={slide.image}
@@ -305,7 +318,7 @@ function StoryViewer() {
                                             data-ai-hint={slide.imageHint}
                                         />
                                     </div>
-                                    <div className="p-8 md:p-10 text-foreground bg-background/80 backdrop-blur-lg border-t">
+                                    <div className="p-8 md:p-10 text-foreground bg-white">
                                         <div className="animate-in fade-in-0 slide-in-from-bottom-5 duration-700">
                                             <div className="w-14 h-14 rounded-2xl bg-muted border flex items-center justify-center text-primary mb-5">
                                                 <CurrentIcon className="h-7 w-7" />
