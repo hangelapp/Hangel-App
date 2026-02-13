@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay"
 import { 
     TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
     ShoppingBag, Leaf, Megaphone
@@ -219,10 +218,6 @@ function StoryViewer() {
     const [api, setApi] = useState<CarouselApi>()
     const [current, setCurrent] = useState(0)
     const [count, setCount] = useState(0)
-    
-    const plugin = useRef(
-        Autoplay({ delay: STORY_DURATION, stopOnInteraction: true, stopOnMouseEnter: true })
-    )
 
     const stories: ImpactSlide[] = React.useMemo(() => {
         switch (category) {
@@ -240,6 +235,14 @@ function StoryViewer() {
     
     const handleClose = useCallback(() => router.back(), [router]);
 
+    const handleAnimationEnd = () => {
+        if (current === count) {
+            handleClose();
+        } else {
+            api?.scrollNext();
+        }
+    };
+
     const prevSlide = useCallback(() => {
         api?.scrollPrev()
     }, [api]);
@@ -253,15 +256,15 @@ function StoryViewer() {
           return;
         }
     
-        const onSelect = () => {
+        const onSelect = (api: CarouselApi) => {
           setCurrent(api.selectedScrollSnap() + 1);
         };
     
-        setCount(api.scrollSnapList().length);
-        setCurrent(api.selectedScrollSnap() + 1);
-    
         api.on("select", onSelect);
         api.on("reInit", onSelect);
+        
+        setCount(api.scrollSnapList().length);
+        setCurrent(api.selectedScrollSnap() + 1);
     
         return () => {
           api.off("select", onSelect);
@@ -273,18 +276,20 @@ function StoryViewer() {
     if (!currentSlide) return <div className="h-full w-full bg-background" />;
 
     return (
-        <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
+        <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col">
             {/* Progress Bars */}
             <div className="absolute top-4 inset-x-4 flex gap-1 z-50">
                 {Array.from({ length: count }).map((_, idx) => (
                     <div key={idx} className="h-0.5 flex-1 bg-black/10 rounded-full overflow-hidden">
                         <div
-                            key={current}
+                            key={current} // Using key to re-mount and restart animation
                             className={cn(
                                 "h-full bg-white",
+                                idx < current - 1 && "w-full",
                                 idx === current - 1 && "animate-story-progress"
                             )}
                             style={{ animationDuration: `${STORY_DURATION}ms` }}
+                            onAnimationEnd={handleAnimationEnd}
                         />
                     </div>
                 ))}
@@ -311,7 +316,7 @@ function StoryViewer() {
                 </Button>
             </div>
             
-            <Carousel setApi={setApi} plugins={[plugin.current]} className="w-full h-full">
+            <Carousel setApi={setApi} className="w-full h-full">
                 <CarouselContent>
                     {stories.map((slide) => {
                         const CurrentIcon = slide.icon;
@@ -327,6 +332,9 @@ function StoryViewer() {
                                             priority={slide.id === stories[0].id}
                                             data-ai-hint={slide.imageHint}
                                         />
+                                        {/* Invisible click areas for navigation */}
+                                        <div className="absolute left-0 top-0 h-full w-1/2 z-20" onClick={prevSlide}></div>
+                                        <div className="absolute right-0 top-0 h-full w-1/2 z-20" onClick={nextSlide}></div>
                                     </div>
                                     <div className="p-8 md:p-10 text-foreground bg-white">
                                         <div className="animate-in fade-in-0 slide-in-from-bottom-5 duration-700">
@@ -349,8 +357,6 @@ function StoryViewer() {
                         )
                     })}
                 </CarouselContent>
-                 <CarouselPrevious onClick={prevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
-                 <CarouselNext onClick={nextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 z-40 h-10 w-10 bg-black/20 text-white border-none hover:bg-black/40" />
             </Carousel>
         </div>
     );
@@ -367,4 +373,3 @@ export default function ImpactStoryPage() {
         </div>
     );
 }
-
