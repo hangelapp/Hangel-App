@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,170 +7,196 @@ import {
   Search,
   ChevronRight,
   Mail,
-  Bot
+  Bot,
+  User,
+  Building,
+  Store,
+  School,
+  HelpCircle,
+  Settings,
+  Library,
+  Video,
+  Users as CommunityIcon
 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import Link from 'next/link';
-import { helpTopics, ngoFaqArticles as popularArticles, user, badges } from '@/lib/data';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { helpTopics } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import { HangelLogo } from '@/components/icons';
+import Image from 'next/image';
 
-export default function SupportPage() {
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredHelpTopics = useMemo(() => {
-        if (!searchTerm.trim()) {
-            return helpTopics;
-        }
-        const lowercased = searchTerm.toLowerCase();
-        return helpTopics.filter(topic =>
-            topic.title.toLowerCase().includes(lowercased) ||
-            topic.description.toLowerCase().includes(lowercased) ||
-            topic.subtopics.some(sub => sub.title.toLowerCase().includes(lowercased) || sub.content.toLowerCase().includes(lowercased))
-        );
-    }, [searchTerm]);
-
-    const filteredFaqArticles = useMemo(() => {
-        if (!searchTerm.trim()) {
-            return popularArticles;
-        }
-        const lowercased = searchTerm.toLowerCase();
-        return popularArticles.filter(article =>
-            article.title.toLowerCase().includes(lowercased)
-        );
-    }, [searchTerm]);
-
-  return (
-    <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold font-headline">Destek Merkezi</h1>
-        <p className="mt-2 text-muted-foreground">Size nasıl yardımcı olabiliriz?</p>
-      </div>
-
-      <div className="relative mx-auto max-w-lg">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input 
-            placeholder="Yardım konularında ara..." 
-            className="pl-12 h-12 text-base" 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <h2 className="text-xl font-bold mb-4">Yardım Konuları</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredHelpTopics.map((topic) => {
-                // @ts-ignore
-                const Icon = Icons[topic.icon] || Icons.HelpCircle;
-                return (
-                    <Link href={`/support/${topic.slug}`} key={topic.slug} className="block">
-                        <Card className="h-full hover:border-primary hover:bg-primary/5 transition-all">
-                            <CardHeader className="flex flex-row items-center gap-4">
-                                <Icon className="h-8 w-8 text-primary" />
-                                <div>
-                                    <CardTitle>{topic.title}</CardTitle>
-                                    <CardDescription>{topic.description}</CardDescription>
-                                </div>
-                            </CardHeader>
-                        </Card>
-                    </Link>
-                );
-            })}
+const CategoryLink = ({ href, icon, label }: { href: string; icon: React.ElementType; label: string }) => (
+    <Link href={href} className="group flex flex-col items-center gap-2 text-center">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+            <Icon className="h-8 w-8 text-primary" />
         </div>
-        {filteredHelpTopics.length === 0 && <p className="p-4 text-center text-muted-foreground">Aramanızla eşleşen konu bulunamadı.</p>}
-      </div>
-      
-      <div>
-        <h2 className="text-xl font-bold mb-4">Sıkça Sorulan Sorular</h2>
-        <Card>
-            <CardContent className='p-0'>
-                <Accordion type="single" collapsible className="w-full">
-                  {filteredFaqArticles.map((article, index) => (
-                      <AccordionItem value={`faq-${index}`} key={article.title} className="px-4">
-                          <AccordionTrigger className="py-4 text-sm font-medium hover:no-underline text-left">
-                               {article.title}
-                          </AccordionTrigger>
-                          <AccordionContent>
-                              <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground pt-2 space-y-4">
-                                <p>Bu sorunun cevabı yakında burada olacak. Anlayışınız için teşekkür ederiz.</p>
-                                <div className="mt-6 border-t pt-4 text-center">
-                                    <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
-                                    <div className="flex justify-center gap-2">
-                                        <Button variant="outline" size="sm">Evet</Button>
-                                        <Button variant="outline" size="sm">Hayır</Button>
-                                    </div>
-                                </div>
-                              </div>
-                          </AccordionContent>
-                      </AccordionItem>
-                  ))}
-                   {filteredFaqArticles.length === 0 && <p className="p-4 text-center text-muted-foreground">Aramanızla eşleşen soru bulunamadı.</p>}
-                </Accordion>
+        <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">{label}</span>
+    </Link>
+);
+
+const QuickActionCard = ({ title, href }: { title: string; href: string }) => (
+    <Link href={href} className="block">
+        <Card className="rounded-[1.25rem] bg-muted/50 hover:bg-muted transition-all h-full">
+            <CardContent className="p-6 flex items-center justify-between">
+                <span className="font-semibold text-lg">{title}</span>
+                <ChevronRight className="h-6 w-6 text-muted-foreground" />
             </CardContent>
         </Card>
-      </div>
+    </Link>
+);
 
-      <div className="text-center space-y-3 pt-4 border-t">
-        <h3 className="text-lg font-semibold">Aradığınızı bulamadınız mı?</h3>
-        <p className="text-muted-foreground text-sm">Destek ekibimiz size yardımcı olmak için burada.</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button size="lg">Destek Talebi Oluştur</Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Destek Talebi Oluştur</DialogTitle>
-                      <DialogDescription>
-                        Aklınıza takılanları, önerilerinizi veya yaşadığınız sorunları bize iletin. Ekibimiz en kısa sürede size geri dönüş yapacaktır.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="support-subject">Konu</Label>
-                          <Select>
-                            <SelectTrigger id="support-subject">
-                              <SelectValue placeholder="Bir konu seçin..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="technical">Teknik Sorun</SelectItem>
-                              <SelectItem value="payment">Ödeme ve Bağışlar</SelectItem>
-                              <SelectItem value="volunteer">Gönüllülük Süreçleri</SelectItem>
-                              <SelectItem value="suggestion">Öneri ve Geri Bildirim</SelectItem>
-                              <SelectItem value="other">Diğer</SelectItem>
-                            </SelectContent>
-                          </Select>
+export default function SupportPage() {
+    const { toast } = useToast();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const popularArticles = helpTopics.flatMap(t => t.subtopics).slice(0,3);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchTerm.trim()) {
+            toast({ variant: 'destructive', title: 'Arama terimi boş olamaz.'});
+            return;
+        }
+        toast({ title: 'Arama Yapılıyor...', description: `"${searchTerm}" için sonuçlar getiriliyor.` });
+    };
+
+  return (
+    <div className="bg-[#f5f5f7] min-h-screen">
+      <main className="container mx-auto px-4 py-12 md:py-20 space-y-20">
+        
+        {/* Hero Section */}
+        <section className="text-center space-y-6">
+            <HangelLogo className="text-6xl mx-auto" />
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">hangel Destek</h1>
+            <p className="text-xl md:text-2xl text-muted-foreground font-medium">Yardıma mı ihtiyacınız var? Buradan başlayın.</p>
+        </section>
+
+        {/* Categories Section */}
+        <section className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-8 max-w-4xl mx-auto">
+            <CategoryLink href="/support/bireysel-kullanicilar" icon={User} label="Bireysel" />
+            <CategoryLink href="/support/stk-yoneticileri" icon={Building} label="STK'lar" />
+            <CategoryLink href="/support/marka-yoneticileri" icon={Store} label="Markalar" />
+            <CategoryLink href="/support/kulup-yoneticileri" icon={School} label="Kulüpler" />
+            <CategoryLink href="/support" icon={HelpCircle} label="Genel" />
+            <CategoryLink href="/support" icon={Settings} label="Teknik" />
+        </section>
+
+        {/* Quick Actions */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+            <QuickActionCard title="Etki Puanım neden artmıyor?" href="/support/bireysel-kullanicilar" />
+            <QuickActionCard title="Şeffaflık belgelerim neden reddedildi?" href="/support/stk-yoneticileri" />
+            <QuickActionCard title="Bağış oranlarımı nasıl ayarlarım?" href="/support/marka-yoneticileri" />
+        </section>
+
+        {/* Search Section */}
+        <section className="max-w-xl mx-auto text-center space-y-4">
+            <h3 className="text-2xl font-bold">Daha Fazla Konu Ara</h3>
+            <form onSubmit={handleSearch} className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                    placeholder="Arama yapın..."
+                    className="pl-12 h-14 rounded-full text-lg border-2"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </form>
+        </section>
+
+        {/* Featured Sections */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
+            <div className="relative aspect-square lg:aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-muted">
+                <Image src="https://images.unsplash.com/photo-1677756119517-756a188d2d94?q=80&w=1974&auto=format&fit=crop" alt="AI Assistant" fill className="object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent" />
+            </div>
+            <div className="text-center lg:text-left space-y-4">
+                <div className="inline-block p-3 bg-primary/10 rounded-2xl">
+                    <Bot className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-3xl font-bold">Yapay Zeka Destekli Asistan</h3>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                    Sorularınıza anında yanıt alın. Yapay zeka asistanımız, kütüphanemizdeki binlerce makale ve yardım belgesini tarayarak size en doğru bilgiyi saniyeler içinde sunar.
+                </p>
+                 <Button asChild variant="link" className="text-lg px-0">
+                    <Link href="/library">Asistanı Dene <ChevronRight className="ml-1" /></Link>
+                 </Button>
+            </div>
+        </section>
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
+             <div className="relative aspect-square lg:aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-muted lg:order-2">
+                <Image src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop" alt="NGO Transparency" fill className="object-cover" />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent" />
+            </div>
+             <div className="text-center lg:text-left space-y-4 lg:order-1">
+                 <div className="inline-block p-3 bg-primary/10 rounded-2xl">
+                    <FileText className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-3xl font-bold">Şeffaflık & Raporlama</h3>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                    Bağışlarınızın yolculuğunu ve STK'ların finansal raporlarını şeffaflık ilkemiz gereği kolayca inceleyebilirsiniz. Güven üzerine kurulu bir ekosistem için çalışıyoruz.
+                </p>
+                 <Button asChild variant="link" className="text-lg px-0">
+                    <Link href="/ngo-admin/transparency">Raporları İncele <ChevronRight className="ml-1" /></Link>
+                 </Button>
+            </div>
+        </section>
+
+        {/* More to Explore */}
+        <section className="max-w-6xl mx-auto space-y-12 pt-12">
+            <h3 className="text-3xl font-bold text-center">Keşfedilecek Daha Fazla Şey Var</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="rounded-[2rem] overflow-hidden group">
+                    <CardContent className="p-0">
+                        <div className="relative aspect-[4/3]">
+                            <Image src="https://images.unsplash.com/photo-1586717791821-3f4ea5654ff3?q=80&w=2070&auto=format&fit=crop" alt="Library" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="support-message">Mesajınız</Label>
-                          <Textarea id="support-message" placeholder="Lütfen talebinizi detaylı bir şekilde açıklayın..." rows={6} />
+                        <div className="p-6 space-y-2">
+                            <h4 className="font-bold text-xl">hangel Kütüphanesi</h4>
+                            <p className="text-sm text-muted-foreground">Sosyal etki, gönüllülük ve sivil toplum hakkında yüzlerce makale, rapor ve rehbere ulaşın.</p>
+                            <Button asChild variant="link" className="px-0">
+                                <Link href="/library">Kütüphaneye git</Link>
+                            </Button>
                         </div>
-                        <Button type="submit" className="w-full">Gönder</Button>
-                    </form>
-                </DialogContent>
-            </Dialog>
-           <Button size="lg" variant="outline" asChild>
-            <a href="mailto:turkiye@hangel.org">
-              <Mail className="mr-2 h-5 w-5" />
-              Bize E-posta Gönder
-            </a>
-          </Button>
-        </div>
-      </div>
-      <footer className="pt-8 pb-4 text-center text-xs text-muted-foreground">
-        <p>® hangel.org v.12</p>
-      </footer>
+                    </CardContent>
+                </Card>
+                 <Card className="rounded-[2rem] overflow-hidden group">
+                    <CardContent className="p-0">
+                        <div className="relative aspect-[4/3]">
+                            <Image src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop" alt="Video Guides" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <div className="p-6 space-y-2">
+                            <h4 className="font-bold text-xl">Video Rehberler</h4>
+                            <p className="text-sm text-muted-foreground">Platformu nasıl daha etkili kullanacağınızı anlatan kısa ve eğitici videolarımızı izleyin.</p>
+                             <Button asChild variant="link" className="px-0">
+                                <Link href="#">Yakında...</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card className="rounded-[2rem] overflow-hidden group">
+                    <CardContent className="p-0">
+                        <div className="relative aspect-[4/3]">
+                            <Image src="https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop" alt="Community" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <div className="p-6 space-y-2">
+                            <h4 className="font-bold text-xl">Topluluk Forumu</h4>
+                            <p className="text-sm text-muted-foreground">Diğer kullanıcılar, STK yöneticileri ve marka temsilcileriyle fikir alışverişinde bulunun.</p>
+                            <Button asChild variant="link" className="px-0">
+                                <Link href="#">Yakında...</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </section>
+
+        <section className="max-w-4xl mx-auto pt-16 text-center">
+            <h4 className="text-xl font-bold">Toplumsal Fayda için Tasarım</h4>
+            <p className="mt-4 text-muted-foreground leading-relaxed">
+                Hangel olarak, paydaşlarımız için her zaman en iyi deneyimi yaratmak için çalışıyoruz. Bu nedenle tüm ürünlerimiz, en yüksek şeffaflık, güvenlik ve sosyal etki standartları göz önünde bulundurularak tasarlanmıştır. Bu güven, emniyet ve gizlilikten ödün vermeden bilinçli ve sürdürülebilir bir gelecek inşa etme taahhüdümüzdür.
+            </p>
+        </section>
+
+      </main>
     </div>
   );
 }
