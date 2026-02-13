@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -19,6 +18,8 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import * as Icons from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -198,12 +199,17 @@ const projectCardsData = [
 ];
 
 
-const Header = () => {
+const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     const { language, changeLanguage } = useTranslation();
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
-                <HangelLogo className="text-xl" />
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={onMenuClick}>
+                        <Menu className="h-5 w-5" />
+                    </Button>
+                    <HangelLogo className="text-xl" />
+                </div>
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#1d1d1f]/80">
                     <Link href="#bagis" className="hover:text-primary transition-colors">Bağış</Link>
                     <Link href="#gonulluluk" className="hover:text-primary transition-colors">Gönüllülük</Link>
@@ -224,9 +230,6 @@ const Header = () => {
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
                     <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold bg-[#0071e3] hover:bg-[#0077ed]">
                         <Link href="/login/selection?action=login">Giriş Yap</Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8">
-                        <Menu className="h-5 w-5" />
                     </Button>
                 </div>
             </div>
@@ -279,9 +282,18 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }
 
 
 export default function LoginPage() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const discoveryCarouselPlugin = useRef(
         Autoplay({ delay: 4000, stopOnInteraction: true })
     );
+
+    const publicNavItems = [
+      { href: '#bagis', label: 'Bağış Yap' },
+      { href: '#gonulluluk', label: 'Gönüllü Ol' },
+      { href: '/hangelassociation', label: 'hangel Derneği' },
+      { href: '/about', label: 'Hakkımızda' },
+      { href: '/support', label: 'Destek' },
+    ];
 
     const discoveryItems = [
         { 
@@ -330,7 +342,24 @@ export default function LoginPage() {
     );
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
-            <Header />
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle className="text-left">
+                            <HangelLogo className="text-2xl" />
+                        </SheetTitle>
+                        <SheetDescription />
+                    </SheetHeader>
+                    <nav className="flex flex-col gap-4 py-6">
+                         {publicNavItems.map(item => (
+                            <SheetClose asChild key={item.label}>
+                                <Link href={item.href} className="text-lg font-medium hover:text-primary">{item.label}</Link>
+                            </SheetClose>
+                         ))}
+                    </nav>
+                </SheetContent>
+            </Sheet>
+            <Header onMenuClick={() => setIsMenuOpen(true)} />
             <main>
                 <section className="h-screen flex flex-col justify-center items-center text-center p-6 bg-white border-b border-black/5">
                     <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</h2>
@@ -363,7 +392,7 @@ export default function LoginPage() {
                     >
                         <CarouselContent className="-ml-4">
                             {allEntityLists.slice(0, 15).map((brand) => (
-                                <CarouselItem key={brand.id} className="pl-4 md:basis-1/3 lg:basis-1/5">
+                                <CarouselItem key={brand.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
                                     <div className="h-[350px] p-1">
                                         <BrandCard brand={brand} />
                                     </div>
@@ -394,7 +423,7 @@ export default function LoginPage() {
                     >
                         <CarouselContent className="-ml-4">
                             {volunteeringOpportunities.slice(0, 15).map((opp) => (
-                                <CarouselItem key={opp.id} className="pl-4 md:basis-1/3 lg:basis-1/5">
+                                <CarouselItem key={opp.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
                                      <div className="h-[350px] p-1">
                                         <VolunteeringCard opportunity={opp} />
                                     </div>
@@ -434,7 +463,7 @@ export default function LoginPage() {
 
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Hangel Association</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">hangel Association</h2>
                         <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
                     </div>
                     <Carousel
