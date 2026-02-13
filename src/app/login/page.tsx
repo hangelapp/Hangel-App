@@ -390,26 +390,35 @@ export default function LoginPage() {
                     cta2="Daha Fazla Bilgi"
                     cta2Href="/social-impact"
                 >
-                     <Carousel
-                        opts={{
-                        align: "start",
-                        loop: true,
-                        }}
-                        plugins={[pluginBagis.current]}
-                        className="w-full max-w-7xl mx-auto"
-                    >
-                        <CarouselContent className="-ml-4">
-                            {allEntityLists.slice(0, 15).map((brand) => (
-                                <CarouselItem key={brand.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
-                                    <div className="h-[350px] p-1">
-                                        <BrandCard brand={brand} />
-                                    </div>
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="ml-16" />
-                        <CarouselNext className="mr-16" />
-                    </Carousel>
+                    <div className="w-full max-w-7xl mx-auto">
+                        <Carousel
+                            opts={{
+                            align: "start",
+                            loop: true,
+                            }}
+                            plugins={[pluginBagis.current]}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-4">
+                                {allEntityLists.slice(0, 15).map((brand) => (
+                                    <CarouselItem key={brand.id} className="pl-4 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                                        <div className="h-[350px] p-1">
+                                            <BrandCard brand={brand} />
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="ml-16 hidden md:flex" />
+                            <CarouselNext className="mr-16 hidden md:flex" />
+                        </Carousel>
+                        <div className="text-center mt-8">
+                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-black hover:text-white">
+                                <Link href="/market">
+                                    Tüm Markaları Gör ({allEntityLists.length} Marka)
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
                 </ProductShowcaseSection>
                 <ProductShowcaseSection
                     id="gonulluluk"
@@ -422,26 +431,35 @@ export default function LoginPage() {
                     cta2="Gönüllü Ol"
                     cta2Href="/login/selection?action=register"
                 >
-                    <Carousel
-                        opts={{
-                        align: "start",
-                        loop: true,
-                        }}
-                         plugins={[pluginImece.current]}
-                        className="w-full max-w-7xl mx-auto"
-                    >
-                        <CarouselContent className="-ml-4">
-                            {volunteeringOpportunities.slice(0, 15).map((opp) => (
-                                <CarouselItem key={opp.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
-                                     <div className="h-[350px] p-1">
-                                        <VolunteeringCard opportunity={opp} />
-                                    </div>
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="ml-16" />
-                        <CarouselNext className="mr-16" />
-                    </Carousel>
+                    <div className="w-full max-w-7xl mx-auto">
+                        <Carousel
+                            opts={{
+                            align: "start",
+                            loop: true,
+                            }}
+                            plugins={[pluginImece.current]}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-4">
+                                {volunteeringOpportunities.slice(0, 15).map((opp) => (
+                                    <CarouselItem key={opp.id} className="pl-4 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                                        <div className="h-[350px] p-1">
+                                            <VolunteeringCard opportunity={opp} />
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                             <CarouselPrevious className="ml-16 hidden md:flex" />
+                            <CarouselNext className="mr-16 hidden md:flex" />
+                        </Carousel>
+                        <div className="text-center mt-8">
+                            <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-white/20 text-white bg-transparent hover:bg-white hover:text-black">
+                                <Link href="/volunteering">
+                                    Tüm İlanları Gör ({volunteeringOpportunities.length} İlan)
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
                 </ProductShowcaseSection>
                 
                 <section id="kurumlar-grid" className="py-16 md:py-24 bg-white">
@@ -450,7 +468,7 @@ export default function LoginPage() {
                             <h2 className="text-4xl font-bold tracking-tight">hangel'i Keşfedin</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Kurumlar ve bireyler için sunduğumuz çözümlerle tanışın.</p>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
                             {discoveryItems.map((item, index) => (
                                 <DiscoveryCarouselCard key={index} {...item} />
                             ))}
@@ -461,7 +479,7 @@ export default function LoginPage() {
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center mb-12">
-                            <h2 className="text-4xl font-bold tracking-tight">hangel Association</h2>
+                            <h2 className="text-4xl font-bold tracking-tight">Hangel Association</h2>
                             <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
                         </div>
                         <Carousel
@@ -474,13 +492,13 @@ export default function LoginPage() {
                         >
                             <CarouselContent className="-ml-4">
                                 {projectCardsData.map((card, index) => (
-                                    <CarouselItem key={index} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                                    <CarouselItem key={index} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-[22%]">
                                         <ProjectCard {...card} />
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
-                            <CarouselPrevious className="ml-16 hidden md:flex" />
-                            <CarouselNext className="mr-16 hidden md:flex" />
+                             <CarouselPrevious className="ml-16 hidden lg:flex" />
+                            <CarouselNext className="mr-16 hidden lg:flex" />
                         </Carousel>
                     </div>
                 </section>
@@ -491,7 +509,7 @@ export default function LoginPage() {
                             <h2 className="text-4xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz</h2>
                             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <InfoCard 
                                 icon={TrendingUp}
                                 title="Sürdürülebilirlik"
