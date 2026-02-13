@@ -7,7 +7,8 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
-import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay"
 import { 
     TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
     ShoppingBag, Leaf, Megaphone
@@ -136,20 +137,20 @@ export const userImpactStories: ImpactSlide[] = [
     },
     {
         id: 2,
-        title: `${user.stats.totalDonation.toLocaleString('tr-TR')} ₺ Bağış Yaptın`,
+        title: \`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺ Bağış Yaptın\`,
         subtitle: "Finansal Destek",
-        content: `Yaptığın alışverişlerle ${user.stats.mostSupportedNgo} gibi kurumlara destek oldun.`,
-        stat: `₺${user.stats.totalDonation.toLocaleString('tr-TR')}`,
+        content: \`Yaptığın alışverişlerle ${user.stats.mostSupportedNgo} gibi kurumlara destek oldun.\`,
+        stat: \`₺${user.stats.totalDonation.toLocaleString('tr-TR')}\`,
         icon: Heart,
         image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
         imageHint: "donation concept"
     },
     {
         id: 3,
-        title: `${user.stats.volunteerHours} Saat Gönüllülük Yaptın`,
+        title: \`${user.stats.volunteerHours} Saat Gönüllülük Yaptın\`,
         subtitle: "Zamanın Değeri",
-        content: `En çok ${user.stats.mostActiveVolunteerArea} alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.`,
-        stat: `${user.stats.volunteerHours} Saat`,
+        content: \`En çok ${user.stats.mostActiveVolunteerArea} alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.\`,
+        stat: \`${user.stats.volunteerHours} Saat\`,
         icon: HeartHandshake,
         image: "https://images.unsplash.com/photo-1618423417959-c8c7f9c73331?q=80&w=1974&auto=format&fit=crop",
         imageHint: "volunteers hands"
@@ -217,7 +218,10 @@ function StoryViewer() {
     const [api, setApi] = useState<CarouselApi>()
     const [current, setCurrent] = useState(0)
     const [count, setCount] = useState(0)
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    
+    const plugin = React.useRef(
+        Autoplay({ delay: STORY_DURATION, stopOnInteraction: true, stopOnMouseEnter: true })
+    )
 
     const stories: ImpactSlide[] = React.useMemo(() => {
         switch (category) {
@@ -235,75 +239,38 @@ function StoryViewer() {
     
     const handleClose = useCallback(() => router.back(), [router]);
 
-    const startTimer = useCallback(() => {
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-        }
-        timerRef.current = setInterval(() => {
-            api?.scrollNext();
-        }, STORY_DURATION);
-    }, [api]);
-
-
     useEffect(() => {
         if (!api) return;
         
         setCount(api.scrollSnapList().length)
         setCurrent(api.selectedScrollSnap() + 1)
-        startTimer();
 
         api.on("select", () => {
             setCurrent(api.selectedScrollSnap() + 1);
-            startTimer();
-        });
-        
-        api.on('pointerDown', () => {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-            }
-        });
-        
-        api.on('pointerUp', () => {
-            startTimer();
         });
 
-        return () => {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-            }
-        }
-
-    }, [api, startTimer]);
-
+    }, [api]);
 
     const prevSlide = useCallback(() => api?.scrollPrev(), [api]);
     const nextSlide = useCallback(() => api?.scrollNext(), [api]);
 
-    const currentSlide = stories[current -1];
+    const currentSlide = stories[current - 1];
     if (!currentSlide) return <div className="h-full w-full bg-background" />;
 
     return (
         <div className="relative w-full h-full bg-background md:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col">
             {/* Progress Bars */}
-            <div className="absolute top-4 inset-x-4 flex gap-1 z-50">
+            <div className="absolute top-4 inset-x-4 flex gap-1 z-50" key={current}>
                 {Array.from({ length: count }).map((_, idx) => (
                     <div key={idx} className="h-0.5 flex-1 bg-muted rounded-full overflow-hidden">
                         <div
                             className={cn(
-                                "h-full bg-primary transition-all duration-[50ms] ease-linear",
-                                idx < current -1 && "w-full",
-                                idx === current -1 && "w-0 animate-[progress_5s_linear_forwards]",
-                                idx > current -1 && "w-0"
+                                "h-full bg-primary",
+                                idx === current - 1 && "animate-story-progress"
                             )}
                         />
                     </div>
                 ))}
-                 <style jsx>{`
-                    @keyframes progress {
-                        from { width: 0%; }
-                        to { width: 100%; }
-                    }
-                `}</style>
             </div>
 
             {/* Header */}
@@ -321,7 +288,7 @@ function StoryViewer() {
                 </Button>
             </div>
             
-            <Carousel setApi={setApi} className="w-full h-full">
+            <Carousel setApi={setApi} plugins={[plugin.current]} className="w-full h-full">
                 <CarouselContent>
                     {stories.map((slide) => {
                         const CurrentIcon = slide.icon;
@@ -378,4 +345,3 @@ export default function ImpactStoryPage() {
         </div>
     );
 }
-
