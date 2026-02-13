@@ -104,23 +104,22 @@ export default function CompaniesPage() {
                                 <Input id="phone" type="tel" placeholder="+90..." required />
                             </div>
                         </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="department">Departman</Label>
+                            <Input id="department" placeholder="Departmanınız (örn: Kurumsal İletişim)" />
+                        </div>
 
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="country">Ülke</Label>
-                                <Select required>
-                                    <SelectTrigger id="country">
-                                        <SelectValue placeholder="Birini seçin" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {countryOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="company-name">Firma/Kurum Adı</Label>
-                                <Input id="company-name" required />
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="country">Ülke</Label>
+                            <Select required>
+                                <SelectTrigger id="country">
+                                    <SelectValue placeholder="Birini seçin" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {countryOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
                         
                         <div className="space-y-2">
@@ -137,7 +136,7 @@ export default function CompaniesPage() {
                             </div>
                              <Button type="submit" className="w-full">Gönder</Button>
                               <p className="text-xs text-muted-foreground">
-                                “Gönder” düğmesine tıklayarak, talebinizi karşılamak için bilgilerinizi yetkili ortaklarımız ve bayilerimizle paylaşmayı kabul ediyorsunuz. Bilgileriniz yalnızca gerekli operasyonel ve işlemsel iletişimler için kullanılacaktır.
+                                “Gönder” düğmesine tıklayarak, talebinizi karşılamak için bilgilerinizi yetkili ortaklarımızla paylaşmayı kabul ediyorsunuz. Bilgileriniz yalnızca gerekli operasyonel ve işlemsel iletişimler için kullanılacaktır.
                             </p>
                         </div>
                     </form>
