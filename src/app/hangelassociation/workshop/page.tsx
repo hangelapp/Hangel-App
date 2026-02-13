@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
