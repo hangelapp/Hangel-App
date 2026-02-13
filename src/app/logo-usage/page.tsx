@@ -8,20 +8,23 @@ import {
     ArrowLeft, 
     FileText, 
     Palette, 
+    Type,
     Copy,
     DownloadCloud,
+    Star,
+    CheckCircle,
     Ruler,
     Scale,
     Handshake,
     Mic,
     Newspaper,
-    Tv,
     Landmark,
-    HeartHandshake, HandCoins, School, Store, Building, Library, Sparkles, Globe, BookOpen, Users
+    HeartHandshake, HandCoins, School, Store, Building, Library, Sparkles, Globe, BookOpen, Users,
+    TrendingUp, ShieldCheck, ChevronRight,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -52,54 +55,6 @@ const SectionTitle = ({ children, className, ...props }: React.HTMLAttributes<HT
     <h2 className={cn("text-4xl md:text-5xl font-bold tracking-tight text-center", className)} {...props}>
         {children}
     </h2>
-);
-
-const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
-    <div className="border rounded-2xl bg-white/50 text-center flex flex-col shadow-sm hover:shadow-lg transition-shadow">
-        <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
-            {children}
-        </div>
-        <div className="p-4 flex-1 flex flex-col">
-            <h4 className="font-semibold text-sm">{title}</h4>
-            <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
-            <Button size="sm" variant="outline" className="text-xs mt-4 w-full" onClick={onDownload}>
-                <Download className="mr-2 h-3.5 w-3.5"/> PNG İndir
-            </Button>
-        </div>
-    </div>
-);
-
-const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
-    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50 shadow-inner">
-        <p className="text-xs font-bold text-muted-foreground">{title}</p>
-        <p className={cn("text-3xl", fontName.includes('Bold') ? 'font-bold' : 'font-semibold')}>Aa</p>
-        <p className="text-lg font-semibold">{fontName}</p>
-        <Button size="sm" variant="link" className="text-primary p-0 h-auto" onClick={onDownload}>Fontu tıkla ve indir</Button>
-    </div>
-);
-
-const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
-    <button className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer shadow-sm hover:shadow-lg transition-all group w-full" onClick={onCopy}>
-        <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
-        <p className="font-bold text-sm">{name}</p>
-        <div className="flex items-center justify-center gap-1 text-xs font-mono text-muted-foreground group-hover:text-primary transition-colors">
-            {hex} <Copy className="w-3 h-3" />
-        </div>
-    </button>
-);
-
-const RuleCard = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
-    <div className="bg-white rounded-3xl p-8 border shadow-sm h-full">
-        <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-primary/10 rounded-xl">
-                <Icon className="h-6 w-6 text-primary" />
-            </div>
-            <h4 className="text-xl font-bold tracking-tight">{title}</h4>
-        </div>
-        <div className="prose prose-sm max-w-none text-muted-foreground pt-4 border-t">
-            {children}
-        </div>
-    </div>
 );
 
 const appArchitecture = [
@@ -139,6 +94,56 @@ const ArchitectureCard = ({ icon: Icon, title, description, href, iconBgClass, c
             </div>
         </Card>
     </Link>
+);
+
+
+const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
+    <div className="border rounded-2xl bg-white/50 text-center flex flex-col shadow-sm hover:shadow-lg transition-shadow">
+        <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
+            {children}
+        </div>
+        <div className="p-4 flex-1 flex flex-col">
+            <h4 className="font-semibold text-sm">{title}</h4>
+            <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
+            <Button size="sm" variant="outline" className="text-xs mt-4 w-full" onClick={onDownload}>
+                <Download className="mr-2 h-3.5 w-3.5"/> PNG İndir
+            </Button>
+        </div>
+    </div>
+);
+
+const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
+    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50 shadow-inner">
+        <p className="text-xs font-bold text-muted-foreground">{title}</p>
+        <p className={cn("text-3xl", fontName.includes('Bold') ? 'font-bold' : 'font-semibold')}>Aa</p>
+        <p className="text-lg font-semibold">{fontName}</p>
+        <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
+    </div>
+);
+
+const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: () => void }) => (
+    <button className="border rounded-2xl p-4 text-center space-y-3 bg-white/50 cursor-pointer shadow-sm hover:shadow-lg transition-all group w-full" onClick={onCopy}>
+        <div className="h-16 w-full rounded-lg" style={{ backgroundColor: hex }} />
+        <p className="font-bold text-sm">{name}</p>
+        <div className="flex items-center justify-center gap-1 text-xs font-mono text-muted-foreground group-hover:text-primary transition-colors">
+            {hex} <Copy className="w-3 h-3" />
+        </div>
+    </button>
+);
+
+const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
+    <div className="bg-white rounded-3xl p-8 flex flex-col h-full text-left border shadow-sm hover:shadow-xl transition-shadow">
+        <div className="p-3 bg-muted rounded-2xl w-fit shadow-sm mb-6">
+            <Icon className="h-6 w-6 text-primary" />
+        </div>
+        <h3 className="font-semibold text-xl text-[#1d1d1f]">{title}</h3>
+        <p className="text-sm text-[#1d1d1f]/80 mt-3 flex-grow">{description}</p>
+        <div className="mt-10">
+            <Link href={link} className="text-sm font-semibold text-primary hover:underline flex items-center group">
+                {linkText} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+            </Link>
+        </div>
+    </div>
 );
 
 
@@ -182,32 +187,32 @@ export default function LogoUsagePage() {
                     </h1>
                     <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed mt-8">
                        hangel logosu yalnızca bir görsel kimlik unsuru değildir. Ortak değerlerimizin, kolektif üretim anlayışımızın ve toplumsal sorunlara karşı geliştirdiğimiz dayanışma kültürünün kurumsal temsildir.
-                       Bu logo; eşit mesafede duran, tarafsız, şeffaf ve kolektif iyiliği önceleyen bir yapının sembolüdür.
-                       Logonun doğru, tutarlı ve mevzuata uygun biçimde kullanımı; marka bütünlüğünün korunmasını, kamusal algının netliğini ve hukuki güvenliğin sürdürülmesini sağlar.
-                       Logomuzu her doğru kullanımınız, dayanışma zincirine eklenen yeni bir halkadır.
                     </p>
                 </Section>
                 
                  <Section id="mimari" className="bg-white">
                     <SectionTitle>Marka Mimarisi</SectionTitle>
-                    <div className="mt-16 space-y-16">
-                        <div className="text-center space-y-4">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Ana Marka</h3>
-                            <HangelLogo className="text-5xl" />
+                    <div className="space-y-12 mt-16">
+                        <div className="text-center space-y-2">
+                             <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Ana Marka</h3>
+                             <HangelLogo className="text-5xl" />
                         </div>
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             <h3 className="text-2xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
                                 {appArchitecture.map(item => <ArchitectureCard key={item.title} {...item} iconBgClass="bg-primary" category="App" />)}
                             </div>
                         </div>
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             <h3 className="text-2xl font-bold tracking-tight text-center text-[#042654]">hangel Derneği Alt Markaları</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
                                 {associationArchitecture.map(item => <ArchitectureCard key={item.title} {...item} iconBgClass="bg-[#042654]" category="Dernek" />)}
                             </div>
                         </div>
-                        <p className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">Tüm alt markalar, ana marka olan hangel çatısı altında konumlanır ve marka hiyerarşisine uygun olarak destekleyici rol üstlenir.</p>
+                    </div>
+                     <div className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
+                        <h4 className="font-bold text-foreground mb-2">Aradığınızı Bulamadınız mı?</h4>
+                        <p>Aradığınız bir alt marka veya ürün için özel bir kullanım yönergesi bulamıyorsanız, bu sayfadaki genel marka kullanım ilkelerine başvurabilir veya destek merkezimizden yardım alabilirsiniz. Doğru kullanım hakkında bilgi edinmek için genel kılavuzlarımızı, API ve ürün entegrasyonu yönergelerimizi veya ticari marka kurallarımızı inceleyebilirsiniz.</p>
                     </div>
                 </Section>
                 
@@ -237,14 +242,15 @@ export default function LogoUsagePage() {
                         {/* Yazı Tipleri */}
                         <div className="space-y-8">
                             <h3 className="text-2xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
-                             <div className="max-w-md mx-auto">
+                             <div className="max-w-6xl mx-auto">
                                 <Card className="rounded-3xl p-10 bg-white/50 text-center">
                                     <CardHeader className="p-0">
                                         <CardTitle>Font Kullanım Yönergesi</CardTitle>
                                         <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">Tipografik bütünlük, marka algısının sürekliliği açısından zorunludur.</p>
                                     </CardHeader>
-                                    <CardContent className="grid grid-cols-1 gap-6 mt-8 p-0">
-                                         <FontCard title="Logo & Başlık Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-0">
+                                         <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                         <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
                                          <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                     </CardContent>
                                 </Card>
@@ -285,36 +291,46 @@ export default function LogoUsagePage() {
                         </div>
                     </div>
                 </Section>
-                
-                <Section id="kullanim-kurallari" className="bg-white">
-                    <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-                        <RuleCard title="Logo Minimum Boyut Kuralı" icon={Ruler}>
-                            <p>Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:</p>
-                            <ul><li><strong>Dijital Ortam:</strong> Minimum genişlik: 120 px, App icon minimum: 32 px</li><li><strong>Basılı Materyal:</strong> Minimum genişlik: 25 mm</li></ul>
-                            <p>Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır.</p>
-                        </RuleCard>
-                        <RuleCard title="Boşluk (Clear Space) Kuralı" icon={Ruler}>
-                            <p>Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez. Bu alan marka görünürlüğünün korunması için zorunlu güvenlik alanıdır.</p>
-                        </RuleCard>
-                        <RuleCard title="Değişiklik Yasağı" icon={Ruler}>
-                            <ul><li>Oranları bozulamaz</li><li>Renkleri değiştirilemez</li><li>Eğilemez</li><li>Üzerine efekt, gölge veya desen eklenemez</li><li>Başka grafik unsurlarla birleştirilemez</li><li>Logo sabittir. Yeniden yorumlanamaz.</li></ul>
-                        </RuleCard>
-                        <RuleCard title="Hiyerarşi Prensibi" icon={Ruler}>
-                             <p>hangel logosu destekleyici marka unsuru olarak konumlandırılır. Ana marka, iş birliği yapan kurumun markasıdır. hangel; platform, altyapı veya entegrasyon sağlayıcı rolünde yer alır. Logo hiçbir koşulda en baskın görsel unsur olarak konumlandırılamaz.</p>
-                        </RuleCard>
-                        <RuleCard title="Ortak Markalama (Co-Branding)" icon={Handshake}>
-                             <p>Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır: Logolar eşit ölçekli kullanılmalıdır. İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır. Logolar yatay hizalı olmalıdır. Birleşik tek bir görsel kilit (lock-up) oluşturulamaz. Renk uyumu gerekçesiyle logo varyasyonu üretilemez. Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur.</p>
-                        </RuleCard>
-                        <RuleCard title="Marka Kullanım İzni" icon={Mic}>
-                            <p>hangel varlıklarını yayın, radyo, açık hava reklamı, TV, A4’ten büyük baskı materyali içinde kullanmak isteyen kişi ve kurumlar yazılı izin almak zorundadır. Talep dosyasında kullanım taslağı sunulmalıdır. hangel marka ekibi, uygun bulmadığı kullanımları reddetme veya iptal etme hakkını saklı tutar.</p>
-                        </RuleCard>
+
+                 <Section id="degerler" className="bg-white">
+                    <div className="text-center mb-16 space-y-4">
+                        <SectionTitle>Değerlerimizle Fark Oluşturuyoruz</SectionTitle>
+                        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <InfoCard 
+                            icon={TrendingUp}
+                            title="Sürdürülebilirlik"
+                            description="Toplumsal ve çevresel etkimizi nasıl yönettiğimizi ve pozitif değişime nasıl liderlik ettiğimizi keşfedin."
+                            link="/social-impact"
+                            linkText="Etkimizi Görün"
+                        />
+                        <InfoCard 
+                            icon={Users}
+                            title="Erişilebilirlik"
+                            description="Teknolojiyi herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin."
+                            link="/accessibility"
+                            linkText="Standartları İnceleyin"
+                        />
+                        <InfoCard 
+                            icon={ShieldCheck}
+                            title="Güvenlik"
+                            description="Verilerinizi nasıl koruduğumuzu ve platformumuzun güvenliğini nasıl sağladığımızı öğrenin."
+                            link="/settings/contracts/gizlilik-politikasi"
+                            linkText="Daha Fazla Bilgi"
+                        />
+                        <InfoCard 
+                            icon={FileText}
+                            title="Yasal Bilgiler"
+                            description="Yasal bilgilendirmelerimize ve kurumsal şeffaflık belgelerimize ulaşın."
+                            link="/bilgi-toplumu-hizmetleri"
+                            linkText="Belgeleri Görüntüleyin"
+                        />
                     </div>
                 </Section>
                 
                 <Section>
-                    <SectionTitle>Yasal Çerçeve ve Son Söz</SectionTitle>
-                     <p className="text-center text-sm text-muted-foreground mt-8 max-w-3xl mx-auto">
+                    <p className="text-left text-sm text-muted-foreground max-w-3xl">
                         hangel, fikri mülkiyet haklarının korunması amacıyla ulusal ve uluslararası düzeyde tescil süreçlerini yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen içeriklerde kullanımı yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
                         <br/><br/>
                         <strong>hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar. Marka, bir görselden ibaret değildir. Marka, bir taahhüttür.</strong>
