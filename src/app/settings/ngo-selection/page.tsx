@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, ChevronRight, X, Info, Handshake, Award, Calendar, MapPin, Store, CreditCard, Globe, Mail, Phone, Linkedin, Facebook, Eye, ShieldAlert } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, ChevronRight, X, Info, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ngos, user, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,23 +16,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { ShareButtons } from '@/components/shared/share-buttons';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
-
-const XIcon = (props: React.ComponentProps<'svg'>) => (
-    <svg
-      role="img"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
-      {...props}
-    >
-      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-    </svg>
-);
+import { Progress } from '@/components/ui/progress';
+import { ShareButtons } from '@/components/shared/share-buttons';
 
 
 type NgoType = NGO['type'] | 'Tümü';
