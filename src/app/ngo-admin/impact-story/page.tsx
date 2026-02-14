@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { Suspense, useCallback, useEffect, useState } from 'react';
@@ -69,20 +70,20 @@ export const userImpactStories: ImpactSlide[] = [
     },
     {
         id: 2,
-        title: "1.250 ₺ Bağış Yaptın",
+        title: user.stats.totalDonation.toLocaleString('tr-TR') + " ₺ Bağış Yaptın",
         subtitle: "Finansal Destek",
-        content: "Yaptığın alışverişlerle TEMA Vakfı gibi kurumlara destek oldun.",
-        stat: "₺1.250",
+        content: "Yaptığın alışverişlerle " + user.stats.mostSupportedNgo + " gibi kurumlara destek oldun.",
+        stat: "₺" + user.stats.totalDonation.toLocaleString('tr-TR'),
         icon: Heart,
         image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
         imageHint: "donation concept"
     },
     {
         id: 3,
-        title: "48 Saat Gönüllülük Yaptın",
+        title: user.stats.volunteerHours + " Saat Gönüllülük Yaptın",
         subtitle: "Zamanın Değeri",
-        content: "En çok Hayvan Hakları alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.",
-        stat: "48 Saat",
+        content: "En çok " + user.stats.mostActiveVolunteerArea + " alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.",
+        stat: user.stats.volunteerHours + " Saat",
         icon: HeartHandshake,
         image: "https://images.unsplash.com/photo-1618423417959-c8c7f9c73331?q=80&w=1974&auto=format&fit=crop",
         imageHint: "volunteers hands"
@@ -292,18 +293,10 @@ export default function ImpactStoryPage() {
     return (
         <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-0 md:p-8 backdrop-blur-sm">
             <div className="relative w-full max-w-[450px] h-full max-h-full md:max-h-[850px] aspect-[9/16] bg-white rounded-none md:rounded-[3rem] overflow-hidden">
-                <Suspense fallback={<div className="flex items-center justify-center h-full bg-white"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                <Suspense fallback={<div className="flex items-center justify-center h-full bg-white">Yükleniyor...</div>}>
                     <StoryViewer />
                 </Suspense>
             </div>
         </div>
-    );
-}
-
-function Loader2({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-        </svg>
     );
 }

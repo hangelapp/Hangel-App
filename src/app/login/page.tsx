@@ -283,6 +283,11 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }
 
 export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
     
     const pluginBagis = useRef(
         Autoplay({ delay: 5000, stopOnInteraction: true })
@@ -347,6 +352,9 @@ export default function LoginPage() {
             </div>
         </div>
     );
+
+    if (!mounted) return <div className="min-h-screen bg-white" />;
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
