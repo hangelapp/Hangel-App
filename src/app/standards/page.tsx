@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -9,6 +8,7 @@ import {
     Award,
     ChevronRight,
     Globe,
+    ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -166,7 +166,7 @@ export default function StandardsPage() {
     const accessibilityLawData = [
         { label: "Web Content Accessibility Guidelines", std: "WCAG 2.2", org: "W3C", region: "Küresel", rate: "AA: %100 / AAA: %95" },
         { label: "European Accessibility Act (EAA)", std: "EN 301 549", org: "Avrupa Komisyonu", region: "Avrupa Birliği", rate: "%95" },
-        { label: "EN 301 549", std: "WCAG 2.1–2.2", org: "ETSI / CEN", region: "Avrupa Birliği", rate: "%95" },
+        { label: "EN 301 549", std: "WCAG 2.1–2.2", org: "ETSI / CEN / CENELEC", region: "Avrupa Birliği", rate: "%95" },
         { label: "Americans with Disabilities Act (ADA)", std: "WCAG 2.1–2.2 AA", org: "DOJ", region: "ABD", rate: "%96" },
         { label: "Section 508", std: "WCAG 2.1–2.2", org: "U.S. Access Board", region: "ABD", rate: "%96" },
         { label: "Equality Act 2010", std: "WCAG 2.1 AA", org: "UK Equality Office", region: "Birleşik Krallık", rate: "%95" },
