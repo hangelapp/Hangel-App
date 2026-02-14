@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +35,8 @@ const contractGroups = [
             { title: 'Çocukların Kişisel Verilerinin Korunması (COPPA Uyumu)', slug: 'cocuklarin-verilerinin-korunmasi' },
             { title: 'ABD Eyalet Bazlı Veri Koruma Politikası (CCPA/CPRA)', slug: 'abd-eyalet-bazli-veri-politikasi' },
             { title: 'Ülke Bazlı Veri Koruma Uyum Beyanı', slug: 'ulke-bazli-veri-koruma-uyum-beyani' },
+            { title: 'LGPD (Latin Amerika) Veri Koruma Beyanı', slug: 'lgpd-veri-koruma-beyani' },
+            { title: 'Yapay Zekâ ve Algoritmik Şeffaflık Beyanı', slug: 'yapay-zeka-seffaflik-beyani' },
         ]
     },
     {
@@ -51,6 +52,10 @@ const contractGroups = [
             { title: 'Kâr Dağıtım Politikası', slug: 'kar-dagitim-politikasi' },
             { title: 'Ücret Politikamız', slug: 'ucret-politikasi' },
             { title: 'ABD IRS Uyumlu Bağış Beyanı', slug: 'abd-irs-bagis-beyani' },
+            { title: 'Çevresel Sorumluluk ve Sürdürülebilirlik Politikası', slug: 'cevresel-sorumluluk-politikasi' },
+            { title: 'AML / CFT Uyum Beyanı', slug: 'aml-cft-uyum-beyani' },
+            { title: 'Etik Bağış ve Fon Kullanımı Beyanı', slug: 'etik-bagis-ve-fon-kullanimi-beyani' },
+            { title: 'Açık Veri ve Etki Verisi Paylaşım Politikası', slug: 'acik-veri-ve-etki-verisi-paylasim-politikasi' },
         ]
     },
     {
@@ -61,6 +66,9 @@ const contractGroups = [
             { title: 'Whistleblower (İhbarcı) Politikası', slug: 'whistleblower-politikasi' },
             { title: 'Yönetim ve Kurumsal Yönetişim İlkeleri', slug: 'yonetim-ve-kurumsal-yonetisim-ilkeleri' },
             { title: 'Kamu Yararı ve Sosyal Fayda Statüsü Beyanı', slug: 'kamu-yarari-ve-sosyal-fayda-beyani' },
+            { title: 'İnsan Hakları Politikası', slug: 'insan-haklari-politikasi' },
+            { title: 'DEI Politikası', slug: 'dei-politikasi' },
+            { title: 'Risk Yönetimi ve Kriz Müdahale Politikası', slug: 'risk-yonetimi-ve-kriz-mudahale-politikasi' },
         ]
     },
     {
@@ -85,7 +93,7 @@ export default function ContractsPage() {
           </Button>
         <div>
           <h1 className="text-2xl font-bold font-headline">Sözleşmeler, Politikalar ve Beyanlar</h1>
-          <p className="text-muted-foreground text-sm">hangel platformu kullanımına ilişkin kurumsal ve yasal belgeler.</p>
+          <p className="text-muted-foreground text-sm">hangel platformu kullanımına ilişkin kurumsal, yasal ve etik belgeler.</p>
         </div>
 
         {contractGroups.map(group => (

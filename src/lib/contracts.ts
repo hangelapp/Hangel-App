@@ -1,4 +1,3 @@
-
 export interface Contract {
   slug: string;
   title: string;
@@ -76,7 +75,7 @@ export const contractsData: Contract[] = [
     `
   },
 
-  // --- B. Gizlilik, Veri Koruma ve Dijital Güvenlik Politikaları ---
+  // --- B. Gizlilik, Veri Koruma ve Güvenlik ---
   {
     slug: 'gizlilik-politikasi',
     title: 'Gizlilik Politikası',
@@ -181,7 +180,7 @@ export const contractsData: Contract[] = [
   },
   {
     slug: 'kullanici-haklari-politikasi',
-    title: 'Kullanıcı Hakları Politikası (erişim, silme, taşınabilirlik)',
+    title: 'Kullanıcı Hakları Politikası',
     content: `
       <h3>Kullanıcı Hakları Politikası</h3>
       <h4>1. Amaç</h4>
@@ -242,7 +241,7 @@ export const contractsData: Contract[] = [
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>güvenli sunucu standartları ve veri yerelleştirme prensipleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>veriler öncelikli olarak türkiye ve AB merkezli güvenli sunucularda (Google Cloud vb.) saklanır.</p>
+      <p>veriler öncelikli olarak türkiye ve AB merkezli güvenli sunucularda saklanır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>teknik altyapı beyanıdır.</p>
     `
@@ -289,7 +288,7 @@ export const contractsData: Contract[] = [
       <h4>1. Amaç</h4>
       <p>küçük yaştaki kullanıcıların dijital güvenliğini en üst seviyede sağlamaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>13 (bazı bölgelerde 16) yaş altı kullanıcı verilerini kapsar.</p>
+      <p>13 yaş altı kullanıcı verilerini kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>Children's Online Privacy Protection Act (COPPA) ve KVKK.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
@@ -310,7 +309,7 @@ export const contractsData: Contract[] = [
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>CCPA / CPRA.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>"Do Not Sell My Personal Information" (bilgilerimi satma) hakkı tanınır.</p>
+      <p>"Do Not Sell My Personal Information" hakkı tanınır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>bölgesel uyum beyanıdır.</p>
     `
@@ -332,6 +331,40 @@ export const contractsData: Contract[] = [
       <p>uluslararası genişleme politikamızın parçasıdır.</p>
     `
   },
+  {
+    slug: 'lgpd-veri-koruma-beyani',
+    title: 'LGPD (Latin Amerika) Veri Koruma Beyanı',
+    content: `
+      <h3>LGPD (Latin Amerika) Veri Koruma Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Latin Amerika, özellikle Brezilya regülasyonlarına tam uyum sağlamaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Latin Amerika bölgesindeki kullanıcı verilerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Lei Geral de Proteção de Dados (LGPD).</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Bölgesel veri sahiplerinin erişim, düzeltme ve silme hakları korunur.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Bölgesel erişimle birlikte yürürlüktedir.</p>
+    `
+  },
+  {
+    slug: 'yapay-zeka-seffaflik-beyani',
+    title: 'Yapay Zekâ ve Algoritmik Şeffaflık Beyanı',
+    content: `
+      <h3>Yapay Zekâ ve Algoritmik Şeffaflık Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Platformdaki yapay zeka süreçlerinin etik ve şeffaf yönetimini sağlamaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Öneri algoritmaları ve otomatik içerik üretim araçlarını kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>AB Yapay Zeka Yasası (AI Act) prensipleri.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Kullanıcılar AI tarafından üretilen içerikler hakkında bilgilendirilir.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>AI özelliklerinin kullanımıyla eş zamanlı yürürlüktedir.</p>
+    `
+  },
 
   // --- C. Sosyal Etki, Bağış ve Finansal Şeffaflık ---
   {
@@ -340,30 +373,30 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Sosyal Etki Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>hangel'in oluşturmayı hedeflediği toplumsal ve çevresel değerin çerçevesini çizmektir.</p>
+      <p>hangel'in oluşturmayı hedeflediği toplumsal değerin çerçevesini çizmektir.</p>
       <h4>2. Kapsam</h4>
-      <p>platformun tüm operasyonel ve projeksiyonel süreçlerini kapsar.</p>
+      <p>tüm operasyonel süreçleri kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>BM Sürdürülebilir Kalkınma Amaçları (SKA).</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hangel, her faaliyetinde pozitif etkiyi maksimize etmeyi taahhüt eder.</p>
+      <p>hangel, pozitif etkiyi maksimize etmeyi taahhüt eder.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>kurumsal anayasamızın bir parçasıdır.</p>
     `
   },
   {
     slug: 'sosyal-etki-metodolojisi',
-    title: 'Sosyal Etki Ölçüm ve Raporlama Metodolojisi (SROI & Theory of Change)',
+    title: 'Sosyal Etki Ölçüm ve Raporlama Metodolojisi',
     content: `
       <h3>Sosyal Etki Ölçüm ve Raporlama Metodolojisi</h3>
       <h4>1. Amaç</h4>
-      <p>oluşturulan etkinin bilimsel ve matematiksel olarak nasıl ölçüldüğünü açıklamaktır.</p>
+      <p>oluşturulan etkinin bilimsel olarak nasıl ölçüldüğünü açıklamaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>tüm bağış ve gönüllülük verilerinin analizini kapsar.</p>
+      <p>tüm bağış ve gönüllülük verilerini kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>Social Value International standartları.</p>
+      <p>Social Value International standartları (SROI).</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>etki raporları yıllık olarak kamuoyuna şeffafça sunulur.</p>
+      <p>etki raporları yıllık olarak şeffafça sunulur.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>analiz süreçlerimizde esastır.</p>
     `
@@ -376,13 +409,13 @@ export const contractsData: Contract[] = [
       <h4>1. Amaç</h4>
       <p>hangel'in sosyal girişim kimliğini evrensel kriterlerle beyan etmektir.</p>
       <h4>2. Kapsam</h4>
-      <p>kâr dağıtımı, yönetişim ve etki odaklılık prensiplerini kapsar.</p>
+      <p>kâr dağıtımı ve yönetişimi kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>Açık Açık Sosyal Girişim kriterleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
       <p>hangel, kârının %51'inden fazlasını misyona yatırmayı taahhüt eder.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>kuruluş felsefemiz olarak yürürlüktedir.</p>
+      <p>kuruluş felsefemizdir.</p>
     `
   },
   {
@@ -391,15 +424,15 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Bağış ve Yardım Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>bağışların toplanması, korunması ve aktarılması süreçlerini düzenlemektir.</p>
+      <p>yardımların toplanması ve aktarılması süreçlerini düzenlemektir.</p>
       <h4>2. Kapsam</h4>
-      <p>platform üzerinden geçen tüm finansal yardımları kapsar.</p>
+      <p>platformdaki tüm finansal yardımları kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>2860 sayılı Yardım Toplama Kanunu ve ilgili mevzuat.</p>
+      <p>2860 sayılı Yardım Toplama Kanunu.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>bağışçılar paralarının nereye gittiğini bilme hakkına sahiptir.</p>
+      <p>bağışçılar şeffaf bilgilendirme talep etme hakkına sahiptir.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>işlem bazlı olarak yürürlüktedir.</p>
+      <p>işlem bazlı yürürlüktedir.</p>
     `
   },
   {
@@ -408,30 +441,30 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Bağışçı Hakları Beyannamesi</h3>
       <h4>1. Amaç</h4>
-      <p>bağışçıların kuruluşa olan güvenini garanti altına almaktır.</p>
+      <p>bağışçı güvenini garanti altına almaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>hangel aracılığıyla bağış yapan tüm birey ve kurumları kapsar.</p>
+      <p>tüm bağışçıları kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>Association of Fundraising Professionals (AFP) standartları.</p>
+      <p>AFP standartları.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>bilgilenme, saygı görme ve verilerinin gizliliği temel haklardır.</p>
+      <p>bilgilenme ve saygı görme temel haklardır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>her bağış işlemi için geçerlidir.</p>
+      <p>her bağışta geçerlidir.</p>
     `
   },
   {
     slug: 'bagis-gelirlerinin-denetlenmesi-politikasi',
-    title: 'Bağış Gelirlerinin Denetlenmesi ve Şeffaflık Raporu Politikası',
+    title: 'Bağış Gelirlerinin Denetlenmesi Politikası',
     content: `
-      <h3>Bağış Gelirlerinin Denetlenmesi ve Şeffaflık Raporu Politikası</h3>
+      <h3>Bağış Gelirlerinin Denetlenmesi Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>finansal akışın dış denetime açık ve şeffaf olmasını sağlamaktır.</p>
+      <p>finansal akışın dış denetime açık olmasını sağlamaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>yıllık finansal tabloları ve bağış dökümlerini kapsar.</p>
+      <p>yıllık finansal tabloları kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>bağımsız denetim standartları.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hangel, her yıl şeffaflık raporu yayınlamayı taahhüt eder.</p>
+      <p>yıllık şeffaflık raporu yayınlanır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>yıllık periyotlarla uygulanır.</p>
     `
@@ -442,13 +475,13 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Finansal Şeffaflık ve Hesap Verebilirlik Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>kurumsal harcamaların ve gelirlerin dürüstlükle paylaşılmasını sağlamaktır.</p>
+      <p>kurumsal harcamaların dürüstlükle paylaşılmasını sağlamaktır.</p>
       <h4>2. Kapsam</h4>
       <p>hangel AŞ'nin tüm mali yapısını kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>kurumsal yönetişim ilkeleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>gelirlerin kullanım alanları paydaşlara bildirilir.</p>
+      <p>gelir kullanımı paydaşlara bildirilir.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>sürekli geçerlidir.</p>
     `
@@ -459,15 +492,15 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Kâr Dağıtım Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>elde edilen gelirin kâr dağıtımı yerine misyona aktarılacağını taahhüt etmektir.</p>
+      <p>gelirin kâr dağıtımı yerine misyona aktarılacağını taahhüt etmektir.</p>
       <h4>2. Kapsam</h4>
-      <p>finansal yıl sonu gelir fazlasını kapsar.</p>
+      <p>yıl sonu gelir fazlasını kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>kâr kilidi (asset lock) prensibi.</p>
+      <p>kâr kilidi prensibi.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hissedarlar kâr payı almaz, tüm kaynak etkiyi büyütmek için kullanılır.</p>
+      <p>hissedarlar kâr payı almaz.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>şirket ana sözleşmesiyle bağlıdır.</p>
+      <p>şirket ana sözleşmesine bağlıdır.</p>
     `
   },
   {
@@ -476,15 +509,15 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Ücret Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>çalışan ve işlem bazlı ücretlerin adaletli bir şekilde belirlenmesidir.</p>
+      <p>ücretlerin adaletli belirlenmesidir.</p>
       <h4>2. Kapsam</h4>
-      <p>hizmet bedelleri ve maaş standartlarını kapsar.</p>
+      <p>maaş standartlarını kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>adil ücret ve sektör kıyaslamaları.</p>
+      <p>adil ücret esasları.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hangel, şeffaf bir ücret baremi uygular.</p>
+      <p>şeffaf bir ücret baremi uygulanır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>kurumsal bir politika olarak yürürlüktedir.</p>
+      <p>kurumsal politika olarak yürürlüktedir.</p>
     `
   },
   {
@@ -493,15 +526,83 @@ export const contractsData: Contract[] = [
     content: `
       <h3>ABD IRS Uyumlu Bağış Beyanı</h3>
       <h4>1. Amaç</h4>
-      <p>ABD'li bağışçıların vergi avantajlarından yararlanabilmesi için gerekli beyanı sunmaktır.</p>
+      <p>ABD'li bağışçıların vergi avantajlarından yararlanmasını sağlamaktır.</p>
       <h4>2. Kapsam</h4>
       <p>ABD vergi mükellefi bağışçıları kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>Internal Revenue Service (IRS) Section 501(c)(3) standartları.</p>
+      <p>IRS Section 501(c)(3) standartları.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hangel, uygun projeleri bu standartlarda raporlamaya çalışır.</p>
+      <p>uygun projeler bu standartta raporlanır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>global finansal uyum beyanıdır.</p>
+      <p>global uyum beyanıdır.</p>
+    `
+  },
+  {
+    slug: 'cevresel-sorumluluk-politikasi',
+    title: 'Çevresel Sorumluluk ve Sürdürülebilirlik Politikası',
+    content: `
+      <h3>Çevresel Sorumluluk ve Sürdürülebilirlik Politikası</h3>
+      <h4>1. Amaç</h4>
+      <p>Platformun ekolojik ayak izini minimize etmek ve sürdürülebilirliği desteklemektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Ofis operasyonları ve dijital altyapıyı kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Paris İklim Anlaşması ilkeleri.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, karbon nötr hedefleri doğrultusunda çalışmayı taahhüt eder.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Kurumsal sürdürülebilirlik stratejisinin bir parçasıdır.</p>
+    `
+  },
+  {
+    slug: 'aml-cft-uyum-beyani',
+    title: 'AML / CFT Uyum Beyanı',
+    content: `
+      <h3>AML / CFT Uyum Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Kara para aklama ve terörizmin finansmanını önlemek için sıkı denetim uygulamaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Tüm finansal transfer ve bağış süreçlerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>5549 sayılı Kanun ve FATF tavsiyeleri.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Şüpheli işlemler ilgili otoritelere ivedilikle bildirilir.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Sürekli denetim prosedürü olarak yürürlüktedir.</p>
+    `
+  },
+  {
+    slug: 'etik-bagis-ve-fon-kullanimi-beyani',
+    title: 'Etik Bağış ve Fon Kullanımı Beyanı',
+    content: `
+      <h3>Etik Bağış ve Fon Kullanımı Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Bağış kaynaklarının etik doğruluğunu ve amacına uygun kullanımını beyan etmektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Fon kabul ve dağıtım süreçlerinin tamamını kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Uluslararası sivil toplum etik kuralları.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Etik dışı kaynaklardan gelen bağışlar reddedilir.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Kurumsal etik kuralların ayrılmaz parçasıdır.</p>
+    `
+  },
+  {
+    slug: 'acik-veri-ve-etki-verisi-paylasim-politikasi',
+    title: 'Açık Veri ve Etki Verisi Paylaşım Politikası',
+    content: `
+      <h3>Açık Veri ve Etki Verisi Paylaşım Politikası</h3>
+      <h4>1. Amaç</h4>
+      <p>Oluşturulan sosyal etkinin verilerini şeffaf bir şekilde kamuoyuyla paylaşmaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Anonimleştirilmiş etki ve operasyon verilerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Açık veri (Open Data) prensipleri.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Veriler akademik ve toplumsal çalışmalar için erişilebilir kılınır.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Şeffaflık taahhüdümüzün temelidir.</p>
     `
   },
 
@@ -514,11 +615,11 @@ export const contractsData: Contract[] = [
       <h4>1. Amaç</h4>
       <p>hangel topluluğunun davranış standartlarını belirlemektir.</p>
       <h4>2. Kapsam</h4>
-      <p>tüm çalışanlar, kullanıcılar ve ortaklar için geçerlidir.</p>
+      <p>tüm paydaşlar için geçerlidir.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>evrensel insan hakları ve etik değerler.</p>
+      <p>evrensel insan hakları.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>ayrımcılık, şiddet ve yolsuzluğa karşı sıfır tolerans politikası esastır.</p>
+      <p>ayrımcılığa karşı sıfır tolerans esastır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>hangel kültürünün temelidir.</p>
     `
@@ -529,15 +630,15 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Çıkar Çatışması Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>karar alma süreçlerinin kişisel çıkarlardan bağımsız olmasını sağlamaktır.</p>
+      <p>karar alma süreçlerinin bağımsızlığını sağlamaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>yönetim kurulu ve karar verici tüm personeli kapsar.</p>
+      <p>yönetim kurulunu kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>kurumsal yönetişim ilkeleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>potansiyel çıkar çatışmaları derhal beyan edilmelidir.</p>
+      <p>potansiyel çatışmalar beyan edilmelidir.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>iç denetim mekanizması olarak yürürlüktedir.</p>
+      <p>iç denetim mekanizmasıdır.</p>
     `
   },
   {
@@ -546,15 +647,15 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Whistleblower (İhbarcı) Politikası</h3>
       <h4>1. Amaç</h4>
-      <p>etik dışı durumların güvenli bir şekilde bildirilmesini sağlamaktır.</p>
+      <p>etik dışı durumların güvenli bildirilmesini sağlamaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>ihbar hattını kullanan herkesi kapsar.</p>
+      <p>tüm kullanıcıları kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>şeffaflık ve dürüstlük prensipleri.</p>
+      <p>şeffaflık prensipleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>ihbarcının kimliği gizli tutulur ve misillemeye karşı korunur.</p>
+      <p>ihbarcı kimliği gizli tutulur.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>güven hattının açılmasıyla yürürlüktedir.</p>
+      <p>güven hattıyla yürürlüktedir.</p>
     `
   },
   {
@@ -563,15 +664,15 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Yönetim ve Kurumsal Yönetişim İlkeleri</h3>
       <h4>1. Amaç</h4>
-      <p>hangel AŞ'nin yönetim yapısını profesyonel ve şeffaf kılmaktır.</p>
+      <p>hangel yönetişim yapısını şeffaf kılmaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>organizasyonel hiyerarşi ve karar süreçlerini kapsar.</p>
+      <p>karar süreçlerini kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>OECD kurumsal yönetişim ilkeleri.</p>
+      <p>OECD ilkeleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>adil yönetim, şeffaf temsil ve hesap verebilirlik esastır.</p>
+      <p>adil yönetim esastır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>yönetim kurulu kararıyla yürürlüktedir.</p>
+      <p>sürekli yürürlüktedir.</p>
     `
   },
   {
@@ -580,15 +681,66 @@ export const contractsData: Contract[] = [
     content: `
       <h3>Kamu Yararı ve Sosyal Fayda Statüsü Beyanı</h3>
       <h4>1. Amaç</h4>
-      <p>hangel'in tüm faaliyetlerinin kamu yararına olduğunu beyan etmektir.</p>
+      <p>hangel faaliyetlerinin kamu yararına olduğunu beyan etmektir.</p>
       <h4>2. Kapsam</h4>
-      <p>şirketin ana sözleşmesindeki amaç maddesini kapsar.</p>
+      <p>şirket ana sözleşmesini kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>sosyal girişimcilik hukuki zemini.</p>
+      <p>sosyal girişimcilik hukuku.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
       <p>tüm projeler toplumsal bir ihtiyaca cevap verir.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>resmi beyan olarak yürürlüktedir.</p>
+      <p>resmi beyanımızdır.</p>
+    `
+  },
+  {
+    slug: 'insan-haklari-politikasi',
+    title: 'İnsan Hakları Politikası',
+    content: `
+      <h3>İnsan Hakları Politikası</h3>
+      <h4>1. Amaç</h4>
+      <p>İnsan onuruna saygıyı tüm kurumsal faaliyetlerin odağında tutmaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Çalışanlar, gönüllüler ve faydalanıcıları kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>BM İnsan Hakları Evrensel Beyannamesi.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Ayrımcılık, sömürü ve çocuk işçiliğine karşı sıfır tolerans uygulanır.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Temel haklar çerçevesi olarak her zaman yürürlüktedir.</p>
+    `
+  },
+  {
+    slug: 'dei-politikasi',
+    title: 'DEI Politikası',
+    content: `
+      <h3>DEI Politikası (Çeşitlilik, Hakkaniyet ve Kapsayıcılık)</h3>
+      <h4>1. Amaç</h4>
+      <p>Farklılıkların zenginlik olarak kabul edildiği kapsayıcı bir ekosistem oluşturmaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>İşe alım, terfi ve topluluk yönetimi süreçlerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Evrensel eşitlik ve adalet ilkeleri.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, her bireye eşit fırsatlar sunmayı taahhüt eder.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Kültürel dönüşüm stratejimizin bir parçasıdır.</p>
+    `
+  },
+  {
+    slug: 'risk-yonetimi-ve-kriz-mudahale-politikasi',
+    title: 'Risk Yönetimi ve Kriz Müdahale Politikası',
+    content: `
+      <h3>Risk Yönetimi ve Kriz Müdahale Politikası</h3>
+      <h4>1. Amaç</h4>
+      <p>Olası kriz anlarında kurumsal sürekliliği ve güvenliği sağlamaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Finansal, itibari ve teknolojik riskleri kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>COSO kurumsal risk yönetimi standartları.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Kriz anında öncelikli olarak paydaş güvenliği ve veri bütünlüğü korunur.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>İç denetim ve operasyonel hazırlık planıdır.</p>
     `
   },
 
@@ -601,13 +753,13 @@ export const contractsData: Contract[] = [
       <h4>1. Amaç</h4>
       <p>dijital ortamda herkesin eşit haklara sahip olmasını sağlamaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>tüm dijital platform ve içeriklerimizi kapsar.</p>
+      <p>tüm dijital platformumuzu kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>WCAG 2.2 AA/AAA standartları.</p>
+      <p>WCAG 2.2 AA standartları.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hangel, sürekli iyileştirme ile engelleri kaldırmayı taahhüt eder.</p>
+      <p>hangel, engelleri kaldırmayı taahhüt eder.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>teknik standartlarımızın bir parçasıdır.</p>
+      <p>teknik standartlarımızdır.</p>
     `
   },
   {
@@ -618,13 +770,13 @@ export const contractsData: Contract[] = [
       <h4>1. Amaç</h4>
       <p>paydaşların doğru bilgiye zamanında erişmesini sağlamaktır.</p>
       <h4>2. Kapsam</h4>
-      <p>resmi duyuru kanallarının tamamını kapsar.</p>
+      <p>resmi duyuruları kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>şeffaflık ilkeleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hangel, kritik gelişmeleri makul sürede ilan eder.</p>
+      <p>kritik gelişmeler makul sürede ilan edilir.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>iletişim stratejimizin temelidir.</p>
+      <p>iletişim stratejimizdir.</p>
     `
   },
   {
@@ -639,26 +791,26 @@ export const contractsData: Contract[] = [
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
       <p>evrensel erişim ilkeleri.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>tercüme farklarında türkiye istanbul merkezli türkçe metin esastır.</p>
+      <p>tercüme farklarında istanbul merkezli türkçe metin esastır.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>global genişleme ile aktive olur.</p>
+      <p>global genişleme ile aktif olur.</p>
     `
   },
   {
     slug: 'yerel-bagis-mevzuatlarina-uyum-beyani',
-    title: 'Yerel Bağış Mevzuatlarına Uyum Beyanı',
+    title: 'Yerel Bağış Mevzuatlarina Uyum Beyanı',
     content: `
-      <h3>Yerel Bağış Mevzuatlarına Uyum Beyanı</h3>
+      <h3>Yerel Bağış Mevzuatlarina Uyum Beyanı</h3>
       <h4>1. Amaç</h4>
-      <p>farklı ülkelerdeki bağış toplama kurallarına uyumu teyit etmektir.</p>
+      <p>global operasyonlarda yerel bağış kurallarına uyumu teyit etmektir.</p>
       <h4>2. Kapsam</h4>
-      <p>operasyon yapılan tüm yerel pazarları kapsar.</p>
+      <p>operasyon yapılan tüm pazarları kapsar.</p>
       <h4>3. Dayanak ve Uyum Çerçevesi</h4>
-      <p>ilgili ülkelerin bağış ve yardım kanunları.</p>
+      <p>ilgili ülkelerin bağış kanunları.</p>
       <h4>4. Haklar ve Yükümlülükler</h4>
-      <p>hangel, yerel otorite izinlerini almayı taahhüt eder.</p>
+      <p>hangel, yerel izinleri almayı taahhüt eder.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
-      <p>hukuki uyum sürecinin parçasıdır.</p>
+      <p>hukuki uyum beyanıdır.</p>
     `
   }
 ];
