@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -20,10 +19,11 @@ import {
     Building2,
     Landmark
 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 const StandardItem = ({ 
