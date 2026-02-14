@@ -28,7 +28,8 @@ import {
     Pointer,
     RotateCcw,
     MessageSquareWarning,
-    Languages
+    Languages,
+    Contrast
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -179,7 +180,7 @@ export default function AccessibilityPublicPage() {
                     </div>
                 </section>
 
-                {/* Teknik Standartlar ve İleri Seviye Kontroller (NEW SECTION) */}
+                {/* Teknik Standartlar ve İleri Seviye Kontroller */}
                 <section className="py-16 md:py-32 px-6 bg-[#f5f5f7]">
                     <div className="container mx-auto max-w-6xl space-y-16">
                         <div className="text-left md:text-center space-y-4 max-w-4xl mx-auto">
@@ -311,7 +312,7 @@ export default function AccessibilityPublicPage() {
                                 </div>
                                 <div className="space-y-6">
                                     <p className="text-base md:text-lg text-white/70 leading-relaxed font-medium">
-                                        Uluslararası standartlar dahi, özellikle AAA seviyesinde %100 uyumu zorunlu bir hedef olarak tanımlamaz. Farklı engel gruplarının ihtiyaçları zaman zaman birbirleriyle çelişebilir.
+                                        Uluslararası standartlar dahi, özellikle AAA seviyesinde %100 uyumu zorunlu bir hedef olarak tanımlamaz. farklı engel gruplarının ihtiyaçları zaman zaman birbirleriyle çelişebilir.
                                     </p>
                                     <p className="text-base md:text-lg text-white/70 leading-relaxed font-medium">
                                         Hangel, %100 gibi mutlak iddialar yerine; <strong>gerçekçi, ölçülebilir ve sürdürülebilir</strong> bir erişilebilirlik yaklaşımını düzenli iyileştirme taahhüdüyle sunar.
