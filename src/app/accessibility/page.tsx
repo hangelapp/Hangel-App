@@ -169,49 +169,30 @@ export default function AccessibilityPublicPage() {
                 </section>
 
                 {/* Uyum Sağlanan Standartlar */}
-                <section className="py-32 px-6 bg-black text-white overflow-hidden">
-                    <div className="container mx-auto max-w-6xl">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-                            <div className="space-y-10">
-                                <div className="space-y-4">
-                                    <h2 className="text-4xl md:text-7xl font-black tracking-tighter">Uluslararası Standartlar.</h2>
-                                    <p className="text-xl text-white/60 font-medium leading-relaxed">
-                                        Hangel, küresel erişilebilirlik standartlarını bir "check-list" olarak değil, bir tasarım felsefesi olarak benimser.
-                                    </p>
-                                </div>
-                                
-                                <div className="space-y-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-3 bg-white/10 rounded-xl text-primary"><ShieldCheck className="h-6 w-6" /></div>
-                                        <div>
-                                            <h4 className="text-lg font-bold">WCAG 2.2 AA</h4>
-                                            <p className="text-sm text-white/50">Esas aldığımız temel standart. Web içeriği erişilebilirliğinde en yüksek kurumsal uyumu hedefler.</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-3 bg-white/10 rounded-xl text-primary"><Layers className="h-6 w-6" /></div>
-                                        <div>
-                                            <h4 className="text-lg font-bold">WCAG 2.2 AAA (Destekleyici)</h4>
-                                            <p className="text-sm text-white/50">İleri seviye kullanıcı kontrolü sağlayan, isteğe bağlı aktive edilebilen üst düzey kriterler.</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-3 bg-white/10 rounded-xl text-primary"><Globe className="h-6 w-6" /></div>
-                                        <div>
-                                            <h4 className="text-lg font-bold">EN 301 549 & ISO/IEC 40500</h4>
-                                            <p className="text-sm text-white/50">Avrupa ve uluslararası dijital erişilebilirlik gereksinimleriyle uyumlu teknik mimari.</p>
-                                        </div>
-                                    </div>
-                                </div>
+                <section className="py-32 px-6 bg-black text-white overflow-hidden text-center">
+                    <div className="container mx-auto max-w-4xl space-y-16">
+                        <div className="space-y-4">
+                            <h2 className="text-4xl md:text-7xl font-black tracking-tighter">Uluslararası Standartlar.</h2>
+                            <p className="text-xl text-white/60 font-medium leading-relaxed max-w-2xl mx-auto">
+                                Hangel, küresel erişilebilirlik standartlarını bir "check-list" olarak değil, bir tasarım felsefesi olarak benimser.
+                            </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <div className="space-y-4 p-8 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                                <div className="p-3 bg-white/10 rounded-xl text-primary w-fit mx-auto"><ShieldCheck className="h-6 w-6" /></div>
+                                <h4 className="text-lg font-bold">WCAG 2.2 AA</h4>
+                                <p className="text-sm text-white/50">Esas aldığımız temel standart. Web içeriği erişilebilirliğinde en yüksek kurumsal uyumu hedefler.</p>
                             </div>
-                            <div className="relative aspect-square rounded-[3rem] overflow-hidden border-8 border-white/5 shadow-2xl">
-                                <Image 
-                                    src="https://images.unsplash.com/photo-1586717791821-3f4ea5654ff3?q=80&w=2070&auto=format&fit=crop" 
-                                    alt="Technical Standards" 
-                                    fill 
-                                    className="object-cover opacity-80"
-                                    data-ai-hint="product design"
-                                />
+                            <div className="space-y-4 p-8 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                                <div className="p-3 bg-white/10 rounded-xl text-primary w-fit mx-auto"><Layers className="h-6 w-6" /></div>
+                                <h4 className="text-lg font-bold">WCAG 2.2 AAA</h4>
+                                <p className="text-sm text-white/50">İleri seviye kullanıcı kontrolü sağlayan, isteğe bağlı aktive edilebilen üst düzey kriterler.</p>
+                            </div>
+                            <div className="space-y-4 p-8 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                                <div className="p-3 bg-white/10 rounded-xl text-primary w-fit mx-auto"><Globe className="h-6 w-6" /></div>
+                                <h4 className="text-lg font-bold">EN 301 549 & ISO/IEC</h4>
+                                <p className="text-sm text-white/50">Avrupa ve uluslararası dijital erişilebilirlik gereksinimleriyle uyumlu teknik mimari.</p>
                             </div>
                         </div>
                     </div>
