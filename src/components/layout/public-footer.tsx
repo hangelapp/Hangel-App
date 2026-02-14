@@ -40,7 +40,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
             links: [
                 {label: "Üye İşyeri Ol", href: "/merchant"}, 
                 {label: "STK Kaydı", href: "/ngo-onboarding"}, 
-                {label: "Kampüs Avantajları", href: "/campus-advantages"},
+                {label: "Kulüp Kaydı", href: "/campus-advantages"},
                 {label: "Kamu İşbirlikleri", href: "/corporate"}
             ] 
         },
