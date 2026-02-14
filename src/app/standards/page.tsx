@@ -1,28 +1,31 @@
+
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowLeft, 
     ShieldCheck, 
     Globe, 
     Scale, 
-    UserCheck,
-    CheckCircle2,
-    Zap,
-    Lock,
-    Cpu,
-    FileText,
-    TrendingUp,
-    ChevronRight,
+    CheckCircle2, 
     Award,
-    Building2,
+    ChevronRight,
     Landmark,
-    Target
+    Target,
+    FileText,
+    Gavel,
+    Shield,
+    HeartHandshake,
+    Eye,
+    TrendingUp,
+    Database,
+    Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,9 +37,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: any[], headers: string[] }) => (
-    <div className="space-y-6">
+    <div className="space-y-6 scroll-mt-24" id={title.toLowerCase().replace(/\s+/g, '-')}>
         <div className="space-y-1">
             <h3 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">{title}</h3>
             {description && <p className="text-sm text-muted-foreground font-medium">{description}</p>}
@@ -74,6 +84,44 @@ const ComplianceTable = ({ title, description, data, headers }: { title: string,
     </div>
 );
 
+const regions = [
+    {
+        name: "Türkiye",
+        flag: "🇹🇷",
+        desc: "KVKK, 2860 Sayılı Yardım Toplama ve 5253 Sayılı Dernekler Kanunu standartlarıyla tam uyumluluk.",
+        image: "https://images.unsplash.com/photo-1541432901012-a77cbd55a04e?q=80&w=2070&auto=format&fit=crop",
+        hint: "istanbul landscape"
+    },
+    {
+        name: "Avrupa Birliği",
+        flag: "🇪🇺",
+        desc: "GDPR veri koruma normları ve EAA (European Accessibility Act) teknik erişilebilirlik mevzuatlarına %100 uyum.",
+        image: "https://images.unsplash.com/photo-1561574564-8a5f8b7a6fae?q=80&w=2070&auto=format&fit=crop",
+        hint: "european parliament"
+    },
+    {
+        name: "ABD",
+        flag: "🇺🇸",
+        desc: "IRS 501(c)(3) bağışçılık standartları, COPPA çocuk veri güvenliği ve ADA erişilebilirlik yasalarıyla uyumluluk.",
+        image: "https://images.unsplash.com/photo-1501466044931-62695aada8e9?q=80&w=2070&auto=format&fit=crop",
+        hint: "washington dc"
+    },
+    {
+        name: "Brezilya",
+        flag: "🇧🇷",
+        desc: "LGPD (Lei Geral de Proteção de Dados) kapsamında Latin Amerika veri güvenliği standartlarına tam adaptasyon.",
+        image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=2070&auto=format&fit=crop",
+        hint: "rio landscape"
+    },
+    {
+        name: "Birleşik Krallık",
+        flag: "🇬🇧",
+        desc: "Equality Act 2010 ve WCAG 2.1 AA seviyesindeki Birleşik Krallık kamu dijital erişilebilirlik kriterlerine uyum.",
+        image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070&auto=format&fit=crop",
+        hint: "london big ben"
+    }
+];
+
 export default function StandardsPage() {
     const router = useRouter();
 
@@ -83,49 +131,88 @@ export default function StandardsPage() {
         { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model", org: "OECD", region: "OECD", rate: "%95" },
         { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
         { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları", org: "UN", region: "Küresel", rate: "%95" },
+    ];
+
+    const privacySecurityData = [
         { label: "Gizlilik Politikası", std: "ISO/IEC 27701", org: "ISO", region: "Küresel", rate: "%85" },
         { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "KVKK Kurumu", region: "Türkiye", rate: "%100" },
         { label: "GDPR Uyum Politikası", std: "GDPR", org: "AB Veri Otoriteleri", region: "AB", rate: "%90" },
         { label: "Açık Rıza Metni", std: "GDPR + KVKK", org: "KVKK / EDPB", region: "TR + AB", rate: "%100" },
         { label: "Veri Saklama & İmha", std: "ISO 27001", org: "ISO", region: "Küresel", rate: "%85" },
-        { label: "Çevresel Sorumluluk", std: "ISO 14001", org: "ISO", region: "Küresel", rate: "%75" },
-        { label: "Etik İlkeler", std: "UN Global Compact", org: "UNGC", region: "Küresel", rate: "%95" },
-        { label: "İnsan Hakları", std: "UNGP", org: "UN", region: "Küresel", rate: "%95" },
-        { label: "Erişilebilirlik", std: "WCAG 2.1", org: "W3C", region: "Küresel", rate: "%85" },
+        { label: "DPO Tanımı", std: "GDPR Md.37", org: "AB", region: "AB", rate: "%80" },
+        { label: "Veri İhlali Bildirimi", std: "ISO 27035", org: "AB Otoriteleri", region: "AB", rate: "%85" },
+        { label: "Çerez Politikası", std: "ePrivacy", org: "AB Komisyonu", region: "AB", rate: "%100" },
+        { label: "COPPA Uyumu", std: "COPPA", org: "FTC", region: "ABD", rate: "%75" },
+        { label: "CCPA / CPRA", std: "California Law", org: "California AG", region: "ABD", rate: "%80" },
+        { label: "LGPD Beyanı", std: "LGPD", org: "ANPD", region: "Brezilya", rate: "%75" },
+        { label: "Ülke Bazlı Veri Uyumu", std: "Yerel Yasalar", org: "Ulusal Otoriteler", region: "Global", rate: "%70" },
+        { label: "Yapay Zekâ Şeffaflığı", std: "OECD AI", org: "OECD", region: "OECD", rate: "%65" },
     ];
 
-    const accessibilityComplianceData = [
+    const socialImpactFinancialData = [
+        { label: "Sosyal Etki Politikası", std: "UN SDGs", org: "UN", region: "Küresel", rate: "%95" },
+        { label: "Etki Ölçüm Metodu", std: "SROI / ToC", org: "Fon Sağlayıcılar", region: "Küresel", rate: "%80" },
+        { label: "Açık Sosyal Girişim Beyanı", std: "Social Business", org: "Impact Fonları", region: "Küresel", rate: "%100" },
+        { label: "Bağış ve Yardım Politikası", std: "Charity Compliance", org: "Kamu", region: "Ülke bazlı", rate: "%95" },
+        { label: "Bağışçı Hakları", std: "Donor Bill of Rights", org: "Vakıflar", region: "ABD / AB", rate: "%90" },
+        { label: "Bağış Denetimi", std: "Financial Audit", org: "Bağımsız Denetçiler", region: "Küresel", rate: "%85" },
+        { label: "Finansal Şeffaflık", std: "IFRS", org: "IFRS Foundation", region: "Küresel", rate: "%90" },
+        { label: "Kâr Dağıtım Politikası", std: "Sosyal Şirket Modeli", org: "Yatırımcılar", region: "Küresel", rate: "%100" },
+        { label: "IRS Uyumlu Bağış", std: "IRS 501(c)", org: "IRS", region: "ABD", rate: "%70" },
+        { label: "Çevresel Sorumluluk", std: "ISO 14001", org: "ISO", region: "Küresel", rate: "%75" },
+        { label: "AML / CFT", std: "FATF", org: "FATF", region: "Küresel", rate: "%80" },
+        { label: "Etik Bağış Beyanı", std: "Anti-Corruption", org: "Fonlar", region: "Küresel", rate: "%95" },
+        { label: "Açık Veri Politikası", std: "Open Data Charter", org: "Kamu Fonları", region: "AB / OECD", rate: "%70" },
+    ];
+
+    const governanceEthicsData = [
+        { label: "Etik İlkeler", std: "UN Global Compact", org: "UNGC", region: "Küresel", rate: "%95" },
+        { label: "Çıkar Çatışması", std: "OECD Governance", org: "OECD", region: "OECD", rate: "%90" },
+        { label: "Whistleblower", std: "ISO 37002", org: "ISO", region: "Küresel", rate: "%85" },
+        { label: "Kurumsal Yönetişim", std: "G20 / OECD", org: "G20", region: "G20", rate: "%90" },
+        { label: "İnsan Hakları", std: "UNGP", org: "UN", region: "Küresel", rate: "%95" },
+        { label: "DEI Politikası", std: "ESG Framework", org: "ESG Fonları", region: "AB / ABD", rate: "%85" },
+        { label: "Risk & Kriz Yönetimi", std: "ISO 31000", org: "ISO", region: "Küresel", rate: "%80" },
+    ];
+
+    const accessibilityLawData = [
         { label: "Web Content Accessibility Guidelines", std: "WCAG 2.2", org: "W3C", region: "Küresel", rate: "AA: %100 / AAA: %95" },
         { label: "European Accessibility Act (EAA)", std: "EN 301 549", org: "Avrupa Komisyonu", region: "Avrupa Birliği", rate: "%95" },
-        { label: "Americans with Disabilities Act (ADA)", std: "WCAG 2.1–2.2 AA", org: "Department of Justice", region: "ABD", rate: "%96" },
+        { label: "EN 301 549", std: "WCAG 2.1–2.2", org: "ETSI / CEN", region: "Avrupa Birliği", rate: "%95" },
+        { label: "Americans with Disabilities Act (ADA)", std: "WCAG 2.1–2.2 AA", org: "DOJ", region: "ABD", rate: "%96" },
         { label: "Section 508", std: "WCAG 2.1–2.2", org: "U.S. Access Board", region: "ABD", rate: "%96" },
+        { label: "Equality Act 2010", std: "WCAG 2.1 AA", org: "UK Equality Office", region: "Birleşik Krallık", rate: "%95" },
         { label: "TS EN 301 549", std: "WCAG 2.1–2.2", org: "TSE", region: "Türkiye", rate: "%95" },
+        { label: "5378 Sayılı Kanun", std: "WCAG referanslı", org: "Aile Sosyal Bak.", region: "Türkiye", rate: "%95" },
+        { label: "JIS X 8341-3", std: "WCAG 2.x", org: "Japonya İçişleri", region: "Japonya", rate: "%90" },
+        { label: "KWCAG 2.2", std: "WCAG 2.2", org: "Güney Kore MSIT", region: "Güney Kore", rate: "%90" },
+        { label: "GB/T 37668", std: "WCAG 2.x", org: "Çin Standart.", region: "Çin", rate: "%88" },
         { label: "UN CRPD (Madde 9)", std: "WCAG referanslı", org: "United Nations", region: "Küresel", rate: "%100" },
     ];
 
-    const socialEconomyData = [
+    const socialEconomyFrameworkData = [
         { label: "Sosyal Ekonomi Eylem Planı", std: "Çerçeve politika", org: "European Commission", region: "AB", rate: "%100" },
         { label: "Sosyal Girişim Tanımı (EU)", std: "Tavsiye kararı", org: "European Union", region: "AB", rate: "%100" },
-        { label: "GRI 413 / 203", std: "Etki raporlama standardı", org: "Global Reporting Initiative", region: "Küresel", rate: "%100" },
+        { label: "GRI 413 / 203", std: "Etki raporlama standardı", org: "GRI", region: "Küresel", rate: "%100" },
         { label: "Dernekler Kanunu (5253)", std: "Bağlayıcı mevzuat", org: "İçişleri Bakanlığı", region: "Türkiye", rate: "%100" },
         { label: "SDGs (2030 Gündemi)", std: "Küresel hedef seti", org: "United Nations", region: "Küresel", rate: "%100" },
+        { label: "Social Impact Measurement", std: "Etki ölçüm rehberi", org: "Harvard Business School", region: "ABD", rate: "%100" },
+        { label: "AU Social Economy Agenda", std: "Kıtasal politika", org: "African Union", region: "Afrika", rate: "%100" },
     ];
 
     const fullAuditList = [
         { label: "Kullanıcı Sözleşmesi", std: "Kurumsal kullanım şartları", org: "hangel", region: "Küresel", rate: "100" },
         { label: "Kuruluş Sözleşmesi", std: "Kurumsal yapı", org: "hangel", region: "Türkiye", rate: "100" },
         { label: "Gönüllülük Sözleşmesi", std: "Gönüllü hak ve sorumluluklar", org: "hangel", region: "Türkiye", rate: "100" },
-        { label: "Gizlilik Politikası", std: "KVKK / GDPR / CCPA / LGPD", org: "hangel", region: "AB, ABD, TR, LATAM", rate: "100" },
-        { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "İçişleri Bakanlığı", region: "Türkiye", rate: "100" },
+        { label: "Gizlilik Politikası", std: "KVKK / GDPR / CCPA / LGPD", org: "hangel", region: "Global", rate: "100" },
         { label: "Bilgi Güvenliği Politikası", std: "ISO 27001", org: "hangel", region: "Küresel", rate: "100" },
         { label: "Yapay Zekâ Şeffaflık Beyanı", std: "AI Şeffaflık İlkeleri", org: "hangel", region: "Küresel", rate: "100" },
         { label: "Sosyal Etki Politikası", std: "SROI & Theory of Change", org: "hangel", region: "Küresel", rate: "100" },
-        { label: "Açık Veri Politikası", std: "Global Reporting Initiative", org: "GRI", region: "Küresel", rate: "100" },
-        { label: "İnsan Hakları Politikası", std: "UN Guiding Principles", org: "United Nations", region: "Küresel", rate: "100" },
-        { label: "Erişilebilirlik Politikası", std: "WCAG / EN 301 549", org: "European Commission", region: "AB", rate: "100" },
+        { label: "Bağış ve Yardım Politikası", std: "IRS / Ulusal mevzuat", org: "hangel", region: "TR + ABD", rate: "100" },
+        { label: "Finansal Şeffaflık", std: "IFRS / GAAP", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Erişilebilirlik Politikası", std: "WCAG / EN 301 549", org: "hangel", region: "Küresel", rate: "100" },
         { label: "ISO 27001 Uyum Beyanı", std: "Bilgi Güvenliği", org: "ISO", region: "Küresel", rate: "100" },
         { label: "ISO 22301 Uyum Beyanı", std: "İş Sürekliliği", org: "ISO", region: "Küresel", rate: "100" },
-        { label: "Bağımsız Mali Denetim", std: "IFRS / GAAP", org: "IFRS / GAAP", region: "Küresel", rate: "100" },
     ];
 
     return (
@@ -136,7 +223,7 @@ export default function StandardsPage() {
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                     </Button>
-                    <span className="text-[10px] font-black tracking-tight uppercase">Kalite & Sertifikasyon Standartları</span>
+                    <span className="text-[10px] font-black tracking-tight uppercase hidden sm:inline">Kalite & Sertifikasyon Standartları</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
                         <Link href="/settings/contracts">Beyanları Oku</Link>
                     </Button>
@@ -146,62 +233,121 @@ export default function StandardsPage() {
             <main className="pt-24 pb-32">
                 {/* Hero Section */}
                 <section className="container mx-auto px-6 max-w-5xl text-center py-16 md:py-24 space-y-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4 animate-in fade-in zoom-in duration-700">
                         <Award className="h-4 w-4" />
                         <span className="text-[10px] font-black uppercase tracking-widest">Global Güven Standartları</span>
                     </div>
-                    <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
+                    <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95] animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         Standartlarına Uyum sağladığımız <br className="hidden md:block" /> Sertifikasyon Kurumları.
                     </h1>
-                    <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed opacity-80">
                         hangel, teknoloji ve sosyal fayda arasındaki köprüyü uluslararası otoritelerin belirlediği en sıkı standartlarla inşaa eder. Güvenimiz, uyum sağladığımız bu ilkelerden gelir.
                     </p>
                 </section>
 
+                {/* Regions Section - Apple Style Card Carousel */}
+                <section className="container mx-auto px-4 max-w-7xl mb-32">
+                    <div className="text-center mb-12 space-y-2">
+                        <h2 className="text-3xl font-bold tracking-tight">Küresel Uyum Ağımız</h2>
+                        <p className="text-muted-foreground font-medium">Faaliyet gösterdiğimiz bölgelerdeki en sıkı yasal ve etik normları uyguluyoruz.</p>
+                    </div>
+                    <Carousel opts={{ align: "start" }} className="w-full">
+                        <CarouselContent className="-ml-6">
+                            {regions.map((region) => (
+                                <CarouselItem key={region.name} className="md:basis-1/2 lg:basis-1/3 pl-6">
+                                    <div className="rounded-[2.5rem] bg-white border border-black/5 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 h-[500px] flex flex-col group">
+                                        <div className="relative aspect-video">
+                                            <Image src={region.image} alt={region.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" data-ai-hint={region.hint} />
+                                            <div className="absolute top-4 left-4 text-4xl drop-shadow-md">{region.flag}</div>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                        </div>
+                                        <div className="p-8 flex flex-col flex-1 justify-between">
+                                            <div className="space-y-3">
+                                                <h3 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">{region.name}</h3>
+                                                <p className="text-sm text-muted-foreground leading-relaxed font-medium">{region.desc}</p>
+                                            </div>
+                                            <div className="pt-4">
+                                                <span className="text-primary font-bold flex items-center text-sm group-hover:gap-2 transition-all">
+                                                    Standartları İncele <ChevronRight className="h-4 w-4 ml-1" />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <div className="hidden xl:flex justify-end gap-2 mt-8 px-6">
+                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
+                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
+                        </div>
+                    </Carousel>
+                </section>
+
                 {/* Compliance Sections */}
-                <section className="container mx-auto px-6 max-w-6xl space-y-24">
+                <section className="container mx-auto px-6 max-w-6xl space-y-32">
                     
                     <ComplianceTable 
-                        title="Kurumsal Sözleşme ve Politika Uyum Oranları"
-                        description="Ana sözleşmeler, gizlilik ve finansal şeffaflık politikalarımızın küresel standartlarla eşleşme durumu."
-                        headers={["Belge", "Standart / Sertifika", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        title="A. ANA SÖZLEŞMELER"
+                        description="Kullanıcı ve kuruluş sözleşmelerimizin bölgesel tüketici ve sivil toplum yasalarıyla uyumu."
+                        headers={["Belge", "Standart", "Kurum", "Ülke / Birlik", "Sağlanan"]}
                         data={mainComplianceData}
                     />
 
                     <ComplianceTable 
+                        title="B. GİZLİLİK, VERİ KORUMA VE GÜVENLİK"
+                        description="Veri mahremiyeti ve siber güvenlik alanındaki uluslararası sertifikasyonlar ve yerel kanunlar."
+                        headers={["Belge", "Standart / Sertifika", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        data={privacySecurityData}
+                    />
+
+                    <ComplianceTable 
+                        title="C. SOSYAL ETKİ, BAĞIŞ VE FİNANSAL ŞEFFAFLIK"
+                        description="Bağışçılık, sosyal etki ölçümleme ve finansal raporlama standartlarımız."
+                        headers={["Belge", "Standart", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        data={socialImpactFinancialData}
+                    />
+
+                    <ComplianceTable 
+                        title="D. KURUMSAL YÖNETİŞİM, ETİK VE DENETİM"
+                        description="Şirket ve dernek yönetişimi, etik ilkeler ve risk yönetimi çerçeveleri."
+                        headers={["Belge", "Standart", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        data={governanceEthicsData}
+                    />
+
+                    <ComplianceTable 
                         title="Küresel Erişilebilirlik Mevzuat Uyumu"
-                        description="Platformumuz; WCAG 2.2 AA standartlarıyla %100 uyumlu, WCAG 2.2 AAA kriterlerini ise %95 oranında destekler."
+                        description="hangel platformu; WCAG 2.2 AA standartlarıyla %100 uyumlu, WCAG 2.2 AAA kriterlerini ise %95 oranında destekler."
                         headers={["Belge / Mevzuat", "Standart Referansı", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan (%)"]}
-                        data={accessibilityComplianceData}
+                        data={accessibilityLawData}
                     />
 
                     <ComplianceTable 
                         title="Sosyal Ekonomi ve Kalkınma Çerçeveleri"
                         description="Sosyal girişimcilik ve etki ölçümlemede temel aldığımız uluslararası politikalar."
-                        headers={["Belge / Çerçeve", "Hukuki Statü", "Kurum", "Ülke / Birlik", "Sağlanan %"]}
-                        data={socialEconomyData}
+                        headers={["Belge / Çerçeve", "Standart / Hukuki Statü", "Kurum", "Ülke / Birlik", "Sağlanan %"]}
+                        data={socialEconomyFrameworkData}
                     />
 
-                    <div className="space-y-8 pt-12 border-t border-black/5">
+                    <div className="space-y-12 pt-12 border-t border-black/10">
                         <div className="text-center space-y-4">
                             <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Tam Uyumluluk Beyan Listesi.</h2>
-                            <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto">
+                            <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
                                 hangel ekosisteminde %100 uyum sağlanan ve periyodik denetime tabi olan döküman ve beyanların tam listesi.
                             </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {fullAuditList.map((item, i) => (
-                                <div key={i} className="flex items-center justify-between p-6 bg-white rounded-3xl border border-black/5 shadow-sm hover:shadow-md transition-all group">
+                                <div key={i} className="flex items-center justify-between p-6 bg-white rounded-3xl border border-black/5 shadow-sm hover:shadow-xl transition-all group">
                                     <div className="flex items-center gap-4">
                                         <div className="p-2.5 bg-green-50 rounded-xl text-green-600">
                                             <CheckCircle2 className="h-5 w-5" />
                                         </div>
-                                        <div className="space-y-0.5">
-                                            <p className="font-bold text-sm text-[#1d1d1f]">{item.label}</p>
-                                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{item.std}</p>
+                                        <div className="space-y-0.5 min-w-0">
+                                            <p className="font-bold text-sm text-[#1d1d1f] truncate">{item.label}</p>
+                                            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest truncate">{item.std}</p>
                                         </div>
                                     </div>
-                                    <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] tracking-widest">%{item.rate}</Badge>
+                                    <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] tracking-widest shrink-0">%{item.rate}</Badge>
                                 </div>
                             ))}
                         </div>
@@ -209,7 +355,7 @@ export default function StandardsPage() {
 
                 </section>
 
-                {/* Bottom Context */}
+                {/* Bottom Context - Final Shield */}
                 <section className="container mx-auto px-6 max-w-4xl mt-32">
                     <Card className="rounded-[3rem] bg-black text-white p-10 md:p-16 border-none shadow-2xl relative overflow-hidden text-center">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -221,10 +367,10 @@ export default function StandardsPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardFooter className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-                            <Button asChild size="lg" className="rounded-full px-10 h-14 font-bold bg-white text-black hover:bg-white/90 w-full sm:w-auto">
+                            <Button asChild size="lg" className="rounded-full px-10 h-14 font-bold bg-white text-black hover:bg-white/90 w-full sm:w-auto transition-all active:scale-95">
                                 <Link href="/ngo-admin/transparency">Şeffaflık Raporu</Link>
                             </Button>
-                            <Button asChild variant="ghost" size="lg" className="rounded-full px-10 h-14 font-bold text-white hover:bg-white/10 w-full sm:w-auto">
+                            <Button asChild variant="ghost" size="lg" className="rounded-full px-10 h-14 font-bold text-white hover:bg-white/10 w-full sm:w-auto transition-all active:scale-95">
                                 <Link href="/support">Teknik Bilgi Al</Link>
                             </Button>
                         </CardFooter>
