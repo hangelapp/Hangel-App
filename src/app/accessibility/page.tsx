@@ -206,11 +206,11 @@ export default function AccessibilityPublicPage() {
                             </div>
                             <div className="relative aspect-square rounded-[3rem] overflow-hidden border-8 border-white/5 shadow-2xl">
                                 <Image 
-                                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop" 
+                                    src="https://images.unsplash.com/photo-1586717791821-3f4ea5654ff3?q=80&w=2070&auto=format&fit=crop" 
                                     alt="Technical Standards" 
                                     fill 
                                     className="object-cover opacity-80"
-                                    data-ai-hint="data visualization"
+                                    data-ai-hint="product design"
                                 />
                             </div>
                         </div>
@@ -228,7 +228,7 @@ export default function AccessibilityPublicPage() {
                         <Card className="overflow-hidden border-none shadow-2xl rounded-[2.5rem]">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="bg-[#f5f5f7] hover:bg-[#f5f5f7]">
+                                    <TableRow className="bg-[#f5f5f7] border-none">
                                         <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-[0.2em]">Ayar / Özellik</TableHead>
                                         <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-[0.2em]">WCAG Kriteri</TableHead>
                                         <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-[0.2em]">Hangel Durumu</TableHead>
@@ -236,7 +236,7 @@ export default function AccessibilityPublicPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {wcagCriteria.map((item, i) => (
-                                        <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                                        <TableRow key={i} className="hover:bg-muted/30 transition-colors border-border/50">
                                             <TableCell className="py-6 px-8 font-bold text-lg text-[#1d1d1f]">{item.feature}</TableCell>
                                             <TableCell className="py-6 px-8">
                                                 <div className="space-y-1">
