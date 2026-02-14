@@ -386,7 +386,7 @@ export const contractsData: Contract[] = [
   },
   {
     slug: 'sosyal-etki-metodolojisi',
-    title: 'Sosyal Etki Ölçüm ve Raporlama Metodolojisi',
+    title: 'Sosyal Etki Ölçüm ve Raporlama Metodolojisi (SROI & Theory of Change)',
     content: `
       <h3>Sosyal Etki Ölçüm ve Raporlama Metodolojisi</h3>
       <h4>1. Amaç</h4>
@@ -454,7 +454,7 @@ export const contractsData: Contract[] = [
   },
   {
     slug: 'bagis-gelirlerinin-denetlenmesi-politikasi',
-    title: 'Bağış Gelirlerinin Denetlenmesi Politikası',
+    title: 'Bağış Gelirlerinin Denetlenmesi ve Şeffaflık Raporu Politikası',
     content: `
       <h3>Bağış Gelirlerinin Denetlenmesi Politikası</h3>
       <h4>1. Amaç</h4>
@@ -811,6 +811,88 @@ export const contractsData: Contract[] = [
       <p>hangel, yerel izinleri almayı taahhüt eder.</p>
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>hukuki uyum beyanıdır.</p>
+    `
+  },
+
+  // --- F. Gelişim Yol Haritası ve Standartlar ---
+  {
+    slug: 'gelisim-yol-haritasi-ve-standartlar',
+    title: 'Gelişim Yol Haritası ve Henüz Sağlanmamış Standartlar Beyanı',
+    content: `
+      <h3>Gelişim Yol Haritası ve Henüz Sağlanmamış Standartlar Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>hangel olarak şeffaflık ilkemiz gereği, platformumuzun mevcut durumunu ve henüz tam uyum sağlanmamış ancak gelişim yol haritamızda yer alan uluslararası standartları paydaşlarımıza beyan etmektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Bilgi güvenliği, finansal yönetim, dijital erişilebilirlik ve kurumsal yönetişim alanlarındaki gelişim hedeflerini kapsar.</p>
+      <h4>3. Mevcut Durum ve Hedeflenen Standartlar Tablosu</h4>
+      <div class="overflow-x-auto my-6">
+        <table class="w-full border-collapse border border-gray-200">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="border border-gray-200 p-3 text-left font-bold text-sm">Ana Blok</th>
+              <th class="border border-gray-200 p-3 text-left font-bold text-sm">Eksik / Henüz Sağlanmamış Standart / Uygulama</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border border-gray-200 p-3 font-bold text-sm">Bilgi Güvenliği</td>
+              <td class="border border-gray-200 p-3 text-sm">
+                <ul class="list-disc ml-4 space-y-1">
+                  <li>ISO 27001 / NIST sertifikasyonu</li>
+                  <li>Düzenli sızma testleri / güvenlik denetimleri</li>
+                  <li>Çalışan güvenlik eğitimi</li>
+                  <li>Olay müdahale planı (Incident Response Plan)</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-200 p-3 font-bold text-sm">Dijital Platform Standartları</td>
+              <td class="border border-gray-200 p-3 text-sm">
+                <ul class="list-disc ml-4 space-y-1">
+                  <li>ISO / IEC 25010 / EN 301 549</li>
+                  <li>Mobil ve web performans ölçüm raporları</li>
+                  <li>UX ve güvenlik testleri</li>
+                  <li>Erişilebilirlik sertifikasyonu</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-200 p-3 font-bold text-sm">Bağış ve Finansal Şeffaflık</td>
+              <td class="border border-gray-200 p-3 text-sm">
+                <ul class="list-disc ml-4 space-y-1">
+                  <li>Dış denetim raporları / bağımsız mali denetim</li>
+                  <li>Finansal standart sertifikaları (IFRS, GAAP)</li>
+                  <li>Bağışçı şikayet / geri bildirim mekanizması</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-200 p-3 font-bold text-sm">Yönetişim ve Etik</td>
+              <td class="border border-gray-200 p-3 text-sm">
+                <ul class="list-disc ml-4 space-y-1">
+                  <li>Board / yönetim kurulunda bağımsız denetim</li>
+                  <li>Etik performans raporlaması</li>
+                  <li>Uyum / risk komitesi uygulaması</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="border border-gray-200 p-3 font-bold text-sm">İş Sürekliliği ve Risk Yönetimi</td>
+              <td class="border border-gray-200 p-3 text-sm">
+                <ul class="list-disc ml-4 space-y-1">
+                  <li>ISO 22301 / İş Sürekliliği Yönetim Sistemi</li>
+                  <li>Felaket kurtarma ve yedekleme planlarının testi</li>
+                  <li>Sistem ve operasyonel risklerin güncellenmesi</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, bu standartlara uyum için gerekli kaynakları ayırmayı ve ilerleme raporlarını periyodik olarak şeffaflık endeksinde yayınlamayı taahhüt eder.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Bu beyan, platformun stratejik yol haritasının bir parçası olarak yayınlandığı tarihte yürürlüğe girmiştir.</p>
     `
   }
 ];

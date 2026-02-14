@@ -43,14 +43,14 @@ const contractGroups = [
         title: 'C. Sosyal Etki, Bağış ve Finansal Şeffaflık',
         items: [
             { title: 'Sosyal Etki Politikası', slug: 'sosyal-etki-politikasi' },
-            { title: 'Sosyal Etki Ölçüm ve Raporlama Metodolojisi', slug: 'sosyal-etki-metodolojisi' },
+            { title: 'Sosyal Etki Ölçüm ve Raporlama Metodolojisi (SROI & Theory of Change)', slug: 'sosyal-etki-metodolojisi' },
             { title: 'Açık Sosyal Girişim Beyanı', slug: 'acik-sosyal-girisim-beyani' },
             { title: 'Bağış ve Yardım Politikası', slug: 'bagis-ve-yardim-politikasi' },
             { title: 'Bağışçı Hakları Beyannamesi', slug: 'bagisci-haklari-beyannamesi' },
-            { title: 'Bağış Gelirlerinin Denetlenmesi Politikası', slug: 'bagis-gelirlerinin-denetlenmesi-politikasi' },
+            { title: 'Bağış Gelirlerinin Denetlenmesi ve Şeffaflık Raporu Politikası', slug: 'bagis-gelirlerinin-denetlenmesi-politikasi' },
             { title: 'Finansal Şeffaflık ve Hesap Verebilirlik Politikası', slug: 'finansal-seffaflik-ve-hesap-verebilirlik-politikasi' },
             { title: 'Kâr Dağıtım Politikası', slug: 'kar-dagitim-politikasi' },
-            { title: 'Ücret Politikamız', slug: 'ucret-politikasi' },
+            { title: 'Ücret Politikası', slug: 'ucret-politikasi' },
             { title: 'ABD IRS Uyumlu Bağış Beyanı', slug: 'abd-irs-bagis-beyani' },
             { title: 'Çevresel Sorumluluk ve Sürdürülebilirlik Politikası', slug: 'cevresel-sorumluluk-politikasi' },
             { title: 'AML / CFT Uyum Beyanı', slug: 'aml-cft-uyum-beyani' },
@@ -78,6 +78,12 @@ const contractGroups = [
             { title: 'Bilgilendirme Politikası', slug: 'bilgilendirme-politikasi' },
             { title: 'Çok Dilli Sözleşmeler ve Küresel Erişim Politikası', slug: 'cok-dilli-sozlesmeler-politikasi' },
             { title: 'Yerel Bağış Mevzuatlarına Uyum Beyanı', slug: 'yerel-bagis-mevzuatlarina-uyum-beyani' },
+        ]
+    },
+    {
+        title: 'F. Gelişim Yol Haritası ve Standartlar',
+        items: [
+            { title: 'Gelişim Yol Haritası ve Henüz Sağlanmamış Standartlar Beyanı', slug: 'gelisim-yol-haritasi-ve-standartlar' },
         ]
     }
 ];
