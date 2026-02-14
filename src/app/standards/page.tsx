@@ -8,7 +8,8 @@ import {
     Award,
     ChevronRight,
     Globe,
-    ShieldCheck
+    ShieldCheck,
+    Target
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -114,94 +115,113 @@ export default function StandardsPage() {
     const router = useRouter();
 
     const mainComplianceData = [
-        { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku", org: "Ticaret Bakanlığı", region: "Türkiye", rate: "%100" },
+        { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku / Kurumsal kullanım şartları", org: "Ticaret Bakanlığı / hangel", region: "Türkiye / Küresel", rate: "%100 / %100" },
         { label: "Kullanıcı Sözleşmesi", std: "Consumer Protection", org: "FTC", region: "ABD", rate: "%90" },
-        { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model", org: "OECD", region: "OECD", rate: "%95" },
+        { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model / Kurumsal yapı", org: "OECD / hangel", region: "OECD / Türkiye", rate: "%95 / %100" },
         { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
-        { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları", org: "UN", region: "Küresel", rate: "%95" },
+        { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları / Etik ve yasal çerçeve", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
     ];
 
     const privacySecurityData = [
-        { label: "Gizlilik Politikası", std: "ISO/IEC 27701", org: "ISO", region: "Küresel", rate: "%85" },
-        { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "KVKK Kurumu", region: "Türkiye", rate: "%100" },
-        { label: "GDPR Uyum Politikası", std: "GDPR", org: "AB Veri Otoriteleri", region: "AB", rate: "%90" },
-        { label: "Açık Rıza Metni", std: "GDPR + KVKK", org: "KVKK / EDPB", region: "TR + AB", rate: "%100" },
-        { label: "Veri Saklama & İmha", std: "ISO 27001", org: "ISO", region: "Küresel", rate: "%85" },
-        { label: "DPO Tanımı", std: "GDPR Md.37", org: "AB", region: "AB", rate: "%80" },
-        { label: "Veri İhlali Bildirimi", std: "ISO 27035", org: "AB Otoriteleri", region: "AB", rate: "%85" },
-        { label: "Çerez Politikası", std: "ePrivacy", org: "AB Komisyonu", region: "AB", rate: "%100" },
-        { label: "COPPA Uyumu", std: "COPPA", org: "FTC", region: "ABD", rate: "%75" },
-        { label: "CCPA / CPRA", std: "California Law", org: "California AG", region: "ABD", rate: "%80" },
-        { label: "LGPD Beyanı", std: "LGPD", org: "ANPD", region: "Brezilya", rate: "%75" },
-        { label: "Ülke Bazlı Veri Uyumu", std: "Yerel Yasalar", org: "Ulusal Otoriteler", region: "Global", rate: "%70" },
-        { label: "Yapay Zekâ Şeffaflığı", std: "OECD AI", org: "OECD", region: "OECD", rate: "%65" },
+        { label: "Gizlilik Politikası", std: "ISO/IEC 27701 / KVKK / GDPR / CCPA / LGPD", org: "ISO / hangel", region: "Küresel / AB / ABD / Türkiye / Latin Amerika", rate: "%85 / %100" },
+        { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "KVKK / İçişleri Bakanlığı", region: "Türkiye", rate: "%100" },
+        { label: "Açık Rıza Metni", std: "GDPR / KVKK uyumlu", org: "hangel", region: "AB / Türkiye", rate: "%100" },
+        { label: "Veri Saklama & İmha", std: "ISO 27001", org: "ISO / hangel", region: "Küresel", rate: "%85 / %100" },
+        { label: "DPO Tanımı", std: "GDPR Md.37", org: "AB", region: "AB / Türkiye", rate: "%80 / %100" },
+        { label: "Veri İhlali Bildirimi", std: "ISO 27035", org: "AB Otoriteleri / hangel", region: "AB / Türkiye", rate: "%85 / %100" },
+        { label: "Çerez Politikası", std: "ePrivacy / GDPR / KVKK", org: "AB Komisyonu / hangel", region: "AB / Türkiye", rate: "%100" },
+        { label: "COPPA Uyumu", std: "COPPA", org: "FTC", region: "ABD", rate: "%75 / %100" },
+        { label: "CCPA / CPRA", std: "California Law", org: "California AG", region: "ABD", rate: "%80 / %100" },
+        { label: "LGPD Beyanı", std: "LGPD", org: "ANPD / hangel", region: "Brezilya / Latin Amerika", rate: "%75 / %100" },
+        { label: "Ülke Bazlı Veri Uyumu", std: "Yerel Yasalar", org: "Ulusal Otoriteler", region: "Global / Türkiye / Latin Amerika / ABD", rate: "%70 / %100" },
+        { label: "Yapay Zekâ Şeffaflığı", std: "OECD AI Principles", org: "OECD / hangel", region: "Küresel", rate: "%65 / %100" },
     ];
 
     const socialImpactFinancialData = [
-        { label: "Sosyal Etki Politikası", std: "UN SDGs", org: "UN", region: "Küresel", rate: "%95" },
-        { label: "Etki Ölçüm Metodu", std: "SROI / ToC", org: "Fon Sağlayıcılar", region: "Küresel", rate: "%80" },
-        { label: "Açık Sosyal Girişim Beyanı", std: "Social Business", org: "Impact Fonları", region: "Küresel", rate: "%100" },
-        { label: "Bağış ve Yardım Politikası", std: "Charity Compliance", org: "Kamu", region: "Ülke bazlı", rate: "%95" },
-        { label: "Bağışçı Hakları", std: "Donor Bill of Rights", org: "Vakıflar", region: "ABD / AB", rate: "%90" },
-        { label: "Bağış Denetimi", std: "Financial Audit", org: "Bağımsız Denetçiler", region: "Küresel", rate: "%85" },
-        { label: "Finansal Şeffaflık", std: "IFRS", org: "IFRS Foundation", region: "Küresel", rate: "%90" },
-        { label: "Kâr Dağıtım Politikası", std: "Sosyal Şirket Modeli", org: "Yatırımcılar", region: "Küresel", rate: "%100" },
-        { label: "IRS Uyumlu Bağış", std: "IRS 501(c)", org: "IRS", region: "ABD", rate: "%70" },
-        { label: "Çevresel Sorumluluk", std: "ISO 14001", org: "ISO", region: "Küresel", rate: "%75" },
-        { label: "AML / CFT", std: "FATF", org: "FATF", region: "Küresel", rate: "%80" },
-        { label: "Etik Bağış Beyanı", std: "Anti-Corruption", org: "Fonlar", region: "Küresel", rate: "%95" },
-        { label: "Açık Veri Politikası", std: "Open Data Charter", org: "Kamu Fonları", region: "AB / OECD", rate: "%70" },
+        { label: "Sosyal Etki Politikası", std: "UN SDGs / SROI & ToC", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
+        { label: "Etki Ölçüm Metodu", std: "SROI / ToC", org: "Fon Sağlayıcılar / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Açık Sosyal Girişim Beyanı", std: "Social Business / Sosyal Girişim İlkeleri", org: "Fon Sağlayıcılar / hangel", region: "Küresel", rate: "%100" },
+        { label: "Bağış ve Yardım Politikası", std: "Charity Compliance / IRS / Ulusal mevzuat", org: "Kamu / hangel", region: "Ülke bazlı / ABD / Türkiye", rate: "%95 / %100" },
+        { label: "Bağışçı Hakları Beyannamesi", std: "Donor Bill of Rights", org: "Vakıflar / hangel", region: "ABD / AB / Küresel", rate: "%90 / %100" },
+        { label: "Bağış Denetimi", std: "Financial Audit", org: "Bağımsız Denetçiler / hangel", region: "Küresel", rate: "%85 / %100" },
+        { label: "Finansal Şeffaflık", std: "IFRS / GAAP", org: "IFRS Foundation / hangel", region: "Küresel", rate: "%90 / %100" },
+        { label: "Kâr Dağıtım Politikası", std: "Sosyal Şirket Modeli", org: "Yatırımcılar / hangel", region: "Küresel", rate: "%100" },
+        { label: "IRS Uyumlu Bağış", std: "IRS 501(c)", org: "IRS / hangel", region: "ABD", rate: "%70 / %100" },
+        { label: "Çevresel Sorumluluk", std: "ISO 14001 / ESG", org: "ISO / hangel", region: "Küresel", rate: "%75 / %100" },
+        { label: "AML / CFT", std: "FATF / Finansal Uyum", org: "FATF / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Etik Bağış Beyanı", std: "Anti-Corruption / Etik Finans", org: "Fonlar / hangel", region: "Küresel", rate: "%95 / %100" },
+        { label: "Açık Veri Politikası", std: "Open Data Charter", org: "AB / OECD / hangel", region: "AB / OECD", rate: "%70 / %100" },
     ];
 
     const governanceEthicsData = [
-        { label: "Etik İlkeler", std: "UN Global Compact", org: "UNGC", region: "Küresel", rate: "%95" },
+        { label: "Etik İlkeler", std: "UN Global Compact", org: "UNGC / hangel", region: "Küresel", rate: "%95" },
         { label: "Çıkar Çatışması", std: "OECD Governance", org: "OECD", region: "OECD", rate: "%90" },
-        { label: "Whistleblower", std: "ISO 37002", org: "ISO", region: "Küresel", rate: "%85" },
+        { label: "Whistleblower Politikası", std: "ISO 37002", org: "ISO / hangel", region: "Küresel", rate: "%85 / %100" },
         { label: "Kurumsal Yönetişim", std: "G20 / OECD", org: "G20", region: "G20", rate: "%90" },
-        { label: "İnsan Hakları", std: "UNGP", org: "UN", region: "Küresel", rate: "%95" },
-        { label: "DEI Politikası", std: "ESG Framework", org: "ESG Fonları", region: "AB / ABD", rate: "%85" },
-        { label: "Risk & Kriz Yönetimi", std: "ISO 31000", org: "ISO", region: "Küresel", rate: "%80" },
+        { label: "İnsan Hakları Politikası", std: "UNGP", org: "United Nations", region: "Küresel", rate: "%95 / %100" },
+        { label: "DEI Politikası", std: "ESG Framework", org: "ESG Fonları / hangel", region: "AB / ABD / Küresel", rate: "%85 / %100" },
+        { label: "Risk & Kriz Yönetimi", std: "ISO 31000", org: "ISO / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Yönetim ve Kurumsal Yönetişim İlkeleri", std: "Kurumsal Yönetim Standartları", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "Kurumsal Risk ve Uyum Komitesi Beyanı", std: "Kurumsal Risk Yönetimi", org: "hangel", region: "Küresel", rate: "%100" },
     ];
 
     const accessibilityLawData = [
-        { label: "Web Content Accessibility Guidelines", std: "WCAG 2.2", org: "W3C", region: "Küresel", rate: "AA: %100 / AAA: %95" },
-        { label: "European Accessibility Act (EAA)", std: "EN 301 549", org: "Avrupa Komisyonu", region: "Avrupa Birliği", rate: "%95" },
-        { label: "EN 301 549", std: "WCAG 2.1–2.2", org: "ETSI / CEN / CENELEC", region: "Avrupa Birliği", rate: "%95" },
-        { label: "Americans with Disabilities Act (ADA)", std: "WCAG 2.1–2.2 AA", org: "DOJ", region: "ABD", rate: "%96" },
-        { label: "Section 508", std: "WCAG 2.1–2.2", org: "U.S. Access Board", region: "ABD", rate: "%96" },
-        { label: "Equality Act 2010", std: "WCAG 2.1 AA", org: "UK Equality Office", region: "Birleşik Krallık", rate: "%95" },
-        { label: "TS EN 301 549", std: "WCAG 2.1–2.2", org: "TSE", region: "Türkiye", rate: "%95" },
-        { label: "5378 Sayılı Kanun", std: "WCAG referanslı", org: "Aile Sosyal Bak.", region: "Türkiye", rate: "%95" },
-        { label: "JIS X 8341-3", std: "WCAG 2.x", org: "Japonya İçişleri", region: "Japonya", rate: "%90" },
-        { label: "KWCAG 2.2", std: "WCAG 2.2", org: "Güney Kore MSIT", region: "Güney Kore", rate: "%90" },
-        { label: "GB/T 37668", std: "WCAG 2.x", org: "Çin Standart.", region: "Çin", rate: "%88" },
-        { label: "UN CRPD (Madde 9)", std: "WCAG referanslı", org: "United Nations", region: "Küresel", rate: "%100" },
-    ];
-
-    const socialEconomyFrameworkData = [
-        { label: "Sosyal Ekonomi Eylem Planı", std: "Çerçeve politika", org: "European Commission", region: "AB", rate: "%100" },
-        { label: "Sosyal Girişim Tanımı (EU)", std: "Tavsiye kararı", org: "European Union", region: "AB", rate: "%100" },
-        { label: "GRI 413 / 203", std: "Etki raporlama standardı", org: "GRI", region: "Küresel", rate: "%100" },
-        { label: "Dernekler Kanunu (5253)", std: "Bağlayıcı mevzuat", org: "İçişleri Bakanlığı", region: "Türkiye", rate: "%100" },
-        { label: "SDGs (2030 Gündemi)", std: "Küresel hedef seti", org: "United Nations", region: "Küresel", rate: "%100" },
-        { label: "Social Impact Measurement", std: "Etki ölçüm rehberi", org: "Harvard Business School", region: "ABD", rate: "%100" },
-        { label: "AU Social Economy Agenda", std: "Kıtasal politika", org: "African Union", region: "Afrika", rate: "%100" },
+        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Afrika / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
+        { label: "Bilgilendirme Politikası", std: "Transparency Rules", org: "Regülatörler / hangel", region: "Küresel", rate: "%95 / %100" },
+        { label: "Çok Dilli Erişim", std: "Inclusive Design", org: "Uluslararası Kullanıcılar / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Yerel Bağış Uyumu", std: "Ulusal Mevzuat", org: "Kamu / hangel", region: "Ülke bazlı", rate: "%85 / %100" },
+        { label: "Gelişim Yol Haritası Beyanı", std: "hangel beyanı", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "ISO 22301 Uyum Beyanı", std: "İş Sürekliliği", org: "ISO / hangel", region: "Küresel", rate: "%100" },
+        { label: "ISO / IEC 25010 / EN 301 549", std: "Dijital Platform Standartları", org: "ISO / European Commission / hangel", region: "AB / Küresel", rate: "%100" },
+        { label: "Sızma ve Güvenlik Testleri", std: "Bilgi Güvenliği Testleri", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "UX ve Kullanıcı Deneyimi Testleri", std: "Dijital Deneyim Standartları", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "Felaket Kurtarma Beyanı", std: "İş Sürekliliği Testleri", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "Üçüncü Taraf Gözetim Beyanı", std: "Kurumsal Uyum / Etik", org: "hangel", region: "Küresel", rate: "%100" },
     ];
 
     const fullAuditList = [
         { label: "Kullanıcı Sözleşmesi", std: "Kurumsal kullanım şartları", org: "hangel", region: "Küresel", rate: "100" },
         { label: "Kuruluş Sözleşmesi", std: "Kurumsal yapı", org: "hangel", region: "Türkiye", rate: "100" },
         { label: "Gönüllülük Sözleşmesi", std: "Gönüllü hak ve sorumluluklar", org: "hangel", region: "Türkiye", rate: "100" },
-        { label: "Gizlilik Politikası", std: "KVKK / GDPR / CCPA / LGPD", org: "hangel", region: "Global", rate: "100" },
+        { label: "Gönüllü Hakları Beyanı", std: "Etik ve yasal çerçeve", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Gizlilik Politikası", std: "KVKK / GDPR / CCPA / LGPD", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "hangel", region: "Türkiye", rate: "100" },
+        { label: "Açık Rıza Metni", std: "GDPR / KVKK uyumlu", org: "hangel", region: "Global", rate: "100" },
+        { label: "Veri Saklama & İmha", std: "ISO 27001", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "GDPR Uyum Politikası", std: "GDPR", org: "hangel", region: "AB", rate: "100" },
+        { label: "DPO Tanımı", std: "GDPR / KVKK", org: "hangel", region: "Global", rate: "100" },
+        { label: "Veri İhlali Bildirimi", std: "GDPR / KVKK", org: "hangel", region: "Global", rate: "100" },
+        { label: "Çerez Politikası", std: "GDPR / KVKK", org: "hangel", region: "Global", rate: "100" },
         { label: "Bilgi Güvenliği Politikası", std: "ISO 27001", org: "hangel", region: "Küresel", rate: "100" },
-        { label: "Yapay Zekâ Şeffaflık Beyanı", std: "AI Şeffaflık İlkeleri", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "COPPA Uyumu", std: "COPPA", org: "hangel", region: "ABD", rate: "100" },
+        { label: "CCPA / CPRA", std: "CCPA / CPRA", org: "hangel", region: "ABD", rate: "100" },
+        { label: "LGPD Beyanı", std: "LGPD", org: "hangel", region: "Brezilya", rate: "100" },
+        { label: "Yapay Zekâ Şeffaflığı", std: "AI Şeffaflık İlkeleri", org: "hangel", region: "Küresel", rate: "100" },
         { label: "Sosyal Etki Politikası", std: "SROI & Theory of Change", org: "hangel", region: "Küresel", rate: "100" },
-        { label: "Bağış ve Yardım Politikası", std: "IRS / Ulusal mevzuat", org: "hangel", region: "TR + ABD", rate: "100" },
+        { label: "Etki Ölçüm Metodu", std: "SROI & Theory of Change", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Açık Sosyal Girişim Beyanı", std: "Sosyal Girişim İlkeleri", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Bağış ve Yardım Politikası", std: "IRS / Ulusal mevzuat", org: "hangel", region: "Global", rate: "100" },
+        { label: "Bağışçı Hakları Beyanı", std: "Bağış İlkeleri", org: "hangel", region: "Küresel", rate: "100" },
         { label: "Finansal Şeffaflık", std: "IFRS / GAAP", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Kâr Dağıtım Politikası", std: "Sosyal Şirket Modeli", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Ücret Politikası", std: "Kurumsal Etik", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "AML / CFT Uyum Beyanı", std: "Finansal Uyum", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Etik Bağış Beyanı", std: "Etik Finans", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Açık Veri Politikası", std: "GRI", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Etik İlkeler", std: "Kurumsal Etik", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "İnsan Hakları Politikası", std: "UNGP", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "DEI Politikası", std: "DEI", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Risk & Kriz Yönetimi", std: "ISO 31000", org: "hangel", region: "Küresel", rate: "100" },
         { label: "Erişilebilirlik Politikası", std: "WCAG / EN 301 549", org: "hangel", region: "Küresel", rate: "100" },
-        { label: "ISO 27001 Uyum Beyanı", std: "Bilgi Güvenliği", org: "ISO", region: "Küresel", rate: "100" },
         { label: "ISO 22301 Uyum Beyanı", std: "İş Sürekliliği", org: "ISO", region: "Küresel", rate: "100" },
+        { label: "ISO 27001 Uyum Beyanı", std: "Bilgi Güvenliği", org: "ISO", region: "Küresel", rate: "100" },
+        { label: "Sızma Testleri Beyanı", std: "Güvenlik Testleri", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "UX Testleri Beyanı", std: "Deneyim Testleri", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Felaket Kurtarma Beyanı", std: "İş Sürekliliği", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Uyum Komitesi Beyanı", std: "Kurumsal Risk", org: "hangel", region: "Küresel", rate: "100" },
     ];
+
+    const tableHeaders = ["Belge", "Standart / Çerçeve", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan %"];
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30">
@@ -281,43 +301,36 @@ export default function StandardsPage() {
                     <ComplianceTable 
                         title="A. ANA SÖZLEŞMELER"
                         description="Kullanıcı ve kuruluş sözleşmelerimizin bölgesel tüketici ve sivil toplum yasalarıyla uyumu."
-                        headers={["Belge", "Standart", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        headers={tableHeaders}
                         data={mainComplianceData}
                     />
 
                     <ComplianceTable 
                         title="B. GİZLİLİK, VERİ KORUMA VE GÜVENLİK"
                         description="Veri mahremiyeti ve siber güvenlik alanındaki uluslararası sertifikasyonlar ve yerel kanunlar."
-                        headers={["Belge", "Standart / Sertifika", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        headers={tableHeaders}
                         data={privacySecurityData}
                     />
 
                     <ComplianceTable 
                         title="C. SOSYAL ETKİ, BAĞIŞ VE FİNANSAL ŞEFFAFLIK"
                         description="Bağışçılık, sosyal etki ölçümleme ve finansal raporlama standartlarımız."
-                        headers={["Belge", "Standart", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        headers={tableHeaders}
                         data={socialImpactFinancialData}
                     />
 
                     <ComplianceTable 
                         title="D. KURUMSAL YÖNETİŞİM, ETİK VE DENETİM"
                         description="Şirket ve dernek yönetişimi, etik ilkeler ve risk yönetimi çerçeveleri."
-                        headers={["Belge", "Standart", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        headers={tableHeaders}
                         data={governanceEthicsData}
                     />
 
                     <ComplianceTable 
-                        title="Küresel Erişilebilirlik Mevzuat Uyumu"
-                        description="hangel platformu; WCAG 2.2 AA standartlarıyla %100 uyumlu, WCAG 2.2 AAA kriterlerini ise %95 oranında destekler."
-                        headers={["Belge / Mevzuat", "Standart Referansı", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan (%)"]}
+                        title="E. ERİŞİLEBİLİRLİK VE DİĞER POLİTİKALAR"
+                        description="Küresel erişilebilirlik mevzuat uyumu ve teknik operasyonel standartlar."
+                        headers={tableHeaders}
                         data={accessibilityLawData}
-                    />
-
-                    <ComplianceTable 
-                        title="Sosyal Ekonomi ve Kalkınma Çerçeveleri"
-                        description="Sosyal girişimcilik ve etki ölçümlemede temel aldığımız uluslararası politikalar."
-                        headers={["Belge / Çerçeve", "Standart / Hukuki Statü", "Kurum", "Ülke / Birlik", "Sağlanan %"]}
-                        data={socialEconomyFrameworkData}
                     />
 
                     <div className="space-y-12 pt-12 border-t border-black/10">
