@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlusCircle, Sparkles, ChevronRight, Heart, Users, School } from 'lucide-react';
+import { PlusCircle, Sparkles, Heart, Users, School } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import {
   Carousel,

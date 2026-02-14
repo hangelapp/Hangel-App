@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { Suspense, useCallback, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,12 @@ import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { 
-    TrendingUp, User, Users, Rocket, Award, Heart, ShieldCheck, Store, Globe, MapPin, School, HeartHandshake,
-    ShoppingBag, Leaf, Sparkles
+    TrendingUp, User, Users, Rocket, Heart, School, HeartHandshake,
+    ShoppingBag, Sparkles
 } from 'lucide-react';
 import { user } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
-// --- Story Data ---
 export type ImpactSlide = {
   id: number;
   title: string;
@@ -27,120 +26,6 @@ export type ImpactSlide = {
   stat?: string;
 };
 
-export const hangelImpactStories: ImpactSlide[] = [
-    {
-        id: 1,
-        title: "2024 Sosyal Etki Raporu",
-        subtitle: "hangel A.Ş.",
-        content: "Birlikte büyüttüğümüz iyilik hareketinin somut sonuçlarını keşfedin. Her adımda daha güçlüyüz.",
-        icon: TrendingUp,
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
-        imageHint: "data charts analysis"
-    },
-    {
-        id: 2,
-        title: "1 Milyon+ Hayata Dokunduk",
-        subtitle: "Toplumsal Erişim",
-        content: "Türkiye'nin dört bir yanında projelerimizle umudu yeşerttik. Bu başarı hepimizin.",
-        stat: "1.240.000",
-        icon: Users,
-        image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
-        imageHint: "happy group people"
-    },
-    {
-        id: 10,
-        title: "Seninle Daha Güçlüyüz",
-        subtitle: "Birlikte Başaralım",
-        content: "Bu başarı hikayesinin en önemli parçası sensin. İyiliği paylaşmaya ve büyütmeye devam edelim.",
-        icon: Rocket,
-        image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "team high five"
-    }
-];
-
-export const userImpactStories: ImpactSlide[] = [
-    {
-        id: 1,
-        title: "Senin Etki Raporun",
-        subtitle: user.name,
-        content: "Bu yılki yolculuğunda yarattığın pozitif değişime yakından bakalım.",
-        icon: User,
-        image: user.avatarUrl,
-        imageHint: "person portrait"
-    },
-    {
-        id: 2,
-        title: user.stats.totalDonation.toLocaleString('tr-TR') + " ₺ Bağış Yaptın",
-        subtitle: "Finansal Destek",
-        content: "Yaptığın alışverişlerle " + user.stats.mostSupportedNgo + " gibi kurumlara destek oldun.",
-        stat: "₺" + user.stats.totalDonation.toLocaleString('tr-TR'),
-        icon: Heart,
-        image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "donation concept"
-    },
-    {
-        id: 3,
-        title: user.stats.volunteerHours + " Saat Gönüllülük Yaptın",
-        subtitle: "Zamanın Değeri",
-        content: "En çok " + user.stats.mostActiveVolunteerArea + " alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.",
-        stat: user.stats.volunteerHours + " Saat",
-        icon: HeartHandshake,
-        image: "https://images.unsplash.com/photo-1618423417959-c8c7f9c73331?q=80&w=1974&auto=format&fit=crop",
-        imageHint: "volunteers hands"
-    },
-];
-
-export const communityImpactStories: ImpactSlide[] = [
-    {
-        id: 1,
-        title: "Gönüllüler Sahada",
-        subtitle: "Ahbap Derneği",
-        content: "Hatay'daki gıda dağıtımında gönüllülerimiz harikalar yarattı. Her birine minnettarız!",
-        icon: Users,
-        image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "food donation"
-    },
-    {
-        id: 2,
-        title: "Geleceğe Nefes",
-        subtitle: "TEMA Vakfı",
-        content: "Balıkesir'de gerçekleştirdiğimiz fidan dikme etkinliği ile 200 yeni ağacı toprakla buluşturduk.",
-        icon: Heart,
-        image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop",
-        imageHint: "planting trees"
-    },
-];
-
-export const opportunityStories: ImpactSlide[] = [
-    {
-        id: 1,
-        title: "Sosyal Etki Temsilcisi Ol",
-        subtitle: "hangel Kampüs",
-        content: "Kampüsünde sosyal etki rüzgarı estir. Üniversite temsilcimiz olarak liderlik yeteneklerini geliştir.",
-        icon: School,
-        image: "https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "university students"
-    },
-    {
-        id: 2,
-        title: "Okul Alışverişiyle Destek Ol",
-        subtitle: "TEGV & Hepsiburada",
-        content: "Kırtasiye ihtiyaçlarınızı Hepsiburada'dan alın, TEGV'e bağış yapın. Eğitime bir ışık da siz yakın!",
-        icon: ShoppingBag,
-        image: "https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop",
-        imageHint: "student school supplies"
-    },
-    {
-        id: 3,
-        title: "Afet Bölgesi Lojistik Destek",
-        subtitle: "Ahbap Derneği",
-        content: "Hatay ve Adıyaman'da yardım kolilerinin dağıtımında görev alacak gönüllüler arıyoruz.",
-        icon: HeartHandshake,
-        image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
-        imageHint: "food donation"
-    },
-];
-
 const STORY_DURATION = 5000;
 
 function StoryViewer() {
@@ -150,14 +35,126 @@ function StoryViewer() {
     
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
-    const [count, setCount] = useState(0);
 
-    const stories: ImpactSlide[] = React.useMemo(() => {
+    const hangelImpactStories: ImpactSlide[] = [
+        {
+            id: 1,
+            title: "2024 Sosyal Etki Raporu",
+            subtitle: "hangel A.Ş.",
+            content: "Birlikte büyüttüğümüz iyilik hareketinin somut sonuçlarını keşfedin. Her adımda daha güçlüyüz.",
+            icon: TrendingUp,
+            image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
+            imageHint: "data charts analysis"
+        },
+        {
+            id: 2,
+            title: "1 Milyon+ Hayata Dokunduk",
+            subtitle: "Toplumsal Erişim",
+            content: "Türkiye'nin dört bir yanında projelerimizle umudu yeşerttik. Bu başarı hepimizin.",
+            stat: "1.240.000",
+            icon: Users,
+            image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
+            imageHint: "happy group people"
+        },
+        {
+            id: 3,
+            title: "Seninle Daha Güçlüyüz",
+            subtitle: "Birlikte Başaralım",
+            content: "Bu başarı hikayesinin en önemli parçası sensin. İyiliği paylaşmaya ve büyütmeye devam edelim.",
+            icon: Rocket,
+            image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "team high five"
+        }
+    ];
+
+    const userImpactStories: ImpactSlide[] = [
+        {
+            id: 1,
+            title: "Senin Etki Raporun",
+            subtitle: user.name,
+            content: "Bu yılki yolculuğunda yarattığın pozitif değişime yakından bakalım.",
+            icon: User,
+            image: user.avatarUrl,
+            imageHint: "person portrait"
+        },
+        {
+            id: 2,
+            title: user.stats.totalDonation.toLocaleString('tr-TR') + " ₺ Bağış Yaptın",
+            subtitle: "Finansal Destek",
+            content: "Yaptığın alışverişlerle " + user.stats.mostSupportedNgo + " gibi kurumlara destek oldun.",
+            stat: "₺" + user.stats.totalDonation.toLocaleString('tr-TR'),
+            icon: Heart,
+            image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "donation concept"
+        },
+        {
+            id: 3,
+            title: user.stats.volunteerHours + " Saat Gönüllülük Yaptın",
+            subtitle: "Zamanın Değeri",
+            content: "En çok " + user.stats.mostActiveVolunteerArea + " alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.",
+            stat: user.stats.volunteerHours + " Saat",
+            icon: HeartHandshake,
+            image: "https://images.unsplash.com/photo-1618423417959-c8c7f9c73331?q=80&w=1974&auto=format&fit=crop",
+            imageHint: "volunteers hands"
+        },
+    ];
+
+    const communityImpactStories: ImpactSlide[] = [
+        {
+            id: 1,
+            title: "Gönüllüler Sahada",
+            subtitle: "Ahbap Derneği",
+            content: "Hatay'daki gıda dağıtımında gönüllülerimiz harikalar yarattı. Her birine minnettarız!",
+            icon: Users,
+            image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "food donation"
+        },
+        {
+            id: 2,
+            title: "Geleceğe Nefes",
+            subtitle: "TEMA Vakfı",
+            content: "Balıkesir'de gerçekleştirdiğimiz fidan dikme etkinliği ile 200 yeni ağacı toprakla buluşturduk.",
+            icon: Heart,
+            image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop",
+            imageHint: "planting trees"
+        },
+    ];
+
+    const opportunityStories: ImpactSlide[] = [
+        {
+            id: 1,
+            title: "Sosyal Etki Temsilcisi Ol",
+            subtitle: "hangel Kampüs",
+            content: "Kampüsünde sosyal etki rüzgarı estir. Üniversite temsilcimiz olarak liderlik yeteneklerini geliştir.",
+            icon: School,
+            image: "https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "university students"
+        },
+        {
+            id: 2,
+            title: "Okul Alışverişiyle Destek Ol",
+            subtitle: "TEGV & Hepsiburada",
+            content: "Kırtasiye ihtiyaçlarınızı Hepsiburada'dan alın, TEGV'e bağış yapın. Eğitime bir ışık da siz yakın!",
+            icon: ShoppingBag,
+            image: "https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop",
+            imageHint: "student school supplies"
+        },
+        {
+            id: 3,
+            title: "Afet Bölgesi Lojistik Destek",
+            subtitle: "Ahbap Derneği",
+            content: "Hatay ve Adıyaman'da yardım kolilerinin dağıtımında görev alacak gönüllüler arıyoruz.",
+            icon: HeartHandshake,
+            image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "food donation"
+        },
+    ];
+
+    const stories = useMemo(() => {
         switch (category) {
             case 'user': return userImpactStories;
             case 'community': return communityImpactStories;
             case 'opportunities': return opportunityStories;
-            case 'hangel':
             default: return hangelImpactStories;
         }
     }, [category]);
@@ -166,9 +163,7 @@ function StoryViewer() {
 
     useEffect(() => {
         if (!api) return;
-        setCount(api.scrollSnapList().length);
         setCurrent(api.selectedScrollSnap() + 1);
-
         api.on("select", () => {
             setCurrent(api.selectedScrollSnap() + 1);
         });
@@ -192,7 +187,7 @@ function StoryViewer() {
         <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-500">
             {/* Progress Bars */}
             <div className="absolute top-4 inset-x-4 flex gap-1.5 z-50">
-                {Array.from({ length: stories.length }).map((_, idx) => (
+                {stories.map((_, idx) => (
                     <div key={`${idx}-${current === idx + 1}`} className="h-1 flex-1 bg-black/5 rounded-full overflow-hidden">
                         <div
                             className={cn(
