@@ -894,5 +894,166 @@ export const contractsData: Contract[] = [
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>Bu beyan, platformun stratejik yol haritasının bir parçası olarak yayınlandığı tarihte yürürlüğe girmiştir.</p>
     `
+  },
+
+  // --- G. ISO / Uluslararası Sertifikasyonlar ---
+  {
+    slug: 'iso-27001-uyum-beyani',
+    title: 'ISO 27001 Uyum Beyanı (Bilgi Güvenliği)',
+    content: `
+      <h3>ISO 27001 Uyum Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>hangel bilgi varlıklarının gizliliğini, bütünlüğünü ve erişilebilirliğini korumak için ISO/IEC 27001:2022 standartlarına uyum sürecini deklare etmektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Tüm dijital altyapı, yazılım geliştirme süreçleri ve personel operasyonlarını kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Uluslararası Bilgi Güvenliği Yönetim Sistemi (ISMS) standartları.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, risk bazlı bir güvenlik yaklaşımı benimser ve düzenli iç denetimler gerçekleştirir.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Sürekli iyileştirme prensibiyle yürürlüktedir.</p>
+    `
+  },
+  {
+    slug: 'iso-22301-uyum-beyani',
+    title: 'ISO 22301 Uyum Beyanı (İş Sürekliliği)',
+    content: `
+      <h3>ISO 22301 Uyum Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Olası kesintilerde sosyal etki süreçlerinin devamlılığını sağlamak için iş sürekliliği standartlarına uyumu taahhüt etmektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Kritik iş süreçleri, veri kurtarma ve kriz yönetimi operasyonlarını kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>ISO 22301 İş Sürekliliği Yönetim Sistemi standartları.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, afet ve kriz anlarında hizmet seviyesi taahhütlerini (SLA) korumak için gerekli yedekleme sistemlerini çalıştırır.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Yıllık test ve güncellemelerle yürürlüktedir.</p>
+    `
+  },
+  {
+    slug: 'iso-25010-en-301-549-uyum-beyani',
+    title: 'ISO / IEC 25010 / EN 301 549 Uyum Beyanı (Dijital Platform Standartları)',
+    content: `
+      <h3>Dijital Platform Standartları Uyum Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Platformun yazılım kalitesini ve erişilebilirlik standartlarını uluslararası normlarda tutmaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Web arayüzü, mobil uygulama ve API servislerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>ISO/IEC 25010 Yazılım Kalite Modeli ve EN 301 549 AB Erişilebilirlik Standartları.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, kullanıcı deneyimini (UX) ve teknik performansı bu standartlar ışığında periyodik olarak test eder.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Geliştirme yaşam döngüsünün (SDLC) bir parçasıdır.</p>
+    `
+  },
+
+  // --- H. Dış Denetim / Mali ve Finansal Sertifikasyon ---
+  {
+    slug: 'bagimsiz-mali-denetim-ve-ifrs-gaap-beyani',
+    title: 'Bağımsız Mali Denetim ve IFRS / GAAP Beyanı',
+    content: `
+      <h3>Bağımsız Mali Denetim Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Finansal tabloların doğruluğunu ve şeffaflığını uluslararası muhasebe standartlarında deklare etmektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>hangel AŞ'nin yıllık tüm finansal operasyonlarını ve bağış aktarım kayıtlarını kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>IFRS (Uluslararası Finansal Raporlama Standartları) ve GAAP prensipleri.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, her yıl bağımsız bir denetim kuruluşu tarafından denetlenmeyi ve raporu kamuoyuyla paylaşmayı taahhüt eder.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Her mali yıl sonunda uygulanır.</p>
+    `
+  },
+
+  // --- I. Sistematik Test ve Uygulama ---
+  {
+    slug: 'sizma-ve-guvenlik-testleri-beyani',
+    title: 'Sızma Testleri ve Güvenlik Testleri Beyanı',
+    content: `
+      <h3>Sızma Testleri ve Güvenlik Testleri Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Sistem zafiyetlerini önceden tespit etmek ve siber saldırılara karşı dirençli kalmaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Network, sunucu ve uygulama katmanındaki tüm güvenlik denetimlerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>OWASP standartları ve etik hackerlık protokolleri.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, yılda en az bir kez bağımsız üçüncü taraflara sızma testi yaptırır.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Güvenlik yol haritasının temel taşıdır.</p>
+    `
+  },
+  {
+    slug: 'ux-ve-kullanici-deneyimi-testleri-beyani',
+    title: 'UX ve Kullanıcı Deneyimi Testleri Beyanı',
+    content: `
+      <h3>UX ve Kullanıcı Deneyimi Testleri Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Platformun kullanım kolaylığını ve erişilebilirliğini gerçek kullanıcı geri bildirimleriyle doğrulamaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Tüm kullanıcı segmentleri ve engel grupları üzerindeki kullanılabilirlik testlerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Nielsen Norman Group prensipleri ve ISO 9241-210.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, test sonuçlarına göre arayüz iyileştirmelerini önceliklendirir.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Tasarım süreçlerinin ayrılmaz parçasıdır.</p>
+    `
+  },
+  {
+    slug: 'felaket-kurtarma-ve-yedekleme-testleri-beyani',
+    title: 'Felaket Kurtarma ve Yedekleme Testleri Beyanı',
+    content: `
+      <h3>Felaket Kurtarma ve Yedekleme Testleri Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Veri kaybını önlemek ve sistemin felaket anında geri yükleme kapasitesini test etmektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Veri tabanı yedekleri, sunucu imajları ve felaket kurtarma merkezi (DRC) senaryolarını kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>3-2-1 yedekleme kuralı ve kurumsal süreklilik planları.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, yedeklerin doğruluğunu ve geri dönülebilirliğini düzenli tatbikatlarla kontrol eder.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Teknik operasyonel standarttır.</p>
+    `
+  },
+
+  // --- J. Kurumsal Uyum / Risk Komitesi ---
+  {
+    slug: 'ucuncu-taraf-gozetim-ve-etik-performans-beyani',
+    title: 'Üçüncü Taraf Gözetim ve Etik Performans Beyanı',
+    content: `
+      <h3>Üçüncü Taraf Gözetim ve Etik Performans Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>hangel'in etik değerlere uyumunu tarafsız kuruluşların denetimine açmaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Tedarik zinciri etiği, çalışan hakları ve topluluk yönetimi süreçlerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>BM Küresel İlkeler Sözleşmesi (UN Global Compact).</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>hangel, etik performans verilerini şeffafça paylaşmayı taahhüt eder.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Kurumsal etik denetim takvimine bağlıdır.</p>
+    `
+  },
+  {
+    slug: 'kurumsal-risk-ve-uyum-komitesi-beyani',
+    title: 'Kurumsal Risk ve Uyum Komitesi Beyanı',
+    content: `
+      <h3>Kurumsal Risk ve Uyum Komitesi Beyanı</h3>
+      <h4>1. Amaç</h4>
+      <p>Yasal regülasyonlara uyumu ve operasyonel riskleri yönetecek üst düzey bir yapı tanımlamaktır.</p>
+      <h4>2. Kapsam</h4>
+      <p>Tüm departmanların risk analizlerini ve mevzuat uyum süreçlerini kapsar.</p>
+      <h4>3. Dayanak ve Uyum Çerçevesi</h4>
+      <p>Kurumsal yönetişim kodları.</p>
+      <h4>4. Haklar ve Yükümlülükler</h4>
+      <p>Komite, yönetim kuruluna doğrudan bağlıdır ve uyumsuzluk durumlarında veto yetkisine sahiptir.</p>
+      <h4>5. Uygulama ve Yürürlük</h4>
+      <p>Yönetim kurulu kararıyla yürürlüğe girmiştir.</p>
+    `
   }
 ];

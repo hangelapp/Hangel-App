@@ -18,7 +18,7 @@ const contractGroups = [
         ]
     },
     {
-        title: 'B. Gizlilik, Veri Koruma ve Güvenlik',
+        title: 'B. Gizlilik, Veri Koruma ve Dijital Güvenlik Politikaları',
         items: [
             { title: 'Gizlilik Politikası', slug: 'gizlilik-politikasi' },
             { title: 'KVKK Aydınlatma Metni', slug: 'kvkk-aydinlatma-metni' },
@@ -84,6 +84,35 @@ const contractGroups = [
         title: 'F. Gelişim Yol Haritası ve Standartlar',
         items: [
             { title: 'Gelişim Yol Haritası ve Henüz Sağlanmamış Standartlar Beyanı', slug: 'gelisim-yol-haritasi-ve-standartlar' },
+        ]
+    },
+    {
+        title: 'G. ISO / Uluslararası Sertifikasyonlar',
+        items: [
+            { title: 'ISO 27001 Uyum Beyanı (Bilgi Güvenliği)', slug: 'iso-27001-uyum-beyani' },
+            { title: 'ISO 22301 Uyum Beyanı (İş Sürekliliği)', slug: 'iso-22301-uyum-beyani' },
+            { title: 'ISO / IEC 25010 / EN 301 549 Uyum Beyanı (Dijital Platform Standartları)', slug: 'iso-25010-en-301-549-uyum-beyani' },
+        ]
+    },
+    {
+        title: 'H. Dış Denetim / Mali ve Finansal Sertifikasyon',
+        items: [
+            { title: 'Bağımsız Mali Denetim ve IFRS / GAAP Beyanı', slug: 'bagimsiz-mali-denetim-ve-ifrs-gaap-beyani' },
+        ]
+    },
+    {
+        title: 'I. Sistematik Test ve Uygulama',
+        items: [
+            { title: 'Sızma Testleri ve Güvenlik Testleri Beyanı', slug: 'sizma-ve-guvenlik-testleri-beyani' },
+            { title: 'UX ve Kullanıcı Deneyimi Testleri Beyanı', slug: 'ux-ve-kullanici-deneyimi-testleri-beyani' },
+            { title: 'Felaket Kurtarma ve Yedekleme Testleri Beyanı', slug: 'felaket-kurtarma-ve-yedekleme-testleri-beyani' },
+        ]
+    },
+    {
+        title: 'J. Kurumsal Uyum / Risk Komitesi',
+        items: [
+            { title: 'Üçüncü Taraf Gözetim ve Etik Performans Beyanı', slug: 'ucuncu-taraf-gozetim-ve-etik-performans-beyani' },
+            { title: 'Kurumsal Risk ve Uyum Komitesi Beyanı', slug: 'kurumsal-risk-ve-uyum-komitesi-beyani' },
         ]
     }
 ];
