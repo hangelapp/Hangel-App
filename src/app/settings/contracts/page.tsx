@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 
 const contractGroups = [
     {
-        title: 'Ana Sözleşmeler',
+        title: 'A. Ana Sözleşmeler',
         items: [
             { title: 'Kullanıcı Sözleşmesi', slug: 'kullanici-sozlesmesi' },
             { title: 'Kuruluş Sözleşmesi', slug: 'kurulus-sozlesmesi' },
@@ -18,32 +19,57 @@ const contractGroups = [
         ]
     },
     {
-        title: 'Gizlilik ve Veri Politikaları',
+        title: 'B. Gizlilik, Veri Koruma ve Güvenlik',
         items: [
             { title: 'Gizlilik Politikası', slug: 'gizlilik-politikasi' },
             { title: 'KVKK Aydınlatma Metni', slug: 'kvkk-aydinlatma-metni' },
-            { title: 'AB Kişisel Veri Koruma Kanunu (GDPR)', slug: 'gdpr' },
+            { title: 'Açık Rıza Metni', slug: 'acik-riza-metni' },
+            { title: 'Veri Saklama ve İmha Politikası', slug: 'veri-saklama-ve-imha-politikasi' },
+            { title: 'AB Genel Veri Koruma Tüzüğü (GDPR) Uyum Politikası', slug: 'gdpr-uyum-politikasi' },
+            { title: 'Veri İşleme Amaçları ve Hukuki Dayanaklar Beyanı', slug: 'veri-isleme-amaclar-beyani' },
+            { title: 'Kullanıcı Hakları Politikası', slug: 'kullanici-haklari-politikasi' },
+            { title: 'Veri Koruma Görevlisi (DPO) Tanımı', slug: 'dpo-tanimi' },
+            { title: 'Veri İhlali Bildirim Prosedürü', slug: 'veri-ihlali-bildirim-proseduru' },
+            { title: 'Veri Transferi ve AB Merkezli Hosting Beyanı', slug: 'veri-transferi-ve-hosting-beyani' },
             { title: 'Çerez Politikası', slug: 'cerez-politikasi' },
             { title: 'Bilgi Güvenliği Politikası', slug: 'bilgi-guvenligi-politikasi' },
+            { title: 'Çocukların Kişisel Verilerinin Korunması (COPPA Uyumu)', slug: 'cocuklarin-verilerinin-korunmasi' },
+            { title: 'ABD Eyalet Bazlı Veri Koruma Politikası (CCPA/CPRA)', slug: 'abd-eyalet-bazli-veri-politikasi' },
+            { title: 'Ülke Bazlı Veri Koruma Uyum Beyanı', slug: 'ulke-bazli-veri-koruma-uyum-beyani' },
         ]
     },
     {
-        title: 'Sosyal Etki ve Finansallar',
+        title: 'C. Sosyal Etki, Bağış ve Finansal Şeffaflık',
         items: [
             { title: 'Sosyal Etki Politikası', slug: 'sosyal-etki-politikasi' },
-            { title: 'Açık Açık Sosyal Girişim Beyanı', slug: 'acik-acik-sosyal-girisim-beyani' },
+            { title: 'Sosyal Etki Ölçüm ve Raporlama Metodolojisi', slug: 'sosyal-etki-metodolojisi' },
+            { title: 'Açık Sosyal Girişim Beyanı', slug: 'acik-sosyal-girisim-beyani' },
             { title: 'Bağış ve Yardım Politikası', slug: 'bagis-ve-yardim-politikasi' },
             { title: 'Bağışçı Hakları Beyannamesi', slug: 'bagisci-haklari-beyannamesi' },
+            { title: 'Bağış Gelirlerinin Denetlenmesi Politikası', slug: 'bagis-gelirlerinin-denetlenmesi-politikasi' },
+            { title: 'Finansal Şeffaflık ve Hesap Verebilirlik Politikası', slug: 'finansal-seffaflik-ve-hesap-verebilirlik-politikasi' },
             { title: 'Kâr Dağıtım Politikası', slug: 'kar-dagitim-politikasi' },
             { title: 'Ücret Politikamız', slug: 'ucret-politikasi' },
+            { title: 'ABD IRS Uyumlu Bağış Beyanı', slug: 'abd-irs-bagis-beyani' },
         ]
     },
     {
-        title: 'Diğer Politikalar',
+        title: 'D. Kurumsal Yönetişim, Etik ve İç Denetim',
+        items: [
+            { title: 'Etik İlkeler', slug: 'etik-ilkeler' },
+            { title: 'Çıkar Çatışması Politikası', slug: 'cikar-catismasi-politikasi' },
+            { title: 'Whistleblower (İhbarcı) Politikası', slug: 'whistleblower-politikasi' },
+            { title: 'Yönetim ve Kurumsal Yönetişim İlkeleri', slug: 'yonetim-ve-kurumsal-yonetisim-ilkeleri' },
+            { title: 'Kamu Yararı ve Sosyal Fayda Statüsü Beyanı', slug: 'kamu-yarari-ve-sosyal-fayda-beyani' },
+        ]
+    },
+    {
+        title: 'E. Erişilebilirlik, Bilgilendirme ve Diğer Politikalar',
         items: [
             { title: 'Erişilebilirlik Politikası', slug: 'erisilebilirlik-politikasi' },
-            { title: 'Etik İlkeler', slug: 'etik-ilkeler' },
             { title: 'Bilgilendirme Politikası', slug: 'bilgilendirme-politikasi' },
+            { title: 'Çok Dilli Sözleşmeler ve Küresel Erişim Politikası', slug: 'cok-dilli-sozlesmeler-politikasi' },
+            { title: 'Yerel Bağış Mevzuatlarına Uyum Beyanı', slug: 'yerel-bagis-mevzuatlarina-uyum-beyani' },
         ]
     }
 ];
@@ -58,22 +84,22 @@ export default function ContractsPage() {
               <ArrowLeft className="h-6 w-6" />
           </Button>
         <div>
-          <h1 className="text-2xl font-bold font-headline">Sözleşmeler ve Politikalar</h1>
-          <p className="text-muted-foreground text-sm">Uygulama kullanımına ilişkin yasal belgeler.</p>
+          <h1 className="text-2xl font-bold font-headline">Sözleşmeler, Politikalar ve Beyanlar</h1>
+          <p className="text-muted-foreground text-sm">hangel platformu kullanımına ilişkin kurumsal ve yasal belgeler.</p>
         </div>
 
         {contractGroups.map(group => (
-          <Card key={group.title}>
+          <Card key={group.title} className="rounded-2xl border-black/5 shadow-sm">
               <CardHeader>
-                  <CardTitle className="text-lg">{group.title}</CardTitle>
+                  <CardTitle className="text-lg font-bold">{group.title}</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-              <div className="divide-y">
+              <div className="divide-y border-t">
                   {group.items.map((contract) => (
                       <Link href={`/settings/contracts/${contract.slug}`} key={contract.title} className="block">
                           <div className="flex items-center justify-between p-4 hover:bg-accent transition-colors">
-                          <span className="font-medium">{contract.title}</span>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          <span className="font-medium text-sm">{contract.title}</span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
                           </div>
                       </Link>
                   ))}
@@ -82,7 +108,7 @@ export default function ContractsPage() {
           </Card>
         ))}
       </main>
-      <PublicFooter currentPageLabel="Sözleşmeler ve Politikalar" />
+      <PublicFooter currentPageLabel="Sözleşmeler, Politikalar ve Beyanlar" />
     </div>
   );
 }
