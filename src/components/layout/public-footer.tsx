@@ -58,8 +58,6 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
             links: [
                 {label: "Giriş Yap", href: "/login/selection?action=login"}, 
                 {label: "Kayıt Ol", href: "/login/selection?action=register"}, 
-                {label: "Cüzdanım", href: "/qr-payment"},
-                {label: "Profilim", href: "/profile"},
                 {label: "Destek Merkezi", href: "/support"}, 
                 {label: "Geri Bildirim", href: "/feedback"}
             ] 
