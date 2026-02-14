@@ -13,8 +13,8 @@ export default function Loading() {
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-4 w-64" />
             <div className="space-y-4 pt-4">
-                {[...Array(5)].map((itemIndex) => (
-                    <div key={itemIndex} className="flex items-center justify-between">
+                {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
                         <div className="space-y-2"><Skeleton className="h-5 w-40" /></div>
                         <Skeleton className="h-10 w-32 rounded-md" />
                     </div>
