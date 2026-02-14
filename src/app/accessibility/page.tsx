@@ -20,7 +20,8 @@ import {
     Info,
     ChevronRight,
     Type,
-    Layers
+    Layers,
+    AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -30,6 +31,14 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, title: string, description: string, badge?: string }) => (
     <Card className="bg-white rounded-[2rem] p-8 border border-black/5 shadow-sm hover:shadow-xl transition-all duration-500 group h-full">
@@ -47,6 +56,23 @@ const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, tit
         </div>
     </Card>
 );
+
+const wcagCriteria = [
+    { feature: "Yüksek Kontrast", wcag: "1.4.3 Contrast (Min)", level: "AA", status: "Sağlanıyor", desc: "Metin–arka plan kontrastı kullanıcı tarafından artırılabiliyor" },
+    { feature: "Yazı Tipi Boyutu", wcag: "1.4.4 Resize Text", level: "AA", status: "Sağlanıyor", desc: "Metin ölçekleme arayüz bozulmadan destekleniyor" },
+    { feature: "Satır Aralığı", wcag: "1.4.12 Text Spacing", level: "AA", status: "Sağlanıyor", desc: "Satır ve paragraf aralığı ayarlanabiliyor" },
+    { feature: "Renk Körlüğü Filtresi", wcag: "1.4.1 Use of Color", level: "A", status: "Sağlanıyor", desc: "Bilgi yalnızca renkle aktarılmıyor" },
+    { feature: "Disleksi Dostu Yazı Tipi", wcag: "1.4.8 Visual Presentation", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Okunabilirliği artıran alternatif yazı tipi" },
+    { feature: "Animasyonları Azalt", wcag: "2.3.3 Animation", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Hareket hassasiyeti olan kullanıcılar için" },
+    { feature: "Büyük Dokunma Alanları", wcag: "2.5.5 Target Size", level: "AA", status: "Sağlanıyor", desc: "Dokunma hedefleri minimum boyutun üzerine çıkarılabiliyor" },
+    { feature: "Uzun Basma Süresi", wcag: "2.1.1 Key/Pointer Control", level: "A", status: "Kısmen", desc: "Yanlış tetikleme azaltılıyor" },
+    { feature: "Basitleştirilmiş Dil", wcag: "3.1.5 Reading Level", level: "AAA (destekleyici)", status: "Kısmen", desc: "Arayüz dili sade, içerik için rehber gerekli" },
+    { feature: "Sade Mod (Odak Modu)", wcag: "2.2.2 Pause, Stop, Hide", level: "A", status: "Sağlanıyor", desc: "Dikkat dağıtıcı öğeler kullanıcı kontrolünde" },
+    { feature: "ARIA ve Anonslar", wcag: "4.1.2 Name, Role, Value", level: "A", status: "Sağlanıyor", desc: "Semantik yapı ve ARIA etiketleri mevcut" },
+    { feature: "Sesli Geri Bildirim", wcag: "1.1.1 Non-text Content", level: "A", status: "Sağlanıyor", desc: "Metinsel uyarılar sesli geri bildirimle destekleniyor" },
+    { feature: "Zaman Sınırlarını Kapat", wcag: "2.2.1 Timing Adjustable", level: "A", status: "Sağlanıyor", desc: "Süre kısıtları kullanıcı tarafından kontrol ediliyor" },
+    { feature: "İşlem Onayları", wcag: "3.3.4 Error Prevention", level: "AA", status: "Sağlanıyor", desc: "Kritik işlemler için ek onay adımı var" },
+];
 
 export default function AccessibilityPublicPage() {
     const router = useRouter();
@@ -70,7 +96,7 @@ export default function AccessibilityPublicPage() {
             <main>
                 {/* Hero Section */}
                 <section className="relative pt-32 pb-24 px-6 text-center bg-[#f5f5f7] overflow-hidden border-b border-black/5">
-                    <div className="container mx-auto max-w-4xl space-y-6 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                    <div className="container mx-auto max-w-4xl space-y-6 relative z-10 animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
                         <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
                             Herkes İçin <br /> Tasarlandı.
                         </h1>
@@ -191,12 +217,65 @@ export default function AccessibilityPublicPage() {
                     </div>
                 </section>
 
+                {/* Uyumluluk Standartları Tablosu */}
+                <section className="py-32 px-6 bg-white border-b border-black/5">
+                    <div className="container mx-auto max-w-6xl space-y-12">
+                        <div className="text-center space-y-4">
+                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Uyumluluk Standartları.</h2>
+                            <p className="text-xl text-muted-foreground uppercase tracking-widest font-black">WCAG 2.2 AA – KRİTER EŞLEŞTİRME VE HANGEL UYUM TABLOSU</p>
+                        </div>
+                        
+                        <Card className="overflow-hidden border-none shadow-2xl rounded-[2.5rem]">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-[#f5f5f7] hover:bg-[#f5f5f7]">
+                                        <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-[0.2em]">Ayar / Özellik</TableHead>
+                                        <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-[0.2em]">WCAG Kriteri</TableHead>
+                                        <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-[0.2em]">Hangel Durumu</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {wcagCriteria.map((item, i) => (
+                                        <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                                            <TableCell className="py-6 px-8 font-bold text-lg text-[#1d1d1f]">{item.feature}</TableCell>
+                                            <TableCell className="py-6 px-8">
+                                                <div className="space-y-1">
+                                                    <p className="font-bold text-sm text-foreground">{item.wcag}</p>
+                                                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest h-5 px-2 border-none bg-muted">{item.level}</Badge>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="py-6 px-8">
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        {item.status === 'Sağlanıyor' ? (
+                                                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                                        ) : (
+                                                            <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                                        )}
+                                                        <span className={cn(
+                                                            "font-black text-[10px] uppercase tracking-widest",
+                                                            item.status === 'Sağlanıyor' ? "text-green-700" : "text-amber-700"
+                                                        )}>
+                                                            {item.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">{item.desc}</p>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Card>
+                    </div>
+                </section>
+
                 {/* Yasal ve Politik Çerçeve */}
-                <section className="py-32 px-6 border-b border-black/5">
+                <section className="py-32 px-6 border-b border-black/5 bg-[#f5f5f7]">
                     <div className="container mx-auto max-w-4xl text-center space-y-12">
                         <div className="p-4 bg-primary/10 rounded-2xl w-fit mx-auto"><Scale className="h-8 w-8 text-primary" /></div>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Yasal ve Politik Çerçeve.</h2>
-                        <div className="text-left space-y-8 bg-[#f5f5f7] p-10 md:p-16 rounded-[3rem] border border-black/5">
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Yasal ve Politik Çerçeve.</h2>
+                        <div className="text-left space-y-8 bg-white p-10 md:p-16 rounded-[3rem] border border-black/5 shadow-xl">
                             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
                                 Hangel, <strong>Avrupa Erişilebilirlik Yasası (European Accessibility Act – EAA)</strong> ve AB dijital hizmetler direktifleriyle uyumlu olacak şekilde tasarlanmıştır. Bu uyum, sadece bir yasal zorunluluk değil, sivil toplumun dijitalleşmesinde herkesin eşit haklara sahip olduğu inancımızın bir parçasıdır.
                             </p>
@@ -230,7 +309,7 @@ export default function AccessibilityPublicPage() {
                             </div>
                             <div className="space-y-6">
                                 <h3 className="text-2xl font-bold flex items-center gap-3"><Info className="text-primary" /> Şeffaf ve Süreklilik.</h3>
-                                <p className="text-muted-foreground font-medium leading-relaxed">Erişilebilirlik uyumluluğumuzu düzenli olarak değerlendiriyor, kullanıcı geri bildirimlerini teknik yol haritamızın en başına koyuyoruz.</p>
+                                <p className="text-muted-foreground font-medium leading-relaxed">Erişilebilirlik uyumluluğumuzu düzenli olarak değerlendiriyor, kullanıcının geri bildirimlerini teknik yol haritamızın en başına koyuyoruz.</p>
                             </div>
                         </div>
                     </div>
