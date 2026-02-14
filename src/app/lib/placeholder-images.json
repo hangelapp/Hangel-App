@@ -1,0 +1,137 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "user-avatar-1",
+      "description": "User avatar 1",
+      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjgwMDU1OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "user-avatar-2",
+      "description": "User avatar 2",
+      "imageUrl": "https://images.unsplash.com/photo-1598625873873-52f9aefd7d9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx3b21hbiUyMHNtaWxpbmd8ZW58MHx8fHwxNzY4MDAyNTIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman smiling"
+    },
+    {
+      "id": "brand-logo-1",
+      "description": "Brand logo for 'Doğa Dostu Giyim'",
+      "imageUrl": "https://images.unsplash.com/photo-1762568761134-380f7ca296f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGVhZiUyMGxvZ298ZW58MHx8fHwxNzY4MDg4MDk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leaf logo"
+    },
+    {
+      "id": "brand-logo-2",
+      "description": "Brand logo for 'Lezzet Köyü'",
+      "imageUrl": "https://images.unsplash.com/photo-1744744041777-2c4604f761db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3aGVhdCUyMGxvZ298ZW58MHx8fHwxNzY4MDg4MDk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wheat logo"
+    },
+    {
+      "id": "brand-logo-3",
+      "description": "Brand logo for 'Gezgin Rotalar'",
+      "imageUrl": "https://images.unsplash.com/photo-1647006870601-27a4b0f21f41?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjb21wYXNzJTIwbG9nb3xlbnwwfHx8fDE3Njc5ODIyMjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "compass logo"
+    },
+    {
+      "id": "brand-logo-4",
+      "description": "Brand logo for 'Tekno Market'",
+      "imageUrl": "https://images.unsplash.com/photo-1678982175192-3ca60f2d7f82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaXJjdWl0JTIwbG9nb3xlbnwwfHx8fDE3NjgwNzI3Mzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "circuit logo"
+    },
+    {
+      "id": "event-cover-1",
+      "description": "Event cover for 'Sahil Temizliği'",
+      "imageUrl": "https://images.unsplash.com/photo-1595902392414-16c64fe8d048?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YmVhY2glMjBjbGVhbnVwfGVufDB8fHx8MTc2ODA4NTM1Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "beach cleanup"
+    },
+    {
+      "id": "event-cover-2",
+      "description": "Event cover for 'Kodlama Atölyesi'",
+      "imageUrl": "https://images.unsplash.com/photo-1523800503107-5bc3ba2a6f81?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsYXB0b3AlMjBjb2RlfGVufDB8fHx8MTc2ODA4NzIwMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop code"
+    },
+    {
+      "id": "timeline-post-1",
+      "description": "Timeline post image of volunteers planting trees",
+      "imageUrl": "https://images.unsplash.com/photo-1589923188900-85dae523342b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwbGFudGluZyUyMHRyZWVzfGVufDB8fHx8MTc2ODA1MDk2MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "planting trees"
+    },
+    {
+      "id": "timeline-post-2",
+      "description": "Timeline post image of a food donation drive",
+      "imageUrl": "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmb29kJTIwZG9uYXRpb258ZW58MHx8fHwxNzY4MDg1MzUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food donation"
+    },
+    {
+      "id": "user-profile-banner",
+      "description": "User profile banner image",
+      "imageUrl": "https://images.unsplash.com/photo-1693902939226-449195d2698b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHh3fHxhYnN0cmFjdCUyMG5hdHVyZXxlbnwwfHx8fDE3NjgwMzgwMDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract nature"
+    },
+    {
+      "id": "campaign-banner-1",
+      "description": "Campaign banner for school shopping donations",
+      "imageUrl": "https://images.unsplash.com/photo-1766961557637-f40431f5839b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzdHVkZW50JTIwc2Nob29sJTIwc3VwcGxpZXN8ZW58MHx8fHwxNzY4MzAwMjgxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student school supplies"
+    },
+    {
+      "id": "campaign-banner-2",
+      "description": "Campaign banner for travel donations",
+      "imageUrl": "https://images.unsplash.com/photo-1503220317375-aa068c833b36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0cmF2ZWx8ZW58MHx8fHwxNzY4MTYyNDU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "travel"
+    },
+    {
+      "id": "stk-illustration",
+      "description": "Charcoal charity illustration",
+      "imageUrl": "https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "charcoal charity drawing"
+    },
+    {
+      "id": "campus-poster-1",
+      "description": "Minimalist University Conference Poster",
+      "imageUrl": "https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtaW5pbWFsaXN0JTIwdW5pdmVyc2l0eSUyMGNvbmZlcmVuY2UlMjBwb3N0ZXJ8ZW58MHx8fHwxNzcwMjY4MTI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "minimalist university conference poster"
+    },
+    {
+      "id": "campus-poster-2",
+      "description": "Apple Style Student Summit Banner",
+      "imageUrl": "https://images.unsplash.com/photo-1623310073887-c40ff625e3ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhcHBsZSUyMHN0eWxlJTIwc3R1ZGVudCUyMHN1bW1pdCUyMGJhbm5lcnxlbnwwfHx8fDE3NzAyNjgxMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "apple style student summit banner"
+    },
+    {
+      "id": "campus-poster-3",
+      "description": "Clean Design Campus Concert Flyer",
+      "imageUrl": "https://images.unsplash.com/photo-1709949906630-fb378d0dfd45?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjbGVhbiUyMGRlc2lnbiUyMGNhbXB1cyUyMGNvbmNlcnQlMjBmbHllcnxlbnwwfHx8fDE3NzAyNjgxMjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "clean design campus concert flyer"
+    },
+    {
+      "id": "campus-poster-4",
+      "description": "Modern Academic Workshop Poster",
+      "imageUrl": "https://images.unsplash.com/photo-1568137223715-939ee931710e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBhY2FkZW1pYyUyMHdvcmtzaG9wJTIwcG9zdGVyfGVufDB8fHx8MTc3MDI2ODEyNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern academic workshop poster"
+    },
+    {
+      "id": "campus-poster-5",
+      "description": "Minimalist College Hackathon Banner",
+      "imageUrl": "https://images.unsplash.com/photo-1538421385567-8395e14f445b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtaW5pbWFsaXN0JTIwY29sbGVnZSUyMGhhY2thdGhvbiUyMGJhbm5lcnxlbnwwfHx8fDE3NzAyNjgxMjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "minimalist college hackathon banner"
+    },
+    {
+      "id": "merchant-illustration",
+      "description": "Charcoal merchant store illustration",
+      "imageUrl": "https://picsum.photos/seed/merc-char/1080/1080",
+      "imageHint": "charcoal merchant store drawing"
+    },
+    {
+      "id": "library-illustration",
+      "description": "Charcoal library drawing",
+      "imageUrl": "https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "charcoal library drawing"
+    },
+    {
+      "id": "accessibility-hero",
+      "description": "Empowered person in a wheelchair representing freedom and accessibility",
+      "imageUrl": "https://images.unsplash.com/photo-1534643900521-643015c44185?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "empowered disabled"
+    }
+  ]
+}

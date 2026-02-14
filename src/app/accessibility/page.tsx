@@ -29,6 +29,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, title: string, description: string, badge?: string }) => (
     <Card className="bg-white rounded-[2rem] p-8 border border-black/5 shadow-sm hover:shadow-xl transition-all duration-500 group h-full">
@@ -49,6 +50,7 @@ const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, tit
 
 export default function AccessibilityPublicPage() {
     const router = useRouter();
+    const heroImage = PlaceHolderImages.find(img => img.id === 'accessibility-hero');
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -78,11 +80,11 @@ export default function AccessibilityPublicPage() {
                     </div>
                     <div className="relative w-full max-w-6xl mx-auto aspect-[21/9] mt-16 rounded-t-[3rem] overflow-hidden shadow-2xl">
                         <Image 
-                            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop" 
+                            src={heroImage?.imageUrl || "https://images.unsplash.com/photo-1534643900521-643015c44185?q=80&w=2070&auto=format&fit=crop"} 
                             alt="Inclusive Design" 
                             fill 
                             className="object-cover"
-                            data-ai-hint="inclusive design people"
+                            data-ai-hint={heroImage?.imageHint || "empowered disabled"}
                         />
                     </div>
                 </section>
@@ -210,7 +212,7 @@ export default function AccessibilityPublicPage() {
                     <div className="container mx-auto max-w-6xl space-y-20">
                         <div className="text-center space-y-4">
                             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Erişilebilirlik Yaklaşımımız.</h2>
-                            <p className="text-xl text-muted-foreground">Prensiplerimiz, kapsayıcı bir toplum inşa etme vizyonumuzun temelidir.</p>
+                            <p className="text-xl text-muted-foreground">Prensiplerimiz, kapsayıcı bir toplum inşa etme vizyonuumuzun temelidir.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
