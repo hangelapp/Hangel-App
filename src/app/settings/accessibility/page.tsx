@@ -41,7 +41,12 @@ import {
     Info,
     Scale,
     Globe,
-    Target
+    Target,
+    ShieldAlert,
+    VolumeX,
+    ImageOff,
+    Command,
+    Rows
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +84,7 @@ export default function AccessibilitySettingsPage() {
     const [textAlignment, setTextAlignment] = useState('left');
     const [separateText, setSeparateText] = useState(false);
     const [showContrastInfo, setShowContrastInfo] = useState(true);
+    const [reflowMode, setReflowMode] = useState(true);
 
     // Interaction
     const [reduceMotion, setReduceMotion] = useState(false);
@@ -87,6 +93,7 @@ export default function AccessibilitySettingsPage() {
     const [fullKeyboard, setFullKeyboard] = useState(false);
     const [focusStrength, setFocusFrame] = useState('thin');
     const [dragDropAlt, setDragDropAlt] = useState(false);
+    const [limitShortcuts, setLimitShortcuts] = useState(false);
 
     // Cognitive
     const [readingLevel, setReadingLevel] = useState('B2');
@@ -94,6 +101,7 @@ export default function AccessibilitySettingsPage() {
     const [termConsistency, setTerminologyConsistency] = useState(false);
     const [focusMode, setFocusMode] = useState(false);
     const [termDefinitions, setTermDefinitions] = useState(true);
+    const [errorPrevention, setErrorPrevention] = useState(true);
 
     // Audio/Media
     const [screenReader, setScreenReader] = useState(true);
@@ -102,20 +110,24 @@ export default function AccessibilitySettingsPage() {
     const [logicalOrder, setLogicalReadingOrder] = useState(true);
     const [audioFeedback, setAudioFeedback] = useState(false);
     const [visualAlerts, setVisualAlerts] = useState(false);
+    const [muteAutoAudio, setMuteAutoAudio] = useState(true);
+    const [ignoreDecorative, setIgnoreDecorative] = useState(true);
 
     // Control
     const [timeoutWarnings, setTimeoutWarnings] = useState(true);
     const [autoSave, setAutoSave] = useState(true);
     const [disableTimeLimits, setDisableTimeLimits] = useState(false);
     const [transactionConfirmation, setTransactionConfirmation] = useState(true);
-    const [undoSupport, setUndoSupport] = useState(false);
+    const [undoSupport, setUndoSupport] = useState(true);
+    const [undoTime, setUndoTime] = useState('10s');
 
     // --- Persistence ---
     useEffect(() => {
-        const saved = localStorage.getItem('hangel-a11y-v2');
+        const saved = localStorage.getItem('hangel-a11y-v3');
         if (saved) {
             try {
                 const s = JSON.parse(saved);
+                // Visual
                 if (s.highContrast !== undefined) setHighContrast(s.highContrast);
                 if (s.fontSize) setFontSize(s.fontSize);
                 if (s.lineHeight) setLineHeight(s.lineHeight);
@@ -126,28 +138,42 @@ export default function AccessibilitySettingsPage() {
                 if (s.textAlignment) setTextAlignment(s.textAlignment);
                 if (s.separateText !== undefined) setSeparateText(s.separateText);
                 if (s.showContrastInfo !== undefined) setShowContrastInfo(s.showContrastInfo);
+                if (s.reflowMode !== undefined) setReflowMode(s.reflowMode);
+
+                // Interaction
                 if (s.reduceMotion !== undefined) setReduceMotion(s.reduceMotion);
                 if (s.largeTouchTargets !== undefined) setLargeTouchTargets(s.largeTouchTargets);
                 if (s.longPressDuration) setLongPressDuration(s.longPressDuration);
                 if (s.fullKeyboard !== undefined) setFullKeyboard(s.fullKeyboard);
                 if (s.focusStrength) setFocusFrame(s.focusStrength);
                 if (s.dragDropAlt !== undefined) setDragDropAlt(s.dragDropAlt);
+                if (s.limitShortcuts !== undefined) setLimitShortcuts(s.limitShortcuts);
+
+                // Cognitive
                 if (s.readingLevel) setReadingLevel(s.readingLevel);
                 if (s.stepByStep !== undefined) setStepByStep(s.stepByStep);
                 if (s.termConsistency !== undefined) setTerminologyConsistency(s.termConsistency);
                 if (s.focusMode !== undefined) setFocusMode(s.focusMode);
                 if (s.termDefinitions !== undefined) setTermDefinitions(s.termDefinitions);
+                if (s.errorPrevention !== undefined) setErrorPrevention(s.errorPrevention);
+
+                // Audio/Media
                 if (s.screenReader !== undefined) setScreenReader(s.screenReader);
                 if (s.dynamicAnnouncements !== undefined) setDynamicAnnouncements(s.dynamicAnnouncements);
                 if (s.mediaDescriptions !== undefined) setMediaDescriptions(s.mediaDescriptions);
                 if (s.logicalOrder !== undefined) setLogicalReadingOrder(s.logicalOrder);
                 if (s.audioFeedback !== undefined) setAudioFeedback(s.audioFeedback);
                 if (s.visualAlerts !== undefined) setVisualAlerts(s.visualAlerts);
+                if (s.muteAutoAudio !== undefined) setMuteAutoAudio(s.muteAutoAudio);
+                if (s.ignoreDecorative !== undefined) setIgnoreDecorative(s.ignoreDecorative);
+
+                // Control
                 if (s.timeoutWarnings !== undefined) setTimeoutWarnings(s.timeoutWarnings);
                 if (s.autoSave !== undefined) setAutoSave(s.autoSave);
                 if (s.disableTimeLimits !== undefined) setDisableTimeLimits(s.disableTimeLimits);
                 if (s.transactionConfirmation !== undefined) setTransactionConfirmation(s.transactionConfirmation);
                 if (s.undoSupport !== undefined) setUndoSupport(s.undoSupport);
+                if (s.undoTime) setUndoTime(s.undoTime);
             } catch (e) {
                 console.error("Settings load error:", e);
             }
@@ -157,14 +183,14 @@ export default function AccessibilitySettingsPage() {
     const handleSave = () => {
         setIsSaving(true);
         const settings = {
-            highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, separateText, showContrastInfo,
-            reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt,
-            readingLevel, stepByStep, termConsistency, focusMode, termDefinitions,
-            screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts,
-            timeoutWarnings, autoSave, disableTimeLimits, transactionConfirmation, undoSupport
+            highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, separateText, showContrastInfo, reflowMode,
+            reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt, limitShortcuts,
+            readingLevel, stepByStep, termConsistency, focusMode, termDefinitions, errorPrevention,
+            screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts, muteAutoAudio, ignoreDecorative,
+            timeoutWarnings, autoSave, disableTimeLimits, transactionConfirmation, undoSupport, undoTime
         };
         
-        localStorage.setItem('hangel-a11y-v2', JSON.stringify(settings));
+        localStorage.setItem('hangel-a11y-v3', JSON.stringify(settings));
         
         setTimeout(() => {
             setIsSaving(false);
@@ -210,6 +236,9 @@ export default function AccessibilitySettingsPage() {
                         <div className="flex flex-col">
                             <SettingsItem label="Yüksek Kontrast" icon={Contrast} iconColor="bg-indigo-500" description="Metin ve arka plan belirginliğini artırır.">
                                 <Switch checked={highContrast} onCheckedChange={setHighContrast} />
+                            </SettingsItem>
+                            <SettingsItem label="Metni Ekrana Sığdır (Reflow)" icon={Rows} iconColor="bg-indigo-500" description="Zoom yapıldığında yatay kaydırmayı engeller. (WCAG 1.4.10)">
+                                <Switch checked={reflowMode} onCheckedChange={setReflowMode} />
                             </SettingsItem>
                             <SettingsItem label="Kontrast Bilgisi Göster" icon={ShieldCheck} iconColor="bg-indigo-500" description="Tema için AA/AAA uyumluluk göstergesi sunar.">
                                 <Switch checked={showContrastInfo} onCheckedChange={setShowContrastInfo} />
@@ -276,6 +305,9 @@ export default function AccessibilitySettingsPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
+                            <SettingsItem label="Hata Önleme Modu" icon={ShieldAlert} iconColor="bg-orange-500" description="Kritik işlemler öncesi hataları işlem öncesi engeller. (WCAG 3.3.4)">
+                                <Switch checked={errorPrevention} onCheckedChange={setErrorPrevention} />
+                            </SettingsItem>
                             <SettingsItem label="Okuma Seviyesi" icon={Languages} iconColor="bg-orange-500" description="Dili sadeleştirir ve cümle yapısını düzenler.">
                                 <Select value={readingLevel} onValueChange={setReadingLevel}>
                                     <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
@@ -310,6 +342,9 @@ export default function AccessibilitySettingsPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
+                            <SettingsItem label="Klavye Kısayollarını Sınırla" icon={Command} iconColor="bg-teal-500" description="Tek tuş kısayollarını kapatarak hataları önler. (WCAG 2.1.4)">
+                                <Switch checked={limitShortcuts} onCheckedChange={setLimitShortcuts} />
+                            </SettingsItem>
                             <SettingsItem label="Klavye ile Tam Kullanım" icon={Keyboard} iconColor="bg-teal-500" description="Tüm öğeleri klavye (Tab/Enter) ile erişilebilir yapar.">
                                 <Switch checked={fullKeyboard} onCheckedChange={setFullKeyboard} />
                             </SettingsItem>
@@ -344,6 +379,12 @@ export default function AccessibilitySettingsPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
+                            <SettingsItem label="Otomatik Sesleri Kapat" icon={VolumeX} iconColor="bg-blue-500" description="Otomatik başlayan sesleri ve müzikleri engeller. (WCAG 1.4.2)">
+                                <Switch checked={muteAutoAudio} onCheckedChange={setMuteAutoAudio} />
+                            </SettingsItem>
+                            <SettingsItem label="Dekoratif Görselleri Yoksay" icon={ImageOff} iconColor="bg-blue-500" description="Sadece süs amaçlı görselleri ekran okuyucuya okumaz.">
+                                <Switch checked={ignoreDecorative} onCheckedChange={setIgnoreDecorative} />
+                            </SettingsItem>
                             <SettingsItem label="Dinamik İçerik Anonsları" icon={Rss} iconColor="bg-blue-500" description="Hata ve başarı bildirimlerini otomatik seslendirir.">
                                 <Switch checked={dynamicAnnouncements} onCheckedChange={setDynamicAnnouncements} />
                             </SettingsItem>
@@ -371,6 +412,17 @@ export default function AccessibilitySettingsPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
+                            <SettingsItem label="Geri Alma Süresi" icon={Undo2} iconColor="bg-slate-600" description="Yapılan işlemi geri alabilmek için tanınan süre. (WCAG 2.2.3)">
+                                <Select value={undoTime} onValueChange={setUndoTime}>
+                                    <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5s">5 Saniye</SelectItem>
+                                        <SelectItem value="10s">10 Saniye</SelectItem>
+                                        <SelectItem value="30s">30 Saniye</SelectItem>
+                                        <SelectItem value="unlimited">Sınırsız</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </SettingsItem>
                             <SettingsItem label="Zaman Aşımı Uyarıları" icon={MessageSquareWarning} iconColor="bg-slate-600" description="Oturum dolmadan önce 'Devam Et' seçeneği sunar.">
                                 <Switch checked={timeoutWarnings} onCheckedChange={setTimeoutWarnings} />
                             </SettingsItem>
