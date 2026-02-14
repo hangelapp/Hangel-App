@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -84,7 +83,7 @@ export default function AccessibilitySettingsPage() {
             </Button>
             <div className="space-y-1">
                 <h1 className="text-3xl font-bold font-headline">Erişilebilirlik</h1>
-                <p className="text-muted-foreground text-sm">Deneyiminizi en iyi hale getirmek için platform özelliklerini kişiselleştirin.</p>
+                <p className="text-muted-foreground text-sm">Deneyiminizi ihtiyaçlarınıza göre kişiselleştirmek için erişilebilirlik ayarlarını yapılandırın.</p>
             </div>
 
             {/* 1. Görsel Ayarlar */}
@@ -230,7 +229,7 @@ export default function AccessibilitySettingsPage() {
                     <div className="flex flex-col">
                         <SettingsItem
                             label="ARIA ve Anonslar"
-                            description="Ekran okuyucular için yapılandırılmış etiketleri etkinleştirir."
+                            description="Ekran okuyucular için yapılandırılmış etiketleri ve yönlendirici anonsları etkinleştirir."
                             icon={Ear} 
                             iconColor="bg-blue-500"
                         >
@@ -238,7 +237,7 @@ export default function AccessibilitySettingsPage() {
                         </SettingsItem>
                         <SettingsItem
                             label="Sesli Geri Bildirim"
-                            description="Hata ve başarı mesajlarını sesli olarak okur."
+                            description="Hata, uyarı ve başarı mesajlarını sesli olarak okur."
                             icon={Volume2} 
                             iconColor="bg-blue-500"
                         >
