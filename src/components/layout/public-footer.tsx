@@ -86,6 +86,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "Site Haritası", href: "/sitemap" },
         { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
         { label: "Erişilebilirlik", href: "/accessibility" },
+        { label: "Standartlar", href: "/standards" },
         { label: "Logo Kullanımı", href: "/logo-usage" }
     ];
 
