@@ -35,7 +35,12 @@ import {
     Sparkles,
     CheckCircle,
     AlertTriangle,
-    Info
+    Info,
+    Undo2,
+    BookText,
+    BellOff,
+    Settings2,
+    MoreHorizontal
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -56,15 +61,15 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 );
 
 const wcagCriteria = [
-    { feature: "Yüksek Kontrast", wcag: "1.4.3 Contrast (Minimum)", level: "AA", status: "Sağlanıyor", desc: "Metin–arka plan kontrastı artırılabiliyor" },
+    { feature: "Yüksek Kontrast", wcag: "1.4.3 Contrast (Min)", level: "AA", status: "Sağlanıyor", desc: "Metin–arka plan kontrastı kullanıcı tarafından artırılabiliyor" },
     { feature: "Yazı Tipi Boyutu", wcag: "1.4.4 Resize Text", level: "AA", status: "Sağlanıyor", desc: "Metin ölçekleme arayüz bozulmadan destekleniyor" },
     { feature: "Satır Aralığı", wcag: "1.4.12 Text Spacing", level: "AA", status: "Sağlanıyor", desc: "Satır ve paragraf aralığı ayarlanabiliyor" },
     { feature: "Renk Körlüğü Filtresi", wcag: "1.4.1 Use of Color", level: "A", status: "Sağlanıyor", desc: "Bilgi yalnızca renkle aktarılmıyor" },
     { feature: "Disleksi Dostu Yazı Tipi", wcag: "1.4.8 Visual Presentation", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Okunabilirliği artıran alternatif yazı tipi" },
-    { feature: "Animasyonları Azalt", wcag: "2.3.3 Animation from Interactions", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Hareket hassasiyeti olan kullanıcılar için" },
+    { feature: "Animasyonları Azalt", wcag: "2.3.3 Animation", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Hareket hassasiyeti olan kullanıcılar için" },
     { feature: "Büyük Dokunma Alanları", wcag: "2.5.5 Target Size", level: "AA", status: "Sağlanıyor", desc: "Dokunma hedefleri minimum boyutun üzerine çıkarılabiliyor" },
-    { feature: "Uzun Basma Süresi", wcag: "2.1.1 Keyboard / Pointer Control", level: "A", status: "Kısmen", desc: "Yanlış tetikleme azaltılıyor" },
-    { feature: "Basitleştirilmiş Dil", wcag: "3.1.5 Reading Level", level: "AAA (destekleyici)", status: "Kısmen", desc: "Arayüz dili sade" },
+    { feature: "Uzun Basma Süresi", wcag: "2.1.1 Key/Pointer Control", level: "A", status: "Kısmen", desc: "Yanlış tetikleme azaltılıyor" },
+    { feature: "Basitleştirilmiş Dil", wcag: "3.1.5 Reading Level", level: "AAA (destekleyici)", status: "Kısmen", desc: "Arayüz dili sade, içerik için rehber gerekli" },
     { feature: "Sade Mod (Odak Modu)", wcag: "2.2.2 Pause, Stop, Hide", level: "A", status: "Sağlanıyor", desc: "Dikkat dağıtıcı öğeler kullanıcı kontrolünde" },
     { feature: "ARIA ve Anonslar", wcag: "4.1.2 Name, Role, Value", level: "A", status: "Sağlanıyor", desc: "Semantik yapı ve ARIA etiketleri mevcut" },
     { feature: "Sesli Geri Bildirim", wcag: "1.1.1 Non-text Content", level: "A", status: "Sağlanıyor", desc: "Metinsel uyarılar sesli geri bildirimle destekleniyor" },
@@ -80,8 +85,10 @@ export default function AccessibilitySettingsPage() {
     const [highContrast, setHighContrast] = useState(false);
     const [fontSize, setFontSize] = useState('normal');
     const [lineSpacing, setLineSpacing] = useState('normal');
+    const [paragraphSpacing, setParagraphSpacing] = useState('normal');
     const [colorFilter, setColorFilter] = useState('yok');
     const [dyslexiaFont, setDyslexiaFont] = useState(false);
+    const [textAlignment, setTextAlignment] = useState('left');
 
     // Interaction States
     const [reduceMotion, setReduceMotion] = useState(false);
@@ -91,14 +98,17 @@ export default function AccessibilitySettingsPage() {
     // Reading States
     const [simplifiedLanguage, setSimplifiedLanguage] = useState(false);
     const [focusMode, setFocusMode] = useState(false);
+    const [termDefinitions, setTermDefinitions] = useState(true);
 
     // Sound States
     const [screenReader, setScreenReader] = useState(true);
     const [audioFeedback, setAudioFeedback] = useState(false);
+    const [visualAlerts, setVisualAlerts] = useState(false);
 
     // Control States
     const [disableTimeLimits, setDisableTimeLimits] = useState(false);
     const [transactionConfirmation, setTransactionConfirmation] = useState(true);
+    const [undoSupport, setUndoSupport] = useState(false);
 
     const handleSave = () => {
         toast({
@@ -124,34 +134,35 @@ export default function AccessibilitySettingsPage() {
                         <div className="p-2 bg-primary/10 rounded-lg">
                             <Sparkles className="h-5 w-5 text-primary" />
                         </div>
-                        <CardTitle className="text-lg">Hangel'i Kişiselleştirin</CardTitle>
+                        <CardTitle className="text-lg">Hangel’i İhtiyaçlarınıza Göre Özelleştirin</CardTitle>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm text-foreground/80 leading-relaxed">
-                    <p>Hangel’i ihtiyaçlarınıza göre özelleştirebilirsiniz. Görünüm, etkileşim, okuma ve kontrol ayarlarıyla deneyiminizi sizin için daha rahat hale getirin.</p>
+                    <p>Görünüm, etkileşim, okuma ve kontrol ayarlarıyla deneyiminizi sizin için daha rahat hale getirin.</p>
                     <p>Bu ayarlar; okunabilirliği artırmak, dikkat dağıtıcı unsurları azaltmak ve uygulamayı daha kolay kullanmanızı sağlamak için tasarlanmıştır. İstediğiniz zaman ayarları değiştirebilirsiniz.</p>
                 </CardContent>
             </Card>
 
             {/* Settings Groups */}
             <div className="space-y-6">
-                {/* 1. Görsel Ayarlar */}
+                
+                {/* 1. Görsel & Okuma */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg">Görsel Ayarlar</CardTitle>
-                        <CardDescription>Görünümü ihtiyacınıza göre düzenleyin.</CardDescription>
+                        <CardTitle className="text-lg">Görsel & Okuma</CardTitle>
+                        <CardDescription>Görsel algı ve okuma deneyimi için yapılandırmalar. (WCAG 1.4.x)</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
                             <SettingsItem 
                                 label="Yüksek Kontrast"
-                                description="Renkleri daha belirgin hale getirerek okunabilirliği artırır."
+                                description="Metin ve arka plan arasındaki renk belirginliğini artırır. (Görsel engel)"
                                 icon={Contrast} 
                                 iconColor="bg-indigo-500" 
                             >
                                 <Switch checked={highContrast} onCheckedChange={setHighContrast} />
                             </SettingsItem>
-                            <SettingsItem label="Yazı Tipi Boyutu" icon={Type} iconColor="bg-indigo-500">
+                            <SettingsItem label="Yazı Tipi Boyutu" icon={Type} iconColor="bg-indigo-500" description="Metin ölçeklemesini arayüze göre ayarlar. (Görsel engel)">
                                 <Select value={fontSize} onValueChange={setFontSize}>
                                     <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
                                         <SelectValue />
@@ -163,19 +174,30 @@ export default function AccessibilitySettingsPage() {
                                     </SelectContent>
                                 </Select>
                             </SettingsItem>
-                            <SettingsItem label="Satır Aralığı" icon={AlignLeft} iconColor="bg-indigo-500">
+                            <SettingsItem label="Satır Aralığı" icon={AlignLeft} iconColor="bg-indigo-500" description="Metin satırları arasındaki boşluğu artırır. (Disleksi, Az görme)">
                                 <Select value={lineSpacing} onValueChange={setLineSpacing}>
                                     <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="tight">Dar</SelectItem>
                                         <SelectItem value="normal">Normal</SelectItem>
-                                        <SelectItem value="wide">Geniş</SelectItem>
+                                        <SelectItem value="wide">Geniş (1.5)</SelectItem>
+                                        <SelectItem value="extra">Ekstra (2.0)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </SettingsItem>
-                            <SettingsItem label="Renk Körlüğü Filtresi" icon={Eye} iconColor="bg-indigo-500">
+                            <SettingsItem label="Metin Hizalama" icon={AlignLeft} iconColor="bg-indigo-500" description="Okuma akışını kolaylaştırmak için tüm metinleri sol hizalı yapar. (Disleksi)">
+                                <Select value={textAlignment} onValueChange={setTextAlignment}>
+                                    <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="default">Varsayılan</SelectItem>
+                                        <SelectItem value="left">Sola Hizalı</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </SettingsItem>
+                            <SettingsItem label="Renk Körlüğü Filtresi" icon={Eye} iconColor="bg-indigo-500" description="Arayüz renklerini algıya göre yeniden haritalar. (Renk körlüğü)">
                                 <Select value={colorFilter} onValueChange={setColorFilter}>
                                     <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
                                         <SelectValue />
@@ -190,7 +212,7 @@ export default function AccessibilitySettingsPage() {
                             </SettingsItem>
                             <SettingsItem 
                                 label="Disleksi Dostu Yazı Tipi"
-                                description="Okuma güçlüğü çekenler için özel tasarlanmış yazı tipi."
+                                description="Harf karışıklığını önleyen OpenDyslexic yazı tipini kullanır. (Nöroçeşitlilik)"
                                 icon={Pilcrow} 
                                 iconColor="bg-indigo-500" 
                             >
@@ -200,17 +222,17 @@ export default function AccessibilitySettingsPage() {
                     </CardContent>
                 </Card>
 
-                {/* 2. Etkileşim & Hareket */}
+                {/* 2. Etkileşim & Motor */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg">Etkileşim & Hareket</CardTitle>
-                        <CardDescription>Motor beceriler ve dokunma kontrolü için ayarlar.</CardDescription>
+                        <CardTitle className="text-lg">Etkileşim & Motor</CardTitle>
+                        <CardDescription>Motor beceriler ve fiziksel erişim için ayarlar. (WCAG 2.x)</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
                             <SettingsItem
                                 label="Animasyonları Azalt"
-                                description="Geçiş efektlerini ve hareketleri en aza indirir."
+                                description="Geçiş efektlerini ve hareketleri devre dışı bırakır. (Vestibüler hassasiyet)"
                                 icon={MinusCircle} 
                                 iconColor="bg-teal-500"
                             >
@@ -218,13 +240,13 @@ export default function AccessibilitySettingsPage() {
                             </SettingsItem>
                             <SettingsItem
                                 label="Büyük Dokunma Alanları"
-                                description="Buton ve link alanlarını büyüterek dokunmayı kolaylaştırır."
+                                description="Buton ve link alanlarını büyüterek (AAA 44x44px) tıklamayı kolaylaştırır. (Motor engel)"
                                 icon={Maximize} 
                                 iconColor="bg-teal-500"
                             >
                                 <Switch checked={largeTouchTargets} onCheckedChange={setLargeTouchTargets} />
                             </SettingsItem>
-                            <SettingsItem label="Uzun Basma Süresi" icon={Timer} iconColor="bg-teal-500">
+                            <SettingsItem label="Uzun Basma Süresi" icon={Timer} iconColor="bg-teal-500" description="Yanlış dokunma tetiklemelerini azaltmak için basma süresini artırır. (Titreme, Motor kontrol)">
                                 <Select value={longPressDuration} onValueChange={setLongPressDuration}>
                                     <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
                                         <SelectValue />
@@ -240,17 +262,17 @@ export default function AccessibilitySettingsPage() {
                     </CardContent>
                 </Card>
 
-                {/* 3. Okuma & Anlama */}
+                {/* 3. Dil & Anlama */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg">Okuma & Anlama</CardTitle>
-                        <CardDescription>Bilişsel yükü azaltmak ve odaklanmayı kolaylaştırmak için.</CardDescription>
+                        <CardTitle className="text-lg">Dil & Anlama</CardTitle>
+                        <CardDescription>Bilişsel yükü azaltma ve netlik ayarları. (WCAG 3.x)</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
                             <SettingsItem
                                 label="Basitleştirilmiş Dil"
-                                description="Daha kısa cümleler ve temel terimler kullanır."
+                                description="Teknik terimleri azaltır, daha kısa ve öz cümleler kullanır. (Bilişsel zorluk)"
                                 icon={Languages} 
                                 iconColor="bg-orange-500"
                             >
@@ -258,11 +280,19 @@ export default function AccessibilitySettingsPage() {
                             </SettingsItem>
                             <SettingsItem
                                 label="Sade Mod (Odak Modu)"
-                                description="Dikkat dağıtıcı unsurları gizleyerek içeriğe odaklanmanızı sağlar."
+                                description="Aynı anda görünen içerik sayısını azaltır, dikkat dağıtıcıları gizler. (DEHB, Anksiyete)"
                                 icon={Layers} 
                                 iconColor="bg-orange-500"
                             >
                                 <Switch checked={focusMode} onCheckedChange={setFocusMode} />
+                            </SettingsItem>
+                            <SettingsItem
+                                label="Terim Açıklamaları"
+                                description="Kısaltmaların ve teknik terimlerin üzerine tıklandığında açıklama gösterir. (Bilişsel)"
+                                icon={BookText} 
+                                iconColor="bg-orange-500"
+                            >
+                                <Switch checked={termDefinitions} onCheckedChange={setTermDefinitions} />
                             </SettingsItem>
                         </div>
                     </CardContent>
@@ -272,13 +302,13 @@ export default function AccessibilitySettingsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">Ekran Okuyucu & Ses</CardTitle>
-                        <CardDescription>Görme ve işitme duyularına yardımcı araçlar.</CardDescription>
+                        <CardDescription>Görme ve işitme duyuları için yardımcı araçlar.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
                             <SettingsItem
                                 label="ARIA ve Anonslar"
-                                description="Ekran okuyucular için yapılandırılmış etiketleri ve yönlendirici anonsları etkinleştirir."
+                                description="Ekran okuyucular için yapılandırılmış etiketleri ve yönlendirici anonsları etkinleştirir. (Görme engelliler)"
                                 icon={Ear} 
                                 iconColor="bg-blue-500"
                             >
@@ -286,11 +316,19 @@ export default function AccessibilitySettingsPage() {
                             </SettingsItem>
                             <SettingsItem
                                 label="Sesli Geri Bildirim"
-                                description="Hata, uyarı ve başarı mesajlarını sesli olarak okur."
+                                description="Hata, uyarı ve başarı mesajlarını sesli olarak okur. (Görme engelliler)"
                                 icon={Volume2} 
                                 iconColor="bg-blue-500"
                             >
                                 <Switch checked={audioFeedback} onCheckedChange={setAudioFeedback} />
+                            </SettingsItem>
+                            <SettingsItem
+                                label="Görsel Uyarı Modu"
+                                description="Sesli bildirimler yerine ekran parlaması veya titreşim kullanır. (İşitme engelliler)"
+                                icon={BellOff} 
+                                iconColor="bg-blue-500"
+                            >
+                                <Switch checked={visualAlerts} onCheckedChange={setVisualAlerts} />
                             </SettingsItem>
                         </div>
                     </CardContent>
@@ -300,13 +338,13 @@ export default function AccessibilitySettingsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">Zaman & Kontrol</CardTitle>
-                        <CardDescription>İşlem sürelerini ve kritik onayları yönetin.</CardDescription>
+                        <CardDescription>İşlem kontrolü ve hata yönetimi. (WCAG 2.2 AAA desteği)</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="flex flex-col">
                             <SettingsItem
                                 label="Zaman Sınırlarını Kapat"
-                                description="Form doldurma ve oturum sürelerini uzatır."
+                                description="Oturum ve form doldurma sürelerini sınırsız hale getirir. (Bilişsel zorluk, Motor engel)"
                                 icon={Clock} 
                                 iconColor="bg-slate-600"
                             >
@@ -314,11 +352,19 @@ export default function AccessibilitySettingsPage() {
                             </SettingsItem>
                             <SettingsItem
                                 label="İşlem Onayları"
-                                description="Kritik işlemlerde ek onay penceresi gösterir."
+                                description="Kritik işlemlerde ek onay pencereleri gösterir. (Bilişsel hassasiyet)"
                                 icon={ShieldCheck} 
                                 iconColor="bg-slate-600"
                             >
                                 <Switch checked={transactionConfirmation} onCheckedChange={setTransactionConfirmation} />
+                            </SettingsItem>
+                            <SettingsItem
+                                label="Geri Al / Hata Toleransı"
+                                description="Yapılan hatalı işlemleri (beğeni, takip vb.) geri almak için süre tanır. (Motor engel)"
+                                icon={Undo2} 
+                                iconColor="bg-slate-600"
+                            >
+                                <Switch checked={undoSupport} onCheckedChange={setUndoSupport} />
                             </SettingsItem>
                         </div>
                     </CardContent>
@@ -329,14 +375,14 @@ export default function AccessibilitySettingsPage() {
             <div className="space-y-4 pt-12">
                 <div className="space-y-1">
                     <h2 className="text-xl font-bold font-headline">Uyumluluk Standartları</h2>
-                    <p className="text-muted-foreground text-xs uppercase tracking-widest font-black">WCAG 2.2 AA – Kriter Eşleşme Tablosu</p>
+                    <p className="text-muted-foreground text-xs uppercase tracking-widest font-black">WCAG 2.2 AA – KRİTER EŞLEŞTİRME VE HANGEL UYUM TABLOSU</p>
                 </div>
                 <Card className="overflow-hidden border-none shadow-lg">
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-muted/50">
                                 <TableHead className="text-[10px] font-black uppercase tracking-wider">Ayar / Özellik</TableHead>
-                                <TableHead className="text-[10px] font-black uppercase tracking-wider">Kriter</TableHead>
+                                <TableHead className="text-[10px] font-black uppercase tracking-wider">WCAG Kriteri</TableHead>
                                 <TableHead className="text-[10px] font-black uppercase tracking-wider">Hangel Durumu</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -379,7 +425,7 @@ export default function AccessibilitySettingsPage() {
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4 leading-relaxed font-medium">
                     <p>Hangel uygulaması, WCAG 2.2 AA kriterleri esas alınarak tasarlanmış ve geliştirilmiştir. Uygulama genelinde erişilebilirlik; görsel algı, motor etkileşim, bilişsel yük ve ekran okuyucu uyumluluğu başlıkları altında ele alınmıştır.</p>
-                    <p>Erişilebilirlik ayarları, kullanıcıların bireysel ihtiyaçlarına göre deneyimi kişiselleştirebilmesini sağlayacak şekilde yapılandırılmıştır. Görsel kontrast, metin ölçekleme, renk kullanımı ve yazı tipi seçenekleri; metin okunabilirliğini artırmaya yöneliktir. Hareket ve etkileşim ayarları; animasyon azaltma, dokunma alanı büyütme ve işlem onayları gibi kontrollerle motor beceri ve dikkat hassasiyetlerini destekler.</p>
+                    <p>Erişilebilirlik ayarları, kullanıcıların bireysel ihtiyaçlarına göre deneyimi kişisellebertilmesini sağlayacak şekilde yapılandırılmıştır. Görsel kontrast, metin ölçekleme, renk kullanımı ve yazı tipi seçenekleri; metin okunabilirliğini artırmaya yöneliktir. Hareket ve etkileşim ayarları; animasyon azaltma, dokunma alanı büyütme ve işlem onayları gibi kontrollerle motor beceri ve dikkat hassasiyetlerini destekler.</p>
                     <p>Ekran okuyucu uyumluluğu kapsamında semantik yapı, ARIA etiketleri ve yönlendirici anonslar kullanılmaktadır. Zaman sınırlı etkileşimler kullanıcı kontrolüne bırakılmış, kritik işlemler için hata önleyici onay mekanizmaları eklenmiştir.</p>
                     <p>Erişilebilirlik uyumluluğu düzenli olarak gözden geçirilmekte, kullanıcı geri bildirimleri ve teknik değerlendirmeler doğrultusunda sürekli iyileştirme yaklaşımı benimsenmektedir.</p>
                 </CardContent>
@@ -387,7 +433,7 @@ export default function AccessibilitySettingsPage() {
 
             <div className="flex justify-end pt-8">
                 <Button onClick={handleSave} className="px-10 h-14 rounded-full font-bold shadow-xl shadow-primary/20 text-base">
-                    Değişiklikleri Kaydet
+                    Ayarları Kaydet
                 </Button>
             </div>
         </div>
