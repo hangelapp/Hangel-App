@@ -1,33 +1,21 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowLeft, 
-    ShieldCheck, 
-    Globe, 
-    Scale, 
     CheckCircle2, 
     Award,
     ChevronRight,
-    Landmark,
-    Target,
-    FileText,
-    Gavel,
-    Shield,
-    HeartHandshake,
-    Eye,
-    TrendingUp,
-    Database,
-    Sparkles
+    Globe,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
     Table,
@@ -47,7 +35,7 @@ import {
 
 const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: any[], headers: string[] }) => (
     <div className="space-y-6 scroll-mt-24" id={title.toLowerCase().replace(/\s+/g, '-')}>
-        <div className="space-y-1">
+        <div className="space-y-1 px-1">
             <h3 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">{title}</h3>
             {description && <p className="text-sm text-muted-foreground font-medium">{description}</p>}
         </div>
@@ -245,7 +233,7 @@ export default function StandardsPage() {
                     </p>
                 </section>
 
-                {/* Regions Section - Apple Style Card Carousel */}
+                {/* Regions Section - Flag Integrated Design */}
                 <section className="container mx-auto px-4 max-w-7xl mb-32">
                     <div className="text-center mb-12 space-y-2">
                         <h2 className="text-3xl font-bold tracking-tight">Küresel Uyum Ağımız</h2>
@@ -256,9 +244,13 @@ export default function StandardsPage() {
                             {regions.map((region) => (
                                 <CarouselItem key={region.name} className="md:basis-1/2 lg:basis-1/3 pl-6">
                                     <div className="rounded-[2.5rem] bg-white border border-black/5 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 h-[500px] flex flex-col group">
-                                        <div className="relative aspect-video">
+                                        <div className="relative aspect-video overflow-hidden">
                                             <Image src={region.image} alt={region.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" data-ai-hint={region.hint} />
-                                            <div className="absolute top-4 left-4 text-4xl drop-shadow-md">{region.flag}</div>
+                                            {/* Flag Panel Integration */}
+                                            <div className="absolute inset-0 bg-black/5" />
+                                            <div className="absolute top-6 left-6 w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl shadow-xl border border-white/30 transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                                                {region.flag}
+                                            </div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                                         </div>
                                         <div className="p-8 flex flex-col flex-1 justify-between">
