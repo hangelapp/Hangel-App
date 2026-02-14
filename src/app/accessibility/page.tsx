@@ -21,7 +21,8 @@ import {
     ChevronRight,
     Type,
     Layers,
-    AlertTriangle
+    AlertTriangle,
+    Target
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -72,6 +73,15 @@ const wcagCriteria = [
     { feature: "Sesli Geri Bildirim", wcag: "1.1.1 Non-text Content", level: "A", status: "Sağlanıyor", desc: "Metinsel uyarılar sesli geri bildirimle destekleniyor" },
     { feature: "Zaman Sınırlarını Kapat", wcag: "2.2.1 Timing Adjustable", level: "A", status: "Sağlanıyor", desc: "Süre kısıtları kullanıcı tarafından kontrol ediliyor" },
     { feature: "İşlem Onayları", wcag: "3.3.4 Error Prevention", level: "AA", status: "Sağlanıyor", desc: "Kritik işlemler için ek onay adımı var" },
+];
+
+const complianceRates = [
+    { standard: "European Accessibility Act (EAA)", region: "Avrupa Birliği", scope: "Dijital ürün ve hizmetlerde erişilebilirlik yükümlülükleri", rate: "75–80", desc: "Ürün mimarisi ve kullanıcı deneyimi EAA’ya uyumlu olacak şekilde tasarlanmıştır. Resmî uygunluk beyanı için sürekli izleme gereklidir." },
+    { standard: "EN 301 549", region: "Avrupa", scope: "Kamuya açık dijital ürünler için teknik erişilebilirlik", rate: "80–85", desc: "WCAG tabanlı kriterlerin büyük bölümü sağlanmakta, bazı kamuya özgü dokümantasyon gereklilikleri kapsam dışındadır." },
+    { standard: "ISO 9241-171", region: "Uluslararası", scope: "İnsan–bilgisayar etkileşimi ve kullanılabilirlik", rate: "70–75", desc: "Kullanılabilirlik ilkeleri uygulanmaktadır; kullanıcı testlerinin sürekliliğiyle artırılabilir." },
+    { standard: "WAI-ARIA Authoring Practices", region: "Uluslararası", scope: "Ekran okuyucu ve semantik yapı uygulamaları", rate: "85–90", desc: "ARIA etiketleri ve semantik yapı büyük ölçüde uygulanmaktadır." },
+    { standard: "Türkiye Erişilebilirlik Mevzuatı", region: "Türkiye", scope: "Ulusal erişilebilirlik çerçevesi", rate: "65–70", desc: "Doğrudan sertifikasyon yoktur, ancak mevzuat ilkeleri referans alınmıştır." },
+    { standard: "Kamu Dijital Hizmet Rehberleri", region: "Türkiye", scope: "Kamu dijital servis beklentileri", rate: "60–65", desc: "Kamuya özel format ve raporlama gereksinimleri kapsam dışıdır." },
 ];
 
 export default function AccessibilityPublicPage() {
@@ -170,7 +180,7 @@ export default function AccessibilityPublicPage() {
 
                 {/* Uyum Sağlanan Standartlar */}
                 <section className="py-32 px-6 bg-black text-white overflow-hidden text-center">
-                    <div className="container mx-auto max-w-4xl space-y-16">
+                    <div className="container mx-auto max-w-6xl space-y-24">
                         <div className="space-y-4">
                             <h2 className="text-4xl md:text-7xl font-black tracking-tighter">Uluslararası Standartlar.</h2>
                             <p className="text-xl text-white/60 font-medium leading-relaxed max-w-2xl mx-auto">
@@ -195,14 +205,86 @@ export default function AccessibilityPublicPage() {
                                 <p className="text-sm text-white/50">Avrupa ve uluslararası dijital erişilebilirlik gereksinimleriyle uyumlu teknik mimari.</p>
                             </div>
                         </div>
+
+                        {/* Ulusal & Uluslararası Standartlar Uyum Tablosu */}
+                        <div className="space-y-12 text-left mt-16 pt-16 border-t border-white/10">
+                            <div className="text-center space-y-4">
+                                <h3 className="text-2xl md:text-4xl font-bold tracking-tight">Ulusal & Uluslararası Standartlar</h3>
+                                <p className="text-white/40 uppercase tracking-widest text-xs font-black">UYUM ORANI VE TEKNİK ANALİZ TABLOSU</p>
+                            </div>
+                            <Card className="overflow-hidden border-none shadow-2xl rounded-[2rem] bg-white/5 text-white">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-white/10 border-none hover:bg-white/10">
+                                            <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-widest text-white/60">Standart / Politika</TableHead>
+                                            <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-widest text-white/60">Bölge</TableHead>
+                                            <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-widest text-white/60">Hangel Uyum Oranı</TableHead>
+                                            <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-widest text-white/60">Açıklama</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {complianceRates.map((item, i) => (
+                                            <TableRow key={i} className="hover:bg-white/5 border-white/10">
+                                                <TableCell className="py-6 px-8">
+                                                    <p className="font-bold text-base">{item.standard}</p>
+                                                    <p className="text-[10px] text-white/40 uppercase tracking-wider mt-1">{item.scope}</p>
+                                                </TableCell>
+                                                <TableCell className="py-6 px-8 text-sm font-medium text-white/60">{item.region}</TableCell>
+                                                <TableCell className="py-6 px-8">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-xl font-black text-primary tracking-tighter">%{item.rate}</span>
+                                                        <div className="w-16 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                            <div className="bg-primary h-full rounded-full" style={{ width: `${item.rate.split('–')[1] || item.rate}%` }} />
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="py-6 px-8 text-xs leading-relaxed text-white/50 font-medium max-w-xs">{item.desc}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </Card>
+                        </div>
+
+                        {/* Neden %100 Erişilebilirlik Değil? Section */}
+                        <div className="max-w-4xl mx-auto space-y-12 text-left pt-16">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white mb-4 border border-white/5">
+                                <Target className="h-4 w-4" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Gerçekçi Yaklaşım</span>
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-[0.95]">Neden %100 <br /> Erişilebilirlik Değil?</h2>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div className="space-y-6">
+                                    <p className="text-lg text-white/70 leading-relaxed font-medium">
+                                        Dijital erişilebilirlik, tek seferde tamamlanan bir durum değil; sürekli geliştirilen bir standarttır. Hangel, web ve mobil erişilebilirlikte <strong>WCAG 2.2 AA</strong> seviyesini temel alır.
+                                    </p>
+                                    <p className="text-lg text-white/70 leading-relaxed font-medium">
+                                        WCAG 2.2 AAA kapsamında yer alan bazı ileri seviye kriterler ise, tüm kullanıcılar için aynı anda geçerli olmayabileceğinden isteğe bağlı ve kişiselleştirilebilir ayarlar olarak sunulur.
+                                    </p>
+                                </div>
+                                <div className="space-y-6">
+                                    <p className="text-lg text-white/70 leading-relaxed font-medium">
+                                        Uluslararası standartlar dahi, özellikle AAA seviyesinde %100 uyumu zorunlu bir hedef olarak tanımlamaz. Farklı engel gruplarının ihtiyaçları zaman zaman birbirleriyle çelişebilir.
+                                    </p>
+                                    <p className="text-lg text-white/70 leading-relaxed font-medium">
+                                        Hangel, %100 gibi mutlak iddialar yerine; <strong>gerçekçi, ölçülebilir ve sürdürülebilir</strong> bir erişilebilirlik yaklaşımını düzenli iyileştirme taahhüdüyle sunar.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="p-8 bg-white text-black rounded-[2.5rem] mt-8 text-center space-y-4 shadow-2xl">
+                                <p className="text-2xl font-black tracking-tight">Amacımız, erişilebilirliği bir vaat değil, kalıcı bir standart haline getirmektir.</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                {/* Uyumluluk Standartları Tablosu */}
+                {/* Uyumluluk Standartları Tablosu (Existing) */}
                 <section className="py-32 px-6 bg-white border-b border-black/5">
                     <div className="container mx-auto max-w-6xl space-y-12">
                         <div className="text-center space-y-4">
-                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Uyumluluk Standartları.</h2>
+                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Kriter Detayları.</h2>
                             <p className="text-xl text-muted-foreground uppercase tracking-widest font-black">WCAG 2.2 AA – KRİTER EŞLEŞTİRME VE HANGEL UYUM TABLOSU</p>
                         </div>
                         
