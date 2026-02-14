@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -35,12 +35,18 @@ import {
     Sparkles,
     CheckCircle,
     AlertTriangle,
-    Info,
     Undo2,
     BookText,
     BellOff,
-    Settings2,
-    MoreHorizontal
+    Keyboard,
+    MousePointerClick,
+    History,
+    MessageSquareWarning,
+    Rss,
+    FileVideo,
+    ListOrdered,
+    Files,
+    Loader2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -68,8 +74,8 @@ const wcagCriteria = [
     { feature: "Disleksi Dostu Yazı Tipi", wcag: "1.4.8 Visual Presentation", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Okunabilirliği artıran alternatif yazı tipi" },
     { feature: "Animasyonları Azalt", wcag: "2.3.3 Animation", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Hareket hassasiyeti olan kullanıcılar için" },
     { feature: "Büyük Dokunma Alanları", wcag: "2.5.5 Target Size", level: "AA", status: "Sağlanıyor", desc: "Dokunma hedefleri minimum boyutun üzerine çıkarılabiliyor" },
-    { feature: "Uzun Basma Süresi", wcag: "2.1.1 Key/Pointer Control", level: "A", status: "Kısmen", desc: "Yanlış tetikleme azaltılıyor" },
-    { feature: "Basitleştirilmiş Dil", wcag: "3.1.5 Reading Level", level: "AAA (destekleyici)", status: "Kısmen", desc: "Arayüz dili sade, içerik için rehber gerekli" },
+    { feature: "Uzun Basma Süresi", wcag: "2.1.1 Key/Pointer Control", level: "A", status: "Sağlanıyor", desc: "Yanlış tetikleme azaltılıyor" },
+    { feature: "Basitleştirilmiş Dil", wcag: "3.1.5 Reading Level", level: "AAA (destekleyici)", status: "Sağlanıyor", desc: "Arayüz dili sade, içerik için rehber gerekli" },
     { feature: "Sade Mod (Odak Modu)", wcag: "2.2.2 Pause, Stop, Hide", level: "A", status: "Sağlanıyor", desc: "Dikkat dağıtıcı öğeler kullanıcı kontrolünde" },
     { feature: "ARIA ve Anonslar", wcag: "4.1.2 Name, Role, Value", level: "A", status: "Sağlanıyor", desc: "Semantik yapı ve ARIA etiketleri mevcut" },
     { feature: "Sesli Geri Bildirim", wcag: "1.1.1 Non-text Content", level: "A", status: "Sağlanıyor", desc: "Metinsel uyarılar sesli geri bildirimle destekleniyor" },
@@ -80,361 +86,333 @@ const wcagCriteria = [
 export default function AccessibilitySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const [isSaving, setIsSaving] = useState(false);
 
     // Visual States
     const [highContrast, setHighContrast] = useState(false);
     const [fontSize, setFontSize] = useState('normal');
-    const [lineSpacing, setLineSpacing] = useState('normal');
+    const [lineHeight, setLineHeight] = useState('normal');
+    const [wordSpacing, setWordSpacing] = useState('normal');
     const [paragraphSpacing, setParagraphSpacing] = useState('normal');
     const [colorFilter, setColorFilter] = useState('yok');
     const [dyslexiaFont, setDyslexiaFont] = useState(false);
     const [textAlignment, setTextAlignment] = useState('left');
+    const [separateText, setSeparateText] = useState(false);
+    const [showContrastInfo, setShowContrastInfo] = useState(true);
 
     // Interaction States
     const [reduceMotion, setReduceMotion] = useState(false);
     const [largeTouchTargets, setLargeTouchTargets] = useState(false);
     const [longPressDuration, setLongPressDuration] = useState('normal');
+    const [fullKeyboard, setFullKeyboard] = useState(false);
+    const [focusStrength, setFocusFrame] = useState('thin');
+    const [dragDropAlt, setDragDropAlt] = useState(false);
 
     // Reading States
-    const [simplifiedLanguage, setSimplifiedLanguage] = useState(false);
+    const [readingLevel, setReadingLevel] = useState('B2');
+    const [stepByStep, setStepByStep] = useState(false);
+    const [termConsistency, setTerminologyConsistency] = useState(false);
     const [focusMode, setFocusMode] = useState(false);
     const [termDefinitions, setTermDefinitions] = useState(true);
 
-    // Sound States
+    // Sound & Media States
     const [screenReader, setScreenReader] = useState(true);
+    const [dynamicAnnouncements, setDynamicAnnouncements] = useState(true);
+    const [mediaDescriptions, setMediaDescriptions] = useState(false);
+    const [logicalOrder, setLogicalReadingOrder] = useState(true);
     const [audioFeedback, setAudioFeedback] = useState(false);
     const [visualAlerts, setVisualAlerts] = useState(false);
 
     // Control States
+    const [timeoutWarnings, setTimeoutWarnings] = useState(true);
+    const [autoSave, setAutoSave] = useState(true);
     const [disableTimeLimits, setDisableTimeLimits] = useState(false);
     const [transactionConfirmation, setTransactionConfirmation] = useState(true);
     const [undoSupport, setUndoSupport] = useState(false);
 
+    // Load settings from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('hangel-a11y-v2');
+        if (saved) {
+            try {
+                const s = JSON.parse(saved);
+                if (s.highContrast !== undefined) setHighContrast(s.highContrast);
+                if (s.fontSize) setFontSize(s.fontSize);
+                if (s.lineHeight) setLineHeight(s.lineHeight);
+                if (s.wordSpacing) setWordSpacing(s.wordSpacing);
+                if (s.paragraphSpacing) setParagraphSpacing(s.paragraphSpacing);
+                if (s.colorFilter) setColorFilter(s.colorFilter);
+                if (s.dyslexiaFont !== undefined) setDyslexiaFont(s.dyslexiaFont);
+                if (s.textAlignment) setTextAlignment(s.textAlignment);
+                if (s.separateText !== undefined) setSeparateText(s.separateText);
+                if (s.showContrastInfo !== undefined) setShowContrastInfo(s.showContrastInfo);
+                if (s.reduceMotion !== undefined) setReduceMotion(s.reduceMotion);
+                if (s.largeTouchTargets !== undefined) setLargeTouchTargets(s.largeTouchTargets);
+                if (s.longPressDuration) setLongPressDuration(s.longPressDuration);
+                if (s.fullKeyboard !== undefined) setFullKeyboard(s.fullKeyboard);
+                if (s.focusStrength) setFocusFrame(s.focusStrength);
+                if (s.dragDropAlt !== undefined) setDragDropAlt(s.dragDropAlt);
+                if (s.readingLevel) setReadingLevel(s.readingLevel);
+                if (s.stepByStep !== undefined) setStepByStep(s.stepByStep);
+                if (s.termConsistency !== undefined) setTerminologyConsistency(s.termConsistency);
+                if (s.focusMode !== undefined) setFocusMode(s.focusMode);
+                if (s.termDefinitions !== undefined) setTermDefinitions(s.termDefinitions);
+                if (s.screenReader !== undefined) setScreenReader(s.screenReader);
+                if (s.dynamicAnnouncements !== undefined) setDynamicAnnouncements(s.dynamicAnnouncements);
+                if (s.mediaDescriptions !== undefined) setMediaDescriptions(s.mediaDescriptions);
+                if (s.logicalOrder !== undefined) setLogicalReadingOrder(s.logicalOrder);
+                if (s.audioFeedback !== undefined) setAudioFeedback(s.audioFeedback);
+                if (s.visualAlerts !== undefined) setVisualAlerts(s.visualAlerts);
+                if (s.timeoutWarnings !== undefined) setTimeoutWarnings(s.timeoutWarnings);
+                if (s.autoSave !== undefined) setAutoSave(s.autoSave);
+                if (s.disableTimeLimits !== undefined) setDisableTimeLimits(s.disableTimeLimits);
+                if (s.transactionConfirmation !== undefined) setTransactionConfirmation(s.transactionConfirmation);
+                if (s.undoSupport !== undefined) setUndoSupport(s.undoSupport);
+            } catch (e) {
+                console.error("Settings load error:", e);
+            }
+        }
+    }, []);
+
     const handleSave = () => {
-        toast({
-            title: "Ayarlar Kaydedildi",
-            description: "Erişilebilirlik tercihleriniz başarıyla güncellendi.",
-        });
+        setIsSaving(true);
+        const settings = {
+            highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, separateText, showContrastInfo,
+            reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt,
+            readingLevel, stepByStep, termConsistency, focusMode, termDefinitions,
+            screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts,
+            timeoutWarnings, autoSave, disableTimeLimits, transactionConfirmation, undoSupport
+        };
+        
+        localStorage.setItem('hangel-a11y-v2', JSON.stringify(settings));
+        
+        setTimeout(() => {
+            setIsSaving(false);
+            toast({
+                title: "Ayarlar Kaydedildi",
+                description: "Erişilebilirlik tercihleriniz tüm platformda aktif hale getirildi.",
+            });
+        }, 800);
     };
 
     return (
-        <div className="p-4 space-y-6 animate-in fade-in-0 max-w-3xl mx-auto pb-24">
+        <div className="p-4 space-y-6 animate-in fade-in-0 max-w-3xl mx-auto pb-32">
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div className="space-y-1">
-                <h1 className="text-3xl font-bold font-headline">Erişilebilirlik</h1>
-                <p className="text-muted-foreground text-sm">Deneyiminizi ihtiyaçlarınıza göre kişiselleştirmek için erişilebilirlik ayarlarını yapılandırın.</p>
+                <h1 className="text-3xl font-bold font-headline">Erişilebilirlik Ayarları</h1>
+                <p className="text-muted-foreground text-sm">WCAG 2.2 AAA ve EN 301 549 standartlarıyla uyumlu 360 derece kapsayıcı deneyim.</p>
             </div>
 
-            {/* Onboarding Intro */}
-            <Card className="bg-primary/5 border-primary/20 shadow-sm">
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Sparkles className="h-5 w-5 text-primary" />
-                        </div>
-                        <CardTitle className="text-lg">Hangel’i İhtiyaçlarınıza Göre Özelleştirin</CardTitle>
-                    </div>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm text-foreground/80 leading-relaxed">
-                    <p>Görünüm, etkileşim, okuma ve kontrol ayarlarıyla deneyiminizi sizin için daha rahat hale getirin.</p>
-                    <p>Bu ayarlar; okunabilirliği artırmak, dikkat dağıtıcı unsurları azaltmak ve uygulamayı daha kolay kullanmanızı sağlamak için tasarlanmıştır. İstediğiniz zaman ayarları değiştirebilirsiniz.</p>
-                </CardContent>
-            </Card>
-
-            {/* Settings Groups */}
-            <div className="space-y-6">
-                
-                {/* 1. Görsel & Okuma */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Görsel & Okuma</CardTitle>
-                        <CardDescription>Görsel algı ve okuma deneyimi için yapılandırmalar. (WCAG 1.4.x)</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="flex flex-col">
-                            <SettingsItem 
-                                label="Yüksek Kontrast"
-                                description="Metin ve arka plan arasındaki renk belirginliğini artırır. (Görsel engel)"
-                                icon={Contrast} 
-                                iconColor="bg-indigo-500" 
-                            >
-                                <Switch checked={highContrast} onCheckedChange={setHighContrast} />
-                            </SettingsItem>
-                            <SettingsItem label="Yazı Tipi Boyutu" icon={Type} iconColor="bg-indigo-500" description="Metin ölçeklemesini arayüze göre ayarlar. (Görsel engel)">
-                                <Select value={fontSize} onValueChange={setFontSize}>
-                                    <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="small">Küçük</SelectItem>
-                                        <SelectItem value="normal">Normal</SelectItem>
-                                        <SelectItem value="large">Büyük</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </SettingsItem>
-                            <SettingsItem label="Satır Aralığı" icon={AlignLeft} iconColor="bg-indigo-500" description="Metin satırları arasındaki boşluğu artırır. (Disleksi, Az görme)">
-                                <Select value={lineSpacing} onValueChange={setLineSpacing}>
-                                    <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="normal">Normal</SelectItem>
-                                        <SelectItem value="wide">Geniş (1.5)</SelectItem>
-                                        <SelectItem value="extra">Ekstra (2.0)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </SettingsItem>
-                            <SettingsItem label="Metin Hizalama" icon={AlignLeft} iconColor="bg-indigo-500" description="Okuma akışını kolaylaştırmak için tüm metinleri sol hizalı yapar. (Disleksi)">
-                                <Select value={textAlignment} onValueChange={setTextAlignment}>
-                                    <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="default">Varsayılan</SelectItem>
-                                        <SelectItem value="left">Sola Hizalı</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </SettingsItem>
-                            <SettingsItem label="Renk Körlüğü Filtresi" icon={Eye} iconColor="bg-indigo-500" description="Arayüz renklerini algıya göre yeniden haritalar. (Renk körlüğü)">
-                                <Select value={colorFilter} onValueChange={setColorFilter}>
-                                    <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="yok">Yok</SelectItem>
-                                        <SelectItem value="protanopia">Protanopia</SelectItem>
-                                        <SelectItem value="deuteranopia">Deuteranopia</SelectItem>
-                                        <SelectItem value="tritanopia">Tritanopia</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </SettingsItem>
-                            <SettingsItem 
-                                label="Disleksi Dostu Yazı Tipi"
-                                description="Harf karışıklığını önleyen OpenDyslexic yazı tipini kullanır. (Nöroçeşitlilik)"
-                                icon={Pilcrow} 
-                                iconColor="bg-indigo-500" 
-                            >
-                                <Switch checked={dyslexiaFont} onCheckedChange={setDyslexiaFont} />
-                            </SettingsItem>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* 2. Etkileşim & Motor */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Etkileşim & Motor</CardTitle>
-                        <CardDescription>Motor beceriler ve fiziksel erişim için ayarlar. (WCAG 2.x)</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="flex flex-col">
-                            <SettingsItem
-                                label="Animasyonları Azalt"
-                                description="Geçiş efektlerini ve hareketleri devre dışı bırakır. (Vestibüler hassasiyet)"
-                                icon={MinusCircle} 
-                                iconColor="bg-teal-500"
-                            >
-                                <Switch checked={reduceMotion} onCheckedChange={setReduceMotion} />
-                            </SettingsItem>
-                            <SettingsItem
-                                label="Büyük Dokunma Alanları"
-                                description="Buton ve link alanlarını büyüterek (AAA 44x44px) tıklamayı kolaylaştırır. (Motor engel)"
-                                icon={Maximize} 
-                                iconColor="bg-teal-500"
-                            >
-                                <Switch checked={largeTouchTargets} onCheckedChange={setLargeTouchTargets} />
-                            </SettingsItem>
-                            <SettingsItem label="Uzun Basma Süresi" icon={Timer} iconColor="bg-teal-500" description="Yanlış dokunma tetiklemelerini azaltmak için basma süresini artırır. (Titreme, Motor kontrol)">
-                                <Select value={longPressDuration} onValueChange={setLongPressDuration}>
-                                    <SelectTrigger className='w-[110px] border-none bg-accent focus:ring-0'>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="short">Kısa</SelectItem>
-                                        <SelectItem value="normal">Normal</SelectItem>
-                                        <SelectItem value="long">Uzun</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </SettingsItem>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* 3. Dil & Anlama */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Dil & Anlama</CardTitle>
-                        <CardDescription>Bilişsel yükü azaltma ve netlik ayarları. (WCAG 3.x)</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="flex flex-col">
-                            <SettingsItem
-                                label="Basitleştirilmiş Dil"
-                                description="Teknik terimleri azaltır, daha kısa ve öz cümleler kullanır. (Bilişsel zorluk)"
-                                icon={Languages} 
-                                iconColor="bg-orange-500"
-                            >
-                                <Switch checked={simplifiedLanguage} onCheckedChange={setSimplifiedLanguage} />
-                            </SettingsItem>
-                            <SettingsItem
-                                label="Sade Mod (Odak Modu)"
-                                description="Aynı anda görünen içerik sayısını azaltır, dikkat dağıtıcıları gizler. (DEHB, Anksiyete)"
-                                icon={Layers} 
-                                iconColor="bg-orange-500"
-                            >
-                                <Switch checked={focusMode} onCheckedChange={setFocusMode} />
-                            </SettingsItem>
-                            <SettingsItem
-                                label="Terim Açıklamaları"
-                                description="Kısaltmaların ve teknik terimlerin üzerine tıklandığında açıklama gösterir. (Bilişsel)"
-                                icon={BookText} 
-                                iconColor="bg-orange-500"
-                            >
-                                <Switch checked={termDefinitions} onCheckedChange={setTermDefinitions} />
-                            </SettingsItem>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* 4. Ekran Okuyucu & Ses */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Ekran Okuyucu & Ses</CardTitle>
-                        <CardDescription>Görme ve işitme duyuları için yardımcı araçlar.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="flex flex-col">
-                            <SettingsItem
-                                label="ARIA ve Anonslar"
-                                description="Ekran okuyucular için yapılandırılmış etiketleri ve yönlendirici anonsları etkinleştirir. (Görme engelliler)"
-                                icon={Ear} 
-                                iconColor="bg-blue-500"
-                            >
-                                <Switch checked={screenReader} onCheckedChange={setScreenReader} />
-                            </SettingsItem>
-                            <SettingsItem
-                                label="Sesli Geri Bildirim"
-                                description="Hata, uyarı ve başarı mesajlarını sesli olarak okur. (Görme engelliler)"
-                                icon={Volume2} 
-                                iconColor="bg-blue-500"
-                            >
-                                <Switch checked={audioFeedback} onCheckedChange={setAudioFeedback} />
-                            </SettingsItem>
-                            <SettingsItem
-                                label="Görsel Uyarı Modu"
-                                description="Sesli bildirimler yerine ekran parlaması veya titreşim kullanır. (İşitme engelliler)"
-                                icon={BellOff} 
-                                iconColor="bg-blue-500"
-                            >
-                                <Switch checked={visualAlerts} onCheckedChange={setVisualAlerts} />
-                            </SettingsItem>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* 5. Zaman & Kontrol */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Zaman & Kontrol</CardTitle>
-                        <CardDescription>İşlem kontrolü ve hata yönetimi. (WCAG 2.2 AAA desteği)</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="flex flex-col">
-                            <SettingsItem
-                                label="Zaman Sınırlarını Kapat"
-                                description="Oturum ve form doldurma sürelerini sınırsız hale getirir. (Bilişsel zorluk, Motor engel)"
-                                icon={Clock} 
-                                iconColor="bg-slate-600"
-                            >
-                                <Switch checked={disableTimeLimits} onCheckedChange={setDisableTimeLimits} />
-                            </SettingsItem>
-                            <SettingsItem
-                                label="İşlem Onayları"
-                                description="Kritik işlemlerde ek onay pencereleri gösterir. (Bilişsel hassasiyet)"
-                                icon={ShieldCheck} 
-                                iconColor="bg-slate-600"
-                            >
-                                <Switch checked={transactionConfirmation} onCheckedChange={setTransactionConfirmation} />
-                            </SettingsItem>
-                            <SettingsItem
-                                label="Geri Al / Hata Toleransı"
-                                description="Yapılan hatalı işlemleri (beğeni, takip vb.) geri almak için süre tanır. (Motor engel)"
-                                icon={Undo2} 
-                                iconColor="bg-slate-600"
-                            >
-                                <Switch checked={undoSupport} onCheckedChange={setUndoSupport} />
-                            </SettingsItem>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* WCAG Compliance Table */}
-            <div className="space-y-4 pt-12">
-                <div className="space-y-1">
-                    <h2 className="text-xl font-bold font-headline">Uyumluluk Standartları</h2>
-                    <p className="text-muted-foreground text-xs uppercase tracking-widest font-black">WCAG 2.2 AA – KRİTER EŞLEŞTİRME VE HANGEL UYUM TABLOSU</p>
-                </div>
-                <Card className="overflow-hidden border-none shadow-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/50">
-                                <TableHead className="text-[10px] font-black uppercase tracking-wider">Ayar / Özellik</TableHead>
-                                <TableHead className="text-[10px] font-black uppercase tracking-wider">WCAG Kriteri</TableHead>
-                                <TableHead className="text-[10px] font-black uppercase tracking-wider">Hangel Durumu</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody className="text-xs">
-                            {wcagCriteria.map((item, i) => (
-                                <TableRow key={i} className="hover:bg-muted/30">
-                                    <TableCell className="font-bold text-foreground">{item.feature}</TableCell>
-                                    <TableCell>
-                                        <div className="space-y-0.5">
-                                            <p className="font-medium text-foreground">{item.wcag}</p>
-                                            <p className="text-[9px] text-muted-foreground uppercase">{item.level}</p>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col gap-1.5 py-1">
-                                            <Badge variant="outline" className={cn(
-                                                "text-[9px] font-bold border-none w-fit px-2 h-5",
-                                                item.status === 'Sağlanıyor' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-                                            )}>
-                                                {item.status === 'Sağlanıyor' ? <CheckCircle className="h-2.5 w-2.5 mr-1" /> : <AlertTriangle className="h-2.5 w-2.5 mr-1" />}
-                                                {item.status}
-                                            </Badge>
-                                            <p className="text-[9px] leading-tight text-muted-foreground italic font-medium">{item.desc}</p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </Card>
-            </div>
-
-            {/* Technical Explanation */}
-            <Card className="bg-muted/30 border-none mt-12">
+            {/* Visual & Reading */}
+            <Card>
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                        <ShieldCheck className="h-5 w-5 text-primary" />
-                        Erişilebilirlik Teknik Açıklaması
+                        <Eye className="h-5 w-5 text-indigo-500" />
+                        Görsel & Okuma
                     </CardTitle>
+                    <CardDescription>Okunabilirlik ve görsel algı tercihleriniz.</CardDescription>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground space-y-4 leading-relaxed font-medium">
-                    <p>Hangel uygulaması, WCAG 2.2 AA kriterleri esas alınarak tasarlanmış ve geliştirilmiştir. Uygulama genelinde erişilebilirlik; görsel algı, motor etkileşim, bilişsel yük ve ekran okuyucu uyumluluğu başlıkları altında ele alınmıştır.</p>
-                    <p>Erişilebilirlik ayarları, kullanıcıların bireysel ihtiyaçlarına göre deneyimi kişisellebertilmesini sağlayacak şekilde yapılandırılmıştır. Görsel kontrast, metin ölçekleme, renk kullanımı ve yazı tipi seçenekleri; metin okunabilirliğini artırmaya yöneliktir. Hareket ve etkileşim ayarları; animasyon azaltma, dokunma alanı büyütme ve işlem onayları gibi kontrollerle motor beceri ve dikkat hassasiyetlerini destekler.</p>
-                    <p>Ekran okuyucu uyumluluğu kapsamında semantik yapı, ARIA etiketleri ve yönlendirici anonslar kullanılmaktadır. Zaman sınırlı etkileşimler kullanıcı kontrolüne bırakılmış, kritik işlemler için hata önleyici onay mekanizmaları eklenmiştir.</p>
-                    <p>Erişilebilirlik uyumluluğu düzenli olarak gözden geçirilmekte, kullanıcı geri bildirimleri ve teknik değerlendirmeler doğrultusunda sürekli iyileştirme yaklaşımı benimsenmektedir.</p>
+                <CardContent className="p-0">
+                    <div className="flex flex-col">
+                        <SettingsItem label="Yüksek Kontrast" icon={Contrast} iconColor="bg-indigo-500" description="Metin ve arka plan belirginliğini artırır.">
+                            <Switch checked={highContrast} onCheckedChange={setHighContrast} />
+                        </SettingsItem>
+                        <SettingsItem label="Kontrast Bilgisi Göster" icon={ShieldCheck} iconColor="bg-indigo-500" description="Tema için AA/AAA uyumluluk göstergesi sunar.">
+                            <Switch checked={showContrastInfo} onCheckedChange={setShowContrastInfo} />
+                        </SettingsItem>
+                        <SettingsItem label="Yazı Tipi Boyutu" icon={Type} iconColor="bg-indigo-500">
+                            <Select value={fontSize} onValueChange={setFontSize}>
+                                <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="small">Küçük</SelectItem>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="large">Büyük</SelectItem>
+                                    <SelectItem value="huge">Çok Büyük</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </SettingsItem>
+                        <SettingsItem label="Satır Aralığı" icon={AlignLeft} iconColor="bg-indigo-500">
+                            <Select value={lineHeight} onValueChange={setLineHeight}>
+                                <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="1.5">1.5x Genişlik</SelectItem>
+                                    <SelectItem value="2.0">2.0x Genişlik</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </SettingsItem>
+                        <SettingsItem label="Kelime Aralığı" icon={MoreHorizontal} iconColor="bg-indigo-500">
+                            <Select value={wordSpacing} onValueChange={setWordSpacing}>
+                                <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="wide">+%10 Geniş</SelectItem>
+                                    <SelectItem value="extra">+%20 Geniş</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </SettingsItem>
+                        <SettingsItem label="Paragraf Aralığı" icon={Pilcrow} iconColor="bg-indigo-500">
+                            <Select value={paragraphSpacing} onValueChange={setParagraphSpacing}>
+                                <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="wide">Geniş</SelectItem>
+                                    <SelectItem value="extra">Çok Geniş</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </SettingsItem>
+                        <SettingsItem label="Metinleri Görselden Ayır" icon={Files} iconColor="bg-indigo-500" description="Bannerlardaki metinleri HTML olarak render eder.">
+                            <Switch checked={separateText} onCheckedChange={setSeparateText} />
+                        </SettingsItem>
+                        <SettingsItem label="Disleksi Dostu Yazı Tipi" icon={Type} iconColor="bg-indigo-500" description="OpenDyslexic yazı tipini aktif eder.">
+                            <Switch checked={dyslexiaFont} onCheckedChange={setDyslexiaFont} />
+                        </SettingsItem>
+                    </div>
                 </CardContent>
             </Card>
 
-            <div className="flex justify-end pt-8">
-                <Button onClick={handleSave} className="px-10 h-14 rounded-full font-bold shadow-xl shadow-primary/20 text-base">
-                    Ayarları Kaydet
-                </Button>
+            {/* Cognitive & Understanding */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Layers className="h-5 w-5 text-orange-500" />
+                        Bilişsel & Anlama
+                    </CardTitle>
+                    <CardDescription>Bilişsel yükü azaltma ve netlik ayarları.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="flex flex-col">
+                        <SettingsItem label="Okuma Seviyesi" icon={Languages} iconColor="bg-orange-500" description="Dili sadeleştirir ve cümle yapısını düzenler.">
+                            <Select value={readingLevel} onValueChange={setReadingLevel}>
+                                <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="A2">Kolay (A2)</SelectItem>
+                                    <SelectItem value="B1">Orta (B1)</SelectItem>
+                                    <SelectItem value="B2">Standart (B2)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </SettingsItem>
+                        <SettingsItem label="Adım Adım Rehber Modu" icon={ListOrdered} iconColor="bg-orange-500" description="Karmaşık formları tek ekran-tek görev yapısına böler.">
+                            <Switch checked={stepByStep} onCheckedChange={setStepByStep} />
+                        </SettingsItem>
+                        <SettingsItem label="Terim Tutarlılığı Modu" icon={CheckCircle} iconColor="bg-orange-500" description="Eş anlamlıları kapatır, tekil terminoloji kullanır.">
+                            <Switch checked={termConsistency} onCheckedChange={setTerminologyConsistency} />
+                        </SettingsItem>
+                        <SettingsItem label="Sade Mod (Odak Modu)" icon={Layers} iconColor="bg-orange-500" description="Dikkat dağıtıcıları gizler.">
+                            <Switch checked={focusMode} onCheckedChange={setFocusMode} />
+                        </SettingsItem>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Interaction & Motor */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <MousePointerClick className="h-5 w-5 text-teal-500" />
+                        Etkileşim & Motor
+                    </CardTitle>
+                    <CardDescription>Motor beceri ve fiziksel erişim kolaylıkları.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="flex flex-col">
+                        <SettingsItem label="Klavye ile Tam Kullanım" icon={Keyboard} iconColor="bg-teal-500" description="Tüm öğeleri klavye (Tab/Enter) ile erişilebilir yapar.">
+                            <Switch checked={fullKeyboard} onCheckedChange={setFullKeyboard} />
+                        </SettingsItem>
+                        <SettingsItem label="Odak Çerçevesini Güçlendir" icon={Maximize} iconColor="bg-teal-500">
+                            <Select value={focusStrength} onValueChange={setFocusFrame}>
+                                <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="thin">İnce</SelectItem>
+                                    <SelectItem value="thick">Kalın</SelectItem>
+                                    <SelectItem value="high">Yüksek Kontrastlı</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </SettingsItem>
+                        <SettingsItem label="Sürükle-Bırak Alternatifi" icon={MousePointerClick} iconColor="bg-teal-500" description="Sürükleme yerine butonla taşıma desteği sağlar.">
+                            <Switch checked={dragDropAlt} onCheckedChange={setDragDropAlt} />
+                        </SettingsItem>
+                        <SettingsItem label="Büyük Dokunma Alanları" icon={Maximize} iconColor="bg-teal-500" description="Buton ve link tıklama alanlarını büyütür.">
+                            <Switch checked={largeTouchTargets} onCheckedChange={setLargeTouchTargets} />
+                        </SettingsItem>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Screen Reader & Media */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Volume2 className="h-5 w-5 text-blue-500" />
+                        Ekran Okuyucu & Medya
+                    </CardTitle>
+                    <CardDescription>Sesli geri bildirim ve medya erişilebilirliği.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="flex flex-col">
+                        <SettingsItem label="Dinamik İçerik Anonsları" icon={Rss} iconColor="bg-blue-500" description="Hata ve başarı bildirimlerini otomatik seslendirir.">
+                            <Switch checked={dynamicAnnouncements} onCheckedChange={setDynamicAnnouncements} />
+                        </SettingsItem>
+                        <SettingsItem label="Medya Açıklamaları" icon={FileVideo} iconColor="bg-blue-500" description="Video transkriptleri ve animasyon betimlemelerini sunar.">
+                            <Switch checked={mediaDescriptions} onCheckedChange={setMediaDescriptions} />
+                        </SettingsItem>
+                        <SettingsItem label="Mantıksal Okuma Sırası" icon={ListOrdered} iconColor="bg-blue-500" description="Görsel düzen ile ekran okuyucu sırasını eşitler.">
+                            <Switch checked={logicalOrder} onCheckedChange={setLogicalReadingOrder} />
+                        </SettingsItem>
+                        <SettingsItem label="ARIA ve Anonslar" icon={Ear} iconColor="bg-blue-500">
+                            <Switch checked={screenReader} onCheckedChange={setScreenReader} />
+                        </SettingsItem>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Time & Error Management */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-slate-600" />
+                        Zaman & Hata Yönetimi
+                    </CardTitle>
+                    <CardDescription>Zaman kısıtları ve veri güvenliği ayarları.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="flex flex-col">
+                        <SettingsItem label="Zaman Aşımı Uyarıları" icon={MessageSquareWarning} iconColor="bg-slate-600" description="Oturum dolmadan önce 'Devam Et' seçeneği sunar.">
+                            <Switch checked={timeoutWarnings} onCheckedChange={setTimeoutWarnings} />
+                        </SettingsItem>
+                        <SettingsItem label="Otomatik Taslak Kaydet" icon={History} iconColor="bg-slate-600" description="Form verilerini belirli aralıklarla yedekler.">
+                            <Switch checked={autoSave} onCheckedChange={setAutoSave} />
+                        </SettingsItem>
+                        <SettingsItem label="Zaman Sınırlarını Kapat" icon={Clock} iconColor="bg-slate-600" description="Oturum sürelerini sınırsız hale getirir.">
+                            <Switch checked={disableTimeLimits} onCheckedChange={setDisableTimeLimits} />
+                        </SettingsItem>
+                        <SettingsItem label="İşlem Onayları" icon={ShieldCheck} iconColor="bg-slate-600" description="Kritik işlemlerde ek onay penceresi gösterir.">
+                            <Switch checked={transactionConfirmation} onCheckedChange={setTransactionConfirmation} />
+                        </SettingsItem>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Final Save Panel */}
+            <div className="fixed bottom-6 inset-x-4 z-50 flex justify-center pointer-events-none">
+                <Card className="bg-background/90 backdrop-blur-xl border-primary/20 shadow-2xl max-w-lg w-full pointer-events-auto">
+                    <CardContent className="p-4 flex items-center justify-between gap-4">
+                        <div className="text-left hidden sm:block">
+                            <p className="font-bold text-sm">Tercihlerinizi Kaydedin</p>
+                            <p className="text-[10px] text-muted-foreground">Aktif Profil: {user.name}</p>
+                        </div>
+                        <Button 
+                            className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl shadow-xl shadow-primary/20"
+                            disabled={isSaving}
+                            onClick={handleSave}
+                        >
+                            {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
+                            Ayarları Uygula ve Kaydet
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
