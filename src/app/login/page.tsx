@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -19,6 +20,7 @@ import { languages, useTranslation } from '@/components/providers/language-provi
 import * as Icons from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -306,6 +308,8 @@ export default function LoginPage() {
       { href: '/support', label: 'Destek' },
     ];
 
+    const libraryImg = PlaceHolderImages.find(img => img.id === 'library-illustration');
+
     const discoveryItems = [
         { 
             title: "hangel STK", 
@@ -332,8 +336,8 @@ export default function LoginPage() {
             title: "Kütüphane", 
             description: "Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin.", 
             href: "/library",
-            imageUrl: "https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-            imageHint: "charcoal library drawing"
+            imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+            imageHint: libraryImg?.imageHint || "digital library"
         }
     ];
 
