@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -20,7 +19,16 @@ import {
     Info,
     Type,
     Layers,
-    Target
+    Target,
+    BookText,
+    KeyRound,
+    Volume2,
+    FileText,
+    History,
+    Pointer,
+    RotateCcw,
+    MessageSquareWarning,
+    Languages
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -54,6 +62,18 @@ const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, tit
             </div>
         </div>
     </Card>
+);
+
+const TechnicalItem = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
+    <div className="flex gap-6 p-6 md:p-8 bg-[#f5f5f7] rounded-[2rem] border border-black/5 items-start">
+        <div className="p-3 bg-white rounded-xl shadow-sm text-primary">
+            <Icon className="h-6 w-6" />
+        </div>
+        <div className="space-y-2">
+            <h4 className="font-bold text-lg text-[#1d1d1f] tracking-tight">{title}</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed font-medium">{description}</p>
+        </div>
+    </div>
 );
 
 const complianceRates = [
@@ -92,7 +112,7 @@ export default function AccessibilityPublicPage() {
                             Herkes İçin <br /> Tasarlandı.
                         </h1>
                         <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
-                            İyilikte engel tanımaz. Hangel, teknolojinin birleştirici gücünü herkes için erişilebilir kılma vizyonuyla geliştirilmiştir.
+                            İyilikte engel tanımaz. Hangel, teknolojinin birleştirici gücünü herkes için erişilebilir kılma vizyonuyla, WCAG 2.2 AAA standartlarını hedefleyerek geliştirilmiştir.
                         </p>
                     </div>
                     <div className="relative w-full max-w-6xl mx-auto aspect-[16/9] md:aspect-[21/9] mt-12 md:mt-16 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-2xl">
@@ -118,7 +138,7 @@ export default function AccessibilityPublicPage() {
                             <FeatureCard 
                                 icon={Eye} 
                                 title="Görme Engelliler" 
-                                description="Tam görme kaybı veya az görme durumunda; ekran okuyucu (ARIA) uyumluluğu ve yüksek kontrastlı arayüz desteği sunuyoruz." 
+                                description="Tam görme kaybı veya az görme durumunda; ekran okuyucu (ARIA) uyumluluğu, yüksek kontrast ve gerçek zamanlı analiz desteği sunuyoruz." 
                             />
                             <FeatureCard 
                                 icon={Zap} 
@@ -128,38 +148,103 @@ export default function AccessibilityPublicPage() {
                             <FeatureCard 
                                 icon={Type} 
                                 title="Disleksi" 
-                                description="Okuma güçlüğü çeken kullanıcılar için OpenDyslexic yazı tipi, satır aralığı ve metin hizalama ayarları mevcuttur." 
+                                description="Okuma güçlüğü çeken kullanıcılar için OpenDyslexic yazı tipi, bağımsız satır/kelime aralığı ve metin hizalama ayarları mevcuttur." 
                             />
                             <FeatureCard 
                                 icon={Brain} 
                                 title="Bilişsel Zorluklar" 
-                                description="DEHB veya anksiyete durumları için dikkat dağıtıcıları gizleyen 'Sade Mod' ve basitleştirilmiş dil seçenekleri tasarladık." 
+                                description="DEHB veya anksiyete durumları için dikkat dağıtıcıları gizleyen 'Sade Mod', basitleştirilmiş dil (A2/B1/B2) ve adım adım görev modu tasarladık." 
                             />
                             <FeatureCard 
                                 icon={MousePointer2} 
                                 title="Motor Beceriler" 
-                                description="Titreme veya sınırlı hareket durumunda; büyük dokunma alanları ve ayarlanabilir basma süreleri ile kontrolü kolaylaştırıyoruz." 
+                                description="Titreme veya sınırlı hareket durumunda; tam klavye erişimi, büyük dokunma alanları ve sürükle-bırak alternatifleri sağlıyoruz." 
                             />
                             <FeatureCard 
                                 icon={Move} 
                                 title="Vestibüler Hassasiyet" 
-                                description="Hareket ve animasyon duyarlılığı olanlar için sistem genelinde geçiş efektlerini azaltma seçeneği sunuyoruz." 
+                                description="Hareket ve animasyon duyarlılığı olanlar için sistem genelinde geçiş efektlerini ve ani hareketleri azaltma seçeneği sunuyoruz." 
                             />
                             <FeatureCard 
                                 icon={Ear} 
                                 title="İşitme Engelliler" 
-                                description="İşitsel uyarılar yerine görsel parlamalar ve titreşimli geri bildirim alternatifleri ile etkileşimi destekliyoruz." 
+                                description="İşitsel uyarılar yerine görsel parlamalar, metin transkriptleri ve titreşimli geri bildirim alternatifleri ile etkileşimi destekliyoruz." 
                             />
                             <FeatureCard 
                                 icon={Clock} 
                                 title="Geçici Engeller" 
-                                description="Yorgunluk, parlak ışık veya geçici sakatlık durumlarında; tek elle kullanım ve yüksek okunabilirlik standartları sağlıyoruz." 
+                                description="Yorgunluk, parlak ışık veya geçici sakatlık durumlarında; zaman sınırı uyarıları, taslak kaydı ve tek elle kullanım standartları sağlıyoruz." 
                             />
                         </div>
                     </div>
                 </section>
 
-                {/* Uyum Sağlanan Standartlar */}
+                {/* Teknik Standartlar ve İleri Seviye Kontroller (NEW SECTION) */}
+                <section className="py-16 md:py-32 px-6 bg-[#f5f5f7]">
+                    <div className="container mx-auto max-w-6xl space-y-16">
+                        <div className="text-left md:text-center space-y-4 max-w-4xl mx-auto">
+                            <h2 className="text-3xl md:text-7xl font-black tracking-tighter leading-[0.95]">Teknik Standartlar ve İleri Seviye Kontroller.</h2>
+                            <p className="text-lg md:text-2xl text-muted-foreground font-medium leading-tight">
+                                WCAG 2.2 AAA ve EN 301 549 standartlarıyla tam uyum yolculuğumuzda sunduğumuz modüler teknik çözümler.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <TechnicalItem 
+                                icon={Type}
+                                title="Bağımsız Tipografik Kontrol"
+                                description="Kullanıcılar; satır yüksekliği, kelime aralığı ve paragraf boşluklarını birbirlerinden bağımsız olarak manuel şekilde ayarlayabilirler. (AAA 1.4.12)"
+                            />
+                            <TechnicalItem 
+                                icon={Languages}
+                                title="Dinamik Dil Seviyesi Seçici"
+                                description="Arayüz ve içerik metinlerini A2, B1 veya B2 seviyelerinde dinamik olarak basitleştirerek bilişsel yükü optimize ediyoruz. (AAA 3.1.5)"
+                            />
+                            <TechnicalItem 
+                                icon={Layers}
+                                title="Adım Adım Görev Modu"
+                                description="Bağış, başvuru ve form doldurma gibi karmaşık süreçleri tek bir ekrana odaklanan adım adım bir yapıya dönüştürüyoruz. (Bilişsel destek)"
+                            />
+                            <TechnicalItem 
+                                icon={Contrast}
+                                title="Gerçek Zamanlı Kontrast Analizi"
+                                description="Seçilen renk paleti ve kontrast ayarları için WCAG AA/AAA uyumluluk durumunu gösteren anlık geri bildirim indikatörü."
+                            />
+                            <TechnicalItem 
+                                icon={KeyRound}
+                                title="Tam Klavye Erişilebilirliği"
+                                description="Tüm etkileşimli öğeler, klavye ile tam erişilebilir ve görsel olarak belirgin odak (visible focus) indikatörlerine sahiptir."
+                            />
+                            <TechnicalItem 
+                                icon={Pointer}
+                                title="Sürükle-Bırak Alternatifleri"
+                                description="Sürükle-bırak gerektiren tüm işlemler için buton bazlı veya liste odaklı erişilebilir etkileşim yöntemleri sunulur. (AAA 2.5.7)"
+                            />
+                            <TechnicalItem 
+                                icon={History}
+                                title="Otomatik Taslak Kaydı"
+                                description="Uzun formlar ve başvurular sırasında veri kaybını önlemek için arka planda sürekli otomatik kayıt sistemi çalışır."
+                            />
+                            <TechnicalItem 
+                                icon={Clock}
+                                title="Zaman Aşımı Uyarıları"
+                                description="Oturum veya işlem süresi dolmadan önce kullanıcıyı bilgilendiren ve ek süre tanımayı sağlayan pre-timeout uyarıları. (AAA 2.2.1)"
+                            />
+                            <TechnicalItem 
+                                icon={Volume2}
+                                title="ARIA Live Regions"
+                                description="Dinamik olarak değişen içerikler ve hata mesajları, ekran okuyucular için ARIA Live standartlarında anında anons edilir."
+                            />
+                            <TechnicalItem 
+                                icon={BookText}
+                                title="Medya Transkriptleri"
+                                description="Tüm video ve animasyonlu içerikler için tam metin transkriptleri, betimlemeler ve işaret dili desteği opsiyonları."
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* Uluslararası Standartlar */}
                 <section className="py-16 md:py-32 px-6 bg-black text-white overflow-hidden text-center">
                     <div className="container mx-auto max-w-6xl space-y-16 md:space-y-24">
                         <div className="space-y-4">
@@ -268,19 +353,19 @@ export default function AccessibilityPublicPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                             <div className="space-y-4 md:space-y-6">
                                 <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><CheckCircle2 className="h-6 w-6 text-primary" /> Bir Özellik Değil, Standarttır.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Erişilebilirlik, platformun üzerine sonradan eklenen bir modül değil; tasarımın en başından itibaren her bileşene entegre edilmiş bir kalite standardıdır.</p>
+                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Erişilebilirlik, platformun üzerine sonradan eklenen bir modül değil; tasarımın en başından itibaren her bileşene entegre edilmiş bir kalite standardıdır. Hiçbir kritik metin görsel içerisine gömülmez, tamamı erişilebilir HTML alternatifiyle sunulur.</p>
                             </div>
                             <div className="space-y-4 md:space-y-6">
                                 <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><UserCheck className="h-6 w-6 text-primary" /> Kullanıcıya Kontrol Verme.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Tek bir kullanıcı profiline göre tasarım yapmak yerine, her bireyin kendi ihtiyaçlarına göre özelleştirebileceği gelişmiş erişilebilirlik ayarları sunuyoruz.</p>
+                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Tek bir kullanıcı profiline göre tasarım yapmak yerine, her bireyin kendi ihtiyaçlarına göre özelleştirebileceği gelişmiş erişilebilirlik ayarları sunuyoruz. Mantıksal okuma sırası ve tutarlı terminoloji ile kontrolü size bırakıyoruz.</p>
                             </div>
                             <div className="space-y-4 md:space-y-6">
                                 <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><Zap className="h-6 w-6 text-primary" /> Varsayılan Sadelik.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Uygulamamız varsayılan olarak sade ve net bir yapıdadır. İhtiyaç duyulduğunda aktive edilen gelişmiş özellikler (AAA kriterleri), bu sadeliği bozmadan etkiyi artırır.</p>
+                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Uygulamamız varsayılan olarak sade ve net bir yapıdadır. İhtiyaç duyulduğunda aktive edilen gelişmiş özellikler (AAA kriterleri), bu sadeliği bozmadan etkiyi artırır. Nöroçeşitlilikten motor engellere kadar tüm regülasyonlara uyumu gözetiyoruz.</p>
                             </div>
                             <div className="space-y-4 md:space-y-6">
                                 <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><Info className="h-6 w-6 text-primary" /> Şeffaf ve Süreklilik.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Erişilebilirlik uyumluluğumuzu düzenli olarak değerlendiriyor, kullanıcının geri bildirimlerini teknik yol haritamızın en başına koyuyoruz.</p>
+                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Erişilebilirlik uyumluluğumuzu düzenli olarak değerlendiriyor, kullanıcının geri bildirimlerini teknik yol haritamızın en başına koyuyoruz. ADA, EAA ve WCAG uyumumuz sürekli izlenen dinamik bir süreçtir.</p>
                             </div>
                         </div>
                     </div>
