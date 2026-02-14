@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -176,29 +175,29 @@ export default function AccessibilityPublicPage() {
                                     <Table>
                                         <TableHeader>
                                             <TableRow className="bg-white/10 border-none hover:bg-white/10">
-                                                <TableHead className="py-4 md:py-6 px-4 md:px-8 text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Standart / Politika</TableHead>
-                                                <TableHead className="py-4 md:py-6 px-4 md:px-8 text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Bölge</TableHead>
-                                                <TableHead className="py-4 md:py-6 px-4 md:px-8 text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Hangel Uyum Oranı</TableHead>
-                                                <TableHead className="py-4 md:py-6 px-4 md:px-8 text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Açıklama</TableHead>
+                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Standart / Politika</TableHead>
+                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Bölge</TableHead>
+                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap text-center">Uyum</TableHead>
+                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Açıklama</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {complianceRates.map((item, i) => (
                                                 <TableRow key={i} className="hover:bg-white/5 border-white/10">
-                                                    <TableCell className="py-4 md:py-6 px-4 md:px-8">
-                                                        <p className="font-bold text-sm md:text-base">{item.standard}</p>
-                                                        <p className="text-[10px] text-white/40 uppercase tracking-wider mt-1">{item.scope}</p>
+                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8 min-w-[140px]">
+                                                        <p className="font-bold text-xs md:text-base leading-tight">{item.standard}</p>
+                                                        <p className="text-[8px] md:text-[10px] text-white/40 uppercase tracking-wider mt-1">{item.scope}</p>
                                                     </TableCell>
-                                                    <TableCell className="py-4 md:py-6 px-4 md:px-8 text-xs md:text-sm font-medium text-white/60 whitespace-nowrap">{item.region}</TableCell>
-                                                    <TableCell className="py-4 md:py-6 px-4 md:px-8">
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="text-lg md:text-xl font-black text-primary tracking-tighter">%{item.rate}</span>
-                                                            <div className="w-12 md:w-16 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8 text-[10px] md:text-sm font-medium text-white/60 whitespace-nowrap">{item.region}</TableCell>
+                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="text-sm md:text-xl font-black text-primary tracking-tighter">%{item.rate}</span>
+                                                            <div className="w-8 md:w-16 h-1 bg-white/10 rounded-full overflow-hidden">
                                                                 <div className="bg-primary h-full rounded-full" style={{ width: `${item.rate.split('–')[1] || item.rate}%` }} />
                                                             </div>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="py-4 md:py-6 px-4 md:px-8 text-[11px] md:text-xs leading-relaxed text-white/50 font-medium min-w-[200px] max-w-xs">{item.desc}</TableCell>
+                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8 text-[10px] md:text-xs leading-relaxed text-white/50 font-medium min-w-[180px] max-w-xs">{item.desc}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
