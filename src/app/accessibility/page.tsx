@@ -171,10 +171,6 @@ export default function AccessibilityPublicPage() {
 
                         {/* Ulusal & Uluslararası Standartlar Uyum Tablosu */}
                         <div className="space-y-8 md:space-y-12 text-left mt-8 md:mt-16 pt-8 md:pt-16 border-t border-white/10">
-                            <div className="text-center space-y-4">
-                                <h3 className="text-2xl md:text-4xl font-bold tracking-tight">Ulusal & Uluslararası Standartlar</h3>
-                                <p className="text-white/40 uppercase tracking-widest text-[10px] font-black">UYUM ORANI VE TEKNİK ANALİZ TABLOSU</p>
-                            </div>
                             <Card className="overflow-hidden border-none shadow-2xl rounded-[1.5rem] md:rounded-[2rem] bg-white/5 text-white">
                                 <div className="overflow-x-auto">
                                     <Table>
