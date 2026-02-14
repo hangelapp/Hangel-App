@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -96,11 +97,11 @@ export default function AccessibilityPublicPage() {
                     </div>
                     <div className="relative w-full max-w-6xl mx-auto aspect-[16/9] md:aspect-[21/9] mt-12 md:mt-16 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-2xl">
                         <Image 
-                            src={heroImage?.imageUrl || "https://images.unsplash.com/photo-1534643900521-643015c44185?q=80&w=2070&auto=format&fit=crop"} 
-                            alt="Inclusive Design" 
+                            src={heroImage?.imageUrl || "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop"} 
+                            alt={heroImage?.description || "Modern Library"} 
                             fill 
                             className="object-cover"
-                            data-ai-hint={heroImage?.imageHint || "empowered disabled"}
+                            data-ai-hint={heroImage?.imageHint || "modern library"}
                         />
                     </div>
                 </section>
