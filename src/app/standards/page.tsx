@@ -17,7 +17,8 @@ import {
     ChevronRight,
     Award,
     Building2,
-    Landmark
+    Landmark,
+    Target
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -25,91 +26,106 @@ import { cn } from '@/lib/utils';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
-const StandardItem = ({ 
-    icon: Icon, 
-    title, 
-    body, 
-    description,
-    standards 
-}: { 
-    icon: any, 
-    title: string, 
-    body: string,
-    description: string,
-    standards: string[]
-}) => (
-    <Card className="bg-white rounded-[2rem] p-8 md:p-12 border border-black/5 shadow-sm hover:shadow-xl transition-all duration-500 group flex flex-col justify-between min-h-[450px]">
-        <div className="space-y-6">
-            <div className="w-16 h-16 rounded-2xl bg-[#f5f5f7] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                <Icon className="h-8 w-8 text-primary" />
-            </div>
-            <div className="space-y-4">
-                <div className="space-y-1">
-                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-primary">{body}</h3>
-                    <h4 className="text-2xl md:text-3xl font-bold tracking-tight text-[#1d1d1f]">{title}</h4>
-                </div>
-                <p className="text-sm md:text-base text-muted-foreground leading-relaxed font-medium">{description}</p>
-            </div>
+const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: any[], headers: string[] }) => (
+    <div className="space-y-6">
+        <div className="space-y-1">
+            <h3 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">{title}</h3>
+            {description && <p className="text-sm text-muted-foreground font-medium">{description}</p>}
         </div>
-        <div className="pt-8 border-t border-black/5 mt-8">
-            <div className="flex flex-wrap gap-2">
-                {standards.map((s, i) => (
-                    <Badge key={i} variant="secondary" className="bg-[#f5f5f7] text-[#1d1d1f]/60 border-none font-bold text-[10px] py-1 px-3 rounded-full">
-                        {s}
-                    </Badge>
-                ))}
+        <Card className="rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border-black/5 shadow-sm bg-white">
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-[#f5f5f7] border-none hover:bg-[#f5f5f7]">
+                            {headers.map((header, i) => (
+                                <TableHead key={i} className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#1d1d1f]/60 whitespace-nowrap">
+                                    {header}
+                                </TableHead>
+                            ))}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {data.map((row, i) => (
+                            <TableRow key={i} className="hover:bg-[#f5f5f7]/50 border-black/5">
+                                {Object.values(row).map((cell: any, j) => (
+                                    <TableCell key={j} className={cn(
+                                        "py-4 px-6 text-sm font-medium",
+                                        j === 0 ? "text-[#1d1d1f] font-bold" : "text-[#1d1d1f]/70",
+                                        String(cell).includes('%') && "text-primary font-black"
+                                    )}>
+                                        {cell}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
-        </div>
-    </Card>
+        </Card>
+    </div>
 );
 
 export default function StandardsPage() {
     const router = useRouter();
 
-    const standardGroups = [
-        {
-            icon: ShieldCheck,
-            body: "ISO / IEC",
-            title: "Uluslararası Standartlar Organizasyonu",
-            description: "Bilgi güvenliği ve iş sürekliliği alanında dünyanın en saygın sertifikasyon süreçlerini temel alıyoruz. Verileriniz ve operasyonlarımız küresel güvence altındadır.",
-            standards: ["ISO 27001", "ISO 22301", "ISO 25010"]
-        },
-        {
-            icon: Globe,
-            body: "W3C / WCAG",
-            title: "World Wide Web Consortium",
-            description: "Webin evrenselliği için erişilebilirlik standartlarını (WCAG 2.2) eksiksiz uyguluyoruz. Engel gruplarını gözeterek dijital adaleti savunuyoruz.",
-            standards: ["WCAG 2.2 AA", "WCAG 2.2 AAA", "EN 301 549"]
-        },
-        {
-            icon: Lock,
-            body: "EU / GDPR",
-            title: "Avrupa Birliği Veri Otoriteleri",
-            description: "Avrupa Birliği Genel Veri Koruma Tüzüğü (GDPR) ile tam uyumlu mimarimizle, verilerinizin mahremiyetini ve taşınabilirliğini yasal korumaya alıyoruz.",
-            standards: ["GDPR", "KVKK", "LGPD", "CCPA"]
-        },
-        {
-            icon: TrendingUp,
-            body: "SVI / SROI",
-            title: "Social Value International",
-            description: "Oluşturduğumuz toplumsal değerin ölçümlenmesinde uluslararası kabul görmüş SROI (Social Return on Investment) metodolojisini ve Değişim Teorisi'ni kullanıyoruz.",
-            standards: ["SROI", "Theory of Change", "Impact Data"]
-        },
-        {
-            icon: Landmark,
-            body: "USA / IRS",
-            title: "Internal Revenue Service (IRS)",
-            description: "Küresel bağışçılık standartları ve fon yönetimi ilkelerinde ABD 501(c)(3) normlarına uyum sağlayarak uluslararası güven inşa ediyoruz.",
-            standards: ["501(c)(3) Standards", "AML / CFT Compliance"]
-        },
-        {
-            icon: UserCheck,
-            body: "UN / SDG",
-            title: "Birleşmiş Milletler",
-            description: "Tüm faaliyetlerimizi Birleşmiş Milletler Sürdürülebilir Kalkınma Amaçları (SKA) ile hizalıyor, küresel hedeflere somut katkı sağlıyoruz.",
-            standards: ["SKA 1-17", "Global Compact", "DEI Principles"]
-        }
+    const mainComplianceData = [
+        { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku", org: "Ticaret Bakanlığı", region: "Türkiye", rate: "%100" },
+        { label: "Kullanıcı Sözleşmesi", std: "Consumer Protection", org: "FTC", region: "ABD", rate: "%90" },
+        { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model", org: "OECD", region: "OECD", rate: "%95" },
+        { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
+        { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları", org: "UN", region: "Küresel", rate: "%95" },
+        { label: "Gizlilik Politikası", std: "ISO/IEC 27701", org: "ISO", region: "Küresel", rate: "%85" },
+        { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "KVKK Kurumu", region: "Türkiye", rate: "%100" },
+        { label: "GDPR Uyum Politikası", std: "GDPR", org: "AB Veri Otoriteleri", region: "AB", rate: "%90" },
+        { label: "Açık Rıza Metni", std: "GDPR + KVKK", org: "KVKK / EDPB", region: "TR + AB", rate: "%100" },
+        { label: "Veri Saklama & İmha", std: "ISO 27001", org: "ISO", region: "Küresel", rate: "%85" },
+        { label: "Çevresel Sorumluluk", std: "ISO 14001", org: "ISO", region: "Küresel", rate: "%75" },
+        { label: "Etik İlkeler", std: "UN Global Compact", org: "UNGC", region: "Küresel", rate: "%95" },
+        { label: "İnsan Hakları", std: "UNGP", org: "UN", region: "Küresel", rate: "%95" },
+        { label: "Erişilebilirlik", std: "WCAG 2.1", org: "W3C", region: "Küresel", rate: "%85" },
+    ];
+
+    const accessibilityComplianceData = [
+        { label: "Web Content Accessibility Guidelines", std: "WCAG 2.2", org: "W3C", region: "Küresel", rate: "AA: %100 / AAA: %95" },
+        { label: "European Accessibility Act (EAA)", std: "EN 301 549", org: "Avrupa Komisyonu", region: "Avrupa Birliği", rate: "%95" },
+        { label: "Americans with Disabilities Act (ADA)", std: "WCAG 2.1–2.2 AA", org: "Department of Justice", region: "ABD", rate: "%96" },
+        { label: "Section 508", std: "WCAG 2.1–2.2", org: "U.S. Access Board", region: "ABD", rate: "%96" },
+        { label: "TS EN 301 549", std: "WCAG 2.1–2.2", org: "TSE", region: "Türkiye", rate: "%95" },
+        { label: "UN CRPD (Madde 9)", std: "WCAG referanslı", org: "United Nations", region: "Küresel", rate: "%100" },
+    ];
+
+    const socialEconomyData = [
+        { label: "Sosyal Ekonomi Eylem Planı", std: "Çerçeve politika", org: "European Commission", region: "AB", rate: "%100" },
+        { label: "Sosyal Girişim Tanımı (EU)", std: "Tavsiye kararı", org: "European Union", region: "AB", rate: "%100" },
+        { label: "GRI 413 / 203", std: "Etki raporlama standardı", org: "Global Reporting Initiative", region: "Küresel", rate: "%100" },
+        { label: "Dernekler Kanunu (5253)", std: "Bağlayıcı mevzuat", org: "İçişleri Bakanlığı", region: "Türkiye", rate: "%100" },
+        { label: "SDGs (2030 Gündemi)", std: "Küresel hedef seti", org: "United Nations", region: "Küresel", rate: "%100" },
+    ];
+
+    const fullAuditList = [
+        { label: "Kullanıcı Sözleşmesi", std: "Kurumsal kullanım şartları", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Kuruluş Sözleşmesi", std: "Kurumsal yapı", org: "hangel", region: "Türkiye", rate: "100" },
+        { label: "Gönüllülük Sözleşmesi", std: "Gönüllü hak ve sorumluluklar", org: "hangel", region: "Türkiye", rate: "100" },
+        { label: "Gizlilik Politikası", std: "KVKK / GDPR / CCPA / LGPD", org: "hangel", region: "AB, ABD, TR, LATAM", rate: "100" },
+        { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "İçişleri Bakanlığı", region: "Türkiye", rate: "100" },
+        { label: "Bilgi Güvenliği Politikası", std: "ISO 27001", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Yapay Zekâ Şeffaflık Beyanı", std: "AI Şeffaflık İlkeleri", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Sosyal Etki Politikası", std: "SROI & Theory of Change", org: "hangel", region: "Küresel", rate: "100" },
+        { label: "Açık Veri Politikası", std: "Global Reporting Initiative", org: "GRI", region: "Küresel", rate: "100" },
+        { label: "İnsan Hakları Politikası", std: "UN Guiding Principles", org: "United Nations", region: "Küresel", rate: "100" },
+        { label: "Erişilebilirlik Politikası", std: "WCAG / EN 301 549", org: "European Commission", region: "AB", rate: "100" },
+        { label: "ISO 27001 Uyum Beyanı", std: "Bilgi Güvenliği", org: "ISO", region: "Küresel", rate: "100" },
+        { label: "ISO 22301 Uyum Beyanı", std: "İş Sürekliliği", org: "ISO", region: "Küresel", rate: "100" },
+        { label: "Bağımsız Mali Denetim", std: "IFRS / GAAP", org: "IFRS / GAAP", region: "Küresel", rate: "100" },
     ];
 
     return (
@@ -142,17 +158,59 @@ export default function StandardsPage() {
                     </p>
                 </section>
 
-                {/* Standards Grid */}
-                <section className="container mx-auto px-6 max-w-7xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {standardGroups.map((group, index) => (
-                            <StandardItem key={index} {...group} />
-                        ))}
+                {/* Compliance Sections */}
+                <section className="container mx-auto px-6 max-w-6xl space-y-24">
+                    
+                    <ComplianceTable 
+                        title="Kurumsal Sözleşme ve Politika Uyum Oranları"
+                        description="Ana sözleşmeler, gizlilik ve finansal şeffaflık politikalarımızın küresel standartlarla eşleşme durumu."
+                        headers={["Belge", "Standart / Sertifika", "Kurum", "Ülke / Birlik", "Sağlanan"]}
+                        data={mainComplianceData}
+                    />
+
+                    <ComplianceTable 
+                        title="Küresel Erişilebilirlik Mevzuat Uyumu"
+                        description="Platformumuz; WCAG 2.2 AA standartlarıyla %100 uyumlu, WCAG 2.2 AAA kriterlerini ise %95 oranında destekler."
+                        headers={["Belge / Mevzuat", "Standart Referansı", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan (%)"]}
+                        data={accessibilityComplianceData}
+                    />
+
+                    <ComplianceTable 
+                        title="Sosyal Ekonomi ve Kalkınma Çerçeveleri"
+                        description="Sosyal girişimcilik ve etki ölçümlemede temel aldığımız uluslararası politikalar."
+                        headers={["Belge / Çerçeve", "Hukuki Statü", "Kurum", "Ülke / Birlik", "Sağlanan %"]}
+                        data={socialEconomyData}
+                    />
+
+                    <div className="space-y-8 pt-12 border-t border-black/5">
+                        <div className="text-center space-y-4">
+                            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Tam Uyumluluk Beyan Listesi.</h2>
+                            <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto">
+                                hangel ekosisteminde %100 uyum sağlanan ve periyodik denetime tabi olan döküman ve beyanların tam listesi.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {fullAuditList.map((item, i) => (
+                                <div key={i} className="flex items-center justify-between p-6 bg-white rounded-3xl border border-black/5 shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-2.5 bg-green-50 rounded-xl text-green-600">
+                                            <CheckCircle2 className="h-5 w-5" />
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            <p className="font-bold text-sm text-[#1d1d1f]">{item.label}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{item.std}</p>
+                                        </div>
+                                    </div>
+                                    <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] tracking-widest">%{item.rate}</Badge>
+                                </div>
+                            ))}
+                        </div>
                     </div>
+
                 </section>
 
-                {/* Compliance Statement */}
-                <section className="container mx-auto px-6 max-w-4xl mt-24">
+                {/* Bottom Context */}
+                <section className="container mx-auto px-6 max-w-4xl mt-32">
                     <Card className="rounded-[3rem] bg-black text-white p-10 md:p-16 border-none shadow-2xl relative overflow-hidden text-center">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                         <CardHeader className="relative z-10 space-y-4">
@@ -171,33 +229,6 @@ export default function StandardsPage() {
                             </Button>
                         </CardFooter>
                     </Card>
-                </section>
-
-                {/* Bottom Context */}
-                <section className="container mx-auto px-6 max-w-5xl mt-32 text-center space-y-12">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left">
-                        <div className="space-y-4">
-                            <div className="p-3 bg-white rounded-2xl shadow-sm w-fit border border-black/5">
-                                <Scale className="h-6 w-6 text-primary" />
-                            </div>
-                            <h4 className="font-bold text-lg">Hukuki Güvence</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed font-medium">Faaliyetlerimiz, hem yerel sivil toplum mevzuatı hem de uluslararası ticaret ve vakıf hukuku ile tam uyum içerisindedir.</p>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="p-3 bg-white rounded-2xl shadow-sm w-fit border border-black/5">
-                                <Cpu className="h-6 w-6 text-primary" />
-                            </div>
-                            <h4 className="font-bold text-lg">Teknik Mükemmeliyet</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed font-medium">Yazılım yaşam döngümüz (SDLC), güvenlik ve performans odaklı uluslararası mimari standartlara (ISO 25010) göre şekillenir.</p>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="p-3 bg-white rounded-2xl shadow-sm w-fit border border-black/5">
-                                <Building2 className="h-6 w-6 text-primary" />
-                            </div>
-                            <h4 className="font-bold text-lg">Kurumsal Şeffaflık</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed font-medium">Tüm sertifikasyon iddialarımız, dileyen paydaşlarımız tarafından kütüphanemizdeki resmi belgelerle teyit edilebilir.</p>
-                        </div>
-                    </div>
                 </section>
             </main>
 
