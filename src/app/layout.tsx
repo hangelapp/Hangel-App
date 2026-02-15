@@ -1,8 +1,15 @@
 import './globals.css';
+import { Poppins } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from './app-shell';
 import { LanguageProvider } from '@/components/providers/language-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-poppins',
+});
 
 export default function RootLayout({
   children,
@@ -10,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className="" suppressHydrationWarning>
-      <body className="antialiased">
+    <html lang="tr" className={`${poppins.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased">
         <FirebaseClientProvider>
           <LanguageProvider>
             <AppShell>
