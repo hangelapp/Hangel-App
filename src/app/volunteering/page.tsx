@@ -1,9 +1,10 @@
+
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle, FileText, XCircle, Plane, ChevronRight } from 'lucide-react';
+import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle, FileText, XCircle, Plane, ChevronRight, Building } from 'lucide-react';
 import { volunteeringOpportunities, user, ngos } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
@@ -61,12 +62,12 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
 const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) => {
     
     const userAbilities = [
-        ...user.volunteerInfo.skills,
-        ...user.volunteerInfo.dailySkills,
-        ...user.volunteerInfo.languages,
-        ...user.volunteerInfo.programs,
-        ...user.volunteerInfo.licenses,
-        ...user.volunteerInfo.documents,
+      ...user.volunteerInfo.skills,
+      ...user.volunteerInfo.dailySkills,
+      ...user.volunteerInfo.languages,
+      ...user.volunteerInfo.programs,
+      ...user.volunteerInfo.licenses,
+      ...user.volunteerInfo.documents,
     ];
     
     const requiredAbilities = [
@@ -135,8 +136,10 @@ export default function VolunteeringPage() {
     const [interestFilter, setInterestFilter] = useState<string[]>([]);
     const [skillFilter, setSkillFilter] = useState<string[]>([]);
     const [cityFilter, setCityFilter] = useState<string[]>([]);
+    const [typeFilter, setTypeFilter] = useState<string[]>([]);
 
     const allCities = useMemo(() => Array.from(new Set(volunteeringOpportunities.map(o => o.location.city))).sort(), []);
+    const allNgoTypes = ['Dernek', 'Vakıf', 'Spor Kulübü', 'Özel İzinli'];
 
 
     const userAbilities = [
@@ -157,6 +160,12 @@ export default function VolunteeringPage() {
         }
         if (cityFilter.length > 0) {
             opportunities = opportunities.filter(opp => cityFilter.includes(opp.location.city));
+        }
+        if (typeFilter.length > 0) {
+            opportunities = opportunities.filter(opp => {
+                const ngo = ngos.find(n => n.id === opp.ngoId);
+                return ngo && typeFilter.includes(ngo.type);
+            });
         }
 
         if (searchTerm.trim()) {
@@ -197,7 +206,7 @@ export default function VolunteeringPage() {
         });
 
         return opportunities;
-    }, [sortKey, searchTerm, userAbilities, interestFilter, skillFilter, cityFilter]);
+    }, [sortKey, searchTerm, userAbilities, interestFilter, skillFilter, cityFilter, typeFilter]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -229,12 +238,13 @@ export default function VolunteeringPage() {
                  </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             <MultiSelect title="Sosyal Hassasiyet" options={allInterests} selected={interestFilter} onSelectedChange={setInterestFilter} />
             <MultiSelect title="Yetkinlikler" options={allSkills} selected={skillFilter} onSelectedChange={setSkillFilter} />
             <MultiSelect title="Lokasyon" options={allCities} selected={cityFilter} onSelectedChange={setCityFilter} />
+            <MultiSelect title="Kurum Türü" options={allNgoTypes} selected={typeFilter} onSelectedChange={setTypeFilter} />
         </div>
-         <div className="pt-1">
+         <div className="pt-0">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1" className="border-b-0">
                 <AccordionTrigger className="hover:no-underline -mx-1 py-1">
