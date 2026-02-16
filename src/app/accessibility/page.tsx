@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -29,7 +30,14 @@ import {
     RotateCcw,
     MessageSquareWarning,
     Languages,
-    Contrast
+    Contrast,
+    MoreHorizontal,
+    AlignLeft,
+    Pilcrow,
+    Rows,
+    Keyboard,
+    Command,
+    Undo2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -47,6 +55,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { user } from '@/lib/data';
 
 const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, title: string, description: string, badge?: string }) => (
     <Card className="bg-white rounded-[2rem] p-6 md:p-8 border border-black/5 shadow-sm hover:shadow-xl transition-all duration-500 group h-full">
@@ -86,9 +98,158 @@ const complianceRates = [
     { standard: "Kamu Dijital Hizmet Rehberleri", region: "Türkiye", scope: "Kamu dijital servis beklentileri", rate: "60–65", desc: "Kamuya özel format ve raporlama gereksinimleri kapsam dışıdır." },
 ];
 
+const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
+    <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
+        <div className={cn("p-1.5 rounded-lg mr-4 shrink-0", iconColor)}>
+            <Icon className="h-5 w-5 text-white" />
+        </div>
+        <div className='flex-1 space-y-0.5 mr-4'>
+            <label htmlFor={label.replace(/\s/g, '')} className="font-medium cursor-pointer block">{label}</label>
+            {description && <p className='text-xs text-muted-foreground leading-snug'>{description}</p>}
+        </div>
+        <div className="shrink-0">
+            {children}
+        </div>
+    </div>
+);
+
+
 export default function AccessibilityPublicPage() {
     const router = useRouter();
+    const { toast } = useToast();
     const heroImage = PlaceHolderImages.find(img => img.id === 'accessibility-hero');
+
+    const [isSaving, setIsSaving] = useState(false);
+
+    // --- State Definition ---
+    // Visual
+    const [highContrast, setHighContrast] = useState(false);
+    const [fontSize, setFontSize] = useState('normal');
+    const [lineHeight, setLineHeight] = useState('normal');
+    const [wordSpacing, setWordSpacing] = useState('normal');
+    const [paragraphSpacing, setParagraphSpacing] = useState('normal');
+    const [colorFilter, setColorFilter] = useState('yok');
+    const [dyslexiaFont, setDyslexiaFont] = useState(false);
+    const [textAlignment, setTextAlignment] = useState('left');
+    const [separateText, setSeparateText] = useState(false);
+    const [showContrastInfo, setShowContrastInfo] = useState(true);
+    const [reflowMode, setReflowMode] = useState(true);
+
+    // Interaction
+    const [reduceMotion, setReduceMotion] = useState(false);
+    const [largeTouchTargets, setLargeTouchTargets] = useState(false);
+    const [longPressDuration, setLongPressDuration] = useState('normal');
+    const [fullKeyboard, setFullKeyboard] = useState(false);
+    const [focusStrength, setFocusFrame] = useState('thin');
+    const [dragDropAlt, setDragDropAlt] = useState(false);
+    const [limitShortcuts, setLimitShortcuts] = useState(false);
+
+    // Cognitive
+    const [readingLevel, setReadingLevel] = useState('B2');
+    const [stepByStep, setStepByStep] = useState(false);
+    const [termConsistency, setTerminologyConsistency] = useState(false);
+    const [focusMode, setFocusMode] = useState(false);
+    const [termDefinitions, setTermDefinitions] = useState(true);
+    const [errorPrevention, setErrorPrevention] = useState(true);
+
+    // Audio/Media
+    const [screenReader, setScreenReader] = useState(true);
+    const [dynamicAnnouncements, setDynamicAnnouncements] = useState(true);
+    const [mediaDescriptions, setMediaDescriptions] = useState(false);
+    const [logicalOrder, setLogicalReadingOrder] = useState(true);
+    const [audioFeedback, setAudioFeedback] = useState(false);
+    const [visualAlerts, setVisualAlerts] = useState(false);
+    const [muteAutoAudio, setMuteAutoAudio] = useState(true);
+    const [ignoreDecorative, setIgnoreDecorative] = useState(true);
+
+    // Control
+    const [timeoutWarnings, setTimeoutWarnings] = useState(true);
+    const [autoSave, setAutoSave] = useState(true);
+    const [disableTimeLimits, setDisableTimeLimits] = useState(false);
+    const [transactionConfirmation, setTransactionConfirmation] = useState(true);
+    const [undoSupport, setUndoSupport] = useState(true);
+    const [undoTime, setUndoTime] = useState('10s');
+
+    // --- Persistence ---
+    useEffect(() => {
+        const saved = localStorage.getItem('hangel-a11y-v3');
+        if (saved) {
+            try {
+                const s = JSON.parse(saved);
+                // Visual
+                if (s.highContrast !== undefined) setHighContrast(s.highContrast);
+                if (s.fontSize) setFontSize(s.fontSize);
+                if (s.lineHeight) setLineHeight(s.lineHeight);
+                if (s.wordSpacing) setWordSpacing(s.wordSpacing);
+                if (s.paragraphSpacing) setParagraphSpacing(s.paragraphSpacing);
+                if (s.colorFilter) setColorFilter(s.colorFilter);
+                if (s.dyslexiaFont !== undefined) setDyslexiaFont(s.dyslexiaFont);
+                if (s.textAlignment) setTextAlignment(s.textAlignment);
+                if (s.separateText !== undefined) setSeparateText(s.separateText);
+                if (s.showContrastInfo !== undefined) setShowContrastInfo(s.showContrastInfo);
+                if (s.reflowMode !== undefined) setReflowMode(s.reflowMode);
+
+                // Interaction
+                if (s.reduceMotion !== undefined) setReduceMotion(s.reduceMotion);
+                if (s.largeTouchTargets !== undefined) setLargeTouchTargets(s.largeTouchTargets);
+                if (s.longPressDuration) setLongPressDuration(s.longPressDuration);
+                if (s.fullKeyboard !== undefined) setFullKeyboard(s.fullKeyboard);
+                if (s.focusStrength) setFocusFrame(s.focusStrength);
+                if (s.dragDropAlt !== undefined) setDragDropAlt(s.dragDropAlt);
+                if (s.limitShortcuts !== undefined) setLimitShortcuts(s.limitShortcuts);
+
+                // Cognitive
+                if (s.readingLevel) setReadingLevel(s.readingLevel);
+                if (s.stepByStep !== undefined) setStepByStep(s.stepByStep);
+                if (s.termConsistency !== undefined) setTerminologyConsistency(s.termConsistency);
+                if (s.focusMode !== undefined) setFocusMode(s.focusMode);
+                if (s.termDefinitions !== undefined) setTermDefinitions(s.termDefinitions);
+                if (s.errorPrevention !== undefined) setErrorPrevention(s.errorPrevention);
+
+                // Audio/Media
+                if (s.screenReader !== undefined) setScreenReader(s.screenReader);
+                if (s.dynamicAnnouncements !== undefined) setDynamicAnnouncements(s.dynamicAnnouncements);
+                if (s.mediaDescriptions !== undefined) setMediaDescriptions(s.mediaDescriptions);
+                if (s.logicalOrder !== undefined) setLogicalReadingOrder(s.logicalOrder);
+                if (s.audioFeedback !== undefined) setAudioFeedback(s.audioFeedback);
+                if (s.visualAlerts !== undefined) setVisualAlerts(s.visualAlerts);
+                if (s.muteAutoAudio !== undefined) setMuteAutoAudio(s.muteAutoAudio);
+                if (s.ignoreDecorative !== undefined) setIgnoreDecorative(s.ignoreDecorative);
+
+                // Control
+                if (s.timeoutWarnings !== undefined) setTimeoutWarnings(s.timeoutWarnings);
+                if (s.autoSave !== undefined) setAutoSave(s.autoSave);
+                if (s.disableTimeLimits !== undefined) setDisableTimeLimits(s.disableTimeLimits);
+                if (s.transactionConfirmation !== undefined) setTransactionConfirmation(s.transactionConfirmation);
+                if (s.undoSupport !== undefined) setUndoSupport(s.undoSupport);
+                if (s.undoTime) setUndoTime(s.undoTime);
+            } catch (e) {
+                console.error("Settings load error:", e);
+            }
+        }
+    }, []);
+
+    const handleSave = () => {
+        setIsSaving(true);
+        const settings = {
+            highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, separateText, showContrastInfo, reflowMode,
+            reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt, limitShortcuts,
+            readingLevel, stepByStep, termConsistency, focusMode, termDefinitions, errorPrevention,
+            screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts, muteAutoAudio, ignoreDecorative,
+            timeoutWarnings, autoSave, disableTimeLimits, transactionConfirmation, undoSupport, undoTime
+        };
+        
+        localStorage.setItem('hangel-a11y-v3', JSON.stringify(settings));
+        
+        setTimeout(() => {
+            setIsSaving(false);
+            toast({
+                title: "Ayarlar Kaydedildi",
+                description: "Erişilebilirlik tercihleriniz tüm platformda aktif hale getirildi.",
+            });
+        }, 800);
+    };
+
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -109,11 +270,11 @@ export default function AccessibilityPublicPage() {
                 {/* Hero Section */}
                 <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-6 text-center bg-[#f5f5f7] overflow-hidden border-b border-black/5">
                     <div className="container mx-auto max-w-4xl space-y-6 relative z-10 animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
-                        <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
-                            Herkes İçin <br /> Tasarlandı.
+                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
+                            Herkes İçin <br /> Erişilebilir.
                         </h1>
                         <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
-                            İyilikte engel tanımaz. Hangel, teknolojinin birleştirici gücünü herkes için erişilebilir kılma vizyonuyla, WCAG 2.2 AAA standartlarını hedefleyerek geliştirilmiştir.
+                            İyilikte engel tanımaz. hangel, teknolojinin birleştirici gücünü herkes için erişilebilir kılma vizyonuyla, WCAG 2.2 AAA standartlarını hedefleyerek geliştirilmiştir.
                         </p>
                     </div>
                     <div className="relative w-full max-w-6xl mx-auto aspect-[16/9] md:aspect-[21/9] mt-12 md:mt-16 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-2xl">
@@ -126,248 +287,252 @@ export default function AccessibilityPublicPage() {
                         />
                     </div>
                 </section>
-
-                {/* Hangi Engel Gruplarını Gözetiyoruz */}
-                <section className="py-16 md:py-32 px-6">
-                    <div className="container mx-auto max-w-6xl space-y-12 md:space-y-16">
-                        <div className="text-center space-y-4">
-                            <h2 className="text-3xl md:text-6xl font-bold tracking-tight">Hangi Engel Gruplarını Gözetiyoruz?</h2>
-                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Platformumuz, farklı ihtiyaçlara sahip kullanıcılarımızın deneyimini en üst seviyeye çıkarmak için optimize edilmiştir.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            <FeatureCard 
-                                icon={Eye} 
-                                title="Görme Engelliler" 
-                                description="Tam görme kaybı veya az görme durumunda; ekran okuyucu (ARIA) uyumluluğu, yüksek kontrast ve gerçek zamanlı analiz desteği sunuyoruz." 
-                            />
-                            <FeatureCard 
-                                icon={Zap} 
-                                title="Renk Körlüğü" 
-                                description="Protanopia, Deuteranopia ve Tritanopia filtreleriyle tüm bilgilerin renkten bağımsız olarak algılanmasını sağlıyoruz." 
-                            />
-                            <FeatureCard 
-                                icon={Type} 
-                                title="Disleksi" 
-                                description="Okuma güçlüğü çeken kullanıcılar için OpenDyslexic yazı tipi, bağımsız satır/kelime aralığı ve metin hizalama ayarları mevcuttur." 
-                            />
-                            <FeatureCard 
-                                icon={Brain} 
-                                title="Bilişsel Zorluklar" 
-                                description="DEHB veya anksiyete durumları için dikkat dağıtıcıları gizleyen 'Sade Mod', basitleştirilmiş dil (A2/B1/B2) ve adım adım görev modu tasarladık." 
-                            />
-                            <FeatureCard 
-                                icon={MousePointer2} 
-                                title="Motor Beceriler" 
-                                description="Titreme veya sınırlı hareket durumunda; tam klavye erişimi, büyük dokunma alanları ve sürükle-bırak alternatifleri sağlıyoruz." 
-                            />
-                            <FeatureCard 
-                                icon={Move} 
-                                title="Vestibüler Hassasiyet" 
-                                description="Hareket ve animasyon duyarlılığı olanlar için sistem genelinde geçiş efektlerini ve ani hareketleri azaltma seçeneği sunuyoruz." 
-                            />
-                            <FeatureCard 
-                                icon={Ear} 
-                                title="İşitme Engelliler" 
-                                description="İşitsel uyarılar yerine görsel parlamalar, metin transkriptleri ve titreşimli geri bildirim alternatifleri ile etkileşimi destekliyoruz." 
-                            />
-                            <FeatureCard 
-                                icon={Clock} 
-                                title="Geçici Engeller" 
-                                description="Yorgunluk, parlak ışık veya geçici sakatlık durumlarında; zaman sınırı uyarıları, taslak kaydı ve tek elle kullanım standartları sağlıyoruz." 
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* Teknik Standartlar ve İleri Seviye Kontroller */}
-                <section className="py-16 md:py-32 px-6 bg-[#f5f5f7]">
-                    <div className="container mx-auto max-w-6xl space-y-16">
-                        <div className="text-left md:text-center space-y-4 max-w-4xl mx-auto">
-                            <h2 className="text-3xl md:text-7xl font-black tracking-tighter leading-[0.95]">Teknik Standartlar ve İleri Seviye Kontroller.</h2>
-                            <p className="text-lg md:text-2xl text-muted-foreground font-medium leading-tight">
-                                WCAG 2.2 AAA ve EN 301 549 standartlarıyla tam uyum yolculuğumuzda sunduğumuz modüler teknik çözümler.
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                            <TechnicalItem 
-                                icon={Type}
-                                title="Bağımsız Tipografik Kontrol"
-                                description="Kullanıcılar; satır yüksekliği, kelime aralığı ve paragraf boşluklarını birbirlerinden bağımsız olarak manuel şekilde ayarlayabilirler. (AAA 1.4.12)"
-                            />
-                            <TechnicalItem 
-                                icon={Languages}
-                                title="Dinamik Dil Seviyesi Seçici"
-                                description="Arayüz ve içerik metinlerini A2, B1 veya B2 seviyelerinde dinamik olarak basitleştirerek bilişsel yükü optimize ediyoruz. (AAA 3.1.5)"
-                            />
-                            <TechnicalItem 
-                                icon={Layers}
-                                title="Adım Adım Görev Modu"
-                                description="Bağış, başvuru ve form doldurma gibi karmaşık süreçleri tek bir ekrana odaklanan adım adım bir yapıya dönüştürüyoruz. (Bilişsel destek)"
-                            />
-                            <TechnicalItem 
-                                icon={Contrast}
-                                title="Gerçek Zamanlı Kontrast Analizi"
-                                description="Seçilen renk paleti ve kontrast ayarları için WCAG AA/AAA uyumluluk durumunu gösteren anlık geri bildirim indikatörü."
-                            />
-                            <TechnicalItem 
-                                icon={KeyRound}
-                                title="Tam Klavye Erişilebilirliği"
-                                description="Tüm etkileşimli öğeler, klavye ile tam erişilebilir ve görsel olarak belirgin odak (visible focus) indikatörlerine sahiptir."
-                            />
-                            <TechnicalItem 
-                                icon={Pointer}
-                                title="Sürükle-Bırak Alternatifleri"
-                                description="Sürükle-bırak gerektiren tüm işlemler için buton bazlı veya liste odaklı erişilebilir etkileşim yöntemleri sunulur. (AAA 2.5.7)"
-                            />
-                            <TechnicalItem 
-                                icon={History}
-                                title="Otomatik Taslak Kaydı"
-                                description="Uzun formlar ve başvurular sırasında veri kaybını önlemek için arka planda sürekli otomatik kayıt sistemi çalışır."
-                            />
-                            <TechnicalItem 
-                                icon={Clock}
-                                title="Zaman Aşımı Uyarıları"
-                                description="Oturum veya işlem süresi dolmadan önce kullanıcıyı bilgilendiren ve ek süre tanımayı sağlayan pre-timeout uyarıları. (AAA 2.2.1)"
-                            />
-                            <TechnicalItem 
-                                icon={Volume2}
-                                title="ARIA Live Regions"
-                                description="Dinamik olarak değişen içerikler ve hata mesajları, ekran okuyucular için ARIA Live standartlarında anında anons edilir."
-                            />
-                            <TechnicalItem 
-                                icon={BookText}
-                                title="Medya Transkriptleri"
-                                description="Tüm video ve animasyonlu içerikler için tam metin transkriptleri, betimlemeler ve işaret dili desteği opsiyonları."
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* Uluslararası Standartlar */}
-                <section className="py-16 md:py-32 px-6 bg-black text-white overflow-hidden text-center">
-                    <div className="container mx-auto max-w-6xl space-y-16 md:space-y-24">
-                        <div className="space-y-4">
-                            <h2 className="text-3xl md:text-7xl font-black tracking-tighter">Uluslararası Standartlar.</h2>
-                            <p className="text-lg md:text-xl text-white/60 font-medium leading-relaxed max-w-2xl mx-auto">
-                                Hangel, küresel erişilebilirlik standartlarını bir "check-list" olarak değil, bir tasarım felsefesi olarak benimser.
-                            </p>
-                        </div>
-
-                        {/* Ulusal & Uluslararası Standartlar Uyum Tablosu */}
-                        <div className="space-y-8 md:space-y-12 text-left mt-8 md:mt-16 pt-8 md:pt-16 border-t border-white/10">
-                            <Card className="overflow-hidden border-none shadow-2xl rounded-[1.5rem] md:rounded-[2rem] bg-white/5 text-white">
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-white/10 border-none hover:bg-white/10">
-                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Standart / Politika</TableHead>
-                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Bölge</TableHead>
-                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap text-center">Uyum</TableHead>
-                                                <TableHead className="py-3 md:py-6 px-3 md:px-8 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/60 whitespace-nowrap">Açıklama</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {complianceRates.map((item, i) => (
-                                                <TableRow key={i} className="hover:bg-white/5 border-white/10">
-                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8 min-w-[140px]">
-                                                        <p className="font-bold text-xs md:text-base leading-tight">{item.standard}</p>
-                                                        <p className="text-[8px] md:text-[10px] text-white/40 uppercase tracking-wider mt-1">{item.scope}</p>
-                                                    </TableCell>
-                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8 text-[10px] md:text-sm font-medium text-white/60 whitespace-nowrap">{item.region}</TableCell>
-                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8">
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <span className="text-sm md:text-xl font-black text-primary tracking-tighter">%{item.rate}</span>
-                                                            <div className="w-8 md:w-16 h-1 bg-white/10 rounded-full overflow-hidden">
-                                                                <div className="bg-primary h-full rounded-full" style={{ width: `${item.rate.split('–')[1] || item.rate}%` }} />
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="py-3 md:py-6 px-3 md:px-8 text-[10px] md:text-xs leading-relaxed text-white/50 font-medium min-w-[180px] max-w-xs">{item.desc}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                
+                 {/* --- Settings Groups --- */}
+                <section className="p-4 space-y-10 animate-in fade-in-0 max-w-3xl mx-auto pb-32">
+                    <div className="space-y-8 mt-16">
+                        {/* Visual & Reading */}
+                        <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
+                            <CardHeader className="bg-[#f5f5f7] border-b">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Eye className="h-5 w-5 text-indigo-500" />
+                                    Görsel & Okuma
+                                </CardTitle>
+                                <CardDescription className="text-xs font-medium">Okunabilirlik ve görsel algı tercihleriniz. (WCAG 1.3 / 1.4)</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="flex flex-col">
+                                    <SettingsItem label="Yüksek Kontrast" icon={Contrast} iconColor="bg-indigo-500" description="Metin ve arka plan belirginliğini artırır.">
+                                        <Switch checked={highContrast} onCheckedChange={setHighContrast} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Metni Ekrana Sığdır (Reflow)" icon={Rows} iconColor="bg-indigo-500" description="Zoom yapıldığında yatay kaydırmayı engeller. (WCAG 1.4.10)">
+                                        <Switch checked={reflowMode} onCheckedChange={setReflowMode} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Kontrast Bilgisi Göster" icon={ShieldCheck} iconColor="bg-indigo-500" description="Tema için AA/AAA uyumluluk göstergesi sunar.">
+                                        <Switch checked={showContrastInfo} onCheckedChange={setShowContrastInfo} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Yazı Tipi Boyutu" icon={Type} iconColor="bg-indigo-500">
+                                        <Select value={fontSize} onValueChange={setFontSize}>
+                                            <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="small">Küçük</SelectItem>
+                                                <SelectItem value="normal">Normal</SelectItem>
+                                                <SelectItem value="large">Büyük</SelectItem>
+                                                <SelectItem value="huge">Çok Büyük</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </SettingsItem>
+                                    <SettingsItem label="Satır Aralığı" icon={AlignLeft} iconColor="bg-indigo-500">
+                                        <Select value={lineHeight} onValueChange={setLineHeight}>
+                                            <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="normal">Normal</SelectItem>
+                                                <SelectItem value="1.5">1.5x Genişlik</SelectItem>
+                                                <SelectItem value="2.0">2.0x Genişlik</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </SettingsItem>
+                                    <SettingsItem label="Kelime Aralığı" icon={MoreHorizontal} iconColor="bg-indigo-500">
+                                        <Select value={wordSpacing} onValueChange={setWordSpacing}>
+                                            <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="normal">Normal</SelectItem>
+                                                <SelectItem value="wide">+%10 Geniş</SelectItem>
+                                                <SelectItem value="extra">+%20 Geniş</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </SettingsItem>
+                                    <SettingsItem label="Paragraf Aralığı" icon={Pilcrow} iconColor="bg-indigo-500">
+                                        <Select value={paragraphSpacing} onValueChange={setParagraphSpacing}>
+                                            <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="normal">Normal</SelectItem>
+                                                <SelectItem value="wide">Geniş</SelectItem>
+                                                <SelectItem value="extra">Çok Geniş</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </SettingsItem>
+                                    <SettingsItem label="Metinleri Görselden Ayır" icon={Files} iconColor="bg-indigo-500" description="Bannerlardaki metinleri HTML olarak render eder.">
+                                        <Switch checked={separateText} onCheckedChange={setSeparateText} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Disleksi Dostu Yazı Tipi" icon={Type} iconColor="bg-indigo-500" description="OpenDyslexic yazı tipini aktif eder.">
+                                        <Switch checked={dyslexiaFont} onCheckedChange={setDyslexiaFont} />
+                                    </SettingsItem>
                                 </div>
-                            </Card>
-                        </div>
+                            </CardContent>
+                        </Card>
 
-                        {/* Neden %100 Erişilebilirlik Değil? Section */}
-                        <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 text-left pt-12 md:pt-16">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white mb-4 border border-white/5">
-                                <Target className="h-4 w-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Gerçekçi Yaklaşım</span>
-                            </div>
-                            <h2 className="text-3xl md:text-6xl font-black tracking-tighter leading-[0.95]">Neden %100 <br /> Erişilebilirlik Değil?</h2>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                                <div className="space-y-6">
-                                    <p className="text-base md:text-lg text-white/70 leading-relaxed font-medium">
-                                        Dijital erişilebilirlik, tek seferde tamamlanan bir durum değil; sürekli geliştirilen bir standarttır. Hangel, web ve mobil erişilebilirlikte <strong>WCAG 2.2 AA</strong> seviyesini temel alır.
-                                    </p>
-                                    <p className="text-base md:text-lg text-white/70 leading-relaxed font-medium">
-                                        WCAG 2.2 AAA kapsamında yer alan bazı ileri seviye kriterler ise, tüm kullanıcılar için aynı anda geçerli olmayabileceğinden isteğe bağlı ve kişiselleştirilebilir ayarlar olarak sunulur.
-                                    </p>
+                        {/* Cognitive & Understanding */}
+                        <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
+                            <CardHeader className="bg-[#f5f5f7] border-b">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Layers className="h-5 w-5 text-orange-500" />
+                                    Bilişsel & Anlama
+                                </CardTitle>
+                                <CardDescription className="text-xs font-medium">Bilişsel yükü azaltma ve netlik ayarları. (WCAG 3.x / AAA)</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="flex flex-col">
+                                    <SettingsItem label="Hata Önleme Modu" icon={ShieldAlert} iconColor="bg-orange-500" description="Kritik işlemler öncesi hataları işlem öncesi engeller. (WCAG 3.3.4)">
+                                        <Switch checked={errorPrevention} onCheckedChange={setErrorPrevention} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Okuma Seviyesi" icon={Languages} iconColor="bg-orange-500" description="Dili sadeleştirir ve cümle yapısını düzenler.">
+                                        <Select value={readingLevel} onValueChange={setReadingLevel}>
+                                            <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="A2">Kolay (A2)</SelectItem>
+                                                <SelectItem value="B1">Orta (B1)</SelectItem>
+                                                <SelectItem value="B2">Standart (B2)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </SettingsItem>
+                                    <SettingsItem label="Adım Adım Rehber Modu" icon={ListOrdered} iconColor="bg-orange-500" description="Karmaşık formları tek ekran-tek görev yapısına böler.">
+                                        <Switch checked={stepByStep} onCheckedChange={setStepByStep} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Terim Tutarlılığı Modu" icon={CheckCircle} iconColor="bg-orange-500" description="Eş anlamlıları kapatır, tekil terminoloji kullanır.">
+                                        <Switch checked={termConsistency} onCheckedChange={setTerminologyConsistency} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Sade Mod (Odak Modu)" icon={Layers} iconColor="bg-orange-500" description="Dikkat dağıtıcıları gizler.">
+                                        <Switch checked={focusMode} onCheckedChange={setFocusMode} />
+                                    </SettingsItem>
                                 </div>
-                                <div className="space-y-6">
-                                    <p className="text-base md:text-lg text-white/70 leading-relaxed font-medium">
-                                        Uluslararası standartlar dahi, özellikle AAA seviyesinde %100 uyumu zorunlu bir hedef olarak tanımlamaz. farklı engel gruplarının ihtiyaçları zaman zaman birbirleriyle çelişebilir.
-                                    </p>
-                                    <p className="text-base md:text-lg text-white/70 leading-relaxed font-medium">
-                                        Hangel, %100 gibi mutlak iddialar yerine; <strong>gerçekçi, ölçülebilir ve sürdürülebilir</strong> bir erişilebilirlik yaklaşımını düzenli iyileştirme taahhüdüyle sunar.
-                                    </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Interaction & Motor */}
+                        <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
+                            <CardHeader className="bg-[#f5f5f7] border-b">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <MousePointerClick className="h-5 w-5 text-teal-500" />
+                                    Etkileşim & Motor
+                                </CardTitle>
+                                <CardDescription className="text-xs font-medium">Motor beceri ve fiziksel erişim kolaylıkları. (WCAG 2.5 / 2.2)</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="flex flex-col">
+                                    <SettingsItem label="Klavye Kısayollarını Sınırla" icon={Command} iconColor="bg-teal-500" description="Tek tuş kısayollarını kapatarak hataları önler. (WCAG 2.1.4)">
+                                        <Switch checked={limitShortcuts} onCheckedChange={setLimitShortcuts} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Klavye ile Tam Kullanım" icon={Keyboard} iconColor="bg-teal-500" description="Tüm öğeleri klavye (Tab/Enter) ile erişilebilir yapar.">
+                                        <Switch checked={fullKeyboard} onCheckedChange={setFullKeyboard} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Odak Çerçevesini Güçlendir" icon={Maximize} iconColor="bg-teal-500">
+                                        <Select value={focusStrength} onValueChange={setFocusFrame}>
+                                            <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="thin">İnce</SelectItem>
+                                                <SelectItem value="thick">Kalın</SelectItem>
+                                                <SelectItem value="high">Yüksek Kontrastlı</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </SettingsItem>
+                                    <SettingsItem label="Sürükle-Bırak Alternatifi" icon={MousePointerClick} iconColor="bg-teal-500" description="Sürükleme yerine butonla taşıma desteği sağlar.">
+                                        <Switch checked={dragDropAlt} onCheckedChange={setDragDropAlt} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Büyük Dokunma Alanları" icon={Maximize} iconColor="bg-teal-500" description="Buton ve link tıklama alanlarını büyütür.">
+                                        <Switch checked={largeTouchTargets} onCheckedChange={setLargeTouchTargets} />
+                                    </SettingsItem>
                                 </div>
-                            </div>
-                            
-                            <div className="p-6 md:p-8 bg-white text-black rounded-[1.5rem] md:rounded-[2.5rem] mt-8 text-center space-y-4 shadow-2xl">
-                                <p className="text-xl md:text-2xl font-black tracking-tight leading-tight">Amacımız, erişilebilirliği bir vaat değil, kalıcı bir standart haline getirmektir.</p>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Screen Reader & Media */}
+                        <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
+                            <CardHeader className="bg-[#f5f5f7] border-b">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Volume2 className="h-5 w-5 text-blue-500" />
+                                    Ekran Okuyucu & Medya
+                                </CardTitle>
+                                <CardDescription className="text-xs font-medium">Sesli geri bildirim ve medya erişilebilirliği. (WCAG 1.1 / 1.2)</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="flex flex-col">
+                                    <SettingsItem label="Otomatik Sesleri Kapat" icon={VolumeX} iconColor="bg-blue-500" description="Otomatik başlayan sesleri ve müzikleri engeller. (WCAG 1.4.2)">
+                                        <Switch checked={muteAutoAudio} onCheckedChange={setMuteAutoAudio} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Dekoratif Görselleri Yoksay" icon={ImageOff} iconColor="bg-blue-500" description="Sadece süs amaçlı görselleri ekran okuyucuya okumaz.">
+                                        <Switch checked={ignoreDecorative} onCheckedChange={setIgnoreDecorative} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Dinamik İçerik Anonsları" icon={Rss} iconColor="bg-blue-500" description="Hata ve başarı bildirimlerini otomatik seslendirir.">
+                                        <Switch checked={dynamicAnnouncements} onCheckedChange={setDynamicAnnouncements} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Medya Açıklamaları" icon={FileVideo} iconColor="bg-blue-500" description="Video transkriptleri ve animasyon betimlemelerini sunar.">
+                                        <Switch checked={mediaDescriptions} onCheckedChange={setMediaDescriptions} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Mantıksal Okuma Sırası" icon={ListOrdered} iconColor="bg-blue-500" description="Görsel düzen ile ekran okuyucu sırasını eşitler.">
+                                        <Switch checked={logicalOrder} onCheckedChange={setLogicalReadingOrder} />
+                                    </SettingsItem>
+                                    <SettingsItem label="ARIA ve Anonslar" icon={Ear} iconColor="bg-blue-500">
+                                        <Switch checked={screenReader} onCheckedChange={setScreenReader} />
+                                    </SettingsItem>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Time & Error Management */}
+                        <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
+                            <CardHeader className="bg-[#f5f5f7] border-b">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Clock className="h-5 w-5 text-slate-600" />
+                                    Zaman & Kontrol Yönetimi
+                                </CardTitle>
+                                <CardDescription className="text-xs font-medium">Zaman kısıtları ve veri güvenliği ayarları. (WCAG 2.2 AAA)</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="flex flex-col">
+                                    <SettingsItem label="Geri Alma Süresi" icon={Undo2} iconColor="bg-slate-600" description="Yapılan işlemi geri alabilmek için tanınan süre. (WCAG 2.2.3)">
+                                        <Select value={undoTime} onValueChange={setUndoTime}>
+                                            <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="5s">5 Saniye</SelectItem>
+                                                <SelectItem value="10s">10 Saniye</SelectItem>
+                                                <SelectItem value="30s">30 Saniye</SelectItem>
+                                                <SelectItem value="unlimited">Sınırsız</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </SettingsItem>
+                                    <SettingsItem label="Zaman Aşımı Uyarıları" icon={MessageSquareWarning} iconColor="bg-slate-600" description="Oturum dolmadan önce 'Devam Et' seçeneği sunar.">
+                                        <Switch checked={timeoutWarnings} onCheckedChange={setTimeoutWarnings} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Otomatik Taslak Kaydet" icon={History} iconColor="bg-slate-600" description="Form verilerini belirli aralıklarla yedekler.">
+                                        <Switch checked={autoSave} onCheckedChange={setAutoSave} />
+                                    </SettingsItem>
+                                    <SettingsItem label="Zaman Sınırlarını Kapat" icon={Clock} iconColor="bg-slate-600" description="Oturum sürelerini sınırsız hale getirir.">
+                                        <Switch checked={disableTimeLimits} onCheckedChange={setDisableTimeLimits} />
+                                    </SettingsItem>
+                                    <SettingsItem label="İşlem Onayları" icon={ShieldCheck} iconColor="bg-slate-600" description="Kritik işlemlerde ek onay penceresi gösterir.">
+                                        <Switch checked={transactionConfirmation} onCheckedChange={setTransactionConfirmation} />
+                                    </SettingsItem>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 </section>
+                
 
-                {/* Yasal ve Politik Çerçeve */}
-                <section className="py-16 md:py-32 px-6 border-b border-black/5 bg-[#f5f5f7]">
-                    <div className="container mx-auto max-w-4xl text-center space-y-8 md:space-y-12">
-                        <div className="p-3 md:p-4 bg-primary/10 rounded-2xl w-fit mx-auto"><Scale className="h-6 w-6 md:h-8 md:w-8 text-primary" /></div>
-                        <h2 className="text-3xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Yasal ve Politik Çerçeve.</h2>
-                        <div className="text-left space-y-6 md:space-y-8 bg-white p-6 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-black/5 shadow-xl">
-                            <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-medium">
-                                Hangel, <strong>Avrupa Erişilebilirlik Yasası (European Accessibility Act – EAA)</strong> ve AB dijital hizmetler direktifleriyle uyumlu olacak şekilde tasarlanmıştır. Bu uyum, sadece bir yasal zorunluluk değil, sivil toplumun dijitalleşmesinde herkesin eşit haklara sahip olduğu inancımızın bir parçasıdır.
-                            </p>
-                            <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-medium">
-                                Türkiye’deki erişilebilirlik yaklaşımlarını yakından takip ediyor ve platformumuzu yerel beklentilerle evrensel standartların kesişiminde sürekli olarak güncelliyoruz. İyileştirme süreçlerimizi düzenli denetimler ve bağımsız testlerle destekliyoruz.
-                            </p>
+                {/* --- Footer Context Section --- */}
+                <section className="p-4">
+                    <div className="space-y-8 pt-10 border-t">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <div className="p-3 bg-indigo-50 rounded-2xl w-fit"><Scale className="h-6 w-6 text-indigo-600" /></div>
+                                <h4 className="font-bold text-sm">Yasal Uyumluluk</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">Tercihleriniz, EN 301 549 Avrupa standardı ve yerel mevzuatlarla tam uyumlu olacak şekilde işlenir.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="p-3 bg-orange-50 rounded-2xl w-fit"><Globe className="h-6 w-6 text-orange-600" /></div>
+                                <h4 className="font-bold text-sm">Evrensel Tasarım</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">Erişilebilirlik bir 'eklenti' değil, hangel'in her hücresine entegre edilmiş bir tasarım felsefesidir.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="p-3 bg-teal-50 rounded-2xl w-fit"><Target className="h-6 w-6 text-teal-600" /></div>
+                                <h4 className="font-bold text-sm">Sürekli İyileştirme</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">Deneyiminizi geliştirmek için WCAG güncellemelerini ve geri bildirimlerinizi anlık olarak takip ediyoruz.</p>
+                            </div>
                         </div>
-                    </div>
-                </section>
-
-                {/* Erişilebilirlik Yaklaşımımız (Prensipler) */}
-                <section className="py-16 md:py-32 px-6 bg-white">
-                    <div className="container mx-auto max-w-6xl space-y-12 md:space-y-20">
-                        <div className="text-center space-y-4">
-                            <h2 className="text-3xl md:text-6xl font-bold tracking-tight">Erişilebilirlik Yaklaşımımız.</h2>
-                            <p className="text-lg md:text-xl text-muted-foreground">Prensiplerimiz, kapsayıcı bir toplum inşa etme vizyonuumuzun temelidir.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                            <div className="space-y-4 md:space-y-6">
-                                <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><CheckCircle2 className="h-6 w-6 text-primary" /> Bir Özellik Değil, Standarttır.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Erişilebilirlik, platformun üzerine sonradan eklenen bir modül değil; tasarımın en başından itibaren her bileşene entegre edilmiş bir kalite standardıdır. Hiçbir kritik metin görsel içerisine gömülmez, tamamı erişilebilir HTML alternatifiyle sunulur.</p>
-                            </div>
-                            <div className="space-y-4 md:space-y-6">
-                                <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><UserCheck className="h-6 w-6 text-primary" /> Kullanıcıya Kontrol Verme.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Tek bir kullanıcı profiline göre tasarım yapmak yerine, her bireyin kendi ihtiyaçlarına göre özelleştirebileceği gelişmiş erişilebilirlik ayarları sunuyoruz. Mantıksal okuma sırası ve tutarlı terminoloji ile kontrolü size bırakıyoruz.</p>
-                            </div>
-                            <div className="space-y-4 md:space-y-6">
-                                <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><Zap className="h-6 w-6 text-primary" /> Varsayılan Sadelik.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Uygulamamız varsayılan olarak sade ve net bir yapıdadır. İhtiyaç duyulduğunda aktive edilen gelişmiş özellikler (AAA kriterleri), bu sadeliği bozmadan etkiyi artırır. Nöroçeşitlilikten motor engellere kadar tüm regülasyonlara uyumu gözetiyoruz.</p>
-                            </div>
-                            <div className="space-y-4 md:space-y-6">
-                                <h3 className="text-xl md:text-2xl font-bold flex items-center gap-3"><Info className="h-6 w-6 text-primary" /> Şeffaf ve Süreklilik.</h3>
-                                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed">Erişilebilirlik uyumluluğumuzu düzenli olarak değerlendiriyor, kullanıcının geri bildirimlerini teknik yol haritamızın en başına koyuyoruz. ADA, EAA ve WCAG uyumumuz sürekli izlenen dinamik bir süreçtir.</p>
-                            </div>
+                        
+                        <div className="p-6 bg-primary/5 rounded-[2rem] text-center border border-primary/10">
+                            <p className="text-sm font-bold text-primary">Daha kapsayıcı bir dünya için birlikte çalışıyoruz.</p>
                         </div>
                     </div>
                 </section>
@@ -378,7 +543,7 @@ export default function AccessibilityPublicPage() {
                         <ShieldCheck className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto mb-4 md:mb-6" />
                         <h2 className="text-3xl md:text-4xl font-black tracking-tighter">Sürekli İyileştirme Taahhüdü.</h2>
                         <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-medium">
-                            Hangel olarak erişilebilirliği bitmiş bir süreç değil, sürekli bir gelişim yolculuğu olarak görüyoruz. Teknik ve içerik ekiplerimiz, en yüksek erişilebilirlik farkındalığıyla platformu her gün daha kapsayıcı hale getirmek için çalışmaktadır.
+                            hangel olarak erişilebilirliği bitmiş bir süreç değil, sürekli bir gelişim yolculuğu olarak görüyoruz. Teknik ve içerik ekiplerimiz, en yüksek erişilebilirlik farkındalığıyla platformu her gün daha kapsayıcı hale getirmek için çalışmaktadır.
                         </p>
                         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Button asChild size="lg" className="rounded-full px-10 md:px-12 h-12 md:h-14 font-bold shadow-xl shadow-primary/20 text-base md:text-lg w-full sm:w-auto">
@@ -396,3 +561,4 @@ export default function AccessibilityPublicPage() {
         </div>
     );
 }
+

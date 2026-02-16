@@ -1,3 +1,4 @@
+
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { events, user, ngos, studentClubs } from '@/lib/data';
@@ -55,7 +56,7 @@ export default function EventDetailPage() {
   const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-  const eventHashtag = `#Hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.date.split(' ')[2].slice(-2)}`;
+  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.date.split(' ')[2].slice(-2)}`;
 
   return (
     <div className="animate-in fade-in-0">
@@ -66,7 +67,7 @@ export default function EventDetailPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="absolute top-4 right-4">
-            <ShareButtons url={profileUrl} title={`${event.name} - Hangel Etkinliği`} buttonClassName="border-white/50 text-white hover:bg-white/20"/>
+            <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} buttonClassName="border-white/50 text-white hover:bg-white/20"/>
         </div>
       </div>
 
@@ -219,3 +220,4 @@ export default function EventDetailPage() {
     </div>
   );
 }
+

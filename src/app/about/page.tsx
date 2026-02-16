@@ -83,7 +83,7 @@ export default function AboutPage() {
             {/* Hero */}
             <AppleSection 
                 title="İyiliği Dijitalleştirdik."
-                subtitle="hangel A.Ş. ile geleceğin dayanışma modelini inşa ediyoruz."
+                subtitle="hangel a.ş. ile geleceğin dayanışma modelini inşa ediyoruz."
                 description="Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, Türkiye'nin en kapsamlı sosyal etki platformuyuz."
                 imageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
                 imageHint="modern office people collaborating"
@@ -112,3 +112,4 @@ export default function AboutPage() {
         </div>
     );
 }
+

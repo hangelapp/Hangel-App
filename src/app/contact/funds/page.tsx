@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,7 +31,7 @@ export default function FundsPage() {
                 <div className="inline-block bg-primary/10 p-4 rounded-full">
                     <DollarSign className="h-10 w-10 text-primary" />
                 </div>
-                <h1 className="text-3xl font-bold font-headline">Uluslararası Fonlar için Hangel</h1>
+                <h1 className="text-3xl font-bold font-headline">Uluslararası Fonlar için hangel</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
                     Türkiye'deki sosyal etki ekosistemine yatırım yapın, şeffaf ve ölçülebilir projelerle pozitif değişime ortak olun.
                 </p>
@@ -38,7 +39,7 @@ export default function FundsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Neden Hangel ile İşbirliği Yapmalısınız?</CardTitle>
+                    <CardTitle>Neden hangel ile İşbirliği Yapmalısınız?</CardTitle>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-3 gap-6">
                     <div className="flex flex-col items-center text-center gap-2">
@@ -54,7 +55,7 @@ export default function FundsPage() {
                     <div className="flex flex-col items-center text-center gap-2">
                         <ShieldCheck className="h-8 w-8 text-primary"/>
                         <h3 className="font-semibold">Şeffaf ve Güvenilir Projeler</h3>
-                        <p className="text-sm text-muted-foreground">Hangel Şeffaflık Endeksi'nden geçmiş, denetlenmiş ve güvenilir projelere yatırım yapın.</p>
+                        <p className="text-sm text-muted-foreground">hangel Şeffaflık Endeksi'nden geçmiş, denetlenmiş ve güvenilir projelere yatırım yapın.</p>
                     </div>
                 </CardContent>
             </Card>
@@ -97,3 +98,4 @@ export default function FundsPage() {
         </div>
     );
 }
+

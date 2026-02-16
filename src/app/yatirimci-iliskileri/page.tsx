@@ -74,7 +74,7 @@ export default function InvestorRelationsPage() {
             <InvestorSection 
                 title="Şeffaf Finansal Gelecek."
                 subtitle="Sosyal etkinin ekonomik değeri."
-                description="Hangel'in sürdürülebilir iş modeli, elde edilen gelirlerin %85'inin toplumsal faydaya aktarıldığı, kâr amacı gütmeyen kuruluşlarla ticari ekosistemi buluşturan bir yapıdır."
+                description="hangel'in sürdürülebilir iş modeli, elde edilen gelirlerin %85'inin toplumsal faydaya aktarıldığı, kâr amacı gütmeyen kuruluşlarla ticari ekosistemi buluşturan bir yapıdır."
                 imageUrl="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
                 imageHint="abstract data stock market graph"
             />
@@ -102,3 +102,4 @@ export default function InvestorRelationsPage() {
         </div>
     );
 }
+

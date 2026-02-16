@@ -93,3 +93,4 @@ export const translations: Record<Language, any> = {
   },
   // Other languages omitted for brevity in this manual revert
 };
+

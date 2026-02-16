@@ -7,3 +7,4 @@ export const HangelLogo = (props: React.HTMLAttributes<HTMLSpanElement>) => (
     hangel
   </span>
 )
+

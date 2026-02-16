@@ -90,7 +90,7 @@ export default function AssociationAboutPage() {
                             <div className="p-4 bg-primary/10 rounded-2xl w-fit"><Target className="h-8 w-8 text-primary" /></div>
                             <h3 className="text-4xl font-black tracking-tighter">Misyonumuz.</h3>
                             <p className="text-xl text-muted-foreground leading-relaxed font-medium">
-                                Hangel ve Social Business Global olarak misyonumuz; hayatın her kesiminden, kurum ve sivil toplumdan herkesin iyilik yapmaya katılabildiği adil ve kapsayıcı bir sistem inşa etmektir. Alışveriş yoluyla bağış, yetkinlik bazlı gönüllülük ve sosyal girişimcilik gibi yenilikçi modellerle sürdürülebilir dönüşüme hayat veriyoruz.
+                                hangel ve Social Business Global olarak misyonumuz; hayatın her kesiminden, kurum ve sivil toplumdan herkesin iyilik yapmaya katılabildiği adil ve kapsayıcı bir sistem inşa etmektir. Alışveriş yoluyla bağış, yetkinlik bazlı gönüllülük ve sosyal girişimcilik gibi yenilikçi modellerle sürdürülebilir dönüşüme hayat veriyoruz.
                             </p>
                         </div>
                         <div className="space-y-8">
@@ -107,7 +107,7 @@ export default function AssociationAboutPage() {
                             icon={ShoppingCart}
                             title="Alışverişle Bağış"
                             desc="Günlük harcamaları ek ücret ödemeden toplumsal faydaya dönüştüren modeller."
-                            onClick={() => toast({ title: "Alışverişle Bağış", description: "Hangel A.Ş. altyapısıyla entegre modeller inceleniyor." })}
+                            onClick={() => toast({ title: "Alışverişle Bağış", description: "hangel a.ş. altyapısıyla entegre modeller inceleniyor." })}
                         />
                         <FeatureBlock 
                             icon={HeartHandshake}
@@ -140,7 +140,7 @@ export default function AssociationAboutPage() {
                             </div>
                             <div className="space-y-6 text-lg text-white/80 font-medium leading-relaxed">
                                 <p>2009 yılından bu yana 147 üniversitede örgütlenen sosyal projelerin mimarı olan ADIGÜZEL, 300'ün üzerinde konferans ile binlerce gence "Sistemli İyilik" vizyonunu aşıladı.</p>
-                                <p>Hangel.org ve Social Business Global Derneği'nin kurucu liderliğini yürüterek, bireylerin günlük aktivitelerini STK'lara kaynak aktarımına dönüştüren yenilikçi modelleri hayata geçirdi.</p>
+                                <p>hangel.org ve Social Business Global Derneği'nin kurucu liderliğini yürüterek, bireylerin günlük aktivitelerini STK'lara kaynak aktarımına dönüştüren yenilikçi modelleri hayata geçirdi.</p>
                             </div>
                             <div className="grid grid-cols-2 gap-8 border-t border-white/10 pt-8">
                                 <div className="space-y-1">
@@ -163,7 +163,7 @@ export default function AssociationAboutPage() {
                     <SectionHeading 
                         badge="NEDEN HANGEL?"
                         title="Birleştirici Bir Güç."
-                        desc="Hangel ve Social Business Global, yalnızca sosyal fayda bilincine sahip olmakla kalmayıp, kalıcı sosyal etki için aktif olarak çalışan çocuklar, gençler, iş insanları ve sivil toplum liderleri için bir köprüdür."
+                        desc="hangel ve Social Business Global, yalnızca sosyal fayda bilincine sahip olmakla kalmayıp, kalıcı sosyal etki için aktif olarak çalışan çocuklar, gençler, iş insanları ve sivil toplum liderleri için bir köprüdür."
                     />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
                         <div className="p-8 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 hover:shadow-xl transition-all">
@@ -184,3 +184,4 @@ export default function AssociationAboutPage() {
         </div>
     );
 }
+

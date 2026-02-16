@@ -303,7 +303,7 @@ export default function LoginPage() {
     const publicNavItems = [
       { href: '#bagis', label: 'Bağış Yap' },
       { href: '#gonulluluk', label: 'Gönüllü Ol' },
-      { href: '/hangelassociation', label: 'hangel Derneği' },
+      { href: '/hangelassociation', label: 'hangel derneği' },
       { href: '/about', label: 'Hakkımızda' },
       { href: '/support', label: 'Destek' },
     ];
@@ -492,7 +492,7 @@ export default function LoginPage() {
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center mb-12">
-                            <h2 className="text-4xl font-bold tracking-tight">Hangel Association</h2>
+                            <h2 className="text-4xl font-bold tracking-tight">hangel derneği</h2>
                             <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
                         </div>
                         <Carousel
@@ -560,3 +560,4 @@ export default function LoginPage() {
         </div>
     );
 }
+

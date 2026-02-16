@@ -40,7 +40,7 @@ export default function SitemapPage() {
             ]
         },
         {
-            title: "hangel Derneği",
+            title: "hangel derneği",
             links: [
                 { label: "Dernek Ana Sayfası", href: "/hangelassociation" },
                 { label: "Dernek Hakkında", href: "/hangelassociation/about" },
@@ -53,7 +53,7 @@ export default function SitemapPage() {
             title: "Kurumsal",
             links: [
                 { label: "Biz Kimiz?", href: "/about" },
-                { label: "Sosyal Etkimiz", href: "/social-impact" },
+                { label: "Sürdürülebilirlik", href: "/social-impact" },
                 { label: "Basın Odası", href: "/press" },
                 { label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri" },
                 { label: "Kariyer", href: "/careers" },
@@ -115,3 +115,4 @@ export default function SitemapPage() {
         </div>
     );
 }
+

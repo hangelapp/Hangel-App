@@ -4,7 +4,7 @@ service cloud.firestore {
 
     /**
      * CORE PHILOSOPHY:
-     * This ruleset implements a dual-layered security model tailored for the Hangel platform:
+     * This ruleset implements a dual-layered security model tailored for the hangel platform:
      * 1. User Privacy: All personal data (profiles, impact scores, badges, payments) is strictly
      *    isolated under /users/{userId} paths, accessible only by the owner.
      * 2. Public Engagement: NGO and Brand profiles, events, and timeline posts are publicly

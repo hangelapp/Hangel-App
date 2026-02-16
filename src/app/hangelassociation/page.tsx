@@ -247,7 +247,8 @@ export default function AssociationHomePage() {
 
             </main>
 
-            <PublicFooter currentPageLabel="hangel Derneği" />
+            <PublicFooter currentPageLabel="hangel derneği" />
         </div>
     );
 }
+

@@ -430,3 +430,4 @@ export type MarketCategory = {
     isHot?: boolean;
   }[];
 };
+

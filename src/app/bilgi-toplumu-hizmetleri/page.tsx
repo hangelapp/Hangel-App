@@ -51,7 +51,7 @@ export default function InformationSocietyServicesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p><strong>Ticari Unvan:</strong> Hangel Teknoloji ve Sosyal Etki Anonim Şirketi</p>
+            <p><strong>Ticari Unvan:</strong> hangel teknoloji ve sosyal etki anonim şirketi</p>
             <p><strong>MERSİS Numarası:</strong> 0123456789101112</p>
             <p><strong>Merkez Adresi:</strong> Caferağa Mah. Moda Cad. No: 123 D:4, Kadıköy, İstanbul</p>
             <p><strong>Sorumlu Kişi:</strong> İsmail Hilmi Adıgüzel</p>
@@ -111,3 +111,4 @@ export default function InformationSocietyServicesPage() {
     </div>
   );
 }
+

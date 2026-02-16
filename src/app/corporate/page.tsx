@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -111,7 +112,7 @@ export default function CorporateShowcasePage() {
                 theme="dark"
                 title="Üniversiteler için."
                 subtitle="Kampüsün sosyal etki merkezi olun."
-                description="Hangel Kampüs Programı ile öğrenci kulüplerinizi dijitalleştirin, gönüllülüğü akademik krediye dönüştürün ve öğrencilerinize sosyal sorumluluk alanında kariyer fırsatları sunun. Etkiyi ölçün, raporlayın ve üniversitenizin toplumsal fayda liderliğini pekiştirin."
+                description="hangel Kampüs Programı ile öğrenci kulüplerinizi dijitalleştirin, gönüllülüğü akademik krediye dönüştürün ve öğrencilerinize sosyal sorumluluk alanında kariyer fırsatları sunun. Etkiyi ölçün, raporlayın ve üniversitenizin toplumsal fayda liderliğini pekiştirin."
                 cta1="Kampüs Avantajları"
                 cta1Href="/campus-advantages"
                 cta2="İşbirliği Başlat"
@@ -124,7 +125,7 @@ export default function CorporateShowcasePage() {
             <ProductSection 
                 title="Liseler için."
                 subtitle="Geleceğin liderlerini bugünden yetiştirin."
-                description="Öğrenci kulüplerinizi Hangel platformuna taşıyarak sosyal sorumluluk projelerini hayata geçirmelerini sağlayın. Öğrencilerinize erken yaşta gönüllülük bilinci kazandırın, etki puanları ve rozetlerle başarılarını ödüllendirin."
+                description="Öğrenci kulüplerinizi hangel platformuna taşıyarak sosyal sorumluluk projelerini hayata geçirmelerini sağlayın. Öğrencilerinize erken yaşta gönüllülük bilinci kazandırın, etki puanları ve rozetlerle başarılarını ödüllendirin."
                 cta1="Kampüs Avantajları"
                 cta1Href="/campus-advantages"
                 cta2="Bize Ulaşın"
@@ -138,7 +139,7 @@ export default function CorporateShowcasePage() {
                 theme="dark"
                 title="Belediyeler için."
                 subtitle="Akıllı şehir, duyarlı toplum."
-                description="Vatandaş katılımını dijital araçlarla artırın. Şehrinizdeki STK'ları ve gönüllü ağlarını Hangel altyapısı ile güçlendirin. Sosyal yardım ve gönüllülük süreçlerini tek bir merkezden yöneterek kaynaklarınızı verimli kullanın."
+                description="Vatandaş katılımını dijital araçlarla artırın. Şehrinizdeki STK'ları ve gönüllü ağlarını hangel altyapısı ile güçlendirin. Sosyal yardım ve gönüllülük süreçlerini tek bir merkezden yöneterek kaynaklarınızı verimli kullanın."
                 cta1="Çözümleri Keşfet"
                 cta1Href="/contact"
                 cta2="Partner Olun"
@@ -151,7 +152,7 @@ export default function CorporateShowcasePage() {
             <ProductSection 
                 title="Hükümetler için."
                 subtitle="Ulusal sosyal etki stratejisi."
-                description="Ülke genelindeki sivil toplum kapasitesini ölçün, sosyal ihtiyaç haritaları oluşturun ve kaynakları en doğru alanlara yönlendirin. Hangel'in sunduğu veri altyapısı ve teknolojik çözümlerle ulusal sosyal politikaları güçlendirin."
+                description="Ülke genelindeki sivil toplum kapasitesini ölçün, sosyal ihtiyaç haritaları oluşturun ve kaynakları en doğru alanlara yönlendirin. hangel'in sunduğu veri altyapısı ve teknolojik çözümlerle ulusal sosyal politikaları güçlendirin."
                 cta1="Veri Altyapısı"
                 cta1Href="/hangelassociation/projects/etki-atlasi"
                 cta2="Stratejik Ortaklık"
@@ -178,3 +179,4 @@ export default function CorporateShowcasePage() {
         </div>
     );
 }
+

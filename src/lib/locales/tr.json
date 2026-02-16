@@ -1,6 +1,6 @@
 {
   "general": {
-    "appName": "hangel A.Ş.",
+    "appName": "hangel a.ş.",
     "appNameStrong": "hangel",
     "all": "Tümü",
     "back": "Geri",
@@ -52,7 +52,7 @@
       "logout": "Çıkış Yap"
     },
     "bottomNav": {
-      "market": "Market",
+      "market": "Markalar",
       "volunteer": "Gönüllülük",
       "qrPayment": "QR Ödeme",
       "timeline": "Zaman Tüneli"
@@ -79,7 +79,7 @@
   "onboarding": {
     "steps": [
       {
-        "title": "hangel A.Ş.'ye Hoş Geldin!",
+        "title": "hangel'e Hoş Geldin!",
         "description": "İyiliğin ve sosyal etkinin buluşma noktası. Topluluğumuzun bir parçası olmaya hazır mısın?"
       },
       {
@@ -116,7 +116,7 @@
       },
       {
         "title": "Hazırsan Başlayalım!",
-        "description": "hangel A.Ş. ile iyilik dolu bir yolculuğa çıkmak için sadece bir adım kaldı."
+        "description": "hangel ile iyilik dolu bir yolculuğa çıkmak için sadece bir adım kaldı."
       }
     ]
   },
@@ -292,7 +292,7 @@
       "schoolNameLabel": "Okul Adı",
       "schoolNamePlaceholder": "Boğaziçi Üniversitesi",
       "companyNameLabel": "Şirket Adı",
-      "companyNamePlaceholder": "hangel A.Ş.",
+      "companyNamePlaceholder": "hangel a.ş.",
       "taxNoLabel": "Vergi Numarası",
       "taxNoPlaceholder": "1234567890",
       "taxOfficeLabel": "Vergi Dairesi",
@@ -310,8 +310,8 @@
   "about": {
     "pageTitle": "Hakkımızda",
     "pageDescription": "İyiliğin ve sosyal etkinin buluşma noktası.",
-    "welcomeTitle": "hangel A.Ş.'ye Hoş Geldiniz",
-    "welcomeText": "hangel A.Ş. olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim oluşturabileceği bir platform oluşturma hayaliyle yola başladık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.",
+    "welcomeTitle": "hangel'e Hoş Geldiniz",
+    "welcomeText": "hangel olarak, bireylerin, sivil toplum kuruluşlarının (STK) ve sosyal sorumluluk sahibi markaların bir araya gelerek pozitif bir değişim oluşturabileceği bir platform oluşturma hayaliyle yola başladık. Teknolojinin gücünü kullanarak gönüllülüğü ve bağışçılığı daha erişilebilir, şeffaf ve etkili kılmayı hedefliyoruz.",
     "missionTitle": "Misyonumuz",
     "missionText": "Sosyal etki oluşturmak isteyen herkes için güvenilir, kolay ve ilham verici bir dijital köprü kurarak, toplumsal sorunlara sürdürülebilir çözümler bulunmasına aracılık etmek.",
     "visionTitle": "Vizyonumuz",
@@ -350,9 +350,9 @@
   },
   "invite": {
     "pageTitle": "Arkadaşlarını Davet Et",
-    "pageDescription": "İyilik zincirini büyütmek için arkadaşlarını hangel A.Ş.'ye davet et.",
+    "pageDescription": "İyilik zincirini büyütmek için arkadaşlarını hangel'e davet et.",
     "cardTitle": "Arkadaşlarını İyiliğe Davet Et",
-    "cardDescription": "Bu linki arkadaşlarınla paylaşarak onların da hangel A.Ş.'ye katılmasını ve sosyal etki oluşturmasını sağla.",
+    "cardDescription": "Bu linki arkadaşlarınla paylaşarak onların da hangel'e katılmasını ve sosyal etki oluşturmasını sağla.",
     "linkCopiedToast": "Davet linkini panoya kopyaladın."
   },
   "myApplications": {
@@ -644,7 +644,7 @@
   },
   "ngoAdminDemographics": {
     "title": "Demografi",
-    "description": "Gönüllü ve bağışçılarınızın demografik yapısını inceleyerek topluluğunuzu daha iyi tanıyın.",
+    "description": "Gönüllü ve bağışçı topluluğunuzu daha yakından tanıyarak stratejilerinizi geliştirin.",
     "volunteerAgeDist": "Gönüllü Yaş Dağılımı",
     "volunteerGenderDist": "Gönüllü Cinsiyet Dağılımı",
     "donorCityDist": "Bağışçıların Şehirlere Göre Dağılımı",
@@ -714,7 +714,7 @@
   },
   "ngoAdminSettings": {
     "title": "Panel Ayarları",
-    "description": "Yönetim paneli ve profilinizle ilgili tercihleri buradan yapılandırın.",
+    "description": "Hesap işlemlerini buradan yönetin.",
     "notificationsTitle": "Bildirim Tercihleri",
     "notifNewVolunteer": "Yeni Gönüllü Başvurusu",
     "notifNewDonation": "Yeni Bağış Yapıldığında",
@@ -771,3 +771,4 @@
     "points": "{current} / {required}"
   }
 }
+

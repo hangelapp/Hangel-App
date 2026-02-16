@@ -45,7 +45,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
             ] 
         },
         { 
-            title: "hangel Derneği", 
+            title: "hangel derneği", 
             links: [
                 {label: "Dernek Ana Sayfa", href: "/hangelassociation"}, 
                 {label: "Dernek Hakkında", href: "/hangelassociation/about"}, 
@@ -182,3 +182,4 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         </footer>
     );
 }
+

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,15 +31,15 @@ export default function MunicipalitiesPage() {
                 <div className="inline-block bg-primary/10 p-4 rounded-full">
                     <Landmark className="h-10 w-10 text-primary" />
                 </div>
-                <h1 className="text-3xl font-bold font-headline">Belediyeler için Hangel</h1>
+                <h1 className="text-3xl font-bold font-headline">Belediyeler için hangel</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-                    Şehrinizdeki sosyal faydayı artırın, vatandaş katılımını güçlendirin ve dijital hizmetlerinizi Hangel ile entegre edin.
+                    Şehrinizdeki sosyal faydayı artırın, vatandaş katılımını güçlendirin ve dijital hizmetlerinizi hangel ile entegre edin.
                 </p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Neden Hangel ile İşbirliği Yapmalısınız?</CardTitle>
+                    <CardTitle>Neden hangel ile İşbirliği Yapmalısınız?</CardTitle>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-3 gap-6">
                     <div className="flex flex-col items-center text-center gap-2">
@@ -75,7 +76,7 @@ export default function MunicipalitiesPage() {
                         <div className='flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold'>2</div>
                         <div>
                             <h4 className="font-semibold">"Akıllı Şehir" Entegrasyonu</h4>
-                            <p>Belediyenizin mevcut dijital hizmetlerini (e-belediye, şehir uygulamaları vb.) Hangel platformu ile entegre ederek vatandaşlara tek bir noktadan sosyal katılım imkanı sunalım.</p>
+                            <p>Belediyenizin mevcut dijital hizmetlerini (e-belediye, şehir uygulamaları vb.) hangel platformu ile entegre ederek vatandaşlara tek bir noktadan sosyal katılım imkanı sunalım.</p>
                         </div>
                     </div>
                      <div className='flex items-start gap-4'>
@@ -133,3 +134,4 @@ export default function MunicipalitiesPage() {
         </div>
     );
 }
+
