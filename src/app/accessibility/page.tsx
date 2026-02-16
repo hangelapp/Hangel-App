@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowLeft, 
@@ -37,7 +37,17 @@ import {
     Rows,
     Keyboard,
     Command,
-    Undo2
+    Undo2,
+    Files,
+    ShieldAlert,
+    ListOrdered,
+    CheckCircle,
+    MousePointerClick,
+    Maximize,
+    VolumeX,
+    ImageOff,
+    Rss,
+    FileVideo
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
