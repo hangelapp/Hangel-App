@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -21,6 +20,7 @@ import * as Icons from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { differenceInDays, parse } from 'date-fns';
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -239,6 +239,9 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
 }
 
 const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
+    const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
+    const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
+
     return (
         <Link href={`/volunteering/${opportunity.id}`} className="group block h-full">
             <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-black/50 backdrop-blur-sm border-white/10 h-full flex flex-col p-6 text-white">
@@ -255,9 +258,14 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
                     <p className="text-xs font-bold text-white/70 uppercase tracking-wider">{opportunity.organization}</p>
                     <h4 className="font-bold text-lg leading-tight mt-1">{opportunity.title}</h4>
                 </div>
-                <div className="text-xs font-medium text-white/70 flex items-center gap-1.5 pt-4 mt-4 border-t border-white/20">
-                    <MapPin className="h-4 w-4" />
-                    <span>{opportunity.location.city} ({opportunity.location.type})</span>
+                <div className="flex justify-between items-end pt-4 mt-4 border-t border-white/20">
+                    <div className="text-xs font-medium text-white/70 flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4" />
+                        <span>{opportunity.location.city} ({opportunity.location.type})</span>
+                    </div>
+                    <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold border-white/30 text-white bg-white/10">
+                        {countdownText}
+                    </Badge>
                 </div>
             </Card>
         </Link>
@@ -560,4 +568,3 @@ export default function LoginPage() {
         </div>
     );
 }
-
