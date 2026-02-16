@@ -15,6 +15,45 @@ import { useState, useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { parse } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
+import { Label } from '@/components/ui/label';
+
+const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
+const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
+
+
+const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: string[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
+    return (
+        <div className="w-full">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between text-left font-normal h-11">
+                        <span className="truncate pr-2">{selected.length > 0 ? selected.join(', ') : title}</span>
+                        <ChevronRight className="h-4 w-4 opacity-50" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                     <DropdownMenuLabel>{title}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {options.map((option) => (
+                        <DropdownMenuCheckboxItem
+                            key={option}
+                            checked={selected.includes(option)}
+                            onCheckedChange={(checked) => {
+                                if (checked) {
+                                    onSelectedChange([...selected, option]);
+                                } else {
+                                    onSelectedChange(selected.filter((item) => item !== option));
+                                }
+                            }}
+                        >
+                            {option}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+    );
+};
 
 
 const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) => {
@@ -74,9 +113,15 @@ const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) 
 export default function VolunteeringPage() {
     const { toast } = useToast();
     const [sortKey, setSortKey] = useState('points');
-    const [filters, setFilters] = useState({ location: 'all', commitment: 'all' });
     const [searchTerm, setSearchTerm] = useState('');
     const [aiSearchTerm, setAiSearchTerm] = useState('');
+
+    const [interestFilter, setInterestFilter] = useState<string[]>([]);
+    const [skillFilter, setSkillFilter] = useState<string[]>([]);
+    const [cityFilter, setCityFilter] = useState<string[]>([]);
+
+    const allCities = useMemo(() => Array.from(new Set(volunteeringOpportunities.map(o => o.location.city))).sort(), []);
+
 
     const userAbilities = [
       ...user.volunteerInfo.skills,
@@ -88,12 +133,14 @@ export default function VolunteeringPage() {
     const sortedAndFilteredOpportunities = useMemo(() => {
         let opportunities = [...volunteeringOpportunities];
 
-        // Filtering
-        if (filters.location !== 'all') {
-            opportunities = opportunities.filter(opp => opp.location.type === filters.location);
+        if (interestFilter.length > 0) {
+            opportunities = opportunities.filter(opp => interestFilter.includes(opp.socialArea));
         }
-        if (filters.commitment !== 'all') {
-            opportunities = opportunities.filter(opp => opp.taskType === filters.commitment);
+        if (skillFilter.length > 0) {
+            opportunities = opportunities.filter(opp => opp.skills && skillFilter.some(s => opp.skills!.includes(s)));
+        }
+        if (cityFilter.length > 0) {
+            opportunities = opportunities.filter(opp => cityFilter.includes(opp.location.city));
         }
 
         if (searchTerm.trim()) {
@@ -105,13 +152,12 @@ export default function VolunteeringPage() {
             );
         }
 
-        // Sorting
         opportunities.sort((a, b) => {
             let comparison = 0;
             if (sortKey === 'points') {
                 comparison = b.points - a.points;
             } else if (sortKey === 'date') {
-                const refDate = new Date(0); // Use a static date for hydration safety
+                const refDate = new Date(0);
                 const timeA = parse(a.dates.applicationEnd, 'yyyy-MM-dd', refDate).getTime();
                 const timeB = parse(b.dates.applicationEnd, 'yyyy-MM-dd', refDate).getTime();
                 comparison = timeA - timeB;
@@ -127,7 +173,6 @@ export default function VolunteeringPage() {
                  comparison = matchPercentageB - matchPercentageA;
             }
 
-            // If primary sort is equal, use a secondary sort for stability
             if (comparison === 0) {
                 return a.id.localeCompare(b.id);
             }
@@ -136,11 +181,11 @@ export default function VolunteeringPage() {
         });
 
         return opportunities;
-    }, [sortKey, filters, searchTerm, userAbilities]);
+    }, [sortKey, searchTerm, userAbilities, interestFilter, skillFilter, cityFilter]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
-      <div className="space-y-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-4 -mx-4 px-4 border-b">
+      <div className="space-y-2 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2 -mx-4 px-4 border-b">
         <div className="space-y-1">
             <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
             <p className="text-muted-foreground text-sm">Topluma katkıda bulun ve etki yarat.</p>
@@ -155,26 +200,6 @@ export default function VolunteeringPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
-                        <Filter className="h-5 w-5" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Konum</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={filters.location === 'all'} onCheckedChange={() => setFilters(f => ({...f, location: 'all'}))}>Tümü</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={filters.location === 'Online'} onCheckedChange={() => setFilters(f => ({...f, location: 'Online'}))}>Online</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={filters.location === 'Saha'} onCheckedChange={() => setFilters(f => ({...f, location: 'Saha'}))}>Saha</DropdownMenuCheckboxItem>
-                    <DropdownMenuLabel>Çalışma Şekli</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={filters.commitment === 'all'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'all'}))}>Tümü</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={filters.commitment === 'Tek Gün'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'Tek Gün'}))}>Tek Günlük</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={filters.commitment === 'Dönemsel'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'Dönemsel'}))}>Dönemsel</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={filters.commitment === 'Sürekli'} onCheckedChange={() => setFilters(f => ({...f, commitment: 'Sürekli'}))}>Sürekli</DropdownMenuCheckboxItem>
-                </DropdownMenuContent>
-             </DropdownMenu>
             <DropdownMenu>
                  <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
@@ -187,31 +212,38 @@ export default function VolunteeringPage() {
                      <DropdownMenuItem onClick={() => setSortKey('date')}>Son Başvuru Tarihi (En Yakın)</DropdownMenuItem>
                  </DropdownMenuContent>
             </DropdownMenu>
-      </div>
-         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1" className="border-b-0">
-            <AccordionTrigger className="hover:no-underline">
-              <div className='flex items-center gap-2 text-sm font-medium'>
-                <Bot />
-                Yapay Zeka ile Öneri Al
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-4 pt-4">
-                <p className='text-sm text-muted-foreground'>Yetenek ve ilgi alanlarınıza en uygun ilanları sizin için bulalım.</p>
-                <Input 
-                    placeholder="Örn: Grafik Tasarım, Hayvan Hakları..." 
-                    value={aiSearchTerm}
-                    onChange={(e) => setAiSearchTerm(e.target.value)}
-                />
-                <Button 
-                    className="w-full"
-                    onClick={() => toast({ title: 'Yapay Zeka Önerisi', description: 'Bu özellik yakında daha detaylı sonuçlar sunacaktır.' })}
-                >
-                    Önerileri Getir
-                </Button>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
+            <MultiSelect title="Sosyal Hassasiyet" options={allInterests} selected={interestFilter} onSelectedChange={setInterestFilter} />
+            <MultiSelect title="Yetkinlikler" options={allSkills} selected={skillFilter} onSelectedChange={setSkillFilter} />
+            <MultiSelect title="Lokasyon" options={allCities} selected={cityFilter} onSelectedChange={setCityFilter} />
+        </div>
+         <div className="pt-1">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1" className="border-b-0">
+                <AccordionTrigger className="hover:no-underline -mx-1 py-2">
+                  <div className='flex items-center gap-2 text-sm font-medium'>
+                    <Bot />
+                    Yapay Zeka ile Öneri Al
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                    <p className='text-sm text-muted-foreground'>Yetenek ve ilgi alanlarınıza en uygun ilanları sizin için bulalım.</p>
+                    <Input 
+                        placeholder="Örn: Grafik Tasarım, Hayvan Hakları..." 
+                        value={aiSearchTerm}
+                        onChange={(e) => setAiSearchTerm(e.target.value)}
+                    />
+                    <Button 
+                        className="w-full"
+                        onClick={() => toast({ title: 'Yapay Zeka Önerisi', description: 'Bu özellik yakında daha detaylı sonuçlar sunacaktır.' })}
+                    >
+                        Önerileri Getir
+                    </Button>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+         </div>
       </div>
 
       <div className="space-y-3">
