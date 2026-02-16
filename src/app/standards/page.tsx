@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -33,6 +34,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: any[], headers: string[] }) => (
     <div className="space-y-6 scroll-mt-24" id={title.toLowerCase().replace(/\s+/g, '-')}>
@@ -113,6 +115,9 @@ const regions = [
 
 export default function StandardsPage() {
     const router = useRouter();
+    const plugin = React.useRef(
+        Autoplay({ delay: 4000, stopOnInteraction: true })
+    );
 
     const mainComplianceData = [
         { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku / Kurumsal kullanım şartları", org: "Ticaret Bakanlığı / hangel", region: "Türkiye / Küresel", rate: "%100 / %100" },
@@ -259,7 +264,11 @@ export default function StandardsPage() {
                         <h2 className="text-3xl font-bold tracking-tight">Küresel Uyum Ağımız</h2>
                         <p className="text-muted-foreground font-medium">Faaliyet gösterdiğimiz bölgelerdeki en sıkı yasal ve etik normları uyguluyoruz.</p>
                     </div>
-                    <Carousel opts={{ align: "start" }} className="w-full">
+                    <Carousel 
+                        opts={{ align: "start", loop: true }}
+                        plugins={[plugin.current]}
+                        className="w-full"
+                    >
                         <CarouselContent className="-ml-6">
                             {regions.map((region) => (
                                 <CarouselItem key={region.name} className="md:basis-1/2 lg:basis-1/3 pl-6">
@@ -386,4 +395,5 @@ export default function StandardsPage() {
             <PublicFooter currentPageLabel="Standartlar" />
         </div>
     );
-}
+
+    
