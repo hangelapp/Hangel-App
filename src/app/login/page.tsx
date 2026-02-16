@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { differenceInDays, parse } from 'date-fns';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -289,6 +290,47 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, 
         </div>
     </div>
 );
+
+const FaqSection = () => {
+    const faqs = [
+        {
+            question: "hangel'i kullanmak ücretli mi?",
+            answer: "hangel'i kullanmak tamamen ücretsizdir. Alışverişlerinizden doğan bağışlar, markalar tarafından karşılanır ve size ek bir maliyet yansıtılmaz."
+        },
+        {
+            question: "Gönüllülük faaliyetlerinden puan kazanıyor muyum?",
+            answer: "Evet, tamamladığınız her gönüllülük faaliyeti için sosyal etki puanı kazanırsınız. Bu puanlar liderlik tablosundaki sıralamanızı ve rozetlerinizi etkiler."
+        },
+        {
+            question: "Yaptığım bağışların doğru STK'ya ulaştığından nasıl emin olabilirim?",
+            answer: "Tüm bağış süreçleri şeffaftır. Profilinizdeki \"Bağışlarım\" bölümünden her işlemin detayını, hangi STK'ya ne kadar bağış yapıldığını ve işlem durumunu anlık olarak takip edebilirsiniz."
+        },
+        {
+            question: "Hangi markalar hangel'i destekliyor?",
+            answer: "Yüzlerce yerel ve global marka hangel ekosisteminde yer alıyor. Giyimden teknolojiye, seyahatten gıdaya birçok farklı kategorideki markayı \"Markalar\" sayfasından keşfedebilirsiniz."
+        }
+    ];
+
+    return (
+        <section className="py-16 md:py-24 bg-white">
+            <div className="container mx-auto px-4 max-w-4xl">
+                <div className="text-center mb-12">
+                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Sorular? Cevaplar.</h2>
+                </div>
+                <Accordion type="single" collapsible className="w-full">
+                    {faqs.map((faq, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                            <AccordionTrigger className="text-lg font-medium hover:no-underline">{faq.question}</AccordionTrigger>
+                            <AccordionContent className="text-base text-muted-foreground">
+                                {faq.answer}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+        </section>
+    )
+};
 
 
 export default function LoginPage() {
@@ -567,7 +609,7 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </section>
-                
+                <FaqSection />
             </main>
             <PublicFooter currentPageLabel="Anasayfa" />
         </div>

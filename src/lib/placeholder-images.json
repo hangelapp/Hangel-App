@@ -93,25 +93,25 @@
     {
       "id": "campus-poster-2",
       "description": "Apple Style Student Summit Banner",
-      "imageUrl": "https://images.unsplash.com/photo-1623310073887-c40ff625e3ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhcHBsZSUyMHN0eWxlJTIwc3R1ZGVudCUyMHN1bW1pdCUyMGJhbm5lcnxlbnwwfHx8fDE3NzAyNjgxMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1623310073887-c40ff625e3ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhcHBsZSUyMHN0eWxlJTIwc3R1ZGVudCUyMHN1bW1pdCUyMGJhbm5lcnxlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "apple style student summit banner"
     },
     {
       "id": "campus-poster-3",
       "description": "Clean Design Campus Concert Flyer",
-      "imageUrl": "https://images.unsplash.com/photo-1709949906630-fb378d0dfd45?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjbGVhbiUyMGRlc2lnbiUyMGNhbXB1cyUyMGNvbmNlcnQlMjBmbHllcnxlbnwwfHx8fDE3NzAyNjgxMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1709949906630-fb378d0dfd45?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjbGVhbiUyMGRlc2lnbiUyMGNhbXB1cyUyMGNvbmNlcnQlMjBmbHllcnxlbnwwfHx8fDE3NzAyNjgxMjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "clean design campus concert flyer"
     },
     {
       "id": "campus-poster-4",
       "description": "Modern Academic Workshop Poster",
-      "imageUrl": "https://images.unsplash.com/photo-1568137223715-939ee931710e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBhY2FkZW1pYyUyMHdvcmtzaG9wJTIwcG9zdGVyfGVufDB8fHx8MTc3MDI2ODEyNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1568137223715-939ee931710e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtb2Rlcm4lMjBhY2FkZW1pYyUyMHdvcmtzaG9wJTIwcG9zdGVyfGVufDB8fHx8MTc3MDI2ODEyNnww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "modern academic workshop poster"
     },
     {
       "id": "campus-poster-5",
       "description": "Minimalist College Hackathon Banner",
-      "imageUrl": "https://images.unsplash.com/photo-1538421385567-8395e14f445b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtaW5pbWFsaXN0JTIwY29sbGVnZSUyMGhhY2thdGhvbiUyMGJhbm5lcnxlbnwwfHx8fDE3NzAyNjgxMjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1538421385567-8395e14f445b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtaW5pbWFsaXN0JTIwY29sbGVnZSUyMGhhY2thdGhvbiUyMGJhbm5lcnxlbnwwfHx8fDE3NzAyNjgxMjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "minimalist college hackathon banner"
     },
     {
@@ -122,9 +122,15 @@
     },
     {
       "id": "library-illustration",
-      "description": "Charcoal library drawing",
-      "imageUrl": "https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "charcoal library drawing"
+      "description": "Digital library illustration showing books and tablet",
+      "imageUrl": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "modern library"
+    },
+    {
+      "id": "accessibility-hero",
+      "description": "Person with a guide dog using a laptop",
+      "imageUrl": "https://images.unsplash.com/photo-1510531705423-53e3c0a597e7?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "accessibility inclusion"
     }
   ]
 }
