@@ -174,7 +174,7 @@ export default function AssociationHomePage() {
 
             <main>
                 <section className="h-[90vh] flex flex-col justify-center items-center text-center p-6 bg-[#f5f5f7] border-b border-black/5">
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">Yok öyle yalnız başına mücadele etmek.</h1>
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">yok öyle yalnız başına mücadele etmek.</h1>
                     <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">Gelin, gücü birleştirelim. Gerçek etki üretelim.</h2>
                     <div className="mt-12">
                         <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
@@ -238,8 +238,8 @@ export default function AssociationHomePage() {
                         subtitle="21 merkezde bilgi ve tecrübe temelli yol haritaları."
                         cta="Kütüphaneye Git"
                         ctaHref="/hangelassociation/workshop"
-                        imageUrl="https://picsum.photos/seed/library/600/400"
-                        imageHint="library books"
+                        imageUrl="https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop"
+                        imageHint="modern library"
                     />
                 </GridSection>
 

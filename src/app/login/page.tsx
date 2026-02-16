@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -194,8 +195,8 @@ const projectCardsData = [
       subtitle: "21 merkezde bilgi ve tecrübe temelli yol haritaları.",
       cta: "Kütüphaneye Git",
       ctaHref: "/hangelassociation/workshop",
-      imageUrl: "https://picsum.photos/seed/library/600/800",
-      imageHint: "library books",
+      imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
+      imageHint: "modern library",
     }
 ];
 
@@ -389,7 +390,7 @@ export default function LoginPage() {
             <main>
                 <section className="h-screen flex flex-col justify-center items-center text-center p-6 bg-white border-b border-black/5">
                     <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</h2>
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">Yok öyle yalnız başına mücadele etmek.</h1>
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">yok öyle yalnız başına mücadele etmek.</h1>
                     <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">#wearehangel</p>
                     <div className="mt-12">
                         <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
@@ -568,3 +569,4 @@ export default function LoginPage() {
         </div>
     );
 }
+
