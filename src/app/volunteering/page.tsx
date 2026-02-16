@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -113,18 +114,17 @@ const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) 
                                 <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
                             </div>
                              <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
-                                <Hourglass className="h-3 w-3 mr-1"/>
                                 {countdownText}
                             </Badge>
                         </div>
                         
                          {requiredAbilities.length > 0 && (
                             <div className="mt-4 space-y-2">
-                                <p className="text-xs font-bold text-muted-foreground">Profil Uygunluğu</p>
-                                <Progress value={matchPercentage} className="h-1.5" />
-                                <div className="flex justify-end text-xs">
+                                <div className="flex justify-between text-xs">
+                                    <span className="font-semibold text-muted-foreground">Profil Uygunluğu</span>
                                     <span className="font-bold">{Math.round(matchPercentage)}%</span>
                                 </div>
+                                <Progress value={matchPercentage} className="h-1.5" />
                             </div>
                         )}
                     </div>
@@ -255,13 +255,13 @@ export default function VolunteeringPage() {
          <div className="pb-2">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1" className="border-b-0">
-                <AccordionTrigger className="hover:no-underline -mx-1 py-0 text-sm font-medium text-muted-foreground">
+                <AccordionTrigger className="hover:no-underline -mx-1 py-1 text-sm font-medium text-muted-foreground">
                   <div className='flex items-center gap-2'>
                     <Bot />
                     Yapay Zeka ile Öneri Al
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="space-y-4 pt-2">
+                <AccordionContent className="space-y-4">
                     <p className='text-sm text-muted-foreground'>Yetenek ve ilgi alanlarınıza en uygun ilanları sizin için bulalım.</p>
                     <Input 
                         placeholder="Örn: Grafik Tasarım, Hayvan Hakları..." 
@@ -295,3 +295,4 @@ export default function VolunteeringPage() {
     </div>
   );
 }
+    
