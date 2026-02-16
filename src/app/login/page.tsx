@@ -303,6 +303,10 @@ const FaqSection = () => {
             answer: "hangel'i kullanmak tamamen ücretsizdir. Alışverişlerinizden doğan bağışlar, markalar tarafından karşılanır ve size ek bir maliyet yansıtılmaz."
         },
         {
+            question: "Sosyal etki puanı nedir?",
+            answer: "Sosyal etki puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Gönüllülük faaliyetleri, bağışlar ve platforma yeni üyeler kazandırma gibi eylemlerle puan kazanırsınız. Bu puanlar, hem topluluk içindeki statünüzü gösterir hem de size özel avantajlar sunar."
+        },
+        {
             question: "Gönüllülük faaliyetlerinden puan kazanıyor muyum?",
             answer: "Evet, tamamladığınız her gönüllülük faaliyeti için sosyal etki puanı kazanırsınız. Bu puanlar liderlik tablosundaki sıralamanızı ve rozetlerinizi etkiler."
         },
