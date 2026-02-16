@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles, Megaphone, Bell } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles, Megaphone, Bell, HelpCircle, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -23,6 +22,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTi
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { differenceInDays, parse } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -299,12 +299,12 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, 
 const FaqSection = () => {
     const faqs = [
         {
-            question: "hangel'i kullanmak ücretli mi?",
-            answer: "hangel'i kullanmak tamamen ücretsizdir. Alışverişlerinizden doğan bağışlar, markalar tarafından karşılanır ve size ek bir maliyet yansıtılmaz."
-        },
-        {
             question: "Sosyal etki puanı nedir?",
             answer: "Sosyal etki puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Gönüllülük faaliyetleri, bağışlar ve platforma yeni üyeler kazandırma gibi eylemlerle puan kazanırsınız. Bu puanlar, hem topluluk içindeki statünüzü gösterir hem de size özel avantajlar sunar."
+        },
+        {
+            question: "hangel'i kullanmak ücretli mi?",
+            answer: "hangel'i kullanmak tamamen ücretsizdir. Alışverişlerinizden doğan bağışlar, markalar tarafından karşılanır ve size ek bir maliyet yansıtılmaz."
         },
         {
             question: "Gönüllülük faaliyetlerinden puan kazanıyor muyum?",
@@ -329,8 +329,13 @@ const FaqSection = () => {
                 <Accordion type="single" collapsible className="w-full">
                     {faqs.map((faq, index) => (
                         <AccordionItem value={`item-${index}`} key={index}>
-                            <AccordionTrigger className="text-lg font-medium hover:no-underline">{faq.question}</AccordionTrigger>
-                            <AccordionContent className="text-base text-muted-foreground">
+                            <AccordionTrigger className="text-lg font-medium hover:no-underline py-6">
+                                <div className="flex items-center gap-4">
+                                    <HelpCircle className="h-6 w-6 text-primary" />
+                                    <span>{faq.question}</span>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="text-base text-muted-foreground pt-0 pb-6 pl-14">
                                 {faq.answer}
                             </AccordionContent>
                         </AccordionItem>
@@ -341,6 +346,80 @@ const FaqSection = () => {
     )
 };
 
+const StandardsSection = () => {
+    const mainComplianceData = [
+        { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku / Kurumsal kullanım şartları", org: "Ticaret Bakanlığı / hangel", region: "Türkiye / Küresel", rate: "%100 / %100" },
+        { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model / Kurumsal yapı", org: "OECD / hangel", region: "OECD / Türkiye", rate: "%95 / %100" },
+        { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
+        { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları / Etik ve yasal çerçeve", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
+    ];
+    const tableHeaders = ["Belge", "Standart / Çerçeve", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan %"];
+
+    return (
+        <section className="py-16 md:py-24 bg-[#f5f5f7]">
+            <div className="container mx-auto px-4 max-w-4xl">
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-standards" className="border-none">
+                        <AccordionTrigger className="text-2xl md:text-3xl font-bold tracking-tight hover:no-underline text-center justify-center data-[state=open]:text-primary py-6 [&>svg:last-child]:hidden">
+                            <div className="flex items-center gap-4">
+                                <Plus className="h-8 w-8" />
+                                <span>Standartlarımız</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-8">
+                            <Card className="rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border-black/5 shadow-sm bg-white">
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow className="bg-[#f5f5f7] border-none hover:bg-[#f5f5f7]">
+                                                {tableHeaders.map((header, i) => (
+                                                    <TableHead key={i} className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#1d1d1f]/60 whitespace-nowrap">
+                                                        {header}
+                                                    </TableHead>
+                                                ))}
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {mainComplianceData.map((row, i) => (
+                                                <TableRow key={i} className="hover:bg-[#f5f5f7]/50 border-black/5">
+                                                    {Object.values(row).map((cell: any, j) => (
+                                                        <TableCell key={j} className={cn(
+                                                            "py-4 px-6 text-sm font-medium",
+                                                            j === 0 ? "text-[#1d1d1f] font-bold" : "text-[#1d1d1f]/70",
+                                                            String(cell).includes('%') && "text-primary font-black"
+                                                        )}>
+                                                            {cell}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </Card>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+        </section>
+    );
+};
+
+
+const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
+    <div className="bg-[#f5f5f7] rounded-3xl p-8 flex flex-col h-full text-left">
+        <div className="p-3 bg-white rounded-2xl w-fit shadow-sm mb-6">
+            <Icon className="h-6 w-6 text-primary" />
+        </div>
+        <h3 className="font-semibold text-xl text-[#1d1d1f]">{title}</h3>
+        <p className="text-sm text-[#1d1d1f]/80 mt-3 flex-grow">{description}</p>
+        <div className="mt-10">
+            <Link href={link} className="text-sm font-semibold text-primary hover:underline flex items-center group">
+                {linkText} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+            </Link>
+        </div>
+    </div>
+);
 
 export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -412,21 +491,6 @@ export default function LoginPage() {
             href2: "/library"
         }
     ];
-
-    const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
-        <div className="bg-[#f5f5f7] rounded-3xl p-8 flex flex-col h-full text-left">
-            <div className="p-3 bg-white rounded-2xl w-fit shadow-sm mb-6">
-                <Icon className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-semibold text-xl text-[#1d1d1f]">{title}</h3>
-            <p className="text-sm text-[#1d1d1f]/80 mt-3 flex-grow">{description}</p>
-            <div className="mt-10">
-                <Link href={link} className="text-sm font-semibold text-primary hover:underline flex items-center group">
-                    {linkText} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
-                </Link>
-            </div>
-        </div>
-    );
 
     if (!mounted) return <div className="min-h-screen bg-white" />;
 
@@ -627,6 +691,7 @@ export default function LoginPage() {
                     </div>
                 </section>
                 <FaqSection />
+                <StandardsSection />
             </main>
             <PublicFooter currentPageLabel="Anasayfa" />
         </div>
