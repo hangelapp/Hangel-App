@@ -195,7 +195,7 @@ const projectCardsData = [
       title: "Girişimcilik Kütüphanesi",
       subtitle: "21 merkezde bilgi ve tecrübe temelli yol haritaları.",
       cta: "Kütüphaneye Gir",
-      ctaHref: "/hangelassociation/workshop",
+      ctaHref: "/library",
       imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
       imageHint: "modern library",
     }
@@ -274,7 +274,7 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     );
 };
 
-const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, linkText }: { title: string, description: string, href: string, imageUrl: string, imageHint: string, linkText: string }) => (
+const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, linkText, linkText2, href2 }: { title: string, description: string, href: string, imageUrl: string, imageHint: string, linkText: string, linkText2?: string, href2?: string }) => (
     <div className="h-full rounded-2xl bg-[#f5f5f7] overflow-hidden group flex flex-col shadow-lg hover:shadow-xl transition-shadow">
         <div className="relative w-full aspect-video">
             <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
@@ -282,10 +282,15 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, 
         <div className="p-6 text-left flex flex-col flex-1">
             <h3 className="font-semibold text-lg">{title}</h3>
             <p className="text-sm text-muted-foreground mt-2 flex-1">{description}</p>
-            <div className="mt-4">
+            <div className="mt-4 flex items-center gap-6">
                 <Link href={href} className="text-sm font-semibold text-primary hover:underline flex items-center">
                     {linkText} <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>
+                {linkText2 && href2 && (
+                     <Link href={href2} className="text-sm font-semibold text-muted-foreground hover:text-primary hover:underline flex items-center">
+                        {linkText2} <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                )}
             </div>
         </div>
     </div>
@@ -368,7 +373,9 @@ export default function LoginPage() {
             href: "/ngo-onboarding",
             imageUrl: "https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
             imageHint: "charcoal charity drawing",
-            linkText: "STK'nı Ekle"
+            linkText: "STK'nı Ekle",
+            linkText2: "Daha Fazla Bilgi",
+            href2: "/ngo-onboarding"
         },
         { 
             title: "hangel Marka", 
@@ -376,7 +383,9 @@ export default function LoginPage() {
             href: "/merchant",
             imageUrl: "https://picsum.photos/seed/merc-char/1080/1080",
             imageHint: "charcoal merchant store illustration",
-            linkText: "Markanı Ekle"
+            linkText: "Markanı Ekle",
+            linkText2: "Daha Fazla Bilgi",
+            href2: "/merchant"
         },
         { 
             title: "hangel Clubs", 
@@ -384,7 +393,9 @@ export default function LoginPage() {
             href: "/campus-advantages",
             imageUrl: "https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtaW5pbWFsaXN0JTIwdW5pdmVyc2l0eSUyMGNvbmZlcmVuY2UlMjBwb3N0ZXJ8ZW58MHx8fHwxNzcwMjY4MTI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
             imageHint: "minimalist university poster",
-            linkText: "Kulübünü Ekle"
+            linkText: "Kulübünü Ekle",
+            linkText2: "Daha Fazla Bilgi",
+            href2: "/campus-advantages"
         },
         { 
             title: "Kütüphane", 
@@ -392,7 +403,9 @@ export default function LoginPage() {
             href: "/library",
             imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
             imageHint: libraryImg?.imageHint || "modern library",
-            linkText: "Kütüphaneye Gir"
+            linkText: "Kütüphaneye Gir",
+            linkText2: "Daha Fazla Bilgi",
+            href2: "/library"
         }
     ];
 
