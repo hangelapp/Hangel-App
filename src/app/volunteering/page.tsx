@@ -1,10 +1,9 @@
-
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle, FileText, XCircle, Plane, ChevronRight, Building } from 'lucide-react';
+import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle, FileText, XCircle, Plane, ChevronRight, Building, Hourglass } from 'lucide-react';
 import { volunteeringOpportunities, user, ngos } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
@@ -104,12 +103,15 @@ const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) 
                         </div>
                         <div className="text-right flex-shrink-0 space-y-1">
                             <p className="font-bold text-primary text-sm">{opp.points} Puan</p>
-                            <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold">{countdownText}</Badge>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4">
+                     <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4 flex-wrap">
                         <span className="flex items-center gap-1.5"><MapPin size={14} /> {opp.location.city} ({opp.location.type})</span>
                         <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
+                        <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
+                            <Hourglass className="h-3 w-3 mr-1"/>
+                            {countdownText}
+                        </Badge>
                     </div>
                      {requiredAbilities.length > 0 && (
                         <div className="mt-4 space-y-1.5">
