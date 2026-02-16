@@ -1,21 +1,23 @@
-
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Filter, ArrowDownUp, Search, MapPin, Calendar, Award, Bot, CheckCircle, FileText, XCircle, Plane, ChevronRight } from 'lucide-react';
-import { volunteeringOpportunities, user } from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
+import { volunteeringOpportunities, user, ngos } from '@/lib/data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { parse } from 'date-fns';
+import { parse, format, differenceInDays } from 'date-fns';
+import { tr } from 'date-fns/locale';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+
 
 const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
 const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
@@ -76,18 +78,32 @@ const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) 
 
     const matchedAbilitiesCount = requiredAbilities.filter(req => userAbilities.includes(req)).length;
     const matchPercentage = requiredAbilities.length > 0 ? (matchedAbilitiesCount / requiredAbilities.length) * 100 : 100;
+    
+    const ngo = ngos.find(n => n.id === opp.ngoId);
+    const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
+    const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
+
 
     return (
         <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20">
-            <Link href={`/volunteering/${opp.id}`} className="block">
+            <Link href={`/volunteering/${opp.id}`} className="block group">
                 <CardContent className="p-4">
                     <div className="flex items-start justify-between">
-                        <div className="flex-1 pr-4">
-                            <p className="text-xs font-medium text-muted-foreground">{opp.organization}</p>
-                            <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors">{opp.title}</h3>
+                        <div className="flex items-center gap-3 flex-1 pr-4">
+                            {ngo && (
+                                <Avatar className="h-10 w-10 border">
+                                    <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
+                                    <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                            )}
+                            <div className="flex-1">
+                                <p className="text-xs font-medium text-muted-foreground">{opp.organization}</p>
+                                <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors">{opp.title}</h3>
+                            </div>
                         </div>
-                        <div className="text-right flex-shrink-0">
-                            <p className="font-bold text-primary">{opp.points} Puan</p>
+                        <div className="text-right flex-shrink-0 space-y-1">
+                            <p className="font-bold text-primary text-sm">{opp.points} Puan</p>
+                            <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold">{countdownText}</Badge>
                         </div>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4">
@@ -185,7 +201,7 @@ export default function VolunteeringPage() {
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
-      <div className="space-y-2 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2 -mx-4 px-4 border-b">
+      <div className="space-y-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2 -mx-4 px-4 border-b">
         <div className="space-y-1">
             <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
             <p className="text-muted-foreground text-sm">Topluma katkıda bulun ve etki yarat.</p>
@@ -221,7 +237,7 @@ export default function VolunteeringPage() {
          <div className="pt-1">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1" className="border-b-0">
-                <AccordionTrigger className="hover:no-underline -mx-1 py-2">
+                <AccordionTrigger className="hover:no-underline -mx-1 py-1">
                   <div className='flex items-center gap-2 text-sm font-medium'>
                     <Bot />
                     Yapay Zeka ile Öneri Al
