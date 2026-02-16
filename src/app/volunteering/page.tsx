@@ -106,10 +106,18 @@ const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) 
                                 <p className="font-bold text-primary text-sm">{opp.points} Puan</p>
                             </div>
                         </div>
-                         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4 flex-wrap">
-                            <span className="flex items-center gap-1.5"><MapPin size={14} /> {opp.location.city} ({opp.location.type})</span>
-                            <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
+                        
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-4 flex-wrap gap-2">
+                            <div className="flex items-center gap-4">
+                                <span className="flex items-center gap-1.5"><MapPin size={14} /> {opp.location.city} ({opp.location.type})</span>
+                                <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
+                            </div>
+                             <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
+                                <Hourglass className="h-3 w-3 mr-1"/>
+                                {countdownText}
+                            </Badge>
                         </div>
+                        
                          {requiredAbilities.length > 0 && (
                             <div className="mt-4 space-y-2">
                                 <p className="text-xs font-bold text-muted-foreground">Profil Uygunluğu</p>
@@ -119,12 +127,6 @@ const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) 
                                 </div>
                             </div>
                         )}
-                    </div>
-                    <div className="flex justify-end mt-4 pt-4 border-t border-dashed">
-                        <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
-                            <Hourglass className="h-3 w-3 mr-1"/>
-                            {countdownText}
-                        </Badge>
                     </div>
                 </CardContent>
             </Link>
