@@ -59,6 +59,7 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
 
 
 const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) => {
+    const ngo = ngos.find(n => n.id === opp.ngoId);
     
     const userAbilities = [
       ...user.volunteerInfo.skills,
@@ -79,49 +80,52 @@ const OpportunityCard = ({ opp }: { opp: typeof volunteeringOpportunities[0] }) 
     const matchedAbilitiesCount = requiredAbilities.filter(req => userAbilities.includes(req)).length;
     const matchPercentage = requiredAbilities.length > 0 ? (matchedAbilitiesCount / requiredAbilities.length) * 100 : 100;
     
-    const ngo = ngos.find(n => n.id === opp.ngoId);
     const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
     const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
 
 
     return (
-        <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20">
-            <Link href={`/volunteering/${opp.id}`} className="block group">
-                <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3 flex-1 pr-4">
-                            {ngo && (
-                                <Avatar className="h-10 w-10 border">
-                                    <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                                    <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                            )}
-                            <div className="flex-1">
-                                <p className="text-xs font-medium text-muted-foreground">{opp.organization}</p>
-                                <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors">{opp.title}</h3>
+        <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20 h-full">
+            <Link href={`/volunteering/${opp.id}`} className="block group h-full">
+                <CardContent className="p-4 flex flex-col justify-between h-full">
+                    <div>
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3 flex-1 pr-4">
+                                {ngo && (
+                                    <Avatar className="h-10 w-10 border">
+                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
+                                        <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                )}
+                                <div className="flex-1">
+                                    <p className="text-xs font-medium text-muted-foreground">{opp.organization}</p>
+                                    <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors">{opp.title}</h3>
+                                </div>
+                            </div>
+                            <div className="text-right flex-shrink-0 space-y-1">
+                                <p className="font-bold text-primary text-sm">{opp.points} Puan</p>
                             </div>
                         </div>
-                        <div className="text-right flex-shrink-0 space-y-1">
-                            <p className="font-bold text-primary text-sm">{opp.points} Puan</p>
+                         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4 flex-wrap">
+                            <span className="flex items-center gap-1.5"><MapPin size={14} /> {opp.location.city} ({opp.location.type})</span>
+                            <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
                         </div>
+                         {requiredAbilities.length > 0 && (
+                            <div className="mt-4 space-y-2">
+                                <p className="text-xs font-bold text-muted-foreground">Profil Uygunluğu</p>
+                                <Progress value={matchPercentage} className="h-1.5" />
+                                <div className="flex justify-end text-xs">
+                                    <span className="font-bold">{Math.round(matchPercentage)}%</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                     <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4 flex-wrap">
-                        <span className="flex items-center gap-1.5"><MapPin size={14} /> {opp.location.city} ({opp.location.type})</span>
-                        <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
-                        <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
+                    <div className="flex justify-end mt-4 pt-4 border-t border-dashed">
+                        <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
                             <Hourglass className="h-3 w-3 mr-1"/>
                             {countdownText}
                         </Badge>
                     </div>
-                     {requiredAbilities.length > 0 && (
-                        <div className="mt-4 space-y-1.5">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="font-medium">Profil Uygunluğu</span>
-                                <span className="font-bold">{Math.round(matchPercentage)}%</span>
-                            </div>
-                            <Progress value={matchPercentage} className="h-1.5" />
-                        </div>
-                    )}
                 </CardContent>
             </Link>
         </Card>
@@ -240,17 +244,17 @@ export default function VolunteeringPage() {
                  </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <MultiSelect title="Sosyal Hassasiyet" options={allInterests} selected={interestFilter} onSelectedChange={setInterestFilter} />
             <MultiSelect title="Yetkinlikler" options={allSkills} selected={skillFilter} onSelectedChange={setSkillFilter} />
             <MultiSelect title="Lokasyon" options={allCities} selected={cityFilter} onSelectedChange={setCityFilter} />
             <MultiSelect title="Kurum Türü" options={allNgoTypes} selected={typeFilter} onSelectedChange={setTypeFilter} />
         </div>
-         <div className="pt-0">
+         <div className="pb-2">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1" className="border-b-0">
-                <AccordionTrigger className="hover:no-underline -mx-1 py-1">
-                  <div className='flex items-center gap-2 text-sm font-medium'>
+                <AccordionTrigger className="hover:no-underline -mx-1 py-0 text-sm font-medium text-muted-foreground">
+                  <div className='flex items-center gap-2'>
                     <Bot />
                     Yapay Zeka ile Öneri Al
                   </div>
