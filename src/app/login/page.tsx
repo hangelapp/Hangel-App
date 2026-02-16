@@ -193,7 +193,7 @@ const projectCardsData = [
     { 
       title: "Girişimcilik Kütüphanesi",
       subtitle: "21 merkezde bilgi ve tecrübe temelli yol haritaları.",
-      cta: "Kütüphaneye Git",
+      cta: "Kütüphaneye Gir",
       ctaHref: "/hangelassociation/workshop",
       imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
       imageHint: "modern library",
@@ -273,7 +273,7 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     );
 };
 
-const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }: { title: string, description: string, href: string, imageUrl: string, imageHint: string }) => (
+const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, linkText }: { title: string, description: string, href: string, imageUrl: string, imageHint: string, linkText: string }) => (
     <div className="h-full rounded-2xl bg-[#f5f5f7] overflow-hidden group flex flex-col shadow-lg hover:shadow-xl transition-shadow">
         <div className="relative w-full aspect-video">
             <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
@@ -283,7 +283,7 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint }
             <p className="text-sm text-muted-foreground mt-2 flex-1">{description}</p>
             <div className="mt-4">
                 <Link href={href} className="text-sm font-semibold text-primary hover:underline flex items-center">
-                    Daha Fazla Bilgi <ChevronRight className="h-4 w-4 ml-1" />
+                    {linkText} <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>
             </div>
         </div>
@@ -325,28 +325,32 @@ export default function LoginPage() {
             description: "Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın.", 
             href: "/ngo-onboarding",
             imageUrl: "https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-            imageHint: "charcoal charity drawing"
+            imageHint: "charcoal charity drawing",
+            linkText: "STK'nı Ekle"
         },
         { 
             title: "hangel Marka", 
             description: "Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın.", 
             href: "/merchant",
             imageUrl: "https://picsum.photos/seed/merc-char/1080/1080",
-            imageHint: "charcoal merchant store illustration"
+            imageHint: "charcoal merchant store illustration",
+            linkText: "Markanı Ekle"
         },
         { 
             title: "hangel Clubs", 
             description: "Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin.", 
             href: "/campus-advantages",
             imageUrl: "https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtaW5pbWFsaXN0JTIwdW5pdmVyc2l0eSUyMGNvbmZlcmVuY2UlMjBwb3N0ZXJ8ZW58MHx8fHwxNzcwMjY4MTI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-            imageHint: "minimalist university poster"
+            imageHint: "minimalist university poster",
+            linkText: "Kulübünü Ekle"
         },
         { 
             title: "Kütüphane", 
             description: "Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin.", 
             href: "/library",
-            imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1760034746619-f922049bc2a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjaGFyY29hbCUyMGxpYnJhcnklMjBib29rJTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-            imageHint: libraryImg?.imageHint || "digital library"
+            imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
+            imageHint: libraryImg?.imageHint || "modern library",
+            linkText: "Kütüphaneye Gir"
         }
     ];
 
@@ -569,4 +573,3 @@ export default function LoginPage() {
         </div>
     );
 }
-
