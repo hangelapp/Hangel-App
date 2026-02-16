@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -449,7 +450,7 @@ const FullStandardsSection = () => {
         { label: "Üçüncü Taraf Gözetim Beyanı", std: "Kurumsal Uyum / Etik", org: "hangel", region: "Küresel", rate: "%100" },
     ];
     return (
-        <section className="py-16 md:py-24 bg-[#f5f5f7]">
+        <section className="py-8 md:py-12 bg-[#f5f5f7]">
             <div className="container mx-auto px-4 max-w-4xl">
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-standards" className="border-none">
@@ -555,7 +556,7 @@ export default function LoginPage() {
             imageUrl: "https://picsum.photos/seed/club-events/1080/1080",
             imageHint: "university event",
             linkText: "Etkinlikleri Keşfet",
-            linkText2: "Kulübünü Ekle",
+            linkText2: "Daha Fazla Bilgi",
             href2: "/campus-advantages"
         },
         { 
@@ -563,7 +564,7 @@ export default function LoginPage() {
             description: "Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin.", 
             href: "/library",
             imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
-            imageHint: libraryImg?.imageHint || "modern library",
+            imageHint: "modern library",
             linkText: "Kütüphaneye Gir",
             linkText2: "Daha Fazla Bilgi",
             href2: "/library"
@@ -695,7 +696,7 @@ export default function LoginPage() {
                             <h2 className="text-4xl font-bold tracking-tight">hangel'i Keşfedin</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Kurumlar ve bireyler için sunduğumuz çözümlerle tanışın.</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {discoveryItems.map((item, index) => (
                                 <DiscoveryCarouselCard key={index} {...item} />
                             ))}
@@ -775,3 +776,4 @@ export default function LoginPage() {
         </div>
     );
 }
+
