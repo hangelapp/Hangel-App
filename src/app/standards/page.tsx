@@ -98,18 +98,39 @@ const regions = [
         hint: "washington dc"
     },
     {
-        name: "Brezilya",
-        flag: "🇧🇷",
-        desc: "LGPD (Lei Geral de Proteção de Dados) kapsamında Latin Amerika veri güvenliği standartlarına tam adaptasyon.",
-        image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=2070&auto=format&fit=crop",
-        hint: "rio landscape"
-    },
-    {
         name: "Birleşik Krallık",
         flag: "🇬🇧",
         desc: "Equality Act 2010 ve WCAG 2.1 AA seviyesindeki Birleşik Krallık kamu dijital erişilebilirlik kriterlerine uyum.",
         image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070&auto=format&fit=crop",
         hint: "london big ben"
+    },
+    {
+        name: "Latin Amerika",
+        flag: "🌎",
+        desc: "LGPD (Brezilya) başta olmak üzere, bölgedeki veri koruma ve tüketici hakları yasalarına uyum sağlanmıştır.",
+        image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=2070&auto=format&fit=crop",
+        hint: "rio de janeiro brazil"
+    },
+    {
+        name: "OECD Ülkeleri",
+        flag: "🌐",
+        desc: "OECD'nin Kurumsal Yönetişim ve Çıkar Çatışması İlkeleri'ne uyum sağlayarak şeffaf bir yapı sunuyoruz.",
+        image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2070&auto=format&fit=crop",
+        hint: "business meeting office"
+    },
+    {
+        name: "Uzak Doğu",
+        flag: "🌏",
+        desc: "Bölgedeki veri koruma ve erişilebilirlik standartlarına uyum sağlayarak küresel etkimizi genişletiyoruz.",
+        image: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2071&auto=format&fit=crop",
+        hint: "taj mahal india"
+    },
+    {
+        name: "Afrika",
+        flag: "🌍",
+        desc: "Kıta genelindeki gönüllülük ve sosyal etki projelerinde yerel yasalara ve kültürel normlara saygı gösteriyoruz.",
+        image: "https://images.unsplash.com/photo-1523805009345-7448845a9e53?q=80&w=2072&auto=format&fit=crop",
+        hint: "african safari sunset"
     }
 ];
 
@@ -395,5 +416,4 @@ export default function StandardsPage() {
             <PublicFooter currentPageLabel="Standartlar" />
         </div>
     );
-
-    
+}
