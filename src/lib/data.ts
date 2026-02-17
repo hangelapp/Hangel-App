@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign } from 'lucide-react';
@@ -414,7 +413,14 @@ export const studentClubs: StudentClub[] = [];
 export const schoolRepresentatives: SchoolRepresentative[] = [];
 export const applications: Application[] = [];
 export const donationTransactions: DonationTransaction[] = [];
-export const badges: Badge[] = [];
+export const badges: Badge[] = [
+    { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 },
+    { id: '2', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Gümüş', socialArea: 'Çevre', pointsRequired: 1000, currentPoints: 800 },
+    { id: '3', name: 'Hayvan Dostu', iconName: Heart, level: 'Bronz', socialArea: 'Hayvan Hakları', pointsRequired: 500, currentPoints: 550 },
+    { id: '4', name: 'Hayvan Dostu', iconName: Heart, level: 'Gümüş', socialArea: 'Hayvan Hakları', pointsRequired: 1000, currentPoints: 550 },
+    { id: '5', name: 'Eğitim Destekçisi', iconName: Award, level: 'Bronz', socialArea: 'Eğitim', pointsRequired: 500, currentPoints: 250 },
+    { id: '6', name: 'Topluluk Lideri', iconName: Star, level: 'Altın', socialArea: 'Topluluk', pointsRequired: 5000, currentPoints: 5150 },
+];
 export const certificates: Certificate[] = [];
 
 export const helpTopics: HelpTopic[] = [

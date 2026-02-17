@@ -5,7 +5,6 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { applications as initialApplications } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +25,23 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+const initialApplications: Application[] = [
+    // Gönüllülük
+    { id: 'app1', title: 'Afet Bölgesi Yardım Dağıtımı', type: 'Gönüllülük', org: 'Ahbap Derneği', date: '2024-07-21', location: 'Hatay', status: 'Onaylandı', entityId: '1' },
+    { id: 'app2', title: 'Fidan Dikme Etkinliği', type: 'Gönüllülük', org: 'TEMA Vakfı', date: '2024-07-20', location: 'İstanbul', status: 'Beklemede', entityId: '2' },
+
+    // Kulüpler
+    { id: 'app3', title: 'Üyelik Başvurusu', type: 'Kulüpler', org: 'İTÜ Girişimcilik Kulübü', date: '2024-07-19', location: 'İstanbul', status: 'Beklemede' },
+    { id: 'app4', title: 'Üyelik Başvurusu', type: 'Kulüpler', org: 'Boğaziçi Üniversitesi Müzik Kulübü', date: '2024-07-18', location: 'İstanbul', status: 'Reddedildi', rejectionReason: "Kontenjan dolu." },
+
+    // STK
+    { id: 'app5', title: 'Kuruluş Başvurusu', type: 'STK', org: 'Yeni Ufuklar Derneği', date: '2024-07-15', location: 'Ankara', status: 'Beklemede' },
+    { id: 'app6', title: 'Kuruluş Başvurusu', type: 'STK', org: 'Minik Patiler Vakfı', date: '2024-07-12', location: 'İzmir', status: 'Onaylandı' },
+
+    // Marka
+    { id: 'app7', title: 'Üye İşletme Başvurusu', type: 'Marka', org: 'Adil Ticaret Kahve', date: '2024-07-10', location: 'Bursa', status: 'Beklemede' },
+];
 
 
 export default function MyApplicationsPage() {
