@@ -318,17 +318,13 @@ const ComplianceTable = ({ title, description, data, headers }: { title: string,
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((row, i) => (
+                        {data.map((row: any, i: number) => (
                             <TableRow key={i} className="hover:bg-[#f5f5f7]/50 border-black/5">
-                                {Object.values(row).map((cell: any, j) => (
-                                    <TableCell key={j} className={cn(
-                                        "py-4 px-6 text-sm font-medium",
-                                        j === 0 ? "text-[#1d1d1f] font-bold" : "text-[#1d1d1f]/70",
-                                        String(cell).includes('%') && "text-primary font-black"
-                                    )}>
-                                        {cell}
-                                    </TableCell>
-                                ))}
+                                <TableCell className="font-bold text-[#1d1d1f]">{row.label}</TableCell>
+                                <TableCell className="text-[#1d1d1f]/70">{row.std}</TableCell>
+                                <TableCell className="text-[#1d1d1f]/70">{row.org}</TableCell>
+                                <TableCell className="text-[#1d1d1f]/70">{row.region}</TableCell>
+                                <TableCell className={cn("text-[#1d1d1f]/70 font-bold", String(row.rate).includes('%') && "text-primary font-black")}>{row.rate}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
