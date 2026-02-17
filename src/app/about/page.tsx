@@ -146,21 +146,21 @@ export default function AboutPage() {
             <section className="bg-[#f5f5f7] py-24 text-center border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-5xl">
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-16 text-[#1d1d1f]">Rakamlarla hangel</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-2 gap-x-8 gap-y-12 lg:gap-x-16">
                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">1.2M+</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">2.5M+</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Kullanıcı</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">112M+ ₺</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">250M+ ₺</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Toplam Sosyal Etki</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">500K+</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">1M+</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Saat Gönüllülük</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">750+</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">1.5K+</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Paydaş (STK & Marka)</p>
                         </div>
                     </div>
@@ -232,3 +232,4 @@ export default function AboutPage() {
         </div>
     );
 }
+    
