@@ -63,34 +63,7 @@ export default function SupportPage() {
         toast({ title: 'Arama Yapılıyor...', description: `"${searchTerm}" için sonuçlar getiriliyor.` });
     };
 
-  return (
-    <div className="bg-[#f5f5f7] min-h-screen">
-      <main className="container mx-auto px-4 py-12 md:py-20 space-y-20">
-        
-        {/* Hero Section */}
-        <section className="text-center space-y-6">
-            <HangelLogo className="text-6xl mx-auto" />
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">hangel Destek</h1>
-            <p className="text-xl md:text-2xl text-muted-foreground font-medium">Yardıma mı ihtiyacınız var? Buradan başlayın.</p>
-        </section>
-
-        {/* Categories Section */}
-        <section className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-8 max-w-4xl mx-auto">
-            <CategoryLink href="/support/bireysel-kullanicilar" icon={User} label="Bireysel" />
-            <CategoryLink href="/support/stk-yoneticileri" icon={Building} label="STK'lar" />
-            <CategoryLink href="/support/marka-yoneticileri" icon={Store} label="Markalar" />
-            <CategoryLink href="/support/kulup-yoneticileri" icon={School} label="Kulüpler" />
-            <CategoryLink href="/support" icon={HelpCircle} label="Genel" />
-            <CategoryLink href="/support" icon={Settings} label="Teknik" />
-        </section>
-
-        {/* Quick Actions */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            <QuickActionCard title="Etki Puanım neden artmıyor?" href="/support/bireysel-kullanicilar" />
-            <QuickActionCard title="Şeffaflık belgelerim neden reddedildi?" href="/support/stk-yoneticileri" />
-            <QuickActionCard title="Bağış oranlarımı nasıl ayarlarım?" href="/support/marka-yoneticileri" />
-        </section>
-
+    const faqSection = (
         <section className="max-w-4xl mx-auto space-y-8">
             <div className="text-center">
                 <h2 className="text-3xl font-bold tracking-tight">Sıkça Sorulan Sorular</h2>
@@ -121,6 +94,35 @@ export default function SupportPage() {
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
+        </section>
+    );
+
+  return (
+    <div className="bg-[#f5f5f7] min-h-screen">
+      <main className="container mx-auto px-4 py-12 md:py-20 space-y-20">
+        
+        {/* Hero Section */}
+        <section className="text-center space-y-6">
+            <HangelLogo className="text-6xl mx-auto" />
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">hangel Destek</h1>
+            <p className="text-xl md:text-2xl text-muted-foreground font-medium">Yardıma mı ihtiyacınız var? Buradan başlayın.</p>
+        </section>
+
+        {/* Categories Section */}
+        <section className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-8 max-w-4xl mx-auto">
+            <CategoryLink href="/support/bireysel-kullanicilar" icon={User} label="Bireysel" />
+            <CategoryLink href="/support/stk-yoneticileri" icon={Building} label="STK'lar" />
+            <CategoryLink href="/support/marka-yoneticileri" icon={Store} label="Markalar" />
+            <CategoryLink href="/support/kulup-yoneticileri" icon={School} label="Kulüpler" />
+            <CategoryLink href="/support" icon={HelpCircle} label="Genel" />
+            <CategoryLink href="/support" icon={Settings} label="Teknik" />
+        </section>
+
+        {/* Quick Actions */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+            <QuickActionCard title="Etki Puanım neden artmıyor?" href="/support/bireysel-kullanicilar" />
+            <QuickActionCard title="Şeffaflık belgelerim neden reddedildi?" href="/support/stk-yoneticileri" />
+            <QuickActionCard title="Bağış oranlarımı nasıl ayarlarım?" href="/support/marka-yoneticileri" />
         </section>
 
         {/* Search Section */}
@@ -223,6 +225,8 @@ export default function SupportPage() {
                 </Card>
             </div>
         </section>
+        
+        {faqSection}
 
         <section className="max-w-4xl mx-auto pt-16 text-center">
             <h4 className="text-xl font-bold">Toplumsal Fayda için Tasarım</h4>
