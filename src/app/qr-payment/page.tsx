@@ -118,49 +118,8 @@ const ActivationDialog = ({ card, open, onClose, onActivate }: { card: any, open
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
-  const [cards, setCards] = useState(qrPaymentCardData);
-  const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
-  const [activeCardId, setActiveCardId] = useState(cards.length > 0 ? cards[0].id : 'bireysel');
-  const [frozenCards, setFrozenCards] = useState<Record<string, boolean>>({});
-  const [showCardNumber, setShowCardNumber] = useState<Record<string, boolean>>({});
-  const [activatedCards, setActivatedCards] = useState<Record<string, boolean>>({ bireysel: true });
-  const [showActivationDialog, setShowActivationDialog] = useState<string | null>(null);
   const qrData = `https://hangel.org/pay/${user.username.replace('@', '')}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
-
-  const cardToActivate = cards.find(c => c.id === showActivationDialog);
-
-  const handleFlip = (cardId: string) => {
-    setFlippedCardId(prev => (prev === cardId ? null : cardId));
-  };
-  
-   const toggleFreezeCard = (cardId: string) => {
-    const isCurrentlyFrozen = frozenCards[cardId] || false;
-    setFrozenCards(prev => ({...prev, [cardId]: !isCurrentlyFrozen }));
-    toast({
-        title: !isCurrentlyFrozen ? "Kart Donduruldu" : "Kart Aktif Edildi",
-    });
-    handleFlip(cardId);
-  };
-  
-   const handleActivateCard = (cardId: string) => {
-    setActivatedCards(prev => ({ ...prev, [cardId]: true }));
-    toast({ title: "Kart Başarıyla Aktive Edildi!" });
-  };
-
-  const handleCancelCard = (cardId: string) => {
-    setCards(prev => {
-        const newCards = prev.filter(c => c.id !== cardId);
-        if (activeCardId === cardId) {
-            setActiveCardId(newCards.length > 0 ? newCards[0].id : '');
-        }
-        return newCards;
-    });
-    toast({
-        variant: 'destructive',
-        title: 'Kart İptal Edildi'
-    });
-  };
 
   const handleActionClick = (action: string) => {
     toast({
@@ -176,49 +135,6 @@ export default function QrPaymentPage() {
     });
   };
   
-  const CardBack = ({ card }: { card: typeof cards[0] }) => {
-    const isCardFrozen = frozenCards[card.id];
-    
-    const handleSettingClick = (settingName: string) => {
-        toast({
-            title: "Kart Ayarları",
-            description: `${settingName} işlevi yakında aktif olacaktır.`,
-        });
-    };
-
-    return (
-        <div className="w-full h-full flex flex-col justify-start text-left space-y-1 p-3 bg-black/30 rounded-lg backdrop-blur-sm overflow-y-auto">
-            <h4 className="font-semibold text-base mb-1 text-center text-white/90">Kart Ayarları</h4>
-            <Button onClick={() => setShowCardNumber(prev => ({ ...prev, [card.id]: !prev[card.id] }))} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><KeyRound className="mr-2 h-4 w-4" /> {showCardNumber[card.id] ? 'Numarayı Gizle' : 'Kart Bilgileri'}</Button>
-            <Button onClick={() => handleSettingClick('Limit Değişikliği')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><SlidersHorizontal className="mr-2 h-4 w-4" /> Limit Değişikliği</Button>
-            <Button onClick={() => toggleFreezeCard(card.id)} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><Power className="mr-2 h-4 w-4" /> {isCardFrozen ? 'Kartı Aktif Et' : 'Kartı Dondur'}</Button>
-            <Button onClick={() => handleSettingClick('İşlem İtirazı')} variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-white/90 hover:bg-white/20 hover:text-white text-sm"><MessageSquareWarning className="mr-2 h-4 w-4" /> İşlem İtirazı</Button>
-            
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-auto py-1 w-full justify-start text-red-400 hover:bg-red-500/50 hover:text-white text-sm">
-                      <MinusCircle className="mr-2 h-4 w-4" /> Kartı İptal Et
-                  </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                  <AlertDialogHeader>
-                      <AlertDialogTitle>Kartı İptal Etmek İstediğinizden Emin misiniz?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                          {`Bu işlem geri alınamaz. ${card.type} kartınız kalıcı olarak iptal edilecektir.`}
-                      </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                      <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleCancelCard(card.id)} className={cn(buttonVariants({ variant: "destructive" }))}>
-                          Evet, İptal Et
-                      </AlertDialogAction>
-                  </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-        </div>
-    );
-  };
-
   const getActiveBorderColor = () => {
     return 'border-primary';
   };
@@ -235,72 +151,6 @@ export default function QrPaymentPage() {
             </div>
         </div>
         
-        <Tabs value={activeCardId} onValueChange={setActiveCardId} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 gap-1 rounded-none h-auto">
-                {cards.map((card) => (
-                    <TabsTrigger
-                        key={card.id}
-                        value={card.id}
-                        className={cn(
-                            "rounded-t-xl p-2 text-xs font-bold text-white transition-all border-b-0",
-                            "data-[state=active]:opacity-100 data-[state=active]:scale-105 data-[state=active]:z-10",
-                            "data-[state=inactive]:opacity-40 data-[state=inactive]:bg-muted data-[state=inactive]:text-muted-foreground",
-                            activeCardId === card.id ? card.bgColor : ""
-                        )}
-                    >
-                        {card.type}
-                    </TabsTrigger>
-                ))}
-            </TabsList>
-
-            {cards.map((card) => (
-                <TabsContent key={card.id} value={card.id} className="mt-0">
-                    <div className="h-56 [perspective:1000px] text-primary-foreground">
-                        <div className={cn("relative h-full w-full rounded-b-2xl shadow-xl transition-transform duration-700 [transform-style:preserve-3d]", flippedCardId === card.id && "[transform:rotateY(180deg)]")}>
-                            {/* FRONT */}
-                            <div className={cn("absolute flex h-full w-full flex-col justify-between rounded-b-2xl p-6 [backface-visibility:hidden]", card.bgColor)}>
-                                <div className="flex justify-between items-start">
-                                    <span className="font-bold text-2xl tracking-tighter">hangel</span>
-                                    <Button onClick={() => handleFlip(card.id)} variant="ghost" size="icon" className="h-9 w-9 text-white/80 hover:bg-white/20 hover:text-white rounded-full bg-black/10"><RotateCw className="h-5 w-5" /></Button>
-                                </div>
-                                <div className="space-y-1 text-left">
-                                    <p className="text-[10px] uppercase font-bold text-white/60 tracking-widest">Bakiye</p>
-                                    <p className="text-3xl font-bold tracking-tight">{card.balance}</p>
-                                    <div className="font-mono text-lg tracking-widest pt-4 drop-shadow-sm">
-                                        {showCardNumber[card.id] ? card.number.replace(/(.{4})/g, '$1 ').trim() : `**** **** **** ${card.number.slice(-4)}`}
-                                    </div>
-                                    <div className="flex justify-between items-end text-xs pt-2">
-                                        <div className="space-y-0.5">
-                                            <p className="text-[8px] uppercase font-bold text-white/60">Kart Sahibi</p>
-                                            <p className="uppercase font-semibold">{card.owner}</p>
-                                        </div>
-                                        <div className="text-right space-y-0.5">
-                                            <p className="text-[8px] uppercase font-bold text-white/60">SKT</p>
-                                            <p className="font-semibold">{card.expiry}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                 {frozenCards[card.id] && <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-b-2xl backdrop-blur-[2px]"><p className="text-2xl font-bold tracking-widest border-2 border-white px-4 py-1">DONDURULDU</p></div>}
-                            </div>
-                            {/* BACK */}
-                            <div className={cn("absolute h-full w-full rounded-b-2xl p-2 [transform:rotateY(180deg)] [backface-visibility:hidden]", card.bgColor)}>
-                                {activatedCards[card.id] ? (
-                                    <CardBack card={card} />
-                                ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center space-y-4 text-center p-4">
-                                        <p className="text-lg font-bold">Kartınız henüz aktif değil.</p>
-                                        <p className="text-xs text-white/70">Güvenlik önlemi olarak kartınızın ilk kullanımı öncesi kimlik doğrulaması gerekmektedir.</p>
-                                        <Button onClick={() => setShowActivationDialog(card.id)} variant="secondary" className="w-full font-bold">Şimdi Aktive Et</Button>
-                                    </div>
-                                )}
-                                 <Button onClick={() => handleFlip(card.id)} variant="ghost" size="icon" className="absolute top-4 right-4 h-9 w-9 text-white/80 hover:bg-white/20 hover:text-white rounded-full bg-black/10"><RotateCw className="h-5 w-5" /></Button>
-                            </div>
-                        </div>
-                    </div>
-                </TabsContent>
-            ))}
-        </Tabs>
-      
       <Card className={cn('transition-all duration-500 border-2 shadow-md', getActiveBorderColor())}>
         <CardHeader>
             <CardTitle>Ödeme Yönetimi</CardTitle>
@@ -390,39 +240,6 @@ export default function QrPaymentPage() {
         </CardContent>
       </Card>
 
-      {activeCardId === 'ticari' && (
-        <Card className="mt-6 border-primary/30 bg-primary/5 shadow-sm">
-            <CardHeader>
-                <CardTitle className="text-primary">Üye İşyeri Materyalleri</CardTitle>
-                <CardDescription>İşletmenizde kullanabileceğiniz dijital ve basılabilir materyaller.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {[
-                    { title: 'QR Kodlu Sticker', desc: 'Müşterilerinizin ödeme yapabileceği sticker.', icon: QrCode },
-                    { title: 'hangel İle Öde Sticker', desc: 'Ödeme kabul ettiğinizi gösteren tabela görseli.', icon: Store },
-                    { title: '"hangel Üye İşyeri" Dönkartı', desc: 'Girişlerde kullanılabilecek çift taraflı kart.', icon: Landmark }
-                ].map((item, i) => (
-                    <div key={i} className="p-4 border bg-background rounded-xl flex items-center justify-between shadow-sm hover:border-primary/50 transition-colors group">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                <item.icon className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-sm">{item.title}</h4>
-                                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleMaterialClick('inceleme')}><Eye className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleMaterialClick('indirme')}><Download className="h-4 w-4" /></Button>
-                        </div>
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
-    )}
-
-
       <Card className={cn('transition-all duration-500 border-2 shadow-md', getActiveBorderColor())}>
         <CardHeader>
            <CardTitle>Son İşlemler</CardTitle>
@@ -511,12 +328,6 @@ export default function QrPaymentPage() {
         </CardContent>
       </Card>
       
-      <ActivationDialog 
-        card={cardToActivate}
-        open={!!showActivationDialog}
-        onClose={() => setShowActivationDialog(null)}
-        onActivate={handleActivateCard}
-      />
     </div>
   );
 }
