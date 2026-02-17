@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, TrendingUp, Users, ShieldCheck, HeartHandshake, Zap, Award, Target, Landmark, Scale } from 'lucide-react';
+import { ChevronRight, ArrowLeft, TrendingUp, Users, ShieldCheck, HeartHandshake, Zap, Award, Target, Landmark, Scale, Brain } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -213,9 +213,15 @@ export default function AboutPage() {
                             href="/accessibility"
                         />
                          <InfoCard 
+                            icon={Brain}
+                            title="Veriye Dayalı Çözüm"
+                            description="Toplumsal sorunları analiz etmek ve en etkili çözümleri üretmek için büyük veriden ve yapay zekadan güç alıyoruz."
+                            href="/data-solutions"
+                        />
+                         <InfoCard 
                             icon={Scale}
                             title="Standartlarımız"
-                            description="Uluslararası veri koruma, güvenlik ve yönetişim standartlarına olan uyum beyanlarımız."
+                            description="50'den fazla uluslararası veri koruma, güvenlik ve yönetişim standardına olan uyumumuzu şeffaflıkla beyan ediyoruz."
                             href="/standards"
                         />
                     </div>
