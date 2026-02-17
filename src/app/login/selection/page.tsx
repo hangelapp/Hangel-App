@@ -9,12 +9,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Upload, Plus, X, Instagram, Facebook, Linkedin, Twitter, Youtube, Link as LinkIcon, Search } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, X, Instagram, Facebook, Linkedin, Twitter, Youtube, Link as LinkIcon, Search, Sparkles, Building, HandCoins, HeartHandshake } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { marketCategories } from '@/lib/data';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useToast } from '@/hooks/use-toast';
 
 // --- Shared Constants & Data ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
@@ -74,8 +77,8 @@ const districts: { [key: string]: string[] } = {
     'Niğde': ['Merkez', 'Altunhisar', 'Bor', 'Çamardı', 'Çiftlik', 'Ulukışla'],
     'Ordu': ['Akkuş', 'Altınordu', 'Aybastı', 'Çamaş', 'Çatalpınar', 'Çaybaşı', 'Fatsa', 'Gölköy', 'Gülyalı', 'Gürgentepe', 'İkizce', 'Kabadüz', 'Kabataş', 'Korgan', 'Kumru', 'Mesudiye', 'Perşembe', 'Ulubey', 'Ünye'],
     'Osmaniye': ['Merkez', 'Bahçe', 'Düziçi', 'Hasanbeyli', 'Kadirli', 'Sumbas', 'Toprakkale'],
-    'Rize': ['Merkez', 'Ardeşen', 'Çamlıhemşin', 'Çayeli', 'Derepazarı', 'Fındıklı', 'Güneysu', 'Hemşin', 'İkizdere', 'İyidere', 'Kalkandere', 'Pazar'],
-    'Sakarya': ['Adapazarı', 'Akyazı', 'Arifiye', 'Erenler', 'Ferizli', 'Geyve', 'Hendek', 'Karapürçek', 'Karasu', 'Kaynarca', 'Kocaali', 'Pamukova', 'Sapanca', 'Serdivan', 'Söğütlü', 'Taraklı'],
+    'Rize': ['Merkez', 'Ardeşen', 'Fındıklı', 'İyidere', 'Çamlıhemşin', 'Güneysu', 'Kalkandere', 'Çayeli', 'Hemşin', 'Pazar', 'Derepazarı', 'İkizdere'],
+    'Sakarya': ['Adapazarı', 'Ferizli', 'Karasu', 'Sapanca', 'Akyazı', 'Geyve', 'Kaynarca', 'Serdivan', 'Arifiye', 'Hendek', 'Kocaali', 'Söğütlü', 'Erenler', 'Karapürçek', 'Pamukova', 'Taraklı'],
     'Samsun': ['19 Mayıs', 'Alaçam', 'Asarcık', 'Atakum', 'Ayvacık', 'Bafra', 'Canik', 'Çarşamba', 'Havza', 'İlkadım', 'Kavak', 'Ladik', 'Salıpazarı', 'Tekkeköy', 'Terme', 'Vezirköprü', 'Yakakent'],
     'Şanlıurfa': ['Akçakale', 'Birecik', 'Bozova', 'Ceylanpınar', 'Eyyübiye', 'Halfeti', 'Haliliye', 'Harran', 'Hilvan', 'Karaköprü', 'Siverek', 'Suruç', 'Viranşehir'],
     'Siirt': ['Merkez', 'Baykan', 'Eruh', 'Kurtalan', 'Pervari', 'Şirvan', 'Tillo'],
@@ -230,64 +233,104 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
     </Card>
 );
 
-const IndividualForm = () => {
-    const router = useRouter();
-    const [step, setStep] = useState<'phone' | 'code'>('phone');
+const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
+    const [step, setStep] = useState(isRegister ? 'info' : 'phone');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [countdown, setCountdown] = useState(60);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const handlePhoneSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        if (step === 'code' && countdown > 0) {
+            timerRef.current = setInterval(() => {
+                setCountdown(prev => prev - 1);
+            }, 1000);
+        } else if (countdown === 0 && timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [step, countdown]);
+
+    const handleResendCode = () => {
+        setCountdown(60);
+        // Resend logic would go here
+    };
+    
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would normally send an SMS with the code
         setStep('code');
+        setCountdown(60);
     };
 
-    const handleCodeSubmit = (e: React.FormEvent) => {
+    const handleFinalSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would normally verify the code
-        router.push('/timeline');
+        onComplete();
     };
 
-    if (step === 'phone') {
+    if (step === 'info' || step === 'phone') {
         return (
-            <form onSubmit={handlePhoneSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
+                {isRegister && (
+                    <>
+                        <div className="space-y-2"><Label>Ad Soyad</Label><Input required value={name} onChange={e => setName(e.target.value)} /></div>
+                        <div className="space-y-2"><Label>E-posta</Label><Input type="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
+                    </>
+                )}
                 <div className="space-y-2">
                     <Label htmlFor="phone">Telefon Numarası</Label>
                     <Input id="phone" type="tel" placeholder="5XX XXX XX XX" required value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
                 </div>
-                 <div className="flex items-center space-x-2">
-                    <Checkbox id="terms-login" required />
-                    <Label htmlFor="terms-login" className="text-xs font-normal text-muted-foreground">
-                        <Link href="/settings/contracts" className="font-medium text-primary hover:underline">Sözleşmeleri</Link> okudum ve onaylıyorum.
-                    </Label>
+                <div className="space-y-3">
+                     <div className="flex items-start space-x-2">
+                        <Checkbox id="terms-user" required />
+                        <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/kullanici-sozlesmesi" className="underline">Kullanıcı Sözleşmesini</Link> okudum, onaylıyorum.</Label>
+                    </div>
+                     <div className="flex items-start space-x-2">
+                        <Checkbox id="terms-privacy" required />
+                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/gizlilik-politikasi ve KVKK Metnini</Link> okudum, onaylıyorum.</Label>
+                    </div>
+                    {isRegister && (
+                        <div className="flex items-start space-x-2">
+                            <Checkbox id="terms-consent" required />
+                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/acik-riza-metni" className="underline">Açık Rıza Metnini</Link> okudum, onaylıyorum.</Label>
+                        </div>
+                    )}
                 </div>
                 <Button type="submit" className="w-full">Doğrulama Kodu Gönder</Button>
             </form>
         );
     }
-
+    
     return (
-        <form onSubmit={handleCodeSubmit} className="space-y-4">
+        <form onSubmit={handleFinalSubmit} className="space-y-4 animate-in fade-in-0">
             <div className="space-y-2">
                 <Label htmlFor="phone-confirm">Telefon Numarası</Label>
                 <Input id="phone-confirm" type="tel" value={phoneNumber} disabled />
-                 <Button variant="link" className="p-0 h-auto text-xs" onClick={() => setStep('phone')}>Numaranı değiştir</Button>
+                <Button variant="link" className="p-0 h-auto text-xs" onClick={() => setStep(isRegister ? 'info' : 'phone')}>Numaranı değiştir</Button>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="code">Doğrulama Kodu</Label>
                 <Input id="code" type="text" maxLength={6} required placeholder="------" className="text-center tracking-[0.5em]" />
             </div>
-            <Button type="submit" className="w-full">Giriş Yap</Button>
+             <div className="text-center text-sm">
+                 <Button type="button" variant="link" onClick={handleResendCode} disabled={countdown > 0} className="text-xs">
+                    {countdown > 0 ? `Yeniden Gönder (${countdown})` : 'Yeniden Gönder'}
+                </Button>
+            </div>
+            <Button type="submit" className="w-full">{isRegister ? 'Kayıt Ol' : 'Giriş Yap'}</Button>
         </form>
     );
 };
 
-const CorporateForm = ({ isRegister }: { isRegister: boolean }) => {
+const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
     const [corporateType, setCorporateType] = useState('');
-    const router = useRouter();
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.push('/admin');
+        onComplete();
     }
 
     return (
@@ -308,14 +351,25 @@ const CorporateForm = ({ isRegister }: { isRegister: boolean }) => {
                     {corporateType === 'NGO' && <NgoForm />}
                     {corporateType === 'BRAND' && <BrandForm />}
                     {corporateType === 'CLUB' && <ClubForm />}
-
                     <Card>
                         <CardHeader><CardTitle className="text-lg">Sözleşme Onayları</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-3">
                             <div className="flex items-start space-x-3">
-                                <Checkbox id="terms-corp" required />
-                                <Label htmlFor="terms-corp" className="text-xs font-normal text-muted-foreground">
-                                    <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>, <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link>'nı okudum, anladım ve onaylıyorum.
+                                <Checkbox id="terms-corp-1" required />
+                                <Label htmlFor="terms-corp-1" className="text-xs font-normal text-muted-foreground">
+                                    <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesini</Link> okudum, anladım ve onaylıyorum.
+                                </Label>
+                            </div>
+                            <div className="flex items-start space-x-3">
+                                <Checkbox id="terms-corp-2" required />
+                                <Label htmlFor="terms-corp-2" className="text-xs font-normal text-muted-foreground">
+                                    <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link> ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikasını</Link> okudum, anladım ve onaylıyorum.
+                                </Label>
+                            </div>
+                             <div className="flex items-start space-x-3">
+                                <Checkbox id="terms-corp-3" required />
+                                <Label htmlFor="terms-corp-3" className="text-xs font-normal text-muted-foreground">
+                                    <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve ilgili veri koruma beyanlarını okudum, anladım ve onaylıyorum.
                                 </Label>
                             </div>
                         </CardContent>
@@ -410,7 +464,21 @@ const BrandForm = () => {
                 <CardHeader><CardTitle className="text-lg">Marka Kimliği</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2"><Label>Marka Adı</Label><Input placeholder="Markanızın adı" required /></div>
+                    <div className="space-y-2">
+                        <Label>Marka Türü</Label>
+                        <Select required>
+                            <SelectTrigger><SelectValue placeholder="Marka türünü seçin..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="brand">Ticari Şirket</SelectItem>
+                                <SelectItem value="cooperative">Kooperatif</SelectItem>
+                                <SelectItem value="social">Sosyal Şirket</SelectItem>
+                                <SelectItem value="economic">İktisadi İşletme</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2"><Label>Telefon Numarası</Label><Input type="tel" placeholder="5XX XXX XX XX" /></div>
                     <div className="space-y-2"><Label>Web Sitesi</Label><Input placeholder="https://marka.com" /></div>
+                    <FileUpload label="Marka Logosu" accept=".jpg,.jpeg,.png" hint="Desteklenen formatlar: .jpg, .png" />
                     <div className="space-y-4 border-t pt-4">
                         <Label className="text-base font-semibold">Kategori Bazlı Bağış Oranları (%)</Label>
                         <p className="text-xs text-muted-foreground">Markanızın farklı kategorileri için taahhüt ettiği bağış oranlarını girin.</p>
@@ -439,6 +507,32 @@ const BrandForm = () => {
                         <Button type="button" variant="outline" size="sm" className="w-full mt-2" onClick={addDonationRate}>
                             <Plus className="mr-2 h-4 w-4" /> Yeni Kategori Ekle
                         </Button>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                 <CardHeader>
+                    <CardTitle className="text-lg">Affiliate & E-Ticaret</CardTitle>
+                    <CardDescription>Pazar yeri entegrasyonu ve gelir ortaklığı bilgileri.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Affiliate Marketing Kodu</Label>
+                        <Input placeholder="Gelir Ortakları, ReklamAction vb. kodunuz" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>E-ticaret Altyapısı</Label>
+                        <Select>
+                            <SelectTrigger><SelectValue placeholder="Altyapı seçin..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="shopify">Shopify</SelectItem>
+                                <SelectItem value="woocommerce">WooCommerce</SelectItem>
+                                <SelectItem value="ticimax">Ticimax</SelectItem>
+                                <SelectItem value="ikas">Ikas</SelectItem>
+                                <SelectItem value="custom">Özel Altyapı</SelectItem>
+                                <SelectItem value="other">Diğer</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </CardContent>
             </Card>
@@ -496,88 +590,128 @@ const ClubForm = () => {
     )
 };
 
-const FormRenderer = () => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const action = searchParams.get('action') || 'login';
-  const type = searchParams.get('type');
-  
-  const [currentView, setCurrentView] = useState('login');
+const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: boolean, onOpenChange: (open: boolean) => void, onComplete: () => void }) => {
+    const [step, setStep] = useState(1);
+    
+    const surveyOptions1 = ["Sosyal Medya", "Arkadaş Tavsiyesi", "Haberler / Basın", "Reklam", "Okul / İş yeri", "Diğer"];
+    const surveyOptions2 = ["Bağış Modeli", "Gönüllülük Fırsatları", "STK Çeşitliliği", "Topluluk ve Etkileşim", "Teknolojik Altyapı", "Diğer"];
 
-  useEffect(() => {
-    if (action === 'register' && type === 'corporate') {
-      setCurrentView('corporate-register');
-    } else if (action === 'register') {
-      setCurrentView('individual-register');
-    } else {
-      setCurrentView('login');
-    }
-  }, [action, type]);
-
-  const handleActionChange = (value: string) => {
-    router.push(`/login/selection?action=${value}`);
-  }
-
-  const handleTypeChange = (value: string) => {
-    const currentAction = action || 'register';
-    if (value === 'individual') {
-        router.push(`/login/selection?action=${currentAction}`);
-    } else {
-        router.push(`/login/selection?action=${currentAction}&type=${value}`);
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
-        <div className="w-full max-w-sm">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4">
-                <ArrowLeft />
-            </Button>
-            <Card className="rounded-2xl shadow-2xl">
-                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">hangel'a {action === 'register' ? 'Kayıt Ol' : 'Giriş Yap'}</CardTitle>
-                    <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                     <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="login">Giriş Yap</TabsTrigger>
-                            <TabsTrigger value="register">Kayıt Ol</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    {action === 'login' ? <IndividualForm /> : (
-                        <div className="space-y-4 pt-4 border-t">
-                            <Label>Hesap Tipi</Label>
-                            <Select onValueChange={handleTypeChange} defaultValue={type ? 'corporate' : 'individual'}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Hesap tipi seçin..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="individual">Bireysel</SelectItem>
-                                    <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {type === 'corporate' ? <CorporateForm isRegister={true} /> : (
-                                <form className="space-y-4 animate-in fade-in-0">
-                                    <div className="space-y-2"><Label>Ad Soyad</Label><Input required /></div>
-                                    <div className="space-y-2"><Label>E-posta</Label><Input type="email" required /></div>
-                                    <div className="space-y-2"><Label>Şifre</Label><Input type="password" required /></div>
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox id="terms" required />
-                                        <Label htmlFor="terms" className="text-xs">
-                                             <Link href="/settings/contracts" className="underline">Sözleşmeleri</Link> okudum ve kabul ediyorum.
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="text-center text-2xl font-bold flex items-center justify-center gap-2">
+                        <Sparkles className="h-6 w-6 text-primary" />
+                        {step === 1 ? "Sizi Tanıyalım" : "Son Bir Adım"}
+                    </DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                    {step === 1 ? (
+                        <div className="space-y-4">
+                            <Label className="text-center block font-semibold">hangel'i nereden duydunuz?</Label>
+                            <RadioGroup defaultValue={surveyOptions1[0]} className="grid grid-cols-2 gap-2">
+                                {surveyOptions1.map(option => (
+                                    <div key={option} className="flex items-center">
+                                        <RadioGroupItem value={option} id={`q1-${option}`} className="peer sr-only" />
+                                        <Label htmlFor={`q1-${option}`} className="flex w-full items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                            {option}
                                         </Label>
                                     </div>
-                                    <Button type="submit" className="w-full">Kayıt Ol</Button>
-                                </form>
-                            )}
+                                ))}
+                            </RadioGroup>
+                            <Button onClick={() => setStep(2)} className="w-full mt-4">İleri</Button>
+                        </div>
+                    ) : (
+                         <div className="space-y-4">
+                            <Label className="text-center block font-semibold">Kayıt olma kararınızı etkileyen en önemli faktör neydi?</Label>
+                            <RadioGroup defaultValue={surveyOptions2[0]} className="grid grid-cols-2 gap-2">
+                                {surveyOptions2.map(option => (
+                                    <div key={option} className="flex items-center">
+                                        <RadioGroupItem value={option} id={`q2-${option}`} className="peer sr-only" />
+                                        <Label htmlFor={`q2-${option}`} className="flex w-full h-full items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                            {option}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
+                            <Button onClick={onComplete} className="w-full mt-4">Bitir</Button>
                         </div>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+
+const FormRenderer = () => {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const action = searchParams.get('action') || 'login';
+    const type = searchParams.get('type');
+    const [showSurvey, setShowSurvey] = useState(false);
+  
+    const handleActionChange = (value: string) => {
+        router.push(`/login/selection?action=${value}`);
+    };
+
+    const handleTypeChange = (value: string) => {
+        const currentAction = action || 'register';
+        if (value === 'individual') {
+            router.push(`/login/selection?action=${currentAction}`);
+        } else {
+            router.push(`/login/selection?action=${currentAction}&type=${value}`);
+        }
+    };
+    
+    const handleRegistrationComplete = () => {
+        setShowSurvey(true);
+    };
+
+    const handleSurveyComplete = () => {
+        setShowSurvey(false);
+        router.push(type === 'corporate' ? '/admin' : '/timeline');
+    }
+
+    return (
+        <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
+            <div className="w-full max-w-sm">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4">
+                    <ArrowLeft />
+                </Button>
+                <Card className="rounded-2xl shadow-2xl">
+                     <CardHeader className="text-center">
+                        <CardTitle className="text-2xl">hangel'a {action === 'register' ? 'Kayıt Ol' : 'Giriş Yap'}</CardTitle>
+                        <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="login">Giriş Yap</TabsTrigger>
+                                <TabsTrigger value="register">Kayıt Ol</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        {action === 'login' ? <IndividualForm onComplete={() => router.push('/timeline')} /> : (
+                            <div className="space-y-4 pt-4 border-t">
+                                <Label>Hesap Tipi</Label>
+                                <Select onValueChange={handleTypeChange} defaultValue={type ? 'corporate' : 'individual'}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Hesap tipi seçin..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="individual">Bireysel</SelectItem>
+                                        <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {type === 'corporate' ? <CorporateForm onComplete={handleRegistrationComplete} /> : <IndividualForm isRegister={true} onComplete={handleRegistrationComplete} />}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+             <PostRegistrationSurvey open={showSurvey} onOpenChange={setShowSurvey} onComplete={handleSurveyComplete} />
         </div>
-    </div>
-  )
+    )
 }
 
 export default function LoginSelectionPage() {
@@ -587,3 +721,5 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
+
+    
