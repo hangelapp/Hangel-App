@@ -30,7 +30,7 @@ export const user: User = {
     impactScore: 15750,
     personalInfo: {
         email: 'i.adiguzel@email.com',
-        phone: '+90 554 700 70 07',
+        phone: '+90 538 400 90 90',
         birthDate: '1993-05-21',
         gender: 'Erkek',
         nationality: 'Türkiye Cumhuriyeti',
@@ -199,16 +199,70 @@ const brandsData = [
     { name: 'Little Caesars', rate: 6, category: 'Gıda & İçecek', domain: 'littlecaesars.com.tr' }
 ];
 
-export const allEntityLists: Brand[] = brandsData.map((brand, index) => ({
-    id: `brand-${index + 1}`,
-    slug: slugify(brand.name),
-    name: brand.name,
-    donationRate: brand.rate,
-    logoUrl: `https://logo.clearbit.com/${brand.domain}`,
-    type: 'brand',
-    category: brand.category,
-    agency: 'GelirOrtaklari' // default
-}));
+export const allEntityLists: Brand[] = brandsData.map((brand, index) => {
+    const slug = slugify(brand.name);
+    const brandId = `brand-${index + 1}`;
+    
+    // Create mock data based on user request
+    const mockAbout = `"${brand.name}" olarak, sürdürülebilir ve etik üretim prensiplerini benimsiyoruz. Her alışverişinizde, belirlediğimiz sosyal etki alanlarına katkıda bulunarak toplumsal bir fayda yaratmanıza olanak tanıyoruz. Kaliteyi ve toplumsal sorumluluğu bir araya getiriyoruz.`;
+    const mockJoinDate = `202${Math.floor(3 - (index % 4))}-0${(index % 9) + 1}-${(index % 28) + 1}`;
+    const mockDonationByCategory = [
+        { category: 'Giyim', rate: brand.rate },
+        { category: 'Aksesuar', rate: brand.rate * 0.8 },
+        { category: 'Ev & Yaşam', rate: brand.rate * 0.9 },
+        { category: 'Elektronik', rate: brand.rate * 0.5 },
+    ].slice(0, 4);
+
+    const mockStats = {
+        supporters: 15000 + (index * 1234),
+        totalDonation: 250000 + (index * 5432),
+        monthlyFollowerGrowth: 5 + (index % 10),
+        profileViews: 50000 + (index * 4321),
+        profileShares: 2000 + (index * 123),
+    };
+    
+    const mockSustainabilityReports = [
+        { title: '2024 Sürdürülebilirlik Raporu', url: '#' },
+        { title: '2023 Sürdürülebilirlik Raporu', url: '#' },
+        { title: '2024 KSS Raporu', url: '#' },
+        { title: '2023 KSS Raporu', url: '#' },
+    ];
+
+    const mockPosts: Post[] = [
+        {
+            id: `post-brand-${brandId}`,
+            author: {
+                name: brand.name,
+                avatarUrl: `https://logo.clearbit.com/${brand.domain}`,
+            },
+            content: `Yeni sezon ürünlerimizle tanışın! ✨ Her alışverişinizde doğaya ve topluma katkıda bulunmanın keyfini çıkarın. Bu sezonki gelirlerimizin bir kısmını ${['TEMA Vakfı', 'Ahbap Derneği', 'LÖSEV'][index % 3]}'na bağışlıyoruz.`,
+            imageUrl: `https://picsum.photos/seed/${slug}/800/450`,
+            imageHint: 'product lifestyle shot',
+            timestamp: `${(index % 5) + 1} gün önce`,
+            likes: 150 + (index * 23),
+            comments: 10 + (index * 5),
+            sponsored: index % 4 === 0,
+        },
+    ];
+
+    return {
+        id: brandId,
+        slug: slug,
+        name: brand.name,
+        donationRate: brand.rate,
+        logoUrl: `https://logo.clearbit.com/${brand.domain}`,
+        type: 'brand',
+        category: brand.category,
+        agency: 'GelirOrtaklari', // default
+        about: mockAbout,
+        joinDate: mockJoinDate,
+        donationByCategory: mockDonationByCategory,
+        stats: mockStats,
+        sustainabilityReports: mockSustainabilityReports,
+        posts: mockPosts,
+        followers: 15000 + (index * 1234),
+    };
+});
 
 const categories = [...new Set(allEntityLists.map(b => b.category))];
 export const marketCategories: MarketCategory[] = [{ mainCategory: 'Tümü', subCategories: [] }, ...categories.map(c => ({ mainCategory: c, subCategories: [] }))];
