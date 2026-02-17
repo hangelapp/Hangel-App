@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo, useRef } from 'react';
@@ -14,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories } from '@/lib/data';
+import { marketCategories, allUniversities, provincialDirectorates } from '@/lib/data';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
@@ -111,7 +112,6 @@ const neighborhoods: { [key: string]: string[] } = {
     'Fatih': ['Aksaray', 'Balat', 'Eminönü', 'Sultanahmet', 'Sirkeci', 'Beyazıt', 'Çapa', 'Kocamustafapaşa', 'Yedikule', 'Karagümrük'],
 };
 
-const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi'];
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
 
@@ -286,16 +286,22 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                 <div className="space-y-3">
                      <div className="flex items-start space-x-2">
                         <Checkbox id="terms-user" required />
-                        <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/kullanici-sozlesmesi" className="underline">Kullanıcı Sözleşmesini</Link> okudum, onaylıyorum.</Label>
+                        <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
+                            <Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.
+                        </Label>
                     </div>
                      <div className="flex items-start space-x-2">
                         <Checkbox id="terms-privacy" required />
-                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground"><Link href="/settings/contracts/gizlilik-politikasi" className="underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline">KVKK Metnini</Link> okudum, onaylıyorum.</Label>
+                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
+                            <Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.
+                        </Label>
                     </div>
                     {isRegister && (
                         <div className="flex items-start space-x-2">
                             <Checkbox id="terms-consent" required />
-                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/acik-riza-metni" className="underline">Açık Rıza Metnini</Link> okudum, onaylıyorum.</Label>
+                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
+                               <Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.
+                            </Label>
                         </div>
                     )}
                 </div>
@@ -446,6 +452,8 @@ const BrandForm = () => {
     const [district, setDistrict] = useState('');
     const [neighborhood, setNeighborhood] = useState('');
     const [donationRates, setDonationRates] = useState([{ category: '', rate: '' }]);
+    const [ecommerceInfra, setEcommerceInfra] = useState('');
+
     const addDonationRate = () => setDonationRates([...donationRates, { category: '', rate: '' }]);
     const removeDonationRate = (index: number) => {
       if (donationRates.length > 1) {
@@ -522,7 +530,7 @@ const BrandForm = () => {
                     </div>
                     <div className="space-y-2">
                         <Label>E-ticaret Altyapısı</Label>
-                        <Select>
+                        <Select value={ecommerceInfra} onValueChange={setEcommerceInfra}>
                             <SelectTrigger><SelectValue placeholder="Altyapı seçin..." /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="shopify">Shopify</SelectItem>
@@ -538,6 +546,12 @@ const BrandForm = () => {
                             </SelectContent>
                         </Select>
                     </div>
+                    {ecommerceInfra === 'other' && (
+                        <div className="space-y-2 animate-in fade-in-0">
+                            <Label>Diğer E-ticaret Altyapısı</Label>
+                            <Input placeholder="Altyapı adını yazın..." />
+                        </div>
+                    )}
                 </CardContent>
             </Card>
             <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
@@ -575,12 +589,41 @@ const ClubForm = () => {
                         <div className="space-y-2">
                             <Label>Üniversite</Label>
                             <Select><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
-                                <SelectContent>{universities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                                <SelectContent>
+                                    {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                    {schoolType === 'high-school' && (
+                        <div className="space-y-2">
+                            <Label>Okulunuzun bağlı olduğu il müdürlüğü</Label>
+                            <Select><SelectTrigger><SelectValue placeholder="İl müdürlüğü seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {provincialDirectorates.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
                             </Select>
                         </div>
                     )}
                     <div className="space-y-2"><Label>Kulüp Adı</Label><Input placeholder="Kulübünüzün tam adı" required /></div>
+                    <div className="space-y-2"><Label>Telefon Numarası</Label><Input type="tel" placeholder="5XX XXX XX XX" /></div>
                     <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="kulup@okul.edu.tr" required /></div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader><CardTitle className="text-lg">Kulüp Başkanı Bilgileri</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2"><Label>Ad Soyad</Label><Input placeholder="Başkanın adı soyadı" required /></div>
+                    <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="baskan@okul.edu.tr" required /></div>
+                    <div className="space-y-2"><Label>Telefon</Label><Input type="tel" placeholder="5XX XXX XX XX" required /></div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader><CardTitle className="text-lg">Akademik Danışman Bilgileri</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2"><Label>Ad Soyad</Label><Input placeholder="Danışmanın adı soyadı" required /></div>
+                    <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="danisman@okul.edu.tr" required /></div>
+                    <div className="space-y-2"><Label>Telefon</Label><Input type="tel" placeholder="5XX XXX XX XX" required /></div>
                 </CardContent>
             </Card>
             <Card>
