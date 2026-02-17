@@ -246,10 +246,28 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!phoneNumber || phoneNumber.trim() === "") {
+            toast({
+                variant: "destructive",
+                title: "Eksik Bilgi",
+                description: "Telefon numarası alanı boş bırakılamaz.",
+            });
+            return;
+        }
+
         const email = `${phoneNumber}@hangel.org`; // Create a fake email from phone number
         
         try {
             if (isRegister) {
+                if (!name || name.trim() === "") {
+                    toast({
+                        variant: "destructive",
+                        title: "Eksik Bilgi",
+                        description: "Ad Soyad alanı boş bırakılamaz.",
+                    });
+                    return;
+                }
                 await createUserWithEmailAndPassword(auth, email, password);
                 toast({ title: "Kayıt Başarılı!", description: "hangel'e hoş geldin!" });
             } else {
@@ -259,11 +277,28 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
             onComplete();
         } catch (error: any) {
             console.error("Authentication error:", error);
-            const errorCode = error.code || 'Bilinmeyen Hata';
+            let description = "Bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.";
+            switch(error.code) {
+                case 'auth/invalid-email':
+                    description = 'Girdiğiniz telefon numarası geçersiz. Lütfen kontrol ediniz.';
+                    break;
+                case 'auth/user-not-found':
+                    description = 'Bu telefon numarası ile kayıtlı bir kullanıcı bulunamadı.';
+                    break;
+                case 'auth/wrong-password':
+                    description = 'Yanlış şifre. Lütfen tekrar deneyin.';
+                    break;
+                case 'auth/email-already-in-use':
+                    description = 'Bu telefon numarası zaten kayıtlı. Lütfen giriş yapmayı deneyin.';
+                    break;
+                case 'auth/weak-password':
+                    description = 'Şifre en az 6 karakter olmalıdır.';
+                    break;
+            }
             toast({
                 variant: "destructive",
-                title: "Bir hata oluştu",
-                description: `Hata: ${errorCode}. Lütfen bilgilerinizi kontrol edip tekrar deneyin.`,
+                title: "Giriş Hatası",
+                description: description,
             });
         }
     };
