@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -16,6 +17,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
 import { ShareButtons } from '@/components/shared/share-buttons';
+import { Separator } from '@/components/ui/separator';
 
 
 type NgoType = NGO['type'] | 'Tümü';
