@@ -232,31 +232,53 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
 
 const IndividualForm = () => {
     const router = useRouter();
+    const [step, setStep] = useState<'phone' | 'code'>('phone');
+    const [phoneNumber, setPhoneNumber] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handlePhoneSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Here you would normally send an SMS with the code
+        setStep('code');
+    };
+
+    const handleCodeSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Here you would normally verify the code
         router.push('/timeline');
-    }
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="email">E-posta</Label>
-                <Input id="email" type="email" placeholder="ornek@eposta.com" required />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="password">Şifre</Label>
-                <Input id="password" type="password" required />
-            </div>
-            <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                    <Checkbox id="remember-me" />
-                    <Label htmlFor="remember-me">Beni hatırla</Label>
+    };
+
+    if (step === 'phone') {
+        return (
+            <form onSubmit={handlePhoneSubmit} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="phone">Telefon Numarası</Label>
+                    <Input id="phone" type="tel" placeholder="5XX XXX XX XX" required value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
                 </div>
-                <Link href="#" className="underline">Şifremi unuttum</Link>
+                 <div className="flex items-center space-x-2">
+                    <Checkbox id="terms-login" required />
+                    <Label htmlFor="terms-login" className="text-xs font-normal text-muted-foreground">
+                        <Link href="/settings/contracts" className="font-medium text-primary hover:underline">Sözleşmeleri</Link> okudum ve onaylıyorum.
+                    </Label>
+                </div>
+                <Button type="submit" className="w-full">Doğrulama Kodu Gönder</Button>
+            </form>
+        );
+    }
+
+    return (
+        <form onSubmit={handleCodeSubmit} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="phone-confirm">Telefon Numarası</Label>
+                <Input id="phone-confirm" type="tel" value={phoneNumber} disabled />
+                 <Button variant="link" className="p-0 h-auto text-xs" onClick={() => setStep('phone')}>Numaranı değiştir</Button>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="code">Doğrulama Kodu</Label>
+                <Input id="code" type="text" maxLength={6} required placeholder="------" className="text-center tracking-[0.5em]" />
             </div>
             <Button type="submit" className="w-full">Giriş Yap</Button>
         </form>
-    )
+    );
 };
 
 const CorporateForm = ({ isRegister }: { isRegister: boolean }) => {
