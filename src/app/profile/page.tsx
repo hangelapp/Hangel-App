@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -107,20 +106,26 @@ export default function ProfilePage() {
     const [filters, setFilters] = useState<string[]>([]);
     const { toast } = useToast();
     const [isStoryLoading, setIsStoryLoading] = useState(false);
-    const [story, setStory] = useState('');
+    const [stories, setStories] = useState<string[]>([]);
     
-    const handleGenerateStory = async () => {
+    const handleGenerateStories = async () => {
         setIsStoryLoading(true);
-        setStory('');
+        setStories([]);
         try {
-            const result = await getImpactStory({
-                userName: user.name.split(' ')[0],
-                donations: `${user.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${user.stats.mostSupportedNgo}.`,
-                volunteering: `${user.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${user.stats.mostActiveVolunteerArea}.`,
-                badges: `Toplamda ${badges.filter(b => b.currentPoints >= b.pointsRequired).length} rozet kazanıldı.`
-            });
-            if (result.story) {
-                setStory(result.story);
+            const storyPromises = Array(5).fill(0).map(() => 
+                getImpactStory({
+                    userName: user.name.split(' ')[0],
+                    donations: `${user.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${user.stats.mostSupportedNgo}.`,
+                    volunteering: `${user.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${user.stats.mostActiveVolunteerArea}.`,
+                    badges: `Toplamda ${badges.filter(b => b.currentPoints >= b.pointsRequired).length} rozet kazanıldı.`
+                })
+            );
+            const results = await Promise.all(storyPromises);
+            const generatedStories = results.map(r => r.story).filter(Boolean);
+            if (generatedStories.length > 0) {
+                setStories(generatedStories);
+            } else {
+                 throw new Error("AI assistant did not return any stories.");
             }
         } catch (error) {
             console.error("Story generation failed:", error);
@@ -245,6 +250,7 @@ export default function ProfilePage() {
                             <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
                             <TabsTrigger value="badges-certificates">Rozetler & Sertifikalar</TabsTrigger>
                             <TabsTrigger value="posts">Gönderi</TabsTrigger>
+                            <TabsTrigger value="story">Hikaye</TabsTrigger>
                         </TabsList>
                     </div>
                     
@@ -256,36 +262,6 @@ export default function ProfilePage() {
                             <CardContent>
                                 <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
                             </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Yapay Zeka Destekli Etki Hikayen</CardTitle>
-                                <CardDescription>Bu ayki katkılarınla sağladığın pozitif etkiyi gör ve paylaş!</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {story ? (
-                                    <div
-                                        className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted rounded-lg"
-                                        dangerouslySetInnerHTML={{ __html: story }}
-                                    />
-                                ) : (
-                                    <Button onClick={handleGenerateStory} disabled={isStoryLoading} className="w-full">
-                                        {isStoryLoading ? 'Hikayen oluşturuluyor...' : 'Bu Ayki Hikayeni Oluştur'}
-                                    </Button>
-                                )}
-                            </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-xs text-muted-foreground">
-                                {story && (
-                                    <Button onClick={handleGenerateStory} disabled={isStoryLoading} variant="secondary" className="w-full">
-                                        {isStoryLoading ? 'Hikayen oluşturuluyor...' : 'Yeni Bir Hikaye Oluştur'}
-                                    </Button>
-                                )}
-                                <div className="w-full flex justify-between items-center">
-                                    <p>Yapay zeka tarafından sağlanan verilerle oluşturulmuştur.</p>
-                                    <Link href="/support/ai-assistants" className="hover:underline text-primary">Nasıl çalışır?</Link>
-                                </div>
-                            </CardFooter>
                         </Card>
                         
                         <Card>
@@ -502,6 +478,45 @@ export default function ProfilePage() {
                                     <p className="mt-4">Henüz bir gönderi paylaşmadınız.</p>
                                 </div>
                             </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="story" className="p-4 space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Yapay Zeka Destekli Etki Hikayen</CardTitle>
+                                <CardDescription>Bu ayki katkılarınla sağladığın pozitif etkiyi gör ve paylaş!</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <Button onClick={handleGenerateStories} disabled={isStoryLoading} className="w-full">
+                                    {isStoryLoading ? 'Hikayelerin oluşturuluyor...' : 'Bu Ayki 5 Hikayeni Oluştur'}
+                                </Button>
+                                {isStoryLoading && (
+                                    <div className="flex justify-center items-center p-8">
+                                        <p>Hikayeleriniz hazırlanıyor, lütfen bekleyin...</p>
+                                    </div>
+                                )}
+                                {stories.length > 0 && (
+                                    <div className="space-y-4">
+                                        {stories.map((story, index) => (
+                                            <div key={index} className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted rounded-lg"
+                                                 dangerouslySetInnerHTML={{ __html: story }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2 text-xs text-muted-foreground">
+                                {stories.length > 0 && (
+                                    <Button onClick={handleGenerateStories} disabled={isStoryLoading} variant="secondary" className="w-full">
+                                        {isStoryLoading ? 'Hikayelerin oluşturuluyor...' : 'Yeni Hikayeler Oluştur'}
+                                    </Button>
+                                )}
+                                <div className="w-full flex justify-between items-center">
+                                    <p>Yapay zeka tarafından sağlanan verilerle oluşturulmuştur.</p>
+                                    <Link href="/support/ai-assistants" className="hover:underline text-primary">Nasıl çalışır?</Link>
+                                </div>
+                            </CardFooter>
                         </Card>
                     </TabsContent>
 
