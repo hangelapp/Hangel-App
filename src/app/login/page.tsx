@@ -298,56 +298,6 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, 
     </div>
 );
 
-const FaqSection = () => {
-    const faqs = [
-        {
-            question: "Sosyal etki puanı nedir?",
-            answer: "Sosyal etki puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Gönüllülük faaliyetleri, bağışlar ve platforma yeni üyeler kazandırma gibi eylemlerle puan kazanırsınız. Bu puanlar, hem topluluk içindeki statünüzü gösterir hem de size özel avantajlar sunar."
-        },
-        {
-            question: "hangel'i kullanmak ücretli mi?",
-            answer: "hangel'i kullanmak tamamen ücretsizdir. Alışverişlerinizden doğan bağışlar, markalar tarafından karşılanır ve size ek bir maliyet yansıtılmaz."
-        },
-        {
-            question: "Gönüllülük faaliyetlerinden puan kazanıyor muyum?",
-            answer: "Evet, tamamladığınız her gönüllülük faaliyeti için sosyal etki puanı kazanırsınız. Bu puanlar liderlik tablosundaki sıralamanızı ve rozetlerinizi etkiler."
-        },
-        {
-            question: "Yaptığım bağışların doğru STK'ya ulaştığından nasıl emin olabilirim?",
-            answer: "Tüm bağış süreçleri şeffaftır. Profilinizdeki \"Bağışlarım\" bölümünden her işlemin detayını, hangi STK'ya ne kadar bağış yapıldığını ve işlem durumunu anlık olarak takip edebilirsiniz."
-        },
-        {
-            question: "Hangi markalar hangel'i destekliyor?",
-            answer: "Yüzlerce yerel ve global marka hangel ekosisteminde yer alıyor. Giyimden teknolojiye, seyahatten gıdaya birçok farklı kategorideki markayı \"Markalar\" sayfasından keşfedebilirsiniz."
-        }
-    ];
-
-    return (
-        <section className="py-16 md:py-24 bg-white">
-            <div className="container mx-auto px-4 max-w-4xl">
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Sorular? Cevaplar.</h2>
-                </div>
-                <Accordion type="single" collapsible className="w-full">
-                    {faqs.map((faq, index) => (
-                        <AccordionItem value={`item-${index}`} key={index}>
-                            <AccordionTrigger className="text-lg font-medium hover:no-underline py-6">
-                                <div className="flex items-center gap-4">
-                                    <HelpCircle className="h-6 w-6 text-primary" />
-                                    <span>{faq.question}</span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="text-base text-muted-foreground pt-0 pb-6 pl-14">
-                                {faq.answer}
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-            </div>
-        </section>
-    )
-};
-
 const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: any[], headers: string[] }) => (
     <div className="space-y-6 scroll-mt-24" id={title.toLowerCase().replace(/\s+/g, '-')}>
         <div className="space-y-1 px-1">
@@ -808,11 +758,9 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </section>
-                <FaqSection />
                 <FullStandardsSection />
             </main>
             <PublicFooter currentPageLabel="Anasayfa" />
         </div>
     );
 }
-
