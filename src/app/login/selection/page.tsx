@@ -253,19 +253,12 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
     // Setup reCAPTCHA
     useEffect(() => {
         if (!auth) return;
-        if ((window as any).recaptchaVerifier) {
-            (window as any).recaptchaVerifier.clear();
+        // Only initialize if it doesn't exist to avoid issues with HMR and strict mode
+        if (!(window as any).recaptchaVerifier) {
+            (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                'size': 'invisible',
+            });
         }
-        
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
-        });
-        
-        return () => {
-            if ((window as any).recaptchaVerifier) {
-                (window as any).recaptchaVerifier.clear();
-            }
-        };
     }, [auth]);
 
     // Countdown timer effect
@@ -311,17 +304,22 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                 description = "Girdiğiniz telefon numarası geçersiz.";
             } else if (error.code === 'auth/too-many-requests') {
                 description = "Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin.";
+            } else if (error.code === 'auth/email-already-in-use') {
+                description = "Bu telefon numarası zaten kayıtlı. Lütfen giriş yapmayı deneyin.";
             }
             
             toast({ variant: "destructive", title: "Kod Gönderilemedi", description: description });
-             // In case of error, reset reCAPTCHA
-            appVerifier.render().then((widgetId: any) => {
+             // In case of error, reset reCAPTCHA.
+             try {
+                const widgetId = await appVerifier.render();
                 // @ts-ignore
-                if(window.grecaptcha) {
+                if (window.grecaptcha) {
                     // @ts-ignore
                     window.grecaptcha.reset(widgetId);
                 }
-            });
+             } catch (renderError) {
+                console.error("reCAPTCHA reset error:", renderError);
+             }
         } finally {
             setIsLoading(false);
         }
