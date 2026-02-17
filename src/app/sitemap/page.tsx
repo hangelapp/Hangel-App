@@ -28,16 +28,45 @@ export default function SitemapPage() {
 
     const sections = [
         {
-            title: "Ana Bölümler",
+            title: "Ana Sayfalar",
             links: [
-                { label: "Market / Alışveriş", href: "/market" },
-                { label: "Gönüllülük İlanları", href: "/volunteering" },
-                { label: "Zaman Tüneli", href: "/timeline" },
-                { label: "Cüzdanım", href: "/qr-payment" },
-                { label: "Profilim", href: "/profile" },
+                { label: "Zaman Tüneli (Ana Akış)", href: "/timeline" },
+                { label: "Market (Alışverişle Bağış)", href: "/market" },
+                { label: "Gönüllülük (İmece)", href: "/volunteering" },
+                { label: "Cüzdanım (QR Ödeme)", href: "/qr-payment" },
+                { label: "Acil Durum Merkezi", href: "/emergency" },
                 { label: "Liderlik Tablosu", href: "/leaderboard" },
+                { label: "Etki Hikayeleri (Stories)", href: "/stories" },
                 { label: "Kütüphane", href: "/library" },
-                { label: "Acil Durum Merkezi", href: "/emergency" }
+            ]
+        },
+        {
+            title: "Hesabım",
+            links: [
+                { label: "Profilim", href: "/profile" },
+                { label: "Ayarlar", href: "/settings" },
+                { label: "Kişisel Bilgileri Düzenle", href: "/settings/profile" },
+                { label: "Gönüllülük Bilgilerini Düzenle", href: "/settings/volunteer" },
+                { label: "Cüzdan Ayarları", href: "/settings/wallet" },
+                { label: "Güvenlik Ayarları", href: "/settings/security" },
+                { label: "Bildirim Ayarları", href: "/settings/notifications" },
+                { label: "Görünüm Ayarları", href: "/settings/theme" },
+                { label: "Dil Ayarları", href: "/settings/language" },
+                { label: "STK Seçimi (Bağış)", href: "/settings/ngo-selection" },
+                { label: "STK Seçimi (Gönüllülük)", href: "/settings/volunteer-ngo-selection" },
+                { label: "Mesajlarım", href: "/messages" },
+                { label: "Başvurularım", href: "/my-applications" },
+                { label: "Bağışlarım", href: "/my-donations" },
+                { label: "Rozetler & Sertifikalar", href: "/my-badges" },
+                { label: "Arkadaş Davet Et", href: "/invite" },
+            ]
+        },
+        {
+            title: "Yönetim Panelleri",
+            links: [
+                { label: "STK Yönetim Paneli", href: "/ngo-admin/dashboard" },
+                { label: "Marka/Kulüp Yönetim Paneli", href: "/admin" },
+                { label: "Süper Admin Paneli", href: "/super-admin" },
             ]
         },
         {
@@ -78,15 +107,13 @@ export default function SitemapPage() {
                 { label: "Yardım Merkezi", href: "/support" },
                 { label: "Geri Bildirim Gönder", href: "/feedback" },
                 { label: "Erişilebilirlik Beyanı", href: "/accessibility" },
-                { label: "Gizlilik Politikası", href: "/settings/contracts/gizlilik-politikasi" },
-                { label: "Kullanıcı Sözleşmesi", href: "/settings/contracts/kullanici-sozlesmesi" },
-                { label: "Çerez Politikası", href: "/settings/contracts/cerez-politikasi" },
-                { label: "KVKK Aydınlatma Metni", href: "/settings/contracts/kvkk-aydinlatma-metni" }
+                { label: "Tüm Sözleşmeler ve Politikalar", href: "/settings/contracts" },
+                { label: "Logo Kullanım Kılavuzu", href: "/logo-usage" }
             ]
         }
     ];
 
-    const mainPagesSection = sections.find(s => s.title === "Ana Bölümler");
+    const mainPagesSection = sections.find(s => s.title === "Ana Sayfalar");
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
