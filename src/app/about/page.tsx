@@ -127,8 +127,8 @@ export default function AboutPage() {
                 title="İyiliği Dijitalleştirdik."
                 subtitle="Geleceğin dayanışma modelini inşa ediyoruz."
                 description="Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, en kapsamlı sosyal etki platformuyuz."
-                imageUrl="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
-                imageHint="university students"
+                imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                imageHint="university students working together"
             />
 
             {/* Social Enterprise */}
@@ -146,10 +146,26 @@ export default function AboutPage() {
             <section className="bg-[#f5f5f7] py-24 text-center border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-5xl">
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-16 text-[#1d1d1f]">Rakamlarla hangel</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-2 gap-x-8 gap-y-12 lg:gap-x-16">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 lg:gap-x-16">
                         <div className="space-y-2">
                             <p className="text-5xl font-black tracking-tighter text-primary">2.5M+</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Kullanıcı</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">1.2K+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">STK</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">500+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Marka Sayısı</p>
+                        </div>
+                         <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">250+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Kulüp</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">50M+ ₺</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Nakit Bağış</p>
                         </div>
                         <div className="space-y-2">
                             <p className="text-5xl font-black tracking-tighter text-primary">250M+ ₺</p>
@@ -161,7 +177,7 @@ export default function AboutPage() {
                         </div>
                         <div className="space-y-2">
                             <p className="text-5xl font-black tracking-tighter text-primary">1.5K+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Paydaş (STK & Marka)</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Tamamlanan Proje</p>
                         </div>
                     </div>
                 </div>

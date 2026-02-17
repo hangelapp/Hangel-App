@@ -297,12 +297,26 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                         </Label>
                     </div>
                     {isRegister && (
-                        <div className="flex items-start space-x-2">
-                            <Checkbox id="terms-consent" required />
-                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
-                               <Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.
-                            </Label>
-                        </div>
+                        <>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-consent" required />
+                                <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
+                                   <Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.
+                                </Label>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-donation" required />
+                                <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
+                                    <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.
+                                </Label>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-volunteer" required />
+                                <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
+                                    <Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.
+                                </Label>
+                            </div>
+                        </>
                     )}
                 </div>
                 <Button type="submit" className="w-full">Doğrulama Kodu Gönder</Button>
@@ -570,6 +584,9 @@ const BrandForm = () => {
 
 const ClubForm = () => {
     const [schoolType, setSchoolType] = useState('');
+    const [highSchoolProvince, setHighSchoolProvince] = useState('');
+    const [highSchoolDistrict, setHighSchoolDistrict] = useState('');
+
     return (
         <div className="space-y-6">
             <Card>
@@ -596,14 +613,32 @@ const ClubForm = () => {
                         </div>
                     )}
                     {schoolType === 'high-school' && (
-                        <div className="space-y-2">
-                            <Label>Okulunuzun bağlı olduğu il müdürlüğü</Label>
-                            <Select><SelectTrigger><SelectValue placeholder="İl müdürlüğü seçin..." /></SelectTrigger>
-                                <SelectContent>
-                                    {provincialDirectorates.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <>
+                            <div className="space-y-2">
+                                <Label>Okulunuzun bağlı olduğu il müdürlüğü</Label>
+                                <Select onValueChange={(value) => {
+                                    const province = value.replace(' İl Millî Eğitim Müdürlüğü', '');
+                                    setHighSchoolProvince(province);
+                                    setHighSchoolDistrict('');
+                                }}>
+                                    <SelectTrigger><SelectValue placeholder="İl müdürlüğü seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {provincialDirectorates.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {highSchoolProvince && (
+                                <div className="space-y-2">
+                                    <Label>Bağlı bulunduğu ilçe müdürlüğü</Label>
+                                    <Select value={highSchoolDistrict} onValueChange={setHighSchoolDistrict}>
+                                        <SelectTrigger><SelectValue placeholder="İlçe müdürlüğü seçin..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {(districts[highSchoolProvince] || []).map(d => <SelectItem key={d} value={`${d} İlçe Millî Eğitim Müdürlüğü`}>{`${d} İlçe Millî Eğitim Müdürlüğü`}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                        </>
                     )}
                     <div className="space-y-2"><Label>Kulüp Adı</Label><Input placeholder="Kulübünüzün tam adı" required /></div>
                     <div className="space-y-2"><Label>Telefon Numarası</Label><Input type="tel" placeholder="5XX XXX XX XX" /></div>
@@ -616,6 +651,27 @@ const ClubForm = () => {
                     <div className="space-y-2"><Label>Ad Soyad</Label><Input placeholder="Başkanın adı soyadı" required /></div>
                     <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="baskan@okul.edu.tr" required /></div>
                     <div className="space-y-2"><Label>Telefon</Label><Input type="tel" placeholder="5XX XXX XX XX" required /></div>
+                    {schoolType === 'university' && (
+                        <>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2"><Label>Fakülte</Label><Input placeholder="Mühendislik Fakültesi" /></div>
+                                <div className="space-y-2"><Label>Bölüm</Label><Input placeholder="Bilgisayar Mühendisliği" /></div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Sınıf</Label>
+                                <Select>
+                                    <SelectTrigger><SelectValue placeholder="Sınıf seçin..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="1">1. Sınıf</SelectItem>
+                                        <SelectItem value="2">2. Sınıf</SelectItem>
+                                        <SelectItem value="3">3. Sınıf</SelectItem>
+                                        <SelectItem value="4">4. Sınıf</SelectItem>
+                                        <SelectItem value="5">5+ Sınıf</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </>
+                    )}
                 </CardContent>
             </Card>
              <Card>
@@ -624,6 +680,15 @@ const ClubForm = () => {
                     <div className="space-y-2"><Label>Ad Soyad</Label><Input placeholder="Danışmanın adı soyadı" required /></div>
                     <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="danisman@okul.edu.tr" required /></div>
                     <div className="space-y-2"><Label>Telefon</Label><Input type="tel" placeholder="5XX XXX XX XX" required /></div>
+                     {schoolType === 'university' && (
+                        <>
+                            <div className="space-y-2"><Label>Unvan</Label><Input placeholder="Prof. Dr. / Doç. Dr. / Dr. Öğr. Üyesi" /></div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2"><Label>Fakülte</Label><Input placeholder="Mühendislik Fakültesi" /></div>
+                                <div className="space-y-2"><Label>Bölüm</Label><Input placeholder="Bilgisayar Mühendisliği" /></div>
+                            </div>
+                        </>
+                    )}
                 </CardContent>
             </Card>
             <Card>
