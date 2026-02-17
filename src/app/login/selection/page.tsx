@@ -18,6 +18,9 @@ import { marketCategories, allUniversities, provincialDirectorates } from '@/lib
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+
 
 // --- Shared Constants & Data ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
@@ -233,111 +236,86 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
 );
 
 const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
-    const [step, setStep] = useState(isRegister ? 'info' : 'phone');
+    const { toast } = useToast();
+    const auth = useAuth();
+    const router = useRouter();
+
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [password, setPassword] = useState('');
     const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [countdown, setCountdown] = useState(60);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-    useEffect(() => {
-        if (step === 'code' && countdown > 0) {
-            timerRef.current = setInterval(() => {
-                setCountdown(prev => prev - 1);
-            }, 1000);
-        } else if (countdown === 0 && timerRef.current) {
-            clearInterval(timerRef.current);
-        }
-        return () => {
-            if (timerRef.current) clearInterval(timerRef.current);
-        };
-    }, [step, countdown]);
-
-    const handleResendCode = () => {
-        setCountdown(60);
-        // Resend logic would go here
-    };
     
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setStep('code');
-        setCountdown(60);
+        const email = `${phoneNumber}@hangel.org`; // Create a fake email from phone number
+        
+        try {
+            if (isRegister) {
+                await createUserWithEmailAndPassword(auth, email, password);
+                toast({ title: "Kayıt Başarılı!", description: "hangel'e hoş geldin!" });
+            } else {
+                await signInWithEmailAndPassword(auth, email, password);
+                toast({ title: "Giriş Başarılı!" });
+            }
+            onComplete();
+        } catch (error: any) {
+            console.error("Authentication error:", error);
+            const errorCode = error.code || 'Bilinmeyen Hata';
+            toast({
+                variant: "destructive",
+                title: "Bir hata oluştu",
+                description: `Hata: ${errorCode}. Lütfen bilgilerinizi kontrol edip tekrar deneyin.`,
+            });
+        }
     };
 
-    const handleFinalSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onComplete();
-    };
-
-    if (step === 'info' || step === 'phone') {
-        return (
-            <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
+            {isRegister && (
+                <div className="space-y-2"><Label>Ad Soyad</Label><Input required value={name} onChange={e => setName(e.target.value)} /></div>
+            )}
+            <div className="space-y-2">
+                <Label htmlFor="phone">Telefon Numarası</Label>
+                <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="password">Şifre</Label>
+                <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <div className="space-y-3">
+                <div className="flex items-start space-x-2">
+                   <Checkbox id="terms-user" required />
+                    <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
+                        <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                    </Label>
+                </div>
+                 <div className="flex items-start space-x-2">
+                    <Checkbox id="terms-privacy" required />
+                    <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
+                       <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
+                    </Label>
+                </div>
                 {isRegister && (
                     <>
-                        <div className="space-y-2"><Label>Ad Soyad</Label><Input required value={name} onChange={e => setName(e.target.value)} /></div>
-                        <div className="space-y-2"><Label>E-posta</Label><Input type="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
+                         <div className="flex items-start space-x-2">
+                            <Checkbox id="terms-consent" required />
+                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
+                               <span><Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
+                            </Label>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                            <Checkbox id="terms-donation" required />
+                             <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
+                                <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
+                            </Label>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                            <Checkbox id="terms-volunteer" required />
+                             <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
+                               <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                            </Label>
+                        </div>
                     </>
                 )}
-                <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon Numarası</Label>
-                    <Input id="phone" type="tel" placeholder="5XX XXX XX XX" required value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
-                </div>
-                <div className="space-y-3">
-                     <div className="flex items-start space-x-2">
-                        <Checkbox id="terms-user" required />
-                        <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
-                            <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                        </Label>
-                    </div>
-                     <div className="flex items-start space-x-2">
-                        <Checkbox id="terms-privacy" required />
-                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
-                            <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
-                        </Label>
-                    </div>
-                    {isRegister && (
-                        <>
-                            <div className="flex items-start space-x-2">
-                                <Checkbox id="terms-consent" required />
-                                <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
-                                   <span><Link href="/settings/contracts/acik-riza-metni" className="underline">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
-                                </Label>
-                            </div>
-                            <div className="flex items-start space-x-2">
-                                <Checkbox id="terms-donation" required />
-                                <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
-                                    <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
-                                </Label>
-                            </div>
-                            <div className="flex items-start space-x-2">
-                                <Checkbox id="terms-volunteer" required />
-                                <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
-                                    <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                                </Label>
-                            </div>
-                        </>
-                    )}
-                </div>
-                <Button type="submit" className="w-full">Doğrulama Kodu Gönder</Button>
-            </form>
-        );
-    }
-    
-    return (
-        <form onSubmit={handleFinalSubmit} className="space-y-4 animate-in fade-in-0">
-            <div className="space-y-2">
-                <Label htmlFor="phone-confirm">Telefon Numarası</Label>
-                <Input id="phone-confirm" type="tel" value={phoneNumber} disabled />
-                <Button variant="link" className="p-0 h-auto text-xs" onClick={() => setStep(isRegister ? 'info' : 'phone')}>Numaranı değiştir</Button>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="code">Doğrulama Kodu</Label>
-                <Input id="code" type="text" maxLength={6} required placeholder="------" className="text-center tracking-[0.5em]" />
-            </div>
-             <div className="text-center text-sm">
-                 <Button type="button" variant="link" onClick={handleResendCode} disabled={countdown > 0} className="text-xs">
-                    {countdown > 0 ? `Yeniden Gönder (${countdown})` : 'Yeniden Gönder'}
-                </Button>
             </div>
             <Button type="submit" className="w-full">{isRegister ? 'Kayıt Ol' : 'Giriş Yap'}</Button>
         </form>
@@ -585,6 +563,8 @@ const ClubForm = () => {
     const [schoolType, setSchoolType] = useState('');
     const [highSchoolProvince, setHighSchoolProvince] = useState('');
     const [highSchoolDistrict, setHighSchoolDistrict] = useState('');
+    const [faculty, setFaculty] = useState('');
+    const [department, setDepartment] = useState('');
 
     return (
         <div className="space-y-6">
@@ -779,6 +759,10 @@ const FormRenderer = () => {
         setShowSurvey(true);
     };
 
+    const handleLoginComplete = () => {
+        router.push('/timeline');
+    }
+
     const handleSurveyComplete = () => {
         setShowSurvey(false);
         router.push(type === 'corporate' ? '/admin' : '/timeline');
@@ -802,7 +786,7 @@ const FormRenderer = () => {
                                 <TabsTrigger value="register">Kayıt Ol</TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        {action === 'login' ? <IndividualForm onComplete={() => router.push('/timeline')} /> : (
+                        {action === 'login' ? <IndividualForm onComplete={handleLoginComplete} /> : (
                             <div className="space-y-4 pt-4 border-t">
                                 <Label>Hesap Tipi</Label>
                                 <Select onValueChange={handleTypeChange} defaultValue={type ? 'corporate' : 'individual'}>
@@ -832,5 +816,3 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
-
-    

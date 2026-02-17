@@ -6,15 +6,17 @@ import {
   Menu, Bell, Siren, Globe, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { UserAvatar } from '@/components/shared/user-avatar';
+import { UserNav } from '@/components/layout/user-nav';
 import { usePathname } from 'next/navigation';
 import * as Icons from 'lucide-react';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useUser } from '@/firebase';
 
 export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) {
   const { language, changeLanguage } = useTranslation();
   const pathname = usePathname();
+  const { user, isUserLoading } = useUser();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
   if (isAuthPage) return null;
@@ -47,12 +49,18 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
             <Button asChild variant="ghost" size="icon"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
             <Button asChild variant="ghost" size="icon"><Link href="/emergency"><Siren className="h-5 w-5 text-destructive" /></Link></Button>
             <Button asChild variant="ghost" size="icon"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
-            <Link href="/profile" passHref className="lg:hidden ml-1">
-              <Button variant="ghost" size="icon"><UserAvatar /></Button>
-            </Link>
+            
+            {isUserLoading ? (
+                <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
+            ) : user ? (
+                <UserNav />
+            ) : (
+                <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
+                    <Link href="/login/selection?action=login">Giriş Yap</Link>
+                </Button>
+            )}
           </div>
         </div>
       </header>
   );
 }
-
