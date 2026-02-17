@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -212,7 +213,7 @@ export default function SupportPage() {
                  <Card className="rounded-[2rem] overflow-hidden group">
                     <CardContent className="p-0">
                         <div className="relative aspect-[4/3]">
-                            <Image src="https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop" alt="Community" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <Image src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" alt="Community" fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint="university students" />
                         </div>
                         <div className="p-6 space-y-2">
                             <h4 className="font-bold text-xl">Topluluk Forumu</h4>
