@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -203,7 +202,6 @@ const projectCardsData = [
     }
 ];
 
-
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     const { language, changeLanguage } = useTranslation();
     return (
@@ -231,7 +229,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="#bagis"><HandCoins className="h-5 w-5" /></Link></Button>
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="#bagis"><ShoppingBag className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="#gonulluluk"><HeartHandshake className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80"><Link href="/emergency"><Siren className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
@@ -305,10 +303,10 @@ const FullStandardsSection = () => {
     const tableHeaders = ["Belge", "Standart / Çerçeve", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan %"];
     const complianceData = [
         { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku / Kurumsal kullanım şartları", org: "Ticaret Bakanlığı / hangel", region: "Türkiye / Küresel", rate: "%100 / %100" },
-        { label: "Gizlilik Politikası", std: "ISO/IEC 27701 / KVKK / GDPR / CCPA / LGPD", org: "ISO / hangel", region: "Küresel / AB / ABD / Türkiye / Latin Amerika", rate: "%85 / %100" },
-        { label: "Sosyal Etki Politikası", std: "UN SDGs / SROI & ToC", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
-        { label: "Etik İlkeler", std: "UN Global Compact", org: "UNGC / hangel", region: "Küresel", rate: "%95" },
-        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Afrika / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
+        { label: "Kullanıcı Sözleşmesi", std: "Consumer Protection", org: "FTC", region: "ABD", rate: "%90" },
+        { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model / Kurumsal yapı", org: "OECD / hangel", region: "OECD / Türkiye", rate: "%95 / %100" },
+        { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
+        { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları / Etik ve yasal çerçeve", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
     ];
     return (
         <section className="py-8 md:py-12 bg-[#f5f5f7]">
