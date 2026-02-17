@@ -37,6 +37,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
+import { HangelLogo } from '@/components/icons';
 
 const donationTransactions = [
     { id: '1', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA Vakfı', 'LÖSEV'], date: '2024-07-21', time: '14:32' },
@@ -159,13 +160,6 @@ export default function QrPaymentPage() {
 };
 
   const activeCard = cards.find(c => c.active);
-  
-  const getActiveBorderColor = () => {
-    if (!activeCard) return 'border-muted';
-    if (activeCard.id === 'ticari') return 'border-blue-800';
-    if (activeCard.id === 'ogrenci') return 'border-green-700';
-    return 'border-primary';
-  };
 
 
   return (
@@ -186,37 +180,58 @@ export default function QrPaymentPage() {
             </CardHeader>
             <CardContent className="space-y-3">
                 {cards.map((card) => (
-                    <div key={card.id} onClick={() => handleCardSelect(card.id)} className={cn("p-4 rounded-xl text-white cursor-pointer transition-all border-4", card.bgColor, activeCard?.id === card.id ? getActiveBorderColor() : 'border-transparent opacity-70 hover:opacity-100')}>
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-1">
+                    <div 
+                        key={card.id} 
+                        onClick={() => handleCardSelect(card.id)} 
+                        className={cn(
+                            "relative p-6 rounded-2xl text-white cursor-pointer transition-all duration-300 transform-gpu overflow-hidden shadow-lg",
+                            card.bgColor,
+                            activeCard?.id === card.id ? "scale-100 opacity-100 shadow-2xl" : "scale-95 opacity-70 hover:opacity-100 hover:scale-100"
+                        )}
+                    >
+                        <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-white/10 rounded-full blur-3xl" />
+                        <div className="relative z-10 flex flex-col justify-between h-[180px]">
+                            <div className="flex justify-between items-start">
                                 <h4 className="text-lg font-bold">{card.type} Kart</h4>
-                                <p className="text-sm font-mono tracking-widest">{card.number.replace(/(\d{4})/g, '$1 ').trim()}</p>
+                                {card.status === 'Aktif' ? (
+                                    <HangelLogo className="text-xl font-black text-white/80" />
+                                ) : (
+                                     <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-300 border-none text-[10px]">Aktivasyon Gerekli</Badge>
+                                )}
                             </div>
-                             <p className="text-2xl font-bold">{card.balance}</p>
-                        </div>
-                        <div className="mt-4 flex justify-between items-end">
-                            <div className="text-xs">
-                                <p className="opacity-70">Kart Sahibi</p>
-                                <p className="font-semibold">{card.owner}</p>
+                            
+                            <div className="mt-4">
+                                 {card.status === 'Aktif' ? (
+                                    <p className="text-3xl font-bold tracking-tight">{card.balance}</p>
+                                 ) : (
+                                    <p className="text-2xl font-bold tracking-tight">Aktif Değil</p>
+                                 )}
                             </div>
-                             {card.status !== 'Aktif' ? (
-                                <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); handleActivateClick(card); }}>Aktive Et</Button>
-                            ) : (
-                                 <Badge variant="secondary" className="bg-white/20 text-white">Aktif</Badge>
-                            )}
+
+                            <div className="mt-4 flex justify-between items-end">
+                                <div>
+                                    <p className="text-xs opacity-70">Kart Sahibi</p>
+                                    <p className="text-sm font-semibold">{card.owner}</p>
+                                </div>
+                                {card.status !== 'Aktif' ? (
+                                    <Button size="sm" variant="secondary" className="h-8 rounded-lg" onClick={(e) => { e.stopPropagation(); handleActivateClick(card); }}>Aktive Et</Button>
+                                ) : (
+                                    <p className="text-sm font-mono tracking-widest">**** {card.number.slice(-4)}</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}
             </CardContent>
         </Card>
 
-      <Card className={cn('transition-all duration-500 border-2 shadow-md', getActiveBorderColor())}>
+      <Card className={cn('transition-all duration-500 shadow-md', activeCard?.bgColor)}>
         <CardHeader>
-            <CardTitle>Ödeme Yönetimi</CardTitle>
+            <CardTitle className="text-white">Ödeme Yönetimi</CardTitle>
         </CardHeader>
         <CardContent>
-            <Tabs defaultValue="scan-qr">
-                <TabsList className="grid w-full grid-cols-4">
+            <Tabs defaultValue="scan-qr" className="bg-background/80 backdrop-blur-sm p-2 rounded-xl">
+                <TabsList className="grid w-full grid-cols-4 bg-muted/50">
                     <TabsTrigger value="my-qr">QR Kodum</TabsTrigger>
                     <TabsTrigger value="scan-qr">QR Oku</TabsTrigger>
                     <TabsTrigger value="by-phone">Numarayla</TabsTrigger>
@@ -299,7 +314,7 @@ export default function QrPaymentPage() {
         </CardContent>
       </Card>
 
-      <Card className={cn('transition-all duration-500 border-2 shadow-md', getActiveBorderColor())}>
+      <Card>
         <CardHeader>
            <CardTitle>Son İşlemler</CardTitle>
            <div className="flex justify-between items-center gap-2 pt-2">
