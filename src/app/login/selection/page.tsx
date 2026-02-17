@@ -277,7 +277,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
     }, [countdown]);
 
 
-    const handleSendCode = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    const handleSendCode = async (e?: React.FormEvent) => {
         if(e) e.preventDefault();
         setIsLoading(true);
 
@@ -304,7 +304,16 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
             toast({ title: "Kod Gönderildi", description: "Telefonunuza bir doğrulama kodu gönderdik." });
         } catch (error: any) {
             console.error("SMS gönderme hatası:", error);
-            toast({ variant: "destructive", title: "Kod Gönderilemedi", description: "Bir hata oluştu. Lütfen tekrar deneyin." });
+            let description = "Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.";
+            if (error.code === 'auth/operation-not-allowed') {
+                description = "Telefon ile giriş bu proje için aktif değil. Lütfen Firebase ayarlarınızı kontrol edin.";
+            } else if (error.code === 'auth/invalid-phone-number') {
+                description = "Girdiğiniz telefon numarası geçersiz.";
+            } else if (error.code === 'auth/too-many-requests') {
+                description = "Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin.";
+            }
+            
+            toast({ variant: "destructive", title: "Kod Gönderilemedi", description: description });
              // In case of error, reset reCAPTCHA
             appVerifier.render().then((widgetId: any) => {
                 // @ts-ignore
@@ -349,7 +358,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
 
     if (step === 'phone') {
         return (
-            <form onSubmit={(e) => handleSendCode(e as any)} className="space-y-4 animate-in fade-in-0">
+            <form onSubmit={handleSendCode} className="space-y-4 animate-in fade-in-0">
                  <div id="recaptcha-container"></div>
                 {isRegister && (
                     <div className="space-y-2"><Label>Ad Soyad</Label><Input required value={name} onChange={e => setName(e.target.value)} /></div>
@@ -416,7 +425,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                 {countdown > 0 ? (
                     <p>{countdown} saniye içinde yeni kod isteyebilirsiniz.</p>
                 ) : (
-                    <Button variant="link" type="button" onClick={handleSendCode} disabled={isLoading}>
+                    <Button variant="link" type="button" onClick={() => handleSendCode()} disabled={isLoading}>
                         {isLoading ? 'Gönderiliyor...' : 'Kodu Tekrar Gönder'}
                     </Button>
                 )}
