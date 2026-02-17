@@ -80,16 +80,24 @@ const AppleSection = ({
 
 // Add a new InfoCard component for links
 const InfoCard = ({ icon: Icon, title, description, href }: { icon: any, title: string, description: string, href: string }) => (
-    <Link href={href} className="block">
-        <Card className="h-full bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all group">
-            <div className="flex items-start gap-4">
-                <div className="p-2 bg-muted rounded-xl">
-                    <Icon className="h-6 w-6 text-primary" />
+    <Link href={href} className="block h-full">
+        <Card className="h-full bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+            <div>
+                <div className="flex items-start gap-4">
+                    <div className="p-2 bg-muted rounded-xl">
+                        <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="font-bold text-lg">{title}</h3>
+                        <p className="text-sm text-muted-foreground">{description}</p>
+                    </div>
                 </div>
-                <div className="space-y-1">
-                    <h3 className="font-bold text-lg">{title}</h3>
-                    <p className="text-sm text-muted-foreground">{description}</p>
-                </div>
+            </div>
+            <div className="mt-6 pt-4 border-t border-dashed">
+                 <span className="font-bold text-primary flex items-center text-sm">
+                    Daha Fazla Bilgi
+                    <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+                </span>
             </div>
         </Card>
     </Link>
@@ -117,8 +125,8 @@ export default function AboutPage() {
             {/* Hero */}
             <AppleSection 
                 title="İyiliği Dijitalleştirdik."
-                subtitle="hangel a.ş. ile geleceğin dayanışma modelini inşa ediyoruz."
-                description="Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, Türkiye'nin en kapsamlı sosyal etki platformuyuz."
+                subtitle="Geleceğin dayanışma modelini inşa ediyoruz."
+                description="Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, en kapsamlı sosyal etki platformuyuz."
                 imageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
                 imageHint="modern office people collaborating"
             />
@@ -140,20 +148,20 @@ export default function AboutPage() {
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-16 text-[#1d1d1f]">Rakamlarla hangel</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">1.2M+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Kullanıcı</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">500+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Aktif Marka</p>
                         </div>
                          <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">128</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Aktif STK</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">8.2M ₺</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Nakit Bağış</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">12.5M ₺</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Toplam Etki</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">1,200+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Gönüllülük Projesi</p>
                         </div>
                          <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">500K+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Gönüllülük Saati</p>
+                            <p className="text-5xl font-black tracking-tighter text-primary">1.2M+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Kullanıcı</p>
                         </div>
                     </div>
                 </div>
@@ -163,7 +171,7 @@ export default function AboutPage() {
             <AppleSection 
                 title="Sivil Toplumun Kalbinde: hangel Derneği."
                 description="Platformun teknolojik gücünü, Social Business Global Derneği'nin (SBG) saha tecrübesi ve akademik vizyonuyla birleştiriyoruz. Derneğimiz, sosyal girişimcilik ekosistemini güçlendirmek, mevzuat çalışmaları yapmak ve uluslararası işbirlikleri kurmak için çalışır."
-                cta1="Derneği Keşfet"
+                cta1="Daha Fazla Bilgi"
                 cta1Href="/hangelassociation"
                 imageUrl="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop"
                 imageHint="conference meeting presentation"
