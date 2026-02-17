@@ -230,3 +230,338 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
     </Card>
 );
 
+const IndividualForm = () => {
+    const router = useRouter();
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.push('/timeline');
+    }
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="email">E-posta</Label>
+                <Input id="email" type="email" placeholder="ornek@eposta.com" required />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="password">Şifre</Label>
+                <Input id="password" type="password" required />
+            </div>
+            <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                    <Checkbox id="remember-me" />
+                    <Label htmlFor="remember-me">Beni hatırla</Label>
+                </div>
+                <Link href="#" className="underline">Şifremi unuttum</Link>
+            </div>
+            <Button type="submit" className="w-full">Giriş Yap</Button>
+        </form>
+    )
+};
+
+const CorporateForm = ({ isRegister }: { isRegister: boolean }) => {
+    const [corporateType, setCorporateType] = useState('');
+    const router = useRouter();
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.push('/admin');
+    }
+
+    return (
+        <div className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="org-type">Kuruluş Türü</Label>
+                <Select required onValueChange={setCorporateType}>
+                    <SelectTrigger id="org-type"><SelectValue placeholder="Kuruluş türünü seçin..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="NGO">Sivil Toplum Kuruluşu (STK)</SelectItem>
+                        <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
+                        <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            {corporateType && (
+                <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in-0">
+                    {corporateType === 'NGO' && <NgoForm />}
+                    {corporateType === 'BRAND' && <BrandForm />}
+                    {corporateType === 'CLUB' && <ClubForm />}
+
+                    <Card>
+                        <CardHeader><CardTitle className="text-lg">Sözleşme Onayları</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-start space-x-3">
+                                <Checkbox id="terms-corp" required />
+                                <Label htmlFor="terms-corp" className="text-xs font-normal text-muted-foreground">
+                                    <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>, <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link>'nı okudum, anladım ve onaylıyorum.
+                                </Label>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Button type="submit" className="w-full">Başvuruyu Gönder</Button>
+                </form>
+            )}
+        </div>
+    )
+};
+
+const NgoForm = () => {
+    const [city, setCity] = useState('');
+    const [district, setDistrict] = useState('');
+    const [neighborhood, setNeighborhood] = useState('');
+    const [aboutText, setAboutText] = useState("");
+    const ABOUT_LIMIT = 1000;
+    return (
+        <div className='space-y-6'>
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Kuruluş Bilgileri</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2"><Label>Kuruluş Adı</Label><Input placeholder="Kuruluşunuzun tam adı" required /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2"><Label>Kuruluş Kısa Adı</Label><Input placeholder="Örn: TEMA" /></div>
+                        <div className="space-y-2"><Label>Kuruluş Yılı</Label><Input type="number" placeholder="Örn: 1992" /></div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Kuruluş Türü</Label>
+                      <Select>
+                        <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dernek">Dernek</SelectItem>
+                          <SelectItem value="vakif">Vakıf</SelectItem>
+                          <SelectItem value="spor">Spor Kulübü</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex justify-between">
+                            <Label>Hakkında</Label>
+                            <span className={cn("text-[10px]", aboutText.length > ABOUT_LIMIT ? "text-destructive" : "text-muted-foreground")}>
+                                {aboutText.length} / {ABOUT_LIMIT} (Kalan: {ABOUT_LIMIT - aboutText.length})
+                            </span>
+                        </div>
+                        <Textarea 
+                            value={aboutText} 
+                            onChange={(e) => setAboutText(e.target.value)} 
+                            maxLength={ABOUT_LIMIT} 
+                            placeholder="Kuruluşunuzu anlatan kısa bir metin." 
+                            className="min-h-[120px]"
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+            <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
+            <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
+            <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
+            <SocialMediaFields />
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Yasal Belgeler</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <FileUpload label="Logo" accept=".jpg,.jpeg" hint="Desteklenen format: .jpg" />
+                    <FileUpload label="Faaliyet Belgesi" accept=".pdf" hint="Desteklenen format: .pdf" />
+                    <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
+                </CardContent>
+            </Card>
+        </div>
+    )
+};
+
+const BrandForm = () => {
+    const [city, setCity] = useState('');
+    const [district, setDistrict] = useState('');
+    const [neighborhood, setNeighborhood] = useState('');
+    const [donationRates, setDonationRates] = useState([{ category: '', rate: '' }]);
+    const addDonationRate = () => setDonationRates([...donationRates, { category: '', rate: '' }]);
+    const removeDonationRate = (index: number) => {
+      if (donationRates.length > 1) {
+          setDonationRates(donationRates.filter((_, i) => i !== index));
+      }
+    };
+    const updateDonationRate = (index: number, field: 'category' | 'rate', value: string) => {
+        const updated = [...donationRates];
+        updated[index][field] = value;
+        setDonationRates(updated);
+    };
+
+    return (
+        <div className="space-y-6">
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Marka Kimliği</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2"><Label>Marka Adı</Label><Input placeholder="Markanızın adı" required /></div>
+                    <div className="space-y-2"><Label>Web Sitesi</Label><Input placeholder="https://marka.com" /></div>
+                    <div className="space-y-4 border-t pt-4">
+                        <Label className="text-base font-semibold">Kategori Bazlı Bağış Oranları (%)</Label>
+                        <p className="text-xs text-muted-foreground">Markanızın farklı kategorileri için taahhüt ettiği bağış oranlarını girin.</p>
+                        <div className="space-y-3">
+                            {donationRates.map((item, index) => (
+                                <div key={index} className="flex gap-2 items-end">
+                                    <div className="flex-1 space-y-1">
+                                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Kategori</Label>
+                                        <Select value={item.category} onValueChange={(val) => updateDonationRate(index, 'category', val)}>
+                                            <SelectTrigger><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                                            <SelectContent>
+                                                {marketCategoryLabels.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="w-24 space-y-1">
+                                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Oran (%)</Label>
+                                        <Input type="number" placeholder="5" value={item.rate} onChange={(e) => updateDonationRate(index, 'rate', e.target.value)} />
+                                    </div>
+                                    <Button type="button" variant="ghost" size="icon" className="text-destructive h-10 w-10 hover:bg-destructive/10" onClick={() => removeDonationRate(index)} disabled={donationRates.length === 1}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                        <Button type="button" variant="outline" size="sm" className="w-full mt-2" onClick={addDonationRate}>
+                            <Plus className="mr-2 h-4 w-4" /> Yeni Kategori Ekle
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+            <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
+            <SocialMediaFields />
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Yasal & Finansal</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2"><Label>Yasal Unvan</Label><Input placeholder="Şirket tam adı" /></div>
+                    <div className="space-y-2"><Label>IBAN</Label><Input placeholder="TR..." /></div>
+                    <FileUpload label="Vergi Levhası" accept=".pdf" />
+                </CardContent>
+            </Card>
+        </div>
+    )
+};
+
+const ClubForm = () => {
+    const [schoolType, setSchoolType] = useState('');
+    return (
+        <div className="space-y-6">
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Kulüp Bilgileri</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Kulüp Türü</Label>
+                        <Select onValueChange={setSchoolType}>
+                            <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="university">Üniversite</SelectItem>
+                                <SelectItem value="high-school">Lise</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    {schoolType === 'university' && (
+                        <div className="space-y-2">
+                            <Label>Üniversite</Label>
+                            <Select><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
+                                <SelectContent>{universities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                    <div className="space-y-2"><Label>Kulüp Adı</Label><Input placeholder="Kulübünüzün tam adı" required /></div>
+                    <div className="space-y-2"><Label>Yetkili E-posta</Label><Input type="email" placeholder="kulup@okul.edu.tr" required /></div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader><CardTitle className="text-lg">Görseller</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" />
+                    <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
+                </CardContent>
+            </Card>
+        </div>
+    )
+};
+
+const FormRenderer = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const action = searchParams.get('action') || 'login';
+  const type = searchParams.get('type');
+  
+  const [currentView, setCurrentView] = useState('login');
+
+  useEffect(() => {
+    if (action === 'register' && type === 'corporate') {
+      setCurrentView('corporate-register');
+    } else if (action === 'register') {
+      setCurrentView('individual-register');
+    } else {
+      setCurrentView('login');
+    }
+  }, [action, type]);
+
+  const handleActionChange = (value: string) => {
+    router.push(`/login/selection?action=${value}`);
+  }
+
+  const handleTypeChange = (value: string) => {
+    const currentAction = action || 'register';
+    if (value === 'individual') {
+        router.push(`/login/selection?action=${currentAction}`);
+    } else {
+        router.push(`/login/selection?action=${currentAction}&type=${value}`);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4">
+                <ArrowLeft />
+            </Button>
+            <Card className="rounded-2xl shadow-2xl">
+                 <CardHeader className="text-center">
+                    <CardTitle className="text-2xl">hangel'a {action === 'register' ? 'Kayıt Ol' : 'Giriş Yap'}</CardTitle>
+                    <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="login">Giriş Yap</TabsTrigger>
+                            <TabsTrigger value="register">Kayıt Ol</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                    {action === 'login' ? <IndividualForm /> : (
+                        <div className="space-y-4 pt-4 border-t">
+                            <Label>Hesap Tipi</Label>
+                            <Select onValueChange={handleTypeChange} defaultValue={type ? 'corporate' : 'individual'}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Hesap tipi seçin..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="individual">Bireysel</SelectItem>
+                                    <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {type === 'corporate' ? <CorporateForm isRegister={true} /> : (
+                                <form className="space-y-4 animate-in fade-in-0">
+                                    <div className="space-y-2"><Label>Ad Soyad</Label><Input required /></div>
+                                    <div className="space-y-2"><Label>E-posta</Label><Input type="email" required /></div>
+                                    <div className="space-y-2"><Label>Şifre</Label><Input type="password" required /></div>
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox id="terms" required />
+                                        <Label htmlFor="terms" className="text-xs">
+                                             <Link href="/settings/contracts" className="underline">Sözleşmeleri</Link> okudum ve kabul ediyorum.
+                                        </Label>
+                                    </div>
+                                    <Button type="submit" className="w-full">Kayıt Ol</Button>
+                                </form>
+                            )}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    </div>
+  )
+}
+
+export default function LoginSelectionPage() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <FormRenderer />
+    </Suspense>
+  );
+}
