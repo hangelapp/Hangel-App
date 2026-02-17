@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo, useRef } from 'react';
@@ -42,7 +41,7 @@ const districts: { [key: string]: string[] } = {
     'Burdur': ['Merkez', 'Ağlasun', 'Altınyayla', 'Bucak', 'Çavdır', 'Çeltikçi', 'Gölhisar', 'Karamanlı', 'Kemer', 'Tefenni', 'Yeşilova'],
     'Bursa': ['Büyükorhan', 'Gemlik', 'Gürsu', 'Harmancık', 'İnegöl', 'İznik', 'Karacabey', 'Keles', 'Kestel', 'Mudanya', 'Mustafakemalpaşa', 'Nilüfer', 'Orhaneli', 'Orhangazi', 'Osmangazi', 'Yenişehir', 'Yıldırım'],
     'Çanakkale': ['Merkez', 'Ayvacık', 'Bayramiç', 'Biga', 'Bozcaada', 'Çan', 'Eceabat', 'Ezine', 'Gelibolu', 'Gökçeada', 'Lapseki', 'Yenice'],
-    'ÇANKIRI': ['Merkez', 'Atkaracalar', 'Bayramören', 'Çerkeş', 'Eldivan', 'Ilgaz', 'Kızılırmak', 'Korgun', 'Kurşunlu', 'Orta', 'Şabanözü', 'Yapraklı'],
+    'Çankırı': ['Merkez', 'Atkaracalar', 'Bayramören', 'Çerkeş', 'Eldivan', 'Ilgaz', 'Kızılırmak', 'Korgun', 'Kurşunlu', 'Orta', 'Şabanözü', 'Yapraklı'],
     'Çorum': ['Merkez', 'Alaca', 'Bayat', 'Boğazkale', 'Dodurga', 'İskilip', 'Kargı', 'Laçin', 'Mecitözü', 'Oğuzlar', 'Ortaköy', 'Osmancık', 'Sungurlu', 'Uğurludağ'],
     'Denizli': ['Merkezefendi', 'Acıpayam', 'Babadağ', 'Baklan', 'Bekilli', 'Beyağaç', 'Bozkurt', 'Buldan', 'Çal', 'Çameli', 'Çardak', 'Çivril', 'Güney', 'Honaz', 'Kale', 'Pamukkale', 'Sarayköy', 'Serinhisar', 'Tavas'],
     'Diyarbakır': ['Bağlar', 'Bismil', 'Çermik', 'Çınar', 'Çüngüş', 'Dicle', 'Eğil', 'Ergani', 'Hani', 'Hazro', 'Kayapınar', 'Kocaköy', 'Kulp', 'Lice', 'Silvan', 'Sur', 'Yenişehir'],
@@ -69,7 +68,7 @@ const districts: { [key: string]: string[] } = {
     'Konya': ['Ahırlı', 'Akören', 'Akşehir', 'Altınekin', 'Beyşehir', 'Bozkır', 'Cihanbeyli', 'Çeltik', 'Çumra', 'Derbent', 'Derebucak', 'Doğanhisar', 'Emirgazi', 'Ereğli', 'Güneysınır', 'Hadim', 'Halkapınar', 'Hüyük', 'Kadınhanı', 'Karapınar', 'Karatay', 'Kulu', 'Meram', 'Sarayönü', 'Selçuklu', 'Seydişehir', 'Taşkent', 'Tuzlukçu', 'Yalıhüyük', 'Yunak'],
     'Kütahya': ['Merkez', 'Altıntaş', 'Aslanapa', 'Çavdarhisar', 'Domaniç', 'Dumlupınar', 'Emet', 'Gediz', 'Hisarcık', 'Pazarlar', 'Simav', 'Şaphane', 'Tavşanlı'],
     'Malatya': ['Akçadağ', 'Arapgir', 'Arguvan', 'Battalgazi', 'Darende', 'Doğanşehir', 'Doğanyol', 'Hekimhan', 'Kale', 'Kuluncak', 'Pütürge', 'Yazıhan', 'Yeşilyurt'],
-    'Manisa': ['Ahmetli', 'Akhisar', 'Alaşehir', 'Demirci', 'Gölmarmara', 'Gördes', 'Salihli', 'Soma', 'Şehzadeler', 'Turgutlu', 'Yunusemre'],
+    'Manisa': ['Ahmetli', 'Akhisar', 'Alaşehir', 'Demirci', 'Gölmarmara', 'Gördes', 'Kırkağaç', 'Köprübaşı', 'Kula', 'Salihli', 'Sarıgöl', 'Saruhanlı', 'Selendi', 'Soma', 'Şehzadeler', 'Turgutlu', 'Yunusemre'],
     'Kahramanmaraş': ['Afşin', 'Andırın', 'Çağlayancerit', 'Dulkadiroğlu', 'Ekinözü', 'Elbistan', 'Göksun', 'Nurhak', 'Onikişubat', 'Pazarcık', 'Türkoğlu'],
     'Mardin': ['Artuklu', 'Dargeçit', 'Derik', 'Kızıltepe', 'Mazıdağı', 'Midyat', 'Nusaybin', 'Ömerli', 'Savur', 'Yeşilli'],
     'Muğla': ['Bodrum', 'Dalaman', 'Datça', 'Fethiye', 'Kavaklıdere', 'Köyceğiz', 'Marmaris', 'Menteşe', 'Milas', 'Ortaca', 'Seydikemer', 'Ula', 'Yatağan'],
@@ -287,13 +286,13 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                      <div className="flex items-start space-x-2">
                         <Checkbox id="terms-user" required />
                         <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
-                            <Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.
+                            <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
                         </Label>
                     </div>
                      <div className="flex items-start space-x-2">
                         <Checkbox id="terms-privacy" required />
                         <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
-                            <Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.
+                            <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
                         </Label>
                     </div>
                     {isRegister && (
@@ -301,19 +300,19 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                             <div className="flex items-start space-x-2">
                                 <Checkbox id="terms-consent" required />
                                 <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
-                                   <Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.
+                                   <span><Link href="/settings/contracts/acik-riza-metni" className="underline">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
                                 </Label>
                             </div>
                             <div className="flex items-start space-x-2">
                                 <Checkbox id="terms-donation" required />
                                 <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
-                                    <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.
+                                    <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
                                 </Label>
                             </div>
                             <div className="flex items-start space-x-2">
                                 <Checkbox id="terms-volunteer" required />
                                 <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
-                                    <Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.
+                                    <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
                                 </Label>
                             </div>
                         </>
@@ -377,19 +376,19 @@ const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
                             <div className="flex items-start space-x-3">
                                 <Checkbox id="terms-corp-1" required />
                                 <Label htmlFor="terms-corp-1" className="text-xs font-normal text-muted-foreground">
-                                    <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesini</Link> okudum, anladım ve onaylıyorum.
+                                    <span><Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesini</Link> okudum, anladım ve onaylıyorum.</span>
                                 </Label>
                             </div>
                             <div className="flex items-start space-x-3">
                                 <Checkbox id="terms-corp-2" required />
                                 <Label htmlFor="terms-corp-2" className="text-xs font-normal text-muted-foreground">
-                                    <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link> ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikasını</Link> okudum, anladım ve onaylıyorum.
+                                    <span><Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link> ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikasını</Link> okudum, anladım ve onaylıyorum.</span>
                                 </Label>
                             </div>
                              <div className="flex items-start space-x-3">
                                 <Checkbox id="terms-corp-3" required />
                                 <Label htmlFor="terms-corp-3" className="text-xs font-normal text-muted-foreground">
-                                    <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve ilgili veri koruma beyanlarını okudum, anladım ve onaylıyorum.
+                                    <span><Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve ilgili veri koruma beyanlarını okudum, anladım ve onaylıyorum.</span>
                                 </Label>
                             </div>
                         </CardContent>
