@@ -50,11 +50,11 @@ const ReceiptDialog = ({ transaction, open, onOpenChange }: { transaction: Donat
 
     if (!transaction) return null;
 
-    // Calculation from the accordion
     const donationAmount = parseFloat(transaction.donationAmount);
     const gelirVergisi = donationAmount * 0.20;
-    const netDonationAfterTaxes = donationAmount - gelirVergisi;
-    const ngoShare = netDonationAfterTaxes / 1.1;
+    const kdv = donationAmount * 0.20;
+    const netDonationAfterTaxes = donationAmount - gelirVergisi - kdv;
+    const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
     const hangelShare = ngoShare * 0.10;
 
     return (
@@ -81,7 +81,7 @@ const ReceiptDialog = ({ transaction, open, onOpenChange }: { transaction: Donat
                             <Separator />
                             <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Desteklenen STK Payı</span><span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                             <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Gelir Vergisi (%20)</span><span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>KDV (%20)</span><span>{(0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>KDV (%20)</span><span>{kdv.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                             <div className='flex justify-between text-xs'><span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span><span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                             {transaction.ngo.length > 0 && <Separator />}
                              {transaction.ngo.length > 0 && (
@@ -208,8 +208,9 @@ export default function MyDonationsPage() {
               {sortedAndFilteredDonations.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
                 const gelirVergisi = donationAmount * 0.20;
-                const netDonationAfterTaxes = donationAmount - gelirVergisi;
-                const ngoShare = netDonationAfterTaxes / 1.1;
+                const kdv = donationAmount * 0.20;
+                const netDonationAfterTaxes = donationAmount - gelirVergisi - kdv;
+                const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
                 const hangelShare = ngoShare * 0.10;
 
                 return (
@@ -252,7 +253,7 @@ export default function MyDonationsPage() {
                         </div>
                          <div className='flex justify-between text-xs'>
                             <span className='text-muted-foreground'>KDV (%20)</span>
-                            <span>{(0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                            <span>{kdv.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
                         </div>
                          <div className='flex justify-between text-xs'>
                             <span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span>
