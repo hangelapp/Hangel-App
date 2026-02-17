@@ -2,7 +2,7 @@
 
 'use client'
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp, Leaf, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,21 +37,6 @@ const levelColors: Record<BadgeType['level'], { bg: string; text: string }> = {
   'Platin': { bg: 'bg-cyan-300/20', text: 'text-cyan-400' },
   'Elmas': { bg: 'bg-sky-400/20', text: 'text-sky-500' },
 };
-
-const allPointTransactions = [
-    { type: 'Alışveriş', icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-    { type: 'Gönüllülük', icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Davet', icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Rozet', icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Alışveriş', icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Alışveriş', icon: HandCoins, description: "Kitap Kurdu alışverişi", points: 80, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Gönüllülük', icon: Handshake, description: "Barınak ziyareti gönüllülüğü", points: 75, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Davet', icon: Users, description: "Ahmet Demir'i davet ettin", points: 100, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Alışveriş', icon: DollarSign, description: "Tekno Market alışverişi", points: 25, date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Rozet', icon: Award, description: "'Bronz Hayvan Dostu' rozeti", points: 250, date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Alışveriş', icon: HandCoins, description: "Sürdürülebilir Moda alışverişi", points: 95, date: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString() },
-    { type: 'Gönüllülük', icon: Handshake, description: "Sahil temizliği etkinliği", points: 120, date: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString() },
-];
 
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
@@ -127,13 +112,32 @@ export default function MyBadgesPage() {
     const { toast } = useToast();
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [filters, setFilters] = useState<string[]>([]);
+    const [pointTransactions, setPointTransactions] = useState<any[]>([]);
+
+    useEffect(() => {
+        const generateTransactions = () => [
+            { type: 'Alışveriş', icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+            { type: 'Gönüllülük', icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Davet', icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Rozet', icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Alışveriş', icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Alışveriş', icon: HandCoins, description: "Kitap Kurdu alışverişi", points: 80, date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Gönüllülük', icon: Handshake, description: "Barınak ziyareti gönüllülüğü", points: 75, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Davet', icon: Users, description: "Ahmet Demir'i davet ettin", points: 100, date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Alışveriş', icon: DollarSign, description: "Tekno Market alışverişi", points: 25, date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Rozet', icon: Award, description: "'Bronz Hayvan Dostu' rozeti", points: 250, date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Alışveriş', icon: HandCoins, description: "Sürdürülebilir Moda alışverişi", points: 95, date: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString() },
+            { type: 'Gönüllülük', icon: Handshake, description: "Sahil temizliği etkinliği", points: 120, date: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString() },
+        ];
+        setPointTransactions(generateTransactions());
+    }, []);
 
     const groupedBadges = React.useMemo(() => {
         return groupBy(badges, 'socialArea');
     }, []);
 
     const sortedAndFilteredTransactions = useMemo(() => {
-        let transactions = [...allPointTransactions];
+        let transactions = [...pointTransactions];
 
         if (filters.length > 0) {
             transactions = transactions.filter(tx => filters.includes(tx.type));
@@ -157,7 +161,7 @@ export default function MyBadgesPage() {
         });
 
         return transactions;
-    }, [sortConfig, filters]);
+    }, [sortConfig, filters, pointTransactions]);
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
