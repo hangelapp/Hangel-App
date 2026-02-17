@@ -306,7 +306,7 @@ export type Badge = {
   id: string;
   name: string;
   iconName: LucideIcon;
-  level: 'Demir' | 'Bakır' | 'Bronz' | 'Çelik' | 'Gümüş' | 'Altın' | 'Platin' | 'Elmas';
+  level: 'Bronz' | 'Gümüş' | 'Altın' | 'Platin' | 'Elmas';
   socialArea: string;
   pointsRequired: number;
   currentPoints: number;
