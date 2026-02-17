@@ -290,7 +290,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                     </div>
                      <div className="flex items-start space-x-2">
                         <Checkbox id="terms-privacy" required />
-                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/gizlilik-politikasi ve KVKK Metnini</Link> okudum, onaylıyorum.</Label>
+                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/gizlilik-politikasi" className="underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline">KVKK Metnini</Link> okudum, onaylıyorum.</Label>
                     </div>
                     {isRegister && (
                         <div className="flex items-start space-x-2">
@@ -652,7 +652,7 @@ const FormRenderer = () => {
     const [showSurvey, setShowSurvey] = useState(false);
   
     const handleActionChange = (value: string) => {
-        router.push(`/login/selection?action=${value}`);
+        router.push(`/login/selection?action=${value}${type ? `&type=${type}`: ''}`);
     };
 
     const handleTypeChange = (value: string) => {
