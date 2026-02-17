@@ -16,7 +16,8 @@ const SitemapGroup = ({ title, links }: { title: string, links: { label: string,
         <nav className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
             {links.map((link) => (
                 <Link key={link.label} href={link.href} className="text-sm md:text-base text-[#1d1d1f]/70 hover:text-primary transition-colors flex items-center group">
-                    {link.label} <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span dangerouslySetInnerHTML={{ __html: link.label.replace(/ /g, '&nbsp;') }} />
+                    <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </Link>
             ))}
         </nav>
@@ -45,17 +46,20 @@ export default function SitemapPage() {
             links: [
                 { label: "Profilim", href: "/profile" },
                 { label: "Ayarlar", href: "/settings" },
-                { label: "Kişisel Bilgileri Düzenle", href: "/settings/profile" },
-                { label: "Gönüllülük Bilgilerini Düzenle", href: "/settings/volunteer" },
-                { label: "Cüzdan Ayarları", href: "/settings/wallet" },
-                { label: "Güvenlik Ayarları", href: "/settings/security" },
-                { label: "Bildirim Ayarları", href: "/settings/notifications" },
-                { label: "Görünüm Ayarları", href: "/settings/theme" },
-                { label: "Dil Ayarları", href: "/settings/language" },
-                { label: "STK Seçimi (Bağış)", href: "/settings/ngo-selection" },
-                { label: "STK Seçimi (Gönüllülük)", href: "/settings/volunteer-ngo-selection" },
+                { label: "  Kişisel Bilgiler", href: "/settings/profile" },
+                { label: "  Gönüllülük Bilgileri", href: "/settings/volunteer" },
+                { label: "  Cüzdan ve Ödeme", href: "/settings/wallet" },
+                { label: "  Güvenlik ve Şifre", href: "/settings/security" },
+                { label: "  Bildirimler", href: "/settings/notifications" },
+                { label: "  Görünüm ve Tema", href: "/settings/theme" },
+                { label: "  Dil", href: "/settings/language" },
+                { label: "  Erişilebilirlik", href: "/settings/accessibility" },
+                { label: "  Gizlilik", href: "/settings/privacy" },
+                { label: "  Bağış STK Seçimi", href: "/settings/ngo-selection" },
+                { label: "  Gönüllülük STK Seçimi", href: "/settings/volunteer-ngo-selection" },
                 { label: "Mesajlarım", href: "/messages" },
                 { label: "Başvurularım", href: "/my-applications" },
+                { label: "  Yeni Başvuru", href: "/my-applications/new" },
                 { label: "Bağışlarım", href: "/my-donations" },
                 { label: "Rozetler & Sertifikalar", href: "/my-badges" },
                 { label: "Arkadaş Davet Et", href: "/invite" },
@@ -64,9 +68,28 @@ export default function SitemapPage() {
         {
             title: "Yönetim Panelleri",
             links: [
-                { label: "STK Yönetim Paneli", href: "/ngo-admin/dashboard" },
                 { label: "Marka/Kulüp Yönetim Paneli", href: "/admin" },
+                { label: "  Öğrenci Kulüpleri", href: "/admin/clubs" },
+                { label: "  Kulüp Etkinlikleri", href: "/admin/events" },
+                { label: "STK Yönetim Paneli", href: "/ngo-admin/dashboard" },
+                { label: "  Profil & Site Yönetimi", href: "/ngo-admin/manage-profile" },
+                { label: "  Web Sitesi Özelleştirme", href: "/ngo-admin/website" },
+                { label: "  Gönüllülük Yönetimi", href: "/ngo-admin/volunteer" },
+                { label: "  Bağış Takibi", href: "/ngo-admin/donations" },
+                { label: "  Gönderi Yönetimi", href: "/ngo-admin/posts" },
+                { label: "  Yetkili Yönetimi", href: "/ngo-admin/users" },
+                { label: "  Raporlar", href: "/ngo-admin/reports" },
+                { label: "  Entegrasyonlar", href: "/ngo-admin/accounting" },
                 { label: "Süper Admin Paneli", href: "/super-admin" },
+                { label: "  Başvuru Yönetimi", href: "/super-admin/applications" },
+                { label: "  Kullanıcı Yönetimi", href: "/super-admin/users" },
+                { label: "  STK Yönetimi", href: "/super-admin/ngos" },
+                { label: "  Marka Yönetimi", href: "/super-admin/brands" },
+                { label: "  Kulüp Yönetimi", href: "/super-admin/clubs" },
+                { label: "  Analizler", href: "/super-admin/analytics" },
+                { label: "  İletişim Merkezi", href: "/super-admin/communications" },
+                { label: "  Kütüphane Yönetimi", href: "/super-admin/library" },
+                { label: "  Yardım Merkezi", href: "/super-admin/help" },
             ]
         },
         {
@@ -76,29 +99,37 @@ export default function SitemapPage() {
                 { label: "Dernek Hakkında", href: "/hangelassociation/about" },
                 { label: "Dernek Etkinlikleri", href: "/hangelassociation/events" },
                 { label: "Uluslararası Çalıştay", href: "/hangelassociation/workshop" },
-                { label: "Mevzuat Taslağı", href: "/hangelassociation/legislation" }
+                { label: "Mevzuat Taslağı", href: "/hangelassociation/legislation" },
+                { label: "Projeler", href: "/hangelassociation/projects/etki-atlasi" },
+                { label: "Komiteler", href: "/hangelassociation/committees/akademik" },
+                { label: "Raporlar", href: "/hangelassociation/reports/5-yillik-etki" },
+                { label: "İletişim", href: "/hangelassociation/contact" },
+                { label: "Geri Bildirim", href: "/hangelassociation/feedback" },
             ]
         },
         {
             title: "Kurumsal",
             links: [
                 { label: "Biz Kimiz?", href: "/about" },
+                { label: "Sosyal Girişimcilik", href: "/social-entrepreneurship" },
                 { label: "Sürdürülebilirlik", href: "/social-impact" },
                 { label: "Basın Odası", href: "/press" },
                 { label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri" },
                 { label: "Kariyer", href: "/careers" },
                 { label: "Kamu İşbirlikleri", href: "/corporate" },
-                { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" }
+                { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
             ]
         },
         {
             title: "İşbirlikleri",
             links: [
-                { label: "Üye İşyeri ol", href: "/merchant" },
-                { label: "STK Kayıt ve Başvuru", href: "/ngo-onboarding" },
-                { label: "Kampüs Temsilciliği", href: "/contact/universities" },
-                { label: "Kulüp Avantajları", href: "/campus-advantages" },
-                { label: "Bağış ve Yardım Politikası", href: "/settings/contracts/bagis-ve-yardim-politikasi" }
+                { label: "Üye İşyeri Ol", href: "/merchant" },
+                { label: "STK Kaydı", href: "/ngo-onboarding" },
+                { label: "Kampüs Avantajları", href: "/campus-advantages" },
+                { label: "İletişim", href: "/contact" },
+                { label: "  Belediyeler", href: "/contact/municipalities" },
+                { label: "  Üniversiteler", href: "/contact/universities" },
+                { label: "  Uluslararası Fonlar", href: "/contact/funds" },
             ]
         },
         {
@@ -107,8 +138,9 @@ export default function SitemapPage() {
                 { label: "Yardım Merkezi", href: "/support" },
                 { label: "Geri Bildirim Gönder", href: "/feedback" },
                 { label: "Erişilebilirlik Beyanı", href: "/accessibility" },
+                { label: "Kalite ve Standartlar", href: "/standards" },
                 { label: "Tüm Sözleşmeler ve Politikalar", href: "/settings/contracts" },
-                { label: "Logo Kullanım Kılavuzu", href: "/logo-usage" }
+                { label: "Logo Kullanım Kılavuzu", href: "/logo-usage" },
             ]
         }
     ];
@@ -134,7 +166,7 @@ export default function SitemapPage() {
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium">Tüm platformun yapısını tek bir bakışta inceleyin.</p>
                 </div>
 
-                <Tabs defaultValue="main-pages" className="w-full">
+                <Tabs defaultValue="all-pages" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="main-pages">Ana Sayfalar</TabsTrigger>
                         <TabsTrigger value="all-pages">Tüm Sayfalar</TabsTrigger>
