@@ -19,7 +19,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 
 
 // --- Shared Constants & Data ---
@@ -238,122 +238,195 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
 const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
     const { toast } = useToast();
     const auth = useAuth();
-    const router = useRouter();
-
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
     
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // States
+    const [name, setName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [code, setCode] = useState('');
+    
+    const [step, setStep] = useState<'phone' | 'code'>('phone');
+    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+    
+    const [isLoading, setIsLoading] = useState(false);
+    const [countdown, setCountdown] = useState(0);
+
+    // Setup reCAPTCHA
+    useEffect(() => {
+        if (!auth) return;
+        if ((window as any).recaptchaVerifier) {
+            (window as any).recaptchaVerifier.clear();
+        }
         
-        if (!phoneNumber || phoneNumber.trim() === "") {
-            toast({
-                variant: "destructive",
-                title: "Eksik Bilgi",
-                description: "Telefon numarası alanı boş bırakılamaz.",
-            });
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+        });
+        
+        return () => {
+            if ((window as any).recaptchaVerifier) {
+                (window as any).recaptchaVerifier.clear();
+            }
+        };
+    }, [auth]);
+
+    // Countdown timer effect
+    useEffect(() => {
+        if (countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [countdown]);
+
+
+    const handleSendCode = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+        if(e) e.preventDefault();
+        setIsLoading(true);
+
+        if (!phoneNumber || phoneNumber.length < 10) {
+            toast({ variant: "destructive", title: "Geçersiz Numara", description: "Lütfen geçerli bir telefon numarası girin." });
+            setIsLoading(false);
             return;
         }
-
-        const email = `${phoneNumber}@hangel.org`; // Create a fake email from phone number
         
+        if (isRegister && (!name || name.trim() === "")) {
+            toast({ variant: "destructive", title: "Eksik Bilgi", description: "Ad Soyad alanı boş bırakılamaz." });
+            setIsLoading(false);
+            return;
+        }
+        
+        const appVerifier = (window as any).recaptchaVerifier;
+        const formattedPhoneNumber = `+90${phoneNumber.replace(/\D/g, '').slice(-10)}`;
+
         try {
-            if (isRegister) {
-                if (!name || name.trim() === "") {
-                    toast({
-                        variant: "destructive",
-                        title: "Eksik Bilgi",
-                        description: "Ad Soyad alanı boş bırakılamaz.",
-                    });
-                    return;
-                }
-                await createUserWithEmailAndPassword(auth, email, password);
-                toast({ title: "Kayıt Başarılı!", description: "hangel'e hoş geldin!" });
-            } else {
-                await signInWithEmailAndPassword(auth, email, password);
-                toast({ title: "Giriş Başarılı!" });
-            }
-            onComplete();
+            const result = await signInWithPhoneNumber(auth, formattedPhoneNumber, appVerifier);
+            setConfirmationResult(result);
+            setStep('code');
+            setCountdown(60);
+            toast({ title: "Kod Gönderildi", description: "Telefonunuza bir doğrulama kodu gönderdik." });
         } catch (error: any) {
-            console.error("Authentication error:", error);
-            let description = "Bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.";
-            const title = isRegister ? "Kayıt Hatası" : "Giriş Hatası";
-            switch(error.code) {
-                case 'auth/invalid-email':
-                    description = 'Girdiğiniz telefon numarası geçersiz. Lütfen kontrol ediniz.';
-                    break;
-                case 'auth/user-not-found':
-                    description = 'Bu telefon numarası ile kayıtlı bir kullanıcı bulunamadı.';
-                    break;
-                case 'auth/wrong-password':
-                    description = 'Yanlış şifre. Lütfen tekrar deneyin.';
-                    break;
-                case 'auth/email-already-in-use':
-                    description = 'Bu telefon numarası zaten kayıtlı. Lütfen giriş yapmayı deneyin.';
-                    break;
-                case 'auth/weak-password':
-                    description = 'Şifre en az 6 karakter olmalıdır.';
-                    break;
-            }
-            toast({
-                variant: "destructive",
-                title: title,
-                description: description,
+            console.error("SMS gönderme hatası:", error);
+            toast({ variant: "destructive", title: "Kod Gönderilemedi", description: "Bir hata oluştu. Lütfen tekrar deneyin." });
+             // In case of error, reset reCAPTCHA
+            appVerifier.render().then((widgetId: any) => {
+                // @ts-ignore
+                if(window.grecaptcha) {
+                    // @ts-ignore
+                    window.grecaptcha.reset(widgetId);
+                }
             });
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
-            {isRegister && (
-                <div className="space-y-2"><Label>Ad Soyad</Label><Input required value={name} onChange={e => setName(e.target.value)} /></div>
-            )}
-            <div className="space-y-2">
-                <Label htmlFor="phone">Telefon Numarası</Label>
-                <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="password">Şifre</Label>
-                <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
-            </div>
-            <div className="space-y-3">
-                <div className="flex items-start space-x-2">
-                   <Checkbox id="terms-user" required />
-                    <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
-                        <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                    </Label>
-                </div>
-                 <div className="flex items-start space-x-2">
-                    <Checkbox id="terms-privacy" required />
-                    <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
-                       <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
-                    </Label>
-                </div>
+    const handleVerifyCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        if (!code || code.length !== 6) {
+            toast({ variant: "destructive", title: "Geçersiz Kod", description: "Lütfen 6 haneli kodu girin." });
+            setIsLoading(false);
+            return;
+        }
+
+        if (!confirmationResult) {
+             toast({ variant: "destructive", title: "Doğrulama Başarısız", description: "Lütfen tekrar kod isteyin." });
+             setIsLoading(false);
+             return;
+        }
+
+        try {
+            await confirmationResult.confirm(code);
+            toast({ title: isRegister ? "Kayıt Başarılı!" : "Giriş Başarılı!", description: "hangel'e hoş geldin!" });
+            onComplete();
+        } catch (error) {
+            console.error("Kod doğrulama hatası:", error);
+            toast({ variant: "destructive", title: "Geçersiz Kod", description: "Girdiğiniz kod hatalı. Lütfen kontrol edip tekrar deneyin." });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    if (step === 'phone') {
+        return (
+            <form onSubmit={(e) => handleSendCode(e as any)} className="space-y-4 animate-in fade-in-0">
+                 <div id="recaptcha-container"></div>
                 {isRegister && (
-                    <>
-                         <div className="flex items-start space-x-2">
-                            <Checkbox id="terms-consent" required />
-                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
-                               <span><Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
-                            </Label>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                            <Checkbox id="terms-donation" required />
-                             <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
-                                <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
-                            </Label>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                            <Checkbox id="terms-volunteer" required />
-                             <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
-                               <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                            </Label>
-                        </div>
-                    </>
+                    <div className="space-y-2"><Label>Ad Soyad</Label><Input required value={name} onChange={e => setName(e.target.value)} /></div>
+                )}
+                <div className="space-y-2">
+                    <Label htmlFor="phone">Telefon Numarası</Label>
+                    <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
+                </div>
+                <div className="space-y-3">
+                    <div className="flex items-start space-x-2">
+                    <Checkbox id="terms-user" required />
+                        <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
+                            <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                        </Label>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                        <Checkbox id="terms-privacy" required />
+                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
+                        <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
+                        </Label>
+                    </div>
+                    {isRegister && (
+                        <>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-consent" required />
+                                <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
+                                <span><Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
+                                </Label>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-donation" required />
+                                <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
+                                    <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
+                                </Label>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-volunteer" required />
+                                <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
+                                <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                                </Label>
+                            </div>
+                        </>
+                    )}
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Gönderiliyor...' : 'Doğrulama Kodu Gönder'}
+                </Button>
+            </form>
+        );
+    }
+
+    return (
+        <form onSubmit={handleVerifyCode} className="space-y-4 animate-in fade-in-0">
+             <div id="recaptcha-container"></div>
+             <div className="space-y-2">
+                <Label>Telefon Numarası</Label>
+                <Input type="tel" value={`+90 ${phoneNumber}`} disabled />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="code">Doğrulama Kodu</Label>
+                <Input id="code" type="text" placeholder="------" maxLength={6} required value={code} onChange={e => setCode(e.target.value)} className="text-center tracking-[0.5em]" />
+            </div>
+            <div className="text-center text-sm text-muted-foreground h-8">
+                {countdown > 0 ? (
+                    <p>{countdown} saniye içinde yeni kod isteyebilirsiniz.</p>
+                ) : (
+                    <Button variant="link" type="button" onClick={handleSendCode} disabled={isLoading}>
+                        {isLoading ? 'Gönderiliyor...' : 'Kodu Tekrar Gönder'}
+                    </Button>
                 )}
             </div>
-            <Button type="submit" className="w-full">{isRegister ? 'Kayıt Ol' : 'Giriş Yap'}</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Doğrulanıyor...' : (isRegister ? 'Kayıt Ol' : 'Giriş Yap')}
+            </Button>
+            <Button variant="link" onClick={() => setStep('phone')} className="w-full">
+                Telefon numarasını değiştir
+            </Button>
         </form>
     );
 };
