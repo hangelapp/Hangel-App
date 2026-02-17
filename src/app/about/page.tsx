@@ -108,8 +108,36 @@ export default function AboutPage() {
                 imageHint="happy group people outdoors"
             />
 
+            <AppleSection
+                theme="dark"
+                title="Teknolojiyle Etki Yaratıyoruz."
+                subtitle="Yapay zeka, QR kod ve mobil öncelikli tasarım."
+                description="Platformumuz, en son teknolojileri kullanarak sosyal etkiyi en üst düzeye çıkarır. Yapay zeka destekli öneri motorlarımız doğru gönüllüyü doğru projeyle buluştururken, QR kod ile ödeme sistemi bağış yapmayı saniyeler içinde mümkün kılar."
+                imageUrl="https://images.unsplash.com/photo-1556742049-02e1f6c40b12?q=80&w=2070&auto=format&fit=crop"
+                imageHint="smartphone scanning QR code"
+            />
+            <AppleSection
+                title="Sürdürülebilir Bir Model."
+                subtitle="Ticaret ve sosyal faydayı birleştiren yapı."
+                description="Marka işbirlikleriyle oluşturduğumuz 'alışverişle bağış' modeli sayesinde, kullanıcılarımız ek bir ücret ödemeden destekledikleri STK'lara kaynak aktarır. Bu, sivil toplum için sürdürülebilir bir gelir kapısı yaratır."
+                imageUrl="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop"
+                imageHint="customer paying at store"
+            />
+            <AppleSection
+                theme="dark"
+                title="İyilik Hareketine Katıl."
+                subtitle="Değişimin bir parçası ol."
+                description="Hemen kaydol, profilini oluştur ve toplumsal fayda yaratmaya başla. Senin de yapabileceğin bir şey mutlaka var."
+                cta1="Hemen Başla"
+                cta1Href="/login/selection?action=register"
+                imageUrl="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
+                imageHint="team working together"
+            />
+
+
             <PublicFooter currentPageLabel="Biz Kimiz?" />
         </div>
     );
 }
+
 
