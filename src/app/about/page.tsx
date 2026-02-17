@@ -3,19 +3,24 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ArrowLeft, TrendingUp, Users, ShieldCheck, HeartHandshake, Zap, Award, Target, Landmark, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
+
+// Keep the AppleSection component
 const AppleSection = ({ 
     title, 
     subtitle, 
     description, 
-    cta1 = "Daha Fazla Bilgi", 
-    cta1Href = "#",
+    cta1, 
+    cta1Href,
+    cta2,
+    cta2Href,
     theme = 'light',
     imageUrl,
     imageHint,
@@ -26,9 +31,11 @@ const AppleSection = ({
     description?: string, 
     cta1?: string, 
     cta1Href?: string,
+    cta2?: string,
+    cta2Href?: string,
     theme?: 'light' | 'dark',
-    imageUrl: string,
-    imageHint: string,
+    imageUrl?: string,
+    imageHint?: string,
     className?: string
 }) => (
     <section className={cn(
@@ -42,26 +49,53 @@ const AppleSection = ({
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
             
             <div className="flex items-center justify-center gap-6 pt-4">
-                <Link href={cta1Href} className="text-primary hover:underline flex items-center text-lg font-medium">
-                    {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
-                </Link>
+                {cta1 && cta1Href && (
+                    <Link href={cta1Href} className="text-primary hover:underline flex items-center text-lg font-medium">
+                        {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
+                    </Link>
+                )}
+                 {cta2 && cta2Href && (
+                    <Link href={cta2Href} className="text-primary hover:underline flex items-center text-lg font-medium">
+                        {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
+                    </Link>
+                )}
             </div>
         </div>
         
-        <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
-            <div className="relative w-full aspect-[16/10] md:aspect-[21/9] rounded-t-[3rem] overflow-hidden shadow-2xl">
-                <Image 
-                    src={imageUrl} 
-                    alt={title} 
-                    fill 
-                    className="object-cover" 
-                    data-ai-hint={imageHint}
-                />
+        {imageUrl && (
+            <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
+                <div className="relative w-full aspect-[16/10] md:aspect-[21/9] rounded-t-[3rem] overflow-hidden shadow-2xl">
+                    <Image 
+                        src={imageUrl} 
+                        alt={title} 
+                        fill 
+                        className="object-cover" 
+                        data-ai-hint={imageHint}
+                    />
+                </div>
             </div>
-        </div>
+        )}
     </section>
 );
 
+// Add a new InfoCard component for links
+const InfoCard = ({ icon: Icon, title, description, href }: { icon: any, title: string, description: string, href: string }) => (
+    <Link href={href} className="block">
+        <Card className="h-full bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all group">
+            <div className="flex items-start gap-4">
+                <div className="p-2 bg-muted rounded-xl">
+                    <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <div className="space-y-1">
+                    <h3 className="font-bold text-lg">{title}</h3>
+                    <p className="text-sm text-muted-foreground">{description}</p>
+                </div>
+            </div>
+        </Card>
+    </Link>
+)
+
+// Main Page Component
 export default function AboutPage() {
     const router = useRouter();
 
@@ -89,55 +123,98 @@ export default function AboutPage() {
                 imageHint="modern office people collaborating"
             />
 
-            {/* Mission */}
+            {/* Social Enterprise */}
+            <AppleSection
+                theme="dark"
+                title="Bir Sosyal Girişim Hikayesi."
+                description="Hangel, kârını toplumsal faydaya yatıran bir sosyal girişimdir. Amacımız ticari başarıyı, sosyal sorunlara sürdürülebilir çözümler üretmek için bir araç olarak kullanmaktır. Bu model, finansal bağımsızlık ve kalıcı etki yaratma gücü sunar."
+                cta1="Sosyal Girişimcilik Nedir?"
+                cta1Href="/social-entrepreneurship"
+                imageUrl="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop"
+                imageHint="people discussing business strategy"
+            />
+            
+            {/* Rakamlarla Hangel */}
+            <section className="bg-[#f5f5f7] py-24 text-center border-b border-black/5">
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-16 text-[#1d1d1f]">Rakamlarla hangel</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">1.2M+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Kullanıcı</p>
+                        </div>
+                         <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">128</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Aktif STK</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">12.5M ₺</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Toplam Etki</p>
+                        </div>
+                         <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">500K+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Gönüllülük Saati</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            {/* Hangel Derneği */}
+            <AppleSection 
+                title="Sivil Toplumun Kalbinde: hangel Derneği."
+                description="Platformun teknolojik gücünü, Social Business Global Derneği'nin (SBG) saha tecrübesi ve akademik vizyonuyla birleştiriyoruz. Derneğimiz, sosyal girişimcilik ekosistemini güçlendirmek, mevzuat çalışmaları yapmak ve uluslararası işbirlikleri kurmak için çalışır."
+                cta1="Derneği Keşfet"
+                cta1Href="/hangelassociation"
+                imageUrl="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop"
+                imageHint="conference meeting presentation"
+            />
+            
+            {/* Founding Philosophy */}
             <AppleSection 
                 theme="dark"
-                title="Misyonumuz Şeffaflık."
-                subtitle="Her bir kuruşun yolculuğunu izleyin."
-                description="Teknolojinin gücüyle bağışçılığı daha güvenilir, gönüllülüğü daha etkili kılıyoruz. Şeffaflık endeksimizle sivil topluma olan güveni yeniden tanımlıyoruz."
-                imageUrl="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop"
-                imageHint="document verify shield icon concept"
+                title="Kuruluş Felsefemiz."
+                description="Yola çıkarken tek bir mottomuz vardı: 'Yok öyle yalnız başına mücadele etmek'. Toplumsal sorunların bireysel çabalarla aşılamayacağına, kolektif bir bilinç ve teknoloji destekli bir altyapı ile gerçek değişimin mümkün olduğuna inanıyoruz."
+                imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+                imageHint="students working together library"
             />
-
-            {/* Team/Community */}
-            <AppleSection 
-                title="Büyük Bir Topluluğuz."
-                subtitle="Milyonlarca gönüllü, yüzlerce STK."
-                description="Sadece bir platform değil, iyilik hareketini bir yaşam biçimi haline getiren bilinçli bir topluluğuz. Her bir üyemiz, kampüs temsilcimiz ve iş ortağımızla daha güçlüyüz."
-                imageUrl="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
-                imageHint="happy group people outdoors"
-            />
-
-            <AppleSection
-                theme="dark"
-                title="Teknolojiyle Etki Yaratıyoruz."
-                subtitle="Yapay zeka, QR kod ve mobil öncelikli tasarım."
-                description="Platformumuz, en son teknolojileri kullanarak sosyal etkiyi en üst düzeye çıkarır. Yapay zeka destekli öneri motorlarımız doğru gönüllüyü doğru projeyle buluştururken, QR kod ile ödeme sistemi bağış yapmayı saniyeler içinde mümkün kılar."
-                imageUrl="https://images.unsplash.com/photo-1556742049-02e1f6c40b12?q=80&w=2070&auto=format&fit=crop"
-                imageHint="smartphone scanning QR code"
-            />
-            <AppleSection
-                title="Sürdürülebilir Bir Model."
-                subtitle="Ticaret ve sosyal faydayı birleştiren yapı."
-                description="Marka işbirlikleriyle oluşturduğumuz 'alışverişle bağış' modeli sayesinde, kullanıcılarımız ek bir ücret ödemeden destekledikleri STK'lara kaynak aktarır. Bu, sivil toplum için sürdürülebilir bir gelir kapısı yaratır."
-                imageUrl="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop"
-                imageHint="customer paying at store"
-            />
-            <AppleSection
-                theme="dark"
-                title="İyilik Hareketine Katıl."
-                subtitle="Değişimin bir parçası ol."
-                description="Hemen kaydol, profilini oluştur ve toplumsal fayda yaratmaya başla. Senin de yapabileceğin bir şey mutlaka var."
-                cta1="Hemen Başla"
-                cta1Href="/login/selection?action=register"
-                imageUrl="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
-                imageHint="team working together"
-            />
-
+            
+            {/* Corporate Links */}
+            <section className="bg-white py-24">
+                <div className="container mx-auto px-6 max-w-5xl space-y-12">
+                     <div className="text-center">
+                        <h2 className="text-3xl font-bold">Şeffaf, Güvenilir ve Kapsayıcı</h2>
+                        <p className="text-muted-foreground mt-2">Kurumsal yapımızı ve taahhütlerimizi inceleyin.</p>
+                     </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InfoCard 
+                            icon={TrendingUp}
+                            title="Yatırımcı İlişkileri"
+                            description="Sürdürülebilir büyüme modelimizi ve finansal şeffaflık ilkelerimizi keşfedin."
+                            href="/yatirimci-iliskileri"
+                        />
+                         <InfoCard 
+                            icon={Landmark}
+                            title="Bilgi Toplumu Hizmetleri"
+                            description="Ticari sicil, yönetim kurulu ve yasal yükümlülüklerimize dair tüm bilgilere erişin."
+                            href="/bilgi-toplumu-hizmetleri"
+                        />
+                         <InfoCard 
+                            icon={Users}
+                            title="Erişilebilirlik"
+                            description="Herkes için eşit bir dijital deneyim sunma taahhüdümüzü ve WCAG uyum standartlarımızı öğrenin."
+                            href="/accessibility"
+                        />
+                         <InfoCard 
+                            icon={Scale}
+                            title="Standartlarımız"
+                            description="Uluslararası veri koruma, güvenlik ve yönetişim standartlarına olan uyum beyanlarımız."
+                            href="/standards"
+                        />
+                    </div>
+                </div>
+            </section>
 
             <PublicFooter currentPageLabel="Biz Kimiz?" />
         </div>
     );
 }
-
-
