@@ -259,12 +259,22 @@ export default function NgosPage() {
 
        <Dialog open={!!viewingNgo} onOpenChange={(isOpen) => !isOpen && setViewingNgo(null)}>
         <DialogContent className="max-w-md w-full max-h-[90vh] overflow-y-auto p-0 border-0 rounded-2xl">
-            <div className="absolute top-4 right-4 z-20">
-                <Button variant="ghost" size="icon" className="rounded-full bg-black/30 hover:bg-black/50 text-white" onClick={() => setViewingNgo(null)}>
-                    <X className="h-5 w-5" />
-                </Button>
-            </div>
-          {viewingNgo && <NgoDetailView ngo={viewingNgo} />}
+          <div className="absolute top-4 right-4 z-20">
+            <Button variant="ghost" size="icon" className="rounded-full bg-black/30 hover:bg-black/50 text-white" onClick={() => setViewingNgo(null)}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          {viewingNgo && (
+            <>
+              <DialogHeader className="sr-only">
+                  <DialogTitle>{viewingNgo.name}</DialogTitle>
+                  <DialogDescription>
+                      {viewingNgo.category} alanında faaliyet gösteren {viewingNgo.name} hakkında detaylı bilgi.
+                  </DialogDescription>
+              </DialogHeader>
+              <NgoDetailView ngo={viewingNgo} />
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
