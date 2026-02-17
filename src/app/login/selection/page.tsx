@@ -278,6 +278,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
         } catch (error: any) {
             console.error("Authentication error:", error);
             let description = "Bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.";
+            const title = isRegister ? "Kayıt Hatası" : "Giriş Hatası";
             switch(error.code) {
                 case 'auth/invalid-email':
                     description = 'Girdiğiniz telefon numarası geçersiz. Lütfen kontrol ediniz.';
@@ -297,7 +298,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
             }
             toast({
                 variant: "destructive",
-                title: "Giriş Hatası",
+                title: title,
                 description: description,
             });
         }
