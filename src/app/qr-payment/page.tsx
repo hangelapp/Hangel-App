@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle, Link as LinkIcon, Contact, Copy, CreditCard, ShoppingBag } from 'lucide-react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle, Link as LinkIcon, Contact, Copy, CreditCard, ShoppingBag, CheckCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -66,7 +67,6 @@ const ActivationDialog = ({ card, open, onClose, onActivate }: { card: any, open
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onActivate(card.id);
-        onClose();
     };
 
     return (
@@ -121,6 +121,10 @@ export default function QrPaymentPage() {
   const qrData = `https://hangel.org/pay/${user.username.replace('@', '')}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
+  const [cards, setCards] = useState(qrPaymentCardData.map((c, i) => ({ ...c, status: i === 0 ? 'Aktif' : 'Aktif Değil', active: i === 0 })));
+  const [isActivationOpen, setIsActivationOpen] = useState(false);
+  const [activatingCard, setActivatingCard] = useState<typeof cards[0] | null>(null);
+
   const handleActionClick = (action: string) => {
     toast({
       title: 'İşlevsellik Yakında!',
@@ -128,14 +132,37 @@ export default function QrPaymentPage() {
     });
   };
 
-  const handleMaterialClick = (action: string) => {
-    toast({
-        title: 'Materyal İşlemi',
-        description: `Bu materyal için ${action} işlevi yakında aktif olacaktır.`,
-    });
+  const handleActivateClick = (card: typeof cards[0]) => {
+      if (card.status === 'Aktif') return;
+      setActivatingCard(card);
+      setIsActivationOpen(true);
+  };
+
+  const handleActivate = (cardId: string) => {
+      setCards(prev => prev.map(c => c.id === cardId ? { ...c, status: 'Aktif' } : c));
+      setIsActivationOpen(false);
+      toast({ title: "Kart Aktive Edildi!", description: `${activatingCard?.type} kartınız artık kullanıma hazır.` });
   };
   
+  const handleCardSelect = (cardId: string) => {
+    const card = cards.find(c => c.id === cardId);
+    if (card?.status !== 'Aktif') {
+        toast({
+            variant: "destructive",
+            title: "Kart Aktif Değil",
+            description: "Lütfen önce kartınızı aktive edin.",
+        });
+        return;
+    }
+    setCards(cards.map(c => ({ ...c, active: c.id === cardId })));
+};
+
+  const activeCard = cards.find(c => c.active);
+  
   const getActiveBorderColor = () => {
+    if (!activeCard) return 'border-muted';
+    if (activeCard.id === 'ticari') return 'border-blue-800';
+    if (activeCard.id === 'ogrenci') return 'border-green-700';
     return 'border-primary';
   };
 
@@ -150,7 +177,38 @@ export default function QrPaymentPage() {
                 <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-5 w-5" /></Button>
             </div>
         </div>
-        
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Kartlarım</CardTitle>
+                <CardDescription>Kullanmak istediğiniz kartı seçin veya yeni bir kart aktive edin.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                {cards.map((card) => (
+                    <div key={card.id} onClick={() => handleCardSelect(card.id)} className={cn("p-4 rounded-xl text-white cursor-pointer transition-all border-4", card.bgColor, activeCard?.id === card.id ? getActiveBorderColor() : 'border-transparent opacity-70 hover:opacity-100')}>
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <h4 className="text-lg font-bold">{card.type} Kart</h4>
+                                <p className="text-sm font-mono tracking-widest">{card.number.replace(/(\d{4})/g, '$1 ').trim()}</p>
+                            </div>
+                             <p className="text-2xl font-bold">{card.balance}</p>
+                        </div>
+                        <div className="mt-4 flex justify-between items-end">
+                            <div className="text-xs">
+                                <p className="opacity-70">Kart Sahibi</p>
+                                <p className="font-semibold">{card.owner}</p>
+                            </div>
+                             {card.status !== 'Aktif' ? (
+                                <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); handleActivateClick(card); }}>Aktive Et</Button>
+                            ) : (
+                                 <Badge variant="secondary" className="bg-white/20 text-white">Aktif</Badge>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+
       <Card className={cn('transition-all duration-500 border-2 shadow-md', getActiveBorderColor())}>
         <CardHeader>
             <CardTitle>Ödeme Yönetimi</CardTitle>
@@ -327,6 +385,8 @@ export default function QrPaymentPage() {
           </Accordion>
         </CardContent>
       </Card>
+
+      <ActivationDialog card={activatingCard} open={isActivationOpen} onClose={() => setIsActivationOpen(false)} onActivate={handleActivate} />
       
     </div>
   );

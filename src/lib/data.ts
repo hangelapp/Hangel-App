@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
@@ -470,25 +471,84 @@ export const donationTransactions: DonationTransaction[] = [];
 export const badges: Badge[] = [
     { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 },
     { id: '2', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Gümüş', socialArea: 'Çevre', pointsRequired: 1000, currentPoints: 800 },
-    { id: '3', name: 'Hayvan Dostu', iconName: Heart, level: 'Bronz', socialArea: 'Hayvan Hakları', pointsRequired: 500, currentPoints: 550 },
-    { id: '4', name: 'Hayvan Dostu', iconName: Heart, level: 'Gümüş', socialArea: 'Hayvan Hakları', pointsRequired: 1000, currentPoints: 550 },
-    { id: '5', name: 'Eğitim Destekçisi', iconName: Award, level: 'Bronz', socialArea: 'Eğitim', pointsRequired: 500, currentPoints: 250 },
-    { id: '6', name: 'Topluluk Lideri', iconName: Star, level: 'Altın', socialArea: 'Topluluk', pointsRequired: 5000, currentPoints: 5150 },
-    { id: '8', name: 'Gençlik Destekçisi', iconName: Users, level: 'Bronz', socialArea: 'Gençlik', pointsRequired: 500, currentPoints: 100 },
-    { id: '10', name: 'Hayvan Dostu', iconName: Heart, level: 'Bronz', socialArea: 'Hayvan', pointsRequired: 500, currentPoints: 550 },
-    { id: '12', name: 'Çocuk Dostu', iconName: Smile, level: 'Bronz', socialArea: 'Çocuk', pointsRequired: 500, currentPoints: 260 },
-    { id: '14', name: 'Gıda Güvenliği', iconName: Utensils, level: 'Bronz', socialArea: 'Gıda', pointsRequired: 500, currentPoints: 50 },
-    { id: '16', name: 'Afet Gönüllüsü', iconName: Siren, level: 'Bronz', socialArea: 'Afet', pointsRequired: 500, currentPoints: 300 },
-    { id: '18', name: 'Eşitlik Savunucusu', iconName: Scale, level: 'Bronz', socialArea: 'Eşitlik', pointsRequired: 500, currentPoints: 0 },
-    { id: '20', name: 'İnovasyon Lideri', iconName: Lightbulb, level: 'Bronz', socialArea: 'İnovasyon', pointsRequired: 500, currentPoints: 120 },
-    { id: '22', name: 'İş Dünyası Destekçisi', iconName: Briefcase, level: 'Bronz', socialArea: 'İş Dünyası', pointsRequired: 500, currentPoints: 0 },
-    { id: '24', name: 'Bilim Destekçisi', iconName: FlaskConical, level: 'Bronz', socialArea: 'Bilim', pointsRequired: 500, currentPoints: 0 },
-    { id: '26', name: 'Engelsiz Yaşam', iconName: Accessibility, level: 'Bronz', socialArea: 'Engelli', pointsRequired: 500, currentPoints: 400 },
-    { id: '28', name: 'Yaşlı Dostu', iconName: PersonStanding, level: 'Bronz', socialArea: 'Yaşlılık', pointsRequired: 500, currentPoints: 0 },
-    { id: '30', name: 'Sanat Destekçisi', iconName: Palette, level: 'Bronz', socialArea: 'Sanat', pointsRequired: 500, currentPoints: 0 },
-    { id: '32', name: 'Tarım Gönüllüsü', iconName: Sprout, level: 'Bronz', socialArea: 'Tarım', pointsRequired: 500, currentPoints: 0 },
-    { id: '34', name: 'Sağlık Gönüllüsü', iconName: HeartPulse, level: 'Bronz', socialArea: 'Sağlık', pointsRequired: 500, currentPoints: 0 },
-    { id: '36', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Bronz', socialArea: 'İnanç', pointsRequired: 500, currentPoints: 0 },
+    { id: '3', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Altın', socialArea: 'Çevre', pointsRequired: 2500, currentPoints: 800 },
+    { id: '4', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Platin', socialArea: 'Çevre', pointsRequired: 5000, currentPoints: 800 },
+    { id: '5', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Elmas', socialArea: 'Çevre', pointsRequired: 10000, currentPoints: 800 },
+    { id: '6', name: 'Hayvan Dostu', iconName: Heart, level: 'Bronz', socialArea: 'Hayvan', pointsRequired: 500, currentPoints: 550 },
+    { id: '7', name: 'Hayvan Dostu', iconName: Heart, level: 'Gümüş', socialArea: 'Hayvan', pointsRequired: 1000, currentPoints: 550 },
+    { id: '8', name: 'Hayvan Dostu', iconName: Heart, level: 'Altın', socialArea: 'Hayvan', pointsRequired: 2500, currentPoints: 550 },
+    { id: '9', name: 'Hayvan Dostu', iconName: Heart, level: 'Platin', socialArea: 'Hayvan', pointsRequired: 5000, currentPoints: 550 },
+    { id: '10', name: 'Hayvan Dostu', iconName: Heart, level: 'Elmas', socialArea: 'Hayvan', pointsRequired: 10000, currentPoints: 550 },
+    { id: '11', name: 'Çocuk Dostu', iconName: Smile, level: 'Bronz', socialArea: 'Çocuk', pointsRequired: 500, currentPoints: 260 },
+    { id: '12', name: 'Çocuk Dostu', iconName: Smile, level: 'Gümüş', socialArea: 'Çocuk', pointsRequired: 1000, currentPoints: 260 },
+    { id: '13', name: 'Çocuk Dostu', iconName: Smile, level: 'Altın', socialArea: 'Çocuk', pointsRequired: 2500, currentPoints: 260 },
+    { id: '14', name: 'Çocuk Dostu', iconName: Smile, level: 'Platin', socialArea: 'Çocuk', pointsRequired: 5000, currentPoints: 260 },
+    { id: '15', name: 'Çocuk Dostu', iconName: Smile, level: 'Elmas', socialArea: 'Çocuk', pointsRequired: 10000, currentPoints: 260 },
+    { id: '16', name: 'Gıda Güvenliği', iconName: Utensils, level: 'Bronz', socialArea: 'Gıda', pointsRequired: 500, currentPoints: 50 },
+    { id: '17', name: 'Gıda Güvenliği', iconName: Utensils, level: 'Gümüş', socialArea: 'Gıda', pointsRequired: 1000, currentPoints: 50 },
+    { id: '18', name: 'Gıda Güvenliği', iconName: Utensils, level: 'Altın', socialArea: 'Gıda', pointsRequired: 2500, currentPoints: 50 },
+    { id: '19', name: 'Gıda Güvenliği', iconName: Utensils, level: 'Platin', socialArea: 'Gıda', pointsRequired: 5000, currentPoints: 50 },
+    { id: '20', name: 'Gıda Güvenliği', iconName: Utensils, level: 'Elmas', socialArea: 'Gıda', pointsRequired: 10000, currentPoints: 50 },
+    { id: '21', name: 'Afet Gönüllüsü', iconName: Siren, level: 'Bronz', socialArea: 'Afet', pointsRequired: 500, currentPoints: 300 },
+    { id: '22', name: 'Afet Gönüllüsü', iconName: Siren, level: 'Gümüş', socialArea: 'Afet', pointsRequired: 1000, currentPoints: 300 },
+    { id: '23', name: 'Afet Gönüllüsü', iconName: Siren, level: 'Altın', socialArea: 'Afet', pointsRequired: 2500, currentPoints: 300 },
+    { id: '24', name: 'Afet Gönüllüsü', iconName: Siren, level: 'Platin', socialArea: 'Afet', pointsRequired: 5000, currentPoints: 300 },
+    { id: '25', name: 'Afet Gönüllüsü', iconName: Siren, level: 'Elmas', socialArea: 'Afet', pointsRequired: 10000, currentPoints: 300 },
+    { id: '26', name: 'Eşitlik Savunucusu', iconName: Scale, level: 'Bronz', socialArea: 'Eşitlik', pointsRequired: 500, currentPoints: 0 },
+    { id: '27', name: 'Eşitlik Savunucusu', iconName: Scale, level: 'Gümüş', socialArea: 'Eşitlik', pointsRequired: 1000, currentPoints: 0 },
+    { id: '28', name: 'Eşitlik Savunucusu', iconName: Scale, level: 'Altın', socialArea: 'Eşitlik', pointsRequired: 2500, currentPoints: 0 },
+    { id: '29', name: 'Eşitlik Savunucusu', iconName: Scale, level: 'Platin', socialArea: 'Eşitlik', pointsRequired: 5000, currentPoints: 0 },
+    { id: '30', name: 'Eşitlik Savunucusu', iconName: Scale, level: 'Elmas', socialArea: 'Eşitlik', pointsRequired: 10000, currentPoints: 0 },
+    { id: '31', name: 'İnovasyon Lideri', iconName: Lightbulb, level: 'Bronz', socialArea: 'İnovasyon', pointsRequired: 500, currentPoints: 120 },
+    { id: '32', name: 'İnovasyon Lideri', iconName: Lightbulb, level: 'Gümüş', socialArea: 'İnovasyon', pointsRequired: 1000, currentPoints: 120 },
+    { id: '33', name: 'İnovasyon Lideri', iconName: Lightbulb, level: 'Altın', socialArea: 'İnovasyon', pointsRequired: 2500, currentPoints: 120 },
+    { id: '34', name: 'İnovasyon Lideri', iconName: Lightbulb, level: 'Platin', socialArea: 'İnovasyon', pointsRequired: 5000, currentPoints: 120 },
+    { id: '35', name: 'İnovasyon Lideri', iconName: Lightbulb, level: 'Elmas', socialArea: 'İnovasyon', pointsRequired: 10000, currentPoints: 120 },
+    { id: '36', name: 'İş Dünyası Destekçisi', iconName: Briefcase, level: 'Bronz', socialArea: 'İş Dünyası', pointsRequired: 500, currentPoints: 0 },
+    { id: '37', name: 'İş Dünyası Destekçisi', iconName: Briefcase, level: 'Gümüş', socialArea: 'İş Dünyası', pointsRequired: 1000, currentPoints: 0 },
+    { id: '38', name: 'İş Dünyası Destekçisi', iconName: Briefcase, level: 'Altın', socialArea: 'İş Dünyası', pointsRequired: 2500, currentPoints: 0 },
+    { id: '39', name: 'İş Dünyası Destekçisi', iconName: Briefcase, level: 'Platin', socialArea: 'İş Dünyası', pointsRequired: 5000, currentPoints: 0 },
+    { id: '40', name: 'İş Dünyası Destekçisi', iconName: Briefcase, level: 'Elmas', socialArea: 'İş Dünyası', pointsRequired: 10000, currentPoints: 0 },
+    { id: '41', name: 'Bilim Destekçisi', iconName: FlaskConical, level: 'Bronz', socialArea: 'Bilim', pointsRequired: 500, currentPoints: 0 },
+    { id: '42', name: 'Bilim Destekçisi', iconName: FlaskConical, level: 'Gümüş', socialArea: 'Bilim', pointsRequired: 1000, currentPoints: 0 },
+    { id: '43', name: 'Bilim Destekçisi', iconName: FlaskConical, level: 'Altın', socialArea: 'Bilim', pointsRequired: 2500, currentPoints: 0 },
+    { id: '44', name: 'Bilim Destekçisi', iconName: FlaskConical, level: 'Platin', socialArea: 'Bilim', pointsRequired: 5000, currentPoints: 0 },
+    { id: '45', name: 'Bilim Destekçisi', iconName: FlaskConical, level: 'Elmas', socialArea: 'Bilim', pointsRequired: 10000, currentPoints: 0 },
+    { id: '46', name: 'Engelsiz Yaşam', iconName: Accessibility, level: 'Bronz', socialArea: 'Engelli', pointsRequired: 500, currentPoints: 400 },
+    { id: '47', name: 'Engelsiz Yaşam', iconName: Accessibility, level: 'Gümüş', socialArea: 'Engelli', pointsRequired: 1000, currentPoints: 400 },
+    { id: '48', name: 'Engelsiz Yaşam', iconName: Accessibility, level: 'Altın', socialArea: 'Engelli', pointsRequired: 2500, currentPoints: 400 },
+    { id: '49', name: 'Engelsiz Yaşam', iconName: Accessibility, level: 'Platin', socialArea: 'Engelli', pointsRequired: 5000, currentPoints: 400 },
+    { id: '50', name: 'Engelsiz Yaşam', iconName: Accessibility, level: 'Elmas', socialArea: 'Engelli', pointsRequired: 10000, currentPoints: 400 },
+    { id: '51', name: 'Yaşlı Dostu', iconName: PersonStanding, level: 'Bronz', socialArea: 'Yaşlılık', pointsRequired: 500, currentPoints: 0 },
+    { id: '52', name: 'Yaşlı Dostu', iconName: PersonStanding, level: 'Gümüş', socialArea: 'Yaşlılık', pointsRequired: 1000, currentPoints: 0 },
+    { id: '53', name: 'Yaşlı Dostu', iconName: PersonStanding, level: 'Altın', socialArea: 'Yaşlılık', pointsRequired: 2500, currentPoints: 0 },
+    { id: '54', name: 'Yaşlı Dostu', iconName: PersonStanding, level: 'Platin', socialArea: 'Yaşlılık', pointsRequired: 5000, currentPoints: 0 },
+    { id: '55', name: 'Yaşlı Dostu', iconName: PersonStanding, level: 'Elmas', socialArea: 'Yaşlılık', pointsRequired: 10000, currentPoints: 0 },
+    { id: '56', name: 'Sanat Destekçisi', iconName: Palette, level: 'Bronz', socialArea: 'Sanat', pointsRequired: 500, currentPoints: 0 },
+    { id: '57', name: 'Sanat Destekçisi', iconName: Palette, level: 'Gümüş', socialArea: 'Sanat', pointsRequired: 1000, currentPoints: 0 },
+    { id: '58', name: 'Sanat Destekçisi', iconName: Palette, level: 'Altın', socialArea: 'Sanat', pointsRequired: 2500, currentPoints: 0 },
+    { id: '59', name: 'Sanat Destekçisi', iconName: Palette, level: 'Platin', socialArea: 'Sanat', pointsRequired: 5000, currentPoints: 0 },
+    { id: '60', name: 'Sanat Destekçisi', iconName: Palette, level: 'Elmas', socialArea: 'Sanat', pointsRequired: 10000, currentPoints: 0 },
+    { id: '61', name: 'Tarım Gönüllüsü', iconName: Sprout, level: 'Bronz', socialArea: 'Tarım', pointsRequired: 500, currentPoints: 0 },
+    { id: '62', name: 'Tarım Gönüllüsü', iconName: Sprout, level: 'Gümüş', socialArea: 'Tarım', pointsRequired: 1000, currentPoints: 0 },
+    { id: '63', name: 'Tarım Gönüllüsü', iconName: Sprout, level: 'Altın', socialArea: 'Tarım', pointsRequired: 2500, currentPoints: 0 },
+    { id: '64', name: 'Tarım Gönüllüsü', iconName: Sprout, level: 'Platin', socialArea: 'Tarım', pointsRequired: 5000, currentPoints: 0 },
+    { id: '65', name: 'Tarım Gönüllüsü', iconName: Sprout, level: 'Elmas', socialArea: 'Tarım', pointsRequired: 10000, currentPoints: 0 },
+    { id: '66', name: 'Eğitim Gönüllüsü', iconName: Award, level: 'Bronz', socialArea: 'Eğitim', pointsRequired: 500, currentPoints: 250 },
+    { id: '67', name: 'Eğitim Gönüllüsü', iconName: Award, level: 'Gümüş', socialArea: 'Eğitim', pointsRequired: 1000, currentPoints: 250 },
+    { id: '68', name: 'Eğitim Gönüllüsü', iconName: Award, level: 'Altın', socialArea: 'Eğitim', pointsRequired: 2500, currentPoints: 250 },
+    { id: '69', name: 'Eğitim Gönüllüsü', iconName: Award, level: 'Platin', socialArea: 'Eğitim', pointsRequired: 5000, currentPoints: 250 },
+    { id: '70', name: 'Eğitim Gönüllüsü', iconName: Award, level: 'Elmas', socialArea: 'Eğitim', pointsRequired: 10000, currentPoints: 250 },
+    { id: '71', name: 'Sağlık Gönüllüsü', iconName: HeartPulse, level: 'Bronz', socialArea: 'Sağlık', pointsRequired: 500, currentPoints: 0 },
+    { id: '72', name: 'Sağlık Gönüllüsü', iconName: HeartPulse, level: 'Gümüş', socialArea: 'Sağlık', pointsRequired: 1000, currentPoints: 0 },
+    { id: '73', name: 'Sağlık Gönüllüsü', iconName: HeartPulse, level: 'Altın', socialArea: 'Sağlık', pointsRequired: 2500, currentPoints: 0 },
+    { id: '74', name: 'Sağlık Gönüllüsü', iconName: HeartPulse, level: 'Platin', socialArea: 'Sağlık', pointsRequired: 5000, currentPoints: 0 },
+    { id: '75', name: 'Sağlık Gönüllüsü', iconName: HeartPulse, level: 'Elmas', socialArea: 'Sağlık', pointsRequired: 10000, currentPoints: 0 },
+    { id: '76', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Bronz', socialArea: 'İnanç', pointsRequired: 500, currentPoints: 0 },
+    { id: '77', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Gümüş', socialArea: 'İnanç', pointsRequired: 1000, currentPoints: 0 },
+    { id: '78', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Altın', socialArea: 'İnanç', pointsRequired: 2500, currentPoints: 0 },
+    { id: '79', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Platin', socialArea: 'İnanç', pointsRequired: 5000, currentPoints: 0 },
+    { id: '80', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Elmas', socialArea: 'İnanç', pointsRequired: 10000, currentPoints: 0 },
 ];
 export const certificates: Certificate[] = [];
 
@@ -519,11 +579,14 @@ export const managedItems: ManagedItem[] = [
 ];
 
 export const qrPaymentCardData = [
-    { id: 'bireysel', type: 'Bireysel', bgColor: 'bg-primary', number: '5549601000001234', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '12/28', balance: '1.250,75 ₺', ngoId: '1', cvv: '123' }
+    { id: 'bireysel', type: 'Bireysel', bgColor: 'bg-primary', number: '5549601000001234', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '12/28', balance: '1.250,75 ₺', ngoId: '1', cvv: '123' },
+    { id: 'ticari', type: 'Ticari', bgColor: 'bg-blue-800', number: '5549601000005678', owner: 'Hangel A.Ş.', expiry: '10/27', balance: '15.450,00 ₺', ngoId: '2', cvv: '456' },
+    { id: 'ogrenci', type: 'Öğrenci', bgColor: 'bg-green-700', number: '5549601000009012', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '08/29', balance: '250,00 ₺', ngoId: '3', cvv: '789' }
 ];
 
 export const allUniversities = ["Abdullah Gül Üniversitesi", "Acıbadem Mehmet Ali Aydınlar Üniversitesi", "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi", "Adıyaman Üniversitesi", "Afyon Kocatepe Üniversitesi", "Afyonkarahisar Sağlık Bilimleri Üniversitesi", "Ağrı İbrahim Çeçen Üniversitesi", "Akdeniz Üniversitesi", "Aksaray Üniversitesi", "Alanya Alaaddin Keykubat Üniversitesi", "Alanya Üniversitesi", "Altınbaş Üniversitesi", "Amasya Üniversitesi", "Anadolu Üniversitesi", "Ankara Bilim Üniversitesi", "Ankara Hacı Bayram Veli Üniversitesi", "Ankara Medipol Üniversitesi", "Ankara Müzik ve Güzel Sanatlar Üniversitesi", "Ankara Sosyal Bilimler Üniversitesi", "Ankara Üniversitesi", "Ankara Yıldırım Beyazıt Üniversitesi", "Antalya Belek Üniversitesi", "Antalya Bilim Üniversitesi", "Ardahan Üniversitesi", "Artvin Çoruh Üniversitesi", "Ataşehir Adıgüzel Meslek Yüksekokulu", "Atatürk Üniversitesi", "Atılım Üniversitesi", "Avrasya Üniversitesi", "Aydın Adnan Menderes Üniversitesi", "Bahçeşehir Üniversitesi", "Balıkesir Üniversitesi", "Bandırma Onyedi Eylül Üniversitesi", "Bartın Üniversitesi", "Başkent Üniversitesi", "Batman Üniversitesi", "Bayburt Üniversitesi", "Beykoz Üniversitesi", "Bezm-i Âlem Vakıf Üniversitesi", "Bilecik Şeyh Edebali Üniversitesi", "Bingöl Üniversitesi", "Biruni Üniversitesi", "Bitlis Eren Üniversitesi", "Boğaziçi Üniversitesi", "Bolu Abant İzzet Baysal Üniversitesi", "Burdur Mehmet Akif Ersoy Üniversitesi", "Bursa Teknik Üniversitesi", "Bursa Uludağ Üniversitesi", "Çağ Üniversitesi", "Çanakkale Onsekiz Mart Üniversitesi", "Çankaya Üniversitesi", "Çankırı Karatekin Üniversitesi", "Çukurova Üniversitesi", "Demiroğlu Bilim Üniversitesi", "Dicle Üniversitesi", "Doğuş Üniversitesi", "Dokuz Eylül Üniversitesi", "Düzce Üniversitesi", "Ege Üniversitesi", "Erciyes Üniversitesi", "Erzincan Binali Yıldırım Üniversitesi", "Erzurum Teknik Üniversitesi", "Eskişehir Osmangazi Üniversitesi", "Eskişehir Teknik Üniversitesi", "Fatih Sultan Mehmet Vakıf Üniversitesi", "Fenerbahçe Üniversitesi", "Fırat Üniversitesi", "Galatasaray Üniversitesi", "Gazi Üniversitesi", "Gaziantep İslam Bilim ve Teknoloji Üniversitesi", "Gaziantep Üniversitesi", "Gebze Teknik Üniversitesi", "Giresun Üniversitesi", "Gümüşhane Üniversitesi", "Hacettepe Üniversitesi", "Hakkari Üniversitesi", "Haliç Üniversitesi", "Harran Üniversitesi", "Hasan Kalyoncu Üniversitesi", "Hatay Mustafa Kemal Üniversitesi", "Hitit Üniversitesi", "Iğdır Üniversitesi", "Isparta Uygulamalı Bilimler Üniversitesi", "Işık Üniversitesi", "İbn Haldun Üniversitesi", "İhsan Doğramacı Bilkent Üniversitesi", "İnönü Üniversitesi", "İskenderun Teknik Üniversitesi", "İstanbul 29 Mayıs Üniversitesi", "İstanbul Arel Üniversitesi", "İstanbul Atlas Üniversitesi", "İstanbul Aydın Üniversitesi", "İstanbul Beykent Üniversitesi", "İstanbul Bilgi Üniversitesi", "İstanbul Esenyurt Üniversitesi", "İstanbul Galata Üniversitesi", "İstanbul Gedik Üniversitesi", "İstanbul Gelişim Üniversitesi", "İstanbul Kent Üniversitesi", "İstanbul Kültür Üniversitesi", "İstanbul Medeniyet Üniversitesi", "İstanbul Medipol Üniversitesi", "İstanbul Nişantaşı Üniversitesi", "İstanbul Okan Üniversitesi", "İstanbul Rumeli Üniversitesi", "İstanbul Sabahattin Zaim Üniversitesi", "İstanbul Sağlık ve Sosyal Bilimler Meslek Yüksekokulu", "İstanbul Sağlık ve Teknoloji Üniversitesi", "İstanbul Şişli Meslek Yüksekokulu", "İstanbul Teknik Üniversitesi", "İstanbul Ticaret Üniversitesi", "İstanbul Topkapı Üniversitesi", "İstanbul Üniversitesi", "İstanbul Üniversitesi-Cerrahpaşa", "İstanbul Yeni Yüzyıl Üniversitesi", "İstinye Üniversitesi", "İzmir Bakırçay Üniversitesi", "İzmir Demokrasi Üniversitesi", "İzmir Ekonomi Üniversitesi", "İzmir Kâtip Çelebi Üniversitesi", "İzmir Kavram Meslek Yüksekokulu", "İzmir Tınaztepe Üniversitesi", "İzmir Yüksek Teknoloji Enstitüsü", "Kadir Has Üniversitesi", "Kafkas Üniversitesi", "Kahramanmaraş İstiklal Üniversitesi", "Kahramanmaraş Sütçü İmam Üniversitesi", "Kapadokya Üniversitesi", "Karabük Üniversitesi", "Karadeniz Teknik Üniversitesi", "Karamanoğlu Mehmetbey Üniversitesi", "Kastamonu Üniversitesi", "Kayseri Üniversitesi", "Kırıkkale Üniversitesi", "Kırklareli Üniversitesi", "Kırşehir Ahi Evran Üniversitesi", "Kilis 7 Aralık Üniversitesi", "Kocaeli Üniversitesi", "Konya Teknik Üniversitesi", "KTO Karatay Üniversitesi", "Malatya Turgut Özal Üniversitesi", "Manisa Celal Bayar Üniversitesi", "Mardin Artuklu Üniversitesi", "Marmara Üniversitesi", "Mersin Üniversitesi", "Muğla Sıtkı Koçman Üniversitesi", "Munzur Üniversitesi", "Muş Alparslan Üniversitesi", "Necmettin Erbakan Üniversitesi", "Nevşehir Hacı Bektaş Veli Üniversitesi", "Niğde Ömer Halisdemir Üniversitesi", "Ondokuz Mayıs Üniversitesi", "Ordu Üniversitesi", "Orta Doğu Teknik Üniversitesi", "Osmaniye Korkut Ata Üniversitesi", "Pamukkale Üniversitesi", "Recep Tayyip Erdoğan Üniversitesi", "Sakarya Üniversitesi", "Sakarya Uygulamalı Bilimler Üniversitesi", "Selçuk Üniversitesi", "Siirt Üniversitesi", "Sinop Üniversitesi", "Sivas Cumhuriyet Üniversitesi", "Süleyman Demirel Üniversitesi", "Şırnak Üniversitesi", "Tekirdağ Namık Kemal Üniversitesi", "Tokat Gaziosmanpaşa Üniversitesi", "Trabzon Üniversitesi", "Trakya Üniversitesi", "Türk-Alman Üniversitesi", "Türk Hava Kurumu Üniversitesi", "Uşak Üniversitesi", "Van Yüzüncü Yıl Üniversitesi", "Yalova Üniversitesi", "Yıldız Teknik Üniversitesi", "Yozgat Bozok Üniversitesi", "Zonguldak Bülent Ecevit Üniversitesi"];
 
 export const provincialDirectorates = [ "Adana İl Millî Eğitim Müdürlüğü", "Adıyaman İl Millî Eğitim Müdürlüğü", "Afyon İl Millî Eğitim Müdürlüğü", "Ağrı İl Millî Eğitim Müdürlüğü", "Amasya İl Millî Eğitim Müdürlüğü", "Ankara İl Millî Eğitim Müdürlüğü", "Antalya İl Millî Eğitim Müdürlüğü", "Artvin İl Millî Eğitim Müdürlüğü", "Aydın İl Millî Eğitim Müdürlüğü", "Balıkesir İl Millî Eğitim Müdürlüğü", "Bilecik İl Millî Eğitim Müdürlüğü", "Bingöl İl Millî Eğitim Müdürlüğü", "Bitlis İl Millî Eğitim Müdürlüğü", "Bolu İl Millî Eğitim Müdürlüğü", "Burdur İl Millî Eğitim Müdürlüğü", "Bursa İl Millî Eğitim Müdürlüğü", "Çanakkale İl Millî Eğitim Müdürlüğü", "Çankırı İl Millî Eğitim Müdürlüğü", "Çorum İl Millî Eğitim Müdürlüğü", "Denizli İl Millî Eğitim Müdürlüğü", "Diyarbakır İl Millî Eğitim Müdürlüğü", "Edirne İl Millî Eğitim Müdürlüğü", "Elazığ İl Millî Eğitim Müdürlüğü", "Erzincan İl Millî Eğitim Müdürlüğü", "Erzurum İl Millî Eğitim Müdürlüğü", "Eskişehir İl Millî Eğitim Müdürlüğü", "Gaziantep İl Millî Eğitim Müdürlüğü", "Giresun İl Millî Eğitim Müdürlüğü", "Gümüşhane İl Millî Eğitim Müdürlüğü", "Hakkari İl Millî Eğitim Müdürlüğü", "Hatay İl Millî Eğitim Müdürlüğü", "Isparta İl Millî Eğitim Müdürlüğü", "Mersin İl Millî Eğitim Müdürlüğü", "İstanbul İl Millî Eğitim Müdürlüğü", "İzmir İl Millî Eğitim Müdürlüğü", "Kars İl Millî Eğitim Müdürlüğü", "Kastamonu İl Millî Eğitim Müdürlüğü", "Kayseri İl Millî Eğitim Müdürlüğü", "Kırklareli İl Millî Eğitim Müdürlüğü", "Kırşehir İl Millî Eğitim Müdürlüğü", "Kocaeli İl Millî Eğitim Müdürlüğü", "Konya İl Millî Eğitim Müdürlüğü", "Kütahya İl Millî Eğitim Müdürlüğü", "Malatya İl Millî Eğitim Müdürlüğü", "Manisa İl Millî Eğitim Müdürlüğü", "Kahramanmaraş İl Millî Eğitim Müdürlüğü", "Mardin İl Millî Eğitim Müdürlüğü", "Muğla İl Millî Eğitim Müdürlüğü", "Muş İl Millî Eğitim Müdürlüğü", "Nevşehir İl Millî Eğitim Müdürlüğü", "Niğde İl Millî Eğitim Müdürlüğü", "Ordu İl Millî Eğitim Müdürlüğü", "Rize İl Millî Eğitim Müdürlüğü", "Sakarya İl Millî Eğitim Müdürlüğü", "Samsun İl Millî Eğitim Müdürlüğü", "Siirt İl Millî Eğitim Müdürlüğü", "Sinop İl Millî Eğitim Müdürlüğü", "Sivas İl Millî Eğitim Müdürlüğü", "Tekirdağ İl Millî Eğitim Müdürlüğü", "Tokat İl Millî Eğitim Müdürlüğü", "Trabzon İl Millî Eğitim Müdürlüğü", "Tunceli İl Millî Eğitim Müdürlüğü", "Şanlıurfa İl Millî Eğitim Müdürlüğü", "Uşak İl Millî Eğitim Müdürlüğü", "Van İl Millî Eğitim Müdürlüğü", "Yozgat İl Millî Eğitim Müdürlüğü", "Zonguldak İl Millî Eğitim Müdürlüğü", "Aksaray İl Millî Eğitim Müdürlüğü", "Bayburt İl Millî Eğitim Müdürlüğü", "Karaman İl Millî Eğitim Müdürlüğü", "Kırıkkale İl Millî Eğitim Müdürlüğü", "Batman İl Millî Eğitim Müdürlüğü", "Şırnak İl Millî Eğitim Müdürlüğü", "Bartın İl Millî Eğitim Müdürlüğü", "Ardahan İl Millî Eğitim Müdürlüğü", "Iğdır İl Millî Eğitim Müdürlüğü", "Yalova İl Millî Eğitim Müdürlüğü", "Karabük İl Millî Eğitim Müdürlüğü", "Kilis İl Millî Eğitim Müdürlüğü", "Osmaniye İl Millî Eğitim Müdürlüğü", "Düzce İl Millî Eğitim Müdürlüğü" ];
+
 
 
