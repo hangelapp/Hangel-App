@@ -489,6 +489,34 @@ const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: s
     </div>
 );
 
+const PressSection = () => (
+    <section className="py-20 md:py-32 bg-white border-y border-black/5 overflow-hidden">
+        <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight">Basında Biz</h2>
+        </div>
+        <div className="relative h-20">
+            <div className="absolute inset-0 flex items-center animate-scroll">
+                {[...Array(2)].flatMap(() => [
+                    { name: 'Anadolu Ajansı', logo: 'https://logo.clearbit.com/aa.com.tr' },
+                    { name: 'TRT Haber', logo: 'https://logo.clearbit.com/trthaber.com' },
+                    { name: 'Hürriyet', logo: 'https://logo.clearbit.com/hurriyet.com.tr' },
+                    { name: 'NTV', logo: 'https://logo.clearbit.com/ntv.com.tr' },
+                    { name: 'Sözcü', logo: 'https://logo.clearbit.com/sozcu.com.tr' },
+                    { name: 'Webrazzi', logo: 'https://logo.clearbit.com/webrazzi.com' },
+                    { name: 'Marketing Türkiye', logo: 'https://logo.clearbit.com/marketingturkiye.com.tr' }
+                ]).map((item, index) => (
+                    <div key={index} className="w-64 h-16 flex items-center justify-center flex-shrink-0 px-8">
+                        <div className="relative h-full w-full">
+                            <Image src={item.logo} alt={item.name} fill className="object-contain grayscale opacity-60" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
+
 export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -575,6 +603,15 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+            <style jsx global>{`
+                @keyframes scroll {
+                    from { transform: translateX(0); }
+                    to { transform: translateX(-50%); }
+                }
+                .animate-scroll {
+                    animation: scroll 40s linear infinite;
+                }
+            `}</style>
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetContent>
                     <SheetHeader>
@@ -730,6 +767,8 @@ export default function LoginPage() {
                         </Carousel>
                     </div>
                 </section>
+
+                <PressSection />
 
                 <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
