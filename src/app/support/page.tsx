@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const CategoryLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
     <Link href={href} className="group flex flex-col items-center gap-2 text-center">
@@ -88,6 +89,38 @@ export default function SupportPage() {
             <QuickActionCard title="Etki Puanım neden artmıyor?" href="/support/bireysel-kullanicilar" />
             <QuickActionCard title="Şeffaflık belgelerim neden reddedildi?" href="/support/stk-yoneticileri" />
             <QuickActionCard title="Bağış oranlarımı nasıl ayarlarım?" href="/support/marka-yoneticileri" />
+        </section>
+
+        <section className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center">
+                <h2 className="text-3xl font-bold tracking-tight">Sıkça Sorulan Sorular</h2>
+            </div>
+            <Accordion type="single" collapsible className="w-full bg-white p-4 rounded-3xl shadow-lg border border-black/5">
+                <AccordionItem value="item-1">
+                    <AccordionTrigger>Sosyal etki puanı nedir?</AccordionTrigger>
+                    <AccordionContent>
+                        Sosyal etki puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Gönüllülük faaliyetleri, bağışlar ve platforma yeni üyeler kazandırma gibi eylemlerle puan kazanırsınız. Bu puanlar, hem topluluk içindeki statünüzü gösterir hem de size özel avantajlar sunar.
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2">
+                    <AccordionTrigger>hangel'i kullanmak ücretli mi?</AccordionTrigger>
+                    <AccordionContent>
+                        hangel'i kullanmak tamamen ücretsizdir. Alışverişlerinizden doğan bağışlar, markalar tarafından karşılanır ve size ek bir maliyet yansıtılmaz.
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-3">
+                    <AccordionTrigger>Gönüllülük faaliyetlerinden puan kazanıyor muyum?</AccordionTrigger>
+                    <AccordionContent>
+                        Evet, tamamladığınız her gönüllülük faaliyeti için sosyal etki puanı kazanırsınız. Bu puanlar liderlik tablosundaki sıralamanızı ve rozetlerinizi etkiler.
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-4">
+                    <AccordionTrigger>Yaptığım bağışların doğru STK'ya ulaştığından nasıl emin olabilirim?</AccordionTrigger>
+                    <AccordionContent>
+                        Tüm bağış süreçleri şeffaftır. Profilinizdeki "Bağışlarım" bölümünden her işlemin detayını, hangi STK'ya ne kadar bağış yapıldığını ve işlem durumunu anlık olarak takip edebilirsiniz.
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
         </section>
 
         {/* Search Section */}
