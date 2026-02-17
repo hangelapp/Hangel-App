@@ -148,20 +148,20 @@ export default function AboutPage() {
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-16 text-[#1d1d1f]">Rakamlarla hangel</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">500+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Aktif Marka</p>
-                        </div>
-                         <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">8.2M ₺</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Nakit Bağış</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-5xl font-black tracking-tighter text-primary">1,200+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Gönüllülük Projesi</p>
-                        </div>
-                         <div className="space-y-2">
                             <p className="text-5xl font-black tracking-tighter text-primary">1.2M+</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Kullanıcı</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">112M+ ₺</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Toplam Sosyal Etki</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">500K+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Saat Gönüllülük</p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-5xl font-black tracking-tighter text-primary">750+</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">Paydaş (STK & Marka)</p>
                         </div>
                     </div>
                 </div>
