@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const SitemapGroup = ({ title, links }: { title: string, links: { label: string, href: string }[] }) => (
     <div className="space-y-6">
@@ -85,6 +86,8 @@ export default function SitemapPage() {
         }
     ];
 
+    const mainPagesSection = sections.find(s => s.title === "Ana Bölümler");
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             {/* Nav */}
@@ -98,21 +101,33 @@ export default function SitemapPage() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 pt-32 pb-32 max-w-4xl space-y-20">
+            <main className="container mx-auto px-4 pt-32 pb-32 max-w-4xl space-y-12">
                 <div className="text-left space-y-4">
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">Navigasyon.</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium">Tüm platformun yapısını tek bir bakışta inceleyin.</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-16">
-                    {sections.map((section) => (
-                        <SitemapGroup key={section.title} {...section} />
-                    ))}
-                </div>
+                <Tabs defaultValue="main-pages" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="main-pages">Ana Sayfalar</TabsTrigger>
+                        <TabsTrigger value="all-pages">Tüm Sayfalar</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="main-pages" className="mt-8">
+                        <div className="grid grid-cols-1 gap-16">
+                            {mainPagesSection && <SitemapGroup {...mainPagesSection} />}
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="all-pages" className="mt-8">
+                        <div className="grid grid-cols-1 gap-16">
+                            {sections.map((section) => (
+                                <SitemapGroup key={section.title} {...section} />
+                            ))}
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </main>
 
             <PublicFooter currentPageLabel="Site Haritası" />
         </div>
     );
 }
-
