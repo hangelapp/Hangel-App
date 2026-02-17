@@ -127,8 +127,8 @@ export default function AboutPage() {
                 title="İyiliği Dijitalleştirdik."
                 subtitle="Geleceğin dayanışma modelini inşa ediyoruz."
                 description="Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, en kapsamlı sosyal etki platformuyuz."
-                imageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
-                imageHint="modern office people collaborating"
+                imageUrl="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
+                imageHint="university students"
             />
 
             {/* Social Enterprise */}
