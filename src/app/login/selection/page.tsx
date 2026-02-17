@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo, useRef } from 'react';
@@ -18,7 +19,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 
 // --- Shared Constants & Data ---
@@ -238,196 +239,119 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
     const { toast } = useToast();
     const auth = useAuth();
     
-    // States
     const [name, setName] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [code, setCode] = useState('');
-    
-    const [step, setStep] = useState<'phone' | 'code'>('phone');
-    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-    
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [countdown, setCountdown] = useState(0);
 
-    // Setup reCAPTCHA
-    useEffect(() => {
-        if (!auth) return;
-        
-        let verifier = (window as any).recaptchaVerifier;
-        if (!verifier) {
-            (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response: any) => {
-                    // reCAPTCHA solved, allow signInWithPhoneNumber.
-                },
-                'expired-callback': () => {
-                    // Response expired. Ask user to solve reCAPTCHA again.
-                }
-            });
-        }
-    }, [auth]);
-
-    // Countdown timer effect
-    useEffect(() => {
-        if (countdown > 0) {
-            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [countdown]);
-
-
-    const handleSendCode = async (e?: React.FormEvent) => {
-        if(e) e.preventDefault();
-        setIsLoading(true);
-
-        if (!phoneNumber || phoneNumber.length < 10) {
-            toast({ variant: "destructive", title: "Geçersiz Numara", description: "Lütfen geçerli bir telefon numarası girin." });
-            setIsLoading(false);
-            return;
-        }
-        
-        if (isRegister && (!name || name.trim() === "")) {
-            toast({ variant: "destructive", title: "Eksik Bilgi", description: "Ad Soyad alanı boş bırakılamaz." });
-            setIsLoading(false);
-            return;
-        }
-        
-        const appVerifier = (window as any).recaptchaVerifier;
-        const formattedPhoneNumber = `+90${phoneNumber.replace(/\D/g, '').slice(-10)}`;
-
-        try {
-            const result = await signInWithPhoneNumber(auth, formattedPhoneNumber, appVerifier);
-            setConfirmationResult(result);
-            setStep('code');
-            setCountdown(60);
-            toast({ title: "Kod Gönderildi", description: "Telefonunuza bir doğrulama kodu gönderdik." });
-        } catch (error: any) {
-            let description = "Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.";
-            if (error.code === 'auth/operation-not-allowed') {
-                description = "Telefon ile giriş bu proje için aktif değil. Lütfen Firebase ayarlarınızı kontrol edin.";
-            } else if (error.code === 'auth/invalid-phone-number') {
-                description = "Girdiğiniz telefon numarası geçersiz.";
-            } else if (error.code === 'auth/too-many-requests') {
-                description = "Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin.";
-            } else if (error.code === 'auth/internal-error') {
-                 description = "Firebase'de bir iç hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin veya reCAPTCHA'yı doğrulayın.";
-            }
-            
-            toast({ variant: "destructive", title: "Kod Gönderilemedi", description: description });
-             
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleVerifyCode = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
 
-        if (!code || code.length !== 6) {
-            toast({ variant: "destructive", title: "Geçersiz Kod", description: "Lütfen 6 haneli kodu girin." });
-            setIsLoading(false);
+        if (isRegister && !name.trim()) {
+            toast({ variant: "destructive", title: "Eksik Bilgi", description: "Lütfen adınızı ve soyadınızı girin." });
             return;
         }
 
-        if (!confirmationResult) {
-             toast({ variant: "destructive", title: "Doğrulama Başarısız", description: "Lütfen tekrar kod isteyin." });
-             setIsLoading(false);
-             return;
+        if (!phone.trim()) {
+            toast({ variant: "destructive", title: "Geçersiz Numara", description: "Lütfen geçerli bir telefon numarası girin." });
+            return;
         }
+        
+        if (!password) {
+            toast({ variant: "destructive", title: "Eksik Bilgi", description: "Lütfen bir şifre belirleyin." });
+            return;
+        }
+        
+        setIsLoading(true);
+        const email = `${phone.replace(/\D/g, '')}@hangel.org`;
 
         try {
-            await confirmationResult.confirm(code);
-            toast({ title: isRegister ? "Kayıt Başarılı!" : "Giriş Başarılı!", description: "hangel'e hoş geldin!" });
+            if (isRegister) {
+                await createUserWithEmailAndPassword(auth, email, password);
+                toast({ title: "Kayıt Başarılı!", description: "hangel'e hoş geldin!" });
+            } else {
+                await signInWithEmailAndPassword(auth, email, password);
+                toast({ title: "Giriş Başarılı!" });
+            }
             onComplete();
-        } catch (error) {
-            console.error("Kod doğrulama hatası:", error);
-            toast({ variant: "destructive", title: "Geçersiz Kod", description: "Girdiğiniz kod hatalı. Lütfen kontrol edip tekrar deneyin." });
+        } catch (error: any) {
+            console.error("Authentication error:", error);
+            let description = "Bilinmeyen bir hata oluştu.";
+            if (error.code === 'auth/email-already-in-use') {
+                description = "Bu telefon numarası zaten kayıtlı. Lütfen giriş yapmayı deneyin.";
+            } else if (error.code === 'auth/invalid-email') {
+                description = "Girdiğiniz telefon numarası geçersiz.";
+            } else if (error.code === 'auth/wrong-password') {
+                description = "Girdiğiniz şifre hatalı.";
+            } else if (error.code === 'auth/user-not-found') {
+                description = "Bu telefon numarası ile kayıtlı bir kullanıcı bulunamadı.";
+            } else if (error.code === 'auth/weak-password') {
+                description = "Şifreniz en az 6 karakter olmalıdır.";
+            }
+            toast({
+                variant: "destructive",
+                title: isRegister ? "Kayıt Hatası" : "Giriş Hatası",
+                description: description
+            });
         } finally {
             setIsLoading(false);
         }
     };
-
-
-    if (step === 'phone') {
-        return (
-            <form onSubmit={handleSendCode} className="space-y-4 animate-in fade-in-0">
-                 <div id="recaptcha-container"></div>
-                {isRegister && (
-                    <div className="space-y-2"><Label>Ad Soyad</Label><Input required value={name} onChange={e => setName(e.target.value)} /></div>
-                )}
-                <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon Numarası</Label>
-                    <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
-                </div>
-                <div className="space-y-3">
-                    <div className="flex items-start space-x-2">
-                    <Checkbox id="terms-user" required />
-                        <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
-                            <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                        </Label>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                        <Checkbox id="terms-privacy" required />
-                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
-                        <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
-                        </Label>
-                    </div>
-                    {isRegister && (
-                        <>
-                            <div className="flex items-start space-x-2">
-                                <Checkbox id="terms-consent" required />
-                                <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
-                                <span><Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
-                                </Label>
-                            </div>
-                            <div className="flex items-start space-x-2">
-                                <Checkbox id="terms-donation" required />
-                                <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
-                                    <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
-                                </Label>
-                            </div>
-                            <div className="flex items-start space-x-2">
-                                <Checkbox id="terms-volunteer" required />
-                                <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
-                                <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                                </Label>
-                            </div>
-                        </>
-                    )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Gönderiliyor...' : 'Doğrulama Kodu Gönder'}
-                </Button>
-            </form>
-        );
-    }
 
     return (
-        <form onSubmit={handleVerifyCode} className="space-y-4 animate-in fade-in-0">
-             <div id="recaptcha-container"></div>
-             <div className="space-y-2">
-                <Label>Telefon Numarası</Label>
-                <Input type="tel" value={`+90 ${phoneNumber}`} disabled />
+        <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
+            {isRegister && (
+                <div className="space-y-2">
+                    <Label htmlFor="name">Ad Soyad</Label>
+                    <Input id="name" required value={name} onChange={e => setName(e.target.value)} />
+                </div>
+            )}
+            <div className="space-y-2">
+                <Label htmlFor="phone">Telefon Numarası</Label>
+                <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="code">Doğrulama Kodu</Label>
-                <Input id="code" type="text" placeholder="------" maxLength={6} required value={code} onChange={e => setCode(e.target.value)} className="text-center tracking-[0.5em]" />
+                <Label htmlFor="password">Şifre</Label>
+                <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
             </div>
-            <div className="text-center text-sm text-muted-foreground h-8">
-                {countdown > 0 ? (
-                    <p>{countdown} saniye içinde yeni kod isteyebilirsiniz.</p>
-                ) : (
-                    <Button variant="link" type="button" onClick={() => handleSendCode()} disabled={isLoading}>
-                        {isLoading ? 'Gönderiliyor...' : 'Kodu Tekrar Gönder'}
-                    </Button>
+            <div className="space-y-3 pt-2">
+                <div className="flex items-start space-x-2">
+                    <Checkbox id="terms-user" required />
+                    <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
+                        <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                    </Label>
+                </div>
+                <div className="flex items-start space-x-2">
+                    <Checkbox id="terms-privacy" required />
+                    <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
+                        <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
+                    </Label>
+                </div>
+                {isRegister && (
+                    <>
+                        <div className="flex items-start space-x-2">
+                            <Checkbox id="terms-consent" required />
+                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
+                            <span><Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
+                            </Label>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                            <Checkbox id="terms-donation" required />
+                            <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
+                                <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
+                            </Label>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                            <Checkbox id="terms-volunteer" required />
+                            <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
+                            <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                            </Label>
+                        </div>
+                    </>
                 )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Doğrulanıyor...' : (isRegister ? 'Kayıt Ol' : 'Giriş Yap')}
-            </Button>
-            <Button variant="link" onClick={() => setStep('phone')} className="w-full">
-                Telefon numarasını değiştir
+                {isLoading ? 'İşleniyor...' : (isRegister ? 'Kayıt Ol' : 'Giriş Yap')}
             </Button>
         </form>
     );
@@ -927,5 +851,7 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
+
+    
 
     
