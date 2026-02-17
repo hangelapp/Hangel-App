@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo, useRef } from 'react';
@@ -253,9 +252,17 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
     // Setup reCAPTCHA
     useEffect(() => {
         if (!auth) return;
-        if (!(window as any).recaptchaVerifier) {
+        
+        let verifier = (window as any).recaptchaVerifier;
+        if (!verifier) {
             (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 'size': 'invisible',
+                'callback': (response: any) => {
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                },
+                'expired-callback': () => {
+                    // Response expired. Ask user to solve reCAPTCHA again.
+                }
             });
         }
     }, [auth]);
@@ -297,22 +304,17 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
         } catch (error: any) {
             let description = "Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.";
             if (error.code === 'auth/operation-not-allowed') {
-                description = "Telefon ile giriş bu proje için aktif değil. Lütfen Firebase konsolundan telefon ile girişi etkinleştirin.";
+                description = "Telefon ile giriş bu proje için aktif değil. Lütfen Firebase ayarlarınızı kontrol edin.";
             } else if (error.code === 'auth/invalid-phone-number') {
                 description = "Girdiğiniz telefon numarası geçersiz.";
             } else if (error.code === 'auth/too-many-requests') {
                 description = "Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin.";
+            } else if (error.code === 'auth/internal-error') {
+                 description = "Firebase'de bir iç hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin veya reCAPTCHA'yı doğrulayın.";
             }
             
             toast({ variant: "destructive", title: "Kod Gönderilemedi", description: description });
              
-             try {
-                if ((window as any).recaptchaVerifier) {
-                    (window as any).recaptchaVerifier.clear();
-                }
-             } catch (recaptchaError) {
-                console.error("reCAPTCHA clear error:", recaptchaError);
-             }
         } finally {
             setIsLoading(false);
         }
@@ -925,3 +927,5 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
+
+    
