@@ -290,7 +290,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                     </div>
                      <div className="flex items-start space-x-2">
                         <Checkbox id="terms-privacy" required />
-                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground"> <Link href="/settings/contracts/gizlilik-politikasi" className="underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline">KVKK Metnini</Link> okudum, onaylıyorum.</Label>
+                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground"><Link href="/settings/contracts/gizlilik-politikasi" className="underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline">KVKK Metnini</Link> okudum, onaylıyorum.</Label>
                     </div>
                     {isRegister && (
                         <div className="flex items-start space-x-2">
@@ -518,7 +518,7 @@ const BrandForm = () => {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label>Affiliate Marketing Kodu</Label>
-                        <Input placeholder="Gelir Ortakları, ReklamAction vb. kodunuz" />
+                        <Input placeholder="Affiliate/Gelir Ortaklığı kodu" />
                     </div>
                     <div className="space-y-2">
                         <Label>E-ticaret Altyapısı</Label>
@@ -529,6 +529,10 @@ const BrandForm = () => {
                                 <SelectItem value="woocommerce">WooCommerce</SelectItem>
                                 <SelectItem value="ticimax">Ticimax</SelectItem>
                                 <SelectItem value="ikas">Ikas</SelectItem>
+                                <SelectItem value="tsoft">Tsoft</SelectItem>
+                                <SelectItem value="ideasoft">ideasoft</SelectItem>
+                                <SelectItem value="wix">Wix</SelectItem>
+                                <SelectItem value="wordpress">Wordpress</SelectItem>
                                 <SelectItem value="custom">Özel Altyapı</SelectItem>
                                 <SelectItem value="other">Diğer</SelectItem>
                             </SelectContent>
