@@ -235,126 +235,24 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
     </Card>
 );
 
-const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
-    const { toast } = useToast();
-    const auth = useAuth();
-    
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (isRegister && !name.trim()) {
-            toast({ variant: "destructive", title: "Eksik Bilgi", description: "Lütfen adınızı ve soyadınızı girin." });
-            return;
-        }
-
-        if (!phone.trim()) {
-            toast({ variant: "destructive", title: "Geçersiz Numara", description: "Lütfen geçerli bir telefon numarası girin." });
-            return;
-        }
-        
-        if (!password) {
-            toast({ variant: "destructive", title: "Eksik Bilgi", description: "Lütfen bir şifre belirleyin." });
-            return;
-        }
-        
-        setIsLoading(true);
-        const email = `${phone.replace(/\D/g, '')}@hangel.org`;
-
-        try {
-            if (isRegister) {
-                await createUserWithEmailAndPassword(auth, email, password);
-                toast({ title: "Kayıt Başarılı!", description: "hangel'e hoş geldin!" });
-            } else {
-                await signInWithEmailAndPassword(auth, email, password);
-                toast({ title: "Giriş Başarılı!" });
-            }
-            onComplete();
-        } catch (error: any) {
-            console.error("Authentication error:", error);
-            let description = "Bilinmeyen bir hata oluştu.";
-            if (error.code === 'auth/email-already-in-use') {
-                description = "Bu telefon numarası zaten kayıtlı. Lütfen giriş yapmayı deneyin.";
-            } else if (error.code === 'auth/invalid-email') {
-                description = "Girdiğiniz telefon numarası geçersiz.";
-            } else if (error.code === 'auth/wrong-password') {
-                description = "Girdiğiniz şifre hatalı.";
-            } else if (error.code === 'auth/user-not-found') {
-                description = "Bu telefon numarası ile kayıtlı bir kullanıcı bulunamadı.";
-            } else if (error.code === 'auth/weak-password') {
-                description = "Şifreniz en az 6 karakter olmalıdır.";
-            }
-            toast({
-                variant: "destructive",
-                title: isRegister ? "Kayıt Hatası" : "Giriş Hatası",
-                description: description
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
+const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
-            {isRegister && (
-                <div className="space-y-2">
-                    <Label htmlFor="name">Ad Soyad</Label>
-                    <Input id="name" required value={name} onChange={e => setName(e.target.value)} />
-                </div>
-            )}
+        <form onSubmit={onComplete} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="name">Ad Soyad</Label>
+                <Input id="name" required />
+            </div>
             <div className="space-y-2">
                 <Label htmlFor="phone">Telefon Numarası</Label>
-                <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
+                <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Şifre</Label>
-                <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+                <Input id="password" type="password" required />
             </div>
-            <div className="space-y-3 pt-2">
-                <div className="flex items-start space-x-2">
-                    <Checkbox id="terms-user" required />
-                    <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
-                        <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                    </Label>
-                </div>
-                <div className="flex items-start space-x-2">
-                    <Checkbox id="terms-privacy" required />
-                    <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
-                        <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
-                    </Label>
-                </div>
-                {isRegister && (
-                    <>
-                        <div className="flex items-start space-x-2">
-                            <Checkbox id="terms-consent" required />
-                            <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
-                            <span><Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
-                            </Label>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                            <Checkbox id="terms-donation" required />
-                            <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
-                                <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
-                            </Label>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                            <Checkbox id="terms-volunteer" required />
-                            <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
-                            <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
-                            </Label>
-                        </div>
-                    </>
-                )}
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'İşleniyor...' : (isRegister ? 'Kayıt Ol' : 'Giriş Yap')}
-            </Button>
+            <Button type="submit" className="w-full">Kayıt Ol</Button>
         </form>
-    );
+    )
 };
 
 const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
@@ -803,6 +701,129 @@ const FormRenderer = () => {
         router.push(type === 'corporate' ? '/admin' : '/timeline');
     }
 
+    const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
+        const { toast } = useToast();
+        const auth = useAuth();
+        
+        const [name, setName] = useState('');
+        const [phone, setPhone] = useState('');
+        const [password, setPassword] = useState('');
+        const [isLoading, setIsLoading] = useState(false);
+    
+        const handleSubmit = async (e: React.FormEvent) => {
+            e.preventDefault();
+    
+            if (isRegister && !name.trim()) {
+                toast({ variant: "destructive", title: "Eksik Bilgi", description: "Lütfen adınızı ve soyadınızı girin." });
+                return;
+            }
+    
+            if (!phone.trim()) {
+                toast({ variant: "destructive", title: "Geçersiz Numara", description: "Lütfen geçerli bir telefon numarası girin." });
+                return;
+            }
+            
+            if (!password) {
+                toast({ variant: "destructive", title: "Eksik Bilgi", description: "Lütfen bir şifre belirleyin." });
+                return;
+            }
+            
+            setIsLoading(true);
+            const email = `${phone.replace(/\D/g, '')}@hangel.org`;
+    
+            try {
+                if (isRegister) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    toast({ title: "Kayıt Başarılı!", description: "hangel'e hoş geldin!" });
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    toast({ title: "Giriş Başarılı!" });
+                }
+                onComplete();
+            } catch (error: any) {
+                let description = "Bilinmeyen bir hata oluştu.";
+                if (error.code === 'auth/email-already-in-use') {
+                    description = "Bu telefon numarası zaten kayıtlı. Lütfen giriş yapmayı deneyin.";
+                } else if (error.code === 'auth/invalid-email') {
+                    description = "Girdiğiniz telefon numarası geçersiz.";
+                } else if (error.code === 'auth/wrong-password') {
+                    description = "Girdiğiniz şifre hatalı.";
+                } else if (error.code === 'auth/user-not-found') {
+                    description = "Bu telefon numarası ile kayıtlı bir kullanıcı bulunamadı.";
+                } else if (error.code === 'auth/weak-password') {
+                    description = "Şifreniz en az 6 karakter olmalıdır.";
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    description = "Telefon ile giriş bu proje için aktif değil. Lütfen Firebase ayarlarınızı kontrol edin.";
+                }
+                toast({
+                    variant: "destructive",
+                    title: isRegister ? "Kayıt Hatası" : "Giriş Hatası",
+                    description: description
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        return (
+            <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
+                {isRegister && (
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Ad Soyad</Label>
+                        <Input id="name" required value={name} onChange={e => setName(e.target.value)} />
+                    </div>
+                )}
+                <div className="space-y-2">
+                    <Label htmlFor="phone">Telefon Numarası</Label>
+                    <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="password">Şifre</Label>
+                    <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+                </div>
+                <div className="space-y-3 pt-2">
+                    <div className="flex items-start space-x-2">
+                        <Checkbox id="terms-user" required />
+                        <Label htmlFor="terms-user" className="text-xs font-normal text-muted-foreground">
+                            <span><Link href="/settings/contracts/kullanici-sozlesmesi" className="underline hover:text-primary">Kullanıcı Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                        </Label>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                        <Checkbox id="terms-privacy" required />
+                        <Label htmlFor="terms-privacy" className="text-xs font-normal text-muted-foreground">
+                            <span><Link href="/settings/contracts/gizlilik-politikasi" className="underline hover:text-primary">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="underline hover:text-primary">KVKK Aydınlatma Metnini</Link> okudum ve onaylıyorum.</span>
+                        </Label>
+                    </div>
+                    {isRegister && (
+                        <>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-consent" required />
+                                <Label htmlFor="terms-consent" className="text-xs font-normal text-muted-foreground">
+                                <span><Link href="/settings/contracts/acik-riza-metni" className="underline hover:text-primary">Açık Rıza Metnini</Link> okudum, onaylıyorum.</span>
+                                </Label>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-donation" required />
+                                <Label htmlFor="terms-donation" className="text-xs font-normal text-muted-foreground">
+                                    <span><Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="underline hover:text-primary">Bağış ve Yardım Politikasını</Link> okudum ve onaylıyorum.</span>
+                                </Label>
+                            </div>
+                            <div className="flex items-start space-x-2">
+                                <Checkbox id="terms-volunteer" required />
+                                <Label htmlFor="terms-volunteer" className="text-xs font-normal text-muted-foreground">
+                                <span><Link href="/settings/contracts/gonulluluk-sozlesmesi" className="underline hover:text-primary">Gönüllülük Sözleşmesini</Link> okudum ve onaylıyorum.</span>
+                                </Label>
+                            </div>
+                        </>
+                    )}
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'İşleniyor...' : (isRegister ? 'Kayıt Ol' : 'Giriş Yap')}
+                </Button>
+            </form>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
             <div className="w-full max-w-sm">
@@ -851,6 +872,8 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
+
+    
 
     
 
