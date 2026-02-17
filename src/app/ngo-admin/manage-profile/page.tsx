@@ -219,10 +219,14 @@ export default function ManageProfilePage() {
                     </SelectContent>
                 </Select>
               </div>
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-website">Web Sitesi</Label>
-                    <Input id="ngo-website" defaultValue="https://ahbap.org" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="ngo-foundation-year">Kuruluş Yılı</Label>
+                <Input id="ngo-foundation-year" type="number" defaultValue="2017" placeholder="Örn: 1992" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="ngo-website">Web Sitesi</Label>
+              <Input id="ngo-website" defaultValue="https://ahbap.org" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ngo-about">Hakkında</Label>
@@ -439,6 +443,7 @@ export default function ManageProfilePage() {
           </CardHeader>
           <CardContent className="space-y-4">
              <FileUpload label="Logo" currentFile="ahbap_logo.png" />
+             <FileUpload label="Kapak Fotoğrafı" />
              <FileUpload label="Faaliyet Belgesi" currentFile="faaliyet_belgesi.pdf" />
              <FileUpload label="Tüzük / Vakıf Senedi" currentFile="ahbap_tuzuk.pdf" />
           </CardContent>

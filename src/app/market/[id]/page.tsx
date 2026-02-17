@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar, Edit } from 'lucide-react';
 import { allEntityLists } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useToast } from '@/hooks/use-toast';
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
     <div className="flex justify-between items-center py-3 text-sm">
@@ -24,6 +25,7 @@ const StatRow = ({ label, value }: { label: string, value: string | number }) =>
 export default function BrandProfilePage() {
   const router = useRouter();
   const params = useParams();
+  const { toast } = useToast();
   const slug = params.id as string;
   const brand = allEntityLists.find(b => b.slug === slug);
   const [profileUrl, setProfileUrl] = useState('');
@@ -74,6 +76,9 @@ export default function BrandProfilePage() {
             </Button>
             <Button variant="outline" className="flex-1">
                 <Heart className="mr-2 h-4 w-4" /> Takip Et
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={() => toast({title: "Profili Düzenle", description: "Bu özellik yakında aktif olacaktır."})}>
+                <Edit className="mr-2 h-4 w-4" /> Düzenle
             </Button>
         </div>
       </div>
