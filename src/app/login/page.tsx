@@ -299,42 +299,6 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, 
     </div>
 );
 
-const FullStandardsSection = () => {
-    const tableHeaders = ["Belge", "Standart / Çerçeve", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan %"];
-    const complianceData = [
-        { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku / Kurumsal kullanım şartları", org: "Ticaret Bakanlığı / hangel", region: "Türkiye / Küresel", rate: "%100 / %100" },
-        { label: "Kullanıcı Sözleşmesi", std: "Consumer Protection", org: "FTC", region: "ABD", rate: "%90" },
-        { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model / Kurumsal yapı", org: "OECD / hangel", region: "OECD / Türkiye", rate: "%95 / %100" },
-        { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
-        { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları / Etik ve yasal çerçeve", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
-    ];
-    return (
-        <section className="py-8 md:py-12 bg-[#f5f5f7]">
-            <div className="container mx-auto px-4 max-w-4xl">
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-standards" className="border-none">
-                        <AccordionTrigger className="text-2xl md:text-3xl font-bold tracking-tight hover:no-underline text-center justify-center data-[state=open]:text-primary py-6 [&>svg:last-child]:hidden">
-                            <div className="flex items-center gap-4">
-                                <Plus className="h-8 w-8" />
-                                <span>Standartlarımız</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pt-8 space-y-12">
-                             <ComplianceTable 
-                                title="Uyumluluk Tablosu"
-                                description="Temel sözleşme ve politikalarımızın uluslararası standartlarla uyumu."
-                                headers={tableHeaders} 
-                                data={complianceData} 
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-            </div>
-        </section>
-    );
-};
-
-
 const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: any[], headers: string[] }) => (
     <div className="space-y-6 scroll-mt-24" id={title.toLowerCase().replace(/\s+/g, '-')}>
         <div className="space-y-1 px-1">
@@ -373,6 +337,124 @@ const ComplianceTable = ({ title, description, data, headers }: { title: string,
         </Card>
     </div>
 );
+
+const FullStandardsSection = () => {
+    const tableHeaders = ["Belge", "Standart / Çerçeve", "Talep Eden Kurum", "Ülke / Birlik", "Sağlanan %"];
+    const mainComplianceData = [
+        { label: "Kullanıcı Sözleşmesi", std: "Tüketici Hukuku / Kurumsal kullanım şartları", org: "Ticaret Bakanlığı / hangel", region: "Türkiye / Küresel", rate: "%100 / %100" },
+        { label: "Kullanıcı Sözleşmesi", std: "Consumer Protection", org: "FTC", region: "ABD", rate: "%90" },
+        { label: "Kuruluş Sözleşmesi", std: "Social Enterprise Model / Kurumsal yapı", org: "OECD / hangel", region: "OECD / Türkiye", rate: "%95 / %100" },
+        { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
+        { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları / Etik ve yasal çerçeve", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
+    ];
+    
+    const privacySecurityData = [
+        { label: "Gizlilik Politikası", std: "ISO/IEC 27701 / KVKK / GDPR / CCPA / LGPD", org: "ISO / hangel", region: "Küresel / AB / ABD / Türkiye / Latin Amerika", rate: "%85 / %100" },
+        { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "KVKK / İçişleri Bakanlığı", region: "Türkiye", rate: "%100" },
+        { label: "Açık Rıza Metni", std: "GDPR / KVKK uyumlu", org: "hangel", region: "AB / Türkiye", rate: "%100" },
+        { label: "Veri Saklama & İmha", std: "ISO 27001", org: "ISO / hangel", region: "Küresel", rate: "%85 / %100" },
+        { label: "DPO Tanımı", std: "GDPR Md.37", org: "AB", region: "AB / Türkiye", rate: "%80 / %100" },
+        { label: "Veri İhlali Bildirimi", std: "ISO 27035", org: "AB Otoriteleri / hangel", region: "AB / Türkiye", rate: "%85 / %100" },
+        { label: "Çerez Politikası", std: "ePrivacy / GDPR / KVKK", org: "AB Komisyonu / hangel", region: "AB / Türkiye", rate: "%100" },
+        { label: "COPPA Uyumu", std: "COPPA", org: "FTC", region: "ABD", rate: "%75 / %100" },
+        { label: "CCPA / CPRA", std: "California Law", org: "California AG", region: "ABD", rate: "%80 / %100" },
+        { label: "LGPD Beyanı", std: "LGPD", org: "ANPD / hangel", region: "Brezilya / Latin Amerika", rate: "%75 / %100" },
+        { label: "Ülke Bazlı Veri Uyumu", std: "Yerel Yasalar", org: "Ulusal Otoriteler", region: "Global / Türkiye / Latin Amerika / ABD", rate: "%70 / %100" },
+        { label: "Yapay Zekâ Şeffaflığı", std: "OECD AI Principles", org: "OECD / hangel", region: "Küresel", rate: "%65 / %100" },
+    ];
+
+    const socialImpactFinancialData = [
+        { label: "Sosyal Etki Politikası", std: "UN SDGs / SROI & ToC", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
+        { label: "Etki Ölçüm Metodu", std: "SROI / ToC", org: "Fon Sağlayıcılar / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Açık Sosyal Girişim Beyanı", std: "Social Business / Sosyal Girişim İlkeleri", org: "Fon Sağlayıcılar / hangel", region: "Küresel", rate: "%100" },
+        { label: "Bağış ve Yardım Politikası", std: "Charity Compliance / IRS / Ulusal mevzuat", org: "Kamu / hangel", region: "Ülke bazlı / ABD / Türkiye", rate: "%95 / %100" },
+        { label: "Bağışçı Hakları Beyannamesi", std: "Donor Bill of Rights", org: "Vakıflar / hangel", region: "ABD / AB / Küresel", rate: "%90 / %100" },
+        { label: "Bağış Denetimi", std: "Financial Audit", org: "Bağımsız Denetçiler / hangel", region: "Küresel", rate: "%85 / %100" },
+        { label: "Finansal Şeffaflık", std: "IFRS / GAAP", org: "IFRS Foundation / hangel", region: "Küresel", rate: "%90 / %100" },
+        { label: "Kâr Dağıtım Politikası", std: "Sosyal Şirket Modeli", org: "Yatırımcılar / hangel", region: "Küresel", rate: "%100" },
+        { label: "IRS Uyumlu Bağış", std: "IRS 501(c)", org: "IRS / hangel", region: "ABD", rate: "%70 / %100" },
+        { label: "Çevresel Sorumluluk", std: "ISO 14001 / ESG", org: "ISO / hangel", region: "Küresel", rate: "%75 / %100" },
+        { label: "AML / CFT", std: "FATF / Finansal Uyum", org: "FATF / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Etik Bağış Beyanı", std: "Anti-Corruption / Etik Finans", org: "Fonlar / hangel", region: "Küresel", rate: "%95 / %100" },
+        { label: "Açık Veri Politikası", std: "Open Data Charter", org: "AB / OECD / hangel", region: "AB / OECD", rate: "%70 / %100" },
+    ];
+
+    const governanceEthicsData = [
+        { label: "Etik İlkeler", std: "UN Global Compact", org: "UNGC / hangel", region: "Küresel", rate: "%95" },
+        { label: "Çıkar Çatışması", std: "OECD Governance", org: "OECD", region: "OECD", rate: "%90" },
+        { label: "Whistleblower Politikası", std: "ISO 37002", org: "ISO / hangel", region: "Küresel", rate: "%85 / %100" },
+        { label: "Kurumsal Yönetişim", std: "G20 / OECD", org: "G20", region: "G20", rate: "%90" },
+        { label: "İnsan Hakları Politikası", std: "UNGP", org: "United Nations", region: "Küresel", rate: "%95 / %100" },
+        { label: "DEI Politikası", std: "ESG Framework", org: "ESG Fonları / hangel", region: "AB / ABD / Küresel", rate: "%85 / %100" },
+        { label: "Risk & Kriz Yönetimi", std: "ISO 31000", org: "ISO / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Yönetim ve Kurumsal Yönetişim İlkeleri", std: "Kurumsal Yönetim Standartları", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "Kurumsal Risk ve Uyum Komitesi Beyanı", std: "Kurumsal Risk Yönetimi", org: "hangel", region: "Küresel", rate: "%100" },
+    ];
+    
+    const accessibilityLawData = [
+        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Afrika / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
+        { label: "Bilgilendirme Politikası", std: "Transparency Rules", org: "Regülatörler / hangel", region: "Küresel", rate: "%95 / %100" },
+        { label: "Çok Dilli Erişim", std: "Inclusive Design", org: "Uluslararası Kullanıcılar / hangel", region: "Küresel", rate: "%80 / %100" },
+        { label: "Yerel Bağış Uyumu", std: "Ulusal Mevzuat", org: "Kamu / hangel", region: "Ülke bazlı", rate: "%85 / %100" },
+        { label: "Gelişim Yol Haritası Beyanı", std: "hangel beyanı", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "ISO 22301 Uyum Beyanı", std: "İş Sürekliliği", org: "ISO / hangel", region: "Küresel", rate: "%100" },
+        { label: "ISO / IEC 25010 / EN 301 549", std: "Dijital Platform Standartları", org: "ISO / European Commission / hangel", region: "AB / Küresel", rate: "%100" },
+        { label: "Sızma ve Güvenlik Testleri", std: "Bilgi Güvenliği Testleri", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "UX ve Kullanıcı Deneyimi Testleri", std: "Dijital Deneyim Standartları", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "Felaket Kurtarma Beyanı", std: "İş Sürekliliği Testleri", org: "hangel", region: "Küresel", rate: "%100" },
+        { label: "Üçüncü Taraf Gözetim Beyanı", std: "Kurumsal Uyum / Etik", org: "hangel", region: "Küresel", rate: "%100" },
+    ];
+
+    return (
+        <section className="py-8 md:py-12 bg-[#f5f5f7]">
+            <div className="container mx-auto px-4 max-w-4xl">
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-standards" className="border-none">
+                        <AccordionTrigger className="text-2xl md:text-3xl font-bold tracking-tight hover:no-underline text-center justify-center data-[state=open]:text-primary py-6 [&>svg:last-child]:hidden">
+                            <div className="flex items-center gap-4">
+                                <Plus className="h-8 w-8" />
+                                <span>Standartlarımız</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-8 space-y-12">
+                             <ComplianceTable 
+                                title="A. ANA SÖZLEŞMELER"
+                                description="Kullanıcı ve kuruluş sözleşmelerimizin bölgesel tüketici ve sivil toplum yasalarıyla uyumu."
+                                headers={tableHeaders} 
+                                data={mainComplianceData} 
+                            />
+                            <ComplianceTable 
+                                title="B. GİZLİLİK, VERİ KORUMA VE GÜVENLİK"
+                                description="Veri mahremiyeti ve siber güvenlik alanındaki uluslararası sertifikasyonlar ve yerel kanunlar."
+                                headers={tableHeaders} 
+                                data={privacySecurityData} 
+                            />
+                            <ComplianceTable 
+                                title="C. SOSYAL ETKİ, BAĞIŞ VE FİNANSAL ŞEFFAFLIK"
+                                description="Bağışçılık, sosyal etki ölçümleme ve finansal raporlama standartlarımız."
+                                headers={tableHeaders} 
+                                data={socialImpactFinancialData} 
+                            />
+                             <ComplianceTable 
+                                title="D. KURUMSAL YÖNETİŞİM, ETİK VE DENETİM"
+                                description="Şirket ve dernek yönetişimi, etik ilkeler ve risk yönetimi çerçeveleri."
+                                headers={tableHeaders} 
+                                data={governanceEthicsData} 
+                            />
+                             <ComplianceTable 
+                                title="E. ERİŞİLEBİLİRLİK VE DİĞER POLİTİKALAR"
+                                description="Küresel erişilebilirlik mevzuat uyumu ve teknik operasyonel standartlar."
+                                headers={tableHeaders} 
+                                data={accessibilityLawData} 
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+        </section>
+    );
+};
+
 
 const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
     <div className="bg-[#f5f5f7] rounded-3xl p-8 flex flex-col h-full text-left">
