@@ -1,11 +1,10 @@
 
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle, Link as LinkIcon, Contact, Copy, CreditCard, ShoppingBag, CheckCircle } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -127,11 +126,21 @@ export default function QrPaymentPage() {
   const [cards, setCards] = useState(qrPaymentCardData.map((c, i) => ({ ...c, status: i === 0 ? 'Aktif' : 'Aktif Değil', active: i === 0 })));
   const [isActivationOpen, setIsActivationOpen] = useState(false);
   const [activatingCard, setActivatingCard] = useState<typeof cards[0] | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const [isMounted, setIsMounted(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  const activeCard = useMemo(() => cards.find(c => c.active), [cards]);
+
+  const sortedCards = useMemo(() => {
+    if (!activeCard) return cards;
+    return [
+        activeCard,
+        ...cards.filter(c => c.id !== activeCard.id)
+    ];
+  }, [cards, activeCard]);
 
   const handleActionClick = (action: string) => {
     toast({
@@ -165,8 +174,6 @@ export default function QrPaymentPage() {
     setCards(cards.map(c => ({ ...c, active: c.id === cardId })));
 };
 
-  const activeCard = cards.find(c => c.active);
-  
   if (!isMounted) {
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
@@ -183,10 +190,9 @@ export default function QrPaymentPage() {
                     <Skeleton className="h-6 w-1/3" />
                     <Skeleton className="h-4 w-2/3" />
                 </CardHeader>
-                <CardContent className="space-y-3">
-                    <Skeleton className="h-[204px] w-full rounded-2xl" />
-                    <Skeleton className="h-[204px] w-full rounded-2xl opacity-70" />
-                    <Skeleton className="h-[204px] w-full rounded-2xl opacity-70" />
+                <CardContent className="h-[280px] relative">
+                    <Skeleton className="h-[220px] w-[90%] absolute top-4 left-1/2 -translate-x-1/2 rounded-[20px]" />
+                    <Skeleton className="h-[220px] w-[90%] absolute top-7 left-1/2 -translate-x-1/2 rounded-[20px] opacity-50" />
                 </CardContent>
             </Card>
             <Card>
@@ -217,19 +223,22 @@ export default function QrPaymentPage() {
                 <CardTitle>Kartlarım</CardTitle>
                 <CardDescription>Kullanmak istediğiniz kartı seçin veya yeni bir kart aktive edin.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-                {cards.map((card) => (
-                    <div 
-                        key={card.id} 
-                        onClick={() => handleCardSelect(card.id)} 
+            <CardContent className="relative h-[280px] flex items-start justify-center pt-4">
+                {sortedCards.map((card, index) => (
+                    <div
+                        key={card.id}
+                        onClick={() => handleCardSelect(card.id)}
                         className={cn(
-                            "relative p-6 rounded-2xl text-white cursor-pointer transition-all duration-300 transform-gpu overflow-hidden shadow-lg",
-                            card.bgColor,
-                            activeCard?.id === card.id ? "scale-100 opacity-100 shadow-2xl" : "scale-95 opacity-70 hover:opacity-100 hover:scale-100"
+                            "absolute p-6 rounded-[20px] text-white cursor-pointer transition-all duration-500 ease-in-out transform-gpu overflow-hidden shadow-2xl w-[90%] max-w-[380px] h-[220px]",
+                            card.bgColor
                         )}
+                        style={{
+                            transform: `translateY(${index * 12}px) scale(${1 - (index * 0.04)})`,
+                            zIndex: sortedCards.length - index,
+                            filter: `brightness(${100 - (index * 8)}%)`
+                        }}
                     >
-                        <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-white/10 rounded-full blur-3xl" />
-                        <div className="relative z-10 flex flex-col justify-between h-[180px]">
+                         <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="flex justify-between items-start">
                                 <h4 className="text-lg font-bold">{card.type} Kart</h4>
                                 {card.status === 'Aktif' ? (
@@ -241,9 +250,9 @@ export default function QrPaymentPage() {
                             
                             <div className="mt-4">
                                  {card.status === 'Aktif' ? (
-                                    <p className="text-3xl font-bold tracking-tight">{card.balance}</p>
+                                    <p className="text-4xl font-bold tracking-tighter">{card.balance}</p>
                                  ) : (
-                                    <p className="text-2xl font-bold tracking-tight">Aktif Değil</p>
+                                    <p className="text-3xl font-bold tracking-tight">Aktif Değil</p>
                                  )}
                             </div>
 
@@ -447,4 +456,5 @@ export default function QrPaymentPage() {
   );
 }
 
+    
     
