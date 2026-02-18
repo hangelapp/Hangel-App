@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Heart, Users, ChevronRight, ShieldCheck, X } from 'lucide-react';
+import { Search, ArrowDownUp, Filter, Heart, Users, ChevronRight, ShieldCheck, X, Info, MessageCircle, Share2, CreditCard, Building, MapPin, Award, Calendar, Handshake, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Rss, Store } from 'lucide-react';
 import Link from 'next/link';
 import { ngos, timelinePosts, user, volunteeringOpportunities } from '@/lib/data';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -21,16 +21,99 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { differenceInDays, format, parse } from 'date-fns';
+import { tr } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 
 type NgoType = NGO['type'] | 'Tümü';
 type LocationFilter = 'global' | 'country' | 'city';
 
+const PostCard = ({ post }: { post: (typeof timelinePosts)[0] }) => (
+    <Card>
+        <CardHeader>
+            <div className="flex items-center gap-3">
+                <Avatar>
+                    <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+                    <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-semibold text-sm">{post.author.name}</p>
+                    <p className="text-xs text-muted-foreground">{post.timestamp}</p>
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent>
+            <p className="text-sm">{post.content}</p>
+            {post.imageUrl && (
+                <div className="relative aspect-video mt-4 rounded-lg overflow-hidden">
+                    <Image src={post.imageUrl} alt="Post image" fill className="object-cover" />
+                </div>
+            )}
+        </CardContent>
+        <CardFooter className="flex justify-start gap-0 border-t p-0">
+            <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
+                <Heart className="h-5 w-5" /> 
+                <span>Beğen</span>
+            </Button>
+            <div className="w-[1px] h-6 bg-border self-center" />
+            <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
+                <Share2 className="h-5 w-5" /> 
+                <span>Paylaş</span>
+            </Button>
+        </CardFooter>
+    </Card>
+);
+
+const OpportunityCard = ({ opp }: { opp: (typeof volunteeringOpportunities)[0] }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-base">{opp.title}</CardTitle>
+            <CardDescription>{opp.organization}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />{opp.location.city} ({opp.location.type})</div>
+            <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-4 w-4" />{opp.commitment}</div>
+            <div className="flex items-center gap-2 text-primary font-semibold"><Award className="h-4 w-4" />{opp.points} Puan</div>
+        </CardContent>
+        <CardFooter>
+            <Button asChild variant="secondary" className="w-full">
+                <Link href={`/volunteering/${opp.id}`}>Detayları Gör</Link>
+            </Button>
+        </CardFooter>
+    </Card>
+);
+
 const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
+    const { toast } = useToast();
+    const router = useRouter();
+
     const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name);
     const ngoOpps = volunteeringOpportunities.filter(o => o.ngoId === ngo.id);
     const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/ngos/${ngo.id}` : '';
 
+    const transparencyCriteria = [
+        { name: 'Faaliyet Belgesi', completed: true },
+        { name: 'Tüzük / Vakıf Senedi', completed: true },
+        { name: 'Yönetim Kurulu Listesi', completed: ngo.transparencyScore > 80 },
+        { name: 'Yıllık Faaliyet Raporu', completed: true },
+        { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
+        { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
+        { name: 'Etki Raporu', completed: ngo.transparencyScore > 75 },
+    ];
+    
+    const handleStoreClick = () => {
+        if (ngo.economicEnterpriseUrl) {
+            router.push(ngo.economicEnterpriseUrl);
+        } else {
+            toast({
+                title: "Bilgi",
+                description: "Bu sivil toplum kuruluşunun iktisadi işletmesi bulunmamaktadır.",
+            });
+        }
+    };
+    
     return (
         <div className="animate-in fade-in-0">
             <div className="relative h-48 w-full bg-muted">
@@ -229,18 +312,27 @@ export default function NgosPage() {
 
       <div className="space-y-3">
         {filteredNgos.length > 0 ? filteredNgos.map((ngo) => (
-            <Card key={ngo.id} className="transition-colors hover:bg-accent/50 cursor-pointer" onClick={() => setViewingNgo(ngo)}>
-                <div className="p-3 flex gap-3 items-center">
-                    <Avatar className="h-12 w-12">
-                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                        <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 overflow-hidden">
-                        <p className="font-semibold text-sm truncate">{ngo.name}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-1">
-                            <span className="truncate">{ngo.category}</span>
-                            <Separator orientation="vertical" className="h-3" />
+            <Card key={ngo.id} className="transition-colors hover:bg-accent/50 relative group">
+                 <div className="absolute top-2 right-2 z-10">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 bg-background/50 hover:bg-background rounded-full" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setViewingNgo(ngo); }}>
+                        <Info className="h-4 w-4"/>
+                    </Button>
+                </div>
+                <Link href={`/ngos/${ngo.id}`} className="block p-3">
+                    <div className="flex gap-3 items-center">
+                        <Avatar className="h-12 w-12">
+                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
+                            <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 overflow-hidden">
+                            <p className="font-semibold text-sm truncate">{ngo.name}</p>
+                            <p className="text-xs text-muted-foreground">{ngo.category}</p>
+                        </div>
+                    </div>
+                    <div className="mt-2 pl-1 sm:pl-0">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                             <span className="flex items-center gap-1 flex-shrink-0"><ShieldCheck className="h-3 w-3" /> {ngo.transparencyScore}</span>
+                            <Separator orientation="vertical" className="h-3" />
                             <span className="flex items-center gap-1 flex-shrink-0"><Heart className="h-3 w-3" /> {ngo.stats.followers / 1000}k</span>
                             <span className="flex items-center gap-1 flex-shrink-0"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
                             {ngo.memberOf && ngo.memberOf.map(membership => (
@@ -251,7 +343,7 @@ export default function NgosPage() {
                             ))}
                         </div>
                     </div>
-                </div>
+                </Link>
             </Card>
         )) : (
              <div className="text-center text-muted-foreground py-16">
@@ -267,17 +359,7 @@ export default function NgosPage() {
               <X className="h-5 w-5" />
             </Button>
           </div>
-          {viewingNgo && (
-            <>
-              <DialogHeader className="sr-only">
-                  <DialogTitle>{viewingNgo.name}</DialogTitle>
-                  <DialogDescription>
-                      {viewingNgo.category} alanında faaliyet gösteren {viewingNgo.name} hakkında detaylı bilgi.
-                  </DialogDescription>
-              </DialogHeader>
-              <NgoDetailView ngo={viewingNgo} />
-            </>
-          )}
+          {viewingNgo && <NgoDetailView ngo={viewingNgo} />}
         </DialogContent>
       </Dialog>
     </div>
