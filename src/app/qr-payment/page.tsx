@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -118,7 +117,6 @@ const ActivationDialog = ({ card, open, onClose, onActivate }: { card: any, open
     );
 };
 
-
 export default function QrPaymentPage() {
   const { toast } = useToast();
   const qrData = `https://hangel.org/pay/${user.username.replace('@', '')}`;
@@ -135,13 +133,7 @@ export default function QrPaymentPage() {
     setIsMounted(true);
   }, []);
 
-  const cardThemes: Record<string, string> = {
-      'Bireysel': 'bg-gradient-to-br from-rose-500 to-red-600',
-      'Ticari': 'bg-gradient-to-br from-slate-800 to-gray-900',
-      'Öğrenci': 'bg-gradient-to-br from-sky-500 to-blue-600',
-  };
-
-  const activeIndex = useMemo(() => cards.findIndex(c => c.id === activeCardId), [cards, activeCardId]);
+  const activeCard = useMemo(() => cards.find(c => c.id === activeCardId), [cards, activeCardId]);
 
   const handleActionClick = (action: string) => {
     toast({
@@ -192,8 +184,8 @@ export default function QrPaymentPage() {
                     <Skeleton className="h-4 w-2/3" />
                 </CardHeader>
                 <CardContent className="h-[280px] relative">
-                    <Skeleton className="h-[220px] w-[90%] absolute top-4 left-1/2 -translate-x-1/2 rounded-[20px]" />
-                    <Skeleton className="h-[220px] w-[90%] absolute top-7 left-1/2 -translate-x-1/2 rounded-[20px] opacity-50" />
+                         <div className="h-[230px] w-[90%] absolute top-4 left-1/2 -translate-x-1/2 rounded-[24px] bg-muted" />
+                         <div className="h-[230px] w-[90%] absolute top-7 left-1/2 -translate-x-1/2 rounded-[24px] bg-muted/50" />
                 </CardContent>
             </Card>
             <Card>
@@ -224,16 +216,17 @@ export default function QrPaymentPage() {
                 <CardTitle>Kartlarım</CardTitle>
                 <CardDescription>Kullanmak istediğiniz kartı seçin veya yeni bir kart aktive edin.</CardDescription>
             </CardHeader>
-            <CardContent className="relative h-[280px] flex items-center justify-center">
+             <CardContent className="h-[280px] relative flex items-center justify-center">
                 {cards.map((card, index) => {
+                    const activeIndex = cards.findIndex(c => c.id === activeCardId);
                     const stackIndex = (index - activeIndex + cards.length) % cards.length;
                     return (
-                        <div
-                            key={card.id}
-                            onClick={() => handleCardSelect(card.id)}
+                        <div 
+                            key={card.id} 
+                            onClick={() => handleCardSelect(card.id)} 
                             className={cn(
-                                "absolute p-6 rounded-[24px] cursor-pointer transition-all duration-500 ease-in-out transform-gpu overflow-hidden shadow-2xl w-[90%] max-w-[380px] h-[230px]",
-                                cardThemes[card.type]
+                                "absolute p-6 rounded-[24px] text-white cursor-pointer transition-all duration-500 ease-in-out transform-gpu overflow-hidden shadow-2xl w-[90%] max-w-[380px] h-[230px]",
+                                card.bgColor,
                             )}
                             style={{
                                 transform: `translateY(${stackIndex * 12}px) scale(${1 - (stackIndex * 0.05)})`,
@@ -241,7 +234,7 @@ export default function QrPaymentPage() {
                                 filter: stackIndex === 0 ? 'brightness(100%)' : `brightness(${100 - (stackIndex * 15)}%)`
                             }}
                         >
-                             <div className="relative z-10 flex flex-col h-full text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.2)]">
+                             <div className="relative z-10 flex flex-col h-full [text-shadow:0_1px_3px_rgba(0,0,0,0.2)]">
                                 <div className="flex justify-between items-start">
                                     <h4 className="text-lg font-semibold">{card.type} Kart</h4>
                                     <HangelLogo className="text-2xl font-black text-white/80" />
@@ -273,7 +266,7 @@ export default function QrPaymentPage() {
             </CardContent>
         </Card>
 
-      <Card className={cn('transition-all duration-500 shadow-md', activeCard ? cardThemes[activeCard.type] : '')}>
+      <Card className={cn('transition-all duration-500 shadow-md', activeCard ? activeCard.bgColor : '')}>
         <CardHeader>
             <CardTitle className="text-white">Ödeme Yönetimi</CardTitle>
         </CardHeader>
@@ -374,7 +367,7 @@ export default function QrPaymentPage() {
                     <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!' })}>
                         <Filter className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={()={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
                         <ArrowDownUp className="h-4 w-4" />
                     </Button>
                 </div>
@@ -455,8 +448,5 @@ export default function QrPaymentPage() {
     </div>
   );
 }
+
     
-    
-
-
-
