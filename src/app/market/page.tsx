@@ -154,10 +154,10 @@ export default function MarketPage() {
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
             <TabsList>
                 <TabsTrigger value="all">Tümü</TabsTrigger>
-                <TabsTrigger value="brand">Ticari Şirket</TabsTrigger>
+                <TabsTrigger value="brand">Ticari</TabsTrigger>
                 <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                <TabsTrigger value="economic">İktisadi İşletme</TabsTrigger>
-                <TabsTrigger value="social">Sosyal Şirket</TabsTrigger>
+                <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
+                <TabsTrigger value="social">Sosyal Ş.</TabsTrigger>
             </TabsList>
         </Tabs>
 
