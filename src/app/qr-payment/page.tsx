@@ -123,16 +123,18 @@ export default function QrPaymentPage() {
   const qrData = `https://hangel.org/pay/${user.username.replace('@', '')}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-  const [cards, setCards] = useState(qrPaymentCardData.map((c, i) => ({ ...c, status: i === 0 ? 'Aktif' : 'Aktif Değil', active: i === 0 })));
+  const [cards, setCards] = useState(qrPaymentCardData.map((c, i) => ({ ...c, status: i === 0 ? 'Aktif' : 'Aktif Değil' })));
+  const [activeCardId, setActiveCardId] = useState(qrPaymentCardData[0].id);
+  
   const [isActivationOpen, setIsActivationOpen] = useState(false);
   const [activatingCard, setActivatingCard] = useState<typeof cards[0] | null>(null);
-  const [isMounted, setIsMounted(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
   
-  const activeCard = useMemo(() => cards.find(c => c.active), [cards]);
+  const activeCard = useMemo(() => cards.find(c => c.id === activeCardId), [cards, activeCardId]);
 
   const sortedCards = useMemo(() => {
     if (!activeCard) return cards;
@@ -171,7 +173,7 @@ export default function QrPaymentPage() {
         });
         return;
     }
-    setCards(cards.map(c => ({ ...c, active: c.id === cardId })));
+    setActiveCardId(cardId);
 };
 
   if (!isMounted) {
@@ -233,9 +235,9 @@ export default function QrPaymentPage() {
                             card.bgColor
                         )}
                         style={{
-                            transform: `translateY(${index * 12}px) scale(${1 - (index * 0.04)})`,
-                            zIndex: sortedCards.length - index,
-                            filter: `brightness(${100 - (index * 8)}%)`
+                            transform: card.id === activeCardId ? 'translateY(0px) scale(1)' : `translateY(${index * 12}px) scale(${1 - (index * 0.04)})`,
+                            zIndex: card.id === activeCardId ? sortedCards.length : sortedCards.length - index,
+                            filter: card.id === activeCardId ? `brightness(100%)` : `brightness(${100 - (index * 10)}%)`
                         }}
                     >
                          <div className="relative z-10 flex flex-col justify-between h-full">
