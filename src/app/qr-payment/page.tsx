@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -225,7 +226,7 @@ export default function QrPaymentPage() {
                 <CardTitle>Kartlarım</CardTitle>
                 <CardDescription>Kullanmak istediğiniz kartı seçin veya yeni bir kart aktive edin.</CardDescription>
             </CardHeader>
-            <CardContent className="relative h-[280px] flex items-start justify-center pt-4">
+            <CardContent className="relative h-[280px] flex items-center justify-center">
                 {sortedCards.map((card, index) => (
                     <div
                         key={card.id}
@@ -237,36 +238,36 @@ export default function QrPaymentPage() {
                         style={{
                             transform: card.id === activeCardId ? 'translateY(0px) scale(1)' : `translateY(${index * 12}px) scale(${1 - (index * 0.04)})`,
                             zIndex: card.id === activeCardId ? sortedCards.length : sortedCards.length - index,
-                            filter: card.id === activeCardId ? `brightness(100%)` : `brightness(${100 - (index * 10)}%)`
+                            filter: card.id === activeCardId ? `brightness(100%)` : `brightness(${100 - (index * 15)}%)`
                         }}
                     >
                          <div className="relative z-10 flex flex-col justify-between h-full">
                             <div className="flex justify-between items-start">
-                                <h4 className="text-lg font-bold">{card.type} Kart</h4>
+                                <h4 className="text-lg font-bold [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">{card.type} Kart</h4>
                                 {card.status === 'Aktif' ? (
-                                     <HangelLogo className="text-xl font-black text-white/80" />
+                                     <HangelLogo className="text-xl font-black text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]" />
                                 ) : (
                                      <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-300 border-none text-[10px]">Aktivasyon Gerekli</Badge>
                                 )}
                             </div>
                             
-                            <div className="mt-4">
+                            <div>
                                  {card.status === 'Aktif' ? (
-                                    <p className="text-4xl font-bold tracking-tighter">{card.balance}</p>
+                                    <p className="text-5xl font-bold tracking-tighter [text-shadow:0_2px_4px_rgba(0,0,0,0.3)]">{card.balance}</p>
                                  ) : (
-                                    <p className="text-3xl font-bold tracking-tight">Aktif Değil</p>
+                                    <p className="text-3xl font-bold tracking-tight [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">Aktif Değil</p>
                                  )}
                             </div>
 
-                            <div className="mt-4 flex justify-between items-end">
-                                <div>
+                            <div className="flex justify-between items-end">
+                                <div className="[text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
                                     <p className="text-xs opacity-70">Kart Sahibi</p>
                                     <p className="text-sm font-semibold">{card.owner}</p>
                                 </div>
                                 {card.status !== 'Aktif' ? (
                                     <Button size="sm" variant="secondary" className="h-8 rounded-lg" onClick={(e) => { e.stopPropagation(); handleActivateClick(card); }}>Aktive Et</Button>
                                 ) : (
-                                    <p className="text-sm font-mono tracking-widest">**** {card.number.slice(-4)}</p>
+                                    <p className="text-sm font-mono tracking-widest [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">**** {card.number.slice(-4)}</p>
                                 )}
                             </div>
                         </div>
@@ -460,3 +461,4 @@ export default function QrPaymentPage() {
 
     
     
+
