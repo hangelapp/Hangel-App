@@ -20,6 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import React from 'react';
 
 
 type NgoType = NGO['type'] | 'Tümü';
@@ -113,19 +114,16 @@ export default function NgosPage() {
     const filteredNgos = useMemo(() => {
         let filtered = [...ngos];
 
-        // Location Filter
         if (locationFilter === 'city') {
             filtered = filtered.filter(ngo => ngo.contact.address?.city === user.personalInfo.address.city);
         } else if (locationFilter === 'country') {
              // Assuming all are in TR for now
         }
         
-        // Type Filter
         if (typeFilter !== 'Tümü') {
             filtered = filtered.filter(ngo => ngo.type === typeFilter);
         }
 
-        // Search Term Filter
         if (searchTerm) {
             const lowercased = searchTerm.toLowerCase();
             filtered = filtered.filter(ngo => 
@@ -134,12 +132,10 @@ export default function NgosPage() {
             );
         }
 
-        // Category Filter
         if (categoryFilter.length > 0) {
             filtered = filtered.filter(ngo => categoryFilter.includes(ngo.category));
         }
 
-        // Sorting
         filtered.sort((a, b) => {
             let valA: string | number, valB: string | number;
             switch(sortConfig.key) {
@@ -241,20 +237,19 @@ export default function NgosPage() {
                     </Avatar>
                     <div className="flex-1 overflow-hidden">
                         <p className="font-semibold text-sm truncate">{ngo.name}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap mt-1">
                             <span className="truncate">{ngo.category}</span>
                             <Separator orientation="vertical" className="h-3" />
                             <span className="flex items-center gap-1 flex-shrink-0"><ShieldCheck className="h-3 w-3" /> {ngo.transparencyScore}</span>
                             <span className="flex items-center gap-1 flex-shrink-0"><Heart className="h-3 w-3" /> {ngo.stats.followers / 1000}k</span>
                             <span className="flex items-center gap-1 flex-shrink-0"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
+                            {ngo.memberOf && ngo.memberOf.map(membership => (
+                                <React.Fragment key={membership}>
+                                    <Separator orientation="vertical" className="h-3" />
+                                    <Badge variant="secondary" className="text-[9px] font-normal">{membership}</Badge>
+                                </React.Fragment>
+                            ))}
                         </div>
-                        {ngo.memberOf && ngo.memberOf.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1">
-                                {ngo.memberOf.map(membership => (
-                                    <Badge key={membership} variant="secondary" className="text-[9px] font-normal">{membership}</Badge>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
             </Card>
