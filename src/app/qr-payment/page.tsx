@@ -136,20 +136,12 @@ export default function QrPaymentPage() {
   }, []);
 
   const cardThemes: Record<string, string> = {
-      'Bireysel': 'bg-gradient-to-br from-red-500 to-rose-400',
+      'Bireysel': 'bg-gradient-to-br from-rose-500 to-red-600',
       'Ticari': 'bg-gradient-to-br from-slate-800 to-gray-900',
       'Öğrenci': 'bg-gradient-to-br from-sky-500 to-blue-600',
   };
-  
-  const activeCard = useMemo(() => cards.find(c => c.id === activeCardId), [cards, activeCardId]);
 
-  const sortedCards = useMemo(() => {
-    if (!activeCard) return cards;
-    return [
-        activeCard,
-        ...cards.filter(c => c.id !== activeCard.id)
-    ];
-  }, [cards, activeCard]);
+  const activeIndex = useMemo(() => cards.findIndex(c => c.id === activeCardId), [cards, activeCardId]);
 
   const handleActionClick = (action: string) => {
     toast({
@@ -233,40 +225,36 @@ export default function QrPaymentPage() {
                 <CardDescription>Kullanmak istediğiniz kartı seçin veya yeni bir kart aktive edin.</CardDescription>
             </CardHeader>
             <CardContent className="relative h-[280px] flex items-center justify-center">
-                {sortedCards.map((card, index) => (
-                    <div
-                        key={card.id}
-                        onClick={() => handleCardSelect(card.id)}
-                        className={cn(
-                            "absolute p-6 rounded-[20px] cursor-pointer transition-all duration-500 ease-in-out transform-gpu overflow-hidden shadow-2xl w-[90%] max-w-[380px] h-[220px]",
-                            cardThemes[card.type]
-                        )}
-                        style={{
-                            transform: card.id === activeCardId ? 'translateY(0px) scale(1)' : `translateY(${index * 12}px) scale(${1 - (index * 0.04)})`,
-                            zIndex: card.id === activeCardId ? sortedCards.length : sortedCards.length - index,
-                            filter: card.id === activeCardId ? 'brightness(100%)' : `brightness(${100 - (index * 15)}%)`
-                        }}
-                    >
-                         <div className="relative z-10 flex flex-col h-full text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.2)]">
-                            <div className="flex justify-between items-start">
-                                <h4 className="text-lg font-semibold">{card.type} Kart</h4>
-                                {card.status === 'Aktif' ? (
+                {cards.map((card, index) => {
+                    const stackIndex = (index - activeIndex + cards.length) % cards.length;
+                    return (
+                        <div
+                            key={card.id}
+                            onClick={() => handleCardSelect(card.id)}
+                            className={cn(
+                                "absolute p-6 rounded-[24px] cursor-pointer transition-all duration-500 ease-in-out transform-gpu overflow-hidden shadow-2xl w-[90%] max-w-[380px] h-[230px]",
+                                cardThemes[card.type]
+                            )}
+                            style={{
+                                transform: `translateY(${stackIndex * 12}px) scale(${1 - (stackIndex * 0.05)})`,
+                                zIndex: cards.length - stackIndex,
+                                filter: stackIndex === 0 ? 'brightness(100%)' : `brightness(${100 - (stackIndex * 15)}%)`
+                            }}
+                        >
+                             <div className="relative z-10 flex flex-col h-full text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.2)]">
+                                <div className="flex justify-between items-start">
+                                    <h4 className="text-lg font-semibold">{card.type} Kart</h4>
                                     <HangelLogo className="text-2xl font-black text-white/80" />
-                                ) : (
-                                    <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-300 border-none text-[10px]">Aktivasyon Gerekli</Badge>
-                                )}
-                            </div>
-                            
-                            <div className="flex-1" />
-
-                            <div className='space-y-4'>
-                                <div>
+                                </div>
+                                
+                                <div className="flex-1 flex flex-col justify-center">
                                     {card.status === 'Aktif' ? (
                                         <p className="text-4xl font-bold tracking-tight">{card.balance}</p>
                                     ) : (
-                                        <p className="text-3xl font-semibold tracking-tight">Aktif Değil</p>
+                                        <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-300 border-none text-[10px] w-fit">Aktivasyon Gerekli</Badge>
                                     )}
                                 </div>
+
                                 <div className="flex justify-between items-end">
                                     <div>
                                         <p className="text-xs opacity-70">Kart Sahibi</p>
@@ -280,8 +268,8 @@ export default function QrPaymentPage() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </CardContent>
         </Card>
 
@@ -386,7 +374,7 @@ export default function QrPaymentPage() {
                     <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!' })}>
                         <Filter className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={()={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
                         <ArrowDownUp className="h-4 w-4" />
                     </Button>
                 </div>
@@ -469,5 +457,6 @@ export default function QrPaymentPage() {
 }
     
     
+
 
 
