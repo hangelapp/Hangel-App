@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 import { HangelLogo } from '@/components/icons';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const donationTransactions = [
     { id: '1', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA Vakfı', 'LÖSEV'], date: '2024-07-21', time: '14:32' },
@@ -126,6 +127,11 @@ export default function QrPaymentPage() {
   const [cards, setCards] = useState(qrPaymentCardData.map((c, i) => ({ ...c, status: i === 0 ? 'Aktif' : 'Aktif Değil', active: i === 0 })));
   const [isActivationOpen, setIsActivationOpen] = useState(false);
   const [activatingCard, setActivatingCard] = useState<typeof cards[0] | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleActionClick = (action: string) => {
     toast({
@@ -160,7 +166,40 @@ export default function QrPaymentPage() {
 };
 
   const activeCard = cards.find(c => c.active);
-
+  
+  if (!isMounted) {
+    return (
+        <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
+            <div className="flex justify-between items-center pt-4">
+                <Skeleton className="h-9 w-1/3" />
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+            </div>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/3" />
+                    <Skeleton className="h-4 w-2/3" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <Skeleton className="h-[204px] w-full rounded-2xl" />
+                    <Skeleton className="h-[204px] w-full rounded-2xl opacity-70" />
+                    <Skeleton className="h-[204px] w-full rounded-2xl opacity-70" />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-12 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    );
+  }
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
@@ -194,7 +233,7 @@ export default function QrPaymentPage() {
                             <div className="flex justify-between items-start">
                                 <h4 className="text-lg font-bold">{card.type} Kart</h4>
                                 {card.status === 'Aktif' ? (
-                                    <HangelLogo className="text-xl font-black text-white/80" />
+                                     <HangelLogo className="text-xl font-black text-white/80" />
                                 ) : (
                                      <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-300 border-none text-[10px]">Aktivasyon Gerekli</Badge>
                                 )}
@@ -338,7 +377,7 @@ export default function QrPaymentPage() {
                 const donationAmount = parseFloat(donation.donationAmount);
                 const gelirVergisi = donationAmount * 0.20;
                 const netDonationAfterTaxes = donationAmount - gelirVergisi;
-                const ngoShare = netDonationAfterTaxes / 1.1;
+                const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
                 const hangelShare = ngoShare * 0.10;
 
                 return (
