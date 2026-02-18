@@ -134,6 +134,12 @@ export default function QrPaymentPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const cardThemes: Record<string, string> = {
+      'Bireysel': 'bg-gradient-to-br from-red-500 to-rose-400',
+      'Ticari': 'bg-gradient-to-br from-slate-800 to-gray-900',
+      'Öğrenci': 'bg-gradient-to-br from-sky-500 to-blue-600',
+  };
   
   const activeCard = useMemo(() => cards.find(c => c.id === activeCardId), [cards, activeCardId]);
 
@@ -232,43 +238,46 @@ export default function QrPaymentPage() {
                         key={card.id}
                         onClick={() => handleCardSelect(card.id)}
                         className={cn(
-                            "absolute p-6 rounded-[20px] text-white cursor-pointer transition-all duration-500 ease-in-out transform-gpu overflow-hidden shadow-2xl w-[90%] max-w-[380px] h-[220px]",
-                            card.bgColor
+                            "absolute p-6 rounded-[20px] cursor-pointer transition-all duration-500 ease-in-out transform-gpu overflow-hidden shadow-2xl w-[90%] max-w-[380px] h-[220px]",
+                            cardThemes[card.type]
                         )}
                         style={{
                             transform: card.id === activeCardId ? 'translateY(0px) scale(1)' : `translateY(${index * 12}px) scale(${1 - (index * 0.04)})`,
                             zIndex: card.id === activeCardId ? sortedCards.length : sortedCards.length - index,
-                            filter: card.id === activeCardId ? `brightness(100%)` : `brightness(${100 - (index * 15)}%)`
+                            filter: card.id === activeCardId ? 'brightness(100%)' : `brightness(${100 - (index * 15)}%)`
                         }}
                     >
-                         <div className="relative z-10 flex flex-col justify-between h-full">
+                         <div className="relative z-10 flex flex-col h-full text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.2)]">
                             <div className="flex justify-between items-start">
-                                <h4 className="text-lg font-bold [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">{card.type} Kart</h4>
+                                <h4 className="text-lg font-semibold">{card.type} Kart</h4>
                                 {card.status === 'Aktif' ? (
-                                     <HangelLogo className="text-xl font-black text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]" />
+                                    <HangelLogo className="text-2xl font-black text-white/80" />
                                 ) : (
-                                     <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-300 border-none text-[10px]">Aktivasyon Gerekli</Badge>
+                                    <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-300 border-none text-[10px]">Aktivasyon Gerekli</Badge>
                                 )}
                             </div>
                             
-                            <div>
-                                 {card.status === 'Aktif' ? (
-                                    <p className="text-5xl font-bold tracking-tighter [text-shadow:0_2px_4px_rgba(0,0,0,0.3)]">{card.balance}</p>
-                                 ) : (
-                                    <p className="text-3xl font-bold tracking-tight [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">Aktif Değil</p>
-                                 )}
-                            </div>
+                            <div className="flex-1" />
 
-                            <div className="flex justify-between items-end">
-                                <div className="[text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
-                                    <p className="text-xs opacity-70">Kart Sahibi</p>
-                                    <p className="text-sm font-semibold">{card.owner}</p>
+                            <div className='space-y-4'>
+                                <div>
+                                    {card.status === 'Aktif' ? (
+                                        <p className="text-4xl font-bold tracking-tight">{card.balance}</p>
+                                    ) : (
+                                        <p className="text-3xl font-semibold tracking-tight">Aktif Değil</p>
+                                    )}
                                 </div>
-                                {card.status !== 'Aktif' ? (
-                                    <Button size="sm" variant="secondary" className="h-8 rounded-lg" onClick={(e) => { e.stopPropagation(); handleActivateClick(card); }}>Aktive Et</Button>
-                                ) : (
-                                    <p className="text-sm font-mono tracking-widest [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">**** {card.number.slice(-4)}</p>
-                                )}
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <p className="text-xs opacity-70">Kart Sahibi</p>
+                                        <p className="text-sm font-medium">{card.owner}</p>
+                                    </div>
+                                    {card.status !== 'Aktif' ? (
+                                        <Button size="sm" variant="secondary" className="h-8 rounded-lg text-black bg-white/90 hover:bg-white" onClick={(e) => { e.stopPropagation(); handleActivateClick(card); }}>Aktive Et</Button>
+                                    ) : (
+                                        <p className="text-sm font-mono tracking-widest opacity-80">**** {card.number.slice(-4)}</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -276,7 +285,7 @@ export default function QrPaymentPage() {
             </CardContent>
         </Card>
 
-      <Card className={cn('transition-all duration-500 shadow-md', activeCard?.bgColor)}>
+      <Card className={cn('transition-all duration-500 shadow-md', activeCard ? cardThemes[activeCard.type] : '')}>
         <CardHeader>
             <CardTitle className="text-white">Ödeme Yönetimi</CardTitle>
         </CardHeader>
@@ -458,7 +467,7 @@ export default function QrPaymentPage() {
     </div>
   );
 }
+    
+    
 
-    
-    
 
