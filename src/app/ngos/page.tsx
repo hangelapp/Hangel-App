@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 
 type NgoType = NGO['type'] | 'Tümü';
@@ -247,6 +248,13 @@ export default function NgosPage() {
                             <span className="flex items-center gap-1 flex-shrink-0"><Heart className="h-3 w-3" /> {ngo.stats.followers / 1000}k</span>
                             <span className="flex items-center gap-1 flex-shrink-0"><Users className="h-3 w-3" /> {ngo.stats.volunteers / 1000}k</span>
                         </div>
+                        {ngo.memberOf && ngo.memberOf.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                                {ngo.memberOf.map(membership => (
+                                    <Badge key={membership} variant="secondary" className="text-[9px] font-normal">{membership}</Badge>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </Card>
