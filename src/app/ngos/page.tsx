@@ -2,8 +2,8 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useState, useMemo, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 
 type NgoType = NGO['type'] | 'Tümü';
@@ -88,11 +89,21 @@ const OpportunityCard = ({ opp }: { opp: (typeof volunteeringOpportunities)[0] }
 const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
     const { toast } = useToast();
     const router = useRouter();
+    const [profileUrl, setProfileUrl] = useState('');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+          setProfileUrl(window.location.href);
+        }
+    }, []);
+    
+    if (!ngo) {
+        return null;
+    }
 
     const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name);
     const ngoOpps = volunteeringOpportunities.filter(o => o.ngoId === ngo.id);
-    const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/ngos/${ngo.id}` : '';
-
+    
     const transparencyCriteria = [
         { name: 'Faaliyet Belgesi', completed: true },
         { name: 'Tüzük / Vakıf Senedi', completed: true },
