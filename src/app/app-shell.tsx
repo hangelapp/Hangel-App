@@ -17,7 +17,7 @@ import { user } from '@/lib/data';
 const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
-  { href: '/admin/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
+  { href: '/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
 ];
 
 const group2Items: SideNavItem[] = [
