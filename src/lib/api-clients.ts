@@ -1,3 +1,4 @@
+
 import type { Brand } from './types';
 
 /**
@@ -22,6 +23,18 @@ const parseRate = (rate: any): number => {
   return isNaN(parsed) ? 5 : parsed;
 };
 
+// Helper function to get the base URL for server-side fetches.
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    // Vercel deployment
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  // Local development
+  const port = process.env.PORT || 3000;
+  return `http://localhost:${port}`;
+};
+
+
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const agencies = [
     {
@@ -44,10 +57,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     }
   ];
 
+  const proxyUrl = `${getBaseUrl()}/api/proxy`;
+
   const results = await Promise.allSettled(
     agencies.map(async (agency) => {
       try {
-        const response = await fetch('/api/proxy', {
+        const response = await fetch(proxyUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
