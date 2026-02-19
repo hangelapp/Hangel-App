@@ -56,7 +56,7 @@ export default function EventDetailPage() {
   const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.date.split(' ')[2].slice(-2)}`;
+  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.date.split('-')[0].slice(-2)}`;
 
   return (
     <div className="animate-in fade-in-0">
