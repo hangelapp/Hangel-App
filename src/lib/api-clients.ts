@@ -23,18 +23,6 @@ const parseRate = (rate: any): number => {
   return isNaN(parsed) ? 5 : parsed;
 };
 
-// Helper function to get the base URL for server-side fetches.
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    // Vercel deployment
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  // Local development
-  const port = process.env.PORT || 3000;
-  return `http://localhost:${port}`;
-};
-
-
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const agencies = [
     {
@@ -57,23 +45,23 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
     }
   ];
 
-  const proxyUrl = `${getBaseUrl()}/api/proxy`;
-
   const results = await Promise.allSettled(
     agencies.map(async (agency) => {
       try {
-        const response = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            agency: agency.name,
-            url: agency.url,
-            headers: agency.headers
-          }),
+        const response = await fetch(agency.url, {
+          method: 'GET',
+          headers: {
+            ...agency.headers,
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json',
+          },
           cache: 'no-store'
         });
 
-        if (!response.ok) return [];
+        if (!response.ok) {
+            console.error(`Error from ${agency.name}: ${response.status} ${response.statusText}`);
+            return [];
+        }
 
         const resData = await response.json();
         let rawList = [];
@@ -108,8 +96,8 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             category: item.category || "Genel"
           };
         });
-      } catch (err) {
-        console.error(`Error fetching from ${agency.name}:`, err);
+      } catch (err: any) {
+        console.error(`Error fetching from ${agency.name}:`, err.message);
         return [];
       }
     })
@@ -119,6 +107,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
+    if (!brand?.name) return; // Guard against empty or invalid brand objects
     const key = brand.name.toLowerCase().trim();
     const existing = uniqueMap.get(key);
     if (!existing || brand.donationRate > existing.donationRate) {
