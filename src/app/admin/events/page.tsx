@@ -8,6 +8,7 @@ import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { events as allEvents, studentClubs } from '@/lib/data';
 
 const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
     <Card key={event.id}>
@@ -22,7 +23,9 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
             </div>
         </CardContent>
         <CardFooter>
-            <Button variant="secondary" className="w-full">Detayları Gör</Button>
+            <Button asChild variant="secondary" className="w-full">
+                <Link href={`/events/${event.id}`}>Detayları Gör</Link>
+            </Button>
         </CardFooter>
     </Card>
 );
@@ -33,14 +36,21 @@ export default function StudentClubEventsPage() {
     const [sortKey, setSortKey] = useState('name');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const sampleEvents = [
-        { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
-        { id: '2', name: 'Sonbahar Konseri', club: 'Boğaziçi Üniversitesi Müzik Kulübü', clubId: '2', date: '15 Kasım 2024' },
-        { id: '3', name: 'Fotoğraf Sergisi: "İstanbul\'un Renkleri"', club: 'Galatasaray Lisesi Sanat Kulübü', clubId: '3', date: '1-7 Aralık 2024' }
-    ];
+    const processedEvents = useMemo(() => {
+        return allEvents.map(event => {
+            const club = studentClubs.find(c => c.name === event.organizer);
+            return {
+                id: event.id,
+                name: event.name,
+                club: event.organizer,
+                clubId: club?.id || '1',
+                date: event.date,
+            };
+        });
+    }, []);
 
     const sortedEvents = useMemo(() => {
-        let events = [...sampleEvents];
+        let events = [...processedEvents];
         if (searchTerm.trim()) {
             const lowercased = searchTerm.toLowerCase();
             events = events.filter(event => 
@@ -59,7 +69,7 @@ export default function StudentClubEventsPage() {
             // Date sorting is complex with string dates, so we omit it for now
             return 0;
         });
-    }, [sortKey, searchTerm]);
+    }, [sortKey, searchTerm, processedEvents]);
 
     const EventList = () => (
         <div className='space-y-4'>

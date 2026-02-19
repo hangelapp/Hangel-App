@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
-import { studentClubs } from '@/lib/data';
+import { studentClubs, events as allEvents } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -62,19 +62,21 @@ export default function StudentClubsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [universityFilter, setUniversityFilter] = useState<string[]>([]);
 
-   const sampleEvents = [
-        { id: '1', name: 'Girişimcilik Zirvesi \'24', club: 'İTÜ Girişimcilik Kulübü', clubId: '1', date: '25 Ekim 2024' },
-        { id: '2', name: 'Sonbahar Konseri', club: 'Boğaziçi Üniversitesi Müzik Kulübü', clubId: '2', date: '15 Kasım 2024' },
-        { id: '3', name: 'Fotoğraf Sergisi: "İstanbul\'un Renkleri"', club: 'Galatasaray Lisesi Sanat Kulübü', clubId: '3', date: '1-7 Aralık 2024' }
-    ];
+  const processedEvents = useMemo(() => {
+    return allEvents.map(event => {
+        const club = studentClubs.find(c => c.name === event.organizer);
+        return {
+            id: event.id,
+            name: event.name,
+            club: event.organizer,
+            clubId: club?.id || '1', 
+            date: event.date,
+        };
+    });
+  }, []);
 
   useEffect(() => {
-    // This is to avoid hydration mismatch error
-    setClubs(studentClubs.map(club => ({
-      ...club,
-      members: Math.floor(Math.random() * 200) + 50,
-      points: Math.floor(Math.random() * 5000) + 1000
-    })));
+    setClubs(studentClubs);
   }, []);
   
   const allUniversities = useMemo(() => {
@@ -85,10 +87,11 @@ export default function StudentClubsPage() {
   const sortedClubs = useMemo(() => {
     let sortableClubs = [...clubs];
     sortableClubs.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        const key = sortConfig.key as keyof StudentClub;
+        if (a[key] < b[key]) {
             return sortConfig.direction === 'asc' ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (a[key] > b[key]) {
             return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
@@ -122,13 +125,13 @@ export default function StudentClubsPage() {
   }, [sortedClubs, searchTerm, universityFilter]);
 
   const finalEvents = useMemo(() => {
-      if (!searchTerm.trim()) return sampleEvents;
+      if (!searchTerm.trim()) return processedEvents;
       const lowercased = searchTerm.toLowerCase();
-      return sampleEvents.filter(event => 
+      return processedEvents.filter(event => 
         event.name.toLowerCase().includes(lowercased) ||
         event.club.toLowerCase().includes(lowercased)
       );
-  }, [sampleEvents, searchTerm]);
+  }, [processedEvents, searchTerm]);
 
   const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
     const filteredClubs = type ? finalClubs.filter(c => c.type === type) : finalClubs;

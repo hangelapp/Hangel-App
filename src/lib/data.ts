@@ -463,11 +463,6 @@ export const volunteeringOpportunities: Volunteering[] = [
     { id: '21', title: 'Adalete Erişim Projesi', organization: 'İnsan Hakları Derneği', ngoId: '6', location: { city: 'Diyarbakır', district: 'Sur', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 5, applications: 3 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '10:00', end: '16:00', total: 90 }, socialArea: 'İnsan Hakları', points: 2200, ngoTransparencyScore: 85, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Adalet Savaşçısı'], hasPreTraining: true, description: 'Dezavantajlı grupların hukuki süreçler hakkında bilgilendirilmesi ve adli yardım mekanizmalarına yönlendirilmesi.', amenities: { transport: true, food: true, accommodation: false }, skills: ['Hukuki Danışmanlık'] }
 ];
 
-export const events: Event[] = [];
-export const studentClubs: StudentClub[] = [];
-export const schoolRepresentatives: SchoolRepresentative[] = [];
-export const applications: Application[] = [];
-export const donationTransactions: DonationTransaction[] = [];
 export const badges: Badge[] = [
     { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 },
     { id: '2', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Gümüş', socialArea: 'Çevre', pointsRequired: 1000, currentPoints: 800 },
@@ -588,9 +583,72 @@ export const allUniversities = ["Abdullah Gül Üniversitesi", "Acıbadem Mehmet
 
 export const provincialDirectorates = [ "Adana İl Millî Eğitim Müdürlüğü", "Adıyaman İl Millî Eğitim Müdürlüğü", "Afyon İl Millî Eğitim Müdürlüğü", "Ağrı İl Millî Eğitim Müdürlüğü", "Amasya İl Millî Eğitim Müdürlüğü", "Ankara İl Millî Eğitim Müdürlüğü", "Antalya İl Millî Eğitim Müdürlüğü", "Artvin İl Millî Eğitim Müdürlüğü", "Aydın İl Millî Eğitim Müdürlüğü", "Balıkesir İl Millî Eğitim Müdürlüğü", "Bilecik İl Millî Eğitim Müdürlüğü", "Bingöl İl Millî Eğitim Müdürlüğü", "Bitlis İl Millî Eğitim Müdürlüğü", "Bolu İl Millî Eğitim Müdürlüğü", "Burdur İl Millî Eğitim Müdürlüğü", "Bursa İl Millî Eğitim Müdürlüğü", "Çanakkale İl Millî Eğitim Müdürlüğü", "Çankırı İl Millî Eğitim Müdürlüğü", "Çorum İl Millî Eğitim Müdürlüğü", "Denizli İl Millî Eğitim Müdürlüğü", "Diyarbakır İl Millî Eğitim Müdürlüğü", "Edirne İl Millî Eğitim Müdürlüğü", "Elazığ İl Millî Eğitim Müdürlüğü", "Erzincan İl Millî Eğitim Müdürlüğü", "Erzurum İl Millî Eğitim Müdürlüğü", "Eskişehir İl Millî Eğitim Müdürlüğü", "Gaziantep İl Millî Eğitim Müdürlüğü", "Giresun İl Millî Eğitim Müdürlüğü", "Gümüşhane İl Millî Eğitim Müdürlüğü", "Hakkari İl Millî Eğitim Müdürlüğü", "Hatay İl Millî Eğitim Müdürlüğü", "Isparta İl Millî Eğitim Müdürlüğü", "Mersin İl Millî Eğitim Müdürlüğü", "İstanbul İl Millî Eğitim Müdürlüğü", "İzmir İl Millî Eğitim Müdürlüğü", "Kars İl Millî Eğitim Müdürlüğü", "Kastamonu İl Millî Eğitim Müdürlüğü", "Kayseri İl Millî Eğitim Müdürlüğü", "Kırklareli İl Millî Eğitim Müdürlüğü", "Kırşehir İl Millî Eğitim Müdürlüğü", "Kocaeli İl Millî Eğitim Müdürlüğü", "Konya İl Millî Eğitim Müdürlüğü", "Kütahya İl Millî Eğitim Müdürlüğü", "Malatya İl Millî Eğitim Müdürlüğü", "Manisa İl Millî Eğitim Müdürlüğü", "Kahramanmaraş İl Millî Eğitim Müdürlüğü", "Mardin İl Millî Eğitim Müdürlüğü", "Muğla İl Millî Eğitim Müdürlüğü", "Muş İl Millî Eğitim Müdürlüğü", "Nevşehir İl Millî Eğitim Müdürlüğü", "Niğde İl Millî Eğitim Müdürlüğü", "Ordu İl Millî Eğitim Müdürlüğü", "Rize İl Millî Eğitim Müdürlüğü", "Sakarya İl Millî Eğitim Müdürlüğü", "Samsun İl Millî Eğitim Müdürlüğü", "Siirt İl Millî Eğitim Müdürlüğü", "Sinop İl Millî Eğitim Müdürlüğü", "Sivas İl Millî Eğitim Müdürlüğü", "Tekirdağ İl Millî Eğitim Müdürlüğü", "Tokat İl Millî Eğitim Müdürlüğü", "Trabzon İl Millî Eğitim Müdürlüğü", "Tunceli İl Millî Eğitim Müdürlüğü", "Şanlıurfa İl Millî Eğitim Müdürlüğü", "Uşak İl Millî Eğitim Müdürlüğü", "Van İl Millî Eğitim Müdürlüğü", "Yozgat İl Millî Eğitim Müdürlüğü", "Zonguldak İl Millî Eğitim Müdürlüğü", "Aksaray İl Millî Eğitim Müdürlüğü", "Bayburt İl Millî Eğitim Müdürlüğü", "Karaman İl Millî Eğitim Müdürlüğü", "Kırıkkale İl Millî Eğitim Müdürlüğü", "Batman İl Millî Eğitim Müdürlüğü", "Şırnak İl Millî Eğitim Müdürlüğü", "Bartın İl Millî Eğitim Müdürlüğü", "Ardahan İl Millî Eğitim Müdürlüğü", "Iğdır İl Millî Eğitim Müdürlüğü", "Yalova İl Millî Eğitim Müdürlüğü", "Karabük İl Millî Eğitim Müdürlüğü", "Kilis İl Millî Eğitim Müdürlüğü", "Osmaniye İl Millî Eğitim Müdürlüğü", "Düzce İl Millî Eğitim Müdürlüğü" ];
 
+const clubNames = [ "İTÜ Girişimcilik Kulübü", "Boğaziçi Üniversitesi Müzik Kulübü", "Galatasaray Lisesi Sanat Kulübü", "ODTÜ Robot Topluluğu", "Koç Üniversitesi Münazara Kulübü", "Bilkent Üniversitesi Yapay Zeka Topluluğu", "Hacettepe Tıp Öğrencileri Birliği", "Ege Üniversitesi Tiyatro Topluluğu", "Dokuz Eylül Hukuk Kulübü", "Sabancı Üniversitesi Finans Kulübü", "Robert Kolej Model Birleşmiş Milletler (MUN)", "Ankara Fen Lisesi Bilim ve Teknoloji Kulübü", "Yıldız Teknik Üniversitesi Fotoğrafçılık Kulübü (YTU FOK)", "Marmara Üniversitesi İletişim Kulübü", "Çankaya Üniversitesi Yazılım Kulübü", "Kabataş Erkek Lisesi Satranç Kulübü", "İstanbul Erkek Lisesi Almanca Tiyatro Topluluğu (IELEV)", "Akdeniz Üniversitesi Sualtı Topluluğu", "Anadolu Üniversitesi Sinema Kulübü", "Uludağ Üniversitesi Dağcılık Kulübü", "Gazi Üniversitesi Halk Dansları Topluluğu" ];
+
+const universitiesAndHighSchools = [...allUniversities.slice(0, 15), "Galatasaray Lisesi", "Robert Kolej", "Ankara Fen Lisesi", "Kabataş Erkek Lisesi", "İstanbul Erkek Lisesi", "İzmir Atatürk Lisesi"];
+
+export const studentClubs: StudentClub[] = clubNames.map((name, index) => {
+    const school = universitiesAndHighSchools[index % universitiesAndHighSchools.length];
+    const isHighSchool = school.includes('Lisesi');
+    return {
+        id: (index + 1).toString(),
+        name: name,
+        university: school,
+        type: isHighSchool ? 'high-school' : 'university',
+        avatarUrl: `https://logo.clearbit.com/${school.toLowerCase().replace(/ /g, '').replace('ü', 'u').replace('ı', 'i').replace('ö','o').replace('ç','c').replace('ş','s').replace('ğ','g')}.edu.tr`,
+        coverPhotoUrl: `https://picsum.photos/seed/clubcover${index}/800/200`,
+        members: Math.floor(Math.random() * 250) + 50,
+        points: Math.floor(Math.random() * 8000) + 1000,
+        description: `${name}, ${school} bünyesinde öğrencilerin sosyal, kültürel ve mesleki gelişimlerine katkıda bulunmak amacıyla kurulmuş aktif bir öğrenci topluluğudur. Yıl boyunca düzenlediğimiz etkinliklerle üyelerimize yeni ufuklar açmayı hedefliyoruz.`,
+        vision: `Vizyonumuz, ${school} öğrencileri arasında bir sinerji yaratarak, topluma faydalı, sorumluluk sahibi ve lider ruhlu bireyler yetiştirmektir.`,
+        joinDate: `2023-0${(index % 9) + 1}-1${(index % 3)}`,
+        contact: {
+            email: `iletisim@${slugify(name)}.org`,
+            phone: `+90 555 10${index} 20${index + 1}`,
+            website: `www.${slugify(name)}.org`
+        },
+        projects: Math.floor(Math.random() * 20) + 5,
+        volunteerHours: Math.floor(Math.random() * 1000) + 200,
+        activeMemberRate: Math.floor(Math.random() * 50) + 40,
+    }
+});
+
+export const events: Event[] = studentClubs.map((club, index) => {
+    const eventTypes = ["Zirve", "Atölye", "Konferans", "Sosyal Etkinlik", "Yarışma", "Teknik Gezi", "Sergi", "Konser", "Söyleşi", "Turnuva"];
+    const eventTags = ["Girişimcilik", "Teknoloji", "Sanat", "Müzik", "Kariyer", "Yapay Zeka", "Sosyal Sorumluluk", "Finans", "Münazara", "Robotik", "Tıp"];
+    const eventType = eventTypes[index % eventTypes.length];
+    const capacity = Math.floor(Math.random() * 200) + 50;
+
+    return {
+        id: `evt${index + 1}`,
+        name: `${club.name} ${eventType}si`,
+        organizer: club.name,
+        type: eventType,
+        date: `2024-11-${(index % 28) + 1}`,
+        time: `${Math.floor(Math.random() * 10) + 9}:00`,
+        location: club.university.split(' ')[0],
+        capacity: {
+            current: Math.floor(Math.random() * capacity),
+            max: capacity
+        },
+        tags: [eventTags[index % eventTags.length], club.university],
+        imageUrl: `https://picsum.photos/seed/event${index}/800/450`,
+        imageHint: `${eventType.toLowerCase()} event`,
+        description: `${club.name} tarafından düzenlenen bu etkinlikte, alanında uzman isimlerle bir araya gelerek ${eventTags[index % eventTags.length]} alanındaki son gelişmeleri ve kariyer fırsatlarını konuşacağız. Tüm öğrenciler davetlidir.`,
+        providesCertificate: index % 2 === 0,
+    };
+});
+
+export const schoolRepresentatives: SchoolRepresentative[] = studentClubs.map((club, index) => ({
+    id: `rep${index + 1}`,
+    name: `Temsilci ${index + 1}`,
+    school: club.university,
+    type: club.type,
+    role: `Kulüp Başkanı`,
+    avatarUrl: `https://i.pravatar.cc/150?u=rep${index+1}`,
+    linkedinUrl: '#',
+}));
 
 
-
-
-
-
+export const applications: Application[] = [];
+export const donationTransactions: DonationTransaction[] = [];
