@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -253,11 +252,6 @@ export default function NgoOnboardingPage() {
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
                     Profesyonel yetkinlik, hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform <span className="text-primary">"hangel.org artık yayında ve Türkiye’de faaliyette."</span>
                 </p>
-                 <div className="max-w-2xl mx-auto text-left text-foreground/80 space-y-4 pt-6 border-t">
-                    <p>Biliyoruz, en temel iki probleminiz düzenli gelir ve profesyonel iş gücü.</p>
-                    <p><strong>hangel</strong> olarak, bu iki sorunu çözebilmen için markalarla iş birliği yapıyor ve kullanıcıların ceplerinden ekstra ödeme yapmadan yaptıkları alışverişlerden düzenli bağış yapmalarını sağlıyoruz.</p>
-                    <p>Ayrıca, profesyonel iş gücüne ulaşabilmen için her ay beş ücretsiz gönüllülük ilanı vererek gönüllülere ulaşmana aracılık ediyoruz.</p>
-                </div>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
                         <Link href="/login/selection?action=register&type=corporate">Ücretsiz Başvur</Link>
