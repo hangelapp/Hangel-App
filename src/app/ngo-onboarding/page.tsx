@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -45,14 +44,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import * as Icons from 'lucide-react';
 
 const AdvantageCard = ({
@@ -71,7 +62,7 @@ const AdvantageCard = ({
   link: { label: string, href: string };
 }) => (
   <div className="bg-white rounded-[1.75rem] h-full flex flex-col text-left overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 group border border-black/5">
-    <div className="relative aspect-[16/10] w-full overflow-hidden">
+    <div className="relative aspect-video w-full overflow-hidden">
       <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
     </div>
     <div className="p-6 flex flex-col flex-1">
@@ -245,7 +236,7 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-32 pb-16 text-center space-y-6">
                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-widest">hangel STK</span>
+                    <span className="text-xs font-bold tracking-widest uppercase"><span className="normal-case">hangel</span> STK</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
                     İyiliği Birlikte Yönetelim.
