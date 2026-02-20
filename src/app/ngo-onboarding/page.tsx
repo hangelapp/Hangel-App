@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -244,18 +245,18 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-32 pb-16 text-center space-y-6">
                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-bold tracking-widest uppercase"><span className="normal-case">hangel</span> STK</span>
+                    <span className="text-xs font-bold tracking-widest uppercase">hangel STK</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
                     STK Yöneticisi, Müjde!
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                    Düzenli gelir elde edebileceğiniz, gönüllülük ilanları verebileceğiniz, gelir modeli oluşturma ve sürdürülebilirlik eğitimleri alabileceğiniz bir platform. "hangel" Türkiye'de faaliyette. Tüm bunlar aynı uygulama üzerinden ve ücretsiz.
+                    Profesyonel yetkinlik, hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform "hangel.org artık yayında ve Türkiye’de faaliyette."
                 </p>
                  <div className="max-w-2xl mx-auto text-left text-foreground/80 space-y-4 pt-6 border-t">
                     <p>Biliyoruz, en temel iki probleminiz düzenli gelir ve profesyonel iş gücü.</p>
-                    <p><strong>hangel</strong> olarak, bu iki sorunu çözebilmeniz için markalarla iş birliği yapıyor ve kullanıcıların ceplerinden ekstra ödeme yapmadan yaptıkları alışverişlerden düzenli bağış yapmalarını sağlıyoruz.</p>
-                    <p>Ayrıca, profesyonel iş gücüne ulaşabilmeniz için her ay beş ücretsiz gönüllülük ilanı vererek gönüllülere ulaşmanıza aracılık ediyoruz.</p>
+                    <p><strong>hangel</strong> olarak, bu iki sorunu çözebilmen için markalarla iş birliği yapıyor ve kullanıcıların ceplerinden ekstra ödeme yapmadan yaptıkları alışverişlerden düzenli bağış yapmalarını sağlıyoruz.</p>
+                    <p>Ayrıca, profesyonel iş gücüne ulaşabilmen için her ay beş ücretsiz gönüllülük ilanı vererek gönüllülere ulaşmana aracılık ediyoruz.</p>
                 </div>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
