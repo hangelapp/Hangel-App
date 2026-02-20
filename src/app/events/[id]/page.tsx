@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy, Github, Palette, Briefcase } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy, Github, Palette, Briefcase, ChevronRight, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -82,7 +82,7 @@ export default function EventDetailPage() {
   let organizerLink = '#';
   if (organizerEntity) {
     if ('transparencyScore' in organizerEntity) { // It's an NGO
-      organizerLink = `/ngos/${organizerEntity.id}`;
+      organizerLink = `/ngos/${ngo.id}`;
     } else if ('university' in organizerEntity) { // It's a Student Club
       organizerLink = `/clubs/profile/${organizerEntity.id}`;
     }
@@ -94,15 +94,15 @@ export default function EventDetailPage() {
   const socialLinks = [];
     if (user.personalInfo.social?.linkedin) socialLinks.push(`URL;TYPE=linkedin:https://linkedin.com/in/${user.personalInfo.social.linkedin}`);
 
-    const backQrData = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      `FN:${user.name}`,
-      `TEL;TYPE=CELL:${user.personalInfo.phone}`,
-      `EMAIL:${user.personalInfo.email}`,
-      ...socialLinks,
-      'END:VCARD'
-    ].join('\n');
+  const backQrData = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${user.name}`,
+    `TEL;TYPE=CELL:${user.personalInfo.phone}`,
+    `EMAIL:${user.personalInfo.email}`,
+    ...socialLinks,
+    'END:VCARD'
+  ].join('\n');
     
   const backQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(backQrData)}`;
   
@@ -193,14 +193,16 @@ export default function EventDetailPage() {
                         <AccordionTrigger>Etkinlik Kuralları</AccordionTrigger>
                         <AccordionContent>
                            <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
-                               <li>Etkinlik belirli yaş kısıtlamalarına tabi olabilir. Lütfen ilan detaylarını kontrol ediniz.</li>
-                               <li>Etkinlik başlangıcından önce alanda olmanız tavsiye edilir. Geç gelen katılımcılar içeri alınmayabilir.</li>
-                               <li>Etkinlik düzenine ve belirtilen oturma planlarına uyulması gerekmektedir.</li>
-                               <li>Organizatör, bilet ve katılım koşullarında değişiklik yapma hakkını saklı tutar.</li>
-                               <li>Organizatör, uygun görmediği kişileri katılım ücretini iade ederek etkinlik alanına almama hakkına sahiptir.</li>
-                               <li>Etkinlik alanına dışarıdan yiyecek ve içecek getirmek yasaktır.</li>
-                               <li>Etkinlik alanına profesyonel kamera, fotoğraf makinesi, ses ve video kayıt cihazları sokmak yasaktır.</li>
-                               <li>Etkinlik alanına tehlikeli, kesici, delici, yanıcı, patlayıcı maddeler ve yasa dışı cisimler getirmek kesinlikle yasaktır.</li>
+                               <li>Etkinlik 4 yaş ve üstü katılımcılar için uygundur.</li>
+                               <li>Etkinlik başlangıç saatinden en az 1 saat önce biletle birlikte etkinliğin kapısında olacak şekilde hazır olunması gerekmektedir.</li>
+                               <li>Etkinlik başladıktan sonra salona seyirci alınmayacaktır.</li>
+                               <li>Misafirlerin belirtilen oturma düzenine uyması zorunludur. Etkinlik boyunca belirlenen koltuklarda oturulması gerekmektedir.</li>
+                               <li>Organizatör, indirimli bilet satın alma koşullarında değişiklik yapma hakkını saklı tutar.</li>
+                               <li>Organizatör etkinlik alanı ve saatinde değişiklik yapma hakkına sahiptir.</li>
+                               <li>Organizatör etkinlik için uygun görmediği kişileri, bilet ücretini iade ederek etkinlik mekanına almama hakkına sahiptir.</li>
+                               <li>Etkinlik mekanına yiyecek ve içecek sokmak yasaktır.</li>
+                               <li>Etkinlik mekanına kamera ve fotoğraf makinası sokmak yasaktır.</li>
+                               <li>Etkinlik alanına ateşli silahlar, yanıcı, patlayıcı, parlayıcı (deodorant, sprey, parfüm, vb.), kesici, delici, bereleyici, saldırı ve savunma amacıyla olmasa bile fiilen saldırı ve savunmada kullanılmaya elverişli (kask, kamp sandalyesi, selfie çubuğu, tripod, pantolon zinciri vb.) her türlü alet ve lazer imleci ile girmek yasaktır.</li>
                            </ul>
                         </AccordionContent>
                     </AccordionItem>
@@ -350,5 +352,8 @@ export default function EventDetailPage() {
       </div>
     </div>
   );
+
+    
+}
 
     
