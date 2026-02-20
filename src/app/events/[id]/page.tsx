@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -18,6 +18,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,6 +35,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useToast } from '@/hooks/use-toast';
 
 const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementType; label: string; children: React.ReactNode, href?: string }) => {
     
@@ -53,6 +63,7 @@ export default function EventDetailPage() {
   const id = params.id as string;
   const event = events.find(e => e.id === id);
   const [profileUrl, setProfileUrl] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -77,11 +88,18 @@ export default function EventDetailPage() {
     }
   }
   
-  const contactQrData = `MECARD:N:${user.name};EMAIL:${user.personalInfo.email};;`;
-  const contactQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(contactQrData)}`;
+  const nameQrData = `BEGIN:VCARD\nVERSION:3.0\nFN:${user.name}\nEND:VCARD`;
+  const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(nameQrData)}`;
 
+  const backQrData = `MECARD:N:${user.name};TEL:${user.personalInfo.phone};EMAIL:${user.personalInfo.email};;`;
+  const backQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(backQrData)}`;
+  
   const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yy')}`;
   
+  const handleCopy = () => {
+    navigator.clipboard.writeText(profileUrl);
+    toast({ title: 'Etkinlik linki kopyalandı!' });
+  };
 
   const formatDateTime = (dateStr: string) => {
     try {
@@ -243,10 +261,18 @@ export default function EventDetailPage() {
 
                 {/* Back Side */}
                 <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
-                    <div className="p-3 bg-muted/50 text-center font-bold border-b text-sm">Kişisel Bilgiler</div>
+                    <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
+                        <span className="text-xl font-bold text-primary">hangel</span>
+                        {organizerLogo && (
+                            <Avatar className="h-10 w-10 bg-white">
+                                <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
+                                <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
+                            </Avatar>
+                        )}
+                    </div>
                     <div className="p-4 flex-1 flex flex-col justify-center items-center text-center space-y-4">
                         <div className="my-2">
-                            <Image src={contactQrCodeUrl} alt="İletişim QR Kodu" width={100} height={100} className="mx-auto rounded-lg border-2 border-primary/50 p-0.5" />
+                            <Image src={backQrCodeUrl} alt="İletişim QR Kodu" width={100} height={100} className="mx-auto rounded-lg border-2 border-primary/50 p-0.5" />
                         </div>
                         <div className="text-sm space-y-2 text-left w-full">
                            <div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> <span className="font-bold">{user.name}</span></div>
@@ -259,13 +285,41 @@ export default function EventDetailPage() {
                      </div>
                 </div>
             </div>
-            <AlertDialogFooter>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
               <AlertDialogCancel>Kapat</AlertDialogCancel>
-              <AlertDialogAction asChild>
-                <a href={contactQrCodeUrl} download={`yaka-karti-arka-${event.id}.png`}>
-                    <Download className="mr-2 h-4 w-4" /> Arka Yüzü İndir
+              <Button asChild>
+                <a href={nameQrCodeUrl} download={`yaka-karti-qr-${event.id}.png`}>
+                    <Download className="mr-2 h-4 w-4" /> Yaka Kartını İndir
                 </a>
-              </AlertDialogAction>
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Share2 className="mr-2 h-4 w-4" /> Paylaş
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Etkinliği Paylaş</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex items-center space-x-2">
+                    <div className="grid flex-1 gap-2">
+                      <Label htmlFor="link" className="sr-only">
+                        Link
+                      </Label>
+                      <Input
+                        id="link"
+                        defaultValue={profileUrl}
+                        readOnly
+                      />
+                    </div>
+                    <Button type="button" size="sm" className="px-3" onClick={handleCopy}>
+                      <span className="sr-only">Copy</span>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
