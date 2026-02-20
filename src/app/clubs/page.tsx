@@ -35,8 +35,8 @@ const ClubCard = ({ club }: { club: StudentClub }) => (
     </Link>
 );
 
-const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
-    <Link href={`/events/${event.id}`} key={event.id} className="block">
+const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string, slug: string } }) => (
+    <Link href={`/events/${event.slug}`} key={event.id} className="block">
         <Card className="hover:bg-accent transition-colors">
             <CardContent className="p-4 flex gap-4 items-center">
                 <div className="p-3 bg-muted rounded-lg">
@@ -70,6 +70,7 @@ export default function ClubsPage() {
         const club = studentClubs.find(c => c.name === event.organizer);
         return {
             id: event.id,
+            slug: event.slug,
             name: event.name,
             club: event.organizer,
             clubId: club?.id || '1', 
@@ -165,7 +166,7 @@ export default function ClubsPage() {
     if (contentType === 'events') {
          return (
              <div className='space-y-4'>
-                {finalEvents.length > 0 ? finalEvents.map((event) => (
+                {finalEvents.map((event) => (
                     <EventCard key={event.id} event={event} />
                 )) : <div className="text-center text-muted-foreground p-8">Etkinlik bulunamadı.</div>}
 
