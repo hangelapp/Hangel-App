@@ -53,6 +53,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import * as Icons from 'lucide-react';
 
 const AdvantageCard = ({
   category,
