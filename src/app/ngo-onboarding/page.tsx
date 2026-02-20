@@ -250,8 +250,8 @@ export default function NgoOnboardingPage() {
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
                     STK yöneticisi, müjde!
                 </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                    Profesyonel yetkinlik, Sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform.
+                <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
+                    Profesyonel yetkinlik, sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform. <strong className="text-primary">"hangel.org artık yayında ve Türkiye’de faaliyette."</strong>
                 </p>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
