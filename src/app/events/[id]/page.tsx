@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
