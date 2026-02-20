@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -25,9 +25,11 @@ import Link from 'next/link';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-const InfoRow = ({ icon: Icon, label, children }: { icon: React.ElementType; label: string; children: React.ReactNode }) => {
-    return (
+const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementType; label: string; children: React.ReactNode, href?: string }) => {
+    
+    const content = (
         <div className="flex items-start gap-4 text-sm py-4">
             <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div className="flex-1">
@@ -35,7 +37,13 @@ const InfoRow = ({ icon: Icon, label, children }: { icon: React.ElementType; lab
                 <div className="text-muted-foreground font-medium mt-1">{children}</div>
             </div>
         </div>
-    )
+    );
+
+    if (href) {
+        return <Link href={href} className="hover:bg-accent/50 -mx-4 px-4 block">{content}</Link>;
+    }
+    
+    return content;
 };
 
 
@@ -114,8 +122,8 @@ export default function EventDetailPage() {
                     <CardTitle className="text-xl">Etkinlik Bilgileri</CardTitle>
                   </CardHeader>
                    <CardContent className="divide-y p-0">
-                        {organizerUniversity && <InfoRow icon={School} label="Üniversite"><Link href={`/events?university=${encodeURIComponent(organizerUniversity)}`} className="text-primary hover:underline">{organizerUniversity}</Link></InfoRow>}
-                        <InfoRow icon={Calendar} label="Başlangıç"><Link href={`/events?month=${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM')}`} className="text-primary hover:underline">{formatDateTime(event.startDate)}</Link></InfoRow>
+                        {organizerUniversity && <InfoRow icon={School} label="Üniversite" href={`/events?university=${encodeURIComponent(organizerUniversity)}`}>{organizerUniversity}</InfoRow>}
+                        <InfoRow icon={Calendar} label="Başlangıç" href={`/events?month=${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM')}`}>{formatDateTime(event.startDate)}</InfoRow>
                         <InfoRow icon={Clock} label="Bitiş">{formatDateTime(event.endDate)}</InfoRow>
                         <InfoRow icon={MapPin} label="Konum">{event.location.type === 'Online' ? 'Online' : `${event.location.address}, ${event.location.district}, ${event.location.city}`}</InfoRow>
                         <InfoRow icon={Languages} label="Dil">{event.language}</InfoRow>
@@ -133,14 +141,29 @@ export default function EventDetailPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl">Açıklama</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{event.description}</p>
-                  </CardContent>
-                </Card>
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="description">
+                        <AccordionTrigger>Açıklama</AccordionTrigger>
+                        <AccordionContent>
+                           <p className="text-muted-foreground">{event.description}</p>
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="rules">
+                        <AccordionTrigger>Etkinlik Kuralları</AccordionTrigger>
+                        <AccordionContent>
+                           <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                               <li>Etkinlik belirli yaş kısıtlamalarına tabi olabilir. Lütfen ilan detaylarını kontrol ediniz.</li>
+                               <li>Etkinlik başlangıcından önce alanda olmanız tavsiye edilir. Geç gelen katılımcılar içeri alınmayabilir.</li>
+                               <li>Etkinlik düzenine ve belirtilen oturma planlarına uyulması gerekmektedir.</li>
+                               <li>Organizatör, bilet ve katılım koşullarında değişiklik yapma hakkını saklı tutar.</li>
+                               <li>Organizatör, uygun görmediği kişileri katılım ücretini iade ederek etkinlik alanına almama hakkına sahiptir.</li>
+                               <li>Etkinlik alanına dışarıdan yiyecek ve içecek getirmek yasaktır.</li>
+                               <li>Etkinlik alanına profesyonel kamera, fotoğraf makinesi, ses ve video kayıt cihazları sokmak yasaktır.</li>
+                               <li>Etkinlik alanına tehlikeli, kesici, delici, yanıcı, patlayıcı maddeler ve yasa dışı cisimler getirmek kesinlikle yasaktır.</li>
+                           </ul>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
             </TabsContent>
             <TabsContent value="organization" className="mt-4">
                  <Card>
@@ -238,3 +261,4 @@ export default function EventDetailPage() {
     </div>
   );
 }
+
