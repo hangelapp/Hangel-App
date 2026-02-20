@@ -42,7 +42,8 @@ export const translations: Record<Language, any> = {
       login: 'Giriş Yap',
       register: 'Kayıt Ol',
       search: 'Platformda Ara',
-      volunteering: 'Gönüllülük'
+      volunteering: 'Gönüllülük',
+      events: "Etkinlikler",
     },
     common: {
       search: 'Ara...',
@@ -82,7 +83,8 @@ export const translations: Record<Language, any> = {
       login: 'Login',
       register: 'Register',
       search: 'Search Platform',
-      volunteering: 'Volunteering'
+      volunteering: 'Volunteering',
+      events: 'Events',
     },
     common: {
       search: 'Search...',
@@ -93,4 +95,3 @@ export const translations: Record<Language, any> = {
   },
   // Other languages omitted for brevity in this manual revert
 };
-

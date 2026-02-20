@@ -10,7 +10,7 @@ import React, { useState, useEffect } from 'react';
 
 const navItems = [
   { href: "/volunteering", icon: HeartHandshake, label: "nav.volunteering" },
-  { href: "/events", icon: Calendar, label: "Events" },
+  { href: "/events", icon: Calendar, label: "nav.events" },
   { href: "/market", icon: Store, label: "nav.market" },
   { href: "/timeline", icon: LayoutGrid, label: "nav.timeline" },
   { href: "/profile", icon: UserCircle, label: "nav.profile" },
@@ -58,7 +58,7 @@ export default function AppBottomNav() {
             >
               <Icon className="h-6 w-6" />
               <span className="text-[10px] font-medium truncate w-full">
-                {isMounted ? t(item.label) : <>&nbsp;</>}
+                {isMounted ? t(item.label) : ''}
               </span>
             </Link>
           );
