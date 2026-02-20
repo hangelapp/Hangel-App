@@ -52,6 +52,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 
 // New component for the large feature cards
 const FeatureShowcaseCard = ({
@@ -96,27 +97,80 @@ const ToolGridItem = ({ icon: Icon, title, description, tag }: { icon: any, titl
     </div>
 );
 
-const AdvantageItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-    <div className="flex items-start gap-4 text-left p-4 bg-muted/50 rounded-xl">
-        <div className="p-2.5 bg-background rounded-lg border shadow-sm">
-            <Icon className="h-5 w-5 text-primary" />
-        </div>
-        <div className="flex-1">
-            <h4 className="font-bold text-foreground">{title}</h4>
-            <p className="text-sm text-muted-foreground leading-snug">{description}</p>
-        </div>
+const AdvantageCarouselCard = ({
+  title,
+  description,
+  imageUrl,
+  imageHint,
+  dark,
+}: {
+  title: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
+  dark?: boolean;
+}) => (
+  <div className={cn(
+      "rounded-2xl overflow-hidden h-full flex flex-col text-left shadow-lg",
+      dark ? "bg-black text-white" : "bg-[#f5f5f7] text-black"
+  )}>
+    <div className="relative w-full aspect-video bg-black">
+      <Image src={imageUrl} alt={title} fill className="object-cover" data-ai-hint={imageHint} />
     </div>
+    <div className="p-5 flex flex-col flex-1">
+        <h3 className="font-semibold text-lg">{title}</h3>
+        <p className={cn("text-sm mt-1 flex-1", dark ? "text-white/70" : "text-muted-foreground")}>{description}</p>
+        <Button variant="link" className={cn("p-0 self-start mt-4", dark ? "text-blue-500" : "text-primary")}>
+            Daha fazla bilgi <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+    </div>
+  </div>
 );
 
 export default function NgoOnboardingPage() {
     const router = useRouter();
 
     const advantageItems = [
-        { icon: Sparkles, title: "Dijital Dönüşüm", description: "Kurumsal web sitenizden CRM'e, tüm dijital araçlarınızı tek yerden yönetin." },
-        { icon: HandCoins, title: "Sürdürülebilir Kaynak", description: "Alışverişle bağış modeli sayesinde sürekli ve yeni bir gelir akışı sağlayın." },
-        { icon: Users, title: "Nitelikli Gönüllü Ağı", description: "Yetkinlik bazlı filtreleme ile projenize en uygun, yetenekli gönüllülere ulaşın." },
-        { icon: ShieldCheck, title: "Artan Güven ve Şeffaflık", description: "Şeffaflık Endeksi ile bağışçıların ve destekçilerin güvenini kazanın." },
-        { icon: BarChart3, title: "Veriye Dayalı Etki", description: "Faaliyetlerinizin sosyal etkisini ölçün, analiz edin ve şeffaf raporlar oluşturun." },
+        { 
+            icon: Sparkles, 
+            title: "Dijital Dönüşüm", 
+            description: "Kurumsal web sitenizden CRM'e, tüm dijital araçlarınızı tek yerden yönetin.",
+            imageUrl: 'https://picsum.photos/seed/digital/800/450',
+            imageHint: 'digital transformation abstract',
+            dark: true,
+        },
+        { 
+            icon: HandCoins, 
+            title: "Sürdürülebilir Kaynak", 
+            description: "Alışverişle bağış modeli sayesinde sürekli ve yeni bir gelir akışı sağlayın.",
+            imageUrl: 'https://picsum.photos/seed/finance/800/450',
+            imageHint: 'sustainable finance chart',
+            dark: false,
+        },
+        { 
+            icon: Users, 
+            title: "Nitelikli Gönüllü Ağı", 
+            description: "Yetkinliklerinize en uygun, yetenekli gönüllülere ulaşın.",
+            imageUrl: 'https://picsum.photos/seed/community/800/450',
+            imageHint: 'diverse group volunteers',
+            dark: true,
+        },
+        { 
+            icon: ShieldCheck, 
+            title: "Artan Güven ve Şeffaflık", 
+            description: "Şeffaflık Endeksi ile bağışçıların ve gönüllülerin güvenini kazanın.",
+            imageUrl: 'https://picsum.photos/seed/trust/800/450',
+            imageHint: 'transparent glass charts',
+            dark: false,
+        },
+        { 
+            icon: BarChart3, 
+            title: "Veriye Dayalı Etki", 
+            description: "Faaliyetlerinizin sosyal etkisini ölçün, analiz edin ve şeffaf raporlar oluşturun.",
+            imageUrl: 'https://picsum.photos/seed/data/800/450',
+            imageHint: 'data analytics dashboard',
+            dark: true,
+        }
     ];
     
     const mainFeatures = [
@@ -183,13 +237,13 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-32 pb-16 text-center space-y-6">
                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-widest">hangel HUB</span>
+                    <span className="text-xs font-bold uppercase tracking-widest">hangel STK</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
                     İyiliği Birlikte Yönetelim.
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                    Sivil toplumun dijital geleceğini birlikte inşa ediyoruz. Hangel Hub, operasyonlarınızı tek bir noktadan yönetmeniz için tasarlandı.
+                    Sivil toplumun dijital geleceğini birlikte inşa ediyoruz. Hangel STK, operasyonlarınızı tek bir noktadan yönetmeniz için tasarlandı.
                 </p>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
@@ -210,12 +264,29 @@ export default function NgoOnboardingPage() {
                                 5 Temel Avantajı Keşfedin
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                             <DialogHeader>
-                                <DialogTitle className="text-2xl font-bold text-center">Etkinizi Katlayın</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                                {advantageItems.map((item, i) => <AdvantageItem key={i} {...item} />)}
+                        <DialogContent className="max-w-7xl w-full bg-transparent border-none shadow-none p-0">
+                            <div className="py-12">
+                                <DialogHeader className="text-center mb-8">
+                                    <DialogTitle className="text-4xl font-bold text-white">Neden Hangel'e Katılmalısınız?</DialogTitle>
+                                </DialogHeader>
+                                <Carousel
+                                    opts={{
+                                    align: "start",
+                                    }}
+                                    className="w-full"
+                                >
+                                    <CarouselContent className="-ml-4">
+                                        {advantageItems.map((item, index) => (
+                                            <CarouselItem key={index} className="pl-4 sm:basis-1/2 md:basis-1/3 xl:basis-1/4">
+                                                <div className="h-[420px] p-1">
+                                                <AdvantageCarouselCard {...item} />
+                                                </div>
+                                            </CarouselItem>
+                                        ))}
+                                    </CarouselContent>
+                                    <CarouselPrevious className="ml-20 hidden xl:flex" />
+                                    <CarouselNext className="mr-20 hidden xl:flex" />
+                                </Carousel>
                             </div>
                         </DialogContent>
                     </Dialog>
