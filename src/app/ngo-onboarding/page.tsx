@@ -29,14 +29,7 @@ import {
     ShoppingCart,
     ChevronRight,
     ArrowLeft,
-    Sparkles,
-    Landmark,
-    FileText,
-    BookCopy,
-    Heart,
-    Handshake,
-    Banknote,
-    Contact,
+    Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -45,6 +38,14 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -52,8 +53,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
-import Autoplay from "embla-carousel-autoplay";
 
 const AdvantageCard = ({
   category,
@@ -70,18 +69,18 @@ const AdvantageCard = ({
   imageHint: string;
   link: { label: string, href: string };
 }) => (
-  <div className="bg-white rounded-3xl h-full flex flex-col text-left overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 group">
-    <div className="relative aspect-video w-full overflow-hidden">
+  <div className="bg-white rounded-2xl h-full flex flex-col text-left overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 group">
+    <div className="relative aspect-[4/3] w-full overflow-hidden">
       <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
     </div>
-    <div className="p-6 flex flex-col flex-1">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{category}</p>
-      <h3 className="text-xl font-bold mt-2 text-foreground">{title}</h3>
-      <p className="text-sm text-muted-foreground mt-2 flex-1 leading-relaxed">{description}</p>
+    <div className="p-5 flex flex-col flex-1">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{category}</p>
+      <h3 className="text-lg font-bold mt-1 text-foreground">{title}</h3>
+      <p className="text-sm text-muted-foreground/90 mt-2 flex-1 leading-snug">{description}</p>
       <div className="mt-4 pt-4">
-        <Link href={link.href} className="text-sm text-primary hover:underline flex items-center">
+        <Link href={link.href} className="text-sm text-primary hover:underline flex items-center font-semibold">
           {link.label}
-          <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ChevronRight className="h-4 w-4 ml-1" />
         </Link>
       </div>
     </div>
@@ -273,16 +272,16 @@ export default function NgoOnboardingPage() {
                     >
                         <CarouselContent className="-ml-6">
                             {advantageItems.map((item, index) => (
-                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 md:basis-1/3">
-                                    <div className="h-[520px] p-1">
+                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
+                                    <div className="h-[520px] p-2">
                                         <AdvantageCard {...item} />
                                     </div>
                                 </CarouselItem>
                             ))}
                         </CarouselContent>
                         <div className="hidden xl:flex justify-end gap-2 mt-8">
-                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
-                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
+                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/5 hover:bg-black/5" />
+                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/5 hover:bg-black/5" />
                         </div>
                     </Carousel>
                 </div>
