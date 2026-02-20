@@ -65,6 +65,7 @@ export default function EventDetailPage() {
   }
 
   const organizerEntity = ngos.find(n => n.name === event.organizer) || studentClubs.find(c => c.name === event.organizer);
+  const organizerCategory = (organizerEntity as any)?.category;
   const organizerLogo = organizerEntity?.avatarUrl;
   const organizerUniversity = (organizerEntity as any)?.university;
 
@@ -81,7 +82,15 @@ export default function EventDetailPage() {
   const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.startDate.split('-')[0].slice(-2)}`;
+  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yy')}`;
+  
+  const eventTags = [
+    event.type,
+    organizerCategory,
+    event.organizer,
+    event.location.city,
+    event.location.district,
+  ].filter(Boolean);
 
   const formatDateTime = (dateStr: string) => {
     try {
@@ -94,23 +103,20 @@ export default function EventDetailPage() {
 
   return (
     <div className="animate-in fade-in-0">
-      <div className="relative h-48 w-full bg-muted">
-        <Image src={event.imageUrl} alt={`${event.name} Cover`} fill className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/0" />
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full">
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="absolute top-4 right-4">
-            <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} buttonClassName="border-white/50 text-white hover:bg-white/20"/>
+        <div className="p-4 bg-background">
+            <div className="flex justify-between items-center mb-6">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                    <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} buttonClassName="border-border text-foreground hover:bg-accent"/>
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold font-headline">{event.name}</h1>
+              <p className="text-lg font-medium text-muted-foreground">{event.organizer}</p>
+            </div>
         </div>
-      </div>
 
       <div className="p-4 space-y-4">
-        <div className="-mt-12 relative z-10">
-          <h1 className="text-3xl font-bold font-headline text-white drop-shadow-md">{event.name}</h1>
-          <p className="text-lg font-medium text-black">{event.organizer}</p>
-        </div>
-
         <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="details">Etkinlik Detayları</TabsTrigger>
@@ -132,8 +138,7 @@ export default function EventDetailPage() {
                         <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</InfoRow>
                         <InfoRow icon={Tag} label="Etiketler">
                             <div className="flex flex-wrap gap-2">
-                                <Link href={`/events?category=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.type}</Badge></Link>
-                                {event.tags.map(tag => (
+                                {eventTags.map(tag => (
                                 <Link key={tag} href={`/events?tag=${encodeURIComponent(tag)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{tag}</Badge></Link>
                                 ))}
                             </div>
@@ -141,13 +146,16 @@ export default function EventDetailPage() {
                     </CardContent>
                 </Card>
 
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Açıklama</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">{event.description}</p>
+                    </CardContent>
+                </Card>
+
                 <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="description">
-                        <AccordionTrigger>Açıklama</AccordionTrigger>
-                        <AccordionContent>
-                           <p className="text-muted-foreground">{event.description}</p>
-                        </AccordionContent>
-                    </AccordionItem>
                     <AccordionItem value="rules">
                         <AccordionTrigger>Etkinlik Kuralları</AccordionTrigger>
                         <AccordionContent>
@@ -261,4 +269,3 @@ export default function EventDetailPage() {
     </div>
   );
 }
-

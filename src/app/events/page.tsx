@@ -42,8 +42,19 @@ function EventsPageContent() {
     }
     
     // Filter by URL params
-    if (categoryParam) {
-      eventsToFilter = eventsToFilter.filter(event => event.type === categoryParam);
+    const activeTag = categoryParam || tagParam;
+    if (activeTag) {
+        const lowercasedTag = activeTag.toLowerCase();
+        eventsToFilter = eventsToFilter.filter(event => {
+             const club = studentClubs.find(c => c.name === event.organizer);
+             const organizerCategory = (club as any)?.category;
+            
+             return event.type.toLowerCase().includes(lowercasedTag) ||
+                    (organizerCategory && organizerCategory.toLowerCase().includes(lowercasedTag)) ||
+                    event.organizer.toLowerCase().includes(lowercasedTag) ||
+                    event.location.city.toLowerCase().includes(lowercasedTag) ||
+                    event.location.district.toLowerCase().includes(lowercasedTag);
+        });
     }
     if (universityParam) {
         eventsToFilter = eventsToFilter.filter(event => {
@@ -53,9 +64,6 @@ function EventsPageContent() {
     }
     if (monthParam) {
         eventsToFilter = eventsToFilter.filter(event => format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM') === monthParam);
-    }
-    if (tagParam) {
-        eventsToFilter = eventsToFilter.filter(event => event.tags.includes(tagParam));
     }
 
 
