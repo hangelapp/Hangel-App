@@ -144,10 +144,19 @@ export type Event = {
   id: string;
   name: string;
   organizer: string;
-  type: string;
-  date: string;
+  type: string; // Kategori
+  date: string; // for backward compatibility
   time?: string;
-  location: string;
+  startDate: string; // YYYY-MM-DD HH:mm
+  endDate: string; // YYYY-MM-DD HH:mm
+  location: {
+    type: 'Online' | 'Fiziksel';
+    address: string;
+    city: string;
+    district: string;
+  };
+  language: string;
+  participationCondition: 'Herkese Açık' | 'Üyelere Özel' | 'Öğrencilere Özel' | 'Davetlilere Özel';
   capacity: {
     current: number;
     max: number;

@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -23,6 +23,8 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { format, parse } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 export default function EventDetailPage() {
   const router = useRouter();
@@ -49,7 +51,7 @@ export default function EventDetailPage() {
     if ('transparencyScore' in organizerEntity) { // It's an NGO
       organizerLink = `/ngos/${organizerEntity.id}`;
     } else if ('university' in organizerEntity) { // It's a Student Club
-      organizerLink = `/admin/clubs/profile/${organizerEntity.id}`;
+      organizerLink = `/clubs/profile/${organizerEntity.id}`;
     }
   }
 
@@ -57,6 +59,15 @@ export default function EventDetailPage() {
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
   const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.date.split('-')[0].slice(-2)}`;
+
+  const formatDateTime = (dateStr: string) => {
+    try {
+        const date = parse(dateStr, 'yyyy-MM-dd HH:mm', new Date());
+        return format(date, 'dd MMMM yyyy, HH:mm', { locale: tr });
+    } catch (e) {
+        return dateStr;
+    }
+  };
 
   return (
     <div className="animate-in fade-in-0">
@@ -89,22 +100,40 @@ export default function EventDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-3 text-base">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <span>{event.date}{event.time && `, ${event.time}`}</span>
+                        <Tag className="h-5 w-5 text-muted-foreground" />
+                        <span>Kategori: {event.type}</span>
                     </div>
                     <div className="flex items-center gap-3 text-base">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <span>{event.location}</span>
+                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <span>Başlangıç: {formatDateTime(event.startDate)}</span>
                     </div>
                     <div className="flex items-center gap-3 text-base">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                      <span>Kapasite: {event.capacity.current} / {event.capacity.max}</span>
+                        <Clock className="h-5 w-5 text-muted-foreground" />
+                        <span>Bitiş: {formatDateTime(event.endDate)}</span>
                     </div>
-                     <div className="flex items-center gap-3 text-base">
-                      <CheckCircle className="h-5 w-5 text-muted-foreground" />
-                      <span>Sertifika: {event.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span>
+                    <div className="flex items-center gap-3 text-base">
+                        <MapPin className="h-5 w-5 text-muted-foreground" />
+                        <span>
+                            {event.location.type === 'Online' ? 'Online' : `${event.location.address}, ${event.location.district}, ${event.location.city}`}
+                        </span>
                     </div>
-                    <div className="flex items-start gap-3 text-base">
+                    <div className="flex items-center gap-3 text-base">
+                        <Languages className="h-5 w-5 text-muted-foreground" />
+                        <span>Dil: {event.language}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-base">
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                        <span>Kapasite: {event.capacity.current} / {event.capacity.max}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-base">
+                        <UserCheck className="h-5 w-5 text-muted-foreground" />
+                        <span>Katılım: {event.participationCondition}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-base">
+                        <CheckCircle className="h-5 w-5 text-muted-foreground" />
+                        <span>Sertifika: {event.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-base pt-4 border-t">
                       <Tag className="h-5 w-5 text-muted-foreground mt-1" />
                       <div className="flex flex-wrap gap-2">
                         {event.tags.map(tag => (
@@ -220,4 +249,3 @@ export default function EventDetailPage() {
     </div>
   );
 }
-

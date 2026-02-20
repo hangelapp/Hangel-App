@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
@@ -574,9 +573,9 @@ export const managedItems: ManagedItem[] = [
 ];
 
 export const qrPaymentCardData = [
-    { id: 'bireysel', type: 'Bireysel', number: '5549601000001234', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '12/28', balance: '1.250,75 ₺', ngoId: '1', cvv: '123' },
-    { id: 'ticari', type: 'Ticari', number: '5549601000005678', owner: 'Hangel A.Ş.', expiry: '10/27', balance: '15.450,00 ₺', ngoId: '2', cvv: '456' },
-    { id: 'ogrenci', type: 'Öğrenci', number: '5549601000009012', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '08/29', balance: '250,00 ₺', ngoId: '3', cvv: '789' }
+    { id: 'bireysel', type: 'Bireysel', number: '5549601000001234', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '12/28', balance: '1.250,75 ₺', ngoId: '1', cvv: '123', bgColor: 'bg-gradient-to-tr from-gray-900 to-gray-700' },
+    { id: 'ticari', type: 'Ticari', number: '5549601000005678', owner: 'Hangel A.Ş.', expiry: '10/27', balance: '15.450,00 ₺', ngoId: '2', cvv: '456', bgColor: 'bg-gradient-to-tr from-blue-900 to-blue-600' },
+    { id: 'ogrenci', type: 'Öğrenci', number: '5549601000009012', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '08/29', balance: '250,00 ₺', ngoId: '3', cvv: '789', bgColor: 'bg-gradient-to-tr from-rose-900 to-rose-600' }
 ];
 
 export const allUniversities = ["Abdullah Gül Üniversitesi", "Acıbadem Mehmet Ali Aydınlar Üniversitesi", "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi", "Adıyaman Üniversitesi", "Afyon Kocatepe Üniversitesi", "Afyonkarahisar Sağlık Bilimleri Üniversitesi", "Ağrı İbrahim Çeçen Üniversitesi", "Akdeniz Üniversitesi", "Aksaray Üniversitesi", "Alanya Alaaddin Keykubat Üniversitesi", "Alanya Üniversitesi", "Altınbaş Üniversitesi", "Amasya Üniversitesi", "Anadolu Üniversitesi", "Ankara Bilim Üniversitesi", "Ankara Hacı Bayram Veli Üniversitesi", "Ankara Medipol Üniversitesi", "Ankara Müzik ve Güzel Sanatlar Üniversitesi", "Ankara Sosyal Bilimler Üniversitesi", "Ankara Üniversitesi", "Ankara Yıldırım Beyazıt Üniversitesi", "Antalya Belek Üniversitesi", "Antalya Bilim Üniversitesi", "Ardahan Üniversitesi", "Artvin Çoruh Üniversitesi", "Ataşehir Adıgüzel Meslek Yüksekokulu", "Atatürk Üniversitesi", "Atılım Üniversitesi", "Avrasya Üniversitesi", "Aydın Adnan Menderes Üniversitesi", "Bahçeşehir Üniversitesi", "Balıkesir Üniversitesi", "Bandırma Onyedi Eylül Üniversitesi", "Bartın Üniversitesi", "Başkent Üniversitesi", "Batman Üniversitesi", "Bayburt Üniversitesi", "Beykoz Üniversitesi", "Bezm-i Âlem Vakıf Üniversitesi", "Bilecik Şeyh Edebali Üniversitesi", "Bingöl Üniversitesi", "Biruni Üniversitesi", "Bitlis Eren Üniversitesi", "Boğaziçi Üniversitesi", "Bolu Abant İzzet Baysal Üniversitesi", "Burdur Mehmet Akif Ersoy Üniversitesi", "Bursa Teknik Üniversitesi", "Bursa Uludağ Üniversitesi", "Çağ Üniversitesi", "Çanakkale Onsekiz Mart Üniversitesi", "Çankaya Üniversitesi", "Çankırı Karatekin Üniversitesi", "Çukurova Üniversitesi", "Demiroğlu Bilim Üniversitesi", "Dicle Üniversitesi", "Doğuş Üniversitesi", "Dokuz Eylül Üniversitesi", "Düzce Üniversitesi", "Ege Üniversitesi", "Erciyes Üniversitesi", "Erzincan Binali Yıldırım Üniversitesi", "Erzurum Teknik Üniversitesi", "Eskişehir Osmangazi Üniversitesi", "Eskişehir Teknik Üniversitesi", "Fatih Sultan Mehmet Vakıf Üniversitesi", "Fenerbahçe Üniversitesi", "Fırat Üniversitesi", "Galatasaray Üniversitesi", "Gazi Üniversitesi", "Gaziantep İslam Bilim ve Teknoloji Üniversitesi", "Gaziantep Üniversitesi", "Gebze Teknik Üniversitesi", "Giresun Üniversitesi", "Gümüşhane Üniversitesi", "Hacettepe Üniversitesi", "Hakkari Üniversitesi", "Haliç Üniversitesi", "Harran Üniversitesi", "Hasan Kalyoncu Üniversitesi", "Hatay Mustafa Kemal Üniversitesi", "Hitit Üniversitesi", "Iğdır Üniversitesi", "Isparta Uygulamalı Bilimler Üniversitesi", "Işık Üniversitesi", "İbn Haldun Üniversitesi", "İhsan Doğramacı Bilkent Üniversitesi", "İnönü Üniversitesi", "İskenderun Teknik Üniversitesi", "İstanbul 29 Mayıs Üniversitesi", "İstanbul Arel Üniversitesi", "İstanbul Atlas Üniversitesi", "İstanbul Aydın Üniversitesi", "İstanbul Beykent Üniversitesi", "İstanbul Bilgi Üniversitesi", "İstanbul Esenyurt Üniversitesi", "İstanbul Galata Üniversitesi", "İstanbul Gedik Üniversitesi", "İstanbul Gelişim Üniversitesi", "İstanbul Kent Üniversitesi", "İstanbul Kültür Üniversitesi", "İstanbul Medeniyet Üniversitesi", "İstanbul Medipol Üniversitesi", "İstanbul Nişantaşı Üniversitesi", "İstanbul Okan Üniversitesi", "İstanbul Rumeli Üniversitesi", "İstanbul Sabahattin Zaim Üniversitesi", "İstanbul Sağlık ve Sosyal Bilimler Meslek Yüksekokulu", "İstanbul Sağlık ve Teknoloji Üniversitesi", "İstanbul Şişli Meslek Yüksekokulu", "İstanbul Teknik Üniversitesi", "İstanbul Ticaret Üniversitesi", "İstanbul Topkapı Üniversitesi", "İstanbul Üniversitesi", "İstanbul Üniversitesi-Cerrahpaşa", "İstanbul Yeni Yüzyıl Üniversitesi", "İstinye Üniversitesi", "İzmir Bakırçay Üniversitesi", "İzmir Demokrasi Üniversitesi", "İzmir Ekonomi Üniversitesi", "İzmir Kâtip Çelebi Üniversitesi", "İzmir Kavram Meslek Yüksekokulu", "İzmir Tınaztepe Üniversitesi", "İzmir Yüksek Teknoloji Enstitüsü", "Kadir Has Üniversitesi", "Kafkas Üniversitesi", "Kahramanmaraş İstiklal Üniversitesi", "Kahramanmaraş Sütçü İmam Üniversitesi", "Kapadokya Üniversitesi", "Karabük Üniversitesi", "Karadeniz Teknik Üniversitesi", "Karamanoğlu Mehmetbey Üniversitesi", "Kastamonu Üniversitesi", "Kayseri Üniversitesi", "Kırıkkale Üniversitesi", "Kırklareli Üniversitesi", "Kırşehir Ahi Evran Üniversitesi", "Kilis 7 Aralık Üniversitesi", "Kocaeli Üniversitesi", "Konya Teknik Üniversitesi", "KTO Karatay Üniversitesi", "Malatya Turgut Özal Üniversitesi", "Manisa Celal Bayar Üniversitesi", "Mardin Artuklu Üniversitesi", "Marmara Üniversitesi", "Mersin Üniversitesi", "Muğla Sıtkı Koçman Üniversitesi", "Munzur Üniversitesi", "Muş Alparslan Üniversitesi", "Necmettin Erbakan Üniversitesi", "Nevşehir Hacı Bektaş Veli Üniversitesi", "Niğde Ömer Halisdemir Üniversitesi", "Ondokuz Mayıs Üniversitesi", "Ordu Üniversitesi", "Orta Doğu Teknik Üniversitesi", "Osmaniye Korkut Ata Üniversitesi", "Pamukkale Üniversitesi", "Recep Tayyip Erdoğan Üniversitesi", "Sakarya Üniversitesi", "Sakarya Uygulamalı Bilimler Üniversitesi", "Selçuk Üniversitesi", "Siirt Üniversitesi", "Sinop Üniversitesi", "Sivas Cumhuriyet Üniversitesi", "Süleyman Demirel Üniversitesi", "Şırnak Üniversitesi", "Tekirdağ Namık Kemal Üniversitesi", "Tokat Gaziosmanpaşa Üniversitesi", "Trabzon Üniversitesi", "Trakya Üniversitesi", "Türk-Alman Üniversitesi", "Türk Hava Kurumu Üniversitesi", "Uşak Üniversitesi", "Van Yüzüncü Yıl Üniversitesi", "Yalova Üniversitesi", "Yıldız Teknik Üniversitesi", "Yozgat Bozok Üniversitesi", "Zonguldak Bülent Ecevit Üniversitesi"];
@@ -618,15 +617,32 @@ export const events: Event[] = studentClubs.map((club, index) => {
     const eventTags = ["Girişimcilik", "Teknoloji", "Sanat", "Müzik", "Kariyer", "Yapay Zeka", "Sosyal Sorumluluk", "Finans", "Münazara", "Robotik", "Tıp"];
     const eventType = eventTypes[index % eventTypes.length];
     const capacity = Math.floor(Math.random() * 200) + 50;
+    const startHour = 9 + (index % 12);
+    const endHour = startHour + Math.floor(Math.random() * 3) + 1;
+    const day = (index % 28) + 1;
+    const eventDate = `2024-11-${day < 10 ? '0' : ''}${day}`;
+    
+    const locations = ["Çevrimiçi", "Kampüs Konferans Salonu", "Kültür Merkezi", "Belediye Salonu", "Partner Ofisi"];
+    const participationConditions: ('Herkese Açık' | 'Üyelere Özel' | 'Öğrencilere Özel' | 'Davetlilere Özel')[] = ['Herkese Açık', 'Üyelere Özel', 'Öğrencilere Özel'];
+    const languages = ["Türkçe", "İngilizce"];
 
     return {
         id: `evt${index + 1}`,
         name: `${club.name} ${eventType}si`,
         organizer: club.name,
         type: eventType,
-        date: `2024-11-${(index % 28) + 1}`,
-        time: `${(9 + (index % 12))}:00`,
-        location: club.university.split(' ')[0],
+        date: eventDate,
+        time: `${startHour}:00`,
+        startDate: `${eventDate} ${startHour}:00`,
+        endDate: `${eventDate} ${endHour}:00`,
+        location: {
+            type: index % 4 === 0 ? 'Online' : 'Fiziksel',
+            address: locations[index % locations.length],
+            city: club.university.split(' ')[0],
+            district: 'Kampüs'
+        },
+        language: languages[index % languages.length],
+        participationCondition: participationConditions[index % participationConditions.length],
         capacity: {
             current: Math.floor(Math.random() * capacity),
             max: capacity
