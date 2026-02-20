@@ -1,3 +1,4 @@
+
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { events, user, ngos, studentClubs } from '@/lib/data';
@@ -91,11 +92,7 @@ export default function EventDetailPage() {
   const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(nameQrData)}`;
 
   const socialLinks = [];
-    if (user.personalInfo.website) socialLinks.push(`URL:${user.personalInfo.website}`);
     if (user.personalInfo.social?.linkedin) socialLinks.push(`URL;TYPE=linkedin:https://linkedin.com/in/${user.personalInfo.social.linkedin}`);
-    if (user.personalInfo.social?.twitter) socialLinks.push(`URL;TYPE=twitter:https://twitter.com/${user.personalInfo.social.twitter}`);
-    if (user.personalInfo.social?.github) socialLinks.push(`URL;TYPE=github:https://github.com/${user.personalInfo.social.github}`);
-    if (user.personalInfo.social?.instagram) socialLinks.push(`URL;TYPE=instagram:https://instagram.com/${user.personalInfo.social.instagram}`);
 
     const backQrData = [
       'BEGIN:VCARD',
@@ -237,7 +234,7 @@ export default function EventDetailPage() {
           <AlertDialogTrigger asChild>
             <Button size="lg" className="w-full">Etkinliğe Katıl</Button>
           </AlertDialogTrigger>
-          <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar">
             <AlertDialogHeader>
               <AlertDialogTitle>Kaydınız Alındı!</AlertDialogTitle>
               <AlertDialogDescription>
