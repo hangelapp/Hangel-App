@@ -53,14 +53,17 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
     </Link>
 );
 
-
 export default function ClubsPage() {
   const [clubs, setClubs] = useState<StudentClub[]>([]);
-  const [activeSubTab, setActiveSubTab] = useState('all');
   const [sortConfig, setSortConfig] = useState<{ key: keyof StudentClub | 'members' | 'points'; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [universityFilter, setUniversityFilter] = useState<string[]>([]);
+  
+  // New state for redesigned filters
+  const [contentType, setContentType] = useState('clubs'); // 'clubs' or 'events'
+  const [locationFilter, setLocationFilter] = useState('all'); // 'all', 'country', 'school', 'city'
+  const [schoolTypeFilter, setSchoolTypeFilter] = useState('all'); // 'all', 'university', 'high-school'
 
   const processedEvents = useMemo(() => {
     return allEvents.map(event => {
@@ -113,6 +116,10 @@ export default function ClubsPage() {
       clubsToFilter = clubsToFilter.filter(club => universityFilter.includes(club.university));
     }
     
+    if (schoolTypeFilter !== 'all') {
+        clubsToFilter = clubsToFilter.filter(club => club.type === schoolTypeFilter);
+    }
+    
     if (!searchTerm.trim()) {
       return clubsToFilter;
     }
@@ -122,85 +129,66 @@ export default function ClubsPage() {
         club.name.toLowerCase().includes(lowercased) ||
         club.university.toLowerCase().includes(lowercased)
     );
-  }, [sortedClubs, searchTerm, universityFilter]);
+  }, [sortedClubs, searchTerm, universityFilter, schoolTypeFilter]);
 
   const finalEvents = useMemo(() => {
-      if (!searchTerm.trim()) return processedEvents;
-      const lowercased = searchTerm.toLowerCase();
-      return processedEvents.filter(event => 
-        event.name.toLowerCase().includes(lowercased) ||
-        event.club.toLowerCase().includes(lowercased)
-      );
-  }, [processedEvents, searchTerm]);
+      let events = [...processedEvents];
+      if (searchTerm.trim()) {
+          const lowercased = searchTerm.toLowerCase();
+          events = events.filter(event => 
+            event.name.toLowerCase().includes(lowercased) ||
+            event.club.toLowerCase().includes(lowercased)
+          );
+      }
+      if (schoolTypeFilter !== 'all') {
+        events = events.filter(event => {
+            const club = studentClubs.find(c => c.id === event.clubId);
+            return club?.type === schoolTypeFilter;
+        });
+    }
+    return events;
+  }, [processedEvents, searchTerm, schoolTypeFilter]);
 
-  const getEventsByType = (type?: 'university' | 'high-school') => {
-      if (!type) return finalEvents;
-      return finalEvents.filter(event => {
-          const club = studentClubs.find(c => c.id === event.clubId);
-          return club?.type === type;
-      });
+  const renderContent = () => {
+    if (locationFilter === 'school' || locationFilter === 'city') {
+        return <div className="text-center text-muted-foreground py-16">Bu özellik yakında aktif olacaktır.</div>
+    }
+    
+    if (contentType === 'clubs') {
+        return finalClubs.length > 0 ? (
+            <div className='space-y-3'>
+                {finalClubs.map((club) => <ClubCard key={club.id} club={club} />)}
+            </div>
+        ) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>;
+    }
+
+    if (contentType === 'events') {
+         return (
+             <div className='space-y-4'>
+                {finalEvents.length > 0 ? finalEvents.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                )) : <div className="text-center text-muted-foreground p-8">Etkinlik bulunamadı.</div>}
+
+                 <div className="text-center text-muted-foreground pt-8">
+                    <p>Yakında daha fazla etkinlik burada olacak.</p>
+                     <Button variant="link" asChild>
+                      <Link href="/settings">
+                        Bildirim almak için etkinlik bildirim ayarlarını aç
+                      </Link>
+                    </Button>
+                </div>
+            </div>
+         )
+    }
+
+    return null;
   };
-
-  const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
-    const filteredClubs = type ? finalClubs.filter(c => c.type === type) : finalClubs;
-    return (
-        <div className='space-y-3'>
-            {filteredClubs.length > 0 ? filteredClubs.map((club) => (
-                <ClubCard key={club.id} club={club} />
-            )) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>}
-        </div>
-    )
-  }
-  
-  const SchoolTypeTabs = () => {
-    const clubContent = (
-      <>
-        <TabsContent value="university" className="mt-4"><ClubList type="university" /></TabsContent>
-        <TabsContent value="high-school" className="mt-4"><ClubList type="high-school" /></TabsContent>
-      </>
-    );
-
-    return (
-        <Tabs defaultValue="university" className='w-full mt-2'>
-            <TabsList className='grid w-full grid-cols-2'>
-                <TabsTrigger value="university">Üniversite</TabsTrigger>
-                <TabsTrigger value="high-school">Lise</TabsTrigger>
-            </TabsList>
-            {clubContent}
-        </Tabs>
-    );
-  };
-
-  const SubTabs = () => {
-    const clubListAll = <ClubList />;
-    const schoolTypeTabs = <SchoolTypeTabs />;
-
-    return (
-        <Tabs defaultValue="all" className='w-full mt-4' onValueChange={setActiveSubTab}>
-            <TabsList className='grid w-full grid-cols-4'>
-                <TabsTrigger value="all">Tümü</TabsTrigger>
-                <TabsTrigger value="country">Ülkemde</TabsTrigger>
-                <TabsTrigger value="school">Okulumda</TabsTrigger>
-                <TabsTrigger value="city">Şehrimde</TabsTrigger>
-            </TabsList>
-            <TabsContent value="all" className="mt-4">
-                {['all'].includes(activeSubTab) ? schoolTypeTabs : clubListAll}
-            </TabsContent>
-            <TabsContent value="country" className="mt-4">
-                 {['country'].includes(activeSubTab) && schoolTypeTabs}
-            </TabsContent>
-            <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
-            <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
-        </Tabs>
-    )
-  };
-
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <h1 className="text-2xl font-bold font-headline">Öğrenci Kulüpleri</h1>
       
-       <div className="p-0 flex gap-2 items-center">
+       <div className="p-0 flex gap-2 items-center sticky top-14 bg-background z-10 py-2">
             <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -251,65 +239,35 @@ export default function ClubsPage() {
             </DropdownMenu>
       </div>
 
-       <Tabs defaultValue="clubs" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="clubs">Kulüpler</TabsTrigger>
-            <TabsTrigger value="events">Etkinlikler</TabsTrigger>
-        </TabsList>
-        <TabsContent value="clubs" className="mt-4">
-            <SubTabs />
-        </TabsContent>
-        <TabsContent value="events" className="mt-4">
-            <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
-                    <TabsTrigger value="country">Ülkemde</TabsTrigger>
-                    <TabsTrigger value="school">Okulumda</TabsTrigger>
-                    <TabsTrigger value="city">Şehrimde</TabsTrigger>
-                    <TabsTrigger value="university">Üniversite</TabsTrigger>
-                    <TabsTrigger value="high-school">Lise</TabsTrigger>
+       <div className="space-y-3">
+            <Tabs value={contentType} onValueChange={setContentType}>
+                <TabsList className="grid w-full grid-cols-2 p-1 h-12 rounded-2xl bg-muted/50">
+                    <TabsTrigger value="clubs" className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Kulüpler</TabsTrigger>
+                    <TabsTrigger value="events" className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Etkinlikler</TabsTrigger>
                 </TabsList>
-                <TabsContent value="all" className="mt-4">
-                    <div className='space-y-4'>
-                        {finalEvents.length > 0 ? finalEvents.map((event) => (
-                            <EventCard key={event.id} event={event} />
-                        )) : <div className="text-center text-muted-foreground p-8">Etkinlik bulunamadı.</div>}
-                    </div>
-                </TabsContent>
-                <TabsContent value="country" className="mt-4">
-                    <div className='space-y-4'>
-                        {finalEvents.length > 0 ? finalEvents.map((event) => (
-                            <EventCard key={event.id} event={event} />
-                        )) : <div className="text-center text-muted-foreground p-8">Etkinlik bulunamadı.</div>}
-                    </div>
-                </TabsContent>
-                <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki etkinlikler yakında burada.</TabsContent>
-                <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki etkinlikler yakında burada.</TabsContent>
-                <TabsContent value="university" className="mt-4">
-                    <div className='space-y-4'>
-                        {getEventsByType('university').length > 0 ? getEventsByType('university').map((event) => (
-                            <EventCard key={event.id} event={event} />
-                        )) : <div className="text-center text-muted-foreground p-8">Üniversite etkinliği bulunamadı.</div>}
-                    </div>
-                </TabsContent>
-                <TabsContent value="high-school" className="mt-4">
-                     <div className='space-y-4'>
-                        {getEventsByType('high-school').length > 0 ? getEventsByType('high-school').map((event) => (
-                            <EventCard key={event.id} event={event} />
-                        )) : <div className="text-center text-muted-foreground p-8">Lise etkinliği bulunamadı.</div>}
-                    </div>
-                </TabsContent>
             </Tabs>
-             <div className="text-center text-muted-foreground pt-8">
-                <p>Yakında daha fazla etkinlik burada olacak.</p>
-                 <Button variant="link" asChild>
-                  <Link href="/settings">
-                    Bildirim almak için etkinlik bildirim ayarlarını aç
-                  </Link>
-                </Button>
-            </div>
-        </TabsContent>
-    </Tabs>
+
+            <Tabs value={locationFilter} onValueChange={setLocationFilter}>
+                <TabsList className="grid w-full grid-cols-4 p-1 h-11 rounded-2xl bg-muted/50">
+                    <TabsTrigger value="all" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Tümü</TabsTrigger>
+                    <TabsTrigger value="country" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Ülkemde</TabsTrigger>
+                    <TabsTrigger value="school" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Okulumda</TabsTrigger>
+                    <TabsTrigger value="city" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Şehrimde</TabsTrigger>
+                </TabsList>
+            </Tabs>
+            
+            <Tabs value={schoolTypeFilter} onValueChange={setSchoolTypeFilter}>
+                <TabsList className="grid w-full grid-cols-3 p-1 h-11 rounded-2xl bg-muted/50">
+                    <TabsTrigger value="all" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Tümü</TabsTrigger>
+                    <TabsTrigger value="university" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Üniversite</TabsTrigger>
+                    <TabsTrigger value="high-school" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Lise</TabsTrigger>
+                </TabsList>
+            </Tabs>
+        </div>
+
+        <div className="mt-6">
+            {renderContent()}
+        </div>
     </div>
   );
 }
