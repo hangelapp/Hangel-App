@@ -77,7 +77,7 @@ export default function EventDetailPage() {
     }
   }
   
-  const contactQrData = `MECARD:N:${user.name};TEL:${user.personalInfo.phone};EMAIL:${user.personalInfo.email};;`;
+  const contactQrData = `MECARD:N:${user.name};EMAIL:${user.personalInfo.email};;`;
   const contactQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(contactQrData)}`;
 
   const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yy')}`;
@@ -204,14 +204,14 @@ export default function EventDetailPage() {
           <AlertDialogTrigger asChild>
             <Button size="lg" className="w-full">Etkinliğe Katıl</Button>
           </AlertDialogTrigger>
-          <AlertDialogContent className="max-w-md">
+          <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <AlertDialogHeader>
               <AlertDialogTitle>Kaydınız Alındı!</AlertDialogTitle>
               <AlertDialogDescription>
                 Etkinlik için QR kodlu yaka kartınız oluşturuldu. Etkinlik girişinde bu QR kodu göstermeniz gerekmektedir.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="my-4 grid grid-cols-1 gap-4">
+            <div className="my-4 flex flex-col items-center gap-4">
                 {/* Front Side */}
                 <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
                     <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
@@ -243,21 +243,15 @@ export default function EventDetailPage() {
 
                 {/* Back Side */}
                 <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
-                    <div className="p-3 bg-muted/50 text-center font-bold border-b text-sm">Acil Durum Bilgileri</div>
+                    <div className="p-3 bg-muted/50 text-center font-bold border-b text-sm">Kişisel Bilgiler</div>
                     <div className="p-4 flex-1 flex flex-col justify-center items-center text-center space-y-4">
                         <div className="my-2">
                             <Image src={contactQrCodeUrl} alt="İletişim QR Kodu" width={100} height={100} className="mx-auto rounded-lg border-2 border-primary/50 p-0.5" />
                         </div>
-                        <div className="text-xs space-y-2 text-left w-full">
+                        <div className="text-sm space-y-2 text-left w-full">
                            <div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> <span className="font-bold">{user.name}</span></div>
+                           <div className="flex items-center gap-2"><School className="h-4 w-4 text-primary" /> <span>{user.volunteerInfo.education[0]?.school || 'Eğitim Bilgisi Yok'}</span></div>
                            <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> <span>{user.personalInfo.email}</span></div>
-                           <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> <span>{user.personalInfo.phone}</span></div>
-                           <div className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-primary" /> <span>Kan Grubu: {user.personalInfo.bloodType}</span></div>
-                        </div>
-                         <div className="text-xs space-y-2 text-left w-full pt-2 border-t">
-                            <p className="font-bold">Acil Durum Kişisi:</p>
-                           <div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-muted-foreground" /> <span>{user.volunteerInfo.emergency.emergencyContacts[0].name}</span></div>
-                           <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> <span>{user.volunteerInfo.emergency.emergencyContacts[0].phone}</span></div>
                         </div>
                     </div>
                      <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
