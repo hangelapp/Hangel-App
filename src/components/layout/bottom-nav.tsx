@@ -58,7 +58,7 @@ export default function AppBottomNav() {
             >
               <Icon className="h-6 w-6" />
               <span className="text-[10px] font-medium truncate w-full">
-                {isMounted ? t(item.label) : ''}
+                {isMounted ? t(item.label) : '\u00A0'}
               </span>
             </Link>
           );
