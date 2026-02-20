@@ -1,4 +1,3 @@
-
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -187,7 +186,7 @@ export default function EmergencyPage() {
                         <Textarea 
                             id="disaster-details" 
                             placeholder="Durumu kısaca açıklayın. Örn: 'Bina çökmesi', 'Büyük trafik kazası', 'Ormanlık alanda duman görülüyor'..."
-                            className="min-h-[80px]"
+                            className="min-h-[80px] placeholder:text-xs"
                         />
                     </div>
                     <div className="py-2">
@@ -325,3 +324,4 @@ export default function EmergencyPage() {
     </div>
   );
 }
+    
