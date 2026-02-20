@@ -53,6 +53,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
 
 // New component for the large feature cards
 const FeatureShowcaseCard = ({
@@ -129,6 +130,9 @@ const AdvantageCarouselCard = ({
 
 export default function NgoOnboardingPage() {
     const router = useRouter();
+    const plugin = React.useRef(
+        Autoplay({ delay: 3000, stopOnInteraction: true })
+    );
 
     const advantageItems = [
         { 
@@ -252,49 +256,37 @@ export default function NgoOnboardingPage() {
                 </div>
             </section>
             
-            <section className="container mx-auto px-4 py-16 text-center">
-                <div className="max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight mb-4">Neden Hangel'e Katılmalısınız?</h2>
-                    <p className="text-muted-foreground mb-8">
-                        Dijital dönüşümden sürdürülebilir kaynak yaratmaya kadar, STK'nızın etkisini en üst düzeye çıkaracak araçları keşfedin.
-                    </p>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="lg" className="rounded-full px-10 h-12">
-                                5 Temel Avantajı Keşfedin
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-7xl w-full bg-transparent border-none shadow-none p-0">
-                            <div className="py-12">
-                                <DialogHeader className="text-center mb-8">
-                                    <DialogTitle className="text-4xl font-bold text-white">Neden Hangel'e Katılmalısınız?</DialogTitle>
-                                </DialogHeader>
-                                <Carousel
-                                    opts={{
-                                    align: "start",
-                                    }}
-                                    className="w-full"
-                                >
-                                    <CarouselContent className="-ml-4">
-                                        {advantageItems.map((item, index) => (
-                                            <CarouselItem key={index} className="pl-4 sm:basis-1/2 md:basis-1/3 xl:basis-1/4">
-                                                <div className="h-[420px] p-1">
-                                                <AdvantageCarouselCard {...item} />
-                                                </div>
-                                            </CarouselItem>
-                                        ))}
-                                    </CarouselContent>
-                                    <CarouselPrevious className="ml-20 hidden xl:flex" />
-                                    <CarouselNext className="mr-20 hidden xl:flex" />
-                                </Carousel>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
+            <section className="py-20 bg-[#f5f5f7] border-y">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-12 space-y-2">
+                        <h2 className="text-3xl font-bold tracking-tight">Neden Hangel'e Katılmalısınız?</h2>
+                        <p className="text-muted-foreground">Dijital dönüşümden sürdürülebilir kaynak yaratmaya kadar, STK'nızın etkisini en üst düzeye çıkaracak araçları keşfedin.</p>
+                    </div>
+                    <Carousel
+                        plugins={[plugin.current]}
+                        opts={{ align: "start" }}
+                        className="w-full"
+                    >
+                        <CarouselContent className="-ml-4">
+                            {advantageItems.map((item, index) => (
+                                <CarouselItem key={index} className="pl-4 sm:basis-1/2 md:basis-1/3 xl:basis-1/4">
+                                    <div className="h-[420px] p-1">
+                                    <AdvantageCarouselCard {...item} />
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <div className="hidden xl:flex justify-end gap-2 mt-8">
+                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
+                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
+                        </div>
+                    </Carousel>
                 </div>
             </section>
 
+
             {/* Main Features Grid */}
-            <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-24 bg-[#f5f5f7] p-6 rounded-[3rem]">
+            <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 my-24 bg-white">
                 {mainFeatures.map(feature => <FeatureShowcaseCard key={feature.title} {...feature} />)}
             </section>
 
