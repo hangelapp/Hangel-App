@@ -234,7 +234,7 @@ export default function NgoOnboardingPage() {
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight uppercase">STK'lar İçin</span>
+                    <span className="text-[12px] font-bold tracking-tight uppercase">hangel STK</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
                         <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
                     </Button>
@@ -248,10 +248,10 @@ export default function NgoOnboardingPage() {
                     <span className="text-xs font-bold tracking-widest uppercase">hangel STK</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                    STK Yöneticisi, Müjde!
+                    STK yöneticisi, müjde!
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                    Profesyonel yetkinlik, hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform "hangel.org artık yayında ve Türkiye’de faaliyette."
+                    Profesyonel yetkinlik, hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform <span className="text-primary">"hangel.org artık yayında ve Türkiye’de faaliyette."</span>
                 </p>
                  <div className="max-w-2xl mx-auto text-left text-foreground/80 space-y-4 pt-6 border-t">
                     <p>Biliyoruz, en temel iki probleminiz düzenli gelir ve profesyonel iş gücü.</p>
@@ -285,11 +285,9 @@ export default function NgoOnboardingPage() {
                                 </CarouselItem>
                             ))}
                         </CarouselContent>
-                        <div className="flex justify-end gap-2 mt-8 px-6">
-                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10 md:hidden" />
-                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10 md:hidden" />
-                             <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10 hidden md:flex" />
-                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10 hidden md:flex" />
+                        <div className="hidden md:flex justify-end gap-2 mt-8 px-6">
+                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
+                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
                         </div>
                     </Carousel>
                 </div>
@@ -317,7 +315,7 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-24">
                 <div className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-[3rem] p-12 text-center space-y-8">
                     <Sparkles className="h-12 w-12 text-primary mx-auto" />
-                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight relative z-10">Gelin, gücü birleştirelim. Gerçek etki üretelim.</h2>
+                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight relative z-10">İş Ortağımız Olun.</h2>
                     <p className="text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto relative z-10">
                         Sosyal sorunlar bireysel değil, çözümleri de öyle olmamalı. Sosyal sorunlarla mücadelede çözümün bir parçası olun, ürün ve hizmetlerinizi sivil toplum kuruluşlarıyla buluşturun.
                     </p>
