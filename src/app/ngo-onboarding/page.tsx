@@ -96,29 +96,29 @@ const ToolGridItem = ({ icon: Icon, title, description, tag }: { icon: any, titl
     </div>
 );
 
-const RequirementItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
+const AdvantageItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
     <div className="flex items-start gap-4 text-left p-4 bg-muted/50 rounded-xl">
         <div className="p-2.5 bg-background rounded-lg border shadow-sm">
-        <Icon className="h-5 w-5 text-primary" />
+            <Icon className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1">
-        <h4 className="font-bold text-foreground">{title}</h4>
-        <p className="text-sm text-muted-foreground leading-snug">{description}</p>
+            <h4 className="font-bold text-foreground">{title}</h4>
+            <p className="text-sm text-muted-foreground leading-snug">{description}</p>
         </div>
     </div>
 );
 
 export default function NgoOnboardingPage() {
     const router = useRouter();
-    
-    const fiveRequirements = [
-        { icon: Landmark, title: "Yasal Statü", description: "Türkiye'de kurulu bir dernek veya vakıf olmak." },
-        { icon: FileText, title: "Faaliyet Belgesi", description: "İlgili mülki idare amirliğinden alınmış güncel faaliyet belgesi." },
-        { icon: BookCopy, title: "Tüzük veya Vakıf Senedi", description: "Kuruluşun güncel resmi tüzüğünü veya vakıf senedini sunmak." },
-        { icon: BarChart3, title: "Finansal Şeffaflık", description: "Mali tabloları periyodik olarak paylaşma taahhüdü." },
-        { icon: CreditCard, title: "Resmi Banka Hesabı", description: "Kuruluş adına açılmış, bağışların aktarılacağı resmi bir IBAN." },
-    ];
 
+    const advantageItems = [
+        { icon: Sparkles, title: "Dijital Dönüşüm", description: "Kurumsal web sitenizden CRM'e, tüm dijital araçlarınızı tek yerden yönetin." },
+        { icon: HandCoins, title: "Sürdürülebilir Kaynak", description: "Alışverişle bağış modeli sayesinde sürekli ve yeni bir gelir akışı sağlayın." },
+        { icon: Users, title: "Nitelikli Gönüllü Ağı", description: "Yetkinlik bazlı filtreleme ile projenize en uygun, yetenekli gönüllülere ulaşın." },
+        { icon: ShieldCheck, title: "Artan Güven ve Şeffaflık", description: "Şeffaflık Endeksi ile bağışçıların ve destekçilerin güvenini kazanın." },
+        { icon: BarChart3, title: "Veriye Dayalı Etki", description: "Faaliyetlerinizin sosyal etkisini ölçün, analiz edin ve şeffaf raporlar oluşturun." },
+    ];
+    
     const mainFeatures = [
         { 
             icon: ShieldCheck,
@@ -200,22 +200,22 @@ export default function NgoOnboardingPage() {
             
             <section className="container mx-auto px-4 py-16 text-center">
                 <div className="max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight mb-4">Başvuru Öncesi Kontrol Listesi</h2>
+                    <h2 className="text-3xl font-bold tracking-tight mb-4">Neden Hangel'e Katılmalısınız?</h2>
                     <p className="text-muted-foreground mb-8">
-                        Başvurunuzu hızlı ve sorunsuz bir şekilde tamamlamak için aşağıdaki 5 temel kriteri sağladığınızdan emin olun.
+                        Dijital dönüşümden sürdürülebilir kaynak yaratmaya kadar, STK'nızın etkisini en üst düzeye çıkaracak araçları keşfedin.
                     </p>
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="outline" size="lg" className="rounded-full px-10 h-12">
-                                5 Temel Kriteri Görüntüle
+                                5 Temel Avantajı Keşfedin
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-lg">
+                        <DialogContent className="sm:max-w-md">
                              <DialogHeader>
-                                <DialogTitle className="text-2xl font-bold text-center">Başvuru İçin 5 Temel Kriter</DialogTitle>
+                                <DialogTitle className="text-2xl font-bold text-center">Etkinizi Katlayın</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
-                                {fiveRequirements.map((req, i) => <RequirementItem key={i} {...req} />)}
+                                {advantageItems.map((item, i) => <AdvantageItem key={i} {...item} />)}
                             </div>
                         </DialogContent>
                     </Dialog>
