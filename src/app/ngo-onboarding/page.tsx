@@ -28,7 +28,10 @@ import {
     ShoppingCart,
     ChevronRight,
     ArrowLeft,
-    Sparkles
+    Sparkles,
+    Briefcase,
+    Network,
+    LineChart
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -62,7 +65,7 @@ const AdvantageCard = ({
   link: { label: string, href: string };
 }) => (
   <div className="bg-white rounded-[1.75rem] h-full flex flex-col text-left overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 group border border-black/5">
-    <div className="relative aspect-video w-full overflow-hidden">
+    <div className="relative aspect-[16/10] w-full overflow-hidden">
       <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
     </div>
     <div className="p-6 flex flex-col flex-1">
@@ -110,17 +113,19 @@ const FeatureShowcaseCard = ({
 
 
 // New component for smaller feature items
-const ToolGridItem = ({ icon: Icon, title, description, tag }: { icon: any, title: string, description: string, tag?: string }) => (
-    <div className="relative flex flex-col items-center text-center gap-4 p-6 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all">
-        {tag && (
-            <Badge className="absolute -top-2 right-4">{tag}</Badge>
-        )}
-        <div className="p-4 bg-[#f5f5f7] rounded-2xl text-primary">
-            <Icon className="h-7 w-7" />
+const ToolGridItem = ({ icon: Icon, title, description, tag, href }: { icon: any, title: string, description: string, tag?: string, href: string }) => (
+    <Link href={href} className="group block h-full">
+        <div className="relative flex flex-col items-center text-center gap-4 p-6 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all h-full">
+            {tag && (
+                <Badge className="absolute -top-2 right-4">{tag}</Badge>
+            )}
+            <div className="p-4 bg-[#f5f5f7] rounded-2xl text-primary">
+                <Icon className="h-7 w-7" />
+            </div>
+            <h4 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">{title}</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed flex-1">{description}</p>
         </div>
-        <h4 className="font-bold text-lg leading-tight">{title}</h4>
-        <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
-    </div>
+    </Link>
 );
 
 export default function NgoOnboardingPage() {
@@ -195,26 +200,29 @@ export default function NgoOnboardingPage() {
         }
     ];
 
-     const toolsetFeatures = [
-        { icon: Users, title: "Yetkili Yönetimi", description: "Ekibinize farklı roller tanımlayın, panel yetkilerini güvenle dağıtın." },
-        { icon: QrCode, title: "STK Profil QR Kodu", description: "Fiziksel alanlarda kurum profilinize anında erişim sağlayın." },
-        { icon: Globe, title: "Web Sitesi Yönetimi", description: "Kurumsal kimliğinize özel web sitesi scriptlerini kolayca yönetin." },
-        { icon: MessageSquare, title: "SMS Gönderimi", description: "Önemli duyurularınızı gönüllülerinize SMS ile anında ulaştırın." },
-        { icon: Mail, title: "Mail Gönderimi", description: "E-bültenlerinizle bağışçılarınızı düzenli olarak bilgilendirin." },
-        { icon: Megaphone, title: "Reklam Yönetimi", description: "Platform içi görünürlüğünüzü artırın, hedef kitleye doğrudan ulaşın.", tag: "Yeni" },
-        { icon: Calendar, title: "Etkinlik Yönetimi", description: "Saha veya online etkinliklerinizi planlayın, kayıtları takip edin." },
-        { icon: Video, title: "Online Eğitim & Toplantı", description: "Gönüllülerinize uzaktan eğitimler verin, toplantılar düzenleyin." },
-        { icon: Palette, title: "Tasarım Programları", description: "Görsel materyalleriniz için profesyonel tasarım araçlarına erişin." },
-        { icon: CreditCard, title: "Pos & Ödeme Sistemleri", description: "Kurumsal ödeme altyapınızı platform ile entegre edin." },
-        { icon: Target, title: "Pazarlama İletişimi", description: "Topluluğunuzla kurduğunuz bağı profesyonel araçlarla büyütün." },
-        { icon: Calculator, title: "Ön Muhasebe Yönetimi", description: "Finansal hareketlerinizi ve hak edişlerinizi şeffafça izleyin.", tag: "Beta" },
-        { icon: Database, title: "CRM Yönetimi", description: "Bağışçı ve gönüllü veri tabanınızı modern bir yapıda tutun." },
-        { icon: PhoneCall, title: "Sanal Santral Yönetimi", description: "Kurumsal telefon ve çağrı merkezi altyapınızı yönetin." },
-        { icon: Building2, title: "Sanal ve Fiziki Ofis", description: "İşbirliği ağımızdaki ofis ve toplantı alanlarından faydalanın." },
-        { icon: GraduationCap, title: "Üniversite Gönüllük Dersi", description: "Akademik kredi kapsamında binlerce öğrenciye kapılarınızı açın." },
-        { icon: MapPin, title: "Saha Ekip Yönetimi", description: "Saha operasyonlarınızı canlı harita ve araçlarla takip edin.", tag: "Yeni" },
-        { icon: MessageCircle, title: "DM Mesajlaşma Merkezi", description: "Destekçilerinizle anlık ve kurumsal bir dille mesajlaşın." },
-        { icon: ShoppingCart, title: "İktisadi İşletme Yönetimi", description: "Kurumsal ürünlerinizin satış süreçlerini dijitalleştirin." },
+    const toolsetFeatures = [
+        { href: '/ngo-admin/users', icon: Users, title: "Yetkili Yönetimi", description: "Ekibinize farklı roller tanımlayın, panel yetkilerini güvenle dağıtın." },
+        { href: '/ngo-admin/qr', icon: QrCode, title: "STK Profil QR Kodu", description: "Fiziksel alanlarda kurum profilinize anında erişim sağlayın." },
+        { href: '/ngo-admin/website', icon: Globe, title: "Web Sitesi Yönetimi", description: "Kurumsal kimliğinize özel web sitesi scriptlerini kolayca yönetin." },
+        { href: '/ngo-admin/sms', icon: MessageSquare, title: "SMS Gönderimi", description: "Önemli duyurularınızı gönüllülerinize SMS ile anında ulaştırın." },
+        { href: '/ngo-admin/mail', icon: Mail, title: "Mail Gönderimi", description: "E-bültenlerinizle bağışçılarınızı düzenli olarak bilgilendirin." },
+        { href: '/ngo-admin/ads', icon: Megaphone, title: "Reklam Yönetimi", description: "Platform içi görünürlüğünüzü artırın, hedef kitleye doğrudan ulaşın.", tag: "Yeni" },
+        { href: '/ngo-admin/events', icon: Calendar, title: "Etkinlik Yönetimi", description: "Saha veya online etkinliklerinizi planlayın, kayıtları takip edin." },
+        { href: '/ngo-admin/online-meeting', icon: Video, title: "Online Eğitim & Toplantı", description: "Gönüllülerinize uzaktan eğitimler verin, toplantılar düzenleyin." },
+        { href: '/ngo-admin/design-tools', icon: Palette, title: "Tasarım Programları", description: "Görsel materyalleriniz için profesyonel tasarım araçlarına erişin." },
+        { href: '/ngo-admin/payment-systems', icon: CreditCard, title: "Pos & Ödeme Sistemleri", description: "Kurumsal ödeme altyapınızı platform ile entegre edin." },
+        { href: '/ngo-admin/marketing', icon: Target, title: "Pazarlama İletişimi", description: "Topluluğunuzla kurduğunuz bağı profesyonel araçlarla büyütün." },
+        { href: '/ngo-admin/accounting', icon: Calculator, title: "Ön Muhasebe Yönetimi", description: "Finansal hareketlerinizi ve hak edişlerinizi şeffafça izleyin.", tag: "Beta" },
+        { href: '/ngo-admin/crm', icon: Database, title: "CRM Yönetimi", description: "Bağışçı ve gönüllü veri tabanınızı modern bir yapıda tutun." },
+        { href: '/ngo-admin/virtual-pbx', icon: PhoneCall, title: "Sanal Santral Yönetimi", description: "Kurumsal telefon ve çağrı merkezi altyapınızı yönetin." },
+        { href: '/ngo-admin/virtual-office', icon: Building2, title: "Sanal ve Fiziki Ofis", description: "İşbirliği ağımızdaki ofis ve toplantı alanlarından faydalanın." },
+        { href: '/ngo-admin/university-volunteering', icon: GraduationCap, title: "Üniversite Gönüllülük Dersi", description: "Akademik kredi kapsamında binlerce öğrenciye kapılarınızı açın." },
+        { href: '/ngo-admin/field-team', icon: MapPin, title: "Saha Ekip Yönetimi", description: "Saha operasyonlarınızı canlı harita ve araçlarla takip edin.", tag: "Yeni" },
+        { href: '/ngo-admin/dm', icon: MessageCircle, title: "DM Mesajlaşma Merkezi", description: "Destekçilerinizle anlık ve kurumsal bir dille mesajlaşın." },
+        { href: '/ngo-admin/ecommerce', icon: ShoppingCart, title: "İktisadi İşletme Yönetimi", description: "Kurumsal ürünlerinizin satış süreçlerini dijitalleştirin." },
+        { href: '/ngo-admin/hr-integration', icon: Briefcase, title: "İK Şirketleri Entegrasyonu", description: "Çalışan gönüllülüğü ve bağış eşleştirme programlarını otomatikleştirin." },
+        { href: '/ngo-admin/volunteer-portal', icon: Network, title: "Gönüllülük Portalı Entegrasyonu", description: "İlanlarınızı diğer ulusal ve global portallarla senkronize edin." },
+        { href: '/ngo-admin/analytics-tools', icon: LineChart, title: "Web Analiz Araçları", description: "Ziyaretçi trafiğinizi ve dönüşümlerinizi profesyonelce ölçümleyin." },
     ];
 
     return (
@@ -242,7 +250,7 @@ export default function NgoOnboardingPage() {
                     İyiliği Birlikte Yönetelim.
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                    Sivil toplumun dijital geleceğini birlikte inşa ediyoruz. Hangel STK, operasyonlarınızı tek bir noktadan yönetmeniz için tasarlandı.
+                    Sivil toplumun dijital geleceğini birlikte inşa ediyoruz. hangel STK, operasyonlarınızı tek bir noktadan yönetmeniz için tasarlandı.
                 </p>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
