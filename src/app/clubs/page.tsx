@@ -166,7 +166,7 @@ export default function ClubsPage() {
     if (contentType === 'events') {
          return (
              <div className='space-y-4'>
-                {finalEvents.map((event) => (
+                {finalEvents.length > 0 ? finalEvents.map((event) => (
                     <EventCard key={event.id} event={event} />
                 )) : <div className="text-center text-muted-foreground p-8">Etkinlik bulunamadı.</div>}
 
