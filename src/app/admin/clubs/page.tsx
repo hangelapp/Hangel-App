@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,11 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
-import { studentClubs, events as allEvents } from '@/lib/data';
+import { studentClubs } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import type { StudentClub, Event } from '@/lib/types';
+import type { StudentClub } from '@/lib/types';
 
 
 const ClubCard = ({ club }: { club: StudentClub }) => (
@@ -36,25 +35,6 @@ const ClubCard = ({ club }: { club: StudentClub }) => (
     </Link>
 );
 
-const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string, slug: string } }) => (
-    <Link href={`/events/${event.slug}`} key={event.id} className="block">
-        <Card className="hover:bg-accent transition-colors">
-            <CardContent className="p-4 flex gap-4 items-center">
-                <div className="p-3 bg-muted rounded-lg">
-                  <Calendar className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                    <p className="font-semibold text-base">{event.name}</p>
-                    <p className="text-sm text-muted-foreground">{event.club}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{event.date}</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </CardContent>
-        </Card>
-    </Link>
-);
-
-
 export default function StudentClubsPage() {
   const [clubs, setClubs] = useState<StudentClub[]>([]);
   const [activeSubTab, setActiveSubTab] = useState('all');
@@ -62,20 +42,6 @@ export default function StudentClubsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [universityFilter, setUniversityFilter] = useState<string[]>([]);
-
-  const processedEvents = useMemo(() => {
-    return allEvents.map(event => {
-        const club = studentClubs.find(c => c.name === event.organizer);
-        return {
-            id: event.id,
-            name: event.name,
-            slug: event.slug,
-            club: event.organizer,
-            clubId: club?.id || '1', 
-            date: event.date,
-        };
-    });
-  }, []);
 
   useEffect(() => {
     setClubs(studentClubs);
@@ -125,15 +91,6 @@ export default function StudentClubsPage() {
         club.university.toLowerCase().includes(lowercased)
     );
   }, [sortedClubs, searchTerm, universityFilter]);
-
-  const finalEvents = useMemo(() => {
-      if (!searchTerm.trim()) return processedEvents;
-      const lowercased = searchTerm.toLowerCase();
-      return processedEvents.filter(event => 
-        event.name.toLowerCase().includes(lowercased) ||
-        event.club.toLowerCase().includes(lowercased)
-      );
-  }, [processedEvents, searchTerm]);
 
   const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
     const filteredClubs = type ? finalClubs.filter(c => c.type === type) : finalClubs;
@@ -244,32 +201,7 @@ export default function StudentClubsPage() {
                 </DropdownMenuContent>
             </DropdownMenu>
       </div>
-
-       <Tabs defaultValue="clubs" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="clubs">Kulüpler</TabsTrigger>
-            <TabsTrigger value="events">Etkinlikler</TabsTrigger>
-        </TabsList>
-        <TabsContent value="clubs" className="mt-4">
-            <SubTabs />
-        </TabsContent>
-        <TabsContent value="events" className="mt-4">
-            <div className='space-y-4'>
-                {finalEvents.length > 0 ? finalEvents.map((event) => (
-                    <EventCard key={event.id} event={event} />
-                )) : <div className="text-center text-muted-foreground p-8">Etkinlik bulunamadı.</div>}
-
-                 <div className="text-center text-muted-foreground pt-8">
-                    <p>Yakında daha fazla etkinlik burada olacak.</p>
-                     <Button variant="link" asChild>
-                      <Link href="/settings">
-                        Bildirim almak için etkinlik bildirim ayarlarını aç
-                      </Link>
-                    </Button>
-                </div>
-            </div>
-        </TabsContent>
-    </Tabs>
+      <SubTabs />
     </div>
   );
 }

@@ -18,6 +18,7 @@ const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
+  { href: '/events', label: 'Etkinlikler', icon: 'calendar' },
 ];
 
 const group2Items: SideNavItem[] = [
@@ -48,6 +49,7 @@ const iconColorMap: { [key: string]: string } = {
   store: 'bg-green-500',
   building: 'bg-orange-500',
   users: 'bg-blue-500',
+  calendar: 'bg-rose-500',
   'dollar-sign': 'bg-green-600',
   'file-text': 'bg-sky-500',
   award: 'bg-amber-500',
