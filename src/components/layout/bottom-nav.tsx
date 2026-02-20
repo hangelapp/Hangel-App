@@ -9,7 +9,7 @@ import { useTranslation } from "@/components/providers/language-provider";
 
 const navItems = [
   { href: "/volunteering", icon: HeartHandshake, label: "nav.volunteering" },
-  { href: "/events", icon: Calendar, label: "nav.events" },
+  { href: "/events", icon: Calendar, label: "Events" },
   { href: "/market", icon: Store, label: "nav.market" },
   { href: "/timeline", icon: LayoutGrid, label: "nav.timeline" },
   { href: "/profile", icon: UserCircle, label: "nav.profile" },
