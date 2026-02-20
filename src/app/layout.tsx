@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from './app-shell';
 import { LanguageProvider } from '@/components/providers/language-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import AppBottomNav from '@/components/layout/bottom-nav';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -24,6 +25,7 @@ export default function RootLayout({
             <AppShell>
                 {children}
             </AppShell>
+            <AppBottomNav />
             <Toaster />
           </LanguageProvider>
         </FirebaseClientProvider>
