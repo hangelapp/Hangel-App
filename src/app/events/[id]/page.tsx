@@ -265,7 +265,10 @@ export default function EventDetailPage() {
                                  <p className="text-base font-semibold uppercase tracking-wider">Katılımcı</p>
                               </div>
                               <p className="text-2xl font-bold pt-2 whitespace-nowrap truncate">{user.name}</p>
-                              <p className="text-xs text-muted-foreground">{user.volunteerInfo.education[0]?.school || 'Eğitim Bilgisi Yok'}<br/>{user.volunteerInfo.profession && `${user.volunteerInfo.profession} @ ${user.volunteerInfo.sector}`}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {user.volunteerInfo.education[0]?.school || 'Eğitim Bilgisi Yok'}<br/>
+                                {user.volunteerInfo.profession && `${user.volunteerInfo.profession} @ ${user.volunteerInfo.sector}`}
+                              </p>
                           </div>
                       </div>
                        <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
@@ -347,4 +350,5 @@ export default function EventDetailPage() {
       </div>
     </div>
   );
-}
+
+    
