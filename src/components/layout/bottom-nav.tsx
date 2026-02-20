@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Store, Calendar, UserCircle, HeartHandshake, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/providers/language-provider";
+import React, { useState, useEffect } from 'react';
 
 const navItems = [
   { href: "/volunteering", icon: HeartHandshake, label: "nav.volunteering" },
@@ -18,6 +19,12 @@ const navItems = [
 export default function AppBottomNav() {
   const { t } = useTranslation();
   const pathname = usePathname();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
   if (isAuthPage) {
@@ -50,7 +57,9 @@ export default function AppBottomNav() {
               )}
             >
               <Icon className="h-6 w-6" />
-              <span className="text-[10px] font-medium truncate w-full">{t(item.label)}</span>
+              <span className="text-[10px] font-medium truncate w-full">
+                {isMounted ? t(item.label) : <>&nbsp;</>}
+              </span>
             </Link>
           );
         })}
