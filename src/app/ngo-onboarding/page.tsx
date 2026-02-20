@@ -97,33 +97,27 @@ const ToolGridItem = ({ icon: Icon, title, description, tag }: { icon: any, titl
 );
 
 const RequirementItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-  <div className="flex items-start gap-4">
-    <div className="p-2 bg-muted rounded-lg mt-1">
-      <Icon className="h-5 w-5 text-primary" />
+    <div className="flex items-start gap-4 text-left p-4 bg-muted/50 rounded-xl">
+        <div className="p-2.5 bg-background rounded-lg border shadow-sm">
+        <Icon className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1">
+        <h4 className="font-bold text-foreground">{title}</h4>
+        <p className="text-sm text-muted-foreground leading-snug">{description}</p>
+        </div>
     </div>
-    <div>
-      <h4 className="font-semibold text-foreground">{title}</h4>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  </div>
 );
 
 export default function NgoOnboardingPage() {
     const router = useRouter();
     
-    const requirements = [
+    const fiveRequirements = [
         { icon: Landmark, title: "Yasal Statü", description: "Türkiye'de kurulu bir dernek veya vakıf olmak." },
         { icon: FileText, title: "Faaliyet Belgesi", description: "İlgili mülki idare amirliğinden alınmış güncel faaliyet belgesi." },
         { icon: BookCopy, title: "Tüzük veya Vakıf Senedi", description: "Kuruluşun güncel resmi tüzüğünü veya vakıf senedini sunmak." },
-        { icon: Users, title: "Yönetim Kurulu", description: "Güncel yönetim ve denetim kurulu üyelerinin listesi." },
-        { icon: BarChart3, title: "Finansal Şeffaflık", description: "Başvuru sırasında ve sonrasında mali tabloları paylaşma taahhüdü." },
-        { icon: ShieldCheck, title: "Vergi Numarası", description: "Kuruluşa ait geçerli bir vergi kimlik numarası." },
+        { icon: BarChart3, title: "Finansal Şeffaflık", description: "Mali tabloları periyodik olarak paylaşma taahhüdü." },
         { icon: CreditCard, title: "Resmi Banka Hesabı", description: "Kuruluş adına açılmış, bağışların aktarılacağı resmi bir IBAN." },
-        { icon: Mail, title: "Yetkili İletişim Bilgileri", description: "Doğrulanabilir bir e-posta, telefon ve yetkili kişi bilgisi." },
-        { icon: Heart, title: "Sosyal Fayda Misyonu", description: "Tüzükte veya senette açıkça belirtilmiş bir toplumsal fayda amacı." },
-        { icon: Handshake, title: "Platform Sözleşmeleri Onayı", description: "hangel Kullanıcı ve Kuruluş Sözleşmelerini kabul etmek." },
     ];
-
 
     const mainFeatures = [
         { 
@@ -186,7 +180,7 @@ export default function NgoOnboardingPage() {
             </header>
 
             {/* Hero Section */}
-            <section className="container mx-auto px-4 pt-32 pb-24 text-center space-y-6">
+            <section className="container mx-auto px-4 pt-32 pb-16 text-center space-y-6">
                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
                     <Sparkles className="h-4 w-4" />
                     <span className="text-xs font-bold uppercase tracking-widest">hangel HUB</span>
@@ -201,25 +195,33 @@ export default function NgoOnboardingPage() {
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
                         <Link href="/login/selection?action=register&type=corporate">Ücretsiz Başvur</Link>
                     </Button>
-                     <Dialog>
+                </div>
+            </section>
+            
+            <section className="container mx-auto px-4 py-16 text-center">
+                <div className="max-w-2xl mx-auto">
+                    <h2 className="text-3xl font-bold tracking-tight mb-4">Başvuru Öncesi Kontrol Listesi</h2>
+                    <p className="text-muted-foreground mb-8">
+                        Başvurunuzu hızlı ve sorunsuz bir şekilde tamamlamak için aşağıdaki 5 temel kriteri sağladığınızdan emin olun.
+                    </p>
+                    <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="link" className="text-primary">Başvuru Koşulları Neler?</Button>
+                            <Button variant="outline" size="lg" className="rounded-full px-10 h-12">
+                                5 Temel Kriteri Görüntüle
+                            </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                                <DialogTitle className="text-xl font-bold">STK Başvuru Gereklilikleri</DialogTitle>
-                                <DialogDescription>
-                                    hangel ekosistemine katılmak için kuruluşunuzun karşılaması gereken 10 temel kriter.
-                                </DialogDescription>
+                        <DialogContent className="sm:max-w-lg">
+                             <DialogHeader>
+                                <DialogTitle className="text-2xl font-bold text-center">Başvuru İçin 5 Temel Kriter</DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-5 py-4">
-                                {requirements.map((req, i) => <RequirementItem key={i} {...req} />)}
+                            <div className="space-y-4 py-4">
+                                {fiveRequirements.map((req, i) => <RequirementItem key={i} {...req} />)}
                             </div>
                         </DialogContent>
                     </Dialog>
                 </div>
             </section>
-            
+
             {/* Main Features Grid */}
             <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-24 bg-[#f5f5f7] p-6 rounded-[3rem]">
                 {mainFeatures.map(feature => <FeatureShowcaseCard key={feature.title} {...feature} />)}
