@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
@@ -594,10 +595,10 @@ export const studentClubs: StudentClub[] = clubNames.map((name, index) => {
         name: name,
         university: school,
         type: isHighSchool ? 'high-school' : 'university',
-        avatarUrl: `https://logo.clearbit.com/${school.toLowerCase().replace(/ /g, '').replace('ü', 'u').replace('ı', 'i').replace('ö','o').replace('ç','c').replace('ş','s').replace('ğ','g')}.edu.tr`,
+        avatarUrl: `https://logo.clearbit.com/${slugify(school)}.edu.tr`,
         coverPhotoUrl: `https://picsum.photos/seed/clubcover${index}/800/200`,
-        members: Math.floor(Math.random() * 250) + 50,
-        points: Math.floor(Math.random() * 8000) + 1000,
+        members: 50 + ((index * 37) % 250),
+        points: 1000 + ((index * 131) % 8000),
         description: `${name}, ${school} bünyesinde öğrencilerin sosyal, kültürel ve mesleki gelişimlerine katkıda bulunmak amacıyla kurulmuş aktif bir öğrenci topluluğudur. Yıl boyunca düzenlediğimiz etkinliklerle üyelerimize yeni ufuklar açmayı hedefliyoruz.`,
         vision: `Vizyonumuz, ${school} öğrencileri arasında bir sinerji yaratarak, topluma faydalı, sorumluluk sahibi ve lider ruhlu bireyler yetiştirmektir.`,
         joinDate: `2023-0${(index % 9) + 1}-1${(index % 3)}`,
@@ -606,9 +607,9 @@ export const studentClubs: StudentClub[] = clubNames.map((name, index) => {
             phone: `+90 555 10${index} 20${index + 1}`,
             website: `www.${slugify(name)}.org`
         },
-        projects: Math.floor(Math.random() * 20) + 5,
-        volunteerHours: Math.floor(Math.random() * 1000) + 200,
-        activeMemberRate: Math.floor(Math.random() * 50) + 40,
+        projects: 5 + ((index * 7) % 20),
+        volunteerHours: 200 + ((index * 61) % 1000),
+        activeMemberRate: 40 + ((index * 13) % 50),
     }
 });
 
@@ -616,9 +617,9 @@ export const events: Event[] = studentClubs.map((club, index) => {
     const eventTypes = ["Zirve", "Atölye", "Konferans", "Sosyal Etkinlik", "Yarışma", "Teknik Gezi", "Sergi", "Konser", "Söyleşi", "Turnuva"];
     const eventTags = ["Girişimcilik", "Teknoloji", "Sanat", "Müzik", "Kariyer", "Yapay Zeka", "Sosyal Sorumluluk", "Finans", "Münazara", "Robotik", "Tıp"];
     const eventType = eventTypes[index % eventTypes.length];
-    const capacity = Math.floor(Math.random() * 200) + 50;
+    const capacity = 50 + ((index * 41) % 200);
     const startHour = 9 + (index % 12);
-    const endHour = startHour + Math.floor(Math.random() * 3) + 1;
+    const endHour = startHour + 1 + (index % 3);
     const day = (index % 28) + 1;
     const eventDate = `2024-11-${day < 10 ? '0' : ''}${day}`;
     
@@ -644,7 +645,7 @@ export const events: Event[] = studentClubs.map((club, index) => {
         language: languages[index % languages.length],
         participationCondition: participationConditions[index % participationConditions.length],
         capacity: {
-            current: Math.floor(Math.random() * capacity),
+            current: Math.floor(capacity * (0.3 + ((index * 7) % 6) / 10)),
             max: capacity
         },
         tags: [eventTags[index % eventTags.length], club.university],
