@@ -102,7 +102,9 @@ export default function NgoProfilePage() {
   const [profileUrl, setProfileUrl] = useState('');
 
   useEffect(() => {
-    setProfileUrl(window.location.href);
+    if (typeof window !== 'undefined') {
+      setProfileUrl(window.location.href);
+    }
   }, []);
   
   if (!ngo) {
@@ -128,13 +130,6 @@ export default function NgoProfilePage() {
     { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
     { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
     { name: 'Etki Raporu', completed: ngo.transparencyScore > 75 },
-    { name: 'Web Sitesi', completed: true },
-    { name: 'Posta Adresi', completed: true },
-    { name: 'Ofis Adresi', completed: ngo.transparencyScore > 70 },
-    { name: 'E-posta Adresi', completed: true },
-    { name: 'Telefon Numarası', completed: true },
-    { name: 'Açık Açık Üyeliği', completed: ngo.transparencyScore > 50 },
-    { name: 'Afet Platformu Üyeliği', completed: ngo.transparencyScore > 60 },
   ];
 
   return (
@@ -187,11 +182,11 @@ export default function NgoProfilePage() {
                 </div>
             </div>
             <div className="flex gap-2">
-                <Button className="flex-1" onClick={() => toast({ title: 'Bağış yapma özelliği yakında eklenecektir.'})}>
-                     Bağışçı Ol
+                <Button asChild className="flex-1">
+                    <Link href="/market">Bağışçı Ol</Link>
                 </Button>
-                <Button variant="outline" className="flex-1" onClick={() => toast({ title: 'Gönüllülük başvurusu yakında eklenecektir.'})}>
-                    <Heart className="mr-2 h-4 w-4" /> Gönüllü Ol
+                <Button asChild variant="outline" className="flex-1">
+                    <Link href="/volunteering"><Heart className="mr-2 h-4 w-4" /> Gönüllü Ol</Link>
                 </Button>
             </div>
         </div>
@@ -377,5 +372,3 @@ export default function NgoProfilePage() {
     </div>
   );
 }
-
-    
