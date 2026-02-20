@@ -247,11 +247,16 @@ export default function NgoOnboardingPage() {
                     <span className="text-xs font-bold tracking-widest uppercase"><span className="normal-case">hangel</span> STK</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                    İyiliği Birlikte Yönetelim.
+                    STK Yöneticisi, Müjde!
                 </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                    Sivil toplumun dijital geleceğini birlikte inşa ediyoruz. hangel STK, operasyonlarınızı tek bir noktadan yönetmeniz için tasarlandı.
+                <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
+                    Düzenli gelir elde edebileceğiniz, gönüllülük ilanları verebileceğiniz, gelir modeli oluşturma ve sürdürülebilirlik eğitimleri alabileceğiniz bir platform. "hangel" Türkiye'de faaliyette. Tüm bunlar aynı uygulama üzerinden ve ücretsiz.
                 </p>
+                 <div className="max-w-2xl mx-auto text-left text-foreground/80 space-y-4 pt-6 border-t">
+                    <p>Biliyoruz, en temel iki probleminiz düzenli gelir ve profesyonel iş gücü.</p>
+                    <p><strong>hangel</strong> olarak, bu iki sorunu çözebilmeniz için markalarla iş birliği yapıyor ve kullanıcıların ceplerinden ekstra ödeme yapmadan yaptıkları alışverişlerden düzenli bağış yapmalarını sağlıyoruz.</p>
+                    <p>Ayrıca, profesyonel iş gücüne ulaşabilmeniz için her ay beş ücretsiz gönüllülük ilanı vererek gönüllülere ulaşmanıza aracılık ediyoruz.</p>
+                </div>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
                         <Link href="/login/selection?action=register&type=corporate">Ücretsiz Başvur</Link>
@@ -280,8 +285,10 @@ export default function NgoOnboardingPage() {
                             ))}
                         </CarouselContent>
                         <div className="flex justify-end gap-2 mt-8 px-6">
-                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
-                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
+                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10 md:hidden" />
+                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10 md:hidden" />
+                             <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10 hidden md:flex" />
+                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10 hidden md:flex" />
                         </div>
                     </Carousel>
                 </div>
