@@ -797,7 +797,7 @@ export const events: Event[] = studentClubs.map((club, index) => {
     const eventTypes = ["Zirve", "Atölye", "Konferans", "Sosyal Etkinlik", "Yarışma", "Teknik Gezi", "Sergi", "Konser", "Söyleşi", "Turnuva"];
     const eventTags = ["Girişimcilik", "Teknoloji", "Sanat", "Müzik", "Kariyer", "Yapay Zeka", "Sosyal Sorumluluk", "Finans", "Münazara", "Robotik", "Tıp"];
     const eventType = eventTypes[index % eventTypes.length];
-    const capacity = Math.floor(Math.random() * (151 - 50) + 50);
+    const capacity = 50 + (index * 7 % 101); // Deterministic capacity
     const startHour = 9 + (index % 10);
     const endHour = startHour + 1 + (index % 4);
     const day = (index % 28) + 1;
@@ -828,7 +828,7 @@ export const events: Event[] = studentClubs.map((club, index) => {
         language: languages[index % languages.length],
         participationCondition: participationConditions[index % participationConditions.length],
         capacity: {
-            current: Math.floor(Math.random() * (capacity - 10) + 10),
+            current: Math.floor(capacity * (0.2 + ((index * 3) % 7) / 10)), // Deterministic current capacity
             max: capacity
         },
         tags: [eventTags[index % eventTags.length], club.university],
@@ -853,6 +853,8 @@ export const schoolRepresentatives: SchoolRepresentative[] = studentClubs.map((c
 export const applications: Application[] = [];
 export const donationTransactions: DonationTransaction[] = [];
 
+
+    
 
     
 
