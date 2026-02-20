@@ -141,7 +141,7 @@ function EventsPageContent() {
                 Kapasite: {event.capacity.current} / {event.capacity.max}
               </p>
               <Button asChild variant="secondary">
-                <Link href={`/events/${event.id}`}>Detayları Gör</Link>
+                <Link href={`/events/${event.slug}`}>Detayları Gör</Link>
               </Button>
             </CardFooter>
           </Card>

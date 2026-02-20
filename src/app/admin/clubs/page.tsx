@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,7 +11,7 @@ import { studentClubs, events as allEvents } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import type { StudentClub } from '@/lib/types';
+import type { StudentClub, Event } from '@/lib/types';
 
 
 const ClubCard = ({ club }: { club: StudentClub }) => (
@@ -35,8 +36,8 @@ const ClubCard = ({ club }: { club: StudentClub }) => (
     </Link>
 );
 
-const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
-    <Link href={`/events/${event.id}`} key={event.id} className="block">
+const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string, slug: string } }) => (
+    <Link href={`/events/${event.slug}`} key={event.id} className="block">
         <Card className="hover:bg-accent transition-colors">
             <CardContent className="p-4 flex gap-4 items-center">
                 <div className="p-3 bg-muted rounded-lg">
@@ -68,6 +69,7 @@ export default function StudentClubsPage() {
         return {
             id: event.id,
             name: event.name,
+            slug: event.slug,
             club: event.organizer,
             clubId: club?.id || '1', 
             date: event.date,

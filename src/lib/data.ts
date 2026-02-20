@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
@@ -599,8 +598,8 @@ export const studentClubs: StudentClub[] = clubNames.map((name, index) => {
         category: clubCategories[index % clubCategories.length],
         avatarUrl: `https://logo.clearbit.com/${slugify(school)}.edu.tr`,
         coverPhotoUrl: `https://picsum.photos/seed/clubcover${index}/800/200`,
-        members: 50 + (index * 37) % 251,
-        points: 1000 + (index * 131) % 8001,
+        members: Math.floor(Math.random() * (251 - 50) + 50),
+        points: Math.floor(Math.random() * (8001 - 1000) + 1000),
         description: `${name}, ${school} bünyesinde öğrencilerin sosyal, kültürel ve mesleki gelişimlerine katkıda bulunmak amacıyla kurulmuş aktif bir öğrenci topluluğudur. Yıl boyunca düzenlediğimiz etkinliklerle üyelerimize yeni ufuklar açmayı hedefliyoruz.`,
         vision: `Vizyonumuz, ${school} öğrencileri arasında bir sinerji yaratarak, topluma faydalı, sorumluluk sahibi ve lider ruhlu bireyler yetiştirmektir.`,
         joinDate: `2023-0${(index % 9) + 1}-1${(index % 3)}`,
@@ -609,9 +608,9 @@ export const studentClubs: StudentClub[] = clubNames.map((name, index) => {
             phone: `+90 555 10${index} 20${index + 1}`,
             website: `www.${slugify(name)}.org`
         },
-        projects: 5 + (index % 13),
-        volunteerHours: 200 + (index % 801),
-        activeMemberRate: 40 + (index % 51),
+        projects: Math.floor(Math.random() * (13 - 5) + 5),
+        volunteerHours: Math.floor(Math.random() * (801 - 200) + 200),
+        activeMemberRate: Math.floor(Math.random() * (51 - 40) + 40),
     }
 });
 
@@ -798,19 +797,22 @@ export const events: Event[] = studentClubs.map((club, index) => {
     const eventTypes = ["Zirve", "Atölye", "Konferans", "Sosyal Etkinlik", "Yarışma", "Teknik Gezi", "Sergi", "Konser", "Söyleşi", "Turnuva"];
     const eventTags = ["Girişimcilik", "Teknoloji", "Sanat", "Müzik", "Kariyer", "Yapay Zeka", "Sosyal Sorumluluk", "Finans", "Münazara", "Robotik", "Tıp"];
     const eventType = eventTypes[index % eventTypes.length];
-    const capacity = 50 + (index * 13) % 151;
+    const capacity = Math.floor(Math.random() * (151 - 50) + 50);
     const startHour = 9 + (index % 10);
     const endHour = startHour + 1 + (index % 4);
     const day = (index % 28) + 1;
     const eventDate = `2024-11-${day < 10 ? '0' : ''}${day}`;
+    const eventName = `${club.name} ${eventType}si`;
+    const eventId = `evt${index + 1}`;
     
     const locations = ["Çevrimiçi", "Kampüs Konferans Salonu", "Kültür Merkezi", "Belediye Salonu", "Partner Ofisi"];
     const participationConditions: ('Herkese Açık' | 'Üyelere Özel' | 'Öğrencilere Özel' | 'Davetlilere Özel')[] = ['Herkese Açık', 'Üyelere Özel', 'Öğrencilere Özel'];
     const languages = ["Türkçe", "İngilizce"];
 
     return {
-        id: `evt${index + 1}`,
-        name: `${club.name} ${eventType}si`,
+        id: eventId,
+        slug: `${slugify(eventName)}-${eventId}`,
+        name: eventName,
         organizer: club.name,
         type: eventType,
         date: eventDate, 
@@ -820,13 +822,13 @@ export const events: Event[] = studentClubs.map((club, index) => {
         location: {
             type: index % 4 === 0 ? 'Online' : 'Fiziksel',
             address: locations[index % locations.length],
-            city: universityToCityMap[club.university] || club.university.split(' ')[0],
+            city: universityToCityMap[club.university] || (club.university.split(' ')[0] || "İstanbul"),
             district: 'Kampüs'
         },
         language: languages[index % languages.length],
         participationCondition: participationConditions[index % participationConditions.length],
         capacity: {
-            current: Math.floor(capacity * (0.3 + (index % 7) / 10)),
+            current: Math.floor(Math.random() * (capacity - 10) + 10),
             max: capacity
         },
         tags: [eventTags[index % eventTags.length], club.university],

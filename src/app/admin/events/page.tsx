@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { events as allEvents, studentClubs } from '@/lib/data';
 
-const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string } }) => (
+const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string, slug: string } }) => (
     <Card key={event.id}>
         <CardHeader>
              <Link href={`/admin/clubs/profile/${event.clubId}`} className="text-sm text-muted-foreground hover:underline">{event.club}</Link>
@@ -24,7 +25,7 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
         </CardContent>
         <CardFooter>
             <Button asChild variant="secondary" className="w-full">
-                <Link href={`/events/${event.id}`}>Detayları Gör</Link>
+                <Link href={`/events/${event.slug}`}>Detayları Gör</Link>
             </Button>
         </CardFooter>
     </Card>
@@ -42,6 +43,7 @@ export default function StudentClubEventsPage() {
             return {
                 id: event.id,
                 name: event.name,
+                slug: event.slug,
                 club: event.organizer,
                 clubId: club?.id || '1',
                 date: event.date,

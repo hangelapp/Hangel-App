@@ -60,16 +60,16 @@ const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementTyp
 export default function EventDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
-  const event = events.find(e => e.id === id);
+  const slug = params.id as string;
+  const event = events.find(e => e.slug === slug);
   const [profileUrl, setProfileUrl] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setProfileUrl(window.location.href);
+    if (typeof window !== 'undefined' && event) {
+      setProfileUrl(`${window.location.origin}/events/${event.slug}`);
     }
-  }, []);
+  }, [event]);
 
   if (!event) {
     notFound();
@@ -165,7 +165,7 @@ export default function EventDetailPage() {
                                 <Link href={`/ngos?category=${encodeURIComponent(organizerCategory)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{organizerCategory}</Badge></Link>
                             </InfoRow>
                         )}
-                        <InfoRow icon={Building} label="Düzenleyen Kurum">
+                        <InfoRow icon={Building} label="Düzenleyen">
                             <Link href={organizerLink} className="text-muted-foreground hover:underline">{event.organizer}</Link>
                         </InfoRow>
                         <InfoRow icon={MapPin} label="İl">
@@ -303,6 +303,7 @@ export default function EventDetailPage() {
                                 <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-primary" /> <span>{user.volunteerInfo.profession} @ {user.volunteerInfo.sector}</span></div>
                               )}
                              <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> <span>{user.personalInfo.email}</span></div>
+                             <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> <span>{user.personalInfo.phone}</span></div>
                           </div>
                       </div>
                        <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>

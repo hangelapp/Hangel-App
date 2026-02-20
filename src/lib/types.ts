@@ -142,6 +142,7 @@ export type NGO = {
 
 export type Event = {
   id: string;
+  slug: string;
   name: string;
   organizer: string;
   type: string; // Kategori
