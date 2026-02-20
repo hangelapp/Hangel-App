@@ -55,6 +55,40 @@ import {
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
 
+const AdvantageCard = ({
+  category,
+  title,
+  description,
+  imageUrl,
+  imageHint,
+  link
+}: {
+  category: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
+  link: { label: string, href: string };
+}) => (
+  <div className="bg-white rounded-3xl h-full flex flex-col text-left overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 group">
+    <div className="relative aspect-video w-full overflow-hidden">
+      <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
+    </div>
+    <div className="p-6 flex flex-col flex-1">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{category}</p>
+      <h3 className="text-xl font-bold mt-2 text-foreground">{title}</h3>
+      <p className="text-sm text-muted-foreground mt-2 flex-1 leading-relaxed">{description}</p>
+      <div className="mt-4 pt-4">
+        <Link href={link.href} className="text-sm text-primary hover:underline flex items-center">
+          {link.label}
+          <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </Link>
+      </div>
+    </div>
+  </div>
+);
+
+
 // New component for the large feature cards
 const FeatureShowcaseCard = ({
   title,
@@ -98,36 +132,6 @@ const ToolGridItem = ({ icon: Icon, title, description, tag }: { icon: any, titl
     </div>
 );
 
-const AdvantageCarouselCard = ({
-  title,
-  description,
-  imageUrl,
-  imageHint,
-  dark,
-}: {
-  title: string;
-  description: string;
-  imageUrl: string;
-  imageHint: string;
-  dark?: boolean;
-}) => (
-  <div className={cn(
-      "rounded-2xl overflow-hidden h-full flex flex-col text-left shadow-lg",
-      dark ? "bg-black text-white" : "bg-[#f5f5f7] text-black"
-  )}>
-    <div className="relative w-full aspect-video bg-black">
-      <Image src={imageUrl} alt={title} fill className="object-cover" data-ai-hint={imageHint} />
-    </div>
-    <div className="p-5 flex flex-col flex-1">
-        <h3 className="font-semibold text-lg">{title}</h3>
-        <p className={cn("text-sm mt-1 flex-1", dark ? "text-white/70" : "text-muted-foreground")}>{description}</p>
-        <Button variant="link" className={cn("p-0 self-start mt-4", dark ? "text-blue-500" : "text-primary")}>
-            Daha fazla bilgi <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
-    </div>
-  </div>
-);
-
 export default function NgoOnboardingPage() {
     const router = useRouter();
     const plugin = React.useRef(
@@ -135,48 +139,48 @@ export default function NgoOnboardingPage() {
     );
 
     const advantageItems = [
-        { 
-            icon: Sparkles, 
-            title: "Dijital Dönüşüm", 
-            description: "Kurumsal web sitenizden CRM'e, tüm dijital araçlarınızı tek yerden yönetin.",
-            imageUrl: 'https://picsum.photos/seed/digital/800/450',
-            imageHint: 'digital transformation abstract',
-            dark: true,
-        },
-        { 
-            icon: HandCoins, 
-            title: "Sürdürülebilir Kaynak", 
-            description: "Alışverişle bağış modeli sayesinde sürekli ve yeni bir gelir akışı sağlayın.",
-            imageUrl: 'https://picsum.photos/seed/finance/800/450',
-            imageHint: 'sustainable finance chart',
-            dark: false,
-        },
-        { 
-            icon: Users, 
-            title: "Nitelikli Gönüllü Ağı", 
-            description: "Yetkinliklerinize en uygun, yetenekli gönüllülere ulaşın.",
-            imageUrl: 'https://picsum.photos/seed/community/800/450',
-            imageHint: 'diverse group volunteers',
-            dark: true,
-        },
-        { 
-            icon: ShieldCheck, 
-            title: "Artan Güven ve Şeffaflık", 
-            description: "Şeffaflık Endeksi ile bağışçıların ve gönüllülerin güvenini kazanın.",
-            imageUrl: 'https://picsum.photos/seed/trust/800/450',
-            imageHint: 'transparent glass charts',
-            dark: false,
-        },
-        { 
-            icon: BarChart3, 
-            title: "Veriye Dayalı Etki", 
-            description: "Faaliyetlerinizin sosyal etkisini ölçün, analiz edin ve şeffaf raporlar oluşturun.",
-            imageUrl: 'https://picsum.photos/seed/data/800/450',
+        {
+            category: "DİJİTAL DÖNÜŞÜM",
+            title: "Tek Panelden Yönetim",
+            description: "Kurumsal web sitenizden CRM'e, tüm dijital araçlarınızı tek yerden yönetin. Teknik bilgiye ihtiyaç duymadan profesyonel bir dijital varlığa sahip olun.",
+            imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
             imageHint: 'data analytics dashboard',
-            dark: true,
+            link: { label: "Araçları Keşfet", href: "/ngo-admin/dashboard" }
+        },
+        {
+            category: "SÜRDÜRÜLEBİLİR KAYNAK",
+            title: "Alışverişle Bağış",
+            description: "Destekçilerinizin günlük alışverişlerini, kurumunuz için düzenli bir gelir modeline dönüştürün. Ek maliyet yok, sadece etki var.",
+            imageUrl: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop',
+            imageHint: 'contactless payment store',
+            link: { label: "Nasıl Çalışır?", href: "/market" }
+        },
+        {
+            category: "NİTELİKLİ GÖNÜLLÜ AĞI",
+            title: "Yetenek Bazlı Gönüllülük",
+            description: "Proje yönetimi, tasarım, hukuk gibi alanlarda uzmanlaşmış binlerce yetenekli gönüllüye ulaşın, projelerinizi güçlendirin.",
+            imageUrl: 'https://images.unsplash.com/photo-1521737852577-6848238f5333?q=80&w=2070&auto=format&fit=crop',
+            imageHint: 'team meeting collaboration',
+            link: { label: "Gönüllü İlanı Oluştur", href: "/ngo-admin/volunteer" }
+        },
+        {
+            category: "ARTAN GÜVEN VE ŞEFFAFLIK",
+            title: "Şeffaflık Endeksi",
+            description: "Yasal belgelerinizi ve raporlarınızı paylaşarak şeffaflık puanınızı yükseltin, bağışçıların ve gönüllülerin güvenini kazanın.",
+            imageUrl: 'https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop',
+            imageHint: 'person reviewing document',
+            link: { label: "Endeksi İncele", href: "/ngo-admin/transparency" }
+        },
+        {
+            category: "VERİYE DAYALI ETKİ",
+            title: "Demografi ve Analiz",
+            description: "Destekçi kitlenizin demografik yapısını, ilgi alanlarını ve davranışlarını analiz ederek iletişim stratejinizi veriye dayalı olarak şekillendirin.",
+            imageUrl: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?q=80&w=2076&auto=format&fit=crop',
+            imageHint: 'world map data connection',
+            link: { label: "Analizleri Gör", href: "/ngo-admin/demographics" }
         }
     ];
-    
+
     const mainFeatures = [
         { 
             icon: ShieldCheck,
@@ -214,7 +218,7 @@ export default function NgoOnboardingPage() {
         { icon: Target, title: "Pazarlama İletişimi", description: "Topluluğunuzla kurduğunuz bağı profesyonel araçlarla büyütün." },
         { icon: Calculator, title: "Ön Muhasebe Yönetimi", description: "Finansal hareketlerinizi ve hak edişlerinizi şeffafça izleyin.", tag: "Beta" },
         { icon: Database, title: "CRM Yönetimi", description: "Bağışçı ve gönüllü veri tabanınızı modern bir yapıda tutun." },
-        { icon: PhoneCall, title: "Sanal Santral Yönetimi", description: "Kurumsal iletişim numaranızı bulut tabanlı sistemle yönetin." },
+        { icon: PhoneCall, title: "Sanal Santral Yönetimi", description: "Kurumsal telefon ve çağrı merkezi altyapınızı yönetin." },
         { icon: Building2, title: "Sanal ve Fiziki Ofis", description: "İşbirliği ağımızdaki ofis ve toplantı alanlarından faydalanın." },
         { icon: GraduationCap, title: "Üniversite Gönüllük Dersi", description: "Akademik kredi kapsamında binlerce öğrenciye kapılarınızı açın." },
         { icon: MapPin, title: "Saha Ekip Yönetimi", description: "Saha operasyonlarınızı canlı harita ve araçlarla takip edin.", tag: "Yeni" },
@@ -267,11 +271,11 @@ export default function NgoOnboardingPage() {
                         opts={{ align: "start" }}
                         className="w-full"
                     >
-                        <CarouselContent className="-ml-4">
+                        <CarouselContent className="-ml-6">
                             {advantageItems.map((item, index) => (
-                                <CarouselItem key={index} className="pl-4 sm:basis-1/2 md:basis-1/3 xl:basis-1/4">
-                                    <div className="h-[420px] p-1">
-                                    <AdvantageCarouselCard {...item} />
+                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 md:basis-1/3">
+                                    <div className="h-[520px] p-1">
+                                        <AdvantageCard {...item} />
                                     </div>
                                 </CarouselItem>
                             ))}
