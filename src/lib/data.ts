@@ -574,7 +574,7 @@ export const managedItems: ManagedItem[] = [
 
 export const qrPaymentCardData = [
     { id: 'bireysel', type: 'Bireysel', number: '5549601000001234', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '12/28', balance: '1.250,75 ₺', ngoId: '1', cvv: '123', bgColor: 'bg-gradient-to-tr from-gray-900 to-gray-700' },
-    { id: 'ticari', type: 'Ticari', number: '5549601000005678', owner: 'Hangel A.Ş.', expiry: '10/27', balance: '15.450,00 ₺', ngoId: '2', cvv: '456', bgColor: 'bg-gradient-to-tr from-blue-900 to-blue-600' },
+    { id: 'ticari', type: 'Ticari', number: '5549601000005678', owner: 'hangel A.Ş.', expiry: '10/27', balance: '15.450,00 ₺', ngoId: '2', cvv: '456', bgColor: 'bg-gradient-to-tr from-blue-900 to-blue-600' },
     { id: 'ogrenci', type: 'Öğrenci', number: '5549601000009012', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '08/29', balance: '250,00 ₺', ngoId: '3', cvv: '789', bgColor: 'bg-gradient-to-tr from-rose-900 to-rose-600' }
 ];
 
@@ -847,6 +847,7 @@ export const schoolRepresentatives: SchoolRepresentative[] = studentClubs.map((c
     role: `Kulüp Başkanı`,
     avatarUrl: `https://i.pravatar.cc/150?u=rep${index+1}`,
     linkedinUrl: '#',
+    faculty: `Mühendislik Fakültesi`,
 }));
 
 
