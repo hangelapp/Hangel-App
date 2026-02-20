@@ -346,6 +346,7 @@ export type StudentClub = {
     name: string;
     university: string;
     type: 'university' | 'high-school';
+    category?: string;
     avatarUrl: string;
     coverPhotoUrl: string;
     members: number;

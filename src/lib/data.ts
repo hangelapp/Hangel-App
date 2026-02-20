@@ -584,6 +584,7 @@ export const allUniversities = ["Abdullah Gül Üniversitesi", "Acıbadem Mehmet
 export const provincialDirectorates = [ "Adana İl Millî Eğitim Müdürlüğü", "Adıyaman İl Millî Eğitim Müdürlüğü", "Afyon İl Millî Eğitim Müdürlüğü", "Ağrı İl Millî Eğitim Müdürlüğü", "Amasya İl Millî Eğitim Müdürlüğü", "Ankara İl Millî Eğitim Müdürlüğü", "Antalya İl Millî Eğitim Müdürlüğü", "Artvin İl Millî Eğitim Müdürlüğü", "Aydın İl Millî Eğitim Müdürlüğü", "Balıkesir İl Millî Eğitim Müdürlüğü", "Bilecik İl Millî Eğitim Müdürlüğü", "Bingöl İl Millî Eğitim Müdürlüğü", "Bitlis İl Millî Eğitim Müdürlüğü", "Bolu İl Millî Eğitim Müdürlüğü", "Burdur İl Millî Eğitim Müdürlüğü", "Bursa İl Millî Eğitim Müdürlüğü", "Çanakkale İl Millî Eğitim Müdürlüğü", "Çankırı İl Millî Eğitim Müdürlüğü", "Çorum İl Millî Eğitim Müdürlüğü", "Denizli İl Millî Eğitim Müdürlüğü", "Diyarbakır İl Millî Eğitim Müdürlüğü", "Edirne İl Millî Eğitim Müdürlüğü", "Elazığ İl Millî Eğitim Müdürlüğü", "Erzincan İl Millî Eğitim Müdürlüğü", "Erzurum İl Millî Eğitim Müdürlüğü", "Eskişehir İl Millî Eğitim Müdürlüğü", "Gaziantep İl Millî Eğitim Müdürlüğü", "Giresun İl Millî Eğitim Müdürlüğü", "Gümüşhane İl Millî Eğitim Müdürlüğü", "Hakkari İl Millî Eğitim Müdürlüğü", "Hatay İl Millî Eğitim Müdürlüğü", "Isparta İl Millî Eğitim Müdürlüğü", "Mersin İl Millî Eğitim Müdürlüğü", "İstanbul İl Millî Eğitim Müdürlüğü", "İzmir İl Millî Eğitim Müdürlüğü", "Kars İl Millî Eğitim Müdürlüğü", "Kastamonu İl Millî Eğitim Müdürlüğü", "Kayseri İl Millî Eğitim Müdürlüğü", "Kırklareli İl Millî Eğitim Müdürlüğü", "Kırşehir İl Millî Eğitim Müdürlüğü", "Kocaeli İl Millî Eğitim Müdürlüğü", "Konya İl Millî Eğitim Müdürlüğü", "Kütahya İl Millî Eğitim Müdürlüğü", "Malatya İl Millî Eğitim Müdürlüğü", "Manisa İl Millî Eğitim Müdürlüğü", "Kahramanmaraş İl Millî Eğitim Müdürlüğü", "Mardin İl Millî Eğitim Müdürlüğü", "Muğla İl Millî Eğitim Müdürlüğü", "Muş İl Millî Eğitim Müdürlüğü", "Nevşehir İl Millî Eğitim Müdürlüğü", "Niğde İl Millî Eğitim Müdürlüğü", "Ordu İl Millî Eğitim Müdürlüğü", "Rize İl Millî Eğitim Müdürlüğü", "Sakarya İl Millî Eğitim Müdürlüğü", "Samsun İl Millî Eğitim Müdürlüğü", "Siirt İl Millî Eğitim Müdürlüğü", "Sinop İl Millî Eğitim Müdürlüğü", "Sivas İl Millî Eğitim Müdürlüğü", "Tekirdağ İl Millî Eğitim Müdürlüğü", "Tokat İl Millî Eğitim Müdürlüğü", "Trabzon İl Millî Eğitim Müdürlüğü", "Tunceli İl Millî Eğitim Müdürlüğü", "Şanlıurfa İl Millî Eğitim Müdürlüğü", "Uşak İl Millî Eğitim Müdürlüğü", "Van İl Millî Eğitim Müdürlüğü", "Yozgat İl Millî Eğitim Müdürlüğü", "Zonguldak İl Millî Eğitim Müdürlüğü", "Aksaray İl Millî Eğitim Müdürlüğü", "Bayburt İl Millî Eğitim Müdürlüğü", "Karaman İl Millî Eğitim Müdürlüğü", "Kırıkkale İl Millî Eğitim Müdürlüğü", "Batman İl Millî Eğitim Müdürlüğü", "Şırnak İl Millî Eğitim Müdürlüğü", "Bartın İl Millî Eğitim Müdürlüğü", "Ardahan İl Millî Eğitim Müdürlüğü", "Iğdır İl Millî Eğitim Müdürlüğü", "Yalova İl Millî Eğitim Müdürlüğü", "Karabük İl Millî Eğitim Müdürlüğü", "Kilis İl Millî Eğitim Müdürlüğü", "Osmaniye İl Millî Eğitim Müdürlüğü", "Düzce İl Millî Eğitim Müdürlüğü" ];
 
 const clubNames = [ "İTÜ Girişimcilik Kulübü", "Boğaziçi Üniversitesi Müzik Kulübü", "Galatasaray Lisesi Sanat Kulübü", "ODTÜ Robot Topluluğu", "Koç Üniversitesi Münazara Kulübü", "Bilkent Üniversitesi Yapay Zeka Topluluğu", "Hacettepe Tıp Öğrencileri Birliği", "Ege Üniversitesi Tiyatro Topluluğu", "Dokuz Eylül Hukuk Kulübü", "Sabancı Üniversitesi Finans Kulübü", "Robert Kolej Model Birleşmiş Milletler (MUN)", "Ankara Fen Lisesi Bilim ve Teknoloji Kulübü", "Yıldız Teknik Üniversitesi Fotoğrafçılık Kulübü (YTU FOK)", "Marmara Üniversitesi İletişim Kulübü", "Çankaya Üniversitesi Yazılım Kulübü", "Kabataş Erkek Lisesi Satranç Kulübü", "İstanbul Erkek Lisesi Almanca Tiyatro Topluluğu (IELEV)", "Akdeniz Üniversitesi Sualtı Topluluğu", "Anadolu Üniversitesi Sinema Kulübü", "Uludağ Üniversitesi Dağcılık Kulübü", "Gazi Üniversitesi Halk Dansları Topluluğu" ];
+const clubCategories = ["Teknoloji", "Girişimcilik", "Sanat", "Müzik", "Sosyal Sorumluluk", "Spor", "Edebiyat", "Münazara", "Bilim"];
 
 const universitiesAndHighSchools = [...allUniversities.slice(0, 15), "Galatasaray Lisesi", "Robert Kolej", "Ankara Fen Lisesi", "Kabataş Erkek Lisesi", "İstanbul Erkek Lisesi", "İzmir Atatürk Lisesi"];
 
@@ -595,10 +596,11 @@ export const studentClubs: StudentClub[] = clubNames.map((name, index) => {
         name: name,
         university: school,
         type: isHighSchool ? 'high-school' : 'university',
+        category: clubCategories[index % clubCategories.length],
         avatarUrl: `https://logo.clearbit.com/${slugify(school)}.edu.tr`,
         coverPhotoUrl: `https://picsum.photos/seed/clubcover${index}/800/200`,
-        members: 50 + ((index * 37) % 250),
-        points: 1000 + ((index * 131) % 8000),
+        members: 50 + (index * 37) % 251,
+        points: 1000 + (index * 131) % 8001,
         description: `${name}, ${school} bünyesinde öğrencilerin sosyal, kültürel ve mesleki gelişimlerine katkıda bulunmak amacıyla kurulmuş aktif bir öğrenci topluluğudur. Yıl boyunca düzenlediğimiz etkinliklerle üyelerimize yeni ufuklar açmayı hedefliyoruz.`,
         vision: `Vizyonumuz, ${school} öğrencileri arasında bir sinerji yaratarak, topluma faydalı, sorumluluk sahibi ve lider ruhlu bireyler yetiştirmektir.`,
         joinDate: `2023-0${(index % 9) + 1}-1${(index % 3)}`,
@@ -607,9 +609,9 @@ export const studentClubs: StudentClub[] = clubNames.map((name, index) => {
             phone: `+90 555 10${index} 20${index + 1}`,
             website: `www.${slugify(name)}.org`
         },
-        projects: 5 + ((index * 7) % 20),
-        volunteerHours: 200 + ((index * 61) % 1000),
-        activeMemberRate: 40 + ((index * 13) % 50),
+        projects: 5 + (index % 13),
+        volunteerHours: 200 + (index % 801),
+        activeMemberRate: 40 + (index % 51),
     }
 });
 
@@ -617,9 +619,9 @@ export const events: Event[] = studentClubs.map((club, index) => {
     const eventTypes = ["Zirve", "Atölye", "Konferans", "Sosyal Etkinlik", "Yarışma", "Teknik Gezi", "Sergi", "Konser", "Söyleşi", "Turnuva"];
     const eventTags = ["Girişimcilik", "Teknoloji", "Sanat", "Müzik", "Kariyer", "Yapay Zeka", "Sosyal Sorumluluk", "Finans", "Münazara", "Robotik", "Tıp"];
     const eventType = eventTypes[index % eventTypes.length];
-    const capacity = 50 + ((index * 41) % 200);
-    const startHour = 9 + (index % 12);
-    const endHour = startHour + 1 + (index % 3);
+    const capacity = 50 + (index * 13) % 151;
+    const startHour = 9 + (index % 10);
+    const endHour = startHour + 1 + (index % 4);
     const day = (index % 28) + 1;
     const eventDate = `2024-11-${day < 10 ? '0' : ''}${day}`;
     
@@ -632,20 +634,20 @@ export const events: Event[] = studentClubs.map((club, index) => {
         name: `${club.name} ${eventType}si`,
         organizer: club.name,
         type: eventType,
-        date: eventDate,
+        date: eventDate, 
         time: `${startHour}:00`,
-        startDate: `${eventDate} ${startHour}:00`,
-        endDate: `${eventDate} ${endHour}:00`,
+        startDate: `${eventDate} ${startHour.toString().padStart(2, '0')}:00`,
+        endDate: `${eventDate} ${endHour.toString().padStart(2, '0')}:00`,
         location: {
             type: index % 4 === 0 ? 'Online' : 'Fiziksel',
             address: locations[index % locations.length],
-            city: club.university.split(' ')[0],
+            city: club.university.split(' ')[0], // Simple city extraction
             district: 'Kampüs'
         },
         language: languages[index % languages.length],
         participationCondition: participationConditions[index % participationConditions.length],
         capacity: {
-            current: Math.floor(capacity * (0.3 + ((index * 7) % 6) / 10)),
+            current: Math.floor(capacity * (0.3 + (index % 7) / 10)),
             max: capacity
         },
         tags: [eventTags[index % eventTags.length], club.university],

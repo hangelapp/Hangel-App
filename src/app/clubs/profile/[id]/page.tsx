@@ -13,6 +13,7 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
@@ -89,9 +90,6 @@ export default function ClubProfilePage() {
             </div>
             <div className="flex gap-2">
                 <Button className="flex-1" onClick={() => toast({ title: 'Başvurunuz alındı!', description: 'Kulüp yönetimi başvurunuzu inceleyecektir.'})}>Kulübe Katıl</Button>
-                <Button variant="outline" className="flex-1" onClick={() => toast({ title: "Profili Düzenle", description: "Bu özellik yakında aktif olacaktır." })}>
-                    <Edit className="mr-2 h-4 w-4" /> Profili Düzenle
-                </Button>
             </div>
         </div>
       </div>
@@ -107,6 +105,9 @@ export default function ClubProfilePage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg">Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4">
+                    {club.category && (
+                        <Badge variant="secondary" className="mb-4">{club.category}</Badge>
+                    )}
                     <p>
                         {club.description} Kulübümüz, üniversite öğrencileri arasında girişimcilik ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
                     </p>

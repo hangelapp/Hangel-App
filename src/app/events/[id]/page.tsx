@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -26,6 +26,19 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
+const InfoRow = ({ icon: Icon, label, children }: { icon: React.ElementType; label: string; children: React.ReactNode }) => {
+    return (
+        <div className="flex items-start gap-4 text-sm py-4">
+            <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex-1">
+                <p className="font-semibold text-foreground">{label}</p>
+                <div className="text-muted-foreground font-medium mt-1">{children}</div>
+            </div>
+        </div>
+    )
+};
+
+
 export default function EventDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -45,6 +58,8 @@ export default function EventDetailPage() {
 
   const organizerEntity = ngos.find(n => n.name === event.organizer) || studentClubs.find(c => c.name === event.organizer);
   const organizerLogo = organizerEntity?.avatarUrl;
+  const organizerUniversity = (organizerEntity as any)?.university;
+
 
   let organizerLink = '#';
   if (organizerEntity) {
@@ -58,7 +73,7 @@ export default function EventDetailPage() {
   const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.date.split('-')[0].slice(-2)}`;
+  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${event.startDate.split('-')[0].slice(-2)}`;
 
   const formatDateTime = (dateStr: string) => {
     try {
@@ -98,50 +113,24 @@ export default function EventDetailPage() {
                   <CardHeader>
                     <CardTitle className="text-xl">Etkinlik Bilgileri</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-3 text-base">
-                        <Tag className="h-5 w-5 text-muted-foreground" />
-                        <span>Kategori: {event.type}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-base">
-                        <Calendar className="h-5 w-5 text-muted-foreground" />
-                        <span>Başlangıç: {formatDateTime(event.startDate)}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-base">
-                        <Clock className="h-5 w-5 text-muted-foreground" />
-                        <span>Bitiş: {formatDateTime(event.endDate)}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-base">
-                        <MapPin className="h-5 w-5 text-muted-foreground" />
-                        <span>
-                            {event.location.type === 'Online' ? 'Online' : `${event.location.address}, ${event.location.district}, ${event.location.city}`}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-base">
-                        <Languages className="h-5 w-5 text-muted-foreground" />
-                        <span>Dil: {event.language}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-base">
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                        <span>Kapasite: {event.capacity.current} / {event.capacity.max}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-base">
-                        <UserCheck className="h-5 w-5 text-muted-foreground" />
-                        <span>Katılım: {event.participationCondition}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-base">
-                        <CheckCircle className="h-5 w-5 text-muted-foreground" />
-                        <span>Sertifika: {event.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span>
-                    </div>
-                    <div className="flex items-start gap-3 text-base pt-4 border-t">
-                      <Tag className="h-5 w-5 text-muted-foreground mt-1" />
-                      <div className="flex flex-wrap gap-2">
-                        {event.tags.map(tag => (
-                          <Badge key={tag} variant="secondary">{tag}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
+                   <CardContent className="divide-y p-0">
+                        {organizerUniversity && <InfoRow icon={School} label="Üniversite"><Link href={`/events?university=${encodeURIComponent(organizerUniversity)}`} className="text-primary hover:underline">{organizerUniversity}</Link></InfoRow>}
+                        <InfoRow icon={Calendar} label="Başlangıç"><Link href={`/events?month=${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM')}`} className="text-primary hover:underline">{formatDateTime(event.startDate)}</Link></InfoRow>
+                        <InfoRow icon={Clock} label="Bitiş">{formatDateTime(event.endDate)}</InfoRow>
+                        <InfoRow icon={MapPin} label="Konum">{event.location.type === 'Online' ? 'Online' : `${event.location.address}, ${event.location.district}, ${event.location.city}`}</InfoRow>
+                        <InfoRow icon={Languages} label="Dil">{event.language}</InfoRow>
+                        <InfoRow icon={Users} label="Kapasite">{event.capacity.current} / {event.capacity.max}</InfoRow>
+                        <InfoRow icon={UserCheck} label="Katılım Koşulu">{event.participationCondition}</InfoRow>
+                        <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</InfoRow>
+                        <InfoRow icon={Tag} label="Etiketler">
+                            <div className="flex flex-wrap gap-2">
+                                <Link href={`/events?category=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.type}</Badge></Link>
+                                {event.tags.map(tag => (
+                                <Link key={tag} href={`/events?tag=${encodeURIComponent(tag)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{tag}</Badge></Link>
+                                ))}
+                            </div>
+                        </InfoRow>
+                    </CardContent>
                 </Card>
 
                 <Card>
@@ -205,7 +194,7 @@ export default function EventDetailPage() {
                     <div className="p-4 flex-1 flex flex-col justify-center items-center text-center">
                         <div className="space-y-1">
                             <p className="text-lg font-semibold text-foreground leading-tight">{event.name}</p>
-                            <p className="text-sm text-muted-foreground">{event.date}{event.time && `, ${event.time}`}</p>
+                            <p className="text-sm text-muted-foreground">{formatDateTime(event.startDate)}</p>
                         </div>
                         
                         <div className="my-4">
