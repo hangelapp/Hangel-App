@@ -84,13 +84,6 @@ export default function EventDetailPage() {
 
   const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yy')}`;
   
-  const eventTags = [
-    event.type,
-    organizerCategory,
-    event.organizer,
-    event.location.city,
-    event.location.district,
-  ].filter(Boolean);
 
   const formatDateTime = (dateStr: string) => {
     try {
@@ -136,13 +129,26 @@ export default function EventDetailPage() {
                         <InfoRow icon={Users} label="Kapasite">{event.capacity.current} / {event.capacity.max}</InfoRow>
                         <InfoRow icon={UserCheck} label="Katılım Koşulu">{event.participationCondition}</InfoRow>
                         <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</InfoRow>
-                        <InfoRow icon={Tag} label="Etiketler">
-                            <div className="flex flex-wrap gap-2">
-                                {eventTags.map(tag => (
-                                <Link key={tag} href={`/events?tag=${encodeURIComponent(tag)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{tag}</Badge></Link>
-                                ))}
-                            </div>
+                        
+                        <InfoRow icon={Tag} label="Etkinlik Türü">
+                            <Link href={`/events?tag=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.type}</Badge></Link>
                         </InfoRow>
+                        {organizerCategory && (
+                            <InfoRow icon={Tag} label="Kuruluş Kategorisi">
+                                <Link href={`/ngos?category=${encodeURIComponent(organizerCategory)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{organizerCategory}</Badge></Link>
+                            </InfoRow>
+                        )}
+                        <InfoRow icon={Building} label="Düzenleyen Kurum">
+                            <Link href={organizerLink} className="text-muted-foreground hover:underline">{event.organizer}</Link>
+                        </InfoRow>
+                        <InfoRow icon={MapPin} label="Şehir">
+                            <Link href={`/events?tag=${encodeURIComponent(event.location.city)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.location.city}</Badge></Link>
+                        </InfoRow>
+                        {event.location.district && event.location.type !== 'Online' && (
+                            <InfoRow icon={MapPin} label="İlçe">
+                                <Link href={`/events?tag=${encodeURIComponent(event.location.district)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.location.district}</Badge></Link>
+                            </InfoRow>
+                        )}
                     </CardContent>
                 </Card>
 
