@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -67,8 +67,6 @@ export default function EventDetailPage() {
   const organizerEntity = ngos.find(n => n.name === event.organizer) || studentClubs.find(c => c.name === event.organizer);
   const organizerCategory = (organizerEntity as any)?.category;
   const organizerLogo = organizerEntity?.avatarUrl;
-  const organizerUniversity = (organizerEntity as any)?.university;
-
 
   let organizerLink = '#';
   if (organizerEntity) {
@@ -78,9 +76,9 @@ export default function EventDetailPage() {
       organizerLink = `/clubs/profile/${organizerEntity.id}`;
     }
   }
-
-  const qrData = `hangel-event-ticket:${event.id}:${user.id}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+  
+  const contactQrData = `MECARD:N:${user.name};TEL:${user.personalInfo.phone};EMAIL:${user.personalInfo.email};;`;
+  const contactQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(contactQrData)}`;
 
   const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yy')}`;
   
@@ -121,27 +119,26 @@ export default function EventDetailPage() {
                     <CardTitle className="text-xl">Etkinlik Bilgileri</CardTitle>
                   </CardHeader>
                    <CardContent className="divide-y p-0">
-                        {organizerUniversity && <InfoRow icon={School} label="Üniversite" href={`/events?university=${encodeURIComponent(organizerUniversity)}`}>{organizerUniversity}</InfoRow>}
                         <InfoRow icon={Calendar} label="Başlangıç" href={`/events?month=${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM')}`}>{formatDateTime(event.startDate)}</InfoRow>
                         <InfoRow icon={Clock} label="Bitiş">{formatDateTime(event.endDate)}</InfoRow>
-                        <InfoRow icon={MapPin} label="Konum">{event.location.type === 'Online' ? 'Online' : `${event.location.address}, ${event.location.district}, ${event.location.city}`}</InfoRow>
-                        <InfoRow icon={Languages} label="Dil">{event.language}</InfoRow>
+                        <InfoRow icon={MapPin} label="Adres">{event.location.type === 'Online' ? 'Online' : `${event.location.address}, ${event.location.district}, ${event.location.city}`}</InfoRow>
+                        <InfoRow icon={Languages} label="Dil" href={`/events?tag=${encodeURIComponent(event.language)}`}>{event.language}</InfoRow>
                         <InfoRow icon={Users} label="Kapasite">{event.capacity.current} / {event.capacity.max}</InfoRow>
                         <InfoRow icon={UserCheck} label="Katılım Koşulu">{event.participationCondition}</InfoRow>
-                        <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</InfoRow>
+                        <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? `Veriliyor (${event.location.type}, ${event.language})` : 'Verilmiyor'}</InfoRow>
                         
                         <InfoRow icon={Tag} label="Etkinlik Türü">
                             <Link href={`/events?tag=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.type}</Badge></Link>
                         </InfoRow>
                         {organizerCategory && (
-                            <InfoRow icon={Tag} label="Kuruluş Kategorisi">
+                            <InfoRow icon={Tag} label="Etkinlik Kategorisi">
                                 <Link href={`/ngos?category=${encodeURIComponent(organizerCategory)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{organizerCategory}</Badge></Link>
                             </InfoRow>
                         )}
                         <InfoRow icon={Building} label="Düzenleyen Kurum">
                             <Link href={organizerLink} className="text-muted-foreground hover:underline">{event.organizer}</Link>
                         </InfoRow>
-                        <InfoRow icon={MapPin} label="Şehir">
+                        <InfoRow icon={MapPin} label="İl">
                             <Link href={`/events?tag=${encodeURIComponent(event.location.city)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.location.city}</Badge></Link>
                         </InfoRow>
                         {event.location.district && event.location.type !== 'Online' && (
@@ -207,16 +204,16 @@ export default function EventDetailPage() {
           <AlertDialogTrigger asChild>
             <Button size="lg" className="w-full">Etkinliğe Katıl</Button>
           </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent className="max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle>Kaydınız Alındı!</AlertDialogTitle>
               <AlertDialogDescription>
                 Etkinlik için QR kodlu yaka kartınız oluşturuldu. Etkinlik girişinde bu QR kodu göstermeniz gerekmektedir.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="my-4 flex flex-col items-center justify-center p-0">
-                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden">
-                    {/* Header with logos */}
+            <div className="my-4 grid grid-cols-1 gap-4">
+                {/* Front Side */}
+                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
                     <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
                         <span className="text-xl font-bold text-primary">hangel</span>
                         {organizerLogo && (
@@ -226,19 +223,12 @@ export default function EventDetailPage() {
                             </Avatar>
                         )}
                     </div>
-
-                    {/* Main content */}
                     <div className="p-4 flex-1 flex flex-col justify-center items-center text-center">
                         <div className="space-y-1">
                             <p className="text-lg font-semibold text-foreground leading-tight">{event.name}</p>
                             <p className="text-sm text-muted-foreground">{formatDateTime(event.startDate)}</p>
                         </div>
-                        
-                        <div className="my-4">
-                            <Image src={qrCodeUrl} alt="Katılımcı QR Kodu" width={120} height={120} className="mx-auto rounded-lg border-4 border-primary/50 p-1" />
-                        </div>
-
-                        <div className='w-full'>
+                        <div className='w-full mt-auto'>
                              <div className="bg-primary text-primary-foreground py-1 w-full mb-2">
                                <p className="text-base font-semibold uppercase tracking-wider">Katılımcı</p>
                             </div>
@@ -246,26 +236,40 @@ export default function EventDetailPage() {
                             <p className="text-base text-muted-foreground">{user.username}</p>
                         </div>
                     </div>
-                    
-                    {/* Footer */}
-                    <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t space-y-1 text-center'>
+                     <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
                         <p className='font-mono'>{eventHashtag}</p>
-                        {organizerEntity && 'transparencyScore' in organizerEntity && (organizerEntity as any).contact.social && (
-                            <div className="flex justify-center gap-4 pt-1">
-                                {(organizerEntity as any).contact.social.twitter && <a href={`https://twitter.com/${(organizerEntity as any).contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><Twitter className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
-                                {(organizerEntity as any).contact.social.instagram && <a href={`https://instagram.com/${(organizerEntity as any).contact.social.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
-                                {(organizerEntity as any).contact.social.facebook && <a href={`https://facebook.com/${(organizerEntity as any).contact.social.facebook}`} target="_blank" rel="noopener noreferrer"><Facebook className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
-                                {(organizerEntity as any).contact.social.linkedin && <a href={`https://linkedin.com/company/${(organizerEntity as any).contact.social.linkedin}`} target="_blank" rel="noopener noreferrer"><Linkedin className="h-4 w-4 text-muted-foreground hover:text-foreground" /></a>}
-                            </div>
-                        )}
+                     </div>
+                </div>
+
+                {/* Back Side */}
+                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
+                    <div className="p-3 bg-muted/50 text-center font-bold border-b text-sm">Acil Durum Bilgileri</div>
+                    <div className="p-4 flex-1 flex flex-col justify-center items-center text-center space-y-4">
+                        <div className="my-2">
+                            <Image src={contactQrCodeUrl} alt="İletişim QR Kodu" width={100} height={100} className="mx-auto rounded-lg border-2 border-primary/50 p-0.5" />
+                        </div>
+                        <div className="text-xs space-y-2 text-left w-full">
+                           <div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> <span className="font-bold">{user.name}</span></div>
+                           <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> <span>{user.personalInfo.email}</span></div>
+                           <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> <span>{user.personalInfo.phone}</span></div>
+                           <div className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-primary" /> <span>Kan Grubu: {user.personalInfo.bloodType}</span></div>
+                        </div>
+                         <div className="text-xs space-y-2 text-left w-full pt-2 border-t">
+                            <p className="font-bold">Acil Durum Kişisi:</p>
+                           <div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-muted-foreground" /> <span>{user.volunteerInfo.emergency.emergencyContacts[0].name}</span></div>
+                           <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> <span>{user.volunteerInfo.emergency.emergencyContacts[0].phone}</span></div>
+                        </div>
                     </div>
+                     <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
+                        <p>Bu kart sadece etkinlik alanında geçerlidir.</p>
+                     </div>
                 </div>
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Kapat</AlertDialogCancel>
               <AlertDialogAction asChild>
-                <a href={qrCodeUrl} download={`yaka-karti-${event.id}.png`}>
-                    <Download className="mr-2 h-4 w-4" /> Yaka Kartını İndir
+                <a href={contactQrCodeUrl} download={`yaka-karti-arka-${event.id}.png`}>
+                    <Download className="mr-2 h-4 w-4" /> Arka Yüzü İndir
                 </a>
               </AlertDialogAction>
             </AlertDialogFooter>
