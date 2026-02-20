@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -28,7 +29,14 @@ import {
     ShoppingCart,
     ChevronRight,
     ArrowLeft,
-    Sparkles
+    Sparkles,
+    Landmark,
+    FileText,
+    BookCopy,
+    Heart,
+    Handshake,
+    Banknote,
+    Contact,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -36,6 +44,14 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // New component for the large feature cards
 const FeatureShowcaseCard = ({
@@ -80,8 +96,34 @@ const ToolGridItem = ({ icon: Icon, title, description, tag }: { icon: any, titl
     </div>
 );
 
+const RequirementItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
+  <div className="flex items-start gap-4">
+    <div className="p-2 bg-muted rounded-lg mt-1">
+      <Icon className="h-5 w-5 text-primary" />
+    </div>
+    <div>
+      <h4 className="font-semibold text-foreground">{title}</h4>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  </div>
+);
+
 export default function NgoOnboardingPage() {
     const router = useRouter();
+    
+    const requirements = [
+        { icon: Landmark, title: "Yasal Statü", description: "Türkiye'de kurulu bir dernek veya vakıf olmak." },
+        { icon: FileText, title: "Faaliyet Belgesi", description: "İlgili mülki idare amirliğinden alınmış güncel faaliyet belgesi." },
+        { icon: BookCopy, title: "Tüzük veya Vakıf Senedi", description: "Kuruluşun güncel resmi tüzüğünü veya vakıf senedini sunmak." },
+        { icon: Users, title: "Yönetim Kurulu", description: "Güncel yönetim ve denetim kurulu üyelerinin listesi." },
+        { icon: BarChart3, title: "Finansal Şeffaflık", description: "Başvuru sırasında ve sonrasında mali tabloları paylaşma taahhüdü." },
+        { icon: ShieldCheck, title: "Vergi Numarası", description: "Kuruluşa ait geçerli bir vergi kimlik numarası." },
+        { icon: CreditCard, title: "Resmi Banka Hesabı", description: "Kuruluş adına açılmış, bağışların aktarılacağı resmi bir IBAN." },
+        { icon: Mail, title: "Yetkili İletişim Bilgileri", description: "Doğrulanabilir bir e-posta, telefon ve yetkili kişi bilgisi." },
+        { icon: Heart, title: "Sosyal Fayda Misyonu", description: "Tüzükte veya senette açıkça belirtilmiş bir toplumsal fayda amacı." },
+        { icon: Handshake, title: "Platform Sözleşmeleri Onayı", description: "hangel Kullanıcı ve Kuruluş Sözleşmelerini kabul etmek." },
+    ];
+
 
     const mainFeatures = [
         { 
@@ -155,10 +197,26 @@ export default function NgoOnboardingPage() {
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                     Sivil toplumun dijital geleceğini birlikte inşa ediyoruz. Hangel Hub, operasyonlarınızı tek bir noktadan yönetmeniz için tasarlandı.
                 </p>
-                <div className="pt-8">
+                <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
                         <Link href="/login/selection?action=register&type=corporate">Ücretsiz Başvur</Link>
                     </Button>
+                     <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="link" className="text-primary">Başvuru Koşulları Neler?</Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle className="text-xl font-bold">STK Başvuru Gereklilikleri</DialogTitle>
+                                <DialogDescription>
+                                    hangel ekosistemine katılmak için kuruluşunuzun karşılaması gereken 10 temel kriter.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-5 py-4">
+                                {requirements.map((req, i) => <RequirementItem key={i} {...req} />)}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </section>
             
