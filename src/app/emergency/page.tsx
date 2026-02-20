@@ -104,7 +104,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="contact-name">İrtibat Kişisi Adı</Label>
-                        <Input id="contact-name" value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})} placeholder="Örn: Ahmet Yılmaz" required />
+                        <Input id="contact-name" value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})} placeholder="İsmail Hilmi ADIGÜZEL" required />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="notes">Özel Durumlar (İsteğe Bağlı)</Label>

@@ -3,13 +3,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, QrCode, UserCircle, HeartHandshake, LayoutGrid } from "lucide-react";
+import { Store, Calendar, UserCircle, HeartHandshake, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/providers/language-provider";
 
 const navItems = [
   { href: "/volunteering", icon: HeartHandshake, label: "nav.volunteering" },
-  { href: "/qr-payment", icon: QrCode, label: "nav.wallet" },
+  { href: "/events", icon: Calendar, label: "nav.events" },
   { href: "/market", icon: Store, label: "nav.market" },
   { href: "/timeline", icon: LayoutGrid, label: "nav.timeline" },
   { href: "/profile", icon: UserCircle, label: "nav.profile" },

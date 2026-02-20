@@ -493,7 +493,7 @@
     "skillsLabel": "Yetkinlikler (Virgülle ayırarak yazınız)",
     "interestsLabel": "İlgi Alanları (Virgülle ayırarak yazınız)",
     "notificationsTitle": "Bildirim Tercihleri",
-    "notificationsDescription": "Hangi durumlarda bildirim almak istediğinizi seçin.",
+    "notificationsDescription": "Hangi durumlarda ve hangi kanallardan bildirim almak istediğinizi seçin.",
     "pushNotifications": "Anlık Bildirimler (Mobil/Web)",
     "pushNewDonation": "Yeni Bağış Yapıldığında",
     "pushAppStatus": "Başvuru Durumu Değiştiğinde",
@@ -769,6 +769,6 @@
     "level": "{level}",
     "earned": "Kazanıldı",
     "points": "{current} / {required}"
-  }
+  },
+  "nav.events": "Etkinlikler"
 }
-
