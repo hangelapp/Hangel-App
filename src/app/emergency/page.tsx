@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
 import {
     Dialog,
@@ -160,84 +162,56 @@ export default function EmergencyPage() {
         });
     };
 
-    const EmergencyTile = ({ icon: Icon, label, color = "bg-destructive", onClick }: { icon: any, label: string, color?: string, onClick: () => void }) => (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <button 
-                    disabled={!!isReporting}
-                    className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group disabled:opacity-50"
-                >
-                    <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110 flex items-center justify-center", color)}>
-                        {isReporting === label ? <Loader2 className="h-7 w-7 animate-spin" /> : <Icon className="h-7 w-7" />}
-                    </div>
-                    <span className="text-[13px] font-bold tracking-tight text-center leading-tight">{label}</span>
-                </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="rounded-3xl">
-                <AlertDialogHeader>
-                    <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
-                    <div className="text-sm text-muted-foreground">
-                        <div className="text-foreground/80 mb-4">
-                            <strong>{label}</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
-                        </div>
-                    </div>
-                </AlertDialogHeader>
-                <div className="py-2">
-                    <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
-                        <Siren className="h-4 w-4" />
-                        <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
-                        <AlertDescription className="text-xs font-bold leading-tight">
-                            Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
-                        </AlertDescription>
-                    </Alert>
-                </div>
-                <AlertDialogFooter className="gap-2 mt-4">
-                    <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
-                    <AlertDialogAction 
-                        onClick={onClick}
-                        className="rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white border-none"
-                    >
-                        Bildirimi Gönder
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    );
-
     const ReportTabContent = () => (
-        <div className="flex flex-col gap-6">
-            <div className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                    <h2 className="text-lg font-bold flex items-center gap-2"><Siren className="h-5 w-5 text-destructive" /> Acil Bildirimler</h2>
-                    <Badge variant="outline" className="rounded-full bg-destructive/10 text-destructive border-destructive/20 text-[10px] font-bold uppercase tracking-widest">Canlı</Badge>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3 px-1">
-                    <EmergencyTile icon={Zap} label="Deprem" onClick={() => handleReportClick('earthquake', 'Deprem')} />
-                    <EmergencyTile icon={CloudRain} label="Sel" onClick={() => handleReportClick('flood', 'Sel')} />
-                    <EmergencyTile icon={Flame} label="Yangın" onClick={() => handleReportClick('fire', 'Yangın')} />
-                    <EmergencyTile icon={Ambulance} label="Kaza" onClick={() => handleReportClick('accident', 'Kaza')} />
-                    <EmergencyTile icon={UserSearch} label="Kayıp" onClick={() => handleReportClick('missing', 'Kayıp')} />
-                    
-                    <button 
+        <div className="flex flex-col gap-4 p-4">
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button 
+                        className="h-24 text-lg flex-col gap-2" 
+                        variant="destructive"
                         disabled={!!isReporting}
-                        onClick={() => setIsBloodDialogOpen(true)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-[2rem] active:scale-95 transition-all duration-200 group disabled:opacity-50"
                     >
-                        <div className={cn("p-4 text-white rounded-2xl shadow-lg transition-transform group-hover:scale-110 flex items-center justify-center", "bg-red-600")}>
-                            {isReporting === 'Kan İhtiyacı' ? <Loader2 className="h-7 w-7 animate-spin" /> : <Droplets className="h-7 w-7" />}
-                        </div>
-                        <span className="text-[13px] font-bold tracking-tight text-center leading-tight">Kan İhtiyacı</span>
-                    </button>
-                </div>
-
-                <div className="p-4 bg-muted/50 rounded-2xl border border-dashed flex items-start gap-3">
-                    <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    <div className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                        Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur. Konum ve iletişim bilgileriniz paylaşılacaktır.
+                        {isReporting === 'Genel Afet Bildirimi' ? <Loader2 className="h-8 w-8 animate-spin" /> : <Siren className="h-8 w-8" />}
+                        Afet Bildirimi
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-3xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            <strong>Genel Afet</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="py-2">
+                        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
+                            <Siren className="h-4 w-4" />
+                            <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
+                            <AlertDescription className="text-xs font-bold leading-tight">
+                                Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
+                            </AlertDescription>
+                        </Alert>
                     </div>
-                </div>
-            </div>
+                    <AlertDialogFooter className="gap-2 mt-4">
+                        <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={() => handleReportClick('disaster', 'Genel Afet Bildirimi')}
+                            className="rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white border-none"
+                        >
+                            Bildirimi Gönder
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+    
+            <Button 
+                className="h-24 text-lg flex-col gap-2" 
+                variant="outline"
+                disabled={!!isReporting}
+                onClick={() => setIsBloodDialogOpen(true)}
+            >
+                <Droplets className="h-8 w-8 text-red-600" />
+                Kan İhtiyacı Bildirimi
+            </Button>
         </div>
     );
 
