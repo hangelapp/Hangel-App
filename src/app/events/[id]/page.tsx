@@ -5,7 +5,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy, Github, Palette } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -88,10 +88,26 @@ export default function EventDetailPage() {
     }
   }
   
-  const nameQrData = `BEGIN:VCARD\nVERSION:3.0\nFN:${user.name}\nEND:VCARD`;
-  const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(nameQrData)}`;
+  const nameQrData = user.name;
+  const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(nameQrData)}`;
 
-  const backQrData = `MECARD:N:${user.name};TEL:${user.personalInfo.phone};EMAIL:${user.personalInfo.email};;`;
+  const socialLinks = [];
+    if (user.personalInfo.website) socialLinks.push(`URL:${user.personalInfo.website}`);
+    if (user.personalInfo.social?.linkedin) socialLinks.push(`URL;TYPE=linkedin:https://linkedin.com/in/${user.personalInfo.social.linkedin}`);
+    if (user.personalInfo.social?.twitter) socialLinks.push(`URL;TYPE=twitter:https://twitter.com/${user.personalInfo.social.twitter}`);
+    if (user.personalInfo.social?.github) socialLinks.push(`URL;TYPE=github:https://github.com/${user.personalInfo.social.github}`);
+    if (user.personalInfo.social?.instagram) socialLinks.push(`URL;TYPE=instagram:https://instagram.com/${user.personalInfo.social.instagram}`);
+
+    const backQrData = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${user.name}`,
+      `TEL;TYPE=CELL:${user.personalInfo.phone}`,
+      `EMAIL:${user.personalInfo.email}`,
+      ...socialLinks,
+      'END:VCARD'
+    ].join('\n');
+    
   const backQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(backQrData)}`;
   
   const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yy')}`;
@@ -229,60 +245,69 @@ export default function EventDetailPage() {
                 Etkinlik için QR kodlu yaka kartınız oluşturuldu. Etkinlik girişinde bu QR kodu göstermeniz gerekmektedir.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="my-4 flex flex-col items-center gap-4">
-                {/* Front Side */}
-                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
-                    <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
-                        <span className="text-xl font-bold text-primary">hangel</span>
-                        {organizerLogo && (
-                            <Avatar className="h-10 w-10 bg-white">
-                                <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
-                                <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
-                            </Avatar>
-                        )}
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col justify-center items-center text-center">
-                        <div className="space-y-1">
-                            <p className="text-lg font-semibold text-foreground leading-tight">{event.name}</p>
-                            <p className="text-sm text-muted-foreground">{formatDateTime(event.startDate)}</p>
-                        </div>
-                        <div className='w-full mt-auto'>
-                             <div className="bg-primary text-primary-foreground py-1 w-full mb-2">
-                               <p className="text-base font-semibold uppercase tracking-wider">Katılımcı</p>
-                            </div>
-                            <p className="text-2xl font-bold pt-2 whitespace-nowrap truncate">{user.name}</p>
-                            <p className="text-base text-muted-foreground">{user.username}</p>
-                        </div>
-                    </div>
-                     <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
-                        <p className='font-mono'>{eventHashtag}</p>
-                     </div>
+            <div className="my-4 flex flex-col items-center gap-8">
+                <div>
+                  <h3 className="font-bold text-center mb-2">Ön Yüz</h3>
+                  <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
+                      <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
+                          <span className="text-xl font-bold text-primary">hangel</span>
+                          {organizerLogo && (
+                              <Avatar className="h-10 w-10 bg-white">
+                                  <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
+                                  <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
+                              </Avatar>
+                          )}
+                      </div>
+                      <div className="p-4 flex-1 flex flex-col justify-between items-center text-center">
+                          <div className="space-y-1">
+                              <p className="text-lg font-semibold text-foreground leading-tight">{event.name}</p>
+                              <p className="text-sm text-muted-foreground">{formatDateTime(event.startDate)}</p>
+                          </div>
+                          <div className='w-full'>
+                               <Image src={nameQrCodeUrl} alt="İsim QR Kodu" width={80} height={80} className="mx-auto my-2 rounded-lg border p-0.5" />
+                               <div className="bg-primary text-primary-foreground py-1 w-full mb-2">
+                                 <p className="text-base font-semibold uppercase tracking-wider">Katılımcı</p>
+                              </div>
+                              <p className="text-2xl font-bold pt-2 whitespace-nowrap truncate">{user.name}</p>
+                              <p className="text-xs text-muted-foreground">{user.volunteerInfo.education[0]?.school || 'Eğitim Bilgisi Yok'}<br/>{user.volunteerInfo.profession && `${user.volunteerInfo.profession} @ ${user.volunteerInfo.sector}`}</p>
+                          </div>
+                      </div>
+                       <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
+                          <p className='font-mono'>{eventHashtag}</p>
+                       </div>
+                  </div>
                 </div>
 
-                {/* Back Side */}
-                <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
-                    <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
-                        <span className="text-xl font-bold text-primary">hangel</span>
-                        {organizerLogo && (
-                            <Avatar className="h-10 w-10 bg-white">
-                                <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
-                                <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
-                            </Avatar>
-                        )}
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col justify-center items-center text-center space-y-4">
-                        <div className="my-2">
-                            <Image src={backQrCodeUrl} alt="İletişim QR Kodu" width={100} height={100} className="mx-auto rounded-lg border-2 border-primary/50 p-0.5" />
-                        </div>
-                        <div className="text-sm space-y-2 text-left w-full">
-                           <div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> <span className="font-bold">{user.name}</span></div>
-                           <div className="flex items-center gap-2"><School className="h-4 w-4 text-primary" /> <span>{user.volunteerInfo.education[0]?.school || 'Eğitim Bilgisi Yok'}</span></div>
-                           <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> <span>{user.personalInfo.email}</span></div>
-                        </div>
-                    </div>
-                     <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
-                        <p>Bu kart sadece etkinlik alanında geçerlidir.</p>
-                     </div>
+                <div>
+                   <h3 className="font-bold text-center mb-2">Arka Yüz</h3>
+                   <div className="w-full max-w-[320px] aspect-[105/148] bg-background rounded-lg shadow-lg border flex flex-col justify-between overflow-hidden mx-auto">
+                      <div className="p-3 bg-muted/50 flex justify-between items-center border-b">
+                           <span className="text-xl font-bold text-primary">hangel</span>
+                          {organizerLogo && (
+                              <Avatar className="h-10 w-10 bg-white">
+                                  <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
+                                  <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
+                              </Avatar>
+                          )}
+                      </div>
+                      <div className="p-4 flex-1 flex flex-col justify-center items-center text-center space-y-4">
+                          <h3 className="text-xl font-bold">Kişisel Bilgiler</h3>
+                          <div className="my-2">
+                              <Image src={backQrCodeUrl} alt="İletişim QR Kodu" width={100} height={100} className="mx-auto rounded-lg border-2 border-primary/50 p-0.5" />
+                          </div>
+                          <div className="text-sm space-y-2 text-left w-full">
+                             <div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary" /> <span className="font-bold">{user.name}</span></div>
+                             <div className="flex items-center gap-2"><School className="h-4 w-4 text-primary" /> <span>{user.volunteerInfo.education[0]?.school || 'Eğitim Bilgisi Yok'}</span></div>
+                              {user.volunteerInfo.profession && user.volunteerInfo.sector && (
+                                <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-primary" /> <span>{user.volunteerInfo.profession} @ {user.volunteerInfo.sector}</span></div>
+                              )}
+                             <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> <span>{user.personalInfo.email}</span></div>
+                          </div>
+                      </div>
+                       <div className='bg-muted/50 p-2 text-xs text-muted-foreground border-t text-center'>
+                          <p>Bu kart sadece etkinlik alanında geçerlidir.</p>
+                       </div>
+                  </div>
                 </div>
             </div>
             <AlertDialogFooter className="flex-col sm:flex-row gap-2">
