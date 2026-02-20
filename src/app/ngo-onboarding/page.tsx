@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -250,7 +251,7 @@ export default function NgoOnboardingPage() {
                     STK yöneticisi, müjde!
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                    Profesyonel yetkinlik, hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform <span className="text-primary">"hangel.org artık yayında ve Türkiye’de faaliyette."</span>
+                    Profesyonel yetkinlik, Sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform.
                 </p>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
