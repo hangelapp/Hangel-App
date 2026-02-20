@@ -625,7 +625,7 @@ export const events: Event[] = studentClubs.map((club, index) => {
         organizer: club.name,
         type: eventType,
         date: `2024-11-${(index % 28) + 1}`,
-        time: `${Math.floor(Math.random() * 10) + 9}:00`,
+        time: `${(9 + (index % 12))}:00`,
         location: club.university.split(' ')[0],
         capacity: {
             current: Math.floor(Math.random() * capacity),
@@ -652,3 +652,6 @@ export const schoolRepresentatives: SchoolRepresentative[] = studentClubs.map((c
 
 export const applications: Application[] = [];
 export const donationTransactions: DonationTransaction[] = [];
+
+
+    
