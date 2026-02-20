@@ -182,6 +182,14 @@ export default function EmergencyPage() {
                             <strong>Genel Afet</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="space-y-2 py-2">
+                        <Label htmlFor="disaster-details">Acil Durum Detayları (İsteğe Bağlı)</Label>
+                        <Textarea 
+                            id="disaster-details" 
+                            placeholder="Durumu kısaca açıklayın. Örn: 'Bina çökmesi', 'Büyük trafik kazası', 'Ormanlık alanda duman görülüyor'..."
+                            className="min-h-[80px]"
+                        />
+                    </div>
                     <div className="py-2">
                         <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
                             <Siren className="h-4 w-4" />
