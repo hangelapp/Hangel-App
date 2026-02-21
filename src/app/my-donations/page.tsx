@@ -21,26 +21,26 @@ type FilterType = 'all' | 'income' | 'expense';
 
 const donationTransactions = [
     { id: '1', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA Vakfı', 'LÖSEV'], date: '2024-07-21', time: '14:32' },
-    { id: '2', type: 'expense', brand: 'Lezzet Köyü', purchaseAmount: '120.50', donationAmount: '12.05', ngo: ['Ahbap Derneği', 'TEGV'], date: '2024-07-20', time: '18:10' },
+    { id: '2', type: 'expense', brand: 'Lezzet Köyü', purchaseAmount: '120.50', donationAmount: '12.05', ngo: ['Uluslararası Sosyal Fayda Derneği', 'TEGV'], date: '2024-07-20', time: '18:10' },
     { id: '3', type: 'income', brand: 'Bakiye Yükleme', purchaseAmount: '500.00', donationAmount: '0.00', ngo: [], date: '2024-07-20', time: '10:00' },
     { id: '4', type: 'expense', brand: 'Tekno Market', purchaseAmount: '1500.00', donationAmount: '30.00', ngo: ['LÖSEV', 'TEGV'], date: '2024-07-19', time: '11:45' },
     { id: '5', type: 'expense', brand: 'Gezgin Rotalar', purchaseAmount: '800.00', donationAmount: '80.00', ngo: ['WWF Türkiye', 'TEMA Vakfı'], date: '2024-07-18', time: '20:05' },
     { id: '6', type: 'expense', brand: 'Kitap Kurdu', purchaseAmount: '85.00', donationAmount: '8.50', ngo: ['TEGV', 'Tohum Otizm Vakfı'], date: '2024-07-18', time: '15:20' },
-    { id: '7', type: 'expense', brand: 'Kahve Dünyası', purchaseAmount: '45.00', donationAmount: '4.50', ngo: ['TEMA Vakfı', 'Ahbap Derneği'], date: '2024-07-17', time: '09:05' },
+    { id: '7', type: 'expense', brand: 'Kahve Dünyası', purchaseAmount: '45.00', donationAmount: '4.50', ngo: ['TEMA Vakfı', 'Uluslararası Sosyal Fayda Derneği'], date: '2024-07-17', time: '09:05' },
     { id: '8', type: 'income', brand: 'Para Transferi', purchaseAmount: '150.00', donationAmount: '0.00', ngo: [], date: '2024-07-16', time: '12:00' },
-    { id: '9', type: 'expense', brand: 'Spor Salonu', purchaseAmount: '350.00', donationAmount: '35.00', ngo: ['Ahbap Derneği', 'LÖSEV'], date: '2024-07-15', time: '19:30' },
+    { id: '9', type: 'expense', brand: 'Spor Salonu', purchaseAmount: '350.00', donationAmount: '35.00', ngo: ['Uluslararası Sosyal Fayda Derneği', 'LÖSEV'], date: '2024-07-15', time: '19:30' },
     { id: '10', type: 'expense', brand: 'Süpermarket', purchaseAmount: '210.75', donationAmount: '21.08', ngo: ['LÖSEV', 'TEMA Vakfı'], date: '2024-07-14', time: '17:00' },
-    { id: '11', type: 'expense', brand: 'Sinema Biletleri', purchaseAmount: '180.00', donationAmount: '18.00', ngo: ['TEGV', 'Ahbap Derneği'], date: '2024-07-13', time: '21:00' },
+    { id: '11', type: 'expense', brand: 'Sinema Biletleri', purchaseAmount: '180.00', donationAmount: '18.00', ngo: ['TEGV', 'Uluslararası Sosyal Fayda Derneği'], date: '2024-07-13', time: '21:00' },
     { id: '12', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '450.00', donationAmount: '45.00', ngo: ['TEMA Vakfı', 'WWF Türkiye'], date: '2024-07-12', time: '13:15' },
     { id: '13', type: 'income', brand: 'Bakiye Yükleme', purchaseAmount: '1000.00', donationAmount: '0.00', ngo: [], date: '2024-07-11', time: '09:00' },
-    { id: '14', type: 'expense', brand: 'Lezzet Köyü', purchaseAmount: '95.00', donationAmount: '9.50', ngo: ['Ahbap Derneği', 'LÖSEV'], date: '2024-07-10', time: '12:45' },
+    { id: '14', type: 'expense', brand: 'Lezzet Köyü', purchaseAmount: '95.00', donationAmount: '9.50', ngo: ['Uluslararası Sosyal Fayda Derneği', 'LÖSEV'], date: '2024-07-10', time: '12:45' },
     { id: '15', type: 'expense', brand: 'Tekno Market', purchaseAmount: '3200.00', donationAmount: '64.00', ngo: ['LÖSEV', 'TEGV'], date: '2024-07-09', time: '16:00' },
-    { id: '16', type: 'expense', brand: 'Gezgin Rotalar', purchaseAmount: '1250.00', donationAmount: '125.00', ngo: ['WWF Türkiye', 'Ahbap Derneği'], date: '2024-07-08', time: '22:30' },
+    { id: '16', type: 'expense', brand: 'Gezgin Rotalar', purchaseAmount: '1250.00', donationAmount: '125.00', ngo: ['WWF Türkiye', 'Uluslararası Sosyal Fayda Derneği'], date: '2024-07-08', time: '22:30' },
     { id: '17', type: 'expense', brand: 'Kitap Kurdu', purchaseAmount: '150.00', donationAmount: '15.00', ngo: ['TEGV', 'TEMA Vakfı'], date: '2024-07-07', time: '14:00' },
     { id: '18', type: 'expense', brand: 'Kahve Dünyası', purchaseAmount: '60.00', donationAmount: '6.00', ngo: ['TEMA Vakfı', 'Tohum Otizm Vakfı'], date: '2024-07-06', time: '10:20' },
     { id: '19', type: 'income', brand: 'Para Transferi', purchaseAmount: '250.00', donationAmount: '0.00', ngo: [], date: '2024-07-05', time: '11:00' },
-    { id: '20', type: 'expense', brand: 'Spor Salonu', purchaseAmount: '350.00', donationAmount: '35.00', ngo: ['Ahbap Derneği', 'TEGV'], date: '2024-07-04', time: '19:45' },
-    { id: '21', type: 'expense', brand: 'Süpermarket', purchaseAmount: '180.25', donationAmount: '18.03', ngo: ['LÖSEV', 'Ahbap Derneği'], date: '2024-07-03', time: '18:15' },
+    { id: '20', type: 'expense', brand: 'Spor Salonu', purchaseAmount: '350.00', donationAmount: '35.00', ngo: ['Uluslararası Sosyal Fayda Derneği', 'TEGV'], date: '2024-07-04', time: '19:45' },
+    { id: '21', type: 'expense', brand: 'Süpermarket', purchaseAmount: '180.25', donationAmount: '18.03', ngo: ['LÖSEV', 'Uluslararası Sosyal Fayda Derneği'], date: '2024-07-03', time: '18:15' },
 ];
 
 
@@ -208,8 +208,7 @@ export default function MyDonationsPage() {
               {sortedAndFilteredDonations.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
                 const gelirVergisi = donationAmount * 0.20;
-                const kdv = donationAmount * 0.20;
-                const netDonationAfterTaxes = donationAmount - gelirVergisi - kdv;
+                const netDonationAfterTaxes = donationAmount - gelirVergisi;
                 const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
                 const hangelShare = ngoShare * 0.10;
 
@@ -234,30 +233,19 @@ export default function MyDonationsPage() {
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4 bg-muted/50">
                         <div className="space-y-2 text-sm mt-2 pt-4 border-t">
-                        <div className='flex justify-between'>
+                        <div className='flex justify-between font-medium'>
                             <span className='text-muted-foreground'>Alışveriş Tutarı</span>
                             <span>{donation.purchaseAmount} ₺</span>
                         </div>
-                        <div className='flex justify-between'>
+                        <div className='flex justify-between font-bold'>
                             <span className='text-muted-foreground'>Toplam Bağış</span>
                             <span className='text-primary'>{donation.donationAmount} ₺</span>
                         </div>
                         <Separator />
-                        <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>Desteklenen STK Payı</span>
-                            <span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
-                        </div>
-                         <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>Gelir Vergisi (%20)</span>
-                            <span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
-                        </div>
-                         <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>KDV (%20)</span>
-                            <span>{kdv.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
-                        </div>
-                         <div className='flex justify-between text-xs'>
-                            <span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span>
-                            <span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                        <div className='space-y-1.5'>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Desteklenen STK Payı</span><span className="font-medium text-foreground">{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                             <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Gelir Vergisi (%20)</span><span className="font-medium text-foreground">{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                             <div className='flex justify-between text-xs'><span className='text-muted-foreground'>hangel Katkı Payı (%10)</span><span className="font-medium text-foreground">{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                         </div>
                         <Separator />
                         {donation.ngo.length > 0 && (

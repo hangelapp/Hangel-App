@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function QrPage() {
   const { toast } = useToast();
-  const ngo = { name: 'Ahbap Derneği', username: '@ahbap' };
+  const ngo = { name: 'Uluslararası Sosyal Fayda Derneği', username: '@sbg' };
   const profileUrl = `hangel.org/${ngo.username.replace('@', '')}`;
   const shareText = `Hangel'deki ${ngo.name} profilini incele!`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}`;

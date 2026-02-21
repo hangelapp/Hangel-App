@@ -1,6 +1,6 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import React, { useState } from 'react';
 import { User, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -10,8 +10,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const initialUsers = [
-    { name: 'İsmail Hilmi Adıgüzel', email: 'i.adiguzel@ahbap.org', role: 'Kurucu', status: 'Onaylandı' as const },
-    { name: 'Ayşe Yılmaz', email: 'ayse.yilmaz@ahbap.org', role: 'Yönetici', status: 'Onaylandı' as const },
+    { name: 'İsmail Hilmi Adıgüzel', email: 'i.adiguzel@socialbusinessglobal.org', role: 'Kurucu', status: 'Onaylandı' as const },
+    { name: 'Ayşe Yılmaz', email: 'ayse.yilmaz@socialbusinessglobal.org', role: 'Yönetici', status: 'Onaylandı' as const },
     { name: 'Mehmet Öztürk', email: 'mehmet.ozturk@example.com', role: 'Editör', status: 'Beklemede' as const },
 ];
 

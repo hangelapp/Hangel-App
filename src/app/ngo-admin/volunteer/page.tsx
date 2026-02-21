@@ -85,7 +85,7 @@ const VolunteerApplicationsTab = () => {
 
 const OpportunityManagementTab = () => {
     const { toast } = useToast();
-    const [opportunities, setOpportunities] = useState(volunteeringOpportunities.filter(o => o.organization === 'Ahbap Derneği'));
+    const [opportunities, setOpportunities] = useState(volunteeringOpportunities.filter(o => o.organization === 'Uluslararası Sosyal Fayda Derneği'));
 
     const handleDeactivate = (oppId: string) => {
         setOpportunities(prev => prev.filter(opp => opp.id !== oppId));

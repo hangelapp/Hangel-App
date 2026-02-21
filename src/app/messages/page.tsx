@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 const mockMessages = [
-    { id: 'm1', sender: 'Ahbap Derneği', senderType: 'ngo', avatar: 'https://logo.clearbit.com/ahbap.org', subject: 'Başvurunuz Hakkında', excerpt: 'Merhaba, gönüllülük başvurunuzu inceledik ve...', time: '10:30', unread: true },
+    { id: 'm1', sender: 'Uluslararası Sosyal Fayda Derneği', senderType: 'ngo', avatar: 'https://logo.clearbit.com/socialbusinessglobal.org', subject: 'Başvurunuz Hakkında', excerpt: 'Merhaba, gönüllülük başvurunuzu inceledik ve...', time: '10:30', unread: true },
     { id: 'm2', sender: 'İTÜ Girişimcilik Kulübü', senderType: 'club', avatar: 'https://logo.clearbit.com/itu.edu.tr', subject: 'Haftalık Toplantı', excerpt: 'Bu haftaki toplantımız çarşamba günü saat 18:00\'de...', time: 'Dün', unread: false },
     { id: 'm3', sender: 'Hangel Sistem', senderType: 'admin', avatar: '', subject: 'Yeni Rozet Kazandın!', excerpt: 'Tebrikler! Çevre Koruyucusu rozetini kazandınız.', time: '2 gün önce', unread: false },
 ];
