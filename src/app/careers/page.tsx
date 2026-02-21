@@ -64,9 +64,7 @@ export default function CareersPage() {
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight">Kariyer</span>
-                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
-                        <Link href="/login/selection?action=register">İlana Başvur</Link>
-                    </Button>
+                    <div className="w-24"></div>
                 </div>
             </header>
 
@@ -106,16 +104,21 @@ export default function CareersPage() {
                 </div>
                 <div className="space-y-4">
                   {[
-                    { title: 'Frontend Geliştirici (React/Next.js)', location: 'İstanbul / Remote', type: 'Tam Zamanlı' },
-                    { title: 'Topluluk Yöneticisi', location: 'Ankara', type: 'Tam Zamanlı' },
-                    { title: 'Proje Koordinatörü (Gönüllülük Programları)', location: 'İzmir', type: 'Tam Zamanlı' },
-                    { title: 'İş Geliştirme Uzmanı (STK ve Marka Ortaklıkları)', location: 'İstanbul', type: 'Tam Zamanlı' },
-                    { title: 'UI/UX Tasarımcısı', location: 'Remote', type: 'Proje Bazlı' },
+                    { title: 'Proje Yöneticisi (Sosyal Etki Projeleri)', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'Gönüllü Koordinatörü', location: 'Ankara', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'İletişim Uzmanı (Dijital Medya)', location: 'Remote', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'Kaynak Geliştirme Sorumlusu', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'Saha Operasyonları Sorumlusu', location: 'Hatay', type: 'Proje Bazlı', org: 'hangel Derneği' },
+                    { title: 'Frontend Geliştirici (React/Next.js)', location: 'İstanbul / Remote', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
+                    { title: 'Topluluk Yöneticisi', location: 'Ankara', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
+                    { title: 'Proje Koordinatörü (Gönüllülük Programları)', location: 'İzmir', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
+                    { title: 'İş Geliştirme Uzmanı (STK ve Marka Ortaklıkları)', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
+                    { title: 'UI/UX Tasarımcısı', location: 'Remote', type: 'Proje Bazlı', org: 'hangel A.Ş.' },
                   ].map((job, index) => (
                     <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
                       <div>
                         <h3 className="font-bold text-lg">{job.title}</h3>
-                        <p className="text-sm text-muted-foreground">{job.location} • {job.type}</p>
+                        <p className="text-sm text-muted-foreground">{job.org} • {job.location} • {job.type}</p>
                       </div>
                       <Button asChild className="shrink-0">
                         <Link href="#">İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></Link>
