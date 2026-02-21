@@ -40,8 +40,8 @@ const group4Items: SideNavItem[] = [
   { href: '/super-admin', label: 'Admin Paneli', icon: 'shield' },
   { href: '/settings', label: 'Ayarlar', icon: 'settings' },
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
-  { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
-  { href: '/ngo-onboarding', label: 'STK Başvurusu', icon: 'HeartHandshake' },
+  { href: '/login/selection?action=register&type=corporate&entity=BRAND', label: 'Üye İşyeri', icon: 'zap' },
+  { href: '/login/selection?action=register&type=corporate&entity=NGO', label: 'STK Başvurusu', icon: 'HeartHandshake' },
   { href: '/support/app-support', label: 'App Destek', icon: 'help-circle' },
 ];
 
