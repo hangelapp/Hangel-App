@@ -566,7 +566,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                 <DialogHeader>
                     <DialogTitle className="text-center text-2xl font-bold flex items-center justify-center gap-2">
                         <Sparkles className="h-6 w-6 text-primary" />
-                        {step === 1 && "Sizi Tanıyalım"}
+                        {step === 1 && "2 soruluk anketimiz var"}
                         {step === 2 && "Arkadaşını Davet Et"}
                         {step === 3 && "Son Bir Adım"}
                     </DialogTitle>
@@ -829,9 +829,55 @@ export default function LoginSelectionPage() {
   );
 }
 
-    
+const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
+    const { toast } = useToast();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const entity = searchParams.get('entity');
 
-    
+    const handleEntityTypeChange = (value: string) => {
+        router.push(`/login/selection?action=register&type=corporate&entity=${value}`);
+    };
 
-    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        toast({
+            title: "Başvuru Alındı!",
+            description: "Kurumsal başvurunuz incelenmek üzere ekibimize iletildi.",
+        });
+        onComplete();
+    };
 
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in-0">
+             <div className="space-y-2">
+                <Label>Kuruluş Türü</Label>
+                <Select required value={entity || ''} onValueChange={handleEntityTypeChange}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Kuruluş türünü seçin..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="NGO"><HandCoins className="mr-2 h-4 w-4" />STK (Dernek / Vakıf)</SelectItem>
+                        <SelectItem value="BRAND"><HeartHandshake className="mr-2 h-4 w-4" />Marka / İşletme</SelectItem>
+                        <SelectItem value="CLUB"><Building className="mr-2 h-4 w-4" />Öğrenci Kulübü</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {entity === 'NGO' && <NgoForm />}
+            {entity === 'BRAND' && <BrandForm />}
+            {entity === 'CLUB' && <ClubForm />}
+
+            <div className="space-y-3 pt-2">
+                <div className="flex items-start space-x-2">
+                    <Checkbox id="terms-corp" required />
+                    <Label htmlFor="terms-corp" className="text-xs font-normal text-muted-foreground">
+                        <Link href="/settings/contracts/kurulus-sozlesmesi" className="underline hover:text-primary">Kuruluş Sözleşmesini</Link> okudum ve kuruluşum adına onaylıyorum.
+                    </Label>
+                </div>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={!entity}>Başvuruyu Gönder</Button>
+        </form>
+    );
+};
