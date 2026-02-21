@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState } from 'react';
@@ -30,7 +31,7 @@ type Post = {
 
 const initialPosts: Post[] = [
     { id: 1, author: 'TEMA Vakfı', avatar: 'https://logo.clearbit.com/tema.org.tr', content: 'Fidan dikme etkinliğimize katılan herkese teşekkürler!', imageUrl: 'https://picsum.photos/seed/post1/600/300', status: 'Aktif' },
-    { id: 2, author: 'Ahbap Derneği', avatar: 'https://logo.clearbit.com/ahbap.org', content: 'Yardım kolilerimiz yola çıktı, destekleriniz için minnettarız.', imageUrl: null, status: 'Onay Bekliyor' },
+    { id: 2, author: 'Uluslararası Sosyal Fayda Derneği', avatar: 'https://logo.clearbit.com/socialbusinessglobal.org', content: 'Yardım kolilerimiz yola çıktı, destekleriniz için minnettarız.', imageUrl: null, status: 'Onay Bekliyor' },
     { id: 3, author: 'Doğa Dostu Giyim', avatar: 'https://logo.clearbit.com/patagonia.com', content: 'Yeni sürdürülebilir koleksiyonumuz yayında! Gelirlerin %10\'u denizleri korumak için bağışlanıyor.', imageUrl: 'https://picsum.photos/seed/post3/600/300', status: 'Aktif' },
     { id: 4, author: 'TEGV', avatar: 'https://logo.clearbit.com/tegv.org', content: 'Geleceğin bilim insanları için kodlama atölyelerimize gönüllü eğitmenler arıyoruz. Başvurular websitemizde!', imageUrl: null, status: 'Onay Bekliyor' },
 ];

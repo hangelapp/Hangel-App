@@ -28,7 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const initialApplications: Application[] = [
     // Gönüllülük
-    { id: 'app1', title: 'Afet Bölgesi Yardım Dağıtımı', type: 'Gönüllülük', org: 'Ahbap Derneği', date: '2024-07-21', location: 'Hatay', status: 'Onaylandı', entityId: '1' },
+    { id: 'app1', title: 'Afet Bölgesi Yardım Dağıtımı', type: 'Gönüllülük', org: 'Uluslararası Sosyal Fayda Derneği', date: '2024-07-21', location: 'Hatay', status: 'Onaylandı', entityId: '2' },
     { id: 'app2', title: 'Fidan Dikme Etkinliği', type: 'Gönüllülük', org: 'TEMA Vakfı', date: '2024-07-20', location: 'İstanbul', status: 'Beklemede', entityId: '2' },
 
     // Kulüpler
