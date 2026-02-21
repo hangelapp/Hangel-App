@@ -30,9 +30,9 @@ export default function AdminPage() {
         </CardHeader>
         <CardContent className='p-0'>
             <div className="divide-y">
-            {managedItems.map(item => {
+            {managedItems.map((item, index) => {
                 return (
-                <Link href={item.href} key={item.name} className="block hover:bg-accent transition-colors">
+                <Link href={item.href} key={index} className="block hover:bg-accent transition-colors">
                     <div className="flex items-center p-4">
                         <Avatar className="h-12 w-12 mr-4 border bg-white">
                             <AvatarImage src={item.logoUrl} alt={item.name} className="object-contain p-1" />
