@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { user } from '@/lib/data';
+import { user as staticUser } from '@/lib/data';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
@@ -33,15 +33,6 @@ const allSectors = ['Teknoloji', 'Sağlık', 'Eğitim', 'Finans', 'Sanat ve Kül
 const allPositions = ['Yazılım Geliştirici', 'Doktor', 'Öğretmen', 'Avukat', 'Grafik Tasarımcı', 'Proje Yöneticisi', 'Öğrenci', 'Emekli', 'Serbest Çalışan'];
 const allUniversities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi', 'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Hacettepe Üniversitesi', 'Bilkent Üniversitesi'];
 const allHighSchools = ['Kabataş Erkek Lisesi', 'Galatasaray Lisesi', 'İstanbul Erkek Lisesi', 'Robert Kolej', 'Ankara Fen Lisesi', 'İzmir Fen Lisesi'];
-
-const faculties = {
-    'Boğaziçi Üniversitesi': ['Mühendislik Fakültesi', 'İİBF', 'Fen-Edebiyat Fakültesi'],
-    'İstanbul Teknik Üniversitesi': ['İnşaat Fakültesi', 'Mimarlık Fakültesi', 'Makine Fakültesi', 'Elektrik-Elektronik Fakültesi'],
-};
-const departments = {
-    'Mühendislik Fakültesi': ['Bilgisayar Müh.', 'Endüstri Müh.', 'İnşaat Müh.'],
-    'İİBF': ['İşletme', 'Ekonomi', 'Siyaset Bilimi ve Uluslararası İlişkiler'],
-};
 
 const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: string[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
     return (
@@ -81,52 +72,66 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
     );
 };
 
-
 export default function VolunteerSettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [isOnboarding, setIsOnboarding] = useState(false);
+
+    // Main state for volunteer info
+    const [volunteerInfo, setVolunteerInfo] = useState(staticUser.volunteerInfo);
 
     useEffect(() => {
         const onboardingStep = localStorage.getItem('onboardingStep');
         if (onboardingStep === 'volunteer') {
             setIsOnboarding(true);
         }
+        const savedUser = localStorage.getItem('hangel-user');
+        if (savedUser) {
+            setVolunteerInfo(JSON.parse(savedUser).volunteerInfo || staticUser.volunteerInfo);
+        }
     }, []);
 
-    const [interests, setInterests] = useState(user.volunteerInfo.interests);
-    const [skills, setSkills] = useState(user.volunteerInfo.skills);
-    const [dailySkills, setDailySkills] = useState(user.volunteerInfo.dailySkills);
-    const [languages, setLanguages] = useState(user.volunteerInfo.languages);
-    const [programs, setPrograms] = useState(user.volunteerInfo.programs);
-    const [licenses, setLicenses] = useState(user.volunteerInfo.licenses);
-    const [documents, setDocuments] = useState(user.volunteerInfo.documents);
-    const [visas, setVisas] = useState(user.volunteerInfo.travelInfo.visas);
+    const handleChange = (field: string, value: any) => {
+        setVolunteerInfo(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleNestedChange = (section: keyof typeof volunteerInfo, field: string, value: any) => {
+        setVolunteerInfo(prev => ({
+            ...prev,
+            [section]: {
+                ...(prev[section] as object),
+                [field]: value,
+            },
+        }));
+    };
     
-    const [university, setUniversity] = useState(user.volunteerInfo.education.find(e => e.level === 'Lisans')?.school || '');
-    const [highSchool, setHighSchool] = useState(user.volunteerInfo.education.find(e => e.level === 'Lise')?.school || '');
-    const [faculty, setFaculty] = useState('');
-    const [department, setDepartment] = useState('');
-    
-    const [sector, setSector] = useState(user.volunteerInfo.sector ?? '');
-    const [profession, setProfession] = useState(user.volunteerInfo.profession ?? '');
+    const handleEducationChange = (level: 'Lisans' | 'Lise', field: 'school', value: string) => {
+        setVolunteerInfo(prev => {
+            const newEducation = [...prev.education];
+            const eduIndex = newEducation.findIndex(e => e.level === level);
+            if (eduIndex > -1) {
+                newEducation[eduIndex] = { ...newEducation[eduIndex], [field]: value };
+            } else {
+                newEducation.push({ level, school: value });
+            }
+            return { ...prev, education: newEducation };
+        });
+    };
 
-    const [domesticTravel, setDomesticTravel] = useState(!user.volunteerInfo.travelInfo.domesticObstacle);
-    const [internationalTravel, setInternationalTravel] = useState(!user.volunteerInfo.travelInfo.internationalObstacle);
-
-    const [emergencyContact1Name, setEmergencyContact1Name] = useState(user.volunteerInfo.emergency.emergencyContacts[0]?.name || '');
-    const [emergencyContact1Phone, setEmergencyContact1Phone] = useState(user.volunteerInfo.emergency.emergencyContacts[0]?.phone || '');
-    const [emergencyContact2Name, setEmergencyContact2Name] = useState(user.volunteerInfo.emergency.emergencyContacts[1]?.name || '');
-    const [emergencyContact2Phone, setEmergencyContact2Phone] = useState(user.volunteerInfo.emergency.emergencyContacts[1]?.phone || '');
-
-    const [emergencyAvailable, setEmergencyAvailable] = useState(user.volunteerInfo.emergency.available);
-    const [chronicIllness, setChronicIllness] = useState(user.volunteerInfo.emergency.hasChronicIllness);
-    const [regularMedication, setRegularMedication] = useState(user.volunteerInfo.emergency.usesRegularMedication);
-    const [physicalLimitation, setPhysicalLimitation] = useState(user.volunteerInfo.emergency.hasPhysicalLimitation);
-
+    const handleEmergencyContactChange = (index: number, field: 'name' | 'phone', value: string) => {
+        setVolunteerInfo(prev => {
+            const newContacts = [...prev.emergency.emergencyContacts];
+            if (!newContacts[index]) newContacts[index] = { name: '', phone: ''};
+            newContacts[index][field] = value;
+            return { ...prev, emergency: { ...prev.emergency, emergencyContacts: newContacts } };
+        });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const currentData = JSON.parse(localStorage.getItem('hangel-user') || '{}');
+        const updatedData = { ...currentData, volunteerInfo };
+        localStorage.setItem('hangel-user', JSON.stringify(updatedData));
         toast({
             title: "Gönüllülük Bilgileri Güncellendi",
             description: "Bilgileriniz başarıyla kaydedildi.",
@@ -155,9 +160,9 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Yetkinlik ve Sosyal Hassasiyetler</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <MultiSelect title="Sosyal Hassasiyetler" options={allInterests} selected={interests} onSelectedChange={setInterests} />
-                        <MultiSelect title="Profesyonel Yetkinlikler" options={allSkills} selected={skills} onSelectedChange={setSkills} />
-                        <MultiSelect title="Sosyal Yetkinlikler" options={allDailySkills} selected={dailySkills} onSelectedChange={setDailySkills} />
+                        <MultiSelect title="Sosyal Hassasiyetler" options={allInterests} selected={volunteerInfo.interests} onSelectedChange={(val) => handleChange('interests', val)} />
+                        <MultiSelect title="Profesyonel Yetkinlikler" options={allSkills} selected={volunteerInfo.skills} onSelectedChange={(val) => handleChange('skills', val)} />
+                        <MultiSelect title="Sosyal Yetkinlikler" options={allDailySkills} selected={volunteerInfo.dailySkills} onSelectedChange={(val) => handleChange('dailySkills', val)} />
                     </CardContent>
                 </Card>
 
@@ -168,36 +173,16 @@ export default function VolunteerSettingsPage() {
                     <CardContent className="space-y-4">
                          <div className="space-y-2">
                             <Label>Üniversite</Label>
-                            <Select value={university} onValueChange={(value) => { setUniversity(value); setFaculty(''); setDepartment(''); }}>
+                            <Select value={volunteerInfo.education.find(e => e.level === 'Lisans')?.school || ''} onValueChange={(value) => handleEducationChange('Lisans', 'school', value)}>
                                 <SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
                                 <SelectContent>
                                     {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Fakülte</Label>
-                                <Select value={faculty} onValueChange={(value) => { setFaculty(value); setDepartment(''); }} disabled={!university}>
-                                    <SelectTrigger><SelectValue placeholder="Fakülte seçin..." /></SelectTrigger>
-                                    <SelectContent>
-                                        {(faculties[university as keyof typeof faculties] || []).map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Bölüm</Label>
-                                <Select value={department} onValueChange={setDepartment} disabled={!faculty}>
-                                    <SelectTrigger><SelectValue placeholder="Bölüm seçin..." /></SelectTrigger>
-                                    <SelectContent>
-                                         {(departments[faculty as keyof typeof departments] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
                          <div className="space-y-2">
                             <Label>Lise</Label>
-                            <Select value={highSchool} onValueChange={setHighSchool}>
+                            <Select value={volunteerInfo.education.find(e => e.level === 'Lise')?.school || ''} onValueChange={(value) => handleEducationChange('Lise', 'school', value)}>
                                 <SelectTrigger><SelectValue placeholder="Lise seçin..." /></SelectTrigger>
                                 <SelectContent>
                                     {allHighSchools.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
@@ -207,7 +192,7 @@ export default function VolunteerSettingsPage() {
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="sector">Çalıştığınız Sektör</Label>
-                                <Select value={sector} onValueChange={setSector}>
+                                <Select value={volunteerInfo.sector || ''} onValueChange={(val) => handleChange('sector', val)}>
                                     <SelectTrigger id="sector"><SelectValue placeholder="Sektör seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -216,7 +201,7 @@ export default function VolunteerSettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="profession">Çalıştığınız Pozisyon</Label>
-                                <Select value={profession} onValueChange={setProfession}>
+                                <Select value={volunteerInfo.profession || ''} onValueChange={(val) => handleChange('profession', val)}>
                                     <SelectTrigger id="profession"><SelectValue placeholder="Pozisyon seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allPositions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -232,8 +217,8 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Dil ve Program Bilgisi</CardTitle>
                     </CardHeader>
                      <CardContent className="space-y-4">
-                        <MultiSelect title="Yabancı Diller" options={allLanguages} selected={languages} onSelectedChange={setLanguages} />
-                        <MultiSelect title="Bildiği Programlar" options={allPrograms} selected={programs} onSelectedChange={setPrograms} />
+                        <MultiSelect title="Yabancı Diller" options={allLanguages} selected={volunteerInfo.languages} onSelectedChange={(val) => handleChange('languages', val)} />
+                        <MultiSelect title="Bildiği Programlar" options={allPrograms} selected={volunteerInfo.programs} onSelectedChange={(val) => handleChange('programs', val)} />
                     </CardContent>
                 </Card>
 
@@ -242,8 +227,8 @@ export default function VolunteerSettingsPage() {
                         <CardTitle>Belgeler ve Lisanslar</CardTitle>
                     </CardHeader>
                      <CardContent className="space-y-4">
-                        <MultiSelect title="Lisanslar" options={allLicenses} selected={licenses} onSelectedChange={setLicenses} />
-                        <MultiSelect title="Belgeler" options={allDocuments} selected={documents} onSelectedChange={setDocuments} />
+                        <MultiSelect title="Lisanslar" options={allLicenses} selected={volunteerInfo.licenses} onSelectedChange={(val) => handleChange('licenses', val)} />
+                        <MultiSelect title="Belgeler" options={allDocuments} selected={volunteerInfo.documents} onSelectedChange={(val) => handleChange('documents', val)} />
                     </CardContent>
                 </Card>
                 
@@ -254,14 +239,14 @@ export default function VolunteerSettingsPage() {
                      <CardContent className="space-y-4">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="domestic-travel" className="font-medium">Yurtiçi seyahat engelim yok</Label>
-                           <Switch id="domestic-travel" checked={domesticTravel} onCheckedChange={setDomesticTravel} />
+                           <Switch id="domestic-travel" checked={!volunteerInfo.travelInfo.domesticObstacle} onCheckedChange={(val) => handleNestedChange('travelInfo', 'domesticObstacle', !val)} />
                         </div>
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="international-travel" className="font-medium">Yurtdışı seyahat engelim yok</Label>
-                           <Switch id="international-travel" checked={internationalTravel} onCheckedChange={setInternationalTravel} />
+                           <Switch id="international-travel" checked={!volunteerInfo.travelInfo.internationalObstacle} onCheckedChange={(val) => handleNestedChange('travelInfo', 'internationalObstacle', !val)} />
                         </div>
                          <div className="space-y-2">
-                           <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={visas} onSelectedChange={setVisas} />
+                           <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={volunteerInfo.travelInfo.visas} onSelectedChange={(val) => handleNestedChange('travelInfo', 'visas', val)} />
                         </div>
                      </CardContent>
                 </Card>
@@ -277,11 +262,11 @@ export default function VolunteerSettingsPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-name-1">Ad Soyad</Label>
-                                    <Input id="emergency-contact-name-1" value={emergencyContact1Name} onChange={(e) => setEmergencyContact1Name(e.target.value)} />
+                                    <Input id="emergency-contact-name-1" value={volunteerInfo.emergency.emergencyContacts[0]?.name || ''} onChange={(e) => handleEmergencyContactChange(0, 'name', e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
-                                    <Input id="emergency-contact-phone-1" type="tel" value={emergencyContact1Phone} onChange={(e) => setEmergencyContact1Phone(e.target.value)} />
+                                    <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -290,11 +275,11 @@ export default function VolunteerSettingsPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-name-2">Ad Soyad</Label>
-                                    <Input id="emergency-contact-name-2" value={emergencyContact2Name} onChange={(e) => setEmergencyContact2Name(e.target.value)} />
+                                    <Input id="emergency-contact-name-2" value={volunteerInfo.emergency.emergencyContacts[1]?.name || ''} onChange={(e) => handleEmergencyContactChange(1, 'name', e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-phone-2">Telefon</Label>
-                                    <Input id="emergency-contact-phone-2" type="tel" value={emergencyContact2Phone} onChange={(e) => setEmergencyContact2Phone(e.target.value)} />
+                                    <Input id="emergency-contact-phone-2" type="tel" value={volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} onChange={(e) => handleEmergencyContactChange(1, 'phone', e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -308,18 +293,18 @@ export default function VolunteerSettingsPage() {
                     <CardContent className="space-y-2">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
-                           <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={setEmergencyAvailable} />
+                           <Switch id="emergency-available" checked={volunteerInfo.emergency.available} onCheckedChange={(val) => handleNestedChange('emergency', 'available', val)} />
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="chronic-illness" checked={chronicIllness} onCheckedChange={(checked) => setChronicIllness(checked as boolean)} />
+                            <Checkbox id="chronic-illness" checked={volunteerInfo.emergency.hasChronicIllness} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasChronicIllness', checked)} />
                             <Label htmlFor="chronic-illness">Kronik bir rahatsızlığım var.</Label>
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="regular-medication" checked={regularMedication} onCheckedChange={(checked) => setRegularMedication(checked as boolean)} />
+                            <Checkbox id="regular-medication" checked={volunteerInfo.emergency.usesRegularMedication} onCheckedChange={(checked) => handleNestedChange('emergency', 'usesRegularMedication', checked)} />
                             <Label htmlFor="regular-medication">Düzenli olarak kullandığım bir ilaç var.</Label>
                         </div>
                          <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="physical-limitation" checked={physicalLimitation} onCheckedChange={(checked) => setPhysicalLimitation(checked as boolean)} />
+                            <Checkbox id="physical-limitation" checked={volunteerInfo.emergency.hasPhysicalLimitation} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasPhysicalLimitation', checked)} />
                             <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
                         </div>
                     </CardContent>

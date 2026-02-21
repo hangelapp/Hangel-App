@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { user, badges, pastVolunteering, certificates } from '@/lib/data';
+import { user as staticUser, badges, pastVolunteering, certificates } from '@/lib/data';
 import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
     HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X
@@ -24,14 +24,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 
 
-const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | null, verified?: boolean, href?: string }) => {
+const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
     const ValueComponent = href ? (
         <Link href={href} className="flex items-center gap-1 text-muted-foreground hover:underline">
             <span>{value}</span>
             <ChevronRight className="h-4 w-4" />
         </Link>
     ) : (
-        <p className="text-muted-foreground">{value}</p>
+        <p className="text-muted-foreground">{Array.isArray(value) ? value.join(', ') : value}</p>
     );
 
     return (
@@ -66,7 +66,7 @@ const pointTransactions = [
 
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
-const NextBadgeGoal = () => {
+const NextBadgeGoal = ({ userProfile }: { userProfile: any }) => {
     const [isVisible, setIsVisible] = useState(true);
     const nextBadge = {
         name: 'Gümüş Çevre Koruyucusu',
@@ -108,6 +108,14 @@ export default function ProfilePage() {
     const { toast } = useToast();
     const [isStoryLoading, setIsStoryLoading] = useState(false);
     const [stories, setStories] = useState<string[]>([]);
+    const [currentUser, setCurrentUser] = useState(staticUser);
+
+    useEffect(() => {
+        const savedUser = localStorage.getItem('hangel-user');
+        if (savedUser) {
+            setCurrentUser(JSON.parse(savedUser));
+        }
+    }, []);
     
     const handleGenerateStories = async () => {
         setIsStoryLoading(true);
@@ -115,9 +123,9 @@ export default function ProfilePage() {
         try {
             const storyPromises = Array(5).fill(0).map(() => 
                 getImpactStory({
-                    userName: user.name.split(' ')[0],
-                    donations: `${user.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${user.stats.mostSupportedNgo}.`,
-                    volunteering: `${user.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${user.stats.mostActiveVolunteerArea}.`,
+                    userName: currentUser.name.split(' ')[0],
+                    donations: `${currentUser.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${currentUser.stats.mostSupportedNgo}.`,
+                    volunteering: `${currentUser.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${currentUser.stats.mostActiveVolunteerArea}.`,
                     badges: `Toplamda ${badges.filter(b => b.currentPoints >= b.pointsRequired).length} rozet kazanıldı.`
                 })
             );
@@ -235,13 +243,13 @@ export default function ProfilePage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`${user.name} - hangel Profili`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
+                <ShareButtons url={profileUrl} title={`${currentUser.name} - hangel Profili`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
             </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center">
                     <UserAvatar className="w-24 h-24 mb-4" />
-                    <h1 className="text-3xl font-bold">{user.name}</h1>
-                    <p className="text-lg text-muted-foreground">{user.username}</p>
+                    <h1 className="text-3xl font-bold">{currentUser.name}</h1>
+                    <p className="text-lg text-muted-foreground">{currentUser.username}</p>
                 </div>
                 <Tabs defaultValue="impact" className="w-full">
                     <div className="flex justify-center">
@@ -261,44 +269,44 @@ export default function ProfilePage() {
                                 <CardTitle>Toplam Sosyal Etki Puanın</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
+                                <p className="text-6xl font-bold text-primary">{currentUser.impactScore.toLocaleString('tr-TR')}</p>
                             </CardContent>
                         </Card>
                         
                         <Card>
                             <CardHeader><CardTitle>Özet İstatistikler</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-3 gap-4">
-                                <StatCard icon={HandCoins} value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
-                                <StatCard icon={Users} value={user.stats.donationCount} label="İşlem Adedi" />
-                                <StatCard icon={TrendingUp} value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} label="En Yüksek Bağış" />
-                                <StatCard icon={DollarSign} value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} label="Ortalama Bağış" />
-                                <StatCard icon={Handshake} value={`${user.stats.volunteerHours} Saat`} label="Gönüllülük" />
-                                <StatCard icon={Briefcase} value={user.stats.completedProjects} label="Proje" />
+                                <StatCard icon={HandCoins} value={`${currentUser.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
+                                <StatCard icon={Users} value={currentUser.stats.donationCount} label="İşlem Adedi" />
+                                <StatCard icon={TrendingUp} value={`${currentUser.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} label="En Yüksek Bağış" />
+                                <StatCard icon={DollarSign} value={`${currentUser.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} label="Ortalama Bağış" />
+                                <StatCard icon={Handshake} value={`${currentUser.stats.volunteerHours} Saat`} label="Gönüllülük" />
+                                <StatCard icon={Briefcase} value={currentUser.stats.completedProjects} label="Proje" />
                                 <StatCard icon={Award} value={badges.filter(b => b.currentPoints >= b.pointsRequired).length} label="Kazanılan Rozet" />
                                 <StatCard icon={FileText} value={certificates.length} label="Sertifika" />
-                                <StatCard icon={BarChart3} value={user.stats.volunteerRank.country} label="Türkiye Sıralaması" />
+                                <StatCard icon={BarChart3} value={currentUser.stats.volunteerRank.country} label="Türkiye Sıralaması" />
                             </CardContent>
                         </Card>
                         
                         <Card>
                             <CardHeader><CardTitle className='text-lg flex items-center gap-2'><BarChart3 className='h-5 w-5 text-primary' />Gönüllülük İstatistikleri</CardTitle></CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={Hourglass} label="Toplam Gönüllülük Saati" value={`${user.stats.volunteerHours} Saat`} />
-                                <InfoRow icon={Handshake} label="Tamamlanan Proje Sayısı" value={`${user.stats.completedProjects} Proje`} />
-                                <InfoRow icon={Sparkles} label="En Aktif Gönüllülük Alanı" value={user.stats.mostActiveVolunteerArea} />
-                                <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={user.stats.volunteerRank.country} href="/leaderboard" />
-                                 <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={user.stats.volunteerRank.city} href="/leaderboard" />
+                                <InfoRow icon={Hourglass} label="Toplam Gönüllülük Saati" value={`${currentUser.stats.volunteerHours} Saat`} />
+                                <InfoRow icon={Handshake} label="Tamamlanan Proje Sayısı" value={`${currentUser.stats.completedProjects} Proje`} />
+                                <InfoRow icon={Sparkles} label="En Aktif Gönüllülük Alanı" value={currentUser.stats.mostActiveVolunteerArea} />
+                                <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={currentUser.stats.volunteerRank.country} href="/leaderboard" />
+                                 <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={currentUser.stats.volunteerRank.city} href="/leaderboard" />
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardHeader><CardTitle className='text-lg flex items-center gap-2'><HandCoins className='h-5 w-5 text-primary' />Bağış İstatistikleri</CardTitle></CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={DollarSign} label="Toplam Bağış Tutarı" value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
-                                <InfoRow icon={FileText} label="Toplam İşlem Adedi" value={`${user.stats.donationCount} İşlem`} />
-                                <InfoRow icon={Target} label="En Çok Desteklenen STK" value={user.stats.mostSupportedNgo} />
-                                <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
-                                <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
+                                <InfoRow icon={DollarSign} label="Toplam Bağış Tutarı" value={`${currentUser.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
+                                <InfoRow icon={FileText} label="Toplam İşlem Adedi" value={`${currentUser.stats.donationCount} İşlem`} />
+                                <InfoRow icon={Target} label="En Çok Desteklenen STK" value={currentUser.stats.mostSupportedNgo} />
+                                <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${currentUser.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
+                                <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${currentUser.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
                             </CardContent>
                         </Card>
                         <Card>
@@ -377,19 +385,19 @@ export default function ProfilePage() {
                                 </Button>
                             </CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={Mail} label="E-posta" value={user.personalInfo.email} verified />
-                                <InfoRow icon={Phone} label="Telefon" value={user.personalInfo.phone} verified />
-                                <InfoRow icon={Cake} label="Doğum Tarihi" value={format(new Date(user.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr })} />
-                                 <InfoRow icon={Globe} label="Uyruk" value={user.personalInfo.nationality} />
-                                <InfoRow icon={UserIcon} label="Cinsiyet" value={user.personalInfo.gender} />
-                                <InfoRow icon={HeartPulse} label="Kan Grubu" value={user.personalInfo.bloodType} />
-                                <InfoRow icon={MapPin} label="Adres" value={`${user.personalInfo.address.district}, ${user.personalInfo.address.city}`} />
-                                <InfoRow icon={Globe} label="Web Sitesi" value={user.personalInfo.website} />
-                                <InfoRow icon={Linkedin} label="LinkedIn" value={user.personalInfo.social?.linkedin} />
-                                <InfoRow icon={Github} label="GitHub" value={user.personalInfo.social?.github} />
-                                <InfoRow icon={Palette} label="Behance" value={user.personalInfo.social?.behance} />
-                                <InfoRow icon={Instagram} label="Instagram" value={user.personalInfo.social?.instagram} />
-                                <InfoRow icon={Twitter} label="X (Twitter)" value={user.personalInfo.social?.twitter} />
+                                <InfoRow icon={Mail} label="E-posta" value={currentUser.personalInfo.email} verified />
+                                <InfoRow icon={Phone} label="Telefon" value={currentUser.personalInfo.phone} verified />
+                                <InfoRow icon={Cake} label="Doğum Tarihi" value={format(new Date(currentUser.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr })} />
+                                 <InfoRow icon={Globe} label="Uyruk" value={currentUser.personalInfo.nationality} />
+                                <InfoRow icon={UserIcon} label="Cinsiyet" value={currentUser.personalInfo.gender} />
+                                <InfoRow icon={HeartPulse} label="Kan Grubu" value={currentUser.personalInfo.bloodType} />
+                                <InfoRow icon={MapPin} label="Adres" value={`${currentUser.personalInfo.address.district}, ${currentUser.personalInfo.address.city}`} />
+                                <InfoRow icon={Globe} label="Web Sitesi" value={currentUser.personalInfo.website} />
+                                <InfoRow icon={Linkedin} label="LinkedIn" value={currentUser.personalInfo.social?.linkedin} />
+                                <InfoRow icon={Github} label="GitHub" value={currentUser.personalInfo.social?.github} />
+                                <InfoRow icon={Palette} label="Behance" value={currentUser.personalInfo.social?.behance} />
+                                <InfoRow icon={Instagram} label="Instagram" value={currentUser.personalInfo.social?.instagram} />
+                                <InfoRow icon={Twitter} label="X (Twitter)" value={currentUser.personalInfo.social?.twitter} />
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -405,30 +413,30 @@ export default function ProfilePage() {
                                 </Button>
                             </CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={Sparkles} label="Sosyal Hassasiyetler" value={user.volunteerInfo.interests.join(', ')} />
-                                <InfoRow icon={Brain} label="Profesyonel Yetkinlikler" value={user.volunteerInfo.skills.join(', ')} />
-                                <InfoRow icon={Users} label="Sosyal Yetkinlikler" value={user.volunteerInfo.dailySkills.join(', ')} />
-                                <InfoRow icon={Cpu} label="Bildiği Programlar" value={user.volunteerInfo.programs.join(', ')} />
-                                <InfoRow icon={Languages} label="Diller" value={user.volunteerInfo.languages.join(', ')} />
-                                <InfoRow icon={FileText} label="Lisanslar" value={user.volunteerInfo.licenses.join(', ')} verified />
-                                <InfoRow icon={FileText} label="Belgeler" value={user.volunteerInfo.documents.join(', ')} verified />
-                                <InfoRow icon={Plane} label="Yurtiçi Seyahat" value={user.volunteerInfo.travelInfo.domesticObstacle ? 'Engelli' : 'Engel Yok'} />
-                                <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={user.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
-                                <InfoRow icon={Landmark} label="Vizeler" value={user.volunteerInfo.travelInfo.visas.join(', ')} />
-                                <InfoRow icon={School} label="Eğitim" value={user.volunteerInfo.education.map(e => e.school).join('; ')} verified />
+                                <InfoRow icon={Sparkles} label="Sosyal Hassasiyetler" value={currentUser.volunteerInfo.interests.join(', ')} />
+                                <InfoRow icon={Brain} label="Profesyonel Yetkinlikler" value={currentUser.volunteerInfo.skills.join(', ')} />
+                                <InfoRow icon={Users} label="Sosyal Yetkinlikler" value={currentUser.volunteerInfo.dailySkills.join(', ')} />
+                                <InfoRow icon={Cpu} label="Bildiği Programlar" value={currentUser.volunteerInfo.programs.join(', ')} />
+                                <InfoRow icon={Languages} label="Diller" value={currentUser.volunteerInfo.languages.join(', ')} />
+                                <InfoRow icon={FileText} label="Lisanslar" value={currentUser.volunteerInfo.licenses.join(', ')} verified />
+                                <InfoRow icon={FileText} label="Belgeler" value={currentUser.volunteerInfo.documents.join(', ')} verified />
+                                <InfoRow icon={Plane} label="Yurtiçi Seyahat" value={currentUser.volunteerInfo.travelInfo.domesticObstacle ? 'Engelli' : 'Engel Yok'} />
+                                <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={currentUser.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
+                                <InfoRow icon={Landmark} label="Vizeler" value={currentUser.volunteerInfo.travelInfo.visas.join(', ')} />
+                                <InfoRow icon={School} label="Eğitim" value={currentUser.volunteerInfo.education.map(e => e.school).join('; ')} verified />
                                 <InfoRow icon={School} label="Fakülte / Bölüm" value="Yönetim Bilişim Sistemleri" />
-                                <InfoRow icon={Briefcase} label="Çalıştığınız Sektör" value={user.volunteerInfo.sector} />
-                                <InfoRow icon={Briefcase} label="Çalıştığınız Pozisyon" value={user.volunteerInfo.profession} />
-                                 <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={user.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
-                                <InfoRow icon={HeartPulse} label="Kronik Hastalık" value={user.volunteerInfo.emergency.hasChronicIllness ? 'Var' : 'Yok'} />
-                                <InfoRow icon={HeartPulse} label="Düzenli İlaç" value={user.volunteerInfo.emergency.usesRegularMedication ? 'Var' : 'Yok'} />
-                                <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={user.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
-                                <InfoRow icon={UserIcon} label="Acil Durum Kişisi 1" value={user.volunteerInfo.emergency.emergencyContacts[0]?.name} />
-                                <InfoRow icon={Phone} label="Acil Durum Tel 1" value={user.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
-                                {user.volunteerInfo.emergency.emergencyContacts[1]?.name && (
+                                <InfoRow icon={Briefcase} label="Çalıştığınız Sektör" value={currentUser.volunteerInfo.sector} />
+                                <InfoRow icon={Briefcase} label="Çalıştığınız Pozisyon" value={currentUser.volunteerInfo.profession} />
+                                 <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={currentUser.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
+                                <InfoRow icon={HeartPulse} label="Kronik Hastalık" value={currentUser.volunteerInfo.emergency.hasChronicIllness ? 'Var' : 'Yok'} />
+                                <InfoRow icon={HeartPulse} label="Düzenli İlaç" value={currentUser.volunteerInfo.emergency.usesRegularMedication ? 'Var' : 'Yok'} />
+                                <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={currentUser.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
+                                <InfoRow icon={UserIcon} label="Acil Durum Kişisi 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.name} />
+                                <InfoRow icon={Phone} label="Acil Durum Tel 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
+                                {currentUser.volunteerInfo.emergency.emergencyContacts[1]?.name && (
                                     <>
-                                        <InfoRow icon={UserIcon} label="Acil Durum Kişisi 2" value={user.volunteerInfo.emergency.emergencyContacts[1]?.name} />
-                                        <InfoRow icon={Phone} label="Acil Durum Tel 2" value={user.volunteerInfo.emergency.emergencyContacts[1]?.phone} />
+                                        <InfoRow icon={UserIcon} label="Acil Durum Kişisi 2" value={currentUser.volunteerInfo.emergency.emergencyContacts[1]?.name} />
+                                        <InfoRow icon={Phone} label="Acil Durum Tel 2" value={currentUser.volunteerInfo.emergency.emergencyContacts[1]?.phone} />
                                     </>
                                 )}
                             </CardContent>
@@ -443,7 +451,7 @@ export default function ProfilePage() {
                     </TabsContent>
                     
                     <TabsContent value="badges-certificates" className="p-4 space-y-4">
-                        <NextBadgeGoal />
+                        <NextBadgeGoal userProfile={currentUser} />
                         <Card>
                             <CardHeader><CardTitle className='text-lg'>Kazanılan Rozetler</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-3 gap-4">
@@ -541,5 +549,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
-    

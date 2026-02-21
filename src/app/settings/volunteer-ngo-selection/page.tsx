@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -15,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function VolunteerNgoSelectionPage() {
     const router = useRouter();
-    const [selectedNgos, setSelectedNgos] = useState(['1', '2']);
+    const [selectedNgos, setSelectedNgos] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const { toast } = useToast();
     const [isOnboarding, setIsOnboarding] = useState(false);
@@ -24,6 +23,12 @@ export default function VolunteerNgoSelectionPage() {
         const onboardingStep = localStorage.getItem('onboardingStep');
         if (onboardingStep === 'volunteer-ngo-selection') {
             setIsOnboarding(true);
+        }
+        const savedNgos = localStorage.getItem('volunteerNgos');
+        if (savedNgos) {
+            setSelectedNgos(JSON.parse(savedNgos));
+        } else {
+            setSelectedNgos(['1', '2']);
         }
     }, []);
 
@@ -40,6 +45,7 @@ export default function VolunteerNgoSelectionPage() {
     };
     
     const handleSave = () => {
+        localStorage.setItem('volunteerNgos', JSON.stringify(selectedNgos));
         toast({
             title: "Tercihler Kaydedildi",
             description: "Gönüllüsü olduğunuz STK seçimleriniz başarıyla güncellendi.",
