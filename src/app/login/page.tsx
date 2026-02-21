@@ -214,8 +214,14 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                     <HangelLogo className="text-xl" />
                 </div>
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#1d1d1f]/80">
-                    <Link href="#bagis" className="hover:text-primary transition-colors">Bağış</Link>
-                    <Link href="#gonulluluk" className="hover:text-primary transition-colors">Gönüllülük</Link>
+                    <Link href="#bagis" className="hover:text-primary transition-colors flex items-center gap-2">
+                        <ShoppingBag className="h-4 w-4" />
+                        <span>Bağış</span>
+                    </Link>
+                    <Link href="#gonulluluk" className="hover:text-primary transition-colors flex items-center gap-2">
+                        <HeartHandshake className="h-4 w-4" />
+                        <span>Gönüllülük</span>
+                    </Link>
                 </nav>
                 <div className="flex items-center gap-2">
                     <Select value={language} onValueChange={changeLanguage}>
@@ -762,3 +768,5 @@ export default function LoginPage() {
         </div>
     );
 }
+
+    
