@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { volunteeringOpportunities } from '@/lib/data';
@@ -6,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import React from 'react';
 
 const OpportunityManagement = () => {
-    const ngoOpportunities = volunteeringOpportunities.filter(o => o.organization === 'Ahbap Derneği');
+    const ngoOpportunities = volunteeringOpportunities.filter(o => o.organization === 'Uluslararası Sosyal Fayda Derneği');
 
   return (
     <Card>

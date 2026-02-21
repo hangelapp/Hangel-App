@@ -305,7 +305,7 @@ export const allEntityLists: Brand[] = brandsData.map((brand, index) => {
                 name: brand.name,
                 avatarUrl: `https://logo.clearbit.com/${brand.domain}`,
             },
-            content: `Yeni sezon ürünlerimizle tanışın! ✨ Her alışverişinizde doğaya ve topluma katkıda bulunmanın keyfini çıkarın. Bu sezonki gelirlerimizin bir kısmını ${['TEMA Vakfı', 'Ahbap Derneği', 'LÖSEV'][index % 3]}'na bağışlıyoruz.`,
+            content: `Yeni sezon ürünlerimizle tanışın! ✨ Her alışverişinizde doğaya ve topluma katkıda bulunmanın keyfini çıkarın. Bu sezonki gelirlerimizin bir kısmını ${['TEMA Vakfı', 'Uluslararası Sosyal Fayda Derneği', 'LÖSEV'][index % 3]}'na bağışlıyoruz.`,
             imageUrl: `https://picsum.photos/seed/${slug}/800/450`,
             imageHint: 'product lifestyle shot',
             timestamp: `${(index % 5) + 1} gün önce`,
@@ -340,7 +340,7 @@ export const marketCategories: MarketCategory[] = [{ mainCategory: 'Tümü', sub
 
 export const timelinePosts: Post[] = [
     { id: '1', author: { name: 'TEMA Vakfı', avatarUrl: 'https://logo.clearbit.com/tema.org.tr' }, content: 'Bugün Balıkesir fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 Gelecek nesillere daha yeşil bir dünya bırakmak için var gücümüzle çalışıyoruz. #Doğaİçin #TEMA', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
-    { id: '2', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #Ahbap #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' }
+    { id: '2', author: { name: 'Uluslararası Sosyal Fayda Derneği', avatarUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #SBG #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' }
 ];
 
 export const adBanners: AdBanner[] = [
@@ -371,20 +371,21 @@ export const ngos: NGO[] = [
     },
     {
         id: '2',
-        name: 'Ahbap Derneği',
+        name: 'Uluslararası Sosyal Fayda Derneği',
+        shortName: 'SBG',
         foundationYear: 2017,
         category: 'Dayanışma',
         type: 'Dernek',
-        avatarUrl: 'https://logo.clearbit.com/ahbap.org',
+        avatarUrl: 'https://logo.clearbit.com/socialbusinessglobal.org',
         coverPhotoUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop',
         stats: { followers: 850000, donors: 250000, volunteers: 150000, volunteerHours: 500000, projects: 500, totalDonation: 12500000, donationCount: 300000, avgDonation: 41.67, highestSingleDonation: 1000, peopleReached: 2000000 },
         transparencyScore: 95,
-        about: "Ahbap, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir.",
+        about: "Uluslararası Sosyal Fayda Derneği, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir.",
         joinDate: "2023-02-20",
         supportedSDGs: ['Yoksulluğa Son', 'Açlığa Son', 'Nitelikli Eğitim'],
         beneficiaryGroups: ['İhtiyaç Sahipleri', 'Afetzedeler', 'Öğrenciler'],
         memberOf: ['Afet Platformu'],
-        contact: { email: 'info@ahbap.org', phone: '0216 550 50 50', website: 'https://ahbap.org', social: { twitter: 'ahbap', instagram: 'ahbap', facebook: 'ahbap', linkedin: 'ahbap' } },
+        contact: { email: 'info@socialbusinessglobal.org', phone: '0216 550 50 50', website: 'https://socialbusinessglobal.org', social: { twitter: 'socialbusinessglobal', instagram: 'socialbusinessglobal', facebook: 'socialbusinessglobal', linkedin: 'socialbusinessglobal' } },
         posts: [],
         opportunities: []
     },
@@ -509,7 +510,7 @@ export const ngos: NGO[] = [
 ];
 
 export const volunteeringOpportunities: Volunteering[] = [
-    { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Ahbap Derneği', ngoId: '2', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 50, applications: 120 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '09:00', end: '18:00', total: 56 }, socialArea: 'Afet', points: 1500, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Afet Kahramanı'], hasPreTraining: true, description: 'Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz.', amenities: { transport: true, food: true, accommodation: true } },
+    { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Uluslararası Sosyal Fayda Derneği', ngoId: '2', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 50, applications: 120 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '09:00', end: '18:00', total: 56 }, socialArea: 'Afet', points: 1500, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Afet Kahramanı'], hasPreTraining: true, description: 'Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz.', amenities: { transport: true, food: true, accommodation: true } },
     { id: '2', title: 'Fidan Dikme Etkinliği', organization: 'TEMA Vakfı', ngoId: '1', location: { city: 'İstanbul', district: 'Beykoz', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 100, applications: 250 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-01' }, hours: { start: '10:00', end: '16:00', total: 6 }, socialArea: 'Çevre', points: 500, ngoTransparencyScore: 92, taskType: 'Tek Gün', providesCertificate: true, earnedBadges: ['Doğa Koruyucu'], hasPreTraining: false, description: 'Geleceğe nefes olmak için binlerce fidanı toprakla buluşturuyoruz.', amenities: { transport: false, food: true, accommodation: false } },
     { id: '3', title: 'Sosyal Medya İçerik Gönüllüsü', organization: 'LÖSEV', ngoId: '3', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Sürekli', volunteerCount: { needed: 5, applications: 45 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2026-06-01' }, hours: { start: '09:00', end: '18:00', total: 240 }, socialArea: 'Sağlık', points: 2000, ngoTransparencyScore: 90, taskType: 'Sürekli', providesCertificate: true, earnedBadges: [], hasPreTraining: true, description: 'LÖSEV\'in sosyal medya hesapları için yaratıcı ve etkili içerikler üretecek gönüllüler arıyoruz.', amenities: { transport: false, food: false, accommodation: false }, skills: ['Sosyal Medya Yönetimi', 'Grafik Tasarım'] },
     { id: '4', title: 'Sokak Hayvanları İçin Kış Hazırlığı', organization: 'HAYTAP', ngoId: '4', location: { city: 'Bursa', district: 'Nilüfer', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 20, applications: 15 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '10:00', end: '17:00', total: 28 }, socialArea: 'Hayvan Hakları', points: 800, ngoTransparencyScore: 88, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Hayvan Dostu'], hasPreTraining: false, description: 'Sokaktaki canlarımız için kulübe yapımı ve mama dağıtımı.', amenities: { transport: true, food: true, accommodation: false } },
@@ -525,7 +526,7 @@ export const volunteeringOpportunities: Volunteering[] = [
     { id: '14', title: 'Tarihi Eser Restorasyonu', organization: 'Kültür Sanat Vakfı', ngoId: '7', location: { city: 'Mardin', district: 'Merkez', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 10, applications: 8 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '09:00', end: '17:00', total: 160 }, socialArea: 'Kültür & Sanat', points: 2800, ngoTransparencyScore: 91, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: [], hasPreTraining: true, description: 'Mardin\'deki tarihi bir yapının restorasyon çalışmalarında arkeolog ve mimarlara yardımcı olacak gönüllüler.', amenities: { transport: true, food: true, accommodation: true }, skills: ['El Becerileri'] },
     { id: '15', title: 'Mobil Uygulama Test Gönüllüsü', organization: 'hangel Derneği', ngoId: '8', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Proje Bazlı', volunteerCount: { needed: 50, applications: 150 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-15' }, hours: { start: '09:00', end: '18:00', total: 10 }, socialArea: 'Teknoloji', points: 300, ngoTransparencyScore: 98, taskType: 'Dönemsel', providesCertificate: false, earnedBadges: [], hasPreTraining: false, description: 'hangel uygulamasının yeni versiyonunu ilk deneyenlerden olun, hataları raporlayarak daha iyi bir deneyim sunmamıza yardımcı olun.', amenities: { transport: false, food: false, accommodation: false } },
     { id: '16', title: 'Köy Okulu Boyama Şenliği', organization: 'TEGV', ngoId: '5', location: { city: 'Van', district: 'Erciş', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 30, applications: 45 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-01' }, hours: { start: '09:00', end: '18:00', total: 16 }, socialArea: 'Eğitim', points: 850, ngoTransparencyScore: 94, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: [], hasPreTraining: false, description: 'Köy okulumuzun duvarlarını renklendirerek çocuklar için daha neşeli bir öğrenme ortamı yaratacağız.', amenities: { transport: true, food: true, accommodation: true } },
-    { id: '17', title: 'İkinci El Giysi Ayırma ve Paketleme', organization: 'Ahbap Derneği', ngoId: '2', location: { city: 'İstanbul', district: 'Ataşehir', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 25, applications: 60 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '10:00', end: '16:00', total: 72 }, socialArea: 'Yoksullukla Mücadele', points: 1100, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: false, earnedBadges: [], hasPreTraining: false, description: 'Bağışlanan ikinci el kıyafetlerin ayrıştırılması, temizlenmesi ve ihtiyaç sahiplerine ulaştırılmak üzere paketlenmesi.', amenities: { transport: false, food: true, accommodation: false } },
+    { id: '17', title: 'İkinci El Giysi Ayırma ve Paketleme', organization: 'Uluslararası Sosyal Fayda Derneği', ngoId: '2', location: { city: 'İstanbul', district: 'Ataşehir', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 25, applications: 60 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '10:00', end: '16:00', total: 72 }, socialArea: 'Yoksullukla Mücadele', points: 1100, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: false, earnedBadges: [], hasPreTraining: false, description: 'Bağışlanan ikinci el kıyafetlerin ayrıştırılması, temizlenmesi ve ihtiyaç sahiplerine ulaştırılmak üzere paketlenmesi.', amenities: { transport: false, food: true, accommodation: false } },
     { id: '18', title: 'Sahipsiz Hayvanlar İçin Mama Bağışı Kampanyası', organization: 'HAYTAP', ngoId: '4', location: { city: 'İzmir', district: 'Karşıyaka', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 50, applications: 80 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-01' }, hours: { start: '11:00', end: '19:00', total: 8 }, socialArea: 'Hayvan Hakları', points: 650, ngoTransparencyScore: 88, taskType: 'Tek Gün', providesCertificate: true, earnedBadges: ['Hayvan Dostu'], hasPreTraining: false, description: 'Belirlenen noktalarda stant kurarak mama bağışı toplanmasına ve farkındalık yaratılmasına destek olacak gönüllüler.', amenities: { transport: false, food: false, accommodation: false }, skills: ['İletişim'] },
     { id: '19', title: 'Lösemili Çocuklara Moral Ziyareti', organization: 'LÖSEV', ngoId: '3', location: { city: 'Ankara', district: 'Çankaya', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 10, applications: 25 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '13:00', end: '15:00', total: 24 }, socialArea: 'Sağlık', points: 950, ngoTransparencyScore: 90, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: [], hasPreTraining: true, description: 'LÖSEV\'in hastanesinde tedavi gören çocuklarla oyunlar oynayacak, onlara moral verecek pedagojik formasyon sahibi gönüllüler.', amenities: { transport: false, food: false, accommodation: false }, requirements: ['Pedagojik Formasyon'] },
     { id: '20', title: 'Plastiksiz Temmuz Farkındalık Kampanyası', organization: 'TEMA Vakfı', ngoId: '1', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Proje Bazlı', volunteerCount: { needed: 15, applications: 40 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-15' }, hours: { start: '09:00', end: '18:00', total: 30 }, socialArea: 'Çevre', points: 1000, ngoTransparencyScore: 92, taskType: 'Dönemsel', providesCertificate: false, earnedBadges: [], hasPreTraining: false, description: 'Sosyal medyada tek kullanımlık plastiklerin zararları hakkında içerikler üretecek, kampanya yürütecek gönüllüler.', amenities: { transport: false, food: false, accommodation: false }, skills: ['Sosyal Medya Yönetimi', 'İçerik Üretimi'] },
@@ -617,7 +618,7 @@ export const badges: Badge[] = [
 export const certificates: Certificate[] = [
     { id: 'cert1', title: 'Gönüllülük Liderliği Sertifikası', organization: 'hangel Akademi', date: '2024-05-20', linkedinUrl: '#' },
     { id: 'cert2', title: 'Proje Yönetimi ve Sosyal Etki', organization: 'Boğaziçi Üniversitesi', date: '2024-03-15', linkedinUrl: '#' },
-    { id: 'cert3', title: 'Afetlerde İlk Yardım Eğitimi', organization: 'Ahbap Derneği', date: '2024-02-10', linkedinUrl: '#' }
+    { id: 'cert3', title: 'Afetlerde İlk Yardım Eğitimi', organization: 'Uluslararası Sosyal Fayda Derneği', date: '2024-02-10', linkedinUrl: '#' }
 ];
 
 export const helpTopics: HelpTopic[] = [
@@ -643,7 +644,7 @@ export const ngoFaqArticles = [
 
 export const pastVolunteering = [];
 export const managedItems: ManagedItem[] = [
-    { name: 'Ahbap Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/ahbap.org' },
+    { name: 'Uluslararası Sosyal Fayda Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' },
     { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'users', href: '/admin/clubs', status: 'approved', logoUrl: 'https://logo.clearbit.com/itu.edu.tr' },
     { name: 'Mavi', type: 'Marka', icon: 'store', href: '/admin', status: 'approved', logoUrl: 'https://logo.clearbit.com/mavi.com' },
 ];
@@ -936,4 +937,3 @@ export const donationTransactions: DonationTransaction[] = [];
     
 
     
-

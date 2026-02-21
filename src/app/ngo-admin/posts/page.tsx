@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 export default function PostsPage() {
     const { toast } = useToast();
-    const [posts, setPosts] = useState<Post[]>(timelinePosts.filter(p => p.author.name === 'Ahbap Derneği'));
+    const [posts, setPosts] = useState<Post[]>(timelinePosts.filter(p => p.author.name === 'Uluslararası Sosyal Fayda Derneği'));
     const [newPostContent, setNewPostContent] = useState('');
 
     const handleCreatePost = () => {
@@ -25,7 +26,7 @@ export default function PostsPage() {
 
         const newPost: Post = {
             id: `${Date.now()}`,
-            author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' },
+            author: { name: 'Uluslararası Sosyal Fayda Derneği', avatarUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' },
             content: newPostContent,
             timestamp: 'Şimdi',
             likes: 0,
