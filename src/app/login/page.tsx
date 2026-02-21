@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -507,7 +508,7 @@ export default function LoginPage() {
             title: "hangel STK", 
             description: "Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın.", 
             href: "/ngo-onboarding",
-            imageUrl: "https://storage.googleapis.com/project-123-bucket/image.jpg",
+            imageUrl: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop",
             imageHint: "volunteers working",
             linkText: "STK'nı Ekle",
             linkText2: "Daha Fazla Bilgi",
@@ -770,3 +771,4 @@ export default function LoginPage() {
 }
 
     
+

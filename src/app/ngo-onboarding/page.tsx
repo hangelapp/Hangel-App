@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -156,8 +157,8 @@ export default function NgoOnboardingPage() {
             category: "NİTELİKLİ GÖNÜLLÜ AĞI",
             title: "Yetenek Bazlı Gönüllülük",
             description: "Proje yönetimi, tasarım, hukuk gibi alanlarda uzmanlaşmış binlerce yetenekli gönüllüye ulaşın, projelerinizi güçlendirin.",
-            imageUrl: "https://storage.googleapis.com/project-123-bucket/image.jpg",
-            imageHint: "volunteers working",
+            imageUrl: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop',
+            imageHint: 'volunteers working',
             link: { label: "Gönüllü İlanı Oluştur", href: "/ngo-admin/volunteer" }
         },
         {
@@ -245,13 +246,13 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-32 pb-16 text-center space-y-6">
                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-bold tracking-widest uppercase">hangel STK</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase">hangel STK</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
                     STK yöneticisi, müjde!
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                    Profesyonel yetkinlik, sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform. <strong className="text-primary">"hangel.org artık yayında ve Türkiye’de faaliyette."</strong>
+                Profesyonel yetkinlik, Sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform.
                 </p>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
@@ -263,7 +264,7 @@ export default function NgoOnboardingPage() {
             <section className="py-20 bg-[#f5f5f7] border-y">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-12 space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tight">Neden Hangel'e Katılmalısınız?</h2>
+                        <h2 className="text-3xl font-bold tracking-tight">Neden hangel'e Katılmalısınız?</h2>
                         <p className="text-muted-foreground">Dijital dönüşümden sürdürülebilir kaynak yaratmaya kadar, STK'nızın etkisini en üst düzeye çıkaracak araçları keşfedin.</p>
                     </div>
                     <Carousel
@@ -299,7 +300,7 @@ export default function NgoOnboardingPage() {
                 <div className="text-center space-y-4 max-w-3xl mx-auto">
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Eksiksiz Bir Yönetim Paneli.</h2>
                     <p className="text-lg text-muted-foreground font-medium">İhtiyacınız olan her araç, profesyonel standartlarda elinizin altında.</p>
-                     <p className="text-base text-muted-foreground max-w-2xl mx-auto">SMS ve e-posta gibi iletişim araçlarından CRM ve muhasebe gibi profesyonel çözümlere kadar tüm operasyonel ihtiyaçlarınızı Hangel'in entegre ekosistemi üzerinden yönetin.</p>
+                     <p className="text-base text-muted-foreground max-w-2xl mx-auto">SMS ve e-posta gibi iletişim araçlarından CRM ve muhasebe gibi profesyonel çözümlere kadar tüm operasyonel ihtiyaçlarınızı hangel'in entegre ekosistemi üzerinden yönetin.</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {toolsetFeatures.map(tool => <ToolGridItem key={tool.title} {...tool} />)}
