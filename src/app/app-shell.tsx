@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import AppHeader from '@/components/layout/header';
 import { SideNav } from '@/components/layout/SideNav';
@@ -89,6 +89,11 @@ const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => vo
 
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+    const [isClient, setIsClient] = useState(false);
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     const [isDrawerOpen, setDrawerOpen] = React.useState(false);
     const pathname = usePathname();
 
@@ -120,6 +125,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
 
+    if (!isClient) {
+        return <>{children}</>;
+    }
 
     if (isPreviewPage || isSuperAdminPage || isPublicPage) {
         return <>{children}</>;
@@ -175,7 +183,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
-            <main className="flex-1 pt-12 pb-8">{children}</main>
+            <main className="flex-1 pt-12 pb-24 lg:pb-8">{children}</main>
           </div>
         </div>
     );
