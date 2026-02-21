@@ -104,11 +104,6 @@ export default function CareersPage() {
                 </div>
                 <div className="space-y-4">
                   {[
-                    { title: 'Proje Yöneticisi (Sosyal Etki Projeleri)', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'Gönüllü Koordinatörü', location: 'Ankara', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'İletişim Uzmanı (Dijital Medya)', location: 'Remote', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'Kaynak Geliştirme Sorumlusu', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'Saha Operasyonları Sorumlusu', location: 'Hatay', type: 'Proje Bazlı', org: 'hangel Derneği' },
                     { title: 'Frontend Geliştirici (React/Next.js)', location: 'İstanbul / Remote', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
                     { title: 'Topluluk Yöneticisi', location: 'Ankara', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
                     { title: 'Proje Koordinatörü (Gönüllülük Programları)', location: 'İzmir', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
@@ -122,6 +117,34 @@ export default function CareersPage() {
                       </div>
                       <Button asChild className="shrink-0">
                         <Link href="#">İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></Link>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+            
+            <section className="py-24 bg-white">
+              <div className="container mx-auto px-6 max-w-4xl space-y-12">
+                <div className="text-center space-y-3">
+                    <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Gönüllülük Fırsatları</h2>
+                    <p className="text-lg text-muted-foreground">Zamanınızı ve yeteneklerinizi toplumsal faydaya dönüştürün.</p>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    { title: 'Proje Yöneticisi (Sosyal Etki Projeleri)', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'Gönüllü Koordinatörü', location: 'Ankara', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'İletişim Uzmanı (Dijital Medya)', location: 'Remote', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'Kaynak Geliştirme Sorumlusu', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
+                    { title: 'Saha Operasyonları Sorumlusu', location: 'Hatay', type: 'Proje Bazlı', org: 'hangel Derneği' },
+                  ].map((job, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
+                      <div>
+                        <h3 className="font-bold text-lg">{job.title}</h3>
+                        <p className="text-sm text-muted-foreground">{job.org} • {job.location} • {job.type}</p>
+                      </div>
+                      <Button asChild className="shrink-0">
+                        <Link href="/volunteering">İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></Link>
                       </Button>
                     </div>
                   ))}
