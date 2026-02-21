@@ -1,11 +1,12 @@
 
+
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users, MessageSquare, Edit } from 'lucide-react';
-import { studentClubs, schoolRepresentatives } from '@/lib/data';
+import { studentClubs as studentClubsData, schoolRepresentatives } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -14,6 +15,9 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import type { StudentClub } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
@@ -34,15 +38,45 @@ export default function ClubProfilePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const club = studentClubs.find(c => c.id === id);
+  const [club, setClub] = useState<StudentClub | null | undefined>(undefined);
   const [profileUrl, setProfileUrl] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
+    const storedClubs = localStorage.getItem('managedClubs');
+    const clubsSource: StudentClub[] = storedClubs ? JSON.parse(storedClubs) : studentClubsData;
+    const foundClub = clubsSource.find(c => c.id === id);
+    setClub(foundClub || null);
+    
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
-  }, []);
+  }, [id]);
+
+  if (club === undefined) {
+    return (
+        <div className="animate-in fade-in-0">
+           <Skeleton className="h-48 w-full" />
+          <div className="p-4 bg-background">
+            <div className="flex gap-4 items-center -mt-16">
+                <Skeleton className="h-20 w-20 rounded-lg border-4 border-background" />
+                 <div className="space-y-1 pt-16">
+                     <Skeleton className="h-7 w-48" />
+                     <Skeleton className="h-5 w-32" />
+                </div>
+            </div>
+             <div className="mt-4 space-y-2">
+                 <Skeleton className="h-16 w-full" />
+                 <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
+            <Skeleton className="h-48 w-full rounded-lg" />
+            <Skeleton className="h-32 w-full rounded-lg" />
+          </div>
+        </div>
+    );
+  }
 
   if (!club) {
     notFound();

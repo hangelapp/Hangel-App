@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { allEntityLists } from "@/lib/data";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -13,7 +13,23 @@ type BrandWithStatus = Brand & { status: 'Aktif' | 'Pasif' };
 
 export default function BrandsPage() {
     const { toast } = useToast();
-    const [brands, setBrands] = useState<BrandWithStatus[]>(allEntityLists.map(b => ({...b, status: 'Aktif'})));
+    const [brands, setBrands] = useState<BrandWithStatus[]>([]);
+
+    useEffect(() => {
+        const storedBrands = localStorage.getItem('managedBrands');
+        if (storedBrands) {
+            setBrands(JSON.parse(storedBrands));
+        } else {
+            const initialBrands = allEntityLists.map(b => ({...b, status: 'Aktif' as 'Aktif' | 'Pasif' }));
+            setBrands(initialBrands);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (brands.length > 0) {
+            localStorage.setItem('managedBrands', JSON.stringify(brands));
+        }
+    }, [brands]);
 
     const handleToggleActive = (id: string) => {
         setBrands(prevBrands => prevBrands.map(b => {
@@ -27,7 +43,11 @@ export default function BrandsPage() {
     };
 
     const handleRemove = (id: string, name: string) => {
-        setBrands(prevBrands => prevBrands.filter(b => b.id !== id));
+        setBrands(prevBrands => {
+            const updatedBrands = prevBrands.filter(b => b.id !== id);
+            localStorage.setItem('managedBrands', JSON.stringify(updatedBrands));
+            return updatedBrands;
+        });
         toast({
             variant: 'destructive',
             title: "Marka Kaldırıldı",

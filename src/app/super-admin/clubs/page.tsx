@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { studentClubs as initialClubs } from "@/lib/data";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -13,7 +13,23 @@ type ClubWithStatus = StudentClub & { status: 'Aktif' | 'Pasif' };
 
 export default function ClubsPage() {
     const { toast } = useToast();
-    const [clubs, setClubs] = useState<ClubWithStatus[]>(initialClubs.map(c => ({...c, status: 'Aktif'})));
+    const [clubs, setClubs] = useState<ClubWithStatus[]>([]);
+
+    useEffect(() => {
+        const storedClubs = localStorage.getItem('managedClubs');
+        if (storedClubs) {
+            setClubs(JSON.parse(storedClubs));
+        } else {
+            const initialClubsWithStatus = initialClubs.map(c => ({...c, status: 'Aktif' as 'Aktif' | 'Pasif'}));
+            setClubs(initialClubsWithStatus);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (clubs.length > 0) {
+           localStorage.setItem('managedClubs', JSON.stringify(clubs));
+        }
+    }, [clubs]);
 
     const handleToggleActive = (id: string) => {
         setClubs(prevClubs => prevClubs.map(c => {
@@ -27,7 +43,11 @@ export default function ClubsPage() {
     };
 
     const handleRemove = (id: string, name: string) => {
-        setClubs(prevClubs => prevClubs.filter(c => c.id !== id));
+        setClubs(prevClubs => {
+            const updatedClubs = prevClubs.filter(c => c.id !== id);
+            localStorage.setItem('managedClubs', JSON.stringify(updatedClubs));
+            return updatedClubs;
+        });
         toast({
             variant: 'destructive',
             title: "Kulüp Kaldırıldı",

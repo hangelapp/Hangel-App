@@ -15,7 +15,8 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import type { Post } from '@/lib/types';
+import type { Post, Brand } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Local StatRow component for statistics tab
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
@@ -69,14 +70,46 @@ export default function BrandProfilePage() {
   const params = useParams();
   const { toast } = useToast();
   const slug = params.id as string;
-  const brand = allEntityLists.find(b => b.slug === slug);
+  const [brand, setBrand] = useState<Brand | null | undefined>(undefined);
   const [profileUrl, setProfileUrl] = useState('');
 
   useEffect(() => {
+    const storedBrands = localStorage.getItem('managedBrands');
+    const brandsSource: Brand[] = storedBrands ? JSON.parse(storedBrands) : allEntityLists;
+    const foundBrand = brandsSource.find((b: Brand) => b.slug === slug);
+    setBrand(foundBrand || null);
+    
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
-  }, []);
+  }, [slug]);
+
+  if (brand === undefined) {
+    return (
+        <div className="animate-in fade-in-0">
+          <Skeleton className="h-40 w-full" />
+          <div className="p-4 bg-background">
+            <div className="flex gap-4 items-end -mt-16">
+                <Skeleton className="h-24 w-24 rounded-full border-4 border-background shrink-0" />
+                 <div className="flex-1 pb-2 flex justify-between items-end">
+                    <div className='space-y-2'>
+                         <Skeleton className="h-7 w-48" />
+                         <Skeleton className="h-5 w-32" />
+                    </div>
+                </div>
+            </div>
+             <div className="flex gap-2 mt-4">
+                <Skeleton className="h-11 w-full" />
+                <Skeleton className="h-11 w-full" />
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        </div>
+    );
+  }
 
   if (!brand) {
     notFound();

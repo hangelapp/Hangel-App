@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ngos as initialNgos } from "@/lib/data";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -13,7 +13,24 @@ type NGOWithStatus = NGO & { status: 'Aktif' | 'Pasif' };
 
 export default function NgosPage() {
     const { toast } = useToast();
-    const [ngos, setNgos] = useState<NGOWithStatus[]>(initialNgos.map(n => ({...n, status: 'Aktif'})));
+    const [ngos, setNgos] = useState<NGOWithStatus[]>([]);
+
+    useEffect(() => {
+        const storedNgos = localStorage.getItem('managedNgos');
+        if (storedNgos) {
+            setNgos(JSON.parse(storedNgos));
+        } else {
+            const initialNgosWithStatus = initialNgos.map(n => ({...n, status: 'Aktif' as 'Aktif' | 'Pasif'}));
+            setNgos(initialNgosWithStatus);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (ngos.length > 0) {
+           localStorage.setItem('managedNgos', JSON.stringify(ngos));
+        }
+    }, [ngos]);
+
 
     const handleToggleActive = (id: string) => {
         setNgos(prevNgos => prevNgos.map(n => {
@@ -27,7 +44,11 @@ export default function NgosPage() {
     };
 
     const handleRemove = (id: string, name: string) => {
-        setNgos(prevNgos => prevNgos.filter(n => n.id !== id));
+        setNgos(prevNgos => {
+            const updatedNgos = prevNgos.filter(n => n.id !== id);
+            localStorage.setItem('managedNgos', JSON.stringify(updatedNgos));
+            return updatedNgos;
+        });
         toast({
             variant: 'destructive',
             title: "Kuruluş Kaldırıldı",

@@ -1,11 +1,12 @@
 
+
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2, CreditCard } from 'lucide-react';
-import { ngos, timelinePosts, volunteeringOpportunities } from '@/lib/data';
+import { ngos as ngosData, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import type { NGO, Post, Volunteering } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -98,15 +101,47 @@ export default function NgoProfilePage() {
   const params = useParams();
   const { toast } = useToast();
   const id = params.id as string;
-  const ngo = ngos.find(n => n.id === id);
+  const [ngo, setNgo] = useState<NGO | null | undefined>(undefined);
   const [profileUrl, setProfileUrl] = useState('');
 
   useEffect(() => {
+    const storedNgos = localStorage.getItem('managedNgos');
+    const ngosSource = storedNgos ? JSON.parse(storedNgos) : ngosData;
+    const foundNgo = ngosSource.find((n: NGO) => n.id === id);
+    setNgo(foundNgo || null);
+
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
-  }, []);
+  }, [id]);
   
+  if (ngo === undefined) {
+    return (
+        <div className="animate-in fade-in-0">
+          <Skeleton className="h-40 w-full" />
+          <div className="p-4 bg-background">
+            <div className="flex gap-4 items-end -mt-16">
+                <Skeleton className="h-24 w-24 rounded-lg border-4 border-background shrink-0" />
+                 <div className="flex-1 pb-2 flex justify-between items-end">
+                    <div className='space-y-2'>
+                         <Skeleton className="h-7 w-48" />
+                         <Skeleton className="h-5 w-32" />
+                    </div>
+                </div>
+            </div>
+             <div className="flex gap-2 mt-4">
+                <Skeleton className="h-11 w-full" />
+                <Skeleton className="h-11 w-full" />
+            </div>
+          </div>
+          <div className="p-4 space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        </div>
+    );
+  }
+
   if (!ngo) {
     notFound();
   }
