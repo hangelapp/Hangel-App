@@ -175,11 +175,10 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                         </div>
                     </div>
                      <div className="text-left text-[11px] text-[#1d1d1f]/50 pt-4">
-                        Telif Hakkı © 2026 hangel A.Ş. Tüm hakları saklıdır.
+                        <p>hangel v.2</p>
                     </div>
                 </div>
             </div>
         </footer>
     );
 }
-

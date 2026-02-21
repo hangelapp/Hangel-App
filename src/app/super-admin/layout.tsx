@@ -144,6 +144,9 @@ export default function SuperAdminLayout({
           )}
           {children}
         </main>
+        <footer className="text-center text-xs text-muted-foreground p-4 border-t bg-muted/40">
+          <p>hangel v.2</p>
+        </footer>
       </div>
     </div>
   );

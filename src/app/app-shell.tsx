@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -114,6 +115,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/logo-usage',
         '/settings/contracts',
         '/contact',
+        '/support/app-support',
     ];
 
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
@@ -174,6 +176,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
             <main className="flex-1 pt-12 pb-8">{children}</main>
+            <footer className="py-4 text-center text-xs text-muted-foreground">
+              <p>hangel v.2</p>
+            </footer>
           </div>
         </div>
     );

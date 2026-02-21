@@ -1,3 +1,4 @@
+
 'use client';
 import { usePathname } from 'next/navigation';
 
@@ -17,7 +18,7 @@ export default function SettingsLayout({
     <>
       {children}
       <footer className="pt-8 pb-4 text-center text-xs text-muted-foreground">
-        <p>® hangel.org v.12</p>
+        <p>hangel v.2</p>
       </footer>
     </>
   );
