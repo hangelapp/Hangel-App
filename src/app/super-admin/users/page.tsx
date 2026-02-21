@@ -117,16 +117,23 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: { user: User | nul
 export default function UsersPage() {
     const [users, setUsers] = useState(mockUsers);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeSearch, setActiveSearch] = useState('');
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
     const { toast } = useToast();
 
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        setActiveSearch(searchTerm);
+    };
+
     const filteredUsers = useMemo(() => {
+        if (!activeSearch) return users;
         return users.filter(u => 
-            u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            u.email.toLowerCase().includes(searchTerm.toLowerCase())
+            u.name.toLowerCase().includes(activeSearch.toLowerCase()) || 
+            u.email.toLowerCase().includes(activeSearch.toLowerCase())
         );
-    }, [searchTerm, users]);
+    }, [activeSearch, users]);
 
     const handleToggleStatus = (userId: string) => {
         setUsers(prevUsers =>
@@ -177,15 +184,18 @@ export default function UsersPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            placeholder="Kullanıcı adı veya e-posta ile ara..." 
-                            className="pl-10" 
-                            value={searchTerm} 
-                            onChange={e => setSearchTerm(e.target.value)} 
-                        />
-                    </div>
+                    <form onSubmit={handleSearch} className="flex items-center gap-2">
+                        <div className="relative flex-grow">
+                            <Input 
+                                placeholder="Kullanıcı adı veya e-posta ile ara..." 
+                                value={searchTerm} 
+                                onChange={e => setSearchTerm(e.target.value)} 
+                            />
+                        </div>
+                        <Button type="submit" size="icon">
+                            <Search className="h-4 w-4" />
+                        </Button>
+                    </form>
                     <div className="space-y-3">
                         {filteredUsers.map(user => (
                            <div key={user.id} className="p-4 border rounded-lg flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
