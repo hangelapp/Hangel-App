@@ -89,11 +89,6 @@ const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => vo
 
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-    const [isClient, setIsClient] = useState(false);
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-
     const [isDrawerOpen, setDrawerOpen] = React.useState(false);
     const pathname = usePathname();
 
@@ -124,10 +119,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     ];
 
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
-
-    if (!isClient) {
-        return <>{children}</>;
-    }
 
     if (isPreviewPage || isSuperAdminPage || isPublicPage) {
         return <>{children}</>;
