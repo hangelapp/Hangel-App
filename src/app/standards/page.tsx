@@ -147,7 +147,7 @@ export default function StandardsPage() {
         { label: "Gönüllülük Sözleşmesi", std: "ILO Çerçevesi", org: "ILO", region: "Küresel", rate: "%90" },
         { label: "Gönüllü Hakları Beyanı", std: "İnsan Hakları / Etik ve yasal çerçeve", org: "UN / hangel", region: "Küresel", rate: "%95 / %100" },
     ];
-
+    
     const privacySecurityData = [
         { label: "Gizlilik Politikası", std: "ISO/IEC 27701 / KVKK / GDPR / CCPA / LGPD", org: "ISO / hangel", region: "Küresel / AB / ABD / Türkiye / Latin Amerika", rate: "%85 / %100" },
         { label: "KVKK Aydınlatma Metni", std: "KVKK", org: "KVKK / İçişleri Bakanlığı", region: "Türkiye", rate: "%100" },
@@ -190,7 +190,7 @@ export default function StandardsPage() {
         { label: "Yönetim ve Kurumsal Yönetişim İlkeleri", std: "Kurumsal Yönetim Standartları", org: "hangel", region: "Küresel", rate: "%100" },
         { label: "Kurumsal Risk ve Uyum Komitesi Beyanı", std: "Kurumsal Risk Yönetimi", org: "hangel", region: "Küresel", rate: "%100" },
     ];
-
+    
     const accessibilityLawData = [
         { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Afrika / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
         { label: "Bilgilendirme Politikası", std: "Transparency Rules", org: "Regülatörler / hangel", region: "Küresel", rate: "%95 / %100" },
