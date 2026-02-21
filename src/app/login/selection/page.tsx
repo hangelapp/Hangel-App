@@ -256,7 +256,15 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
 };
 
 const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
-    const [corporateType, setCorporateType] = useState('');
+    const searchParams = useSearchParams();
+    const entityParam = searchParams.get('entity');
+    const [corporateType, setCorporateType] = useState(entityParam || '');
+
+    useEffect(() => {
+        if (entityParam && ['NGO', 'BRAND', 'CLUB'].includes(entityParam)) {
+            setCorporateType(entityParam);
+        }
+    }, [entityParam]);
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -267,7 +275,7 @@ const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="org-type">Kuruluş Türü</Label>
-                <Select required onValueChange={setCorporateType}>
+                <Select required onValueChange={setCorporateType} value={corporateType}>
                     <SelectTrigger id="org-type"><SelectValue placeholder="Kuruluş türünü seçin..." /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="NGO">Sivil Toplum Kuruluşu (STK)</SelectItem>

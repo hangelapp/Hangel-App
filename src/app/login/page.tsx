@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -507,8 +506,8 @@ export default function LoginPage() {
         { 
             title: "hangel STK", 
             description: "Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın.", 
-            href: "/ngo-onboarding",
-            imageUrl: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop",
+            href: "/login/selection?action=register&type=corporate&entity=NGO",
+            imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
             imageHint: "volunteers working",
             linkText: "STK'nı Ekle",
             linkText2: "Daha Fazla Bilgi",
@@ -517,7 +516,7 @@ export default function LoginPage() {
         { 
             title: "hangel Marka", 
             description: "Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın.", 
-            href: "/merchant",
+            href: "/login/selection?action=register&type=corporate&entity=BRAND",
             imageUrl: "https://picsum.photos/seed/merc-char/1080/1080",
             imageHint: "charcoal merchant store drawing",
             linkText: "Markanı Ekle",
@@ -527,10 +526,10 @@ export default function LoginPage() {
         { 
             title: "hangel Clubs", 
             description: "Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin.", 
-            href: "/campus-advantages",
+            href: "/login/selection?action=register&type=corporate&entity=CLUB",
             imageUrl: campusImg?.imageUrl || "https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?q=80&w=1080",
             imageHint: campusImg?.imageHint || "minimalist university poster",
-            linkText: "Kulübünü Ekle",
+            linkText: "Kulübünü Kaydet",
             linkText2: "Daha Fazla Bilgi",
             href2: "/campus-advantages"
         },
@@ -769,6 +768,3 @@ export default function LoginPage() {
         </div>
     );
 }
-
-    
-
