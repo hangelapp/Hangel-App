@@ -114,18 +114,18 @@ const ShowcaseCard = ({
   const Icon = Icons[item.icon] || Icons.HelpCircle;
   return (
     <Link href={item.href} className="group block h-full">
-      <div className={cn("rounded-[2rem] p-8 text-center flex flex-col justify-between h-[450px]", themeConfig.bg)}>
-        <div className="pt-8">
-          <p className={cn("font-semibold text-base mt-2", themeConfig.subtitleColor)}>{item.label}</p>
-          <h3 className={cn("text-3xl font-bold leading-tight mt-2", themeConfig.titleColor)}>{item.description}</h3>
-          <div className="mt-4">
-             <span className={cn("text-sm font-semibold flex items-center justify-center", themeConfig.linkColor)}>
-                Daha fazla bilgi edin <ChevronRight className="h-4 w-4 ml-0.5" />
+      <div className={cn("rounded-[2rem] p-6 text-center flex flex-col justify-between min-h-[300px]", themeConfig.bg)}>
+        <div>
+          <p className={cn("font-semibold text-sm mt-2", themeConfig.subtitleColor)}>{item.label}</p>
+          <h3 className={cn("text-2xl font-bold leading-tight mt-1", themeConfig.titleColor)}>{item.description}</h3>
+          <div className="mt-3">
+             <span className={cn("text-xs font-semibold flex items-center justify-center", themeConfig.linkColor)}>
+                Daha fazla bilgi edin <ChevronRight className="h-3 w-3 ml-0.5" />
              </span>
           </div>
         </div>
-        <div className="mt-8 flex-1 flex items-end justify-center">
-            <div className="w-32 h-32 relative">
+        <div className="mt-4 flex-1 flex items-end justify-center">
+            <div className="w-24 h-24 relative">
                 <Icon className={cn("w-full h-full", themeConfig.iconColor)} />
             </div>
         </div>
@@ -182,8 +182,7 @@ const ColorCard = ({ hex, name, rgb, cmyk, onCopy }: { hex: string, name: string
     </div>
 );
 
-
-export default function LogoUsagePage() {
+export default function LogoPage() {
     const router = useRouter();
     const { toast } = useToast();
 
