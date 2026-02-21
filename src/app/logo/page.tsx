@@ -37,7 +37,9 @@ import {
     HandCoins,
     ChevronRight,
     UserCog,
-    ShieldCheck
+    ShieldCheck,
+    MessageSquare,
+    Megaphone,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -114,18 +116,18 @@ const ShowcaseCard = ({
   const Icon = Icons[item.icon] || Icons.HelpCircle;
   return (
     <Link href={item.href} className="group block h-full">
-      <div className={cn("rounded-[2rem] p-6 text-center flex flex-col justify-between min-h-[220px]", themeConfig.bg)}>
+      <div className={cn("rounded-[2rem] p-4 text-center flex flex-col justify-between min-h-[180px]", themeConfig.bg)}>
         <div>
-          <h3 className={cn("text-xl font-bold leading-tight", themeConfig.titleColor)}>{item.label}</h3>
-          <p className={cn("text-sm mt-2", themeConfig.subtitleColor)}>{item.description}</p>
-          <div className="mt-3">
+          <h3 className={cn("text-xl font-black leading-tight", themeConfig.titleColor)}>{item.label}</h3>
+          <p className={cn("text-xs mt-1", themeConfig.subtitleColor)}>{item.description}</p>
+          <div className="mt-2">
              <span className={cn("text-xs font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-3 w-3 ml-0.5" />
              </span>
           </div>
         </div>
-        <div className="mt-4 flex-1 flex items-end justify-center">
-            <div className="w-16 h-16 relative">
+        <div className="mt-2 flex-1 flex items-end justify-center">
+            <div className="w-12 h-12 relative">
                 <Icon className={cn("w-full h-full", themeConfig.iconColor)} />
             </div>
         </div>
@@ -136,13 +138,13 @@ const ShowcaseCard = ({
 
 const LogoShowcaseCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
     <Card className="rounded-[1.75rem] h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-xl transition-shadow group">
-        <div className="relative aspect-square w-full flex items-center justify-center p-6 bg-muted/30">
+        <div className="relative aspect-square w-full flex items-center justify-center p-4 bg-muted/30">
             {children}
         </div>
-        <CardContent className="p-6 flex-1 flex flex-col">
-            <h4 className="font-semibold text-base">{title}</h4>
+        <CardContent className="p-4 flex-1 flex flex-col">
+            <h4 className="font-semibold text-sm">{title}</h4>
             <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
-            <Button size="sm" variant="ghost" className="text-xs mt-4 p-0 h-auto self-start text-primary hover:text-primary group-hover:underline" onClick={onDownload}>
+            <Button size="sm" variant="ghost" className="text-xs mt-2 p-0 h-auto self-start text-primary hover:text-primary group-hover:underline" onClick={onDownload}>
                 PNG İndir <Download className="ml-1.5 h-3.5 w-3.5"/>
             </Button>
         </CardContent>
@@ -150,32 +152,30 @@ const LogoShowcaseCard = ({ title, description, children, onDownload }: { title:
 );
 
 const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
-    <div className="border rounded-2xl p-6 text-center space-y-3 bg-white/50">
+    <div className="border rounded-2xl p-4 text-center space-y-2 bg-white/50">
         <p className="text-xs font-bold text-muted-foreground">{title}</p>
-        <p className={cn("text-3xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
-        <p className="text-lg font-semibold">{fontName}</p>
+        <p className={cn("text-2xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
+        <p className="text-base font-semibold">{fontName}</p>
         <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
     </div>
 );
 
 const ColorCard = ({ hex, name, rgb, cmyk, onCopy }: { hex: string, name: string, rgb: string, cmyk: string, onCopy: () => void }) => (
     <div 
-        className="group cursor-pointer bg-white rounded-3xl shadow-sm overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-[300px]"
+        className="group cursor-pointer bg-white rounded-2xl shadow-sm overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-[220px]"
         onClick={onCopy}
     >
-        <div className="relative w-full h-24" style={{ backgroundColor: hex }}>
-            {/* A subtle pattern or icon could be added here for visual interest */}
-        </div>
-        <div className="p-6 flex-1 flex flex-col">
-            <h4 className="font-bold text-lg text-foreground">{name}</h4>
-            <div className="mt-4 text-xs text-muted-foreground space-y-2 font-mono flex-1">
+        <div className="relative w-full h-16" style={{ backgroundColor: hex }} />
+        <div className="p-4 flex-1 flex flex-col">
+            <h4 className="font-bold text-base text-foreground">{name}</h4>
+            <div className="mt-2 text-xs text-muted-foreground space-y-1 font-mono flex-1">
                 <p>HEX: {hex}</p>
                 <p>RGB: {rgb}</p>
                 <p>CMYK: {cmyk}</p>
             </div>
-            <div className="mt-4 pt-4 border-t border-black/5">
-                <span className="text-primary text-sm font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Copy className="w-4 h-4" /> Kodu Kopyala
+            <div className="mt-2 pt-2 border-t border-black/5">
+                <span className="text-primary text-xs font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Copy className="w-3 h-3" /> Kodu Kopyala
                 </span>
             </div>
         </div>
@@ -206,25 +206,25 @@ export default function LogoPage() {
             title: "Birincil Logo",
             description: "Zeminsiz Logo (PNG)",
             onDownload: () => handleDownload('birincil-logo.png'),
-            content: <HangelLogo className="text-5xl text-primary" />
+            content: <HangelLogo className="text-4xl text-primary" />
         },
         {
             title: "İkincil Logo",
             description: "Zeminli Logo (PNG)",
             onDownload: () => handleDownload('ikincil-logo.png'),
-            content: <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 bg-primary rounded-xl"><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
             description: "Beyaz Logo (PNG) – (Zorunlu hallerde)",
             onDownload: () => handleDownload('beyaz-logo.png'),
-            content: <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center"><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "App Icon",
             description: "Mobil Uygulama Simgesi (PNG)",
             onDownload: () => handleDownload('app-icon.png'),
-            content: <div className="p-4 bg-primary rounded-3xl"><span className="text-3xl font-black text-white">h</span></div>
+            content: <div className="p-3 bg-primary rounded-2xl"><span className="text-2xl font-black text-white">h</span></div>
         },
     ];
 
@@ -233,25 +233,25 @@ export default function LogoPage() {
             title: "Birincil Logo",
             description: "Zeminsiz Logo (PNG)",
             onDownload: () => handleDownload('dernek-birincil-logo.png'),
-            content: <HangelLogo className="text-5xl" style={{color: '#042654'}} />
+            content: <HangelLogo className="text-4xl" style={{color: '#042654'}} />
         },
         {
             title: "İkincil Logo",
             description: "Zeminli Logo (PNG)",
             onDownload: () => handleDownload('dernek-ikincil-logo.png'),
-            content: <div className="p-4 rounded-2xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 rounded-xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
             description: "Beyaz Logo (PNG)",
             onDownload: () => handleDownload('dernek-beyaz-logo.png'),
-            content: <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center"><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "Dernek Icon",
             description: "Mobil Uygulama Simgesi (PNG)",
             onDownload: () => handleDownload('dernek-app-icon.png'),
-            content: <div className="p-4 bg-primary rounded-3xl" style={{backgroundColor: '#042654'}}><span className="text-3xl font-black text-white">h</span></div>
+            content: <div className="p-3 bg-primary rounded-2xl" style={{backgroundColor: '#042654'}}><span className="text-2xl font-black text-white">h</span></div>
         },
     ];
     
@@ -265,6 +265,8 @@ export default function LogoPage() {
       { id: 'sosyal-medya', icon: Share2, title: "SOSYAL MEDYA VE DİJİTAL MECRALAR", content: ["Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez."] },
       { id: 'tv', icon: Tv, title: "TV, FİLM VE YAYINCILIK", content: ["Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır."] },
       { id: 'cobranding', icon: Handshake, title: "CO-BRANDING (ORTAK MARKALAMA) KURALLARI", content: ["Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:", "• Logo eşit ölçekli kullanılmalıdır.", "• İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.", "• Logolar yatay hizalı olmalıdır.", "• Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.", "• Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur."] },
+      { id: 'dil-ton', icon: MessageSquare, title: "İLETİŞİM DİLİ VE TONU", content: ["Net, tarafsız ve öğretici bir dil kullanılmalıdır.", "Veri ve etki odaklı olunmalıdır.", "Kaçınılması gerekenler: Kahramanlaştırma, duygusal ajitasyon, yardım alanı edilgen gösteren söylem."] },
+      { id: 'slogan', icon: Megaphone, title: "SLOGAN VE KULLANIM HİYERARŞİSİ", content: ["“We Are Hangel / I’m Hangel” ifadeleri topluluk dili kapsamında yer alır, resmî slogan değildir."] },
       { id: 'yasal', icon: Shield, title: "YASAL ÇERÇEVE", content: ["hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür.", "Ticari markalarımız tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz.", "Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır.", "hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar."] }
     ];
 
@@ -290,9 +292,7 @@ export default function LogoPage() {
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight uppercase">Basın Kiti & Marka Yönergesi</span>
-                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                        <a href="mailto:press@hangel.org">İletişime Geç</a>
-                    </Button>
+                    <div className="w-20" />
                 </div>
             </header>
 
@@ -356,35 +356,23 @@ export default function LogoPage() {
                             <div className="space-y-12">
                                 <div className='space-y-6'>
                                     <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel A.Ş. Logoları</h4>
-                                    <Carousel opts={{ align: "start" }} className="w-full">
-                                        <CarouselContent className="-ml-6">
-                                            {asLogos.map((logo, index) => (
-                                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/4">
-                                                    <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
-                                                        {logo.content}
-                                                    </LogoShowcaseCard>
-                                                </CarouselItem>
-                                            ))}
-                                        </CarouselContent>
-                                        <CarouselPrevious className="left-[-50px] hidden xl:flex" />
-                                        <CarouselNext className="right-[-50px] hidden xl:flex" />
-                                    </Carousel>
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {asLogos.map((logo, index) => (
+                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} onDownload={logo.onDownload}>
+                                                {logo.content}
+                                            </LogoShowcaseCard>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className='space-y-6'>
                                     <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel Derneği Logoları</h4>
-                                     <Carousel opts={{ align: "start" }} className="w-full">
-                                        <CarouselContent className="-ml-6">
-                                            {dernekLogos.map((logo, index) => (
-                                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/4">
-                                                    <LogoShowcaseCard title={logo.title} description={logo.description} onDownload={logo.onDownload}>
-                                                        {logo.content}
-                                                    </LogoShowcaseCard>
-                                                </CarouselItem>
-                                            ))}
-                                        </CarouselContent>
-                                        <CarouselPrevious className="left-[-50px] hidden xl:flex" />
-                                        <CarouselNext className="right-[-50px] hidden xl:flex" />
-                                    </Carousel>
+                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {dernekLogos.map((logo, index) => (
+                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} onDownload={logo.onDownload}>
+                                                {logo.content}
+                                            </LogoShowcaseCard>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -405,17 +393,11 @@ export default function LogoPage() {
                         
                         <div className="space-y-12">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Renkler</h3>
-                             <Carousel opts={{ align: "start" }} className="w-full">
-                                <CarouselContent className="-ml-6">
-                                    {colors.map((color, index) => (
-                                        <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                                            <ColorCard {...color} onCopy={() => copyColor(color.hex)} />
-                                        </CarouselItem>
-                                    ))}
-                                </CarouselContent>
-                                <CarouselPrevious className="left-[-50px] hidden xl:flex" />
-                                <CarouselNext className="right-[-50px] hidden xl:flex" />
-                            </Carousel>
+                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                {colors.map((color, index) => (
+                                    <ColorCard key={index} {...color} onCopy={() => copyColor(color.hex)} />
+                                ))}
+                            </div>
                         </div>
                         
                         <div className="space-y-8">
