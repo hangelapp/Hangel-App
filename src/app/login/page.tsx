@@ -507,8 +507,8 @@ export default function LoginPage() {
             title: "hangel STK", 
             description: "Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın.", 
             href: "/ngo-onboarding",
-            imageUrl: "https://images.unsplash.com/photo-1526375568935-e57a76cc0f2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2hhcmNvYWwlMjBjaGFyaXR5JTIwZHJhd2luZ3xlbnwwfHx8fDE3NzAyNjgxMjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-            imageHint: "charcoal charity drawing",
+            imageUrl: "https://storage.googleapis.com/project-123-bucket/image.jpg",
+            imageHint: "volunteers working",
             linkText: "STK'nı Ekle",
             linkText2: "Daha Fazla Bilgi",
             href2: "/ngo-onboarding"
@@ -518,7 +518,7 @@ export default function LoginPage() {
             description: "Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın.", 
             href: "/merchant",
             imageUrl: "https://picsum.photos/seed/merc-char/1080/1080",
-            imageHint: "charcoal merchant store illustration",
+            imageHint: "charcoal merchant store drawing",
             linkText: "Markanı Ekle",
             linkText2: "Daha Fazla Bilgi",
             href2: "/merchant"

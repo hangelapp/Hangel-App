@@ -156,8 +156,8 @@ export default function NgoOnboardingPage() {
             category: "NİTELİKLİ GÖNÜLLÜ AĞI",
             title: "Yetenek Bazlı Gönüllülük",
             description: "Proje yönetimi, tasarım, hukuk gibi alanlarda uzmanlaşmış binlerce yetenekli gönüllüye ulaşın, projelerinizi güçlendirin.",
-            imageUrl: 'https://images.unsplash.com/photo-1521737852577-6848238f5333?q=80&w=2070&auto=format&fit=crop',
-            imageHint: 'team meeting collaboration',
+            imageUrl: "https://storage.googleapis.com/project-123-bucket/image.jpg",
+            imageHint: "volunteers working",
             link: { label: "Gönüllü İlanı Oluştur", href: "/ngo-admin/volunteer" }
         },
         {
