@@ -12,6 +12,7 @@ const iconColorMap: { [key: string]: string } = {
   'user-cog': 'bg-gray-500',
   'heart-handshake': 'bg-red-500',
   'dollar-sign': 'bg-green-600',
+  'HandCoins': 'bg-emerald-700',
   newspaper: 'bg-orange-500',
   'bar-chart-3': 'bg-indigo-500',
   'shield-check': 'bg-green-500',
@@ -88,6 +89,7 @@ const navGroups = [
         title: "Finans & Sosyal Etki",
         items: [
             { id: 'donations', href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: 'dollar-sign', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
+            { id: 'funds', href: '/ngo-admin/funds', label: 'Hibeler ve Fonlar', icon: 'HandCoins', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
         ]
     },
     {
