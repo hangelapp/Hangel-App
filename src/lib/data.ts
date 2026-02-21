@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
@@ -642,7 +643,9 @@ export const ngoFaqArticles = [
 
 export const pastVolunteering = [];
 export const managedItems: ManagedItem[] = [
-    { name: 'Ahbap Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/ahbap.org' }
+    { name: 'Ahbap Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/ahbap.org' },
+    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'users', href: '/admin/clubs', status: 'approved', logoUrl: 'https://logo.clearbit.com/itu.edu.tr' },
+    { name: 'Mavi', type: 'Marka', icon: 'store', href: '/admin', status: 'approved', logoUrl: 'https://logo.clearbit.com/mavi.com' },
 ];
 
 export const qrPaymentCardData = [
@@ -933,3 +936,4 @@ export const donationTransactions: DonationTransaction[] = [];
     
 
     
+
