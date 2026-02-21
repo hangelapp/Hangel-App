@@ -28,10 +28,44 @@ type LocationFilter = 'global' | 'country' | 'city';
 
 // This is the component for the popup profile view
 const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
+    const { toast } = useToast();
+    const router = useRouter();
+    const [profileUrl, setProfileUrl] = useState('');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+          setProfileUrl(window.location.href);
+        }
+    }, []);
+    
+    if (!ngo) {
+        return null;
+    }
+
     const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name);
     const ngoOpps = volunteeringOpportunities.filter(o => o.ngoId === ngo.id);
-    const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/ngos/${ngo.id}` : '';
-
+    
+    const transparencyCriteria = [
+        { name: 'Faaliyet Belgesi', completed: true },
+        { name: 'Tüzük / Vakıf Senedi', completed: true },
+        { name: 'Yönetim Kurulu Listesi', completed: ngo.transparencyScore > 80 },
+        { name: 'Yıllık Faaliyet Raporu', completed: true },
+        { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
+        { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
+        { name: 'Etki Raporu', completed: ngo.transparencyScore > 75 },
+    ];
+    
+    const handleStoreClick = () => {
+        if (ngo.economicEnterpriseUrl) {
+            router.push(ngo.economicEnterpriseUrl);
+        } else {
+            toast({
+                title: "Bilgi",
+                description: "Bu sivil toplum kuruluşunun iktisadi işletmesi bulunmamaktadır.",
+            });
+        }
+    };
+    
     return (
         <div className="animate-in fade-in-0">
             <div className="relative h-48 w-full bg-muted">

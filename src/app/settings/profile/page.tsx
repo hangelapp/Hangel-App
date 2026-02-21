@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,14 @@ const districts: { [key: string]: string[] } = {
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [isOnboarding, setIsOnboarding] = useState(false);
+
+  useEffect(() => {
+    const onboardingStep = localStorage.getItem('onboardingStep');
+    if (onboardingStep === 'profile') {
+        setIsOnboarding(true);
+    }
+  }, []);
 
   const [name, setName] = useState(user.name);
   const [username, setUsername] = useState(user.username.replace('@', ''));
@@ -63,7 +71,12 @@ export default function ProfileSettingsPage() {
       title: "Profil Güncellendi",
       description: "Kişisel bilgileriniz başarıyla kaydedildi.",
     });
-    router.push('/settings/volunteer');
+    if (isOnboarding) {
+        localStorage.setItem('onboardingStep', 'volunteer');
+        router.push('/settings/volunteer');
+    } else {
+        router.push('/settings');
+    }
   };
 
   return (
@@ -229,7 +242,7 @@ export default function ProfileSettingsPage() {
         </Card>
         
         <div className="flex justify-end">
-          <Button type="submit">Değişiklikleri Kaydet</Button>
+          <Button type="submit">{isOnboarding ? "Devam Et" : "Değişiklikleri Kaydet"}</Button>
         </div>
       </form>
     </div>

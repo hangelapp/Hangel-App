@@ -235,90 +235,6 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
     </Card>
 );
 
-const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
-    return (
-        <form onSubmit={onComplete} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="name">Ad Soyad</Label>
-                <Input id="name" required />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="phone">Telefon Numarası</Label>
-                <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="password">Şifre</Label>
-                <Input id="password" type="password" required />
-            </div>
-            <Button type="submit" className="w-full">Kayıt Ol</Button>
-        </form>
-    )
-};
-
-const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
-    const searchParams = useSearchParams();
-    const entityParam = searchParams.get('entity');
-    const [corporateType, setCorporateType] = useState(entityParam || '');
-
-    useEffect(() => {
-        if (entityParam && ['NGO', 'BRAND', 'CLUB'].includes(entityParam)) {
-            setCorporateType(entityParam);
-        }
-    }, [entityParam]);
-    
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onComplete();
-    }
-
-    return (
-        <div className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="org-type">Kuruluş Türü</Label>
-                <Select required onValueChange={setCorporateType} value={corporateType}>
-                    <SelectTrigger id="org-type"><SelectValue placeholder="Kuruluş türünü seçin..." /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="NGO">Sivil Toplum Kuruluşu (STK)</SelectItem>
-                        <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
-                        <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            {corporateType && (
-                <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in-0">
-                    {corporateType === 'NGO' && <NgoForm />}
-                    {corporateType === 'BRAND' && <BrandForm />}
-                    {corporateType === 'CLUB' && <ClubForm />}
-                    <Card>
-                        <CardHeader><CardTitle className="text-lg">Sözleşme Onayları</CardTitle></CardHeader>
-                        <CardContent className="space-y-3">
-                            <div className="flex items-start space-x-3">
-                                <Checkbox id="terms-corp-1" required />
-                                <Label htmlFor="terms-corp-1" className="text-xs font-normal text-muted-foreground">
-                                    <span><Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesini</Link> okudum, anladım ve onaylıyorum.</span>
-                                </Label>
-                            </div>
-                            <div className="flex items-start space-x-3">
-                                <Checkbox id="terms-corp-2" required />
-                                <Label htmlFor="terms-corp-2" className="text-xs font-normal text-muted-foreground">
-                                    <span><Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link> ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikasını</Link> okudum, anladım ve onaylıyorum.</span>
-                                </Label>
-                            </div>
-                             <div className="flex items-start space-x-3">
-                                <Checkbox id="terms-corp-3" required />
-                                <Label htmlFor="terms-corp-3" className="text-xs font-normal text-muted-foreground">
-                                    <span><Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve ilgili veri koruma beyanlarını okudum, anladım ve onaylıyorum.</span>
-                                </Label>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Button type="submit" className="w-full">Başvuruyu Gönder</Button>
-                </form>
-            )}
-        </div>
-    )
-};
-
 const NgoForm = () => {
     const [city, setCity] = useState('');
     const [district, setDistrict] = useState('');
@@ -624,9 +540,25 @@ const ClubForm = () => {
 
 const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: boolean, onOpenChange: (open: boolean) => void, onComplete: () => void }) => {
     const [step, setStep] = useState(1);
+    const [friendPhone, setFriendPhone] = useState('');
+    const { toast } = useToast();
     
     const surveyOptions1 = ["Sosyal Medya", "Arkadaş Tavsiyesi", "Haberler / Basın", "Reklam", "Okul / İş yeri", "Diğer"];
     const surveyOptions2 = ["Bağış Modeli", "Gönüllülük Fırsatları", "STK Çeşitliliği", "Topluluk ve Etkileşim", "Teknolojik Altyapı", "Diğer"];
+
+    const handleInviteFriend = () => {
+        if (friendPhone.trim()) {
+            toast({
+                title: "Davet Gönderildi!",
+                description: "Arkadaşın hangel'e davet edildi. Katıldığında puan kazanacaksın!",
+            });
+        }
+        setStep(3);
+    };
+
+    const handleFinalStep = () => {
+        onComplete();
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -634,11 +566,13 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                 <DialogHeader>
                     <DialogTitle className="text-center text-2xl font-bold flex items-center justify-center gap-2">
                         <Sparkles className="h-6 w-6 text-primary" />
-                        {step === 1 ? "Sizi Tanıyalım" : "Son Bir Adım"}
+                        {step === 1 && "Sizi Tanıyalım"}
+                        {step === 2 && "Arkadaşını Davet Et"}
+                        {step === 3 && "Son Bir Adım"}
                     </DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                    {step === 1 ? (
+                    {step === 1 && (
                         <div className="space-y-4">
                             <Label className="text-center block font-semibold">hangel'i nereden duydunuz?</Label>
                             <RadioGroup defaultValue={surveyOptions1[0]} className="grid grid-cols-2 gap-2">
@@ -653,7 +587,20 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                             </RadioGroup>
                             <Button onClick={() => setStep(2)} className="w-full mt-4">İleri</Button>
                         </div>
-                    ) : (
+                    )}
+                    {step === 2 && (
+                         <div className="space-y-4">
+                            <Label className="text-center block font-semibold">İyilik zincirine bir halka da sen ekle!</Label>
+                            <p className="text-center text-sm text-muted-foreground">Arkadaşını davet et, o da kazansın sen de!</p>
+                             <div className="space-y-2">
+                                <Label htmlFor="friend-phone">Arkadaşının Telefon Numarası</Label>
+                                <Input id="friend-phone" type="tel" placeholder="5XX XXX XX XX" value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} />
+                            </div>
+                            <Button onClick={handleInviteFriend} className="w-full mt-4">Davet Et ve Devam Et</Button>
+                             <Button variant="link" onClick={() => setStep(3)} className="w-full mt-2">Atla</Button>
+                        </div>
+                    )}
+                    {step === 3 && (
                          <div className="space-y-4">
                             <Label className="text-center block font-semibold">Kayıt olma kararınızı etkileyen en önemli faktör neydi?</Label>
                             <RadioGroup defaultValue={surveyOptions2[0]} className="grid grid-cols-2 gap-2">
@@ -666,7 +613,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                                     </div>
                                 ))}
                             </RadioGroup>
-                            <Button onClick={onComplete} className="w-full mt-4">Bitir</Button>
+                            <Button onClick={handleFinalStep} className="w-full mt-4">Bitir</Button>
                         </div>
                     )}
                 </div>
@@ -701,12 +648,13 @@ const FormRenderer = () => {
     };
 
     const handleLoginComplete = () => {
-        router.push('/timeline');
+        router.push('/market');
     }
 
     const handleSurveyComplete = () => {
         setShowSurvey(false);
-        router.push(type === 'corporate' ? '/admin' : '/timeline');
+        localStorage.setItem('onboardingStep', 'ngo-selection');
+        router.push('/settings/ngo-selection');
     }
 
     const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
@@ -886,3 +834,4 @@ export default function LoginSelectionPage() {
     
 
     
+

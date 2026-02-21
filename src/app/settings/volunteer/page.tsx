@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -85,6 +85,14 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
 export default function VolunteerSettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const [isOnboarding, setIsOnboarding] = useState(false);
+
+    useEffect(() => {
+        const onboardingStep = localStorage.getItem('onboardingStep');
+        if (onboardingStep === 'volunteer') {
+            setIsOnboarding(true);
+        }
+    }, []);
 
     const [interests, setInterests] = useState(user.volunteerInfo.interests);
     const [skills, setSkills] = useState(user.volunteerInfo.skills);
@@ -123,7 +131,12 @@ export default function VolunteerSettingsPage() {
             title: "Gönüllülük Bilgileri Güncellendi",
             description: "Bilgileriniz başarıyla kaydedildi.",
         });
-        router.push('/market');
+        if (isOnboarding) {
+            localStorage.removeItem('onboardingStep');
+            router.push('/market');
+        } else {
+            router.push('/settings');
+        }
     };
 
     return (
@@ -313,7 +326,7 @@ export default function VolunteerSettingsPage() {
                 </Card>
 
                 <div className="flex justify-end">
-                    <Button type="submit">Değişiklikleri Kaydet</Button>
+                    <Button type="submit">{isOnboarding ? "Bitir ve Keşfetmeye Başla" : "Değişiklikleri Kaydet"}</Button>
                 </div>
             </form>
         </div>
