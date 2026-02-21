@@ -38,7 +38,7 @@ const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
                 {ngo.coverPhotoUrl && <Image src={ngo.coverPhotoUrl} alt={`${ngo.name} Cover`} fill className="object-cover" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/0" />
                  <div className="absolute top-4 right-4 z-10">
-                    <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} />
+                    <ShareButtons url={profileUrl} title={`hangel'deki ${ngo.name} profilini incele!`} />
                 </div>
             </div>
             <div className="p-4 bg-background">
@@ -112,6 +112,14 @@ export default function NgoSelectionPage() {
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
     const [viewingNgo, setViewingNgo] = useState<NGO | null>(null);
+    const [isOnboarding, setIsOnboarding] = useState(false);
+
+    useEffect(() => {
+        const onboardingStep = localStorage.getItem('onboardingStep');
+        if (onboardingStep === 'ngo-selection') {
+            setIsOnboarding(true);
+        }
+    }, []);
 
     const allCategories = useMemo(() => Array.from(new Set(ngos.map(n => n.category))), []);
 
@@ -189,7 +197,12 @@ export default function NgoSelectionPage() {
             title: "Tercihler Kaydedildi",
             description: "Varsayılan STK seçimleriniz başarıyla güncellendi.",
         });
-        router.push('/settings/profile');
+        if (isOnboarding) {
+            localStorage.setItem('onboardingStep', 'volunteer-ngo-selection');
+            router.push('/settings/volunteer-ngo-selection');
+        } else {
+            router.push('/settings/profile');
+        }
     };
 
     return (
@@ -314,7 +327,7 @@ export default function NgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
+                <Button onClick={handleSave}>{isOnboarding ? "Devam Et" : "Değişiklikleri Kaydet"}</Button>
             </div>
 
             <Dialog open={!!viewingNgo} onOpenChange={(isOpen) => !isOpen && setViewingNgo(null)}>

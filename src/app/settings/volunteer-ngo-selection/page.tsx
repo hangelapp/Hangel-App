@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Search } from 'lucide-react';
@@ -17,6 +18,14 @@ export default function VolunteerNgoSelectionPage() {
     const [selectedNgos, setSelectedNgos] = useState(['1', '2']);
     const [searchTerm, setSearchTerm] = useState('');
     const { toast } = useToast();
+    const [isOnboarding, setIsOnboarding] = useState(false);
+
+    useEffect(() => {
+        const onboardingStep = localStorage.getItem('onboardingStep');
+        if (onboardingStep === 'volunteer-ngo-selection') {
+            setIsOnboarding(true);
+        }
+    }, []);
 
     const filteredNgos = ngos.filter(ngo => 
         ngo.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -35,6 +44,12 @@ export default function VolunteerNgoSelectionPage() {
             title: "Tercihler Kaydedildi",
             description: "Gönüllüsü olduğunuz STK seçimleriniz başarıyla güncellendi.",
         });
+        if (isOnboarding) {
+            localStorage.setItem('onboardingStep', 'profile');
+            router.push('/settings/profile');
+        } else {
+            router.push('/settings/profile');
+        }
     };
 
     return (
@@ -88,7 +103,7 @@ export default function VolunteerNgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
+                <Button onClick={handleSave}>{isOnboarding ? "Devam Et" : "Değişiklikleri Kaydet"}</Button>
             </div>
         </div>
     );

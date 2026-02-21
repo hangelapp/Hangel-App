@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
@@ -612,7 +613,11 @@ export const badges: Badge[] = [
     { id: '79', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Platin', socialArea: 'İnanç', pointsRequired: 5000, currentPoints: 0 },
     { id: '80', name: 'Hoşgörü Elçisi', iconName: Handshake, level: 'Elmas', socialArea: 'İnanç', pointsRequired: 10000, currentPoints: 0 },
 ];
-export const certificates: Certificate[] = [];
+export const certificates: Certificate[] = [
+    { id: 'cert1', title: 'Gönüllülük Liderliği Sertifikası', organization: 'hangel Akademi', date: '2024-05-20', linkedinUrl: '#' },
+    { id: 'cert2', title: 'Proje Yönetimi ve Sosyal Etki', organization: 'Boğaziçi Üniversitesi', date: '2024-03-15', linkedinUrl: '#' },
+    { id: 'cert3', title: 'Afetlerde İlk Yardım Eğitimi', organization: 'Ahbap Derneği', date: '2024-02-10', linkedinUrl: '#' }
+];
 
 export const helpTopics: HelpTopic[] = [
     {
