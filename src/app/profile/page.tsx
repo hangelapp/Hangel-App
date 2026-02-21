@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -234,7 +235,7 @@ export default function ProfilePage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`${user.name} - Hangel Profili`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
+                <ShareButtons url={profileUrl} title={`${user.name} - hangel Profili`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
             </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center">
@@ -261,6 +262,20 @@ export default function ProfilePage() {
                             </CardHeader>
                             <CardContent>
                                 <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Özet İstatistikler</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-3 gap-4">
+                                <StatCard icon={HandCoins} value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
+                                <StatCard icon={Handshake} value={`${user.stats.volunteerHours} Saat`} label="Gönüllülük" />
+                                <StatCard icon={Briefcase} value={user.stats.completedProjects} label="Proje" />
+                                <StatCard icon={Award} value={badges.filter(b => b.currentPoints >= b.pointsRequired).length} label="Rozet" />
+                                <StatCard icon={FileText} value={certificates.length} label="Sertifika" />
+                                <StatCard icon={TrendingUp} value={user.stats.volunteerRank.country} label="Sıralama" />
                             </CardContent>
                         </Card>
                         
@@ -525,3 +540,5 @@ export default function ProfilePage() {
         </div>
     );
 }
+
+    
