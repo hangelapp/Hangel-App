@@ -114,10 +114,10 @@ const ShowcaseCard = ({
   const Icon = Icons[item.icon] || Icons.HelpCircle;
   return (
     <Link href={item.href} className="group block h-full">
-      <div className={cn("rounded-[2rem] p-6 text-center flex flex-col justify-between min-h-[300px]", themeConfig.bg)}>
+      <div className={cn("rounded-[2rem] p-6 text-center flex flex-col justify-between min-h-[220px]", themeConfig.bg)}>
         <div>
           <p className={cn("font-semibold text-sm mt-2", themeConfig.subtitleColor)}>{item.label}</p>
-          <h3 className={cn("text-2xl font-bold leading-tight mt-1", themeConfig.titleColor)}>{item.description}</h3>
+          <h3 className={cn("text-xl font-bold leading-tight mt-1", themeConfig.titleColor)}>{item.description}</h3>
           <div className="mt-3">
              <span className={cn("text-xs font-semibold flex items-center justify-center", themeConfig.linkColor)}>
                 Daha fazla bilgi edin <ChevronRight className="h-3 w-3 ml-0.5" />
@@ -125,7 +125,7 @@ const ShowcaseCard = ({
           </div>
         </div>
         <div className="mt-4 flex-1 flex items-end justify-center">
-            <div className="w-24 h-24 relative">
+            <div className="w-16 h-16 relative">
                 <Icon className={cn("w-full h-full", themeConfig.iconColor)} />
             </div>
         </div>
@@ -136,7 +136,7 @@ const ShowcaseCard = ({
 
 const LogoShowcaseCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
     <Card className="rounded-[1.75rem] h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-xl transition-shadow group">
-        <div className="relative aspect-video w-full flex items-center justify-center p-6 bg-muted/30">
+        <div className="relative aspect-square w-full flex items-center justify-center p-4 bg-muted/30">
             {children}
         </div>
         <CardContent className="p-6 flex-1 flex flex-col">
@@ -160,10 +160,10 @@ const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: st
 
 const ColorCard = ({ hex, name, rgb, cmyk, onCopy }: { hex: string, name: string, rgb: string, cmyk: string, onCopy: () => void }) => (
     <div 
-        className="group cursor-pointer bg-white rounded-3xl shadow-sm overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-[400px]"
+        className="group cursor-pointer bg-white rounded-3xl shadow-sm overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-[300px]"
         onClick={onCopy}
     >
-        <div className="relative w-full h-40" style={{ backgroundColor: hex }}>
+        <div className="relative w-full h-24" style={{ backgroundColor: hex }}>
             {/* A subtle pattern or icon could be added here for visual interest */}
         </div>
         <div className="p-6 flex-1 flex flex-col">
@@ -206,25 +206,25 @@ export default function LogoPage() {
             title: "Birincil Logo",
             description: "Zeminsiz Logo (PNG)",
             onDownload: () => handleDownload('birincil-logo.png'),
-            content: <HangelLogo className="text-5xl text-primary" />
+            content: <HangelLogo className="text-3xl text-primary" />
         },
         {
             title: "İkincil Logo",
             description: "Zeminli Logo (PNG)",
             onDownload: () => handleDownload('ikincil-logo.png'),
-            content: <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 bg-primary rounded-xl"><HangelLogo className="text-3xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
             description: "Beyaz Logo (PNG) – (Zorunlu hallerde)",
             onDownload: () => handleDownload('beyaz-logo.png'),
-            content: <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center"><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-3xl text-white" /></div>
         },
         {
             title: "App Icon",
             description: "Mobil Uygulama Simgesi (PNG)",
             onDownload: () => handleDownload('app-icon.png'),
-            content: <div className="p-4 bg-primary rounded-3xl"><span className="text-5xl font-black text-white">h</span></div>
+            content: <div className="p-3 bg-primary rounded-2xl"><span className="text-3xl font-black text-white">h</span></div>
         },
     ];
 
@@ -233,25 +233,25 @@ export default function LogoPage() {
             title: "Birincil Logo",
             description: "Zeminsiz Logo (PNG)",
             onDownload: () => handleDownload('dernek-birincil-logo.png'),
-            content: <HangelLogo className="text-5xl" style={{color: '#042654'}} />
+            content: <HangelLogo className="text-3xl" style={{color: '#042654'}} />
         },
         {
             title: "İkincil Logo",
             description: "Zeminli Logo (PNG)",
             onDownload: () => handleDownload('dernek-ikincil-logo.png'),
-            content: <div className="p-4 rounded-2xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 rounded-xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-3xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
             description: "Beyaz Logo (PNG)",
             onDownload: () => handleDownload('dernek-beyaz-logo.png'),
-            content: <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center"><HangelLogo className="text-5xl text-white" /></div>
+            content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-3xl text-white" /></div>
         },
         {
             title: "Dernek Icon",
             description: "Mobil Uygulama Simgesi (PNG)",
             onDownload: () => handleDownload('dernek-app-icon.png'),
-            content: <div className="p-4 rounded-3xl" style={{backgroundColor: '#042654'}}><span className="text-5xl font-black text-white">h</span></div>
+            content: <div className="p-3 rounded-2xl" style={{backgroundColor: '#042654'}}><span className="text-3xl font-black text-white">h</span></div>
         },
     ];
     
@@ -290,9 +290,7 @@ export default function LogoPage() {
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight uppercase">Basın Kiti & Marka Yönergesi</span>
-                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                        <a href="mailto:press@hangel.org">İletişime Geç</a>
-                    </Button>
+                    <div className="w-20" />
                 </div>
             </header>
 
