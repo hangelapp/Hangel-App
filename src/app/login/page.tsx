@@ -24,6 +24,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { differenceInDays, parse } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useUser } from '@/firebase';
+import { UserNav } from '@/components/layout/user-nav';
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -204,6 +206,7 @@ const projectCardsData = [
 
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     const { language, changeLanguage } = useTranslation();
+    const { user, isUserLoading } = useUser();
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
@@ -240,9 +243,15 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80"><Link href="/emergency"><Siren className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
-                    <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                        <Link href="/login/selection?action=login">Giriş Yap</Link>
-                    </Button>
+                    {isUserLoading ? (
+                        <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
+                    ) : user ? (
+                        <UserNav />
+                    ) : (
+                        <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
+                            <Link href="/login/selection?action=login">Giriş Yap</Link>
+                        </Button>
+                    )}
                 </div>
             </div>
         </header>
