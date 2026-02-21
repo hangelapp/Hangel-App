@@ -266,16 +266,17 @@ export default function ProfilePage() {
                         </Card>
                         
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Özet İstatistikler</CardTitle>
-                            </CardHeader>
+                            <CardHeader><CardTitle>Özet İstatistikler</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-3 gap-4">
                                 <StatCard icon={HandCoins} value={`${user.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
+                                <StatCard icon={Users} value={user.stats.donationCount} label="İşlem Adedi" />
+                                <StatCard icon={TrendingUp} value={`${user.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} label="En Yüksek Bağış" />
+                                <StatCard icon={DollarSign} value={`${user.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} label="Ortalama Bağış" />
                                 <StatCard icon={Handshake} value={`${user.stats.volunteerHours} Saat`} label="Gönüllülük" />
                                 <StatCard icon={Briefcase} value={user.stats.completedProjects} label="Proje" />
-                                <StatCard icon={Award} value={badges.filter(b => b.currentPoints >= b.pointsRequired).length} label="Rozet" />
+                                <StatCard icon={Award} value={badges.filter(b => b.currentPoints >= b.pointsRequired).length} label="Kazanılan Rozet" />
                                 <StatCard icon={FileText} value={certificates.length} label="Sertifika" />
-                                <StatCard icon={TrendingUp} value={user.stats.volunteerRank.country} label="Sıralama" />
+                                <StatCard icon={BarChart3} value={user.stats.volunteerRank.country} label="Türkiye Sıralaması" />
                             </CardContent>
                         </Card>
                         
