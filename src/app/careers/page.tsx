@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { volunteeringOpportunities } from '@/lib/data';
 
 const CareerSection = ({ 
     title, 
@@ -54,6 +55,10 @@ const CareerSection = ({
 
 export default function CareersPage() {
     const router = useRouter();
+
+    const hangelVolunteerOps = volunteeringOpportunities.filter(
+        (op) => op.organization === 'hangel Derneği'
+    );
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -131,20 +136,14 @@ export default function CareersPage() {
                     <p className="text-lg text-muted-foreground">Zamanınızı ve yeteneklerinizi toplumsal faydaya dönüştürün.</p>
                 </div>
                 <div className="space-y-4">
-                  {[
-                    { title: 'Proje Yöneticisi (Sosyal Etki Projeleri)', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'Gönüllü Koordinatörü', location: 'Ankara', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'İletişim Uzmanı (Dijital Medya)', location: 'Remote', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'Kaynak Geliştirme Sorumlusu', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel Derneği' },
-                    { title: 'Saha Operasyonları Sorumlusu', location: 'Hatay', type: 'Proje Bazlı', org: 'hangel Derneği' },
-                  ].map((job, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
+                  {hangelVolunteerOps.map((job) => (
+                    <div key={job.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
                       <div>
                         <h3 className="font-bold text-lg">{job.title}</h3>
-                        <p className="text-sm text-muted-foreground">{job.org} • {job.location} • {job.type}</p>
+                        <p className="text-sm text-muted-foreground">{job.organization} • {job.location.city} • {job.commitment}</p>
                       </div>
                       <Button asChild className="shrink-0">
-                        <Link href="/volunteering">İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></Link>
+                        <Link href={`/volunteering/${job.id}`}>İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></Link>
                       </Button>
                     </div>
                   ))}
