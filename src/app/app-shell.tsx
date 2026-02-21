@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -91,6 +90,11 @@ const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => vo
 export function AppShell({ children }: { children: React.ReactNode }) {
     const [isDrawerOpen, setDrawerOpen] = React.useState(false);
     const pathname = usePathname();
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');
@@ -174,7 +178,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
-            <main className="flex-1 pt-12 pb-24 lg:pb-8">{children}</main>
+            <main className={cn("flex-1 pt-12", isMounted ? "pb-24 lg:pb-8" : "pb-8")}>{children}</main>
           </div>
         </div>
     );
