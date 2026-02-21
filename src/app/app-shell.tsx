@@ -42,7 +42,7 @@ const group4Items: SideNavItem[] = [
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/merchant', label: 'Üye İşyeri', icon: 'zap' },
   { href: '/ngo-onboarding', label: 'STK Başvurusu', icon: 'HeartHandshake' },
-  { href: '/support', label: 'Destek', icon: 'help-circle' },
+  { href: '/support/app-support', label: 'App Destek', icon: 'help-circle' },
 ];
 
 const iconColorMap: { [key: string]: string } = {
@@ -112,12 +112,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/ngo-onboarding',
         '/hangelassociation',
         '/logo-usage',
-        '/support',
         '/settings/contracts',
         '/contact',
     ];
 
-    const isPublicPage = publicWebsitePaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+    const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
 
 
     if (isPreviewPage || isSuperAdminPage || isPublicPage) {
