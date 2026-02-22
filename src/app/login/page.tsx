@@ -261,7 +261,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                         <UserNav />
                     ) : (
                         <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                            <Link href="/login/selection?action=login">Giriş Yap</Link>
+                            <Link href="/login/selection?action=login">Geniş Yap</Link>
                         </Button>
                     )}
                 </div>
@@ -286,18 +286,22 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
                          <p className="text-xs text-white/70">Etki Puanı</p>
                     </div>
                 </div>
-                <div className="flex-1">
-                    <p className="text-xs font-bold text-white/70 uppercase tracking-wider">{opportunity.organization}</p>
-                    <h4 className="font-bold text-lg leading-tight mt-1">{opportunity.title}</h4>
+                <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                        <p className="text-xs font-bold text-white/70 uppercase tracking-wider">{opportunity.organization}</p>
+                        <h4 className="font-bold text-lg leading-tight mt-1">{opportunity.title}</h4>
+                    </div>
+                    <div className="flex justify-end mt-2">
+                        <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold border-white/30 text-white bg-white/10">
+                            {countdownText}
+                        </Badge>
+                    </div>
                 </div>
-                <div className="flex justify-between items-end pt-4 mt-4 border-t border-white/20">
+                <div className="flex justify-between items-end pt-4 mt-2 border-t border-white/20">
                     <div className="text-xs font-medium text-white/70 flex items-center gap-1.5">
                         <MapPin className="h-4 w-4" />
                         <span>{opportunity.location.city} ({opportunity.location.type})</span>
                     </div>
-                    <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold border-white/30 text-white bg-white/10">
-                        {countdownText}
-                    </Badge>
                 </div>
             </Card>
         </Link>
