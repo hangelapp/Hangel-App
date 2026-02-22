@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { UserAvatar } from '@/components/shared/user-avatar';
 import * as Icons from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { user } from '@/lib/data';
+import { useUser } from '@/firebase';
 
 
 const group1Items: SideNavItem[] = [
@@ -91,6 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const [isDrawerOpen, setDrawerOpen] = React.useState(false);
     const pathname = usePathname();
     const [isMounted, setIsMounted] = useState(false);
+    const { user: authUser } = useUser();
 
     useEffect(() => {
         setIsMounted(true);
@@ -128,6 +131,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return <>{children}</>;
     }
 
+    const currentUserName = authUser?.displayName || authUser?.email?.split('@')[0] || user.name;
+    const currentUserHandle = authUser?.email ? `@${authUser.email.split('@')[0]}` : user.username;
+
     return (
         <div className="relative mx-auto flex min-h-screen w-full flex-col bg-background">
           <SideNav 
@@ -153,8 +159,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             <Link href="/profile" className="flex items-center gap-3">
                                 <UserAvatar className="h-12 w-12" />
                                 <div>
-                                    <p className="font-bold">{user.name}</p>
-                                    <p className="text-sm text-muted-foreground">{user.username}</p>
+                                    <p className="font-bold">{currentUserName}</p>
+                                    <p className="text-sm text-muted-foreground">{currentUserHandle}</p>
                                 </div>
                             </Link>
                         </div>
@@ -183,3 +189,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
     );
 }
+
+    

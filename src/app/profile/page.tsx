@@ -22,6 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
+import { useUser } from '@/firebase';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -108,14 +109,72 @@ export default function ProfilePage() {
     const { toast } = useToast();
     const [isStoryLoading, setIsStoryLoading] = useState(false);
     const [stories, setStories] = useState<string[]>([]);
+    
+    const { user: authUser, isUserLoading } = useUser();
     const [currentUser, setCurrentUser] = useState(staticUser);
 
     useEffect(() => {
-        const savedUser = localStorage.getItem('hangel-user');
-        if (savedUser) {
-            setCurrentUser(JSON.parse(savedUser));
+        if (isUserLoading) return;
+
+        if (authUser) {
+            const isDemoUser = authUser.email === 'i.adiguzel@email.com' || authUser.email === 'ismail@hangel.org';
+            
+            if (isDemoUser) {
+                const savedUser = localStorage.getItem('hangel-user');
+                if (savedUser) {
+                    setCurrentUser(JSON.parse(savedUser));
+                } else {
+                    setCurrentUser(staticUser);
+                }
+            } else {
+                const savedUser = localStorage.getItem(`hangel-user-${authUser.uid}`);
+                if (savedUser) {
+                    setCurrentUser(JSON.parse(savedUser));
+                } else {
+                    // Start with an empty profile for non-demo users
+                    setCurrentUser({
+                        ...staticUser,
+                        id: authUser.uid,
+                        name: authUser.displayName || authUser.email?.split('@')[0] || 'Yeni Kullanıcı',
+                        username: `@${authUser.email?.split('@')[0] || 'kullanici'}`,
+                        impactScore: 0,
+                        personalInfo: {
+                            ...staticUser.personalInfo,
+                            email: authUser.email || '',
+                            phone: '',
+                            social: {}
+                        },
+                        volunteerInfo: {
+                            ...staticUser.volunteerInfo,
+                            skills: [],
+                            dailySkills: [],
+                            interests: [],
+                            education: [],
+                            programs: [],
+                            languages: [],
+                            licenses: [],
+                            documents: []
+                        },
+                        stats: {
+                            totalDonation: 0,
+                            donationCount: 0,
+                            highestSingleDonation: 0,
+                            supportedNgosCount: 0,
+                            mostSupportedNgo: '-',
+                            avgDonation: 0,
+                            volunteerHours: 0,
+                            completedProjects: 0,
+                            volunteerRank: { country: '-', city: '-', school: '-', interest: '-' },
+                            mostActiveVolunteerArea: '-',
+                            avgVolunteerDuration: '-',
+                            totalImpactValue: 0,
+                        },
+                        progress: {}
+                    });
+                }
+            }
         }
-    }, []);
+    }, [authUser, isUserLoading]);
     
     const handleGenerateStories = async () => {
         setIsStoryLoading(true);
@@ -237,6 +296,14 @@ export default function ProfilePage() {
         )
     }
 
+    if (isUserLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
     return (
         <div className="animate-in fade-in-0 bg-secondary min-h-screen">
             <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
@@ -275,13 +342,10 @@ export default function ProfilePage() {
                         
                         <Card>
                             <CardHeader><CardTitle>Özet İstatistikler</CardTitle></CardHeader>
-                            <CardContent className="grid grid-cols-3 gap-4">
+                            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <StatCard icon={HandCoins} value={`${currentUser.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
-                                <StatCard icon={Users} value={currentUser.stats.donationCount} label="İşlem Adedi" />
-                                <StatCard icon={TrendingUp} value={`${currentUser.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} label="En Yüksek Bağış" />
-                                <StatCard icon={DollarSign} value={`${currentUser.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} label="Ortalama Bağış" />
+                                <StatCard icon={Sparkles} value={`${currentUser.stats.totalImpactValue.toLocaleString('tr-TR')} ₺`} label="Sosyal Etki Mali Değeri" />
                                 <StatCard icon={Handshake} value={`${currentUser.stats.volunteerHours} Saat`} label="Gönüllülük" />
-                                <StatCard icon={Briefcase} value={currentUser.stats.completedProjects} label="Proje" />
                                 <StatCard icon={Award} value={badges.filter(b => b.currentPoints >= b.pointsRequired).length} label="Kazanılan Rozet" />
                                 <StatCard icon={FileText} value={certificates.length} label="Sertifika" />
                                 <StatCard icon={BarChart3} value={currentUser.stats.volunteerRank.country} label="Türkiye Sıralaması" />
@@ -387,7 +451,7 @@ export default function ProfilePage() {
                             <CardContent className="divide-y">
                                 <InfoRow icon={Mail} label="E-posta" value={currentUser.personalInfo.email} verified />
                                 <InfoRow icon={Phone} label="Telefon" value={currentUser.personalInfo.phone} verified />
-                                <InfoRow icon={Cake} label="Doğum Tarihi" value={format(new Date(currentUser.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr })} />
+                                <InfoRow icon={Cake} label="Doğum Tarihi" value={currentUser.personalInfo.birthDate ? format(new Date(currentUser.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr }) : '-'} />
                                  <InfoRow icon={Globe} label="Uyruk" value={currentUser.personalInfo.nationality} />
                                 <InfoRow icon={UserIcon} label="Cinsiyet" value={currentUser.personalInfo.gender} />
                                 <InfoRow icon={HeartPulse} label="Kan Grubu" value={currentUser.personalInfo.bloodType} />
@@ -424,7 +488,6 @@ export default function ProfilePage() {
                                 <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={currentUser.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Landmark} label="Vizeler" value={currentUser.volunteerInfo.travelInfo.visas.join(', ')} />
                                 <InfoRow icon={School} label="Eğitim" value={currentUser.volunteerInfo.education.map(e => e.school).join('; ')} verified />
-                                <InfoRow icon={School} label="Fakülte / Bölüm" value="Yönetim Bilişim Sistemleri" />
                                 <InfoRow icon={Briefcase} label="Çalıştığınız Sektör" value={currentUser.volunteerInfo.sector} />
                                 <InfoRow icon={Briefcase} label="Çalıştığınız Pozisyon" value={currentUser.volunteerInfo.profession} />
                                  <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={currentUser.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
@@ -433,18 +496,16 @@ export default function ProfilePage() {
                                 <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={currentUser.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
                                 <InfoRow icon={UserIcon} label="Acil Durum Kişisi 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.name} />
                                 <InfoRow icon={Phone} label="Acil Durum Tel 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
-                                {currentUser.volunteerInfo.emergency.emergencyContacts[1]?.name && (
-                                    <>
-                                        <InfoRow icon={UserIcon} label="Acil Durum Kişisi 2" value={currentUser.volunteerInfo.emergency.emergencyContacts[1]?.name} />
-                                        <InfoRow icon={Phone} label="Acil Durum Tel 2" value={currentUser.volunteerInfo.emergency.emergencyContacts[1]?.phone} />
-                                    </>
-                                )}
                             </CardContent>
                         </Card>
                         <Card>
                              <CardHeader><CardTitle className='text-lg'>Geçmiş Gönüllülükler</CardTitle></CardHeader>
                              <CardContent className='space-y-4'>
-                                 {pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)}
+                                 {pastVolunteering.length > 0 ? (
+                                     pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)
+                                 ) : (
+                                     <p className="text-center text-muted-foreground text-sm py-8">Henüz tamamlanmış bir gönüllülük faaliyetiniz yok.</p>
+                                 )}
                                  <Button variant="secondary" className='w-full'>Tüm Gönüllülük Geçmişini Gör</Button>
                              </CardContent>
                         </Card>
@@ -549,3 +610,5 @@ export default function ProfilePage() {
         </div>
     );
 }
+
+    
