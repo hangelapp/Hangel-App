@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -54,13 +53,25 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
   );
 };
 
+const brandTypeLabels: Record<string, string> = {
+  brand: 'Marka',
+  cooperative: 'Kooperatif',
+  social: 'Sosyal Şirket',
+  economic: 'İktisadi İşletme',
+};
+
 const BrandCard = ({ brand }: { brand: Brand }) => (
     <Link href={`/market/${brand.slug}`} className="group block h-full">
       <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white border border-gray-100 h-full flex flex-col p-6 items-center text-center">
         <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border">
           <BrandLogo brand={brand} />
         </div>
-        <h4 className="font-bold text-lg leading-tight flex-1">{brand.name}</h4>
+        <div className="flex-1 flex flex-col items-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                {brandTypeLabels[brand.type] || 'Marka'}
+            </p>
+            <h4 className="font-bold text-lg leading-tight">{brand.name}</h4>
+        </div>
         <Badge variant="secondary" className="mt-2 bg-primary/10 text-primary border-none text-base font-bold">
           %{brand.donationRate} Bağış
         </Badge>
@@ -750,7 +761,7 @@ export default function LoginPage() {
                             <InfoCard 
                                 icon={Users}
                                 title="Erişilebilirlik"
-                                description="Teknolojiyi herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin."
+                                description="Teknolojiye herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin."
                                 link="/accessibility"
                                 linkText="Standartları İnceleyin"
                             />
