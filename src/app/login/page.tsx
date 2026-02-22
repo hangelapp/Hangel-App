@@ -64,13 +64,13 @@ const brandTypeLabels: Record<string, string> = {
 const BrandCard = ({ brand }: { brand: Brand }) => (
     <Link href={`/market/${brand.slug}`} className="group block h-full">
       <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white border border-gray-100 h-full flex flex-col p-6 items-center text-center">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+            {brandTypeLabels[brand.type] || 'Ticari'}
+        </p>
         <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border">
           <BrandLogo brand={brand} />
         </div>
         <div className="flex-1 flex flex-col items-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                {brandTypeLabels[brand.type] || 'Ticari'}
-            </p>
             <h4 className="font-bold text-lg leading-tight">{brand.name}</h4>
         </div>
         <Badge variant="secondary" className="mt-2 bg-primary/10 text-primary border-none text-base font-bold">
