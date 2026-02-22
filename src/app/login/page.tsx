@@ -291,10 +291,13 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
                         <p className="text-xs font-bold text-white/70 uppercase tracking-wider">{opportunity.organization}</p>
                         <h4 className="font-bold text-lg leading-tight mt-1">{opportunity.title}</h4>
                     </div>
-                    <div className="flex justify-end mt-2">
-                        <Badge variant={daysRemaining < 3 ? 'destructive' : 'outline'} className="text-[10px] font-bold border-white/30 text-white bg-white/10">
+                    <div className="flex justify-center mt-2">
+                        <span className={cn(
+                            "text-[10px] font-bold uppercase tracking-[0.1em]",
+                            daysRemaining < 3 ? "text-primary" : "text-white/60"
+                        )}>
                             {countdownText}
-                        </Badge>
+                        </span>
                     </div>
                 </div>
                 <div className="flex justify-between items-end pt-4 mt-2 border-t border-white/20">
