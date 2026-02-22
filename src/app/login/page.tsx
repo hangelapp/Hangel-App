@@ -57,8 +57,8 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 const brandTypeLabels: Record<string, string> = {
   brand: 'Ticari',
   cooperative: 'Kooperatif',
-  social: 'Sosyal Ş.',
-  economic: 'İktisadi İşl.',
+  social: 'Sosyal Şirket',
+  economic: 'İktisadi İşletme',
 };
 
 const BrandCard = ({ brand }: { brand: Brand }) => (
@@ -415,7 +415,7 @@ const FullStandardsSection = () => {
     ];
     
     const accessibilityLawData = [
-        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Afrika / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
+        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Africa / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
         { label: "Bilgilendirme Politikası", std: "Transparency Rules", org: "Regülatörler / hangel", region: "Küresel", rate: "%95 / %100" },
         { label: "Çok Dilli Erişim", std: "Inclusive Design", org: "Uluslararası Kullanıcılar / hangel", region: "Küresel", rate: "%80 / %100" },
         { label: "Yerel Bağış Uyumu", std: "Ulusal Mevzuat", org: "Kamu / hangel", region: "Ülke bazlı", rate: "%85 / %100" },

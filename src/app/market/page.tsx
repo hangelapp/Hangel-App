@@ -156,8 +156,8 @@ export default function MarketPage() {
                 <TabsTrigger value="all">Tümü</TabsTrigger>
                 <TabsTrigger value="brand">Ticari</TabsTrigger>
                 <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                <TabsTrigger value="economic">İktisadi İşl.</TabsTrigger>
-                <TabsTrigger value="social">Sosyal Ş.</TabsTrigger>
+                <TabsTrigger value="economic">İktisadi İşletme</TabsTrigger>
+                <TabsTrigger value="social">Sosyal Şirket</TabsTrigger>
             </TabsList>
         </Tabs>
 
