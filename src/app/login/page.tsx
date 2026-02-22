@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -54,10 +55,10 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 };
 
 const brandTypeLabels: Record<string, string> = {
-  brand: 'Marka',
+  brand: 'Ticari',
   cooperative: 'Kooperatif',
-  social: 'Sosyal Şirket',
-  economic: 'İktisadi İşletme',
+  social: 'Sosyal Ş.',
+  economic: 'İktisadi İşl.',
 };
 
 const BrandCard = ({ brand }: { brand: Brand }) => (
@@ -68,7 +69,7 @@ const BrandCard = ({ brand }: { brand: Brand }) => (
         </div>
         <div className="flex-1 flex flex-col items-center">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                {brandTypeLabels[brand.type] || 'Marka'}
+                {brandTypeLabels[brand.type] || 'Ticari'}
             </p>
             <h4 className="font-bold text-lg leading-tight">{brand.name}</h4>
         </div>
@@ -511,6 +512,32 @@ export default function LoginPage() {
         Autoplay({ delay: 4500, stopOnInteraction: true })
     );
 
+    const brandsInCarousel = useMemo(() => {
+        const brands = allEntityLists.filter(b => b.type === 'brand');
+        const cooperatives = allEntityLists.filter(b => b.type === 'cooperative');
+        const economics = allEntityLists.filter(b => b.type === 'economic');
+        const socials = allEntityLists.filter(b => b.type === 'social');
+
+        const result: Brand[] = [];
+        let bIdx = 0, cIdx = 0, eIdx = 0, sIdx = 0;
+        
+        while (result.length < 15) {
+            // 2 Ticari
+            if (brands[bIdx]) result.push(brands[bIdx++]);
+            if (result.length < 15 && brands[bIdx]) result.push(brands[bIdx++]);
+            // 1 Kooperatif
+            if (result.length < 15 && cooperatives[cIdx]) result.push(cooperatives[cIdx++]);
+            // 1 İktisadi İşl.
+            if (result.length < 15 && economics[eIdx]) result.push(economics[eIdx++]);
+            // 1 Sosyal Ş.
+            if (result.length < 15 && socials[sIdx]) result.push(socials[sIdx++]);
+            
+            // Break if we ran out of everything
+            if (bIdx >= brands.length && cIdx >= cooperatives.length && eIdx >= economics.length && sIdx >= socials.length) break;
+        }
+        return result.slice(0, 15);
+    }, []);
+
     const publicNavItems = [
       { href: '#bagis', label: 'Bağış Yap' },
       { href: '#gonulluluk', label: 'Gönüllü Ol' },
@@ -640,7 +667,7 @@ export default function LoginPage() {
                             className="w-full"
                         >
                             <CarouselContent className="-ml-4">
-                                {allEntityLists.slice(0, 15).map((brand) => (
+                                {brandsInCarousel.map((brand) => (
                                     <CarouselItem key={brand.id} className="pl-4 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                                         <div className="h-[350px] p-1">
                                             <BrandCard brand={brand} />
