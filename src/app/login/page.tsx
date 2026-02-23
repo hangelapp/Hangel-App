@@ -273,15 +273,15 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
 
     return (
-        <Link href={`/volunteering/${opportunity.id}`} className="group block h-full">
+        <Link href={`/volunteering/${opportunity.id}`} className="block h-full">
             <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-black/50 backdrop-blur-sm border-white/10 h-full flex flex-col p-6 text-white">
                 <div className="flex justify-between items-start mb-4">
                     <div className="p-3 bg-white/10 rounded-xl text-white/80">
                          <HeartHandshake className="h-6 w-6" />
                     </div>
                     <div className="text-right">
-                         <p className="font-bold text-lg">{opportunity.points} Puan</p>
-                         <p className="text-xs text-white/70">Etki Puanı</p>
+                         <p className="font-bold text-sm leading-tight">{opportunity.points} Puan</p>
+                         <p className="text-[9px] text-white/50 uppercase tracking-widest">Etki Puanı</p>
                     </div>
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
