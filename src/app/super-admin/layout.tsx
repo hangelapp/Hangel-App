@@ -1,11 +1,13 @@
+
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { HangelLogo } from '@/components/icons';
 
 export default function SuperAdminLayout({
   children,
@@ -13,16 +15,25 @@ export default function SuperAdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  const handleBackClick = () => {
+    if (pathname === '/super-admin') {
+      router.push('/market');
+    } else {
+      router.push('/super-admin');
+    }
+  };
 
   return (
     <div className="min-h-screen w-full">
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 backdrop-blur-xl">
-            <Button onClick={() => router.push('/admin')} variant="ghost" size="icon" className="h-9 w-9">
+            <Button onClick={handleBackClick} variant="ghost" size="icon" className="h-9 w-9">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Link href="/super-admin" className="flex items-center gap-2 font-semibold">
-              <span className="text-xl font-bold text-primary">hangel</span>
+              <HangelLogo className="text-xl" />
               <span className="text-foreground">Admin Paneli</span>
             </Link>
             <div className="w-full flex-1" />
