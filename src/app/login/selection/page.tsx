@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo, useRef } from 'react';
@@ -9,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Upload, Plus, X, Instagram, Facebook, Linkedin, Twitter, Youtube, Link as LinkIcon, Search, Sparkles, Building, HandCoins, HeartHandshake, Info, ShieldCheck, UserPlus, LogIn } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, X, Instagram, Facebook, Linkedin, Twitter, Youtube, Link as LinkIcon, Search, Sparkles, Building, HandCoins, HeartHandshake, Info, ShieldCheck, UserPlus, LogIn, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -679,7 +678,7 @@ const FormRenderer = () => {
                     {isLoading ? (
                         <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> İşleniyor...</>
                     ) : (
-                        isRegister ? <><UserPlus className="mr-2 h-5 w-5" /> Aramıza Katıl</> : <><LogIn className="mr-2 h-5 w-5" /> Hesabıma Giriş Yap</>
+                        isRegister ? <><UserPlus className="mr-2 h-5 w-5" /> Aramıza Katıl</> : <><LogIn className="mr-2 h-5 w-5" /> Hesabama Giriş Yap</>
                     )}
                 </Button>
             </form>
