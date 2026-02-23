@@ -103,11 +103,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             const protectedPaths = [
                 '/timeline', '/market', '/volunteering', '/clubs', '/events', 
                 '/qr-payment', '/emergency', '/leaderboard', '/stories', 
-                '/invite', '/library', '/profile', '/settings', '/messages', 
+                '/invite', '/library', '/profile', '/my-donations', 
+                '/my-applications', '/my-badges', '/messages', '/settings', 
                 '/ngo-admin', '/super-admin', '/admin'
             ];
-            if (protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
-                router.push('/login');
+            
+            const isProtected = protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+            
+            if (isProtected) {
+                const redirectUrl = `/login/selection?action=login&redirect=${encodeURIComponent(pathname)}`;
+                router.push(redirectUrl);
             }
         }
     }, [authUser, isUserLoading, pathname, router]);

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -26,7 +25,8 @@ import {
     LogIn, 
     Loader2,
     Landmark,
-    Building2
+    Building2,
+    CheckCircle
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -89,18 +89,20 @@ const FormRenderer = () => {
     const router = useRouter();
     const action = searchParams.get('action') || 'login';
     const type = searchParams.get('type');
+    const redirectParam = searchParams.get('redirect');
     const [showSurvey, setShowSurvey] = useState(false);
   
     const handleActionChange = (value: string) => {
-        router.push(`/login/selection?action=${value}${type ? `&type=${type}`: ''}`);
+        router.push(`/login/selection?action=${value}${type ? `&type=${type}`: ''}${redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : ''}`);
     };
 
     const handleTypeChange = (value: string) => {
         const currentAction = action || 'register';
+        const redirectSuffix = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
         if (value === 'individual') {
-            router.push(`/login/selection?action=${currentAction}`);
+            router.push(`/login/selection?action=${currentAction}${redirectSuffix}`);
         } else {
-            router.push(`/login/selection?action=${currentAction}&type=${value}`);
+            router.push(`/login/selection?action=${currentAction}&type=${value}${redirectSuffix}`);
         }
     };
     
@@ -109,13 +111,21 @@ const FormRenderer = () => {
     };
 
     const handleLoginComplete = () => {
-        router.push('/market');
+        if (redirectParam) {
+            router.push(redirectParam);
+        } else {
+            router.push('/market');
+        }
     };
 
     const handleSurveyComplete = () => {
         setShowSurvey(false);
-        localStorage.setItem('onboardingStep', 'ngo-selection');
-        router.push('/settings/ngo-selection');
+        if (redirectParam) {
+            router.push(redirectParam);
+        } else {
+            localStorage.setItem('onboardingStep', 'ngo-selection');
+            router.push('/settings/ngo-selection');
+        }
     };
 
     const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
@@ -148,7 +158,10 @@ const FormRenderer = () => {
             <form onSubmit={handleSubmit} className="space-y-5 animate-in fade-in-0">
                 {isRegister && (
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Adınız ve Soyadınız</Label>
+                        <div className="flex justify-between items-end mb-1">
+                            <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Adınız ve Soyadınız</Label>
+                            <span className="text-[9px] text-primary font-bold uppercase tracking-tighter">Kimlikteki gibi</span>
+                        </div>
                         <Input id="name" placeholder="Örn: Can Demir" required value={name} onChange={e => setName(e.target.value)} className="h-12 rounded-xl" />
                     </div>
                 )}
@@ -158,32 +171,44 @@ const FormRenderer = () => {
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">+90</span>
                         <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 rounded-xl pl-12 font-bold tracking-widest" />
                     </div>
+                    <p className="text-[10px] text-muted-foreground ml-1">Doğrulama kodu SMS ile gönderilecektir.</p>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şifre</Label>
                     <Input id="password" type="password" placeholder="En az 6 karakter" required value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl" />
                 </div>
+                <div className="pt-2">
+                    <div className="flex items-start space-x-3 mb-4">
+                        <Checkbox id="terms-accept" required />
+                        <Label htmlFor="terms-accept" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                            <Link href="/settings/contracts/kullanici-sozlesmesi" className="text-primary font-bold hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>'nı okudum ve kabul ediyorum.
+                        </Label>
+                    </div>
+                </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRegister ? "Kayıt Ol" : "Giriş Yap")}
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRegister ? "Kayıt Ol ve Başla" : "Giriş Yap")}
                 </Button>
             </form>
         );
     };
 
     return (
-        <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
+        <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-sm lg:max-w-md">
                 <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
-                     <CardHeader className="text-center pt-10 pb-6">
+                     <CardHeader className="text-center pt-10 pb-6 space-y-2">
                         <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-2">
                             <HangelLogo className="text-3xl" />
                         </div>
                         <CardTitle className="text-3xl font-black tracking-tighter">
                             {action === 'register' ? 'İyiliğe İlk Adım' : 'Tekrar Hoş Geldin'}
                         </CardTitle>
+                        <CardDescription className="text-sm font-medium px-4">
+                            {action === 'register' ? 'Dünyayı güzelleştiren topluluğumuza katılmak için formu doldurun.' : 'İyilik yolculuğuna kaldığın yerden devam et.'}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 px-8 pb-10">
                          <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
@@ -205,6 +230,7 @@ const FormRenderer = () => {
                                             <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <p className="text-[9px] text-muted-foreground italic px-1">Kurumsal başvurular ekip denetiminden geçmektedir.</p>
                                 </div>
                                 <IndividualForm isRegister={true} onComplete={handleRegistrationComplete} />
                             </div>
@@ -217,6 +243,7 @@ const FormRenderer = () => {
                         <Landmark className="h-6 w-6" />
                         <Building2 className="h-6 w-6" />
                     </div>
+                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Güvenli ve Şeffaf Altyapı</p>
                 </div>
             </div>
              <PostRegistrationSurvey open={showSurvey} onOpenChange={setShowSurvey} onComplete={handleSurveyComplete} />
@@ -300,5 +327,3 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
-
-    
