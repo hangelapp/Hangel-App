@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Send, Bell, History, MessageSquare, ShieldAlert, Eye, User, Building, School } from 'lucide-react';
+import { Search, Send, Bell, History, MessageSquare, ShieldAlert, Eye, User, Building, School, Mail } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -81,19 +81,25 @@ export default function CommunicationsPage() {
     return (
         <div className="space-y-6 animate-in fade-in-0">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold font-headline">İletişim ve Mesaj Merkezi</h1>
+                 <div>
+                    <h1 className="text-2xl font-bold font-headline">İletişim Merkezi</h1>
+                    <p className="text-muted-foreground text-sm">Direkt mesaj, toplu bildirim ve e-bülten gönderimlerinizi yönetin.</p>
+                </div>
             </div>
 
             <Tabs defaultValue="broadcast">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="broadcast">
-                        <Bell className="mr-2 h-4 w-4" /> Toplu Duyuru
+                        <Bell className="mr-2 h-4 w-4" /> Toplu Bildirim
                     </TabsTrigger>
-                    <TabsTrigger value="individual">
-                        <MessageSquare className="mr-2 h-4 w-4" /> Bireysel/Kurumsal Mesaj
+                    <TabsTrigger value="dm">
+                        <MessageSquare className="mr-2 h-4 w-4" /> Direkt Mesaj (DM)
+                    </TabsTrigger>
+                    <TabsTrigger value="newsletter">
+                        <Mail className="mr-2 h-4 w-4" /> E-Bülten
                     </TabsTrigger>
                     <TabsTrigger value="monitor">
-                        <History className="mr-2 h-4 w-4" /> Mesaj Trafiği İzle
+                        <History className="mr-2 h-4 w-4" /> Trafik İzleme
                     </TabsTrigger>
                 </TabsList>
 
@@ -146,7 +152,7 @@ export default function CommunicationsPage() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="individual" className="mt-6">
+                <TabsContent value="dm" className="mt-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Bireysel veya Kurumsal Özel Mesaj</CardTitle>
@@ -230,6 +236,43 @@ export default function CommunicationsPage() {
                                 </Button>
                             </div>
                         </CardContent>
+                    </Card>
+                </TabsContent>
+                
+                <TabsContent value="newsletter" className="mt-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Yeni E-Bülten Oluştur</CardTitle>
+                            <CardDescription>Abonelerinize veya belirli kullanıcı gruplarına e-posta bülteni gönderin.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Hedef Grup</Label>
+                                <Select>
+                                    <SelectTrigger><SelectValue placeholder="Grup seçiniz..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all-subscribers">Tüm E-posta Aboneleri</SelectItem>
+                                        <SelectItem value="all-users">Tüm Kullanıcılar</SelectItem>
+                                        <SelectItem value="all-ngos">Tüm STK'lar</SelectItem>
+                                        <SelectItem value="all-brands">Tüm Markalar</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>E-posta Konusu</Label>
+                                <Input placeholder="Temmuz Ayı Gelişmeleri ve Etki Raporu" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>E-posta İçeriği (HTML Destekli)</Label>
+                                <Textarea rows={12} placeholder="Bülten içeriğinizi buraya yazın veya bir şablon yapıştırın..." />
+                            </div>
+                        </CardContent>
+                        <CardFooter className="justify-end gap-2">
+                            <Button variant="outline">Taslağı Kaydet</Button>
+                            <Button onClick={() => toast({ title: "E-Bülten Gönderildi", description: "Bülteniniz gönderim kuyruğuna alındı." })}>
+                                <Send className="mr-2 h-4 w-4" /> Bülteni Gönder
+                            </Button>
+                        </CardFooter>
                     </Card>
                 </TabsContent>
 
