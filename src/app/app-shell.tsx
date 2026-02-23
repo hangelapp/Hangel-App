@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import AppHeader from '@/components/layout/header';
 import { SideNav } from '@/components/layout/SideNav';
 import type { SideNavItem } from '@/lib/types';
@@ -14,7 +14,6 @@ import * as Icons from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { user } from '@/lib/data';
 import { useUser } from '@/firebase';
-
 
 const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
@@ -88,16 +87,31 @@ const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => vo
     );
 };
 
-
 export function AppShell({ children }: { children: React.ReactNode }) {
     const [isDrawerOpen, setDrawerOpen] = React.useState(false);
     const pathname = usePathname();
+    const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);
-    const { user: authUser } = useUser();
+    const { user: authUser, isUserLoading } = useUser();
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // Auth Guard Logic
+    useEffect(() => {
+        if (!isUserLoading && !authUser) {
+            const protectedPaths = [
+                '/timeline', '/market', '/volunteering', '/clubs', '/events', 
+                '/qr-payment', '/emergency', '/leaderboard', '/stories', 
+                '/invite', '/library', '/profile', '/settings', '/messages', 
+                '/ngo-admin', '/super-admin', '/admin'
+            ];
+            if (protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
+                router.push('/login');
+            }
+        }
+    }, [authUser, isUserLoading, pathname, router]);
 
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');

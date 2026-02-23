@@ -20,7 +20,9 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
   if (isAuthPage) return null;
-  if (['/ngo-admin', '/admin'].some(p => pathname.startsWith(p))) return null;
+  
+  const isManagementPage = ['/ngo-admin', '/admin', '/super-admin'].some(p => pathname.startsWith(p));
+  if (isManagementPage) return null;
 
   return (
       <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64">
@@ -29,7 +31,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
-            <div className="w-8 h-8" /> {/* Logo alanı talebiniz üzerine boşaltılmıştır */}
+            <div className="w-8 h-8" /> 
           </div>
 
           <div className="flex items-center gap-1">
@@ -64,3 +66,5 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
       </header>
   );
 }
+
+    

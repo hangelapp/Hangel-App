@@ -5,7 +5,7 @@ import {
     CreditCard,
     LogOut,
     Settings,
-    User,
+    User as UserIcon,
   } from "lucide-react"
   import Link from "next/link"
   import { useRouter } from "next/navigation"
@@ -52,22 +52,32 @@ import {
         }
     };
 
+    const getInitials = () => {
+        if (user.displayName) {
+            return user.displayName.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+        if (user.email) {
+            return user.email[0].toUpperCase();
+        }
+        return 'U';
+    };
+
     return (
       <>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || ''} />
-                <AvatarFallback>{user.email ? user.email.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full border shadow-sm">
+              <Avatar className="h-full w-full">
+                <AvatarImage src={user.photoURL || undefined} alt="Profile" />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">{getInitials()}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.displayName || 'Kullanıcı'}</p>
-                <p className="text-xs leading-none text-muted-foreground">
+                <p className="text-sm font-bold leading-none">{user.displayName || 'Kullanıcı'}</p>
+                <p className="text-xs leading-none text-muted-foreground truncate">
                   {user.email}
                 </p>
               </div>
@@ -75,26 +85,26 @@ import {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <Link href="/profile" passHref>
-                  <DropdownMenuItem>
-                      <User className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem className="cursor-pointer">
+                      <UserIcon className="mr-2 h-4 w-4" />
                       <span>Profil</span>
                   </DropdownMenuItem>
               </Link>
               <Link href="/qr-payment" passHref>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
                       <CreditCard className="mr-2 h-4 w-4" />
                       <span>Cüzdanım</span>
                   </DropdownMenuItem>
               </Link>
               <Link href="/settings" passHref>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Ayarlar</span>
                   </DropdownMenuItem>
               </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setIsLogoutDialogOpen(true); }}>
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setIsLogoutDialogOpen(true); }} className="cursor-pointer text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Çıkış Yap</span>
             </DropdownMenuItem>
@@ -102,11 +112,11 @@ import {
         </DropdownMenu>
 
         <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
-            <AlertDialogContent className="rounded-3xl">
+            <AlertDialogContent className="rounded-[2.5rem]">
                 <AlertDialogHeader>
-                    <AlertDialogTitle className="text-xl font-bold">Emin misin?</AlertDialogTitle>
+                    <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
                     <AlertDialogDescription className="text-base">
-                        Çıkış yaptığında yaptığın alışverişlerden bağış yapamazsın.
+                        Oturumu kapattığınızda bağış ve gönüllülük fırsatlarını takip edemezsiniz.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="gap-2">
@@ -123,3 +133,5 @@ import {
       </>
     )
   }
+
+    
