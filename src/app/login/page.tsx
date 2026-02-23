@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { differenceInDays, parse } from 'date-fns';
+import { tr } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useUser } from '@/firebase';
@@ -680,8 +681,10 @@ export default function LoginPage() {
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
-                            <CarouselPrevious className="ml-16 hidden md:flex" />
-                            <CarouselNext className="mr-16 hidden md:flex" />
+                            <div className="flex justify-end gap-2 mt-4 px-4">
+                                <CarouselPrevious className="static translate-y-0 h-10 w-10 border-black/10" />
+                                <CarouselNext className="static translate-y-0 h-10 w-10 border-black/10" />
+                            </div>
                         </Carousel>
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-primary/20 text-primary hover:bg-primary/5">
@@ -722,8 +725,10 @@ export default function LoginPage() {
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
-                             <CarouselPrevious className="ml-16 hidden md:flex" />
-                            <CarouselNext className="mr-16 hidden md:flex" />
+                            <div className="flex justify-end gap-2 mt-4 px-4">
+                                <CarouselPrevious className="static translate-y-0 h-10 w-10 border-white/20 text-white bg-transparent hover:bg-white hover:text-black" />
+                                <CarouselNext className="static translate-y-0 h-10 w-10 border-white/20 text-white bg-transparent hover:bg-white hover:text-black" />
+                            </div>
                         </Carousel>
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-white/20 text-white bg-transparent hover:bg-white hover:text-black">
@@ -770,8 +775,10 @@ export default function LoginPage() {
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
-                             <CarouselPrevious className="ml-16 hidden lg:flex" />
-                            <CarouselNext className="mr-16 hidden lg:flex" />
+                             <div className="hidden lg:flex justify-end gap-2 mt-8 px-6">
+                                <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
+                                <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
+                            </div>
                         </Carousel>
                     </div>
                 </section>
