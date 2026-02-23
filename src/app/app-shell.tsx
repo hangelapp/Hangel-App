@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -165,7 +164,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                    <div className="flex h-full flex-col overflow-y-auto bg-secondary/30">
                         <div className="p-4 bg-background border-b sticky top-0 z-10">
                             <div className="flex justify-between items-center mb-6">
-                                <HangelLogo className="text-2xl" />
+                                <Link href="/login" onClick={() => setDrawerOpen(false)}>
+                                    <HangelLogo className="text-2xl" />
+                                </Link>
                                 <SheetClose>
                                     <Icons.X className="h-6 w-6 text-muted-foreground" />
                                 </SheetClose>
@@ -203,5 +204,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
     );
 }
-
-    

@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -12,6 +11,7 @@ import * as Icons from 'lucide-react';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUser } from '@/firebase';
+import { HangelLogo } from '@/components/icons';
 
 export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) {
   const { language, changeLanguage } = useTranslation();
@@ -27,11 +27,13 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   return (
       <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64">
         <div className="flex h-12 items-center justify-between px-4">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
                 <Menu className="h-6 w-6" />
             </Button>
-            <div className="w-8 h-8" /> 
+            <Link href="/market" className="flex items-center">
+              <HangelLogo className="text-xl" />
+            </Link>
           </div>
 
           <div className="flex items-center gap-1">
@@ -66,5 +68,3 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
       </header>
   );
 }
-
-    
