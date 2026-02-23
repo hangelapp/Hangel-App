@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -170,7 +169,7 @@ export default function SitemapPage() {
                 { label: "2.4.12.52 Bağımsız Mali Denetim Beyanı", href: "/settings/contracts/bagimsiz-mali-denetim-ve-ifrs-gaap-beyani", indent: 2 },
                 { label: "2.4.12.53 Sızma ve Güvenlik Testleri Beyanı", href: "/settings/contracts/sizma-ve-guvenlik-testleri-beyani", indent: 2 },
                 { label: "2.4.12.54 UX ve Kullanıcı Deneyimi Testleri Beyanı", href: "/settings/contracts/ux-ve-kullanici-deneyimi-testleri-beyani", indent: 2 },
-                { label: "2.4.12.55 Felaket Kurtarma ve Yedekleme Beyanı", href: "/settings/contracts/felaket-kurtarma-ve-yedekleme-testleri-beyani", indent: 2 },
+                { label: "2.4.12.55 Felaket Kurtarma ve Yedekleme Testleri Beyanı", href: "/settings/contracts/felaket-kurtarma-ve-yedekleme-testleri-beyani", indent: 2 },
                 { label: "2.5 Yönetim Paneli (Yetkili)", href: "/ngo-admin/dashboard" },
                 { label: "2.5.1 STK Dashboard", href: "/ngo-admin/dashboard", indent: 1 },
                 { label: "2.5.2 Profili Güncelle", href: "/ngo-admin/manage-profile", indent: 1 },
@@ -258,6 +257,8 @@ export default function SitemapPage() {
         }
     ];
 
+    const totalAllPagesCount = allPagesSections.reduce((acc, section) => acc + section.links.length, 0);
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             {/* Nav */}
@@ -279,8 +280,8 @@ export default function SitemapPage() {
 
                 <Tabs defaultValue="main-pages" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="main-pages">Ana Sayfalar</TabsTrigger>
-                        <TabsTrigger value="all-pages">Tüm Sayfalar (Hiyerarşik Liste)</TabsTrigger>
+                        <TabsTrigger value="main-pages">Ana Sayfalar ({mainPages.length})</TabsTrigger>
+                        <TabsTrigger value="all-pages">Tüm Sayfalar ({totalAllPagesCount})</TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="main-pages" className="mt-8">
