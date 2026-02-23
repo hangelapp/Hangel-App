@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
@@ -13,13 +13,16 @@ import {
   HeartHandshake,
   BarChart3,
   Shield,
+  LayoutDashboard,
+  Newspaper,
   BookCopy,
   Settings,
   HelpCircle,
-  Newspaper,
-  UserCog,
   School,
-  LifeBuoy
+  UserCog,
+  LifeBuoy,
+  Megaphone,
+  Inbox
 } from "lucide-react";
 
 const iconColorMap: { [key: string]: string } = {
@@ -37,27 +40,11 @@ const iconColorMap: { [key: string]: string } = {
   'Settings': 'bg-gray-500',
   'HelpCircle': 'bg-pink-500',
   'LifeBuoy': 'bg-blue-400',
+  'Megaphone': 'bg-yellow-500',
+  'LayoutDashboard': 'bg-blue-500',
+  'Inbox': 'bg-cyan-500',
+  'Users': 'bg-blue-500',
 };
-
-const NavLink = ({ href, icon, label, description }: { href: string, icon: keyof typeof Icons, label: string, description: string }) => {
-  const Icon = Icons[icon] || Icons.HelpCircle;
-  const color = iconColorMap[icon] || 'bg-gray-500';
-
-  return (
-    <Link href={href} className="block hover:bg-accent transition-colors w-full rounded-lg border p-4">
-      <div className="flex items-center gap-4">
-        <div className={cn("p-2 rounded-lg", color)}>
-            <Icon className="h-6 w-6 text-white" />
-        </div>
-        <div className="flex-1">
-          <p className="font-semibold text-base">{label}</p>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-        <Icons.ChevronRight className="h-5 w-5 text-muted-foreground" />
-      </div>
-    </Link>
-  )
-}
 
 const superAdminNavItems = [
     { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },
@@ -71,6 +58,8 @@ const superAdminNavItems = [
     { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
     { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy', description: 'Kütüphane içeriklerini ekle, düzenle veya sil.' },
     { href: '/super-admin/communications', label: 'Bildirimler ve Bülten', icon: 'Bell', description: 'Toplu bildirimler ve e-posta bültenleri gönder.' },
+    { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone', description: 'Platform içi reklamları yönet.' },
+    { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users', description: 'Kurumsal işbirliği taleplerini yönet.' },
     { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings', description: 'Platformun genel ayarlarını yönet.' },
     { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle', description: 'Kullanıcılardan gelen destek taleplerini yönet.' },
     { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy', description: 'Admin paneli kullanımı hakkında bilgi al.' },
@@ -78,9 +67,9 @@ const superAdminNavItems = [
 
 export default function SuperAdminDashboard() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Paneli Ana Sayfa</h1>
+    <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12">
+      <div className="space-y-1 px-1">
+        <h1 className="text-3xl font-bold font-headline">Admin Paneli</h1>
         <p className="text-muted-foreground text-sm">hangel platformunun genel sağlığını, üyelik süreçlerini ve operasyonel araçlarını buradan denetleyin.</p>
       </div>
 
@@ -139,15 +128,32 @@ export default function SuperAdminDashboard() {
           </Card>
         </div>
 
-        <Card>
-            <CardHeader>
+        <Card className="shadow-sm">
+            <CardHeader className="bg-muted/20">
                 <CardTitle>Yönetim Araçları</CardTitle>
                 <CardDescription>Platformun temel fonksiyonlarını ve sistem ayarlarını yapılandırın.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-                {superAdminNavItems.map(item => (
-                    <NavLink key={item.href} {...item} />
-                ))}
+            <CardContent className="p-0">
+                <div className="divide-y">
+                    {superAdminNavItems.map(item => {
+                        const Icon = Icons[item.icon as keyof typeof Icons] || Icons.HelpCircle;
+                        const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
+                        return (
+                            <Link href={item.href} key={item.href} className="block hover:bg-accent transition-colors">
+                                <div className="flex items-center p-4">
+                                    <div className={cn("h-12 w-12 flex items-center justify-center mr-4 rounded-lg", color)}>
+                                        <Icon className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold">{item.label}</p>
+                                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                                    </div>
+                                    <Icons.ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                                </div>
+                            </Link>
+                        )
+                    })}
+                </div>
             </CardContent>
         </Card>
     </div>
