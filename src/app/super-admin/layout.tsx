@@ -1,96 +1,11 @@
-
 'use client';
 
 import React from 'react';
-import {
-  Bell,
-  Users,
-  Building,
-  Store,
-  FileText,
-  HeartHandshake,
-  BarChart3,
-  Shield,
-  LayoutDashboard,
-  ArrowLeft,
-  Newspaper,
-  BookCopy,
-  Settings,
-  HelpCircle,
-  School,
-  UserCog,
-  LifeBuoy,
-  LogOut,
-  Megaphone,
-  Inbox
-} from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import type { SideNavItem } from '@/lib/types';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
-import * as Icons from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const navItems: SideNavItem[] = [
-  { href: '/super-admin', label: 'Genel Bakış', icon: 'LayoutDashboard' },
-  { href: '/super-admin/inbox', label: 'Gelen Kutusu', icon: 'Inbox' },
-  { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText' },
-  { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog' },
-  { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building' },
-  { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store' },
-  { href: '/super-admin/clubs', label: 'Kulüp Yönetimi', icon: 'School' },
-  { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake' },
-  { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper' },
-  { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3' },
-  { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield' },
-  { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy' },
-  { href: '/super-admin/communications', label: 'Bildirimler ve Bülten', icon: 'Bell' },
-  { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone' },
-  { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users' },
-  { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings' },
-  { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle' },
-  { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy' },
-];
-
-const iconColorMap: { [key: string]: string } = {
-  'FileText': 'bg-sky-500',
-  'UserCog': 'bg-purple-500',
-  'Building': 'bg-orange-500',
-  'Store': 'bg-green-500',
-  'School': 'bg-gray-500',
-  'HeartHandshake': 'bg-red-500',
-  'Newspaper': 'bg-blue-500',
-  'BarChart3': 'bg-indigo-500',
-  'Shield': 'bg-green-600',
-  'BookCopy': 'bg-amber-600',
-  'Bell': 'bg-teal-500',
-  'Settings': 'bg-gray-500',
-  'HelpCircle': 'bg-pink-500',
-  'LifeBuoy': 'bg-blue-400',
-  'Megaphone': 'bg-yellow-500',
-  'LayoutDashboard': 'bg-blue-500',
-  'Inbox': 'bg-cyan-500',
-  'Users': 'bg-blue-500',
-};
-
-const NavLink = ({ item }: { item: SideNavItem }) => {
-    const pathname = usePathname();
-    const isActive = pathname === item.href;
-    // @ts-ignore
-    const Icon = Icons[item.icon] || Icons.HelpCircle;
-
-    return (
-        <Link href={item.href} className={cn(
-            'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
-            isActive && 'bg-muted text-primary'
-        )}>
-            <Icon className="h-4 w-4" />
-            {item.label}
-        </Link>
-    );
-};
-
 
 export default function SuperAdminLayout({
   children,
@@ -98,50 +13,24 @@ export default function SuperAdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-
-  // Show back button only on sub-pages
-  const showBackButton = pathname !== '/super-admin';
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-muted/40 md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+    <div className="min-h-screen w-full">
+      <div className="flex flex-col">
+        <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 backdrop-blur-xl">
+            <Button onClick={() => router.push('/admin')} variant="ghost" size="icon" className="h-9 w-9">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <Link href="/super-admin" className="flex items-center gap-2 font-semibold">
               <span className="text-xl font-bold text-primary">hangel</span>
               <span className="text-foreground">Admin Paneli</span>
             </Link>
-          </div>
-          <div className="flex-1 flex flex-col">
-            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {navItems.map(item => <NavLink key={item.href} item={item} />)}
-            </nav>
-            <div className="mt-auto p-4">
-                <Link href="/timeline" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-destructive">
-                    <LogOut className="h-4 w-4" />
-                    <span>Panelden Çık</span>
-                </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-            {/* Mobile menu can be added here */}
-            <div className="w-full flex-1">
-                 {/* Optional search bar */}
-            </div>
+            <div className="w-full flex-1" />
             <Link href="/profile">
               <UserAvatar />
             </Link>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-secondary">
-          {showBackButton && (
-              <Button onClick={() => router.back()} variant="ghost" size="icon" className="-mt-2 -ml-2 h-8 w-8 self-start">
-                  <ArrowLeft className="h-5 w-5" />
-              </Button>
-          )}
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/30">
           {children}
         </main>
       </div>
