@@ -27,125 +27,130 @@ const SitemapGroup = ({ title, links }: { title: string, links: { label: string,
 export default function SitemapPage() {
     const router = useRouter();
 
-    const sections = [
+    const mainPages = [
+        { label: "Zaman Tüneli (Ana Akış)", href: "/timeline" },
+        { label: "Market (Alışverişle Bağış)", href: "/market" },
+        { label: "Gönüllülük (İmece)", href: "/volunteering" },
+        { label: "Etkinlikler", href: "/events" },
+        { label: "Cüzdanım (QR Ödeme)", href: "/qr-payment" },
+        { label: "Acil Durum Merkezi", href: "/emergency" },
+        { label: "Liderlik Tablosu", href: "/leaderboard" },
+        { label: "Etki Hikayeleri (Stories)", href: "/stories" },
+        { label: "Kütüphane", href: "/library" },
+        { label: "Hakkımızda", href: "/about" },
+        { label: "İletişim", href: "/contact" },
+    ];
+
+    const allPagesSections = [
         {
-            title: "Ana Sayfalar",
+            title: "1. Ana Gezinti ve Keşfet",
             links: [
-                { label: "Zaman Tüneli (Ana Akış)", href: "/timeline" },
-                { label: "Market (Alışverişle Bağış)", href: "/market" },
-                { label: "Gönüllülük (İmece)", href: "/volunteering" },
-                { label: "Cüzdanım (QR Ödeme)", href: "/qr-payment" },
+                { label: "Anasayfa / Giriş", href: "/login" },
+                { label: "Zaman Tüneli", href: "/timeline" },
+                { label: "Market (Markalar)", href: "/market" },
+                { label: "Gönüllülük (İlanlar)", href: "/volunteering" },
+                { label: "Etkinlikler Takvimi", href: "/events" },
+                { label: "Cüzdanım (Ödeme & Bakiye)", href: "/qr-payment" },
                 { label: "Acil Durum Merkezi", href: "/emergency" },
                 { label: "Liderlik Tablosu", href: "/leaderboard" },
-                { label: "Etki Hikayeleri (Stories)", href: "/stories" },
-                { label: "Kütüphane", href: "/library" },
+                { label: "Etki Story (Hikayeler)", href: "/stories" },
+                { label: "Kütüphane (Kaynaklar)", href: "/library" },
             ]
         },
         {
-            title: "Hesabım",
+            title: "2. Kullanıcı Hesabı ve Ayarlar",
             links: [
                 { label: "Profilim", href: "/profile" },
-                { label: "Ayarlar", href: "/settings" },
-                { label: "  Kişisel Bilgiler", href: "/settings/profile" },
-                { label: "  Gönüllülük Bilgileri", href: "/settings/volunteer" },
-                { label: "  Cüzdan ve Ödeme", href: "/settings/wallet" },
-                { label: "  Güvenlik ve Şifre", href: "/settings/security" },
-                { label: "  Bildirimler", href: "/settings/notifications" },
-                { label: "  Görünüm ve Tema", href: "/settings/theme" },
-                { label: "  Dil", href: "/settings/language" },
-                { label: "  Erişilebilirlik", href: "/settings/accessibility" },
-                { label: "  Gizlilik", href: "/settings/privacy" },
-                { label: "  Bağış STK Seçimi", href: "/settings/ngo-selection" },
-                { label: "  Gönüllülük STK Seçimi", href: "/settings/volunteer-ngo-selection" },
                 { label: "Mesajlarım", href: "/messages" },
                 { label: "Başvurularım", href: "/my-applications" },
-                { label: "  Yeni Başvuru", href: "/my-applications/new" },
-                { label: "Bağışlarım", href: "/my-donations" },
-                { label: "Rozetler & Sertifikalar", href: "/my-badges" },
+                { label: "Yeni Başvuru Oluştur", href: "/my-applications/new" },
+                { label: "Bağışlarım (Geçmiş)", href: "/my-donations" },
+                { label: "Rozetler ve Sertifikalar", href: "/my-badges" },
                 { label: "Arkadaş Davet Et", href: "/invite" },
+                { label: "Ayarlar Paneli", href: "/settings" },
+                { label: "  - Kişisel Bilgileri Düzenle", href: "/settings/profile" },
+                { label: "  - Gönüllülük Bilgileri", href: "/settings/volunteer" },
+                { label: "  - Cüzdan ve Ödeme", href: "/settings/wallet" },
+                { label: "  - Güvenlik ve Şifre", href: "/settings/security" },
+                { label: "  - Bildirim Tercihleri", href: "/settings/notifications" },
+                { label: "  - Görünüm ve Tema", href: "/settings/theme" },
+                { label: "  - Dil Ayarları", href: "/settings/language" },
+                { label: "  - Erişilebilirlik", href: "/settings/accessibility" },
+                { label: "  - Gizlilik ve Etkileşim", href: "/settings/privacy" },
+                { label: "  - Bağış Yapılan STK Seçimi", href: "/settings/ngo-selection" },
+                { label: "  - Gönüllüsü Olunan STK Seçimi", href: "/settings/volunteer-ngo-selection" },
             ]
         },
         {
-            title: "Yönetim Panelleri",
+            title: "3. Kurumsal ve Yasal",
             links: [
-                { label: "Marka/Kulüp Yönetim Paneli", href: "/admin" },
-                { label: "  Öğrenci Kulüpleri", href: "/admin/clubs" },
-                { label: "  Kulüp Etkinlikleri", href: "/admin/events" },
-                { label: "STK Yönetim Paneli", href: "/ngo-admin/dashboard" },
-                { label: "  Profil & Site Yönetimi", href: "/ngo-admin/manage-profile" },
-                { label: "  Web Sitesi Özelleştirme", href: "/ngo-admin/website" },
-                { label: "  Gönüllülük Yönetimi", href: "/ngo-admin/volunteer" },
-                { label: "  Bağış Takibi", href: "/ngo-admin/donations" },
-                { label: "  Gönderi Yönetimi", href: "/ngo-admin/posts" },
-                { label: "  Yetkili Yönetimi", href: "/ngo-admin/users" },
-                { label: "  Raporlar", href: "/ngo-admin/reports" },
-                { label: "  Entegrasyonlar", href: "/ngo-admin/accounting" },
-                { label: "Süper Admin Paneli", href: "/super-admin" },
-                { label: "  Başvuru Yönetimi", href: "/super-admin/applications" },
-                { label: "  Kullanıcı Yönetimi", href: "/super-admin/users" },
-                { label: "  STK Yönetimi", href: "/super-admin/ngos" },
-                { label: "  Marka Yönetimi", href: "/super-admin/brands" },
-                { label: "  Kulüp Yönetimi", href: "/super-admin/clubs" },
-                { label: "  Analizler", href: "/super-admin/analytics" },
-                { label: "  İletişim Merkezi", href: "/super-admin/communications" },
-                { label: "  Kütüphane Yönetimi", href: "/super-admin/library" },
-                { label: "  Yardım Merkezi", href: "/super-admin/help" },
+                { label: "Biz Kimiz? (Detaylı)", href: "/about" },
+                { label: "Sosyal Girişimcilik Nedir?", href: "/social-entrepreneurship" },
+                { label: "Sürdürülebilirlik ve Etki", href: "/social-impact" },
+                { label: "Basın Odası & Medya Kiti", href: "/press" },
+                { label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri" },
+                { label: "Kariyer Fırsatları", href: "/careers" },
+                { label: "Kamu İşbirliği Programları", href: "/corporate" },
+                { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
+                { label: "Logo Kullanım Kılavuzu", href: "/logo-usage" },
+                { label: "Erişilebilirlik Beyanı", href: "/accessibility" },
+                { label: "Kalite ve Standartlarımız", href: "/standards" },
             ]
         },
         {
-            title: "hangel derneği",
+            title: "4. İşbirliği ve Kayıt",
+            links: [
+                { label: "Üye İşyeri Başvurusu", href: "/merchant" },
+                { label: "STK Kayıt ve Onboarding", href: "/ngo-onboarding" },
+                { label: "Kampüs Avantajları (Kulüpler)", href: "/campus-advantages" },
+                { label: "Kurumsal İletişim", href: "/contact" },
+                { label: "  - Belediyeler için hangel", href: "/contact/municipalities" },
+                { label: "  - Üniversiteler için hangel", href: "/contact/universities" },
+                { label: "  - Fonlar için hangel", href: "/contact/funds" },
+            ]
+        },
+        {
+            title: "5. hangel derneği (SBG)",
             links: [
                 { label: "Dernek Ana Sayfası", href: "/hangelassociation" },
                 { label: "Dernek Hakkında", href: "/hangelassociation/about" },
                 { label: "Dernek Etkinlikleri", href: "/hangelassociation/events" },
                 { label: "Uluslararası Çalıştay", href: "/hangelassociation/workshop" },
-                { label: "Mevzuat Taslağı", href: "/hangelassociation/legislation" },
-                { label: "Projeler", href: "/hangelassociation/projects/etki-atlasi" },
-                { label: "Komiteler", href: "/hangelassociation/committees/akademik" },
-                { label: "Raporlar", href: "/hangelassociation/reports/5-yillik-etki" },
-                { label: "İletişim", href: "/hangelassociation/contact" },
-                { label: "Geri Bildirim", href: "/hangelassociation/feedback" },
+                { label: "Mevzuat Taslağı Çalışmaları", href: "/hangelassociation/legislation" },
+                { label: "Projelerimiz", href: "/hangelassociation/projects/etki-atlasi" },
+                { label: "Komitelerimiz", href: "/hangelassociation/committees/akademik" },
+                { label: "Şeffaflık Raporları", href: "/hangelassociation/reports/5-yillik-etki" },
+                { label: "Dernek İletişim", href: "/hangelassociation/contact" },
+                { label: "Dernek Geri Bildirim", href: "/hangelassociation/feedback" },
             ]
         },
         {
-            title: "Kurumsal",
+            title: "6. Yönetim Panelleri (Yetkili)",
             links: [
-                { label: "Biz Kimiz?", href: "/about" },
-                { label: "Sosyal Girişimcilik", href: "/social-entrepreneurship" },
-                { label: "Sürdürülebilirlik", href: "/social-impact" },
-                { label: "Basın Odası", href: "/press" },
-                { label: "Yatırımcı İlişkileri", href: "/yatirimci-iliskileri" },
-                { label: "Kariyer", href: "/careers" },
-                { label: "Kamu İşbirlikleri", href: "/corporate" },
-                { label: "Bilgi Toplumu Hizmetleri", href: "/bilgi-toplumu-hizmetleri" },
+                { label: "Kulüp Yönetim Paneli", href: "/admin/clubs" },
+                { label: "Kulüp Etkinlik Yönetimi", href: "/admin/events" },
+                { label: "STK Yönetim Paneli (Dashboard)", href: "/ngo-admin/dashboard" },
+                { label: "  - STK Profil Yönetimi", href: "/ngo-admin/manage-profile" },
+                { label: "  - STK Web Sitesi Düzenleyici", href: "/ngo-admin/website" },
+                { label: "  - Gönüllü Yönetim Paneli", href: "/ngo-admin/volunteer" },
+                { label: "  - Bağış ve Finans Takibi", href: "/ngo-admin/donations" },
+                { label: "  - Mini Blog (Gönderi) Yönetimi", href: "/ngo-admin/posts" },
+                { label: "  - Muhasebe & ERP Entegrasyonu", href: "/ngo-admin/accounting" },
+                { label: "  - CRM & Veri Yönetimi", href: "/ngo-admin/crm" },
+                { label: "  - Reklam & Görünürlük", href: "/ngo-admin/ads" },
+                { label: "Süper Admin (Platform Kontrol)", href: "/super-admin" },
             ]
         },
         {
-            title: "İşbirlikleri",
+            title: "7. Destek ve Yardım",
             links: [
-                { label: "Üye İşyeri Ol", href: "/merchant" },
-                { label: "STK Kaydı", href: "/ngo-onboarding" },
-                { label: "Kampüs Avantajları", href: "/campus-advantages" },
-                { label: "İletişim", href: "/contact" },
-                { label: "  Belediyeler", href: "/contact/municipalities" },
-                { label: "  Üniversiteler", href: "/contact/universities" },
-                { label: "  Uluslararası Fonlar", href: "/contact/funds" },
-            ]
-        },
-        {
-            title: "Destek ve Yasal",
-            links: [
-                { label: "Yardım Merkezi", href: "/support" },
-                { label: "Geri Bildirim Gönder", href: "/feedback" },
-                { label: "Erişilebilirlik Beyanı", href: "/accessibility" },
-                { label: "Kalite ve Standartlar", href: "/standards" },
-                { label: "Tüm Sözleşmeler ve Politikalar", href: "/settings/contracts" },
-                { label: "Logo Kullanım Kılavuzu", href: "/logo-usage" },
+                { label: "Yardım Merkezi (Genel)", href: "/support" },
+                { label: "Uygulama Kullanım Desteği", href: "/support/app-support" },
+                { label: "Geri Bildirim Formu", href: "/feedback" },
+                { label: "Sözleşmeler ve Politikalar", href: "/settings/contracts" },
             ]
         }
     ];
-
-    const mainPagesSection = sections.find(s => s.title === "Ana Sayfalar");
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -166,19 +171,19 @@ export default function SitemapPage() {
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium">Tüm platformun yapısını tek bir bakışta inceleyin.</p>
                 </div>
 
-                <Tabs defaultValue="all-pages" className="w-full">
+                <Tabs defaultValue="main-pages" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="main-pages">Ana Sayfalar</TabsTrigger>
-                        <TabsTrigger value="all-pages">Tüm Sayfalar</TabsTrigger>
+                        <TabsTrigger value="all-pages">Tüm Sayfalar (Detaylı)</TabsTrigger>
                     </TabsList>
+                    
                     <TabsContent value="main-pages" className="mt-8">
-                        <div className="grid grid-cols-1 gap-16">
-                            {mainPagesSection && <SitemapGroup {...mainPagesSection} />}
-                        </div>
+                        <SitemapGroup title="Temel Navigasyon" links={mainPages} />
                     </TabsContent>
+                    
                     <TabsContent value="all-pages" className="mt-8">
                         <div className="grid grid-cols-1 gap-16">
-                            {sections.map((section) => (
+                            {allPagesSections.map((section) => (
                                 <SitemapGroup key={section.title} {...section} />
                             ))}
                         </div>
