@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -10,7 +9,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
 
 const AskLibraryAssistantInputSchema = z.object({
@@ -30,6 +28,7 @@ export async function askLibraryAssistant(input: AskLibraryAssistantInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'getLibraryAnswerPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: AskLibraryAssistantInputSchema},
   output: {schema: AskLibraryAssistantOutputSchema},
   prompt: `You are the "Hangel Kütüphane Asistanı" (Library Assistant). Your goal is to help users navigate and understand the resources available in the Hangel Library.
@@ -51,7 +50,7 @@ const getLibraryAnswerFlow = ai.defineFlow(
     outputSchema: AskLibraryAssistantOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, {model: googleAI.model('gemini-1.5-flash-latest')});
+    const {output} = await prompt(input);
     return output!;
   }
 );

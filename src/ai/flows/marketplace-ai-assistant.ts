@@ -9,7 +9,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
 
 const AskMarketAssistantInputSchema = z.object({
@@ -29,6 +28,7 @@ export async function askMarketAssistant(input: AskMarketAssistantInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'getMarketplaceAnswerPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: AskMarketAssistantInputSchema},
   output: {schema: AskMarketAssistantOutputSchema},
   prompt: `You are a personal shopping assistant for "Hangel", a marketplace for social-impact brands. Your goal is to recommend the best brands to the user based on what they want to buy and their values.
@@ -55,7 +55,7 @@ const getMarketplaceAnswerFlow = ai.defineFlow(
     outputSchema: AskMarketAssistantOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, {model: googleAI.model('gemini-1.5-flash-latest')});
+    const {output} = await prompt(input);
     return output!;
   }
 );

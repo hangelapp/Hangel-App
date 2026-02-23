@@ -9,7 +9,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
 
 const ImpactStoryInputSchema = z.object({
@@ -31,6 +30,7 @@ export async function getImpactStory(input: ImpactStoryInput): Promise<ImpactSto
 
 const prompt = ai.definePrompt({
   name: 'generateImpactStoryPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ImpactStoryInputSchema},
   output: {schema: ImpactStoryOutputSchema},
   prompt: `You are "Hangel's Etki Asistanı" (Impact Assistant), a cheerful and inspiring AI friend. Your purpose is to celebrate a user's positive impact in a short, personal, and heartfelt story. The story should feel like a warm message from a friend, not a corporate announcement. It should be perfect for sharing on social media.
@@ -72,7 +72,7 @@ const generateImpactStoryFlow = ai.defineFlow(
     outputSchema: ImpactStoryOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, {model: googleAI.model('gemini-1.5-flash-latest')});
+    const {output} = await prompt(input);
     return output!;
   }
 );

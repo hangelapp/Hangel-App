@@ -9,7 +9,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
 
 const ProjectWriterInputSchema = z.object({
@@ -37,6 +36,7 @@ export async function writeProjectProposal(input: ProjectWriterInput): Promise<P
 
 const prompt = ai.definePrompt({
   name: 'projectWriterPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ProjectWriterInputSchema},
   output: {schema: ProjectWriterOutputSchema},
   prompt: `You are an expert Social Project Writer. Your goal is to transform user notes into a professional project proposal suitable for {{{institution}}}.
@@ -69,7 +69,7 @@ const projectWriterFlow = ai.defineFlow(
     outputSchema: ProjectWriterOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, {model: googleAI.model('gemini-1.5-flash-latest')});
+    const {output} = await prompt(input);
     return output!;
   }
 );
