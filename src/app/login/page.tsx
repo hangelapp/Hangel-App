@@ -252,8 +252,6 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                         </SelectContent>
                     </Select>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80"><Link href="/emergency"><Siren className="h-5 w-5" /></Link></Button>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
                     {isUserLoading ? (
                         <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
                     ) : user ? (
@@ -421,7 +419,7 @@ const FullStandardsSection = () => {
     ];
     
     const accessibilityLawData = [
-        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Africa / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
+        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Afrika / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
         { label: "Bilgilendirme Politikası", std: "Transparency Rules", org: "Regülatörler / hangel", region: "Küresel", rate: "%95 / %100" },
         { label: "Çok Dilli Erişim", std: "Inclusive Design", org: "Uluslararası Kullanıcılar / hangel", region: "Küresel", rate: "%80 / %100" },
         { label: "Yerel Bağış Uyumu", std: "Ulusal Mevzuat", org: "Kamu / hangel", region: "Ülke bazlı", rate: "%85 / %100" },
