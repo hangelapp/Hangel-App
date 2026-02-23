@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -21,6 +22,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useState } from 'react';
 
 const SettingsLink = ({ href, icon, label, iconColor }: { href: string, icon: React.ElementType, label: string, iconColor: string }) => {
   const Icon = icon;
@@ -38,6 +42,8 @@ const SettingsLink = ({ href, icon, label, iconColor }: { href: string, icon: Re
 export default function SettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   const handleDeleteAccount = () => {
     toast({
@@ -45,9 +51,23 @@ export default function SettingsPage() {
         title: 'Hesap Silindi',
         description: 'Hesabınız kalıcı olarak silindi. Güvenli bir şekilde çıkış yapılıyor.',
     });
-    setTimeout(() => {
-        router.push('/login');
+    setTimeout(async () => {
+        try {
+            await signOut(auth);
+            router.push('/login');
+        } catch (error) {
+            console.error("Sign out error:", error);
+        }
     }, 2000);
+  };
+
+  const handleSignOut = async () => {
+    try {
+        await signOut(auth);
+        router.push('/login');
+    } catch (error) {
+        console.error("Sign out error:", error);
+    }
   };
   
   return (
@@ -118,25 +138,43 @@ export default function SettingsPage() {
                 <CardDescription>Hesabınızı yönetin, dondurun veya silin.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <Button variant="secondary" className="w-full justify-start text-base p-6" onClick={() => router.push('/login')}>
+                <Button variant="secondary" className="w-full justify-start text-base p-6 rounded-2xl" onClick={() => setIsLogoutDialogOpen(true)}>
                     <LogOut className="mr-2 h-5 w-5" /> Çıkış Yap
                 </Button>
+                
+                <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+                    <AlertDialogContent className="rounded-3xl">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="text-xl font-bold">Emin misin?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-base">
+                                Çıkış yaptığında yaptığın alışverişlerden bağış yapamazsın.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="gap-2">
+                            <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleSignOut} className="rounded-2xl font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Çıkış Yap
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
                  <AlertDialog>
                   <AlertDialogTrigger asChild>
-                     <Button variant="ghost" className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive text-sm p-3">
+                     <Button variant="ghost" className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive text-sm p-3 rounded-xl">
                         <Trash2 className="mr-2 h-5 w-5" /> Hesabı Kalıcı Olarak Sil
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="rounded-3xl">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Hesabınızı Silmek Üzeresiniz</AlertDialogTitle>
-                      <AlertDialogDescription>
+                      <AlertDialogTitle className="text-xl font-bold text-destructive">Hesabınızı Silmek Üzeresiniz</AlertDialogTitle>
+                      <AlertDialogDescription className="text-base">
                         Bu işlem geri alınamaz. Tüm profil bilgileriniz, puanlarınız, rozetleriniz ve işlem geçmişiniz kalıcı olarak silinecektir. Devam etmek istediğinizden emin misiniz?
                       </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                      <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }))} onClick={handleDeleteAccount}>Evet, Hesabımı Sil</AlertDialogAction>
+                    <AlertDialogFooter className="gap-2">
+                      <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
+                      <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }), "rounded-2xl font-bold")} onClick={handleDeleteAccount}>Evet, Hesabımı Sil</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
