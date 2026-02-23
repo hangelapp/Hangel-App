@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense, useEffect, useMemo, useRef } from 'react';
+import React, { useState, Suspense, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,7 +35,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { marketCategories, allUniversities, provincialDirectorates } from '@/lib/data';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
@@ -56,7 +56,7 @@ const neighborhoods: { [key: string]: string[] } = {
 };
 
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
-const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
+const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomi Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
 
 const marketCategoryLabels = marketCategories
     .filter(c => c.mainCategory !== 'Öne çıkanlar' && c.mainCategory !== 'Tümü')
@@ -699,11 +699,12 @@ const FormRenderer = () => {
                     {isLoading ? (
                         <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> İşleniyor...</>
                     ) : (
-                        isRegister ? <><UserPlus className="mr-2 h-5 w-5" /> Aramıza Katıl</> : <><LogIn className="mr-2 h-5 w-5" /> Hesabama Giriş Yap</>
+                        isRegister ? <><UserPlus className="mr-2 h-4 w-4" /> Aramıza Katıl</> : <><LogIn className="mr-2 h-4 w-4" /> Hesabama Giriş Yap</>
                     )}
                 </Button>
             </form>
-        };
+        );
+    };
 
     return (
         <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -757,8 +758,8 @@ const FormRenderer = () => {
             </div>
              <PostRegistrationSurvey open={showSurvey} onOpenChange={setShowSurvey} onComplete={handleSurveyComplete} />
         </div>
-    )
-}
+    );
+};
 
 export default function LoginSelectionPage() {
   return (
