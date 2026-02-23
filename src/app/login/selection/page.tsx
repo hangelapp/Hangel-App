@@ -28,7 +28,9 @@ import {
     ShieldCheck, 
     UserPlus, 
     LogIn, 
-    Loader2 
+    Loader2,
+    Landmark,
+    Building2
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -554,6 +556,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
     );
 };
 
+const Separator = ({ className }: { className?: string }) => <div className={cn("h-px w-full bg-border", className)} />;
 
 const FormRenderer = () => {
     const searchParams = useSearchParams();
@@ -581,13 +584,13 @@ const FormRenderer = () => {
 
     const handleLoginComplete = () => {
         router.push('/market');
-    }
+    };
 
     const handleSurveyComplete = () => {
         setShowSurvey(false);
         localStorage.setItem('onboardingStep', 'ngo-selection');
         router.push('/settings/ngo-selection');
-    }
+    };
 
     const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
         const { toast } = useToast();
@@ -706,6 +709,62 @@ const FormRenderer = () => {
         );
     };
 
+    const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
+        const { toast } = useToast();
+        const searchParams = useSearchParams();
+        const router = useRouter();
+        const entity = searchParams.get('entity');
+    
+        const handleEntityTypeChange = (value: string) => {
+            router.push(`/login/selection?action=register&type=corporate&entity=${value}`);
+        };
+    
+        const handleSubmit = (e: React.FormEvent) => {
+            e.preventDefault();
+            toast({
+                title: "Başvuru Kuyruğa Alındı!",
+                description: "Kurumsal üyeliğiniz, evrak kontrolü ve doğrulama süreçleri için ekibimize ulaştırıldı.",
+            });
+            onComplete();
+        };
+    
+        return (
+            <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in-0">
+                 <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
+                    <Select required value={entity || ''} onValueChange={handleEntityTypeChange}>
+                        <SelectTrigger className="h-12 rounded-xl font-bold border-primary/20 bg-primary/5 text-primary">
+                            <SelectValue placeholder="Kuruluş türünü seçin..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="NGO"><div className="flex items-center gap-2"><HandCoins className="h-4 w-4" /><span>Sivil Toplum Kuruluşu (STK)</span></div></SelectItem>
+                            <SelectItem value="BRAND"><div className="flex items-center gap-2"><HeartHandshake className="h-4 w-4" /><span>Marka / Sosyal İşletme</span></div></SelectItem>
+                            <SelectItem value="CLUB"><div className="flex items-center gap-2"><Building className="h-4 w-4" /><span>Öğrenci Kulübü / Topluluğu</span></div></SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+    
+                {entity === 'NGO' && <NgoForm />}
+                {entity === 'BRAND' && <BrandForm />}
+                {entity === 'CLUB' && <ClubForm />}
+    
+                <div className="space-y-4 pt-4 border-t border-dashed">
+                    <div className="flex items-start space-x-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                        <Checkbox id="terms-corp" required className="mt-1" />
+                        <Label htmlFor="terms-corp" className="text-xs leading-relaxed font-medium text-muted-foreground cursor-pointer">
+                            <span className="text-primary font-bold">Kuruluş Yetkilisi Beyanı:</span> <Link href="/settings/contracts/kurulus-sozlesmesi" className="underline font-bold">Kuruluş Sözleşmesini</Link> ve ekli tüm kurumsal politikaları kuruluşum adına okudum, temsil yetkisi ile onaylıyorum.
+                        </Label>
+                    </div>
+                </div>
+    
+                <Button type="submit" className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20" disabled={!entity}>
+                    Başvuruyu Tamamla ve Gönder
+                </Button>
+                <p className="text-center text-[10px] text-muted-foreground italic">Onay süreci ortalama 2-3 iş günü sürmektedir.</p>
+            </form>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-sm lg:max-w-md">
@@ -768,59 +827,3 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
-
-const CorporateForm = ({ onComplete }: { onComplete: () => void }) => {
-    const { toast } = useToast();
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const entity = searchParams.get('entity');
-
-    const handleEntityTypeChange = (value: string) => {
-        router.push(`/login/selection?action=register&type=corporate&entity=${value}`);
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        toast({
-            title: "Başvuru Kuyruğa Alındı!",
-            description: "Kurumsal üyeliğiniz, evrak kontrolü ve doğrulama süreçleri için ekibimize ulaştırıldı.",
-        });
-        onComplete();
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in-0">
-             <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
-                <Select required value={entity || ''} onValueChange={handleEntityTypeChange}>
-                    <SelectTrigger className="h-12 rounded-xl font-bold border-primary/20 bg-primary/5 text-primary">
-                        <SelectValue placeholder="Kuruluş türünü seçin..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="NGO"><div className="flex items-center gap-2"><HandCoins className="h-4 w-4" /><span>Sivil Toplum Kuruluşu (STK)</span></div></SelectItem>
-                        <SelectItem value="BRAND"><div className="flex items-center gap-2"><HeartHandshake className="h-4 w-4" /><span>Marka / Sosyal İşletme</span></div></SelectItem>
-                        <SelectItem value="CLUB"><div className="flex items-center gap-2"><Building className="h-4 w-4" /><span>Öğrenci Kulübü / Topluluğu</span></div></SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {entity === 'NGO' && <NgoForm />}
-            {entity === 'BRAND' && <BrandForm />}
-            {entity === 'CLUB' && <ClubForm />}
-
-            <div className="space-y-4 pt-4 border-t border-dashed">
-                <div className="flex items-start space-x-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                    <Checkbox id="terms-corp" required className="mt-1" />
-                    <Label htmlFor="terms-corp" className="text-xs leading-relaxed font-medium text-muted-foreground cursor-pointer">
-                        <span className="text-primary font-bold">Kuruluş Yetkilisi Beyanı:</span> <Link href="/settings/contracts/kurulus-sozlesmesi" className="underline font-bold">Kuruluş Sözleşmesini</Link> ve ekli tüm kurumsal politikaları kuruluşum adına okudum, temsil yetkisi ile onaylıyorum.
-                    </Label>
-                </div>
-            </div>
-
-            <Button type="submit" className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20" disabled={!entity}>
-                Başvuruyu Tamamla ve Gönder
-            </Button>
-            <p className="text-center text-[10px] text-muted-foreground italic">Onay süreci ortalama 2-3 iş günü sürmektedir.</p>
-        </form>
-    );
-};
