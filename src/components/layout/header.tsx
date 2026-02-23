@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Menu, Bell, Siren, Globe, Megaphone
+  Menu, Siren, Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
@@ -51,7 +51,6 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                 </Select>
             </div>
             <Button asChild variant="ghost" size="icon"><Link href="/emergency"><Siren className="h-5 w-5 text-destructive" /></Link></Button>
-            <Button asChild variant="ghost" size="icon"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
             
             {isUserLoading ? (
                 <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
