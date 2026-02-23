@@ -31,7 +31,6 @@ const group2Items: SideNavItem[] = [
 const group3Items: SideNavItem[] = [
     { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
-    { href: '/stories', label: 'Etki Story', icon: 'sparkles' },
     { href: '/library', label: 'Kütüphane', icon: 'library' },
 ];
 
