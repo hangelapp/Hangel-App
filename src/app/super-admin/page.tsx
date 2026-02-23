@@ -24,6 +24,7 @@ import {
   Megaphone,
   Inbox,
   FileEdit,
+  Globe,
 } from "lucide-react";
 
 const iconColorMap: { [key: string]: string } = {
@@ -46,10 +47,12 @@ const iconColorMap: { [key: string]: string } = {
   'LayoutDashboard': 'bg-blue-500',
   'Inbox': 'bg-cyan-500',
   'Users': 'bg-blue-500',
+  'Globe': 'bg-emerald-500',
 };
 
 const superAdminNavItems = [
     { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
+    { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
     { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },
     { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog', description: 'Platformdaki kullanıcıları görüntüle ve yönet.' },
     { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki STK\'ları görüntüle ve yönet.' },
