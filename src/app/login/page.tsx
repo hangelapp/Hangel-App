@@ -250,8 +250,6 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="#bagis"><ShoppingBag className="h-5 w-5" /></Link></Button>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="#gonulluluk"><HeartHandshake className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80"><Link href="/emergency"><Siren className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/stories"><Megaphone className="h-5 w-5" /></Link></Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-[#1d1d1f]/80"><Link href="/notifications"><Bell className="h-5 w-5" /></Link></Button>
@@ -261,7 +259,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                         <UserNav />
                     ) : (
                         <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                            <Link href="/login/selection?action=login">Geniş Yap</Link>
+                            <Link href="/login/selection?action=login">Giriş Yap</Link>
                         </Button>
                     )}
                 </div>
