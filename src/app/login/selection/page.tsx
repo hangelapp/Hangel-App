@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -40,7 +39,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, allUniversities } from '@/lib/data';
+import { marketCategories, allUniversities, provincialDirectorates } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
@@ -69,6 +68,18 @@ const allHighSchools = [
     "Ankara Fen Lisesi",
     "İzmir Fen Lisesi",
     "Robert Kolej"
+];
+
+const clubCategories = [
+    "Sosyal Sorumluluk",
+    "Girişimcilik",
+    "Kariyer & Gelişim",
+    "Teknoloji & İnovasyon",
+    "Kültür & Sanat",
+    "Spor",
+    "Bilim & Araştırma",
+    "Düşünce & Tartışma",
+    "Diğer"
 ];
 
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
@@ -151,7 +162,7 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya" }: {
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">X (Twitter)</Label>
                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-muted rounded-lg"><Twitter className="h-4 w-4 text-muted-foreground" /></div>
+                    <div className="p-2 bg-muted rounded-lg"><XIcon className="h-4 w-4 text-muted-foreground" /></div>
                     <Input placeholder="x.com/kullaniciadi" className="h-11 rounded-xl" />
                 </div>
             </div>
@@ -616,18 +627,30 @@ const FormRenderer = () => {
                         {clubType && (
                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                                    {clubType === 'university' ? 'Üniversite' : 'Okul Adı'}
+                                    {clubType === 'university' ? 'Üniversite' : 'İl Millî Eğitim Müdürlüğü'}
                                 </Label>
                                 <Select required>
                                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent>
-                                        {(clubType === 'university' ? allUniversities : allHighSchools).map(u => (
+                                        {(clubType === 'university' ? allUniversities : provincialDirectorates).map(u => (
                                             <SelectItem key={u} value={u}>{u}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                         )}
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Kategorisi</Label>
+                            <Select required>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent>
+                                    {clubCategories.map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Adı</Label>
