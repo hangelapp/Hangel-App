@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -34,7 +33,8 @@ import {
     Trash2,
     Smartphone,
     Mail,
-    Globe
+    Globe,
+    Code
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -628,24 +628,56 @@ const FormRenderer = () => {
                     </div>
 
                     {/* Affiliate Marketing Info */}
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Affiliate Marketing</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-6">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Affiliate Marketing & Teknik Takip</h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed px-1">
+                            Burada amaç, platformun markanın reklamını veya linklerini yayınlayabilmesi ve satışları takip edebilmesi.
+                        </p>
+                        
+                        <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ajans / Network</Label>
-                                <Select>
-                                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="gelir-ortaklari">Gelir Ortakları</SelectItem>
-                                        <SelectItem value="reklamaction">ReklamAction</SelectItem>
-                                        <SelectItem value="affocean">Affocean</SelectItem>
-                                        <SelectItem value="ozel">Özel Altyapı</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Affiliate ID veya Referral ID</Label>
+                                <Input placeholder="Örnek: HANGEL_REF_001" className="h-11 rounded-xl" />
+                                <p className="text-[9px] text-muted-foreground italic ml-1">Markanın affiliate sistemi varsa sana vereceği ID</p>
                             </div>
+
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Program / Campaign ID</Label>
-                                <Input placeholder="ID numaranız" className="h-11 rounded-xl" />
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Affiliate / Tracking Link / Base URL</Label>
+                                <Input placeholder="Örnek: https://marka.com/product/123?ref=HANGEL_REF_001" className="h-11 rounded-xl" />
+                                <p className="text-[9px] text-muted-foreground italic ml-1">Platform üzerinden yönlendirme için kullanılır</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Conversion Pixel / Event Script (opsiyonel ama önerilir)</Label>
+                                <Textarea 
+                                    placeholder='<script>
+  window.hangelConversion({ orderId: "123", amount: 499.90, currency: "TRY" });
+</script>' 
+                                    className="min-h-[100px] rounded-xl font-mono text-xs" 
+                                />
+                                <p className="text-[9px] text-muted-foreground italic ml-1">Satın alma / işlem gerçekleştiğinde tetiklenecek kod</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">API Erişim Bilgileri (isteğe bağlı / ileri seviye)</Label>
+                                <Textarea 
+                                    placeholder="API Key / Secret / Endpoint bilgilerinizi buraya girebilirsiniz." 
+                                    className="min-h-[80px] rounded-xl text-xs" 
+                                />
+                                <p className="text-[9px] text-muted-foreground italic ml-1">Ürün listesi, fiyat ve stok güncellemesi için</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Cookie Süresi veya Tracking Window</Label>
+                                    <Input placeholder="Örn: 30 Gün" className="h-11 rounded-xl" />
+                                    <p className="text-[9px] text-muted-foreground italic ml-1">Kaç saat/gün içinde dönüşüm sayılacak</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kategori / Ürün Bilgisi</Label>
+                                    <Input placeholder="Örn: Tüm ürünler" className="h-11 rounded-xl" />
+                                    <p className="text-[9px] text-muted-foreground italic ml-1">Hangi ürünleri yayınlayabilirsin</p>
+                                </div>
                             </div>
                         </div>
                     </div>
