@@ -41,12 +41,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes } from '@/lib/data';
+import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { HangelLogo } from '@/components/icons';
+import { Badge } from '@/components/ui/badge';
 
 // --- Icons ---
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -503,10 +504,23 @@ const FormRenderer = () => {
     };
 
     const NgoRegistrationForm = () => {
+        const [ngoType, setNgoType] = useState<string>('');
+        const [selectedFeds, setSelectedFeds] = useState<string[]>([]);
+
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
             toast({ title: "Başvuru Alındı", description: "STK başvurunuz incelemeye alınmıştır." });
             handleRegistrationComplete();
+        };
+
+        const toggleFed = (fed: string) => {
+            if (selectedFeds.includes(fed)) {
+                setSelectedFeds(selectedFeds.filter(f => f !== fed));
+            } else if (selectedFeds.length < 3) {
+                setSelectedFeds([...selectedFeds, fed]);
+            } else {
+                toast({ variant: 'destructive', title: 'Limit Aşıldı', description: 'En fazla 3 federasyon seçebilirsiniz.' });
+            }
         };
 
         return (
@@ -517,7 +531,7 @@ const FormRenderer = () => {
                         
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
-                            <Select required>
+                            <Select required onValueChange={setNgoType} value={ngoType}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="dernek">Dernek</SelectItem>
@@ -591,12 +605,42 @@ const FormRenderer = () => {
                         </div>
                     </div>
 
-                    <CheckboxGroup 
-                        title="Kayıtlı Olduğunuz Federasyonlar (En fazla 3)" 
-                        options={allFederations} 
-                        limit={3}
-                        onLimitExceeded={() => toast({ variant: 'destructive', title: 'Limit Aşıldı', description: 'En fazla 3 federasyon seçebilirsiniz.' })}
-                    />
+                    {ngoType === 'spor-kulubu' && (
+                        <div className="space-y-4 p-4 border rounded-[2rem] bg-primary/5 border-primary/10 animate-in slide-in-from-top-2">
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Kayıtlı Olduğunuz Federasyonlar (En fazla 3)</Label>
+                                <p className="text-[9px] text-muted-foreground ml-1">Alttan federasyon seçerek listenize ekleyebilirsiniz.</p>
+                            </div>
+                            
+                            <Select onValueChange={toggleFed}>
+                                <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm">
+                                    <SelectValue placeholder="Federasyon seçin ve ekleyin..." />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                    {sportsFederations.map(fed => (
+                                        <SelectItem key={fed} value={fed} disabled={selectedFeds.includes(fed)}>
+                                            {fed}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {selectedFeds.map(fed => (
+                                    <Badge key={fed} className="bg-white text-foreground border shadow-sm px-3 py-1.5 rounded-xl gap-2 h-auto flex items-center">
+                                        <span className="text-[11px] font-medium leading-tight">{fed}</span>
+                                        <button type="button" onClick={() => toggleFed(fed)} className="text-muted-foreground hover:text-destructive">
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                ))}
+                                {selectedFeds.length === 0 && (
+                                    <p className="text-[10px] text-muted-foreground italic p-2">Henüz federasyon seçilmedi.</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
                     <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
@@ -767,7 +811,7 @@ const FormRenderer = () => {
     };
 
     const ClubRegistrationForm = () => {
-        const [clubType, setClubType] = useState<string>('');
+        const [clubSchoolType, setClubSchoolType] = useState<string>('');
         const [clubCategory, setClubCategory] = useState<string>('');
         const [otherClubCategory, setOtherClubCategory] = useState<string>('');
         
@@ -785,7 +829,7 @@ const FormRenderer = () => {
                         
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Türü</Label>
-                            <Select required onValueChange={setClubType} value={clubType}>
+                            <Select required onValueChange={setClubSchoolType} value={clubSchoolType}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="university">Üniversite Kulübü</SelectItem>
@@ -794,15 +838,15 @@ const FormRenderer = () => {
                             </Select>
                         </div>
 
-                        {(clubType === 'university' || clubType === 'high-school') && (
+                        {(clubSchoolType === 'university' || clubSchoolType === 'high-school') && (
                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                                    {clubType === 'university' ? 'Üniversite' : 'İl Millî Eğitim Müdürlüğü'}
+                                    {clubSchoolType === 'university' ? 'Üniversite' : 'İl Millî Eğitim Müdürlüğü'}
                                 </Label>
                                 <Select required>
                                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent>
-                                        {(clubType === 'university' ? allUniversities : provincialDirectorates).map(u => (
+                                        {(clubSchoolType === 'university' ? allUniversities : provincialDirectorates).map(u => (
                                             <SelectItem key={u} value={u}>{u}</SelectItem>
                                         ))}
                                     </SelectContent>
@@ -853,7 +897,7 @@ const FormRenderer = () => {
                     <AuthorizedPersonFields />
                     <AgreementList type="corporate" />
                 </div>
-                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={!clubType}>Başvuruyu Gönder</Button>
+                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={!clubSchoolType}>Başvuruyu Gönder</Button>
             </form>
         );
     };
