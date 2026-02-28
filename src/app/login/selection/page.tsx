@@ -83,6 +83,7 @@ const clubCategories = [
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
 const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
+const allFederations = ['Türkiye Gönüllülük Federasyonu', 'Sosyal İnovasyon Federasyonu', 'Gençlik STK’ları Federasyonu', 'Sivil Toplum Dayanışma Federasyonu', 'Doğa ve Çevre Federasyonu', 'Eğitim ve Kültür Federasyonu', 'Hayvan Hakları Federasyonu', 'İnsan Hakları Federasyonu'];
 const years = Array.from({ length: 2025 - 1900 }, (_, i) => (2024 - i).toString());
 
 const marketCategoryLabels = marketCategories
@@ -91,19 +92,39 @@ const marketCategoryLabels = marketCategories
 
 // --- Shared Components ---
 
-const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => (
-    <div className="space-y-3">
-        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{title}</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border p-4 bg-background">
-            {options.map(option => (
-                <div key={option} className="flex items-center gap-2">
-                    <Checkbox id={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} />
-                    <Label htmlFor={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} className="text-xs font-medium cursor-pointer leading-none">{option}</Label>
-                </div>
-            ))}
+const CheckboxGroup = ({ title, options, limit, onLimitExceeded }: { title: string, options: string[], limit?: number, onLimitExceeded?: () => void }) => {
+    const [selected, setSelected] = useState<string[]>([]);
+
+    const handleToggle = (option: string, checked: boolean) => {
+        if (checked) {
+            if (limit && selected.length >= limit) {
+                onLimitExceeded?.();
+                return;
+            }
+            setSelected([...selected, option]);
+        } else {
+            setSelected(selected.filter(s => s !== option));
+        }
+    };
+
+    return (
+        <div className="space-y-3">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{title}</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border p-4 bg-background">
+                {options.map(option => (
+                    <div key={option} className="flex items-center gap-2">
+                        <Checkbox 
+                            id={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} 
+                            checked={selected.includes(option)}
+                            onCheckedChange={(checked) => handleToggle(option, !!checked)}
+                        />
+                        <Label htmlFor={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} className="text-xs font-medium cursor-pointer leading-none">{option}</Label>
+                    </div>
+                ))}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint?: string}) => (
     <div className="space-y-2">
@@ -126,24 +147,15 @@ const AuthorizedPersonFields = () => (
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-muted rounded-lg"><UserCircle className="h-4 w-4 text-muted-foreground" /></div>
-                    <Input placeholder="Adınız Soyadınız" required className="h-11 rounded-xl" />
-                </div>
+                <Input placeholder="Adınız Soyadınız" required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-muted rounded-lg"><Code className="h-4 w-4 text-muted-foreground" /></div>
-                    <Input placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" required className="h-11 rounded-xl" />
-                </div>
+                <Input placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-muted rounded-lg"><Mail className="h-4 w-4 text-muted-foreground" /></div>
-                    <Input type="email" placeholder="kurumsal@ornek.com" required className="h-11 rounded-xl" />
-                </div>
+                <Input type="email" placeholder="kurumsal@ornek.com" required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
@@ -346,6 +358,7 @@ const AgreementList = ({ type, isLogin = false }: { type: 'individual' | 'corpor
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { toast } = useToast();
     const action = searchParams.get('action') || 'login';
     const type = searchParams.get('type') || 'individual';
     const entity = searchParams.get('entity') || '';
@@ -490,7 +503,6 @@ const FormRenderer = () => {
     };
 
     const NgoRegistrationForm = () => {
-        const { toast } = useToast();
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
             toast({ title: "Başvuru Alındı", description: "STK başvurunuz incelemeye alınmıştır." });
@@ -539,7 +551,7 @@ const FormRenderer = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İktisadi İşletme</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İktisadi İşletme Durumu</Label>
                                 <Select required>
                                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent>
@@ -579,6 +591,12 @@ const FormRenderer = () => {
                         </div>
                     </div>
 
+                    <CheckboxGroup 
+                        title="Kayıtlı Olduğunuz Federasyonlar (En fazla 3)" 
+                        options={allFederations} 
+                        limit={3}
+                        onLimitExceeded={() => toast({ variant: 'destructive', title: 'Limit Aşıldı', description: 'En fazla 3 federasyon seçebilirsiniz.' })}
+                    />
                     <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
                     <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
@@ -589,8 +607,8 @@ const FormRenderer = () => {
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler</h3>
-                        <FileUpload label="Logo" accept=".jpg,.jpeg" hint="Desteklenen format: .jpg" />
-                        <FileUpload label="Faaliyet Belgesi" accept=".pdf" hint="Desteklenen format: .pdf" />
+                        <FileUpload label="Logo" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" />
+                        <FileUpload label="Faaliyet Belgesi" accept=".pdf,.png" hint="Desteklenen format: .pdf, .png" />
                         <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
                     </div>
 
@@ -603,7 +621,6 @@ const FormRenderer = () => {
     };
 
     const BrandRegistrationForm = () => {
-        const { toast } = useToast();
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
             toast({ title: "Başvuru Alındı", description: "Marka başvurunuz incelemeye alınmıştır." });
@@ -750,7 +767,6 @@ const FormRenderer = () => {
     };
 
     const ClubRegistrationForm = () => {
-        const { toast } = useToast();
         const [clubType, setClubType] = useState<string>('');
         const [clubCategory, setClubCategory] = useState<string>('');
         const [otherClubCategory, setOtherClubCategory] = useState<string>('');
@@ -830,7 +846,7 @@ const FormRenderer = () => {
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Görseller</h3>
-                        <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" />
+                        <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" />
                         <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
                     </div>
 
