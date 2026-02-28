@@ -43,17 +43,30 @@ import { useAuth } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { HangelLogo } from '@/components/icons';
 
-// --- Shared Data ---
+// --- Expanded Mock Data for Cascade ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
 
-const districts: { [key: string]: string[] } = {
-    'İstanbul': ['Kadıköy', 'Beşiktaş', 'Fatih', 'Üsküdar', 'Sarıyer'],
-    'Ankara': ['Çankaya', 'Mamak', 'Keçiören'],
+const districtsData: { [key: string]: string[] } = {
+    'İstanbul': ['Kadıköy', 'Beşiktaş', 'Fatih', 'Üsküdar', 'Sarıyer', 'Şişli', 'Bakırköy', 'Beykoz'],
+    'Ankara': ['Çankaya', 'Mamak', 'Keçiören', 'Etimesgut', 'Yenimahalle', 'Gölbaşı'],
+    'İzmir': ['Konak', 'Bornova', 'Karşıyaka', 'Buca', 'Çiğli'],
 };
 
-const neighborhoods: { [key: string]: string[] } = {
-    'Kadıköy': ['Caferağa', 'Osmanağa', 'Moda'],
+const neighborhoodsData: { [key: string]: string[] } = {
+    'Kadıköy': ['Caferağa', 'Osmanağa', 'Moda', 'Rasimpaşa', 'Fenerbahçe'],
+    'Beşiktaş': ['Levent', 'Etiler', 'Bebek', 'Arnavutköy', 'Ortaköy'],
+    'Çankaya': ['Kızılay', 'Kavaklıdere', 'Bahçelievler', 'Ayrancı', 'Dikmen'],
 };
+
+const allSchools = [
+    ...allUniversities,
+    "Kabataş Erkek Lisesi",
+    "İstanbul Erkek Lisesi",
+    "Galatasaray Lisesi",
+    "Ankara Fen Lisesi",
+    "İzmir Fen Lisesi",
+    "Robert Kolej"
+];
 
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
@@ -95,6 +108,8 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
 
 const SocialMediaFields = () => (
     <div className="space-y-4">
+        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Sosyal Medya Hesapları</h3>
+        <p className="text-[10px] text-muted-foreground italic px-1">Kuruluşunuzun sosyal medya linklerini ekleyin.</p>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Instagram</Label>
             <div className="flex items-center gap-2">
@@ -135,6 +150,7 @@ const SocialMediaFields = () => (
 
 const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood }: any) => (
     <div className="space-y-4">
+        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">İletişim & Adres</h3>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">E-posta</Label>
             <Input type="email" placeholder="iletisim@ornek.com" className="h-11 rounded-xl" required />
@@ -154,7 +170,7 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
                 <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city}>
                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
                     <SelectContent>
-                        {city && (districts[city] || ['Merkez']).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        {city && (districtsData[city] || ['Merkez']).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>
@@ -163,7 +179,7 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
                 <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district}>
                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
                     <SelectContent>
-                        {district && (neighborhoods[district] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                        {district && (neighborhoodsData[district] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>
@@ -174,6 +190,60 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
         </div>
     </div>
 );
+
+const FinancialFields = () => (
+    <div className="space-y-4">
+        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal & Finansal</h3>
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yasal Unvan</Label>
+            <Input placeholder="Şirket veya kurum tam adı" className="h-11 rounded-xl" />
+        </div>
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">IBAN Numarası</Label>
+            <Input placeholder="TR..." className="h-11 rounded-xl font-mono" />
+        </div>
+    </div>
+);
+
+// --- Agreement Components ---
+
+const AgreementList = ({ type }: { type: 'individual' | 'corporate' }) => {
+    if (type === 'individual') {
+        return (
+            <div className="pt-2">
+                <div className="flex items-start space-x-3 mb-4">
+                    <Checkbox id="terms-accept" required />
+                    <Label htmlFor="terms-accept" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                        <Link href="/settings/contracts/kullanici-sozlesmesi" className="text-primary font-bold hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>'nı okudum ve kabul ediyorum.
+                    </Label>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="pt-4 space-y-4">
+            <div className="flex items-start space-x-3">
+                <Checkbox id="corp-terms-1" required />
+                <Label htmlFor="corp-terms-1" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                    <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesi</Link> ve <Link href="/settings/contracts/sosyal-etki-politikasi" className="text-primary font-bold hover:underline">Sosyal Etki Politikası</Link>'nı okudum, kuruluşum adına onaylıyorum.
+                </Label>
+            </div>
+            <div className="flex items-start space-x-3">
+                <Checkbox id="corp-terms-2" required />
+                <Label htmlFor="corp-terms-2" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                    <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/acik-riza-metni" className="text-primary font-bold hover:underline">Açık Rıza Metni</Link>'ni okudum ve kabul ediyorum.
+                </Label>
+            </div>
+            <div className="flex items-start space-x-3">
+                <Checkbox id="corp-terms-3" required />
+                <Label htmlFor="corp-terms-3" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                    <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="text-primary font-bold hover:underline">Bağış ve Yardım Politikası</Link> ile <Link href="/settings/contracts/etik-ilkeler" className="text-primary font-bold hover:underline">Etik İlkeler</Link>'e uyacağımızı taahhüt ediyorum.
+                </Label>
+            </div>
+        </div>
+    );
+};
 
 // --- Form Renderer Component ---
 
@@ -267,7 +337,7 @@ const FormRenderer = () => {
                 {isRegister && (
                     <div className="space-y-2">
                         <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Adınız ve Soyadınız</Label>
-                        <Input id="name" placeholder="Örn: Can Demir" required value={name} onChange={e => setName(e.target.value)} className="h-12 rounded-xl" />
+                        <Input id="name" placeholder="İsmail Hilmi ADIGÜZEL" required value={name} onChange={e => setName(e.target.value)} className="h-12 rounded-xl" />
                     </div>
                 )}
                 <div className="space-y-2">
@@ -281,16 +351,7 @@ const FormRenderer = () => {
                     <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şifre</Label>
                     <Input id="password" type="password" placeholder="En az 6 karakter" required value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl" />
                 </div>
-                {isRegister && (
-                    <div className="pt-2">
-                        <div className="flex items-start space-x-3 mb-4">
-                            <Checkbox id="terms-accept" required />
-                            <Label htmlFor="terms-accept" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                                <Link href="/settings/contracts/kullanici-sozlesmesi" className="text-primary font-bold hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>'nı okudum ve kabul ediyorum.
-                            </Label>
-                        </div>
-                    </div>
-                )}
+                {isRegister && <AgreementList type="individual" />}
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                     {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRegister ? "Kayıt Ol ve Başla" : "Giriş Yap")}
                 </Button>
@@ -318,11 +379,11 @@ const FormRenderer = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
-                                <Input placeholder="Örn: TEMA" className="h-11 rounded-xl" />
+                                <Input placeholder="hangel Derneği" className="h-11 rounded-xl" />
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
-                                <Input type="number" placeholder="Örn: 1992" className="h-11 rounded-xl" />
+                                <Input type="number" placeholder="1983" className="h-11 rounded-xl" />
                             </div>
                         </div>
                         <div className="space-y-2">
@@ -356,16 +417,9 @@ const FormRenderer = () => {
                     <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
                     <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">İletişim & Adres</h3>
-                        <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    </div>
-
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Sosyal Medya Hesapları</h3>
-                        <p className="text-[10px] text-muted-foreground italic px-1">Kuruluşunuzun sosyal medya linklerini ekleyin.</p>
-                        <SocialMediaFields />
-                    </div>
+                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
+                    <SocialMediaFields />
+                    <FinancialFields />
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler</h3>
@@ -374,12 +428,7 @@ const FormRenderer = () => {
                         <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
                     </div>
 
-                    <div className="flex items-start space-x-3 pt-4">
-                        <Checkbox id="ngo-terms" required />
-                        <Label htmlFor="ngo-terms" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                            <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesini</Link> okudum ve kuruluşum adına onaylıyorum.
-                        </Label>
-                    </div>
+                    <AgreementList type="corporate" />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
             </form>
@@ -418,30 +467,16 @@ const FormRenderer = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">İletişim & Adres</h3>
-                        <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    </div>
+                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
+                    <SocialMediaFields />
+                    <FinancialFields />
 
                     <div className="space-y-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal & Finansal</h3>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yasal Unvan</Label>
-                            <Input placeholder="Şirket tam adı" className="h-11 rounded-xl" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">IBAN</Label>
-                            <Input placeholder="TR..." className="h-11 rounded-xl font-mono" />
-                        </div>
-                        <FileUpload label="Vergi Levhası" accept=".pdf" />
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Logolar</h3>
+                        <FileUpload label="Marka Logosu" accept=".jpg,.jpeg,.png" hint="Yüksek çözünürlüklü .png veya .jpg" />
                     </div>
 
-                    <div className="flex items-start space-x-3 pt-4">
-                        <Checkbox id="brand-terms" required />
-                        <Label htmlFor="brand-terms" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                            <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesini</Link> okudum ve markam adına onaylıyorum.
-                        </Label>
-                    </div>
+                    <AgreementList type="corporate" />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
             </form>
@@ -466,7 +501,7 @@ const FormRenderer = () => {
                             <Select required>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Kurum seçin..." /></SelectTrigger>
                                 <SelectContent>
-                                    {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                    {allSchools.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -474,11 +509,10 @@ const FormRenderer = () => {
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Adı</Label>
                             <Input placeholder="Kulübünüzün tam adı" required className="h-11 rounded-xl" />
                         </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yetkili E-posta</Label>
-                            <Input type="email" placeholder="kulup@okul.edu.tr" className="h-11 rounded-xl" required />
-                        </div>
                     </div>
+
+                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
+                    <SocialMediaFields />
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Görseller</h3>
@@ -486,12 +520,7 @@ const FormRenderer = () => {
                         <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
                     </div>
 
-                    <div className="flex items-start space-x-3 pt-4">
-                        <Checkbox id="club-terms" required />
-                        <Label htmlFor="club-terms" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                            <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesini</Link> okudum ve kulübüm adına onaylıyorum.
-                        </Label>
-                    </div>
+                    <AgreementList type="corporate" />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
             </form>
