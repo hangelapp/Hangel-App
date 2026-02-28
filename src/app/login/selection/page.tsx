@@ -106,9 +106,9 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
     </div>
 );
 
-const SocialMediaFields = () => (
+const SocialMediaFields = ({ title = "Sosyal Medya Hesapları" }: { title?: string }) => (
     <div className="space-y-4">
-        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Sosyal Medya Hesapları</h3>
+        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">{title}</h3>
         <p className="text-[10px] text-muted-foreground italic px-1">Kuruluşunuzun sosyal medya linklerini ekleyin.</p>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Instagram</Label>
@@ -393,6 +393,8 @@ const FormRenderer = () => {
                                 <SelectContent>
                                     <SelectItem value="dernek">Dernek</SelectItem>
                                     <SelectItem value="vakif">Vakıf</SelectItem>
+                                    <SelectItem value="spor-kulubu">Spor Kulübü</SelectItem>
+                                    <SelectItem value="ozel-izinli">Özel İzinli</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -578,7 +580,7 @@ const FormRenderer = () => {
                                                 <SelectValue placeholder="Kuruluş türünü seçin..." />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="NGO">STK (Dernek / Vakıf)</SelectItem>
+                                                <SelectItem value="NGO">STK (Dernek, Vakıf, Spor Kulübü, Özel İzinli)</SelectItem>
                                                 <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
                                                 <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
                                             </SelectContent>
