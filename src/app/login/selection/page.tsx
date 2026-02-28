@@ -39,7 +39,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, allUniversities, provincialDirectorates } from '@/lib/data';
+import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
@@ -75,7 +75,7 @@ const neighborhoodsData: { [key: string]: string[] } = {
 };
 
 const clubCategories = [
-    "E-Spor", "Robotik", "Yapay Zekâ", "Siber Güvenlik", "Veri Bilimi", "Gastronomi", "Moda ve Tasarım", "Mimarlık ve Tasarım", "Hak Temelli Çalışmalar", "Mülteci ve Uyum", "Sürdürülebilirlik", "Psikoloji", "Kişisel Gelişim", "Medya ve Yayıncılık", "Yeni Medya", "Gazetecilik", "Radyo", "Gönüllülük", "Afet ve Arama Kurtarma", "Satranç", "Yazılım Geliştirme", "Oyun Geliştirme", "Donanım Geliştirme", "Eğlence", "Münazara", "Erasmus", "Mesleki", "Tiyatro", "Müzik", "Fotoğrafçılık", "Sinema", "Edebiyat", "Dans", "Resim ve Görsel Sanatlar", "Bilim ve Araştırma", "Hayvan Hakları", "Yabancı Dil", "Felsefe", "İnovasyon", "Girişimcilik", "Kariyer ve Gelişim", "Fikir ve Tartışma", "Politika ve Kamu Yönetimi", "İnsan Hakları", "Futbol", "Basketbol", "Voleybol", "Dağcılık ve Trekking", "Su Sporları", "Diğer Spor Kulüpleri", "Savunma Sporları", "Kampçılık", "Sosyal Sorumluluk", "Ekonomi", "Hukuk", "Sağlık ve Toplum Sağlığı", "Beslenme ve Diyetetik", "Sosyal Girişimcilik", "Diğer"
+    "E-Spor", "Robotik", "Yapay Zekâ", "Siber Güvenlik", "Veri Bilimi", "Gastronomi", "Moda ve Tasarım", "Mimarlık ve Tasarım", "Hak Temelli Çalışmalar", "Mülteci ve Uyum", "Sürdürülebilirlık", "Psikoloji", "Kişisel Gelişim", "Medya ve Yayıncılık", "Yeni Medya", "Gazetecilik", "Radyo", "Gönüllülük", "Afet ve Arama Kurtarma", "Satranç", "Yazılım Geliştirme", "Oyun Geliştirme", "Donanım Geliştirme", "Eğlence", "Münazara", "Erasmus", "Mesleki", "Tiyatro", "Müzik", "Fotoğrafçılık", "Sinema", "Edebiyat", "Dans", "Resim ve Görsel Sanatlar", "Bilim ve Araştırma", "Hayvan Hakları", "Yabancı Dil", "Felsefe", "İnovasyon", "Girişimcilik", "Kariyer ve Gelişim", "Fikir ve Tartışma", "Politika ve Kamu Yönetimi", "İnsan Hakları", "Futbol", "Basketbol", "Voleybol", "Dağcılık ve Trekking", "Su Sporları", "Diğer Spor Kulüpleri", "Savunma Sporları", "Kampçılık", "Sosyal Sorumluluk", "Ekonomi", "Hukuk", "Sağlık ve Toplum Sağlığı", "Beslenme ve Diyetetik", "Sosyal Girişimcilik", "Diğer"
 ];
 
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
@@ -105,7 +105,7 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
     <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label}</Label>
         <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
-            <Input id={`${label}-upload`} type="file" className="hidden" accept={accept} />
+            <input id={`${label}-upload`} type="file" className="hidden" accept={accept} />
             <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5">
                 <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
             </Button>
@@ -131,9 +131,20 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya" }: {
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-muted rounded-lg"><Smartphone className="h-4 w-4 text-muted-foreground" /></div>
-                    <Input type="tel" placeholder="0212 XXX XX XX" className="h-11 rounded-xl" />
+                <div className="flex gap-2">
+                    <div className="w-[100px] shrink-0">
+                        <Select defaultValue="90">
+                            <SelectTrigger className="h-11 rounded-xl">
+                                <SelectValue placeholder="Kod" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {countryPhoneCodes.map(code => (
+                                    <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Input type="tel" placeholder="5XX XXX XX XX" className="h-11 rounded-xl flex-1" />
                 </div>
             </div>
             <div className="space-y-2">
@@ -384,9 +395,20 @@ const FormRenderer = () => {
                 )}
                 <div className="space-y-2">
                     <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Telefon Numarası</Label>
-                    <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">+90</span>
-                        <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 rounded-xl pl-12 font-bold tracking-widest" />
+                    <div className="flex gap-2">
+                        <div className="w-[100px] shrink-0">
+                            <Select defaultValue="90">
+                                <SelectTrigger className="h-12 rounded-xl font-bold">
+                                    <SelectValue placeholder="Kod" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {countryPhoneCodes.map(code => (
+                                        <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 rounded-xl flex-1 font-bold tracking-widest" />
                     </div>
                 </div>
                 <div className="space-y-2">
@@ -840,7 +862,21 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Arkadaşının Telefon Numarası</Label>
-                                <Input type="tel" placeholder="5XX XXX XX XX" value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl text-center text-lg font-bold" />
+                                <div className="flex gap-2">
+                                    <div className="w-[100px] shrink-0">
+                                        <Select defaultValue="90">
+                                            <SelectTrigger className="h-12 rounded-xl font-bold">
+                                                <SelectValue placeholder="Kod" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {countryPhoneCodes.map(code => (
+                                                    <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Input type="tel" placeholder="5XX XXX XX XX" value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl text-center text-lg font-bold flex-1" />
+                                </div>
                             </div>
                             <Button onClick={handleInviteFriend} className="w-full h-12 rounded-2xl font-bold">Davet Et</Button>
                              <Button variant="link" onClick={() => setStep(3)} className="w-full text-muted-foreground font-bold">Atla</Button>

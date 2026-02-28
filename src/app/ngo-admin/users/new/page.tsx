@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, UserPlus, Contact, ShieldCheck, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { countryPhoneCodes } from '@/lib/data';
 
 const roles = [
     { 
@@ -116,19 +117,33 @@ export default function NewUserPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="phone">Telefon Numarası</Label>
-                                <div className="relative">
-                                    <Input 
-                                        id="phone" 
-                                        type="tel" 
-                                        placeholder="5XX XXX XX XX" 
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        required
-                                        className="pr-10"
-                                    />
-                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-primary">
-                                        <Contact className="h-4 w-4" />
-                                    </Button>
+                                <div className="flex gap-2">
+                                    <div className="w-[100px] shrink-0">
+                                        <Select defaultValue="90">
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Kod" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {countryPhoneCodes.map(code => (
+                                                    <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="relative flex-1">
+                                        <Input 
+                                            id="phone" 
+                                            type="tel" 
+                                            placeholder="5XX XXX XX XX" 
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            required
+                                            className="pr-10"
+                                        />
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-primary">
+                                            <Contact className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

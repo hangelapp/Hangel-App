@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { user as staticUser } from '@/lib/data';
+import { user as staticUser, countryPhoneCodes } from '@/lib/data';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
@@ -266,7 +265,21 @@ export default function VolunteerSettingsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
-                                    <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} />
+                                    <div className="flex gap-2">
+                                        <div className="w-[100px] shrink-0">
+                                            <Select defaultValue="90">
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Kod" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {countryPhoneCodes.map(code => (
+                                                        <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -279,7 +292,21 @@ export default function VolunteerSettingsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-phone-2">Telefon</Label>
-                                    <Input id="emergency-contact-phone-2" type="tel" value={volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} onChange={(e) => handleEmergencyContactChange(1, 'phone', e.target.value)} />
+                                    <div className="flex gap-2">
+                                        <div className="w-[100px] shrink-0">
+                                            <Select defaultValue="90">
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Kod" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {countryPhoneCodes.map(code => (
+                                                        <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <Input id="emergency-contact-phone-2" type="tel" value={volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} onChange={(e) => handleEmergencyContactChange(1, 'phone', e.target.value)} className="flex-1" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

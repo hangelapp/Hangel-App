@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { user as staticUser } from '@/lib/data';
+import { user as staticUser, countryPhoneCodes } from '@/lib/data';
 import { ArrowLeft, Github, Linkedin, Globe, Palette, Instagram, Camera, Trash2, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -163,7 +162,21 @@ export default function ProfileSettingsPage() {
                     </div>
                      <div className="space-y-2">
                         <Label>Telefon</Label>
-                        <Input value={profile.personalInfo.phone} onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)} />
+                        <div className="flex gap-2">
+                            <div className="w-[100px] shrink-0">
+                                <Select defaultValue="90">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Kod" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {countryPhoneCodes.map(code => (
+                                            <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Input value={profile.personalInfo.phone} onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)} className="flex-1" />
+                        </div>
                     </div>
                 </div>
             </CardContent>
@@ -253,5 +266,3 @@ export default function ProfileSettingsPage() {
     </div>
   );
 }
-
-    

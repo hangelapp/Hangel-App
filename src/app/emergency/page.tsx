@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { countryPhoneCodes } from '@/lib/data';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -99,7 +100,21 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                         </div>
                         <div className="space-y-2">
                              <Label htmlFor="contact-phone">İrtibat Telefon</Label>
-                            <Input id="contact-phone" type="tel" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} placeholder="5XX XXX XX XX" required />
+                             <div className="flex gap-1">
+                                <div className="w-[70px] shrink-0">
+                                    <Select defaultValue="90">
+                                        <SelectTrigger className="h-10 px-2 text-xs">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {countryPhoneCodes.map(code => (
+                                                <SelectItem key={code} value={code} className="text-xs">+{code}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Input id="contact-phone" type="tel" value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} placeholder="5XX..." required className="flex-1 h-10" />
+                             </div>
                         </div>
                     </div>
                      <div className="space-y-2">
@@ -324,4 +339,3 @@ export default function EmergencyPage() {
     </div>
   );
 }
-    

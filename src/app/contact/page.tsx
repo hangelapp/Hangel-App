@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -12,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { countryPhoneCodes } from '@/lib/data';
 
 const countryOptions = ["Türkiye", "ABD", "Almanya", "İngiltere"];
 const institutionTypeOptions = ["Belediye", "Bakanlık", "Üniversite", "Lise", "Şirket", "Diğer"];
@@ -150,7 +150,21 @@ const CorporateContactForm = () => {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Telefon Numarası</Label>
-                    <Input id="phone" type="tel" placeholder="+90..." required />
+                    <div className="flex gap-2">
+                        <div className="w-[100px] shrink-0">
+                            <Select defaultValue="90">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Kod" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {countryPhoneCodes.map(code => (
+                                        <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Input id="phone" type="tel" placeholder="5XX XXX XX XX" required className="flex-1" />
+                    </div>
                 </div>
             </div>
             <div className="space-y-2">
@@ -199,7 +213,7 @@ export default function ContactPage() {
                     </TabsList>
                     <TabsContent value="individual">
                         <CardHeader>
-                            <CardTitle>Kullanıcı İletişim Departmanı</CardTitle>
+                            <CardTitle>Bireysel Destek Talebi</CardTitle>
                             <CardDescription>Uygulama kullanımı, puanlar ve genel sorularınız için bize yazın.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -208,7 +222,7 @@ export default function ContactPage() {
                     </TabsContent>
                     <TabsContent value="ngo">
                         <CardHeader>
-                            <CardTitle>STK İlişkileri Departmanı</CardTitle>
+                            <CardTitle>STK İşbirliği Formu</CardTitle>
                             <CardDescription>Kuruluşunuzu hangel'e dahil etmek veya işbirliği için bize ulaşın.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -217,7 +231,7 @@ export default function ContactPage() {
                     </TabsContent>
                     <TabsContent value="brand">
                          <CardHeader>
-                            <CardTitle>Üye İşletme İlişkileri Departmanı</CardTitle>
+                            <CardTitle>Marka & İşletme İşbirliği Formu</CardTitle>
                             <CardDescription>Markanızla sosyal etki yaratmak veya QR ödeme sistemine dahil olmak için bize ulaşın.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -226,7 +240,7 @@ export default function ContactPage() {
                     </TabsContent>
                     <TabsContent value="corporate">
                         <CardHeader>
-                            <CardTitle>Kamu Politikası Departmanı</CardTitle>
+                            <CardTitle>Genel Kurumsal İletişim Formu</CardTitle>
                             <CardDescription>
                                 Kamu kurumları veya diğer kurumsal talepleriniz için bu formu kullanın.
                             </CardDescription>
@@ -240,4 +254,3 @@ export default function ContactPage() {
         </div>
     );
 }
-
