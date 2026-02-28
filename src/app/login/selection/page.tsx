@@ -123,7 +123,7 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
 const AuthorizedPersonFields = () => (
     <div className="space-y-6">
         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yetkili Kişi Bilgileri</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
                 <div className="flex items-center gap-2">
@@ -138,8 +138,6 @@ const AuthorizedPersonFields = () => (
                     <Input placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" required className="h-11 rounded-xl" />
                 </div>
             </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
                 <div className="flex items-center gap-2">
@@ -586,7 +584,7 @@ const FormRenderer = () => {
                     <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
                     
                     <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <CommunicationAndSocialMedia />
+                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" />
                     <FinancialFields />
 
                     <div className="space-y-4">
@@ -734,7 +732,7 @@ const FormRenderer = () => {
                     </div>
 
                     <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <CommunicationAndSocialMedia />
+                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" />
                     <FinancialFields type="Marka" />
 
                     <div className="space-y-4">
@@ -828,7 +826,7 @@ const FormRenderer = () => {
                     </div>
 
                     <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <CommunicationAndSocialMedia />
+                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" />
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Görseller</h3>
