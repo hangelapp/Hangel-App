@@ -75,7 +75,7 @@ const neighborhoodsData: { [key: string]: string[] } = {
 };
 
 const clubCategories = [
-    "E-Spor", "Robotik", "Yapay Zekâ", "Siber Güvenlik", "Veri Bilimi", "Gastronomi", "Moda ve Tasarım", "Mimarlık ve Tasarım", "Hak Temelli Çalışmalar", "Mülteci ve Uyum", "Sürdürülebilir Psikoloji", "Kişisel Gelişim", "Medya ve Yayıncılık", "Yeni Medya", "Gazetecilik", "Radyo", "Gönüllülük", "Afet ve Arama Kurtarma", "Satranç", "Yazılım Geliştirme", "Oyun Geliştirme", "Donanım Geliştirme", "Eğlence", "Münazara", "Erasmus", "Mesleki", "Tiyatro", "Müzik", "Fotoğrafçılık", "Sinema", "Edebiyat", "Dans", "Resim ve Görsel Sanatlar", "Bilim ve Araştırma", "Hayvan Hakları", "Yabancı Dil", "Felsefe", "İnovasyon", "Girişimcilik", "Kariyer ve Gelişim", "Fikir ve Tartışma", "Politika ve Kamu Yönetimi", "İnsan Hakları", "Futbol", "Basketbol", "Voleybol", "Dağcılık ve Trekking", "Su Sporları", "Diğer Spor Kulüpleri", "Savunma Sporları", "Kampçılık", "Sosyal Sorumluluk", "Ekonomi", "Hukuk", "Sağlık ve Toplum Sağlığı", "Beslenme ve Diyetetik", "Sosyal Girişimcilik", "Diğer"
+    "E-Spor", "Robotik", "Yapay Zekâ", "Siber Güvenlik", "Veri Bilimi", "Gastronomi", "Moda ve Tasarım", "Mimarlık ve Tasarım", "Hak Temelli Çalışmalar", "Mülteci ve Uyum", "Sürdürülebilirlik", "Psikoloji", "Kişisel Gelişim", "Medya ve Yayıncılık", "Yeni Medya", "Gazetecilik", "Radyo", "Gönüllülük", "Afet ve Arama Kurtarma", "Satranç", "Yazılım Geliştirme", "Oyun Geliştirme", "Donanım Geliştirme", "Eğlence", "Münazara", "Erasmus", "Mesleki", "Tiyatro", "Müzik", "Fotoğrafçılık", "Sinema", "Edebiyat", "Dans", "Resim ve Görsel Sanatlar", "Bilim ve Araştırma", "Hayvan Hakları", "Yabancı Dil", "Felsefe", "İnovasyon", "Girişimcilik", "Kariyer ve Gelişim", "Fikir ve Tartışma", "Politika ve Kamu Yönetimi", "İnsan Hakları", "Futbol", "Basketbol", "Voleybol", "Dağcılık ve Trekking", "Su Sporları", "Diğer Spor Kulüpleri", "Savunma Sporları", "Kampçılık", "Sosyal Sorumluluk", "Ekonomi", "Hukuk", "Sağlık ve Toplum Sağlığı", "Beslenme ve Diyetetik", "Sosyal Girişimcilik", "Diğer"
 ];
 
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
@@ -596,6 +596,9 @@ const FormRenderer = () => {
     const ClubRegistrationForm = () => {
         const { toast } = useToast();
         const [clubType, setClubType] = useState<string>('');
+        const [otherClubType, setOtherClubType] = useState<string>('');
+        const [clubCategory, setClubCategory] = useState<string>('');
+        const [otherClubCategory, setOtherClubCategory] = useState<string>('');
         
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
@@ -616,11 +619,25 @@ const FormRenderer = () => {
                                 <SelectContent>
                                     <SelectItem value="university">Üniversite Kulübü</SelectItem>
                                     <SelectItem value="high-school">Lise Kulübü</SelectItem>
+                                    <SelectItem value="other">Diğer</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        {clubType && (
+                        {clubType === 'other' && (
+                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Türünü Belirtin</Label>
+                                <Input 
+                                    placeholder="Elle yazınız..." 
+                                    value={otherClubType} 
+                                    onChange={(e) => setOtherClubType(e.target.value)}
+                                    className="h-11 rounded-xl"
+                                    required
+                                />
+                            </div>
+                        )}
+
+                        {(clubType === 'university' || clubType === 'high-school') && (
                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
                                     {clubType === 'university' ? 'Üniversite' : 'İl Millî Eğitim Müdürlüğü'}
@@ -638,7 +655,7 @@ const FormRenderer = () => {
 
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Kategorisi</Label>
-                            <Select required>
+                            <Select required onValueChange={setClubCategory} value={clubCategory}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent>
                                     {clubCategories.map(cat => (
@@ -647,6 +664,19 @@ const FormRenderer = () => {
                                 </SelectContent>
                             </Select>
                         </div>
+
+                        {clubCategory === 'Diğer' && (
+                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Kategorisini Belirtin</Label>
+                                <Input 
+                                    placeholder="Elle yazınız..." 
+                                    value={otherClubCategory} 
+                                    onChange={(e) => setOtherClubCategory(e.target.value)}
+                                    className="h-11 rounded-xl"
+                                    required
+                                />
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Adı</Label>
