@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -26,20 +27,23 @@ import {
     Loader2,
     Landmark,
     Building2,
-    CheckCircle
+    CheckCircle,
+    Facebook,
+    Youtube,
+    Link as LinkIcon
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, allUniversities, provincialDirectorates } from '@/lib/data';
+import { marketCategories, allUniversities } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { HangelLogo } from '@/components/icons';
 
+// --- Shared Data ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
 
 const districts: { [key: string]: string[] } = {
@@ -51,13 +55,18 @@ const neighborhoods: { [key: string]: string[] } = {
     'Kadıköy': ['Caferağa', 'Osmanağa', 'Moda'],
 };
 
+const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
+const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
+
 const marketCategoryLabels = marketCategories
     .filter(c => c.mainCategory !== 'Öne çıkanlar' && c.mainCategory !== 'Tümü')
     .map(c => c.mainCategory);
 
+// --- Shared Components ---
+
 const CheckboxGroup = ({ title, options }: { title: string, options: string[] }) => (
     <div className="space-y-3">
-        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{title}</Label>
+        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{title}</Label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border p-4 bg-background">
             {options.map(option => (
                 <div key={option} className="flex items-center gap-2">
@@ -71,7 +80,7 @@ const CheckboxGroup = ({ title, options }: { title: string, options: string[] })
 
 const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint?: string}) => (
     <div className="space-y-2">
-        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</Label>
+        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label}</Label>
         <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
             <Input id={`${label}-upload`} type="file" className="hidden" accept={accept} />
             <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5">
@@ -84,28 +93,127 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
     </div>
 );
 
+const SocialMediaFields = () => (
+    <div className="space-y-4">
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Instagram</Label>
+            <div className="flex items-center gap-2">
+                <div className="p-2 bg-muted rounded-lg"><Instagram className="h-4 w-4 text-muted-foreground" /></div>
+                <Input placeholder="instagram.com/kullaniciadi" className="h-11 rounded-xl" />
+            </div>
+        </div>
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">X (Twitter)</Label>
+            <div className="flex items-center gap-2">
+                <div className="p-2 bg-muted rounded-lg"><Twitter className="h-4 w-4 text-muted-foreground" /></div>
+                <Input placeholder="x.com/kullaniciadi" className="h-11 rounded-xl" />
+            </div>
+        </div>
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Facebook</Label>
+            <div className="flex items-center gap-2">
+                <div className="p-2 bg-muted rounded-lg"><Facebook className="h-4 w-4 text-muted-foreground" /></div>
+                <Input placeholder="facebook.com/sayfaadi" className="h-11 rounded-xl" />
+            </div>
+        </div>
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">LinkedIn</Label>
+            <div className="flex items-center gap-2">
+                <div className="p-2 bg-muted rounded-lg"><Linkedin className="h-4 w-4 text-muted-foreground" /></div>
+                <Input placeholder="linkedin.com/company/kurumadi" className="h-11 rounded-xl" />
+            </div>
+        </div>
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">YouTube</Label>
+            <div className="flex items-center gap-2">
+                <div className="p-2 bg-muted rounded-lg"><Youtube className="h-4 w-4 text-muted-foreground" /></div>
+                <Input placeholder="youtube.com/@kanaladi" className="h-11 rounded-xl" />
+            </div>
+        </div>
+    </div>
+);
+
+const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood }: any) => (
+    <div className="space-y-4">
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">E-posta</Label>
+            <Input type="email" placeholder="iletisim@ornek.com" className="h-11 rounded-xl" required />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
+                <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }}>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                    <SelectContent>
+                        {allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
+                <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city}>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                    <SelectContent>
+                        {city && (districts[city] || ['Merkez']).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district}>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                    <SelectContent>
+                        {district && (neighborhoods[district] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
+        <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Açık Adres</Label>
+            <Input placeholder="Sokak, kapı no..." className="h-11 rounded-xl" />
+        </div>
+    </div>
+);
+
+// --- Form Renderer Component ---
+
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const action = searchParams.get('action') || 'login';
-    const type = searchParams.get('type');
+    const type = searchParams.get('type') || 'individual';
+    const entity = searchParams.get('entity') || '';
     const redirectParam = searchParams.get('redirect');
+    
     const [showSurvey, setShowSurvey] = useState(false);
-  
+    const [aboutText, setAboutText] = useState("");
+    const ABOUT_LIMIT = 1000;
+
+    const [city, setCity] = useState('');
+    const [district, setDistrict] = useState('');
+    const [neighborhood, setNeighborhood] = useState('');
+
     const handleActionChange = (value: string) => {
-        router.push(`/login/selection?action=${value}${type ? `&type=${type}`: ''}${redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : ''}`);
+        const typePart = type !== 'individual' ? `&type=${type}` : '';
+        const entityPart = entity ? `&entity=${entity}` : '';
+        const redirectPart = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
+        router.push(`/login/selection?action=${value}${typePart}${entityPart}${redirectPart}`);
     };
 
     const handleTypeChange = (value: string) => {
-        const currentAction = action || 'register';
-        const redirectSuffix = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
+        const redirectPart = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
         if (value === 'individual') {
-            router.push(`/login/selection?action=${currentAction}${redirectSuffix}`);
+            router.push(`/login/selection?action=${action}${redirectPart}`);
         } else {
-            router.push(`/login/selection?action=${currentAction}&type=${value}${redirectSuffix}`);
+            router.push(`/login/selection?action=${action}&type=corporate${redirectPart}`);
         }
     };
-    
+
+    const handleEntityChange = (value: string) => {
+        const redirectPart = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
+        router.push(`/login/selection?action=${action}&type=corporate&entity=${value}${redirectPart}`);
+    };
+
     const handleRegistrationComplete = () => {
         setShowSurvey(true);
     };
@@ -131,9 +239,9 @@ const FormRenderer = () => {
     const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
         const { toast } = useToast();
         const auth = useAuth();
-        const [name, setName] = useState('');
         const [phone, setPhone] = useState('');
         const [password, setPassword] = useState('');
+        const [name, setName] = useState('');
         const [isLoading, setIsLoading] = useState(false);
     
         const handleSubmit = async (e: React.FormEvent) => {
@@ -158,10 +266,7 @@ const FormRenderer = () => {
             <form onSubmit={handleSubmit} className="space-y-5 animate-in fade-in-0">
                 {isRegister && (
                     <div className="space-y-2">
-                        <div className="flex justify-between items-end mb-1">
-                            <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Adınız ve Soyadınız</Label>
-                            <span className="text-[9px] text-primary font-bold uppercase tracking-tighter">Kimlikteki gibi</span>
-                        </div>
+                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Adınız ve Soyadınız</Label>
                         <Input id="name" placeholder="Örn: Can Demir" required value={name} onChange={e => setName(e.target.value)} className="h-12 rounded-xl" />
                     </div>
                 )}
@@ -171,20 +276,21 @@ const FormRenderer = () => {
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">+90</span>
                         <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 rounded-xl pl-12 font-bold tracking-widest" />
                     </div>
-                    <p className="text-[10px] text-muted-foreground ml-1">Doğrulama kodu SMS ile gönderilecektir.</p>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şifre</Label>
                     <Input id="password" type="password" placeholder="En az 6 karakter" required value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl" />
                 </div>
-                <div className="pt-2">
-                    <div className="flex items-start space-x-3 mb-4">
-                        <Checkbox id="terms-accept" required />
-                        <Label htmlFor="terms-accept" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                            <Link href="/settings/contracts/kullanici-sozlesmesi" className="text-primary font-bold hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>'nı okudum ve kabul ediyorum.
-                        </Label>
+                {isRegister && (
+                    <div className="pt-2">
+                        <div className="flex items-start space-x-3 mb-4">
+                            <Checkbox id="terms-accept" required />
+                            <Label htmlFor="terms-accept" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                                <Link href="/settings/contracts/kullanici-sozlesmesi" className="text-primary font-bold hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>'nı okudum ve kabul ediyorum.
+                            </Label>
+                        </div>
                     </div>
-                </div>
+                )}
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                     {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRegister ? "Kayıt Ol ve Başla" : "Giriş Yap")}
                 </Button>
@@ -192,9 +298,209 @@ const FormRenderer = () => {
         );
     };
 
+    const NgoRegistrationForm = () => {
+        const { toast } = useToast();
+        const handleSubmit = (e: React.FormEvent) => {
+            e.preventDefault();
+            toast({ title: "Başvuru Alındı", description: "STK başvurunuz incelemeye alınmıştır." });
+            handleRegistrationComplete();
+        };
+
+        return (
+            <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in-0">
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Kuruluş Bilgileri</h3>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Adı</Label>
+                            <Input placeholder="Kuruluşunuzun tam adı" required className="h-11 rounded-xl" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
+                                <Input placeholder="Örn: TEMA" className="h-11 rounded-xl" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
+                                <Input type="number" placeholder="Örn: 1992" className="h-11 rounded-xl" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
+                            <Select required>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="dernek">Dernek</SelectItem>
+                                    <SelectItem value="vakif">Vakıf</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-end mb-1 px-1">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Hakkında</Label>
+                                <span className={cn("text-[10px] font-bold", aboutText.length > ABOUT_LIMIT ? "text-destructive" : "text-muted-foreground")}>
+                                    {aboutText.length} / {ABOUT_LIMIT} (Kalan: {ABOUT_LIMIT - aboutText.length})
+                                </span>
+                            </div>
+                            <Textarea 
+                                value={aboutText} 
+                                onChange={(e) => setAboutText(e.target.value)} 
+                                maxLength={ABOUT_LIMIT} 
+                                placeholder="Kuruluşunuzu anlatan kısa bir metin." 
+                                className="min-h-[120px] rounded-2xl p-4"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
+                    <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
+                    
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">İletişim & Adres</h3>
+                        <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Sosyal Medya Hesapları</h3>
+                        <p className="text-[10px] text-muted-foreground italic px-1">Kuruluşunuzun sosyal medya linklerini ekleyin.</p>
+                        <SocialMediaFields />
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler</h3>
+                        <FileUpload label="Logo" accept=".jpg,.jpeg" hint="Desteklenen format: .jpg" />
+                        <FileUpload label="Faaliyet Belgesi" accept=".pdf" hint="Desteklenen format: .pdf" />
+                        <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
+                    </div>
+
+                    <div className="flex items-start space-x-3 pt-4">
+                        <Checkbox id="ngo-terms" required />
+                        <Label htmlFor="ngo-terms" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                            <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesini</Link> okudum ve kuruluşum adına onaylıyorum.
+                        </Label>
+                    </div>
+                </div>
+                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
+            </form>
+        );
+    };
+
+    const BrandRegistrationForm = () => {
+        const { toast } = useToast();
+        const handleSubmit = (e: React.FormEvent) => {
+            e.preventDefault();
+            toast({ title: "Başvuru Alındı", description: "Marka başvurunuz incelemeye alınmıştır." });
+            handleRegistrationComplete();
+        };
+
+        return (
+            <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in-0">
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Marka Kimliği</h3>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Marka Adı</Label>
+                            <Input placeholder="Markanızın adı" required className="h-11 rounded-xl" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Web Sitesi</Label>
+                            <Input placeholder="https://marka.com" className="h-11 rounded-xl" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sektör</Label>
+                            <Select required>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent>
+                                    {marketCategoryLabels.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">İletişim & Adres</h3>
+                        <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal & Finansal</h3>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yasal Unvan</Label>
+                            <Input placeholder="Şirket tam adı" className="h-11 rounded-xl" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">IBAN</Label>
+                            <Input placeholder="TR..." className="h-11 rounded-xl font-mono" />
+                        </div>
+                        <FileUpload label="Vergi Levhası" accept=".pdf" />
+                    </div>
+
+                    <div className="flex items-start space-x-3 pt-4">
+                        <Checkbox id="brand-terms" required />
+                        <Label htmlFor="brand-terms" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                            <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesini</Link> okudum ve markam adına onaylıyorum.
+                        </Label>
+                    </div>
+                </div>
+                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
+            </form>
+        );
+    };
+
+    const ClubRegistrationForm = () => {
+        const { toast } = useToast();
+        const handleSubmit = (e: React.FormEvent) => {
+            e.preventDefault();
+            toast({ title: "Başvuru Alındı", description: "Öğrenci kulübü başvurunuz incelemeye alınmıştır." });
+            handleRegistrationComplete();
+        };
+
+        return (
+            <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in-0">
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Kulüp Bilgileri</h3>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Üniversite / Okul</Label>
+                            <Select required>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Kurum seçin..." /></SelectTrigger>
+                                <SelectContent>
+                                    {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Adı</Label>
+                            <Input placeholder="Kulübünüzün tam adı" required className="h-11 rounded-xl" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yetkili E-posta</Label>
+                            <Input type="email" placeholder="kulup@okul.edu.tr" className="h-11 rounded-xl" required />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Görseller</h3>
+                        <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" />
+                        <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
+                    </div>
+
+                    <div className="flex items-start space-x-3 pt-4">
+                        <Checkbox id="club-terms" required />
+                        <Label htmlFor="club-terms" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                            <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesini</Link> okudum ve kulübüm adına onaylıyorum.
+                        </Label>
+                    </div>
+                </div>
+                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
+            </form>
+        );
+    };
+
     return (
-        <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 lg:p-8">
-            <div className="w-full max-w-sm lg:max-w-md">
+        <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 lg:p-8 pt-20 pb-20">
+            <div className="w-full max-w-sm lg:max-w-md xl:max-w-lg">
                 <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -207,7 +513,7 @@ const FormRenderer = () => {
                             {action === 'register' ? 'İyiliğe İlk Adım' : 'Tekrar Hoş Geldin'}
                         </CardTitle>
                         <CardDescription className="text-sm font-medium px-4">
-                            {action === 'register' ? 'Dünyayı güzelleştiren topluluğumuza katılmak için formu doldurun.' : 'İyilik yolculuğuna kaldığın yerden devam et.'}
+                            {action === 'register' ? 'Toplumsal etki için aramıza katılın.' : 'İyilik yolculuğuna kaldığın yerden devam et.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 px-8 pb-10">
@@ -217,11 +523,14 @@ const FormRenderer = () => {
                                 <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        {action === 'login' ? <IndividualForm onComplete={handleLoginComplete} /> : (
+
+                        {action === 'login' ? (
+                            <IndividualForm onComplete={handleLoginComplete} />
+                        ) : (
                             <div className="space-y-6 pt-4 border-t border-dashed">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kayıt Türü Seçin</Label>
-                                    <Select onValueChange={handleTypeChange} defaultValue={type ? 'corporate' : 'individual'}>
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Hesap Tipi</Label>
+                                    <Select onValueChange={handleTypeChange} value={type}>
                                         <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
                                             <SelectValue placeholder="Hesap tipi seçin..." />
                                         </SelectTrigger>
@@ -230,9 +539,38 @@ const FormRenderer = () => {
                                             <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <p className="text-[9px] text-muted-foreground italic px-1">Kurumsal başvurular ekip denetiminden geçmektedir.</p>
                                 </div>
-                                <IndividualForm isRegister={true} onComplete={handleRegistrationComplete} />
+
+                                {type === 'corporate' && (
+                                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
+                                        <Select onValueChange={handleEntityChange} value={entity}>
+                                            <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
+                                                <SelectValue placeholder="Kuruluş türünü seçin..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="NGO">STK (Dernek / Vakıf)</SelectItem>
+                                                <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
+                                                <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+
+                                {type === 'individual' ? (
+                                    <IndividualForm isRegister={true} onComplete={handleRegistrationComplete} />
+                                ) : (
+                                    <div className="pt-4">
+                                        {entity === 'NGO' && <NgoRegistrationForm />}
+                                        {entity === 'BRAND' && <BrandRegistrationForm />}
+                                        {entity === 'CLUB' && <ClubRegistrationForm />}
+                                        {!entity && (
+                                            <div className="p-12 text-center border-2 border-dashed rounded-[2rem] opacity-40">
+                                                <p className="text-sm font-medium italic">Lütfen kuruluş türünü seçin.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </CardContent>
