@@ -74,25 +74,8 @@ const neighborhoodsData: { [key: string]: string[] } = {
     'Çankaya': ['Kızılay', 'Kavaklıdere', 'Bahçelievler', 'Ayrancı', 'Dikmen'],
 };
 
-const allHighSchools = [
-    "Kabataş Erkek Lisesi",
-    "İstanbul Erkek Lisesi",
-    "Galatasaray Lisesi",
-    "Ankara Fen Lisesi",
-    "İzmir Fen Lisesi",
-    "Robert Kolej"
-];
-
 const clubCategories = [
-    "Sosyal Sorumluluk",
-    "Girişimcilik",
-    "Kariyer & Gelişim",
-    "Teknoloji & İnovasyon",
-    "Kültür & Sanat",
-    "Spor",
-    "Bilim & Araştırma",
-    "Düşünce & Tartışma",
-    "Diğer"
+    "E-Spor", "Robotik", "Yapay Zekâ", "Siber Güvenlik", "Veri Bilimi", "Gastronomi", "Moda ve Tasarım", "Mimarlık ve Tasarım", "Hak Temelli Çalışmalar", "Mülteci ve Uyum", "Sürdürülebilir Psikoloji", "Kişisel Gelişim", "Medya ve Yayıncılık", "Yeni Medya", "Gazetecilik", "Radyo", "Gönüllülük", "Afet ve Arama Kurtarma", "Satranç", "Yazılım Geliştirme", "Oyun Geliştirme", "Donanım Geliştirme", "Eğlence", "Münazara", "Erasmus", "Mesleki", "Tiyatro", "Müzik", "Fotoğrafçılık", "Sinema", "Edebiyat", "Dans", "Resim ve Görsel Sanatlar", "Bilim ve Araştırma", "Hayvan Hakları", "Yabancı Dil", "Felsefe", "İnovasyon", "Girişimcilik", "Kariyer ve Gelişim", "Fikir ve Tartışma", "Politika ve Kamu Yönetimi", "İnsan Hakları", "Futbol", "Basketbol", "Voleybol", "Dağcılık ve Trekking", "Su Sporları", "Diğer Spor Kulüpleri", "Savunma Sporları", "Kampçılık", "Sosyal Sorumluluk", "Ekonomi", "Hukuk", "Sağlık ve Toplum Sağlığı", "Beslenme ve Diyetetik", "Sosyal Girişimcilik", "Diğer"
 ];
 
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
