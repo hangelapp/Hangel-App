@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -80,6 +81,8 @@ const clubCategories = [
 
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
+const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
+const years = Array.from({ length: 2025 - 1900 }, (_, i) => (2024 - i).toString());
 
 const marketCategoryLabels = marketCategories
     .filter(c => c.mainCategory !== 'Öne çıkanlar' && c.mainCategory !== 'Tümü')
@@ -451,20 +454,7 @@ const FormRenderer = () => {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Kuruluş Bilgileri</h3>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Adı</Label>
-                            <Input placeholder="Kuruluşunuzun tam adı" required className="h-11 rounded-xl" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
-                                <Input placeholder="hangel Derneği" className="h-11 rounded-xl" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
-                                <Input type="number" placeholder="1983" className="h-11 rounded-xl" />
-                            </div>
-                        </div>
+                        
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
                             <Select required>
@@ -477,6 +467,52 @@ const FormRenderer = () => {
                                 </SelectContent>
                             </Select>
                         </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Adı</Label>
+                            <Input placeholder="Kuruluşunuzun tam adı" required className="h-11 rounded-xl" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
+                                <Input placeholder="hangel Derneği" className="h-11 rounded-xl" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
+                                <Select required>
+                                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                                    <SelectContent>
+                                        {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İktisadi İşletme</Label>
+                                <Select required>
+                                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="var">Var</SelectItem>
+                                        <SelectItem value="yok">Yok</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kullanım Amacı</Label>
+                                <Select defaultValue="both">
+                                    <SelectTrigger className="h-11 rounded-xl text-[11px]"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="donation">Bağış toplamak</SelectItem>
+                                        <SelectItem value="volunteer">Gönüllülük ilanı vermek</SelectItem>
+                                        <SelectItem value="both">Bağış ve Gönüllülük ilanı vermek</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <div className="flex justify-between items-end mb-1 px-1">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Hakkında</Label>
@@ -497,6 +533,7 @@ const FormRenderer = () => {
 
                     <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} />
                     <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
+                    <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
                     
                     <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
                     <CommunicationAndSocialMedia />
@@ -758,7 +795,7 @@ const FormRenderer = () => {
                     <CardContent className="space-y-6 px-8 pb-10">
                          <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
+                                <TabsTrigger value="login" className="rounded-lg font-bold">Geniş Yap</TabsTrigger>
                                 <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
                             </TabsList>
                         </Tabs>
