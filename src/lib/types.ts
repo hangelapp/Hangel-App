@@ -114,6 +114,9 @@ export type NGO = {
   supportedSDGs: string[];
   beneficiaryGroups: string[];
   memberOf: string[];
+  federations?: string[];
+  usagePurpose?: 'donation' | 'volunteer' | 'both';
+  economicEnterpriseStatus?: 'var' | 'yok';
   affiliatedWith?: {
     name: string;
     logoUrl?: string;

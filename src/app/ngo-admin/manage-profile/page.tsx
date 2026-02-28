@@ -1,16 +1,21 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Facebook, Instagram, Linkedin, Youtube, Link as LinkIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import { Upload, Facebook, Instagram, Linkedin, Youtube, Link as LinkIcon, ArrowLeft, Globe, Mail, Phone, MapPin, Sparkles, Target, Users, CheckCircle2, X, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations } from '@/lib/data';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -47,120 +52,35 @@ const allSdgs = [
     '17. Amaçlar için Ortaklıklar'
 ];
 const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
-
-const cities = allProvinces;
-const districts: { [key: string]: string[] } = {
-    'Adana': ['Aladağ', 'Ceyhan', 'Çukurova', 'Feke', 'İmamoğlu', 'Karaisalı', 'Karataş', 'Kozan', 'Pozantı', 'Saimbeyli', 'Sarıçam', 'Seyhan', 'Tufanbeyli', 'Yumurtalık', 'Yüreğir'],
-    'Adıyaman': ['Merkez', 'Besni', 'Çelikhan', 'Gerger', 'Gölbaşı', 'Kahta', 'Samsat', 'Sincik', 'Tut'],
-    'Afyonkarahisar': ['Merkez', 'Başmakçı', 'Bayat', 'Bolvadin', 'Çay', 'Çobanlar', 'Dazkırı', 'Dinar', 'Emirdağ', 'Evciler', 'Hocalar', 'İhsaniye', 'İscehisar', 'Kızılören', 'Sandıklı', 'Sinanpaşa', 'Sultandağı', 'Şuhut'],
-    'Ağrı': ['Merkez', 'Diyadin', 'Doğubayazıt', 'Eleşkirt', 'Hamur', 'Patnos', 'Taşlıçay', 'Tutak'],
-    'Aksaray': ['Ağaçören', 'Ortaköy', 'Eskil', 'Sarıyahşi', 'Gülağaç', 'Sultanhanı', 'Güzelyurt'],
-    'Amasya': ['Merkez', 'Göynücek', 'Gümüşhacıköy', 'Hamamözü', 'Merzifon', 'Suluova', 'Taşova'],
-    'Ankara': ['Akyurt', 'Altındağ', 'Ayaş', 'Bala', 'Beypazarı', 'Çamlidere', 'Çankaya', 'Çubuk', 'Elmadağ', 'Etimesgut', 'Evren', 'Gölbaşı', 'Güdül', 'Haymana', 'Kahramankazan', 'Kalecik', 'Keçiören', 'Kızılcahamam', 'Mamak', 'Nallıhan', 'Polatlı', 'Pursaklar', 'Sincan', 'Şereflikoçhisar', 'Yenimahalle'],
-    'Antalya': ['Akseki', 'Aksu', 'Alanya', 'Demre', 'Döşemealtı', 'Elmalı', 'Finike', 'Gazipaşa', 'Gündoğmuş', 'İbradı', 'Kaş', 'Kemer', 'Kepez', 'Konyaaltı', 'Korkuteli', 'Kumluca', 'Manavgat', 'Muratpaşa', 'Serik'],
-    'Artvin': ['Merkez', 'Ardanuç', 'Arhavi', 'Borçka', 'Hopa', 'Kemalpaşa', 'Murgul', 'Şavşat', 'Yusufeli'],
-    'Aydın': ['Bozdoğan', 'Buharkent', 'Çine', 'Didim', 'Efeler', 'Germencik', 'İncirliova', 'Karacasu', 'Karpuzlu', 'Koçarlı', 'Köşk', 'Kuşadası', 'Kuyucak', 'Nazilli', 'Söke', 'Sultanhisar', 'Yenipazar'],
-    'Balıkesir': ['Altıeylül', 'Ayvalık', 'Balya', 'Bandırma', 'Bigadiç', 'Burhaniye', 'Dursunbey', 'Edremit', 'Erdek', 'Gömeç', 'Gönen', 'Havran', 'İvrindi', 'Karesi', 'Kepsut', 'Manyas', 'Marmara', 'Savaştepe', 'Sındırgı', 'Susurluk'],
-    'Bartın': ['Amasra', 'Kurucaşile', 'Ulus'],
-    'Batman': ['Beşiri', 'Sason', 'Gercüş', 'Hasankeyf', 'Kozluk'],
-    'Bayburt': ['Merkez', 'Aydıntepe', 'Demirözü'],
-    'Bilecik': ['Merkez', 'Bozüyük', 'Gölpazarı', 'İnhisar', 'Osmaneli', 'Pazaryeri', 'Söğüt', 'Yenipazar'],
-    'Bingöl': ['Merkez', 'Adaklı', 'Genç', 'Karlıova', 'Kiğı', 'Solhan', 'Yayledere', 'Yedisu'],
-    'Bitlis': ['Merkez', 'Adilcevaz', 'Ahlat', 'Güroymak', 'Hizan', 'Mutki', 'Tatvan'],
-    'Bolu': ['Merkez', 'Dörtdivan', 'Gerede', 'Göynük', 'Kıbrıscık', 'Mengen', 'Mudurnu', 'Seben', 'Yeniçağa'],
-    'Burdur': ['Merkez', 'Ağlasun', 'Altınyayla', 'Bucak', 'Çavdır', 'Çeltikçi', 'Gölhisar', 'Karamanlı', 'Kemer', 'Tefenni', 'Yeşilova'],
-    'Bursa': ['Büyükorhan', 'Gemlik', 'Gürsu', 'Harmancık', 'İnegöl', 'İznik', 'Karacabey', 'Keles', 'Kestel', 'Mudanya', 'Mustafakemalpaşa', 'Nilüfer', 'Orhaneli', 'Orhangazi', 'Osmangazi', 'Yenişehir', 'Yıldırım'],
-    'Çanakkale': ['Merkez', 'Ayvacık', 'Bayramiç', 'Biga', 'Bozcaada', 'Çan', 'Eceabat', 'Ezine', 'Gelibolu', 'Gökçeada', 'Lapseki', 'Yenice'],
-    'Çankırı': ['Merkez', 'Atkaracalar', 'Bayramören', 'Çerkeş', 'Eldivan', 'Ilgaz', 'Kızılırmak', 'Korgun', 'Kurşunlu', 'Orta', 'Şabanözü', 'Yapraklı'],
-    'Çorum': ['Merkez', 'Alaca', 'Bayat', 'Boğazkale', 'Dodurga', 'İskilip', 'Kargı', 'Laçin', 'Mecitözü', 'Oğuzlar', 'Ortaköy', 'Osmancık', 'Sungurlu', 'Uğurludağ'],
-    'Denizli': ['Acıpayam', 'Baklan', 'Bekilli', 'Beyağaç', 'Bozkurt', 'Buldan', 'Çal', 'Çameli', 'Çardak', 'Çivril', 'Güney', 'Honaz', 'Kale', 'Merkezefendi', 'Pamukkale', 'Sarayköy', 'Serinhisar', 'Tavas'],
-    'Diyarbakır': ['Bağlar', 'Bismil', 'Çermik', 'Çınar', 'Çüngüş', 'Dicle', 'Eğil', 'Ergani', 'Hani', 'Hazro', 'Kayapınar', 'Kocaköy', 'Kulp', 'Lice', 'Silvan', 'Sur', 'Yenişehir'],
-    'Düzce': ['Akçakoca', 'Gümüşova', 'Cumayeri', 'Kaynaşlı', 'Çilimli', 'Yığılca', 'Gölyaka'],
-    'Edirne': ['Merkez', 'Enez', 'Havsa', 'İpsala', 'Keşan', 'Lalapaşa', 'Meriç', 'Süloğlu', 'Uzunköprü'],
-    'Elazığ': ['Merkez', 'Ağın', 'Alacakaya', 'Arıcak', 'Baskil', 'Karakoçan', 'Keban', 'Kovancılar', 'Maden', 'Palu', 'Sivrice'],
-    'Erzincan': ['Merkez', 'Çayırlı', 'İliç', 'Kemah', 'Kemaliye', 'Otlukbeli', 'Refahiye', 'Tercan', 'Üzümlü'],
-    'Erzurum': ['Aşkale', 'Aziziye', 'Çat', 'Hınıs', 'Horasan', 'İspir', 'Karaçoban', 'Karayazı', 'Köprüköy', 'Narman', 'Oltu', 'Olur', 'Palandöken', 'Pasinler', 'Pazaryolu', 'Şenkaya', 'Tekman', 'Tortum', 'Uzundere', 'Yakutiye'],
-    'Eskişehir': ['Alpu', 'Beylikova', 'Çifteler', 'Günyüzü', 'Han', 'İnönü', 'Mahmudiye', 'Sarıcakaya', 'Seyitgazi', 'Sivrihisar', 'Tepebaşı'],
-    'Gaziantep': ['Araban', 'İslahiye', 'Karkamış', 'Nizip', 'Nurdağı', 'Oğuzeli', 'Şahinbey', 'Şehitkamil', 'Yavuzeli'],
-    'Giresun': ['Merkez', 'Alucra', 'Bulancak', 'Çamoluk', 'Çanakçı', 'Dereli', 'Doğankent', 'Espiye', 'Eynesil', 'Görele', 'Güce', 'Keşap', 'Piraziz', 'Şebinkarahisar', 'Tirebolu', 'Yağlıdere'],
-    'Gümüşhane': ['Merkez', 'Kelkit', 'Köse', 'Kürtün', 'Şiran', 'Torul'],
-    'Hakkari': ['Merkez', 'Çukurca', 'Derecik', 'Şemdinli', 'Yüksekova'],
-    'Hatay': ['Altınözü', 'Antakya', 'Arsuz', 'Belen', 'Defne', 'Dörtyol', 'Erzin', 'Hassa', 'İskenderun', 'Kırıkhan', 'Kumlu', 'Payas', 'Reyhanlı', 'Samandağ', 'Yayladağı'],
-    'Isparta': ['Merkez', 'Aksu', 'Atabey', 'Eğirdir', 'Gelendost', 'Gönen', 'Keçiborlu', 'Senirkent', 'Sütçüler', 'Şarkikaraağaç', 'Uluborlu', 'Yalvaç', 'Yenişarbademli'],
-    'Mersin': ['Akdeniz', 'Anamur', 'Aydıncık', 'Bozyazı', 'Çamlıyayla', 'Erdemli', 'Silifke', 'Aydıncık', 'Gülnar', 'Tarsus', 'Bozyazı', 'Mezitli', 'Toroslar', 'Yenişehir'],
-    'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
-    'İzmir': ['Aliağa', 'Balçova', 'Bayındır', 'Bayraklı', 'Bergama', 'Beydağ', 'Bornova', 'Buca', 'Çeşme', 'Çiğli', 'Dikili', 'Foça', 'Gaziemir', 'Güzelbahçe', 'Karabağlar', 'Karaburun', 'Karşıyaka', 'Kemalpaşa', 'Menderes', 'Menemen', 'Narlıdere', 'Ödemiş', 'Seferihisar', 'Selçuk', 'Tire', 'Torbalı', 'Urla'],
-    'Kars': ['Merkez', 'Akyaka', 'Arpaçay', 'Digor', 'Kağızman', 'Sarıkamış', 'Selim', 'Susuz'],
-    'Kastamonu': ['Merkez', 'Abana', 'Ağlı', 'Araç', 'Azdavay', 'Bozkurt', 'Cide', 'Çatalzeytin', 'Daday', 'Devrekani', 'Doğanyurt', 'Hanönü', 'İhsangazi', 'İnebolu', 'Küre', 'Pınarbaşı', 'Seydiler', 'Şenpazar', 'Taşköprü', 'Tosya'],
-    'Kayseri': ['Akkışla', 'Bünyan', 'Develi', 'Felahiye', 'Hacılar', 'İncesu', 'Kocasinan', 'Melikgazi', 'Özvatan', 'Pınarbaşı', 'Sarıoğlan', 'Sarız', 'Talas', 'Tomarza', 'Yahyalı', 'Yeşilhisar'],
-    'Kırklareli': ['Merkez', 'Babaeski', 'Demirköy', 'Kofçaz', 'Lüleburgaz', 'Pehlivanköy', 'Pınarhisar', 'Vize'],
-    'Kırşehir': ['Merkez', 'Akçakent', 'Akpınar', 'Boztepe', 'Çiçekdağı', 'Kaman', 'Mucur'],
-    'Kocaeli': ['Başiskele', 'Çayırova', 'Darıca', 'Derince', 'Dilovası', 'Gebze', 'Gölcük', 'İzmit', 'Kandıra', 'Karamürsel', 'Kartepe', 'Körfez'],
-    'Konya': ['Ahırlı', 'Akören', 'Akşehir', 'Altınekin', 'Beyşehir', 'Bozkır', 'Cihanbeyli', 'Çeltik', 'Çumra', 'Derbent', 'Derebucak', 'Doğanhisar', 'Emirgazi', 'Ereğli', 'Güneysınır', 'Hadim', 'Halkapınar', 'Hüyük', 'Ilgın', 'Kadınhanı', 'Karapınar', 'Karatay', 'Kulu', 'Meram', 'Sarayönü', 'Selçuklu', 'Seydişehir', 'Taşkent', 'Tuzlukçu', 'Yalıhüyük', 'Yunak'],
-    'Kütahya': ['Merkez', 'Altıntaş', 'Aslanapa', 'Çavdarhisar', 'Domaniç', 'Dumlupınar', 'Emet', 'Gediz', 'Hisarcık', 'Pazarlar', 'Simav', 'Şaphane', 'Tavşanlı'],
-    'Malatya': ['Akçadağ', 'Arapgir', 'Arguvan', 'Battalgazi', 'Darende', 'Doğanşehir', 'Doğanyol', 'Hekimhan', 'Kale', 'Kuluncak', 'Pütürge', 'Yazıhan', 'Yeşilyurt'],
-    'Manisa': ['Ahmetli', 'Akhisar', 'Alaşehir', 'Demirci', 'Gölmarmara', 'Gördes', 'Kırkağaç', 'Köprübaşı', 'Kula', 'Salihli', 'Sarıgöl', 'Saruhanlı', 'Selendi', 'Soma', 'Şehzadeler', 'Turgutlu', 'Yunusemre'],
-    'Mardin': ['Artuklu', 'Dargeçit', 'Derik', 'Kızıltepe', 'Mazıdağı', 'Midyat', 'Nusaybin', 'Ömerli', 'Savur', 'Yeşilli'],
-    'Muğla': ['Bodrum', 'Dalaman', 'Datça', 'Fethiye', 'Kavaklıdere', 'Köyceğiz', 'Marmaris', 'Menteşe', 'Milas', 'Ortaca', 'Seydikemer', 'Ula', 'Yatağan'],
-    'Muş': ['Merkez', 'Bulanık', 'Hasköy', 'Korkut', 'Malazgirt', 'Varto'],
-    'Nevşehir': ['Merkez', 'Acıgöl', 'Avanos', 'Derinkuyu', 'Gülşehir', 'Hacıbektaş', 'Kozaklı', 'Ürgüp'],
-    'Niğde': ['Merkez', 'Altunhisar', 'Bor', 'Çamardı', 'Çiftlik', 'Ulukışla'],
-    'Ordu': ['Akkuş', 'Altınordu', 'Aybastı', 'Çamaş', 'Çatalpınar', 'Çaybaşı', 'Fatsa', 'Gölköy', 'Gülyalı', 'Gürgentepe', 'İkizce', 'Kabadüz', 'Kabataş', 'Korgan', 'Kumru', 'Mesudiye', 'Perşembe', 'Ulubey', 'Ünye'],
-    'Osmaniye': ['Merkez', 'Bahçe', 'Düziçi', 'Hasanbeyli', 'Kadirli', 'Sumbas', 'Toprakkale'],
-    'Rize': ['Merkez', 'Ardeşen', 'Fındıklı', 'İyidere', 'Çamlıhemşin', 'Güneysu', 'Kalkandere', 'Çayeli', 'Hemşin', 'Pazar', 'Derepazarı', 'İkizdere'],
-    'Sakarya': ['Adapazarı', 'Ferizli', 'Karasu', 'Sapanca', 'Akyazı', 'Geyve', 'Kaynarca', 'Serdivan', 'Arifiye', 'Hendek', 'Kocaali', 'Söğütlü', 'Erenler', 'Karapürçek', 'Pamukova', 'Taraklı'],
-    'Samsun': ['19 Mayıs', 'Alaçam', 'Asarcık', 'Atakum', 'Ayvacık', 'Bafra', 'Canik', 'Çarşamba', 'Havza', 'İlkadım', 'Kavak', 'Ladik', 'Salıpazarı', 'Tekkeköy', 'Terme', 'Vezirköprü', 'Yakakent'],
-    'Şanlıurfa': ['Akçakale', 'Birecik', 'Bozova', 'Ceylanpınar', 'Eyyübiye', 'Halfeti', 'Haliliye', 'Harran', 'Hilvan', 'Karaköprü', 'Siverek', 'Suruç', 'Viranşehir'],
-    'Siirt': ['Merkez', 'Baykan', 'Eruh', 'Kurtalan', 'Pervari', 'Şirvan', 'Tillo'],
-    'Sinop': ['Merkez', 'Ayancık', 'Boyabat', 'Dikmen', 'Durağan', 'Erfelek', 'Gerze', 'Saraydüzü', 'Türkeli'],
-    'Sivas': ['Merkez', 'Akıncılar', 'Altınyayla', 'Divriği', 'Doğanşar', 'Gemerek', 'Gölova', 'Gürün', 'Hafik', 'İmranlı', 'Kangal', 'Koyulhisar', 'Suşehri', 'Şarkışla', 'Ulaş', 'Yıldızeli', 'Zara'],
-    'Şırnak': ['Merkez', 'Beytüşşebap', 'Cizre', 'Güçlükonak', 'İdil', 'Silopi', 'Uludere'],
-    'Tekirdağ': ['Çerkezköy', 'Çorlu', 'Ergene', 'Hayrabolu', 'Kapaklı', 'Malkara', 'Marmaraereğlisi', 'Muratlı', 'Saray', 'Şarköy', 'Süleymanpaşa'],
-    'Tokat': ['Merkez', 'Almus', 'Artova', 'Başçiftlik', 'Erbaa', 'Niksar', 'Pazar', 'Reşadiye', 'Sulusaray', 'Turhal', 'Yeşilyurt', 'Zile'],
-    'Trabzon': ['Akçaabat', 'Araklı', 'Arsin', 'Beşikdüzü', 'Çarşıbaşı', 'Çaykara', 'Dernekpazarı', 'Düzköy', 'Hayrat', 'Köprübaşı', 'Maçka', 'Of', 'Ortahisar', 'Sürmene', 'Şalpazarı', 'Tonya', 'Vakfıkebir', 'Yomra'],
-    'Tunceli': ['Merkez', 'Çemişgezek', 'Hozat', 'Mazgirt', 'Nazımiye', 'Ovacık', 'Pertek', 'Pülümür'],
-    'Uşak': ['Merkez', 'Banaz', 'Eşme', 'Karahallı', 'Sivaslı', 'Ulubey'],
-    'Van': ['Bahçesaray', 'Başkale', 'Çaldıran', 'Çatak', 'Edremit', 'Erciş', 'Gevaş', 'Gürpınar', 'İpekyolu', 'Muradiye', 'Özalp', 'Saray', 'Tuşba'],
-    'Yalova': ['Merkez', 'Altınova', 'Armutlu', 'Çınarcık', 'Çiftlikköy', 'Termal'],
-    'Yozgat': ['Merkez', 'Akdağmadeni', 'Aydıncık', 'Boğazlıyan', 'Çandır', 'Çayıralan', 'Çekerek', 'Kadışehri', 'Saraykent', 'Sarıkaya', 'Sorgun', 'Şefaatli', 'Yenifakılı', 'Yerköy'],
-    'Zonguldak': ['Merkez', 'Alaplı', 'Çaycuma', 'Devrek', 'Ereğli', 'Gökçebey', 'Kilimli', 'Kozlu'],
-    'Aksaray': ['Merkez', 'Ağaçören', 'Eskil', 'Gülağaç', 'Güzelyurt', 'Ortaköy', 'Sarıyahşi', 'Sultanhanı'],
-};
-
-const neighborhoods: { [key: string]: string[] } = {
-    'Kadıköy': ['Caferağa', 'Osmanağa', 'Rasimpaşa', 'Moda', 'Fenerbahçe', 'Eğitim', 'Göztepe', 'Merdivenköy', 'Bostancı', 'Caddebostan'],
-    'Beşiktaş': ['Levent', 'Etiler', 'Bebek', 'Arnavutköy', 'Ortaköy', 'Gayrettepe', 'Dikilitaş', 'Muradiye', 'Abbasağa', 'Vişnezade'],
-    'Fatih': ['Aksaray', 'Balat', 'Eminönü', 'Sultanahmet', 'Sirkeci', 'Beyazıt', 'Çapa', 'Kocamustafapaşa', 'Yedikule', 'Karagümrük'],
-    'Sarıyer': ['Tarabya', 'İstinye', 'Yeniköy', 'Maslak', 'Zekeriyaköy', 'Reşitpaşa', 'Ayazağa', 'Bahçeköy', 'Kireçburnu', 'Emirgan'],
-    'Çankaya': ['Kızılay', 'Kavaklıdere', 'Maltepe', 'Bahçelievler', 'Ayrancı', 'Dikmen', 'Oran', 'Yıldız', 'Ümitköy', 'Çayyolu'],
-    'Konak': ['Alsancak', 'Göztepe', 'Hatay', 'Basmane', 'Kahramanlar', 'Küçükyalı', 'Güzelyalı', 'Pasaport', 'Kemeraltı', 'Kadifekale'],
-};
+const years = Array.from({ length: 2025 - 1900 }, (_, i) => (2024 - i).toString());
 
 const FileUpload = ({label, currentFile}: {label: string, currentFile?: string}) => (
     <div className="space-y-2">
-        <Label>{label}</Label>
-        <div className="flex items-center gap-4">
-            <Input id={`${label}-upload`} type="file" className="hidden" />
-            <Button asChild variant="outline">
-                <label htmlFor={`${label}-upload`} className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />{currentFile ? 'Değiştir' : 'Yükle'}</label>
+        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label}</Label>
+        <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
+            <input id={`${label}-upload`} type="file" className="hidden" />
+            <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5">
+                <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold"><Upload className="mr-2 h-4 w-4" />{currentFile ? 'Değiştir' : 'Belge Seç'}</label>
             </Button>
-            {currentFile && <span className="text-sm text-muted-foreground">Mevcut: {currentFile}</span>}
+            <div className="flex-1">
+                <p className="text-[10px] text-muted-foreground leading-tight">{currentFile ? `Mevcut: ${currentFile}` : "Resmi formatta bir dosya yükleyin."}</p>
+            </div>
         </div>
     </div>
 )
 
-const CheckboxGroup = ({ title, options, defaultValues }: { title: string, options: string[], defaultValues: string[] }) => {
+const CheckboxGroup = ({ title, options, defaultValues = [] }: { title: string, options: string[], defaultValues?: string[] }) => {
     return (
-        <div className="space-y-2">
-            <Label>{title}</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 rounded-lg border p-4">
+        <div className="space-y-3">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{title}</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border p-4 bg-background">
                 {options.map(option => (
                     <div key={option} className="flex items-center gap-2">
                         <Checkbox 
-                            id={`${title}-${option.replace(/\s/g, '-')}`}
+                            id={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} 
                             defaultChecked={defaultValues.includes(option)}
                         />
-                        <Label htmlFor={`${title}-${option.replace(/\s/g, '-')}`} className="text-sm font-normal">{option}</Label>
+                        <Label htmlFor={`${title.replace(/\s/g, '-')}-${option.replace(/\s/g, '-')}`} className="text-xs font-medium cursor-pointer leading-none">{option}</Label>
                     </div>
                 ))}
             </div>
@@ -169,315 +89,243 @@ const CheckboxGroup = ({ title, options, defaultValues }: { title: string, optio
 }
 
 export default function ManageProfilePage() {
-  const [aboutText, setAboutText] = React.useState("Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.");
+  const router = useRouter();
+  const { toast } = useToast();
+  const [aboutText, setAboutText] = useState("Ahbap, ihtiyaç sahibi kişilere ayni ve nakdi olmak üzere her türlü yardımda bulunmak, toplumda yardımlaşma bilincinin güçlenmesini sağlamak, iyi insan ve iyi toplum inşasına hizmet etmek amacıyla kurulmuş bir işbirliği hareketidir.");
   const ABOUT_MAX_LENGTH = 1000;
   
-  const [officeCity, setOfficeCity] = useState('İstanbul');
-  const [officeDistrict, setOfficeDistrict] = useState('Kadıköy');
-  const [mailCity, setMailCity] = useState('İstanbul');
-  const [mailDistrict, setMailDistrict] = useState('Kadıköy');
+  const [ngoType, setNgoType] = useState('dernek');
+  const [selectedFeds, setSelectedFeds] = useState<string[]>([]);
+  const [city, setCity] = useState('İstanbul');
+  const [district, setDistrict] = useState('Kadıköy');
+
+  const handleSave = (e: React.FormEvent) => {
+      e.preventDefault();
+      toast({ title: "Değişiklikler Kaydedildi", description: "Kuruluş profiliniz başarıyla güncellendi." });
+  };
+
+  const toggleFed = (fed: string) => {
+    if (selectedFeds.includes(fed)) {
+        setSelectedFeds(selectedFeds.filter(f => f !== fed));
+    } else if (selectedFeds.length < 3) {
+        setSelectedFeds([...selectedFeds, fed]);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">STK Profilini Güncelle</h1>
-        <p className="text-muted-foreground">
-          Platformda görünen bilgilerinizi ve yasal belgelerinizi buradan yönetebilirsiniz.
-        </p>
+    <div className="p-4 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <div>
+                <h1 className="text-2xl font-bold font-headline">STK Profilini Güncelle</h1>
+                <p className="text-muted-foreground text-sm">Platformda görünen bilgilerinizi buradan yönetebilirsiniz.</p>
+            </div>
+          </div>
+          <Button onClick={handleSave} size="sm" className="shadow-lg"><Save className="mr-2 h-4 w-4" /> Kaydet</Button>
       </div>
       
-      <form className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Kuruluş Bilgileri</CardTitle>
-            <CardDescription>Kuruluşunuzun temel kimlik bilgileri.</CardDescription>
+      <form onSubmit={handleSave} className="space-y-8">
+        <Card className="rounded-[2rem] overflow-hidden shadow-sm">
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="text-lg flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" /> Kuruluş Bilgileri</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-name">Kuruluşun Tam Adı</Label>
-                    <Input id="ngo-name" defaultValue="Ahbap Derneği" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-short-name">Kuruluş Kısa Adı</Label>
-                    <Input id="ngo-short-name" defaultValue="Ahbap" placeholder="Örn: AHBAP" />
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ngo-type">Kuruluş Türü</Label>
-                <Select defaultValue="dernek">
-                    <SelectTrigger id="ngo-type">
-                        <SelectValue />
-                    </SelectTrigger>
+          <CardContent className="space-y-6 pt-6">
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
+                <Select required onValueChange={setNgoType} defaultValue={ngoType}>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="dernek">Dernek</SelectItem>
                         <SelectItem value="vakif">Vakıf</SelectItem>
-                        <SelectItem value="spor">Spor Kulübü</SelectItem>
-                        <SelectItem value="ozel">Özel İzinli</SelectItem>
-                         <SelectItem value="ogrenci">Öğrenci Kulübü</SelectItem>
+                        <SelectItem value="spor-kulubu">Spor Kulübü</SelectItem>
+                        <SelectItem value="ozel-izinli">Özel İzinli</SelectItem>
                     </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ngo-foundation-year">Kuruluş Yılı</Label>
-                <Input id="ngo-foundation-year" type="number" defaultValue="2017" placeholder="Örn: 1992" />
-              </div>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="ngo-website">Web Sitesi</Label>
-              <Input id="ngo-website" defaultValue="https://ahbap.org" />
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Tam Adı</Label>
+                <Input defaultValue="Ahbap Derneği" className="h-11 rounded-xl" />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
+                    <Input defaultValue="Ahbap" className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
+                    <Select defaultValue="2017">
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İktisadi İşletme Durumu</Label>
+                    <Select defaultValue="var">
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="var">Var</SelectItem>
+                            <SelectItem value="yok">Yok</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kullanım Amacı</Label>
+                    <Select defaultValue="both">
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="donation">Bağış toplamak</SelectItem>
+                            <SelectItem value="volunteer">Gönüllülük ilanı vermek</SelectItem>
+                            <SelectItem value="both">Bağış ve Gönüllülük ilanı vermek</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {ngoType === 'spor-kulubu' && (
+                <div className="space-y-4 p-4 border rounded-[2rem] bg-primary/5 border-primary/10 animate-in slide-in-from-top-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Kayıtlı Olduğunuz Federasyonlar</Label>
+                    <Select onValueChange={toggleFed}>
+                        <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm"><SelectValue placeholder="Federasyon ekleyin..." /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                            {sportsFederations.map(fed => <SelectItem key={fed} value={fed}>{fed}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <div className="flex flex-wrap gap-2">
+                        {selectedFeds.map(fed => (
+                            <Badge key={fed} className="bg-white text-foreground border shadow-sm px-3 py-1.5 rounded-xl gap-2 h-auto flex items-center">
+                                <span className="text-[11px] font-medium">{fed}</span>
+                                <button type="button" onClick={() => toggleFed(fed)}><X className="h-3 w-3" /></button>
+                            </Badge>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="ngo-about">Hakkında</Label>
-              <Textarea 
-                id="ngo-about" 
-                rows={5} 
-                value={aboutText}
-                onChange={(e) => setAboutText(e.target.value)}
-                maxLength={ABOUT_MAX_LENGTH}
-              />
-              <p className="text-xs text-muted-foreground text-right">{aboutText.length} / {ABOUT_MAX_LENGTH}</p>
+                <div className="flex justify-between items-end mb-1">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Hakkında</Label>
+                    <span className="text-[10px] font-bold text-muted-foreground">{aboutText.length} / {ABOUT_MAX_LENGTH}</span>
+                </div>
+                <Textarea 
+                    value={aboutText} 
+                    onChange={(e) => setAboutText(e.target.value)} 
+                    maxLength={ABOUT_MAX_LENGTH} 
+                    className="min-h-[120px] rounded-2xl"
+                />
             </div>
           </CardContent>
         </Card>
         
-        <Card>
-            <CardHeader>
-                <CardTitle>Kuruluş Detayları</CardTitle>
-                <CardDescription>Kuruluşunuzun odaklandığı alanları ve üyeliklerini belirtin.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} defaultValues={["Afetzedeler", "İhtiyaç Sahibi Aileler", "Öğrenciler", "Hastalar"]} />
-                <CheckboxGroup title="Birleşmiş Milletler 17 Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} defaultValues={["1. Yoksulluğa Son", "3. Sağlıklı ve Kaliteli Yaşam", "4. Nitelikli Eğitim"]} />
-                <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} defaultValues={["Afet Platformu", "Açık Açık"]} />
-            </CardContent>
-        </Card>
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>İletişim Bilgileri</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-email">STK'nın e-postası</Label>
-                    <Input id="ngo-email" type="email" defaultValue="iletisim@ahbap.org" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="ngo-phone">Telefon Numarası</Label>
-                    <Input id="ngo-phone" type="tel" defaultValue="0216 550 50 50" />
-                </div>
-            </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 gap-8">
+            <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} defaultValues={["Afetzedeler", "İhtiyaç Sahibi Aileler", "Öğrenciler"]} />
+            <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri (SKA)" options={allSdgs} defaultValues={["1. Yoksulluğa Son", "2. Açlığa Son"]} />
+            <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} defaultValues={["Afet Platformu", "Açık Açık"]} />
+        </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle>Ofis Adresi</CardTitle>
+        <Card className="rounded-[2rem] overflow-hidden shadow-sm">
+            <CardHeader className="bg-muted/30 border-b">
+                <CardTitle className="text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Adres & İletişim</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="office-city">İl</Label>
-                        <Select value={officeCity} onValueChange={(val) => { setOfficeCity(val); setOfficeDistrict(''); }}>
-                            <SelectTrigger id="office-city"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="office-district">İlçe</Label>
-                        <Select value={officeDistrict} onValueChange={setOfficeDistrict} disabled={!officeCity}>
-                            <SelectTrigger id="office-district"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {officeCity && districts[officeCity]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="office-neighborhood">Mahalle</Label>
-                    <Input id="office-neighborhood" defaultValue="Caferağa" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="office-address">Açık Adres (Sokak, Kapı No vb.)</Label>
-                    <Input id="office-address" defaultValue="Zuhal Sk. No:1" />
-                </div>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Posta Adresi</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                    <Checkbox id="same-address" />
-                    <Label htmlFor="same-address">Ofis adresi ile aynı</Label>
-                </div>
+            <CardContent className="space-y-6 pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="mail-city">İl</Label>
-                        <Select value={mailCity} onValueChange={(val) => { setMailCity(val); setMailDistrict(''); }}>
-                            <SelectTrigger id="mail-city"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                            </SelectContent>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
+                        <Select value={city} onValueChange={setCity}>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                            <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="mail-district">İlçe</Label>
-                        <Select value={mailDistrict} onValueChange={setMailDistrict} disabled={!mailCity}>
-                            <SelectTrigger id="mail-district"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {mailCity && districts[mailCity]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
+                        <Input value={district} onChange={(e) => setDistrict(e.target.value)} className="h-11 rounded-xl" />
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="mail-neighborhood">Mahalle</Label>
-                    <Input id="mail-neighborhood" />
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
+                    <Input type="email" defaultValue="iletisim@ahbap.org" className="h-11 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="mail-address">Açık Adres (Sokak, Kapı No vb.)</Label>
-                    <Input id="mail-address" />
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
+                    <div className="flex gap-2">
+                        <div className="w-[100px] shrink-0">
+                            <Select defaultValue="90">
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                                <SelectContent>{countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}</SelectContent>
+                            </Select>
+                        </div>
+                        <Input defaultValue="5551234567" className="h-11 rounded-xl flex-1" />
+                    </div>
                 </div>
             </CardContent>
         </Card>
 
-         <Card>
-            <CardHeader>
-                <CardTitle>Banka ve Ödeme Entegrasyonu</CardTitle>
-                 <CardDescription>Bağışların aktarılacağı hesap ve sanal POS entegrasyon bilgileri.</CardDescription>
+        <Card className="rounded-[2rem] overflow-hidden shadow-sm">
+            <CardHeader className="bg-muted/30 border-b">
+                <CardTitle className="text-lg flex items-center gap-2"><Palette className="h-5 w-5 text-primary" /> Sosyal Medya</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="account-holder">Hesap Sahibi Adı</Label>
-                    <Input id="account-holder" defaultValue="Ahbap Derneği" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="bank-name">Banka Adı</Label>
-                    <Input id="bank-name" defaultValue="Türkiye İş Bankası" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="ngo-iban">Banka IBAN Numarası</Label>
-                    <Input id="ngo-iban" defaultValue="TR00 0000 0000 0000 0000 0000 00" />
-                </div>
-                <div className="pt-4 border-t">
-                     <h3 className="text-base font-medium mb-2">Sanal POS Bilgileri (İsteğe Bağlı)</h3>
-                     <div className="space-y-4">
-                         <div className="space-y-2">
-                            <Label htmlFor="pos-merchant-id">Üye İşyeri Numarası (Merchant ID)</Label>
-                            <Input id="pos-merchant-id" />
+            <CardContent className="space-y-4 pt-6">
+                {[
+                    { label: 'Instagram', icon: Instagram, prefix: 'instagram.com/' },
+                    { label: 'X (Twitter)', icon: XIcon, prefix: 'x.com/' },
+                    { label: 'LinkedIn', icon: Linkedin, prefix: 'linkedin.com/company/' },
+                    { label: 'YouTube', icon: Youtube, prefix: 'youtube.com/@' },
+                ].map((social) => (
+                    <div key={social.label} className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{social.label}</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-muted rounded-lg"><social.icon className="h-4 w-4 text-muted-foreground" /></div>
+                            <Input placeholder={social.prefix + "kullaniciadi"} className="h-11 rounded-xl" />
                         </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="pos-api-key">API Anahtarı (API Key)</Label>
-                            <Input id="pos-api-key" type="password"/>
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="pos-api-secret">API Şifresi (API Secret)</Label>
-                            <Input id="pos-api-secret" type="password"/>
-                        </div>
-                     </div>
-                </div>
-            </CardContent>
-        </Card>
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>Sosyal Medya Hesapları</CardTitle>
-                <CardDescription>Topluluğunuzla etkileşimde kaldığınız kanallar.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="social-twitter">X.com</Label>
-                    <div className='flex items-center gap-2'>
-                        <XIcon className='h-5 w-5 text-muted-foreground' />
-                        <Input id="social-twitter" placeholder="Kullanıcı Adı" defaultValue="ahbap" />
                     </div>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="social-instagram">Instagram</Label>
-                     <div className='flex items-center gap-2'>
-                        <Instagram className='h-5 w-5 text-muted-foreground' />
-                        <Input id="social-instagram" placeholder="Kullanıcı Adı" defaultValue="ahbap" />
-                    </div>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="social-facebook">Facebook</Label>
-                     <div className='flex items-center gap-2'>
-                        <Facebook className='h-5 w-5 text-muted-foreground' />
-                        <Input id="social-facebook" placeholder="Sayfa Adı" defaultValue="ahbapdernegi" />
-                    </div>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="social-linkedin">LinkedIn</Label>
-                     <div className='flex items-center gap-2'>
-                        <Linkedin className='h-5 w-5 text-muted-foreground' />
-                        <Input id="social-linkedin" placeholder="Sayfa Adı" defaultValue="ahbap-dernegi" />
-                    </div>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="social-youtube">YouTube</Label>
-                     <div className='flex items-center gap-2'>
-                        <Youtube className='h-5 w-5 text-muted-foreground' />
-                        <Input id="social-youtube" placeholder="Kanal ID veya kullanıcı adı" />
-                    </div>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="social-other">Blog / Diğer</Label>
-                     <div className='flex items-center gap-2'>
-                        <LinkIcon className='h-5 w-5 text-muted-foreground' />
-                        <Input id="social-other" placeholder="https://..." />
-                    </div>
-                </div>
+                ))}
             </CardContent>
         </Card>
 
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Yasal Belgeler ve Görseller</CardTitle>
-            <CardDescription>Bu bilgiler şeffaflık puanınızı etkiler.</CardDescription>
+        <Card className="rounded-[2rem] overflow-hidden shadow-sm">
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Yasal Belgeler</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-             <FileUpload label="Logo" currentFile="ahbap_logo.png" />
-             <FileUpload label="Kapak Fotoğrafı" />
-             <FileUpload label="Faaliyet Belgesi" currentFile="faaliyet_belgesi.pdf" />
-             <FileUpload label="Tüzük / Vakıf Senedi" currentFile="ahbap_tuzuk.pdf" />
+          <CardContent className="space-y-6 pt-6">
+             <FileUpload label="Kuruluş Logosu (PNG/JPG)" currentFile="ahbap_logo.png" />
+             <FileUpload label="Faaliyet Belgesi (PNG/PDF)" currentFile="faaliyet_belgesi_2024.pdf" />
+             <FileUpload label="Tüzük / Vakıf Senedi (PDF)" currentFile="dernek_tuzugu.pdf" />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-[2rem] overflow-hidden shadow-sm bg-primary/5 border-primary/20">
             <CardHeader>
-                <CardTitle>Sözleşme ve Politika Onayları</CardTitle>
-                <CardDescription>Platformda yer alabilmek için bu belgeleri okuyup onaylamanız gerekmektedir.</CardDescription>
+                <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Yetkili Kişi Bilgileri</CardTitle>
+                <CardDescription>Kuruluşu platformda temsil eden ana yetkili bilgileri.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-start space-x-3">
-                    <Checkbox id="terms-ngo" required defaultChecked/>
-                    <Label htmlFor="terms-ngo" className="text-sm font-normal text-muted-foreground">
-                        <Link href="/settings/contracts/kurulus-sozlesmesi" className="font-medium text-primary hover:underline">Kuruluş Sözleşmesi</Link>'ni okudum ve kabul ediyorum.
-                    </Label>
+            <CardContent className="space-y-4 pt-0">
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
+                    <Input defaultValue="Haluk Levent" className="h-11 rounded-xl bg-white" />
                 </div>
-                 <div className="flex items-start space-x-3">
-                    <Checkbox id="terms-privacy" required defaultChecked/>
-                    <Label htmlFor="terms-privacy" className="text-sm font-normal text-muted-foreground">
-                        <Link href="/settings/contracts/gizlilik-politikasi" className="font-medium text-primary hover:underline">Gizlilik Politikası</Link> ve <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="font-medium text-primary hover:underline">KVKK Aydınlatma Metni</Link>'ni okudum ve kabul ediyorum.
-                    </Label>
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
+                    <Input defaultValue="Genel Başkan" className="h-11 rounded-xl bg-white" />
                 </div>
-                 <div className="flex items-start space-x-3">
-                    <Checkbox id="terms-social-impact" required defaultChecked/>
-                    <Label htmlFor="terms-social-impact" className="text-sm font-normal text-muted-foreground">
-                        <Link href="/settings/contracts/sosyal-etki-politikasi" className="font-medium text-primary hover:underline">Sosyal Etki Politikası</Link>'nı ve <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="font-medium text-primary hover:underline">Bağış ve Yardım Politikası</Link>'nı okudum ve kabul ediyorum.
-                    </Label>
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şahsi E-posta</Label>
+                    <Input defaultValue="haluk@ahbap.org" className="h-11 rounded-xl bg-white" />
                 </div>
             </CardContent>
         </Card>
         
-        <div className="flex justify-end">
-          <Button type="submit">Değişiklikleri Kaydet</Button>
+        <div className="flex justify-end gap-4 pb-10">
+          <Button variant="outline" onClick={() => router.back()}>İptal</Button>
+          <Button onClick={handleSave} className="px-10 font-bold">Tümünü Kaydet</Button>
         </div>
       </form>
     </div>

@@ -1,11 +1,10 @@
 
-
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2, CreditCard } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, DollarSign, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, MessageCircle, Share2, CreditCard, Target, ShoppingCart } from 'lucide-react';
 import { ngos as ngosData, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,13 +34,13 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
 );
 
 const StatRow = ({ label, value }: { label: string, value: string | number }) => (
-    <div className="flex justify-between items-center py-3 text-sm">
+    <div className="flex justify-between items-center py-3 text-sm border-b last:border-b-0">
         <p className="text-muted-foreground">{label}</p>
         <p className="font-semibold text-foreground">{value}</p>
     </div>
 );
 
-const PostCard = ({ post }: { post: (typeof timelinePosts)[0] }) => (
+const PostCard = ({ post }: { post: Post }) => (
     <Card>
         <CardHeader>
             <div className="flex items-center gap-3">
@@ -77,7 +76,7 @@ const PostCard = ({ post }: { post: (typeof timelinePosts)[0] }) => (
     </Card>
 );
 
-const OpportunityCard = ({ opp }: { opp: (typeof volunteeringOpportunities)[0] }) => (
+const OpportunityCard = ({ opp }: { opp: Volunteering }) => (
     <Card>
         <CardHeader>
             <CardTitle className="text-base">{opp.title}</CardTitle>
@@ -121,7 +120,7 @@ export default function NgoProfilePage() {
           <Skeleton className="h-40 w-full" />
           <div className="p-4 bg-background">
             <div className="flex gap-4 items-end -mt-16">
-                <Skeleton className="h-24 w-24 rounded-lg border-4 border-background shrink-0" />
+                <Skeleton className="h-24 w-24 rounded-full border-4 border-background shrink-0" />
                  <div className="flex-1 pb-2 flex justify-between items-end">
                     <div className='space-y-2'>
                          <Skeleton className="h-7 w-48" />
@@ -202,7 +201,11 @@ export default function NgoProfilePage() {
                         {ngo.transparencyScore}
                     </Badge>
                 </div>
-                <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-muted-foreground text-sm capitalize">{ngo.category}</p>
+                    <Separator orientation="vertical" className="h-3" />
+                    <p className="text-muted-foreground text-sm">{ngo.type}</p>
+                </div>
             </div>
         </div>
         <div className="mt-4 space-y-2">
@@ -247,16 +250,17 @@ export default function NgoProfilePage() {
                         <div className="flex justify-between"><span className="font-medium text-foreground">Kategori:</span><span>{ngo.category}</span></div>
                         {ngo.foundationYear && <div className="flex justify-between"><span className="font-medium text-foreground">Kuruluş Yılı:</span><span>{ngo.foundationYear}</span></div>}
                         {ngo.joinDate && <div className="flex justify-between"><span className="font-medium text-foreground">Katılım Tarihi:</span><span>{new Date(ngo.joinDate).toLocaleDateString('tr-TR')}</span></div>}
+                        <div className="flex justify-between"><span className="font-medium text-foreground">İktisadi İşletme:</span><span>{ngo.economicEnterpriseStatus === 'var' ? 'Var' : 'Yok'}</span></div>
                     </div>
                 </CardContent>
             </Card>
 
             <Card>
-                <CardHeader><CardTitle className="text-lg">Detaylar</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg">Etki Alanları</CardTitle></CardHeader>
                 <CardContent className="text-sm space-y-4">
                     {ngo.beneficiaryGroups && ngo.beneficiaryGroups.length > 0 && (
                         <div>
-                            <h4 className="font-semibold mb-2">Faydalanıcı Gruplar</h4>
+                            <h4 className="font-semibold mb-2 flex items-center gap-2"><Users className="h-4 w-4 text-primary"/> Faydalanıcı Gruplar</h4>
                             <div className="flex flex-wrap gap-2">
                                 {ngo.beneficiaryGroups.map(group => <Link key={group} href={`/ngos?filter=${encodeURIComponent(group)}`}><Badge variant="outline" className="cursor-pointer hover:bg-accent">{group}</Badge></Link>)}
                             </div>
@@ -264,15 +268,23 @@ export default function NgoProfilePage() {
                     )}
                     {ngo.supportedSDGs && ngo.supportedSDGs.length > 0 && (
                         <div className="pt-4 border-t">
-                            <h4 className="font-semibold mb-2">Desteklenen SKA'lar</h4>
+                            <h4 className="font-semibold mb-2 flex items-center gap-2"><Target className="h-4 w-4 text-primary"/> Desteklenen SKA'lar</h4>
                              <div className="flex flex-wrap gap-2">
                                 {ngo.supportedSDGs.map(sdg => <Link key={sdg} href={`/ngos?filter=${encodeURIComponent(sdg)}`}><Badge variant="outline" className="cursor-pointer hover:bg-accent">{sdg}</Badge></Link>)}
                             </div>
                         </div>
                     )}
+                    {ngo.federations && ngo.federations.length > 0 && (
+                        <div className="pt-4 border-t">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2"><Building className="h-4 w-4 text-primary"/> Kayıtlı Federasyonlar</h4>
+                             <div className="flex flex-wrap gap-2">
+                                {ngo.federations.map(fed => <Badge key={fed} variant="secondary" className="text-[10px]">{fed}</Badge>)}
+                            </div>
+                        </div>
+                    )}
                     {ngo.memberOf && ngo.memberOf.length > 0 && (
                         <div className="pt-4 border-t">
-                            <h4 className="font-semibold mb-2">Üye Olunan Platformlar</h4>
+                            <h4 className="font-semibold mb-2 flex items-center gap-2"><Handshake className="h-4 w-4 text-primary"/> Üye Olunan Platformlar</h4>
                              <div className="flex flex-wrap gap-2">
                                 {ngo.memberOf.map(platform => <Link key={platform} href={`/ngos?filter=${encodeURIComponent(platform)}`}><Badge variant="outline" className="cursor-pointer hover:bg-accent">{platform}</Badge></Link>)}
                             </div>

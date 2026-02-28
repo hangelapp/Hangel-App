@@ -1,5 +1,4 @@
 
-
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -182,13 +181,23 @@ export default function BrandProfilePage() {
                         {brand.donationByCategory && brand.donationByCategory.length > 0 && (
                             <div className="pt-4 border-t">
                                 <h4 className="font-semibold text-sm mb-2 text-foreground">Kategori Bazlı Oranlar</h4>
-                                <div className="space-y-2">
-                                    {brand.donationByCategory.map(item => (
-                                        <div key={item.category} className="flex justify-between text-xs">
-                                            <span className="text-muted-foreground">{item.category}</span>
-                                            <span className="font-medium text-foreground">% {item.rate.toFixed(2)}</span>
-                                        </div>
-                                    ))}
+                                <div className="rounded-xl border overflow-hidden">
+                                    <table className="w-full text-xs text-left">
+                                        <thead className="bg-muted">
+                                            <tr>
+                                                <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px] text-muted-foreground">Kategori</th>
+                                                <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px] text-muted-foreground text-right">Bağış Oranı</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {brand.donationByCategory.map(item => (
+                                                <tr key={item.category} className="hover:bg-accent/50 transition-colors">
+                                                    <td className="px-4 py-2.5 font-medium text-foreground">{item.category}</td>
+                                                    <td className="px-4 py-2.5 font-black text-primary text-right">% {item.rate.toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         )}

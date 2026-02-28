@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
@@ -372,6 +373,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['İklim Eylemi', 'Sudaki Yaşam', 'Karasal Yaşam'],
         beneficiaryGroups: ['Çevre', 'Gelecek Nesiller'],
         memberOf: ['Açık Açık'],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'var',
         contact: { email: 'info@tema.org.tr', phone: '0212 292 69 69', website: 'https://tema.org.tr', social: { twitter: 'temavakfi', instagram: 'temavakfi', facebook: 'temavakfi', linkedin: 'tema' } },
         posts: [],
         opportunities: []
@@ -392,6 +395,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Yoksulluğa Son', 'Açlığa Son', 'Nitelikli Eğitim'],
         beneficiaryGroups: ['İhtiyaç Sahipleri', 'Afetzedeler', 'Öğrenciler'],
         memberOf: ['Afet Platformu'],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'var',
         contact: { email: 'info@socialbusinessglobal.org', phone: '0216 550 50 50', website: 'https://socialbusinessglobal.org', social: { twitter: 'socialbusinessglobal', instagram: 'socialbusinessglobal', facebook: 'socialbusinessglobal', linkedin: 'socialbusinessglobal' } },
         posts: [],
         opportunities: []
@@ -411,6 +416,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim'],
         beneficiaryGroups: ['Çocuklar', 'Hastalar'],
         memberOf: [],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'var',
         contact: { email: 'info@losev.org.tr', phone: '0312 447 06 60', website: 'https://www.losev.org.tr', social: { twitter: 'losev1998', instagram: 'losev1998', facebook: 'losev', linkedin: 'losev' } },
         posts: [],
         opportunities: []
@@ -430,6 +437,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Karasal Yaşam'],
         beneficiaryGroups: ['Hayvanlar'],
         memberOf: [],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'var',
         contact: { email: 'info@haytap.org', phone: '0212 212 HAY', website: 'https://www.haytap.org', social: { twitter: 'haytap', instagram: 'haytap', facebook: 'haytap', linkedin: 'haytap' } },
         posts: [],
         opportunities: []
@@ -450,6 +459,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Çocuklar', 'Öğrenciler', 'Gençler'],
         memberOf: ['Açık Açık'],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'var',
         contact: { email: 'info@tegv.org', phone: '0216 290 70 00', website: 'https://tegv.org', social: { twitter: 'tegv', instagram: 'tegv', facebook: 'tegv', linkedin: 'tegv' } },
         posts: [],
         opportunities: []
@@ -470,6 +481,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Barış, Adalet ve Güçlü Kurumlar', 'Eşitsizliklerin Azaltılması'],
         beneficiaryGroups: ['Hak mücadelesi verenler'],
         memberOf: [],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'yok',
         contact: { email: 'info@ihd.org.tr', phone: '0312 417 71 80', website: 'https://ihd.org.tr', social: { twitter: 'ihdgenelmerkez', instagram: 'ihdgenelmerkez', facebook: 'ihdgenelmerkez', linkedin: 'insan-haklari-dernegi' } },
         posts: [],
         opportunities: []
@@ -490,6 +503,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Toplumsal Cinsiyet Eşitliği', 'İnsana Yakışır İş ve Ekonomik Büyüme', 'Yoksulluğa Son'],
         beneficiaryGroups: ['Kadınlar', 'Girişimciler'],
         memberOf: [],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'var',
         contact: { email: 'kedv@kedv.org.tr', phone: '0212 244 17 64', website: 'https://www.kedv.org.tr', social: { twitter: 'kedv', instagram: 'kedv', facebook: 'kedv', linkedin: 'kedv' } },
         posts: [],
         opportunities: []
@@ -510,6 +525,8 @@ export const ngos: NGO[] = [
         supportedSDGs: ['Amaçlar için Ortaklıklar', 'Sanayi, Yenilikçilik ve Altyapı', 'Nitelikli Eğitim'],
         beneficiaryGroups: ['Girişimciler', 'Gençler', 'Sivil Toplum', 'Öğrenciler'],
         memberOf: ['Açık Açık', 'Afet Platformu'],
+        usagePurpose: 'both',
+        economicEnterpriseStatus: 'var',
         contact: { email: 'dernek@hangel.org', phone: '0850 123 45 67', website: 'https://hangelassociation.org', social: { twitter: 'hangel', instagram: 'hangel', facebook: 'hangel', linkedin: 'hangel' } },
         posts: [],
         opportunities: []
@@ -584,8 +601,8 @@ export const studentClubs: StudentClub[] = [
         coverPhotoUrl: 'https://picsum.photos/seed/clubcover1/800/200',
         members: 150,
         points: 4500,
-        description: '...',
-        vision: '...',
+        description: 'Türkiye\'nin en köklü üniversite girişimcilik kulüplerinden biridir.',
+        vision: 'Girişimcilik ekosistemini kampüse taşımak.',
         joinDate: '2023-01-01',
         contact: { email: 'iletisim@itugirisim.org', phone: '+90 555 123 45 67', website: 'itugirisim.org' }
     }

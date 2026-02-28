@@ -1,11 +1,10 @@
 
-
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users, MessageSquare, Edit } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users, MessageSquare, Edit, School, Tag } from 'lucide-react';
 import { studentClubs as studentClubsData, schoolRepresentatives } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -102,13 +101,16 @@ export default function ClubProfilePage() {
       </div>
       <div className="p-4 bg-background">
         <div className="flex gap-4 items-center -mt-16">
-            <Avatar className="h-20 w-20 shrink-0 bg-white border-4 border-background">
+            <Avatar className="h-20 w-20 shrink-0 bg-white border-4 border-background shadow-lg">
                 <AvatarImage src={club.avatarUrl} alt={club.name} className="object-contain p-2"/>
                 <AvatarFallback>{club.name.slice(0,2)}</AvatarFallback>
             </Avatar>
              <div className="space-y-1 pt-16">
                  <h1 className="text-2xl font-bold font-headline">{club.name}</h1>
-                 <p className="text-muted-foreground text-sm">{club.university}</p>
+                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <School className="h-3.5 w-3.5" />
+                    <span>{club.university}</span>
+                 </div>
             </div>
         </div>
          <div className="mt-4 space-y-2">
@@ -137,24 +139,24 @@ export default function ClubProfilePage() {
         </TabsList>
         <TabsContent value="about" className="p-4 space-y-4">
             <Card>
-                <CardHeader><CardTitle className="text-lg">Hakkında</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Kulüp Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4">
                     {club.category && (
-                        <Badge variant="secondary" className="mb-4">{club.category}</Badge>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Tag className="h-4 w-4 text-primary" />
+                            <Badge variant="secondary" className="font-bold">{club.category}</Badge>
+                        </div>
                     )}
-                    <p>
-                        {club.description} Kulübümüz, üniversite öğrencileri arasında girişimcilik ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
+                    <p className="leading-relaxed">
+                        {club.description} Kulübümüz, öğrenciler arasında {club.category.toLowerCase()} ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
                     </p>
-                    <p>
-                        Topluluğumuz, farklı disiplinlerden gelen öğrencileri bir araya getirerek multidisipliner bir çalışma ortamı sunar. Sosyal sorumluluk bilinciyle hareket ederek, girişimcilik projelerinin topluma fayda sağlamasını önemsiyoruz. Hangel platformu aracılığıyla sosyal etkimizi daha da artırmayı hedefliyoruz.
-                    </p>
-                    <p className="text-xs pt-2 border-t">hangel'a Katılım Tarihi: {club.joinDate}</p>
+                    <p className="text-xs pt-4 border-t italic">hangel'a Katılım Tarihi: {club.joinDate}</p>
                 </CardContent>
             </Card>
              <Card>
                 <CardHeader><CardTitle className="text-lg">Vizyonumuz</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
-                    <p>{club.vision}</p>
+                    <p className="leading-relaxed">{club.vision}</p>
                 </CardContent>
             </Card>
             <Card>
@@ -178,9 +180,9 @@ export default function ClubProfilePage() {
                 <CardHeader><CardTitle className="text-lg">Kulüp İstatistikleri</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.members}</p><p className="text-sm text-muted-foreground">Toplam Üye</p></div>
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.projects}</p><p className="text-sm text-muted-foreground">Tamamlanan Projeler</p></div>
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.volunteerHours} Saat</p><p className="text-sm text-muted-foreground">Gönüllülük Saati</p></div>
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">%{club.activeMemberRate}</p><p className="text-sm text-muted-foreground">Aktif Üye Oranı</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.projects || 0}</p><p className="text-sm text-muted-foreground">Tamamlanan Projeler</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.volunteerHours || 0} Saat</p><p className="text-sm text-muted-foreground">Gönüllülük Saati</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">%{club.activeMemberRate || 0}</p><p className="text-sm text-muted-foreground">Aktif Üye Oranı</p></div>
                 </CardContent>
              </Card>
         </TabsContent>
