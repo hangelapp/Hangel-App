@@ -239,14 +239,27 @@ const FinancialFields = ({ type = 'STK' }: { type?: 'STK' | 'Marka' }) => (
 
 // --- Agreement Components ---
 
-const AgreementList = ({ type }: { type: 'individual' | 'corporate' }) => {
+const AgreementList = ({ type, isLogin = false }: { type: 'individual' | 'corporate', isLogin?: boolean }) => {
     if (type === 'individual') {
+        const prefix = isLogin ? "login" : "reg";
         return (
-            <div className="pt-2">
-                <div className="flex items-start space-x-3 mb-4">
-                    <Checkbox id="terms-accept" required />
-                    <Label htmlFor="terms-accept" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                        <Link href="/settings/contracts/kullanici-sozlesmesi" className="text-primary font-bold hover:underline">Kullanıcı Sözleşmesi</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>'nı okudum ve kabul ediyorum.
+            <div className="pt-2 space-y-3">
+                <div className="flex items-start space-x-3">
+                    <Checkbox id={`${prefix}-terms-1`} required />
+                    <Label htmlFor={`${prefix}-terms-1`} className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                        <Link href="/settings/contracts/kullanici-sozlesmesi" className="text-primary font-bold hover:underline">Kullanıcı Sözleşmesi</Link>'ni okudum ve kabul ediyorum.
+                    </Label>
+                </div>
+                <div className="flex items-start space-x-3">
+                    <Checkbox id={`${prefix}-terms-2`} required />
+                    <Label htmlFor={`${prefix}-terms-2`} className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                        <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">KVKK Aydınlatma Metni</Link> ve <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>'nı okudum ve onaylıyorum.
+                    </Label>
+                </div>
+                <div className="flex items-start space-x-3">
+                    <Checkbox id={`${prefix}-terms-3`} required />
+                    <Label htmlFor={`${prefix}-terms-3`} className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                        <Link href="/settings/contracts/cerez-politikasi" className="text-primary font-bold hover:underline">Çerez Politikası</Link> ve <Link href="/settings/contracts/acik-riza-metni" className="text-primary font-bold hover:underline">Açık Rıza Metni</Link>'ni kabul ediyorum.
                     </Label>
                 </div>
             </div>
@@ -415,7 +428,9 @@ const FormRenderer = () => {
                     <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şifre</Label>
                     <Input id="password" type="password" placeholder="En az 6 karakter" required value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl" />
                 </div>
-                {isRegister && <AgreementList type="individual" />}
+                
+                <AgreementList type="individual" isLogin={!isRegister} />
+
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                     {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRegister ? "Kayıt Ol ve Başla" : "Giriş Yap")}
                 </Button>
