@@ -30,7 +30,10 @@ import {
     CheckCircle,
     Facebook,
     Youtube,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Trash2,
+    Smartphone,
+    Mail
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -58,8 +61,7 @@ const neighborhoodsData: { [key: string]: string[] } = {
     'Çankaya': ['Kızılay', 'Kavaklıdere', 'Bahçelievler', 'Ayrancı', 'Dikmen'],
 };
 
-const allSchools = [
-    ...allUniversities,
+const allHighSchools = [
     "Kabataş Erkek Lisesi",
     "İstanbul Erkek Lisesi",
     "Galatasaray Lisesi",
@@ -106,43 +108,58 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
     </div>
 );
 
-const SocialMediaFields = ({ title = "Sosyal Medya Hesapları" }: { title?: string }) => (
-    <div className="space-y-4">
+const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya" }: { title?: string }) => (
+    <div className="space-y-6">
         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">{title}</h3>
-        <p className="text-[10px] text-muted-foreground italic px-1">Kuruluşunuzun sosyal medya linklerini ekleyin.</p>
-        <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Instagram</Label>
-            <div className="flex items-center gap-2">
-                <div className="p-2 bg-muted rounded-lg"><Instagram className="h-4 w-4 text-muted-foreground" /></div>
-                <Input placeholder="instagram.com/kullaniciadi" className="h-11 rounded-xl" />
+        
+        {/* Core Contact Info */}
+        <div className="space-y-4">
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Mail className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input type="email" placeholder="kurumsal@ornek.com" className="h-11 rounded-xl" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Smartphone className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input type="tel" placeholder="0212 XXX XX XX" className="h-11 rounded-xl" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Web Sitesi</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Globe className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input placeholder="https://www.ornek.com" className="h-11 rounded-xl" />
+                </div>
             </div>
         </div>
-        <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">X (Twitter)</Label>
-            <div className="flex items-center gap-2">
-                <div className="p-2 bg-muted rounded-lg"><Twitter className="h-4 w-4 text-muted-foreground" /></div>
-                <Input placeholder="x.com/kullaniciadi" className="h-11 rounded-xl" />
+
+        {/* Social Accounts */}
+        <div className="space-y-4 pt-4 border-t border-dashed">
+            <p className="text-[10px] text-muted-foreground italic px-1">Sosyal medya hesap linklerini ekleyin.</p>
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Instagram</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Instagram className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input placeholder="instagram.com/kullaniciadi" className="h-11 rounded-xl" />
+                </div>
             </div>
-        </div>
-        <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Facebook</Label>
-            <div className="flex items-center gap-2">
-                <div className="p-2 bg-muted rounded-lg"><Facebook className="h-4 w-4 text-muted-foreground" /></div>
-                <Input placeholder="facebook.com/sayfaadi" className="h-11 rounded-xl" />
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">X (Twitter)</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Twitter className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input placeholder="x.com/kullaniciadi" className="h-11 rounded-xl" />
+                </div>
             </div>
-        </div>
-        <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">LinkedIn</Label>
-            <div className="flex items-center gap-2">
-                <div className="p-2 bg-muted rounded-lg"><Linkedin className="h-4 w-4 text-muted-foreground" /></div>
-                <Input placeholder="linkedin.com/company/kurumadi" className="h-11 rounded-xl" />
-            </div>
-        </div>
-        <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">YouTube</Label>
-            <div className="flex items-center gap-2">
-                <div className="p-2 bg-muted rounded-lg"><Youtube className="h-4 w-4 text-muted-foreground" /></div>
-                <Input placeholder="youtube.com/@kanaladi" className="h-11 rounded-xl" />
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">LinkedIn</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Linkedin className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input placeholder="linkedin.com/company/kurumadi" className="h-11 rounded-xl" />
+                </div>
             </div>
         </div>
     </div>
@@ -150,11 +167,7 @@ const SocialMediaFields = ({ title = "Sosyal Medya Hesapları" }: { title?: stri
 
 const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood }: any) => (
     <div className="space-y-4">
-        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">İletişim & Adres</h3>
-        <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">E-posta</Label>
-            <Input type="email" placeholder="iletisim@ornek.com" className="h-11 rounded-xl" required />
-        </div>
+        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Adres Bilgileri</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
@@ -191,12 +204,12 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
     </div>
 );
 
-const FinancialFields = () => (
+const FinancialFields = ({ type = 'STK' }: { type?: 'STK' | 'Marka' }) => (
     <div className="space-y-4">
         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal & Finansal</h3>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yasal Unvan</Label>
-            <Input placeholder="Şirket veya kurum tam adı" className="h-11 rounded-xl" />
+            <Input placeholder="Hesap Adı" className="h-11 rounded-xl" />
         </div>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">IBAN Numarası</Label>
@@ -262,6 +275,27 @@ const FormRenderer = () => {
     const [city, setCity] = useState('');
     const [district, setDistrict] = useState('');
     const [neighborhood, setNeighborhood] = useState('');
+
+    // Dynamic Donation Rates for Brands
+    const [brandDonationRates, setBrandDonationRates] = useState([{ category: '', rate: '' }]);
+
+    const addDonationRate = () => {
+        if (brandDonationRates.length < 10) {
+            setBrandDonationRates([...brandDonationRates, { category: '', rate: '' }]);
+        }
+    };
+
+    const removeDonationRate = (index: number) => {
+        if (brandDonationRates.length > 1) {
+            setBrandDonationRates(brandDonationRates.filter((_, i) => i !== index));
+        }
+    };
+
+    const updateDonationRate = (index: number, field: 'category' | 'rate', value: string) => {
+        const updated = [...brandDonationRates];
+        updated[index][field] = value;
+        setBrandDonationRates(updated);
+    };
 
     const handleActionChange = (value: string) => {
         const typePart = type !== 'individual' ? `&type=${type}` : '';
@@ -420,7 +454,7 @@ const FormRenderer = () => {
                     <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     
                     <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <SocialMediaFields />
+                    <CommunicationAndSocialMedia />
                     <FinancialFields />
 
                     <div className="space-y-4">
@@ -455,10 +489,6 @@ const FormRenderer = () => {
                             <Input placeholder="Markanızın adı" required className="h-11 rounded-xl" />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Web Sitesi</Label>
-                            <Input placeholder="https://marka.com" className="h-11 rounded-xl" />
-                        </div>
-                        <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sektör</Label>
                             <Select required>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
@@ -469,12 +499,82 @@ const FormRenderer = () => {
                         </div>
                     </div>
 
+                    {/* Category Based Donation Rates */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Kategori Bazlı Bağış Oranları</h3>
+                        <p className="text-[10px] text-muted-foreground italic px-1">En fazla 10 kategori için farklı bağış oranları belirleyebilirsiniz.</p>
+                        <div className="space-y-3">
+                            {brandDonationRates.map((item, index) => (
+                                <div key={index} className="flex gap-2 items-end group animate-in slide-in-from-top-2 duration-300">
+                                    <div className="flex-1 space-y-1">
+                                        <Label className="text-[9px] uppercase font-bold text-muted-foreground">Kategori</Label>
+                                        <Input 
+                                            placeholder="Örn: Giyim, Aksesuar..." 
+                                            value={item.category} 
+                                            onChange={(e) => updateDonationRate(index, 'category', e.target.value)}
+                                            className="h-10 rounded-xl"
+                                        />
+                                    </div>
+                                    <div className="w-24 space-y-1">
+                                        <Label className="text-[9px] uppercase font-bold text-muted-foreground">Oran (%)</Label>
+                                        <Input 
+                                            type="number" 
+                                            placeholder="5" 
+                                            value={item.rate} 
+                                            onChange={(e) => updateDonationRate(index, 'rate', e.target.value)}
+                                            className="h-10 rounded-xl"
+                                        />
+                                    </div>
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="text-destructive h-10 w-10 hover:bg-destructive/10 rounded-xl"
+                                        onClick={() => removeDonationRate(index)}
+                                        disabled={brandDonationRates.length === 1}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                        {brandDonationRates.length < 10 && (
+                            <Button type="button" variant="outline" size="sm" className="w-full mt-2 rounded-xl border-dashed" onClick={addDonationRate}>
+                                <Plus className="mr-2 h-4 w-4" /> Yeni Kategori Ekle
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Affiliate Marketing Info */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Affiliate Marketing</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ajans / Network</Label>
+                                <Select>
+                                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="gelir-ortaklari">Gelir Ortakları</SelectItem>
+                                        <SelectItem value="reklamaction">ReklamAction</SelectItem>
+                                        <SelectItem value="affocean">Affocean</SelectItem>
+                                        <SelectItem value="ozel">Özel Altyapı</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Program / Campaign ID</Label>
+                                <Input placeholder="ID numaranız" className="h-11 rounded-xl" />
+                            </div>
+                        </div>
+                    </div>
+
                     <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <SocialMediaFields />
-                    <FinancialFields />
+                    <CommunicationAndSocialMedia />
+                    <FinancialFields type="Marka" />
 
                     <div className="space-y-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Logolar</h3>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler & Logolar</h3>
+                        <FileUpload label="Vergi Levhası" accept=".pdf" hint="Desteklenen format: .pdf" />
                         <FileUpload label="Marka Logosu" accept=".jpg,.jpeg,.png" hint="Yüksek çözünürlüklü .png veya .jpg" />
                     </div>
 
@@ -487,6 +587,8 @@ const FormRenderer = () => {
 
     const ClubRegistrationForm = () => {
         const { toast } = useToast();
+        const [clubType, setClubType] = useState<string>('');
+        
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
             toast({ title: "Başvuru Alındı", description: "Öğrenci kulübü başvurunuz incelemeye alınmıştır." });
@@ -498,15 +600,34 @@ const FormRenderer = () => {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Kulüp Bilgileri</h3>
+                        
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Üniversite / Okul</Label>
-                            <Select required>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Kurum seçin..." /></SelectTrigger>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Türü</Label>
+                            <Select required onValueChange={setClubType} value={clubType}>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent>
-                                    {allSchools.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                    <SelectItem value="university">Üniversite Kulübü</SelectItem>
+                                    <SelectItem value="high-school">Lise Kulübü</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
+
+                        {clubType && (
+                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                                    {clubType === 'university' ? 'Üniversite' : 'Okul Adı'}
+                                </Label>
+                                <Select required>
+                                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {(clubType === 'university' ? allUniversities : allHighSchools).map(u => (
+                                            <SelectItem key={u} value={u}>{u}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Adı</Label>
                             <Input placeholder="Kulübünüzün tam adı" required className="h-11 rounded-xl" />
@@ -514,7 +635,7 @@ const FormRenderer = () => {
                     </div>
 
                     <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <SocialMediaFields />
+                    <CommunicationAndSocialMedia />
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Görseller</h3>
@@ -524,7 +645,7 @@ const FormRenderer = () => {
 
                     <AgreementList type="corporate" />
                 </div>
-                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
+                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={!clubType}>Başvuruyu Gönder</Button>
             </form>
         );
     };
