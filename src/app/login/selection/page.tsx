@@ -34,7 +34,8 @@ import {
     Smartphone,
     Mail,
     Globe,
-    Code
+    Code,
+    UserCircle
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -114,6 +115,55 @@ const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint
             </Button>
             <div className="flex-1">
                 <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>
+            </div>
+        </div>
+    </div>
+);
+
+const AuthorizedPersonFields = () => (
+    <div className="space-y-6">
+        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yetkili Kişi Bilgileri</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><UserCircle className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input placeholder="Adınız Soyadınız" required className="h-11 rounded-xl" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Code className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" required className="h-11 rounded-xl" />
+                </div>
+            </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-lg"><Mail className="h-4 w-4 text-muted-foreground" /></div>
+                    <Input type="email" placeholder="kurumsal@ornek.com" required className="h-11 rounded-xl" />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
+                <div className="flex gap-2">
+                    <div className="w-[100px] shrink-0">
+                        <Select defaultValue="90">
+                            <SelectTrigger className="h-11 rounded-xl">
+                                <SelectValue placeholder="Kod" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {countryPhoneCodes.map(code => (
+                                    <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Input type="tel" placeholder="5XX XXX XX XX" className="h-11 rounded-xl flex-1" required />
+                </div>
             </div>
         </div>
     </div>
@@ -546,6 +596,7 @@ const FormRenderer = () => {
                         <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
                     </div>
 
+                    <AuthorizedPersonFields />
                     <AgreementList type="corporate" />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
@@ -692,6 +743,7 @@ const FormRenderer = () => {
                         <FileUpload label="Marka Logosu" accept=".jpg,.jpeg,.png" hint="Yüksek çözünürlüklü .png veya .jpg" />
                     </div>
 
+                    <AuthorizedPersonFields />
                     <AgreementList type="corporate" />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl">Başvuruyu Gönder</Button>
@@ -784,6 +836,7 @@ const FormRenderer = () => {
                         <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
                     </div>
 
+                    <AuthorizedPersonFields />
                     <AgreementList type="corporate" />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={!clubType}>Başvuruyu Gönder</Button>
