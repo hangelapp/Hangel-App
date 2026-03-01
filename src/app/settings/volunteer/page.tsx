@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { user as staticUser, countryPhoneCodes } from '@/lib/data';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
@@ -19,6 +20,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
 const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
@@ -74,21 +77,31 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
 export default function VolunteerSettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const [isOnboarding, setIsOnboarding] = useState(false);
+    const { user: authUser, isUserLoading } = useUser();
+    const db = useFirestore();
 
-    // Main state for volunteer info
+    const [isOnboarding, setIsOnboarding] = useState(false);
     const [volunteerInfo, setVolunteerInfo] = useState(staticUser.volunteerInfo);
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser]);
+
+    const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
 
     useEffect(() => {
         const onboardingStep = localStorage.getItem('onboardingStep');
         if (onboardingStep === 'volunteer') {
             setIsOnboarding(true);
         }
-        const savedUser = localStorage.getItem('hangel-user');
-        if (savedUser) {
-            setVolunteerInfo(JSON.parse(savedUser).volunteerInfo || staticUser.volunteerInfo);
-        }
     }, []);
+
+    useEffect(() => {
+        if (userData && userData.volunteerInfo) {
+            setVolunteerInfo(userData.volunteerInfo);
+        }
+    }, [userData]);
 
     const handleChange = (field: string, value: any) => {
         setVolunteerInfo(prev => ({ ...prev, [field]: value }));
@@ -128,13 +141,15 @@ export default function VolunteerSettingsPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const currentData = JSON.parse(localStorage.getItem('hangel-user') || '{}');
-        const updatedData = { ...currentData, volunteerInfo };
-        localStorage.setItem('hangel-user', JSON.stringify(updatedData));
+        if (!userDocRef) return;
+
+        updateDocumentNonBlocking(userDocRef, { volunteerInfo });
+
         toast({
             title: "Gönüllülük Bilgileri Güncellendi",
             description: "Bilgileriniz başarıyla kaydedildi.",
         });
+        
         if (isOnboarding) {
             localStorage.removeItem('onboardingStep');
             router.push('/market');
@@ -142,6 +157,14 @@ export default function VolunteerSettingsPage() {
             router.push('/settings');
         }
     };
+
+    if (isUserLoading || isUserDataLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
@@ -172,7 +195,7 @@ export default function VolunteerSettingsPage() {
                     <CardContent className="space-y-4">
                          <div className="space-y-2">
                             <Label>Üniversite</Label>
-                            <Select value={volunteerInfo.education.find(e => e.level === 'Lisans')?.school || ''} onValueChange={(value) => handleEducationChange('Lisans', 'school', value)} required>
+                            <Select value={volunteerInfo.education.find(e => e.level === 'Lisans')?.school || ''} onValueChange={(value) => handleEducationChange('Lisans', 'school', value)}>
                                 <SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
                                 <SelectContent>
                                     {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
@@ -191,7 +214,7 @@ export default function VolunteerSettingsPage() {
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="sector">Çalıştığınız Sektör</Label>
-                                <Select value={volunteerInfo.sector || ''} onValueChange={(val) => handleChange('sector', val)} required>
+                                <Select value={volunteerInfo.sector || ''} onValueChange={(val) => handleChange('sector', val)}>
                                     <SelectTrigger id="sector"><SelectValue placeholder="Sektör seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -200,7 +223,7 @@ export default function VolunteerSettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="profession">Çalıştığınız Pozisyon</Label>
-                                <Select value={volunteerInfo.profession || ''} onValueChange={(val) => handleChange('profession', val)} required>
+                                <Select value={volunteerInfo.profession || ''} onValueChange={(val) => handleChange('profession', val)}>
                                     <SelectTrigger id="profession"><SelectValue placeholder="Pozisyon seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allPositions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -253,7 +276,7 @@ export default function VolunteerSettingsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Acil Durum Kişileri</CardTitle>
-                        <CardDescription>Acil bir durumda ulaşılacak kişilerin bilgilerini girin. Bu bilgiler sadece acil durum prosedürleri için kullanılacaktır.</CardDescription>
+                        <CardDescription>Acil bir durumda ulaşılacak kişilerin bilgilerini girin.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div>
@@ -267,33 +290,6 @@ export default function VolunteerSettingsPage() {
                                     <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
                                     <div className="flex gap-2">
                                         <div className="w-[100px] shrink-0">
-                                            <Select defaultValue="90" required>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Kod" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {countryPhoneCodes.map(code => (
-                                                        <SelectItem key={code} value={code}>+{code}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" required />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="border-t pt-6">
-                            <h4 className="font-medium text-base mb-2">Acil Durum Kişisi 2</h4>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="emergency-contact-name-2">Ad Soyad</Label>
-                                    <Input id="emergency-contact-name-2" value={volunteerInfo.emergency.emergencyContacts[1]?.name || ''} onChange={(e) => handleEmergencyContactChange(1, 'name', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="emergency-contact-phone-2">Telefon</Label>
-                                    <div className="flex gap-2">
-                                        <div className="w-[100px] shrink-0">
                                             <Select defaultValue="90">
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Kod" />
@@ -305,7 +301,7 @@ export default function VolunteerSettingsPage() {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <Input id="emergency-contact-phone-2" type="tel" value={volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} onChange={(e) => handleEmergencyContactChange(1, 'phone', e.target.value)} className="flex-1" />
+                                        <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" required />
                                     </div>
                                 </div>
                             </div>
@@ -323,15 +319,15 @@ export default function VolunteerSettingsPage() {
                            <Switch id="emergency-available" checked={volunteerInfo.emergency.available} onCheckedChange={(val) => handleNestedChange('emergency', 'available', val)} />
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="chronic-illness" checked={volunteerInfo.emergency.hasChronicIllness} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasChronicIllness', checked)} />
+                            <Checkbox id="chronic-illness" checked={volunteerInfo.emergency.hasChronicIllness} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasChronicIllness', !!checked)} />
                             <Label htmlFor="chronic-illness">Kronik bir rahatsızlığım var.</Label>
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="regular-medication" checked={volunteerInfo.emergency.usesRegularMedication} onCheckedChange={(checked) => handleNestedChange('emergency', 'usesRegularMedication', checked)} />
+                            <Checkbox id="regular-medication" checked={volunteerInfo.emergency.usesRegularMedication} onCheckedChange={(checked) => handleNestedChange('emergency', 'usesRegularMedication', !!checked)} />
                             <Label htmlFor="regular-medication">Düzenli olarak kullandığım bir ilaç var.</Label>
                         </div>
                          <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="physical-limitation" checked={volunteerInfo.emergency.hasPhysicalLimitation} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasPhysicalLimitation', checked)} />
+                            <Checkbox id="physical-limitation" checked={volunteerInfo.emergency.hasPhysicalLimitation} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasPhysicalLimitation', !!checked)} />
                             <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
                         </div>
                     </CardContent>

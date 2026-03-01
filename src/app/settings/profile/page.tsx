@@ -8,34 +8,53 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { user as staticUser, countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
-import { ArrowLeft, Camera, Trash2, Save } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Save, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import Image from 'next/image';
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const bloodGroups = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'];
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user: authUser, isUserLoading } = useUser();
+  const db = useFirestore();
+  
   const [isOnboarding, setIsOnboarding] = useState(false);
-  const [profile, setProfile] = useState(staticUser);
   const [isPhotoEditorOpen, setIsPhotoEditorOpen] = useState(false);
   const [zoom, setZoom] = useState([1]);
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser) return null;
+    return doc(db, 'users', authUser.uid);
+  }, [db, authUser]);
+
+  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+  const [profile, setProfile] = useState(staticUser);
 
   useEffect(() => {
     const onboardingStep = localStorage.getItem('onboardingStep');
     if (onboardingStep === 'profile') {
         setIsOnboarding(true);
     }
-    const savedUser = localStorage.getItem('hangel-user');
-    if (savedUser) {
-        setProfile(JSON.parse(savedUser));
-    }
   }, []);
+
+  useEffect(() => {
+    if (userData) {
+        setProfile({
+            ...staticUser,
+            ...userData,
+            personalInfo: { ...staticUser.personalInfo, ...(userData.personalInfo || {}) },
+            volunteerInfo: { ...staticUser.volunteerInfo, ...(userData.volunteerInfo || {}) },
+        });
+    }
+  }, [userData]);
 
   const handleChange = (section: string, field: string, value: any) => {
     setProfile(prev => {
@@ -71,8 +90,17 @@ export default function ProfileSettingsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('hangel-user', JSON.stringify(profile));
+    if (!userDocRef) return;
+
+    updateDocumentNonBlocking(userDocRef, {
+        name: profile.name,
+        username: profile.username,
+        avatarUrl: profile.avatarUrl,
+        personalInfo: profile.personalInfo
+    });
+
     toast({ title: "Profil Güncellendi", description: "Tüm değişiklikler başarıyla kaydedildi." });
+    
     if (isOnboarding) {
         localStorage.setItem('onboardingStep', 'volunteer');
         router.push('/settings/volunteer');
@@ -84,6 +112,14 @@ export default function ProfileSettingsPage() {
   const city = profile.personalInfo.address.city;
   const district = profile.personalInfo.address.district;
   const neighborhood = profile.personalInfo.address.neighborhood;
+
+  if (isUserLoading || isUserDataLoading) {
+      return (
+          <div className="flex items-center justify-center min-h-screen">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+      );
+  }
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
@@ -173,14 +209,14 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>İl</Label>
-                        <Select value={city} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
+                        <Select value={city || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>İlçe</Label>
-                        <Select value={district} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!city}>
+                        <Select value={district || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!city}>
                             <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                             <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                         </Select>
@@ -190,7 +226,7 @@ export default function ProfileSettingsPage() {
                 {city && district && neighborhoodsData[city]?.[district] && (
                     <div className="space-y-2">
                         <Label>Mahalle</Label>
-                        <Select value={neighborhood} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
+                        <Select value={neighborhood || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
                             <SelectTrigger><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
                             <SelectContent>
                                 {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
@@ -202,14 +238,14 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Kan Grubu</Label>
-                        <Select value={profile.personalInfo.bloodType} onValueChange={(v) => handleChange('personalInfo', 'bloodType', v)} required>
+                        <Select value={profile.personalInfo.bloodType || ''} onValueChange={(v) => handleChange('personalInfo', 'bloodType', v)} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>{bloodGroups.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>Cinsiyet</Label>
-                        <Select value={profile.personalInfo.gender} onValueChange={(v) => handleChange('personalInfo', 'gender', v)} required>
+                        <Select value={profile.personalInfo.gender || ''} onValueChange={(v) => handleChange('personalInfo', 'gender', v)} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Erkek">Erkek</SelectItem>
@@ -238,7 +274,7 @@ export default function ProfileSettingsPage() {
                   <div className="relative w-64 h-64 rounded-full overflow-hidden border-4 border-primary/20 shadow-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                           <Image 
-                            src={profile.avatarUrl || '/placeholder-avatar.png'} 
+                            src={profile.avatarUrl || 'https://picsum.photos/seed/avatar/200/200'} 
                             alt="Preview" 
                             width={256} 
                             height={256} 
@@ -264,5 +300,3 @@ export default function ProfileSettingsPage() {
     </div>
   );
 }
-
-    

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { user as staticUser, badges, pastVolunteering, certificates } from '@/lib/data';
 import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X, Loader2
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -22,7 +22,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -111,70 +112,25 @@ export default function ProfilePage() {
     const [stories, setStories] = useState<string[]>([]);
     
     const { user: authUser, isUserLoading } = useUser();
-    const [currentUser, setCurrentUser] = useState(staticUser);
+    const db = useFirestore();
 
-    useEffect(() => {
-        if (isUserLoading) return;
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser]);
 
-        if (authUser) {
-            const isDemoUser = authUser.email === 'i.adiguzel@email.com' || authUser.email === 'ismail@hangel.org';
-            
-            if (isDemoUser) {
-                const savedUser = localStorage.getItem('hangel-user');
-                if (savedUser) {
-                    setCurrentUser(JSON.parse(savedUser));
-                } else {
-                    setCurrentUser(staticUser);
-                }
-            } else {
-                const savedUser = localStorage.getItem(`hangel-user-${authUser.uid}`);
-                if (savedUser) {
-                    setCurrentUser(JSON.parse(savedUser));
-                } else {
-                    // Start with an empty profile for non-demo users
-                    setCurrentUser({
-                        ...staticUser,
-                        id: authUser.uid,
-                        name: authUser.displayName || authUser.email?.split('@')[0] || 'Yeni Kullanıcı',
-                        username: `@${authUser.email?.split('@')[0] || 'kullanici'}`,
-                        impactScore: 0,
-                        personalInfo: {
-                            ...staticUser.personalInfo,
-                            email: authUser.email || '',
-                            phone: '',
-                            social: {}
-                        },
-                        volunteerInfo: {
-                            ...staticUser.volunteerInfo,
-                            skills: [],
-                            dailySkills: [],
-                            interests: [],
-                            education: [],
-                            programs: [],
-                            languages: [],
-                            licenses: [],
-                            documents: []
-                        },
-                        stats: {
-                            totalDonation: 0,
-                            donationCount: 0,
-                            highestSingleDonation: 0,
-                            supportedNgosCount: 0,
-                            mostSupportedNgo: '-',
-                            avgDonation: 0,
-                            volunteerHours: 0,
-                            completedProjects: 0,
-                            volunteerRank: { country: '-', city: '-', school: '-', interest: '-' },
-                            mostActiveVolunteerArea: '-',
-                            avgVolunteerDuration: '-',
-                            totalImpactValue: 0,
-                        },
-                        progress: {}
-                    });
-                }
-            }
-        }
-    }, [authUser, isUserLoading]);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+
+    const currentUser = useMemo(() => {
+        if (!userData) return staticUser;
+        return {
+            ...staticUser,
+            ...userData,
+            personalInfo: { ...staticUser.personalInfo, ...(userData.personalInfo || {}) },
+            volunteerInfo: { ...staticUser.volunteerInfo, ...(userData.volunteerInfo || {}) },
+            stats: { ...staticUser.stats, ...(userData.stats || {}) },
+        };
+    }, [userData]);
     
     const handleGenerateStories = async () => {
         setIsStoryLoading(true);
@@ -296,7 +252,7 @@ export default function ProfilePage() {
         )
     }
 
-    if (isUserLoading) {
+    if (isUserLoading || isUserDataLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -610,5 +566,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
-    

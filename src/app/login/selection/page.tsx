@@ -46,8 +46,9 @@ import { cn } from '@/lib/utils';
 import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 
@@ -431,6 +432,7 @@ const FormRenderer = () => {
     const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
         const { toast } = useToast();
         const auth = useAuth();
+        const db = useFirestore();
         const [phone, setPhone] = useState('');
         const [password, setPassword] = useState('');
         const [name, setName] = useState('');
@@ -442,13 +444,52 @@ const FormRenderer = () => {
             const email = `${phone.replace(/\D/g, '')}@hangel.org`;
             try {
                 if (isRegister) {
-                    await createUserWithEmailAndPassword(auth, email, password);
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const userId = userCredential.user.uid;
+                    
+                    // Initialize user profile in Firestore
+                    const userRef = doc(db, 'users', userId);
+                    setDocumentNonBlocking(userRef, {
+                        id: userId,
+                        name: name,
+                        username: `@${phone.replace(/\D/g, '')}`,
+                        avatarUrl: '',
+                        coverPhotoUrl: '',
+                        personalInfo: {
+                            email: email,
+                            phone: phone,
+                            address: { city: '', district: '', neighborhood: '', fullAddress: '' }
+                        },
+                        volunteerInfo: {
+                            interests: [],
+                            skills: [],
+                            dailySkills: [],
+                            languages: [],
+                            programs: [],
+                            licenses: [],
+                            documents: [],
+                            education: [],
+                            travelInfo: { domesticObstacle: false, internationalObstacle: false, visas: [] },
+                            emergency: { available: true, hasChronicIllness: false, usesRegularMedication: false, hasPhysicalLimitation: false, emergencyContacts: [] }
+                        },
+                        impactScore: 0,
+                        stats: {
+                            totalDonation: 0,
+                            donationCount: 0,
+                            volunteerHours: 0,
+                            completedProjects: 0,
+                            totalImpactValue: 0
+                        }
+                    }, { merge: true });
+
+                    await updateProfile(userCredential.user, { displayName: name });
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
                 onComplete();
             } catch (error: any) {
-                toast({ variant: "destructive", title: "Hata", description: "İşlem başarısız oldu." });
+                console.error(error);
+                toast({ variant: "destructive", title: "Hata", description: error.message || "İşlem başarısız oldu." });
             } finally {
                 setIsLoading(false);
             }
