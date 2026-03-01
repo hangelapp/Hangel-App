@@ -120,18 +120,14 @@ const ProductShowcaseSection = ({
             <h2 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">{title}</h2>
             {description && <p className="text-lg md:text-xl opacity-80 max-w-3xl mx-auto leading-relaxed font-medium">{description}</p>}
             
-             <div className="flex items-center justify-center gap-4 pt-4">
-                <Button asChild size="lg" className="rounded-full px-6">
-                    <Link href={cta1Href!}>{cta1}</Link>
-                </Button>
+             <div className="flex items-center justify-center gap-6 pt-4">
+                <Link href={cta1Href!} className={cn("hover:underline flex items-center text-lg font-medium", theme === 'dark' ? "text-[#2997ff]" : "text-primary")}>
+                    {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
+                </Link>
                 {cta2 && cta2Href && (
-                    <Button asChild size="lg" variant="outline" className={cn(
-                        "rounded-full px-6",
-                        theme === 'dark' 
-                            && "border-white/50 text-white bg-transparent hover:bg-white hover:text-black"
-                    )}>
-                        <Link href={cta2Href}>{cta2}</Link>
-                    </Button>
+                    <Link href={cta2Href} className={cn("hover:underline flex items-center text-lg font-medium", theme === 'dark' ? "text-[#2997ff]" : "text-primary")}>
+                        {cta2} <ChevronRight className="h-5 w-5 ml-0.5" />
+                    </Link>
                 )}
             </div>
         </div>
@@ -717,9 +713,7 @@ export default function LoginPage() {
                             <CarouselContent className="-ml-4">
                                 {volunteeringOpportunities.slice(0, 15).map((opp) => (
                                     <CarouselItem key={opp.id} className="pl-4 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
-                                        <div className="h-[350px] p-1">
-                                            <VolunteeringCard opportunity={opp} />
-                                        </div>
+                                        <VolunteeringCard opportunity={opp} />
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
@@ -757,9 +751,9 @@ export default function LoginPage() {
                         <div className="text-center mb-12 space-y-4">
                             <h2 className="text-4xl font-bold tracking-tight">hangel derneği</h2>
                             <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
-                            <Button asChild variant="link" className="font-bold text-primary text-base p-0 h-auto">
-                                <Link href="/hangelassociation">Derneğin ana sayfasını görüntüle</Link>
-                            </Button>
+                            <Link href="/hangelassociation" className="text-primary hover:underline flex items-center justify-center text-lg font-medium group">
+                                Derneğin ana sayfasını görüntüle <ChevronRight className="h-5 w-5 ml-0.5" />
+                            </Link>
                         </div>
                         <Carousel
                             opts={{
