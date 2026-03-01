@@ -13,12 +13,11 @@ service cloud.firestore {
 
     // --- Kullanıcı Verileri ---
     match /users/{userId} {
-      // Bireysel döküman erişimi
-      allow get, write: if isOwner(userId);
+      // Bireysel döküman erişimi (get + list)
+      // Not: Admin panelinde tüm kullanıcıları sayabilmek için imzalı kullanıcılara 'read' izni verilmiştir.
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
       
-      // Koleksiyon listeleme izni (Super Admin paneli için kritik)
-      allow list: if isSignedIn();
-
       // Alt koleksiyonlar (badges, certificates, qrCodePayments vb.)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId);
