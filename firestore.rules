@@ -17,7 +17,7 @@ service cloud.firestore {
       allow get, write: if isOwner(userId);
       
       // Admin paneli sayaçları ve listeleme için izin
-      // Super Admin panelinde tüm kullanıcıları sayabilmek için list izni gereklidir.
+      // Super Admin panelinde tüm kullanıcıları sayabilmek ve listelemek için list izni gereklidir.
       allow list: if isSignedIn();
 
       // Alt koleksiyonlar (badges, certificates, qrCodePayments vb.)
@@ -63,7 +63,7 @@ service cloud.firestore {
 
     // --- Başvurular ---
     match /applications/{appId} {
-      // Super Admin panelinde başvuruları listelemek için 'list' izni eklendi.
+      // Super Admin panelinde başvuruları listelemek ve saymak için 'read' (get + list) izni gereklidir.
       allow read, write: if isSignedIn();
     }
 
