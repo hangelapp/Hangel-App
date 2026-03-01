@@ -52,7 +52,8 @@
         "content": { "type": "string" },
         "timestamp": { "type": "string" },
         "likes": { "type": "number" },
-        "imageUrl": { "type": "string" }
+        "imageUrl": { "type": "string" },
+        "sponsored": { "type": "boolean" }
       }
     },
     "Volunteering": {
@@ -64,7 +65,8 @@
         "organization": { "type": "string" },
         "points": { "type": "number" },
         "location": { "type": "object" },
-        "description": { "type": "string" }
+        "description": { "type": "string" },
+        "socialArea": { "type": "string" }
       }
     },
     "LibrarySection": {
@@ -87,6 +89,17 @@
         "type": { "type": "string" },
         "status": { "type": "string" },
         "date": { "type": "string" }
+      }
+    },
+    "Event": {
+      "title": "Event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "organizer": { "type": "string" },
+        "startDate": { "type": "string" },
+        "location": { "type": "object" }
       }
     }
   },
@@ -121,6 +134,10 @@
     "/applications/{appId}": {
       "schema": { "$ref": "#/backend/entities/Application" },
       "description": "Başvurular."
+    },
+    "/events/{eventId}": {
+      "schema": { "$ref": "#/backend/entities/Event" },
+      "description": "Etkinlikler."
     }
   }
 }
