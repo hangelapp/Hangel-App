@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -37,365 +37,202 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText } from "lucide-react";
-
-
-type Application = {
-  id: string;
-  name: string;
-  date: string;
-  avatar: string;
-  type: 'STK' | 'Marka' | 'Kulüp';
-};
-
-const initialData: {
-  pending: {
-    ngo: Application[];
-    brand: Application[];
-    club: Application[];
-  };
-  approved: Application[];
-  rejected: Application[];
-} = {
-  pending: {
-    ngo: [
-      { id: 'ngo1', name: 'Doğa Koruma Derneği', date: '2024-07-22', avatar: 'https://logo.clearbit.com/wwf.org', type: 'STK' },
-      { id: 'ngo2', name: 'Eğitim Meşalesi Vakfı', date: '2024-07-21', avatar: 'https://logo.clearbit.com/tegv.org', type: 'STK' },
-    ],
-    brand: [
-      { id: 'brand1', name: 'Eko Giyim', date: '2024-07-22', avatar: 'https://logo.clearbit.com/patagonia.com', type: 'Marka' },
-      { id: 'brand2', name: 'Sağlıklı Atıştırmalıklar', date: '2024-07-20', avatar: 'https://logo.clearbit.com/fellasfoods.com.tr', type: 'Marka' },
-    ],
-    club: [
-      { id: 'club1', name: 'YTÜ Sosyal Sorumluluk Kulübü', date: '2024-07-21', avatar: 'https://logo.clearbit.com/yildiz.edu.tr', type: 'Kulüp' },
-    ],
-  },
-  approved: [
-    { id: 'ngo3', name: 'TEMA Vakfı', date: '2024-07-15', avatar: 'https://logo.clearbit.com/tema.org.tr', type: 'STK' },
-    { id: 'brand3', name: 'Decathlon', date: '2024-07-14', avatar: 'https://logo.clearbit.com/decathlon.com.tr', type: 'Marka' },
-  ],
-  rejected: [],
-};
+import { FileText, Loader2, CheckCircle, XCircle, Clock } from "lucide-react";
+import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
+import type { Application } from '@/lib/types';
 
 const ApplicationDetailsDialog = ({ application }: { application: Application }) => (
-    <DialogContent className="sm:max-w-[600px]">
+    <DialogContent className="sm:max-w-[600px] rounded-[2.5rem]">
         <DialogHeader>
-            <DialogTitle>Başvuru Detayları: {application.name}</DialogTitle>
+            <DialogTitle>Başvuru Detayları: {application.org}</DialogTitle>
             <DialogDescription>
                 <strong>Tür:</strong> {application.type} <br />
                 <strong>Başvuru Tarihi:</strong> {application.date}
             </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-            <Card>
+        <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
+            <Card className="rounded-2xl border-black/5 bg-muted/30">
                 <CardHeader><CardTitle className="text-base">Kuruluş Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                    <p><strong>Yasal Adı:</strong> {application.name}</p>
-                    <p><strong>Web Sitesi:</strong> <a href="#" className="text-primary underline">https://ornek-site.org</a></p>
-                    <p><strong>Kategori:</strong> {application.type === 'STK' ? 'Eğitim' : 'Giyim'}</p>
+                    <p><strong>Yasal Adı:</strong> {application.org}</p>
+                    <p><strong>Konum:</strong> {application.location}</p>
+                    <p><strong>Başvuru Başlığı:</strong> {application.title}</p>
                 </CardContent>
             </Card>
-             <Card>
-                <CardHeader><CardTitle className="text-base">Yetkili Bilgileri</CardTitle></CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                    <p><strong>Ad Soyad:</strong> Ali Veli</p>
-                    <p><strong>E-posta:</strong> ali.veli@ornek-site.org</p>
-                    <p><strong>Telefon:</strong> +90 555 123 45 67</p>
+             <Card className="rounded-2xl border-black/5">
+                <CardHeader><CardTitle className="text-base">Durum Takibi</CardTitle></CardHeader>
+                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                    <p>Bu başvuru şu an <strong>{application.status}</strong> durumundadır.</p>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl border-black/5">
                 <CardHeader><CardTitle className="text-base">Yasal Belgeler</CardTitle></CardHeader>
                 <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start"><FileText className="mr-2 h-4 w-4"/> Faaliyet Belgesi.pdf</Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start"><FileText className="mr-2 h-4 w-4"/> Vergi Levhası.pdf</Button>
+                    <Button variant="outline" size="sm" className="w-full justify-start rounded-xl"><FileText className="mr-2 h-4 w-4 text-primary"/> Faaliyet_Belgesi.pdf</Button>
+                    <Button variant="outline" size="sm" className="w-full justify-start rounded-xl"><FileText className="mr-2 h-4 w-4 text-primary"/> Vergi_Levhasi.pdf</Button>
                 </CardContent>
             </Card>
         </div>
         <DialogFooter>
             <DialogClose asChild>
-                <Button variant="secondary">Kapat</Button>
+                <Button variant="secondary" className="rounded-xl">Kapat</Button>
             </DialogClose>
         </DialogFooter>
     </DialogContent>
 );
 
-const EditApplicationDialog = ({ application, open, onOpenChange, onSave }: { application: Application | null, open: boolean, onOpenChange: (open: boolean) => void, onSave: (updatedApp: Application) => void }) => {
-    const [name, setName] = useState('');
-    const [type, setType] = useState<'STK' | 'Marka' | 'Kulüp'>('STK');
-
-    useEffect(() => {
-        if (application) {
-            setName(application.name);
-            setType(application.type);
-        }
-    }, [application]);
-    
-    if (!application) return null;
-
-    const handleSave = () => {
-        onSave({ ...application, name, type });
-    };
-    
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Başvuruyu Düzenle</DialogTitle>
-                    <DialogDescription>{application.name} başvurusunun bilgilerini güncelleyin.</DialogDescription>
-                </DialogHeader>
-                 <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Kuruluş Adı</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="type">Başvuru Türü</Label>
-                        <Select value={type} onValueChange={(value) => setType(value as 'STK' | 'Marka' | 'Kulüp')}>
-                            <SelectTrigger id="type">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="STK">STK</SelectItem>
-                                <SelectItem value="Marka">Marka</SelectItem>
-                                <SelectItem value="Kulüp">Kulüp</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="ghost" onClick={() => onOpenChange(false)}>İptal</Button>
-                    <Button onClick={handleSave}>Kaydet</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
-const PendingApplicationCard = ({ item, onApprove, onReject, onEdit }: { item: Application, onApprove: (item: Application) => void, onReject: (item: Application) => void, onEdit: (item: Application) => void }) => (
-    <Card>
+const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Application, onApprove: (id: string) => void, onReject: (id: string) => void }) => (
+    <Card className="rounded-2xl border-black/5 hover:shadow-md transition-all group">
         <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-                <Avatar>
-                    <AvatarImage src={item.avatar} />
-                    <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                    {item.org[0]}
+                </div>
                 <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">{item.date} - {item.type}</p>
+                    <p className="font-bold text-foreground">{item.org}</p>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">{item.date} • {item.type}</p>
                 </div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0">İncele</Button>
+                        <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 rounded-xl font-bold">İncele</Button>
                     </DialogTrigger>
                     <ApplicationDetailsDialog application={item} />
                 </Dialog>
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => onEdit(item)}>Düzenle</Button>
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => onApprove(item)}>Onayla</Button>
-                <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => onReject(item)}>Reddet</Button>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-50 rounded-xl font-bold" 
+                    onClick={() => onApprove(item.id)}
+                >
+                    Onayla
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex-1 sm:flex-grow-0 text-destructive hover:bg-destructive/10 rounded-xl font-bold" 
+                    onClick={() => onReject(item.id)}
+                >
+                    Reddet
+                </Button>
             </div>
         </CardContent>
     </Card>
 );
-
-const ProcessedApplicationCard = ({ item, onEdit }: { item: Application, onEdit: (item: Application) => void }) => (
-    <Card>
-        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-                <Avatar>
-                    <AvatarImage src={item.avatar} />
-                    <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">{item.type} - Onaylandı: {item.date}</p>
-                </div>
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0">Profili Görüntüle</Button>
-                    </DialogTrigger>
-                    <ApplicationDetailsDialog application={item} />
-                </Dialog>
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => onEdit(item)}>Düzenle</Button>
-            </div>
-        </CardContent>
-    </Card>
-);
-
-const RejectedApplicationCard = ({ item }: { item: Application }) => (
-    <Card>
-        <CardContent className="p-4 flex items-center justify-between opacity-70">
-            <div className="flex items-center gap-4">
-                <Avatar>
-                    <AvatarImage src={item.avatar} />
-                    <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">{item.type} - Reddedildi: {new Date().toLocaleDateString('tr-CA')}</p>
-                </div>
-            </div>
-            <Button variant="ghost" size="sm">Detay</Button>
-        </CardContent>
-    </Card>
-);
-
 
 export default function ApplicationsPage() {
+    const db = useFirestore();
     const { toast } = useToast();
-    const [data, setData] = useState(initialData);
-    const [editingApplication, setEditingApplication] = useState<Application | null>(null);
-
-    const handleApprove = (appToApprove: Application) => {
-        setData(prevData => {
-            const newPending = {
-                ngo: prevData.pending.ngo.filter(app => app.id !== appToApprove.id),
-                brand: prevData.pending.brand.filter(app => app.id !== appToApprove.id),
-                club: prevData.pending.club.filter(app => app.id !== appToApprove.id),
-            };
-            const newApproved = [...prevData.approved, appToApprove].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            return { ...prevData, pending: newPending, approved: newApproved };
-        });
-        toast({
-            title: "Başvuru Onaylandı",
-            description: `${appToApprove.name} başvurusu başarıyla onaylandı.`,
-        });
-    };
-
-    const handleReject = (appToReject: Application) => {
-         setData(prevData => {
-            const newPending = {
-                ngo: prevData.pending.ngo.filter(app => app.id !== appToReject.id),
-                brand: prevData.pending.brand.filter(app => app.id !== appToReject.id),
-                club: prevData.pending.club.filter(app => app.id !== appToReject.id),
-            };
-            const newRejected = [...prevData.rejected, appToReject];
-            return { ...prevData, pending: newPending, rejected: newRejected };
-        });
-        toast({
-            variant: "destructive",
-            title: "Başvuru Reddedildi",
-            description: `${appToReject.name} başvurusu reddedildi.`,
-        });
-    };
     
-    const handleSave = (updatedApp: Application) => {
-        setData(prevData => ({
-            pending: {
-                ngo: prevData.pending.ngo.map(app => app.id === updatedApp.id ? updatedApp : app),
-                brand: prevData.pending.brand.map(app => app.id === updatedApp.id ? updatedApp : app),
-                club: prevData.pending.club.map(app => app.id === updatedApp.id ? updatedApp : app),
-            },
-            approved: prevData.approved.map(app => app.id === updatedApp.id ? updatedApp : app),
-            rejected: prevData.rejected.map(app => app.id === updatedApp.id ? updatedApp : app),
-        }));
+    const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
+    const { data: applications, isLoading } = useCollection<Application>(appsQuery);
+
+    const handleUpdateStatus = (id: string, newStatus: 'Onaylandı' | 'Reddedildi') => {
+        const appRef = doc(db, 'applications', id);
+        updateDocumentNonBlocking(appRef, { status: newStatus });
+        
         toast({
-            title: "Başvuru Güncellendi",
-            description: `${updatedApp.name} başvurusu başarıyla güncellendi.`,
+            title: newStatus === 'Onaylandı' ? "Başvuru Onaylandı" : "Başvuru Reddedildi",
+            description: `İşlem başarıyla Firestore üzerine yansıtıldı.`,
         });
-        setEditingApplication(null);
     };
 
-    const allPending = [...data.pending.ngo, ...data.pending.brand, ...data.pending.club].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
+    const sortedApps = useMemo(() => {
+        if (!applications) return { pending: [], approved: [], rejected: [] };
+        return {
+            pending: applications.filter(a => a.status === 'Beklemede').sort((a, b) => b.date.localeCompare(a.date)),
+            approved: applications.filter(a => a.status === 'Onaylandı').sort((a, b) => b.date.localeCompare(a.date)),
+            rejected: applications.filter(a => a.status === 'Reddedildi').sort((a, b) => b.date.localeCompare(a.date)),
+        };
+    }, [applications]);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Başvurular Yükleniyor...</p>
+            </div>
+        );
+    }
+
     return (
-        <>
-            <h1 className="text-lg font-semibold md:text-2xl">Başvuru Yönetimi</h1>
-            <Tabs defaultValue="pending">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="pending">Bekleyen Başvurular ({allPending.length})</TabsTrigger>
-                    <TabsTrigger value="approved">Onaylananlar ({data.approved.length})</TabsTrigger>
-                    <TabsTrigger value="rejected">Reddedilenler ({data.rejected.length})</TabsTrigger>
+        <div className="space-y-8 animate-in fade-in-0">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Başvuru Yönetimi</h1>
+                <p className="text-muted-foreground text-sm font-medium">STK, Marka ve Kulüp başvurularını gerçek zamanlı denetleyin.</p>
+            </div>
+
+            <Tabs defaultValue="pending" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-14 rounded-2xl bg-muted/50 p-1.5 backdrop-blur-xl">
+                    <TabsTrigger value="pending" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">
+                        <Clock className="mr-2 h-4 w-4" /> Bekleyenler ({sortedApps.pending.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="approved" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">
+                        <CheckCircle className="mr-2 h-4 w-4" /> Onaylananlar
+                    </TabsTrigger>
+                    <TabsTrigger value="rejected" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">
+                        <XCircle className="mr-2 h-4 w-4" /> Reddedilenler
+                    </TabsTrigger>
                 </TabsList>
-                <TabsContent value="pending" className="mt-4">
-                     <Tabs defaultValue="all">
-                        <TabsList className="grid w-full grid-cols-4">
-                            <TabsTrigger value="all">Tümü ({allPending.length})</TabsTrigger>
-                            <TabsTrigger value="ngo">STK ({data.pending.ngo.length})</TabsTrigger>
-                            <TabsTrigger value="brand">Marka ({data.pending.brand.length})</TabsTrigger>
-                            <TabsTrigger value="club">Kulüp ({data.pending.club.length})</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="all" className="mt-4">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Tüm Bekleyen Başvurular</CardTitle>
-                                    <CardDescription>
-                                        Onay bekleyen tüm başvuruları burada yönetin.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                {allPending.length > 0 ? allPending.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen başvuru bulunmuyor.</p>}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="ngo" className="mt-4">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Bekleyen STK Başvuruları</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                {data.pending.ngo.length > 0 ? data.pending.ngo.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen STK başvurusu bulunmuyor.</p>}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="brand" className="mt-4">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Bekleyen Marka Başvuruları</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                {data.pending.brand.length > 0 ? data.pending.brand.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen marka başvurusu bulunmuyor.</p>}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="club" className="mt-4">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Bekleyen Öğrenci Kulübü Başvuruları</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                {data.pending.club.length > 0 ? data.pending.club.map(app => <PendingApplicationCard key={app.id} item={app} onApprove={handleApprove} onReject={handleReject} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Bekleyen öğrenci kulübü başvurusu bulunmuyor.</p>}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                    </Tabs>
+
+                <TabsContent value="pending" className="mt-8 space-y-4">
+                    {sortedApps.pending.length > 0 ? (
+                        sortedApps.pending.map(app => (
+                            <PendingApplicationCard 
+                                key={app.id} 
+                                item={app} 
+                                onApprove={(id) => handleUpdateStatus(id, 'Onaylandı')}
+                                onReject={(id) => handleUpdateStatus(id, 'Reddedildi')}
+                            />
+                        ))
+                    ) : (
+                        <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+                            <CheckCircle className="h-12 w-12 text-green-500/30 mx-auto mb-4" />
+                            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Bekleyen başvuru bulunmuyor.</p>
+                        </div>
+                    )}
                 </TabsContent>
-                <TabsContent value="approved" className="mt-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Onaylanan Başvurular</CardTitle>
-                            <CardDescription>
-                                Yakın zamanda onaylanmış başvurular.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                           {data.approved.length > 0 ? data.approved.map(app => <ProcessedApplicationCard key={app.id} item={app} onEdit={setEditingApplication} />) : <p className="text-muted-foreground text-center p-8">Henüz onaylanmış bir başvuru bulunmuyor.</p>}
-                        </CardContent>
-                    </Card>
+
+                <TabsContent value="approved" className="mt-8 space-y-4">
+                    {sortedApps.approved.map(app => (
+                        <Card key={app.id} className="rounded-2xl border-black/5 bg-green-50/30">
+                            <CardContent className="p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-700 font-bold">
+                                        {app.org[0]}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold">{app.org}</p>
+                                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{app.type} • ONAYLANDI</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => handleUpdateStatus(app.id, 'Beklemede')}>Geri Al</Button>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </TabsContent>
-                <TabsContent value="rejected" className="mt-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Reddedilen Başvurular</CardTitle>
-                            <CardDescription>
-                                Geçmişte reddedilmiş başvurular.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                           {data.rejected.length > 0 ? data.rejected.map(app => <RejectedApplicationCard key={app.id} item={app} />) : <p className="text-muted-foreground text-center p-8">Reddedilmiş bir başvuru bulunmuyor.</p>}
-                        </CardContent>
-                    </Card>
+
+                <TabsContent value="rejected" className="mt-8 space-y-4">
+                    {sortedApps.rejected.map(app => (
+                        <Card key={app.id} className="rounded-2xl border-black/5 opacity-60">
+                            <CardContent className="p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground font-bold">
+                                        {app.org[0]}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold">{app.org}</p>
+                                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{app.type} • REDDEDİLDİ</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => handleUpdateStatus(app.id, 'Beklemede')}>Yeniden Değerlendir</Button>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </TabsContent>
             </Tabs>
-            <EditApplicationDialog 
-                application={editingApplication}
-                open={!!editingApplication}
-                onOpenChange={() => setEditingApplication(null)}
-                onSave={handleSave}
-            />
-        </>
-    )
+        </div>
+    );
 }

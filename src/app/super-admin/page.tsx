@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +27,8 @@ import {
   FileEdit,
   Globe,
   MessageSquare,
-  DatabaseZap
+  DatabaseZap,
+  Activity
 } from "lucide-react";
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -91,77 +93,92 @@ export default function SuperAdminDashboard() {
   const { data: brandsData, isLoading: brandsLoading } = useCollection(brandsQuery);
   const { data: appsData, isLoading: appsLoading } = useCollection(appsQuery);
 
+  const pendingAppsCount = appsData?.filter(a => a.status === 'Beklemede').length || 0;
+
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12">
-      <div className="space-y-1 px-1">
-        <h1 className="text-3xl font-bold font-headline">Admin Paneli</h1>
-        <p className="text-muted-foreground text-sm">hangel platformunun genel sağlığını, üyelik süreçlerini ve operasyonel araçlarını buradan denetleyin.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
+        <div className="space-y-1">
+            <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Admin Paneli</h1>
+            <p className="text-muted-foreground text-sm font-medium">Platform sağlığı ve operasyonel denetim merkezi.</p>
+        </div>
+        <Badge variant="outline" className="w-fit bg-green-50 text-green-700 border-green-200 font-bold flex items-center gap-1.5 px-3 py-1">
+            <Activity className="h-3.5 w-3.5 animate-pulse" /> CANLI VERİ AKIŞI
+        </Badge>
       </div>
 
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="rounded-2xl border-black/5 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Toplam Kullanıcı</CardTitle>
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">Kullanıcılar</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{usersLoading ? '...' : (usersData?.length || 0)}</div>
-              <p className="text-xs text-muted-foreground">Aktif üye sayısı</p>
+              <div className="text-3xl font-black tracking-tighter">{usersLoading ? '...' : (usersData?.length || 0)}</div>
+              <p className="text-[10px] text-muted-foreground mt-1">Aktif kayıtlı üye</p>
             </CardContent>
           </Card>
-          <Card>
+          
+          <Link href="/super-admin/applications" className="block group">
+            <Card className={cn(
+                "rounded-2xl border-black/5 shadow-sm transition-all",
+                pendingAppsCount > 0 ? "bg-primary/5 border-primary/20 hover:bg-primary/10" : "hover:shadow-md"
+            )}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className={cn("text-xs font-black uppercase tracking-widest", pendingAppsCount > 0 ? "text-primary" : "text-muted-foreground")}>Onay Bekleyenler</CardTitle>
+                <FileText className={cn("h-4 w-4", pendingAppsCount > 0 ? "text-primary" : "text-muted-foreground")} />
+                </CardHeader>
+                <CardContent>
+                <div className={cn("text-3xl font-black tracking-tighter", pendingAppsCount > 0 && "text-primary")}>{appsLoading ? '...' : pendingAppsCount}</div>
+                <p className="text-[10px] text-muted-foreground mt-1">Yeni kurumsal başvuru</p>
+                </CardContent>
+            </Card>
+          </Link>
+
+          <Card className="rounded-2xl border-black/5 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Onay Bekleyenler</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{appsLoading ? '...' : (appsData?.length || 0)}</div>
-              <p className="text-xs text-muted-foreground">Yeni başvurular</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aktif STK</CardTitle>
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">Aktif STK</CardTitle>
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{ngosLoading ? '...' : (ngosData?.length || 0)}</div>
-              <p className="text-xs text-muted-foreground">Kayıtlı kuruluşlar</p>
+              <div className="text-3xl font-black tracking-tighter">{ngosLoading ? '...' : (ngosData?.length || 0)}</div>
+              <p className="text-[10px] text-muted-foreground mt-1">Bağışçı kabul eden dernekler</p>
             </CardContent>
           </Card>
-          <Card>
+
+          <Card className="rounded-2xl border-black/5 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aktif Marka</CardTitle>
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">Aktif Marka</CardTitle>
               <Store className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{brandsLoading ? '...' : (brandsData?.length || 0)}</div>
-              <p className="text-xs text-muted-foreground">İş ortağı markalar</p>
+              <div className="text-3xl font-black tracking-tighter">{brandsLoading ? '...' : (brandsData?.length || 0)}</div>
+              <p className="text-[10px] text-muted-foreground mt-1">İş ortağı işletmeler</p>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="shadow-sm">
-            <CardHeader className="bg-muted/20">
-                <CardTitle>Yönetim Araçları</CardTitle>
-                <CardDescription>Platformun temel fonksiyonlarını ve sistem ayarlarını yapılandırın.</CardDescription>
+        <Card className="shadow-xl rounded-[2.5rem] border-black/5 overflow-hidden bg-white">
+            <CardHeader className="bg-muted/30 p-8 border-b">
+                <CardTitle className="text-xl font-bold">Yönetim Araçları</CardTitle>
+                <CardDescription>Platformun teknik ve içerik operasyonlarını buradan yönetin.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="divide-y">
+                <div className="divide-y border-black/5">
                     {superAdminNavItems.map(item => {
                         const Icon = Icons[item.icon as keyof typeof Icons] || Icons.HelpCircle;
                         const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
                         return (
-                            <Link href={item.href} key={item.href} className="block hover:bg-accent transition-colors">
-                                <div className="flex items-center p-4">
-                                    <div className={cn("h-12 w-12 flex items-center justify-center mr-4 rounded-lg", color)}>
+                            <Link href={item.href} key={item.href} className="block hover:bg-muted/30 transition-all group">
+                                <div className="flex items-center p-6">
+                                    <div className={cn("h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110", color)}>
                                         <Icon className="h-6 w-6 text-white" />
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold">{item.label}</p>
-                                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                                    <div className="flex-1 space-y-0.5">
+                                        <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{item.label}</p>
+                                        <p className="text-sm text-muted-foreground font-medium leading-tight">{item.description}</p>
                                     </div>
-                                    <Icons.ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                                    <Icons.ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
                                 </div>
                             </Link>
                         )
