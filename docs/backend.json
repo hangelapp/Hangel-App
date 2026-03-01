@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "User": {
@@ -85,63 +84,33 @@
     "providers": ["password", "phone"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": { "$ref": "#/backend/entities/User" },
-          "description": "Kullanıcı dokümanı."
-        }
-      },
-      {
-        "path": "/ngos/{ngoId}",
-        "definition": {
-          "entityName": "NGO",
-          "schema": { "$ref": "#/backend/entities/NGO" },
-          "description": "STK profili."
-        }
-      },
-      {
-        "path": "/brands/{brandId}",
-        "definition": {
-          "entityName": "Brand",
-          "schema": { "$ref": "#/backend/entities/Brand" },
-          "description": "Marka profili."
-        }
-      },
-      {
-        "path": "/posts/{postId}",
-        "definition": {
-          "entityName": "Post",
-          "schema": { "$ref": "#/backend/entities/Post" },
-          "description": "Zaman tüneli gönderileri."
-        }
-      },
-      {
-        "path": "/volunteering/{oppId}",
-        "definition": {
-          "entityName": "Volunteering",
-          "schema": { "$ref": "#/backend/entities/Volunteering" },
-          "description": "Gönüllülük ilanları."
-        }
-      },
-      {
-        "path": "/library/{sectionId}",
-        "definition": {
-          "entityName": "LibrarySection",
-          "schema": { "$ref": "#/backend/entities/LibrarySection" },
-          "description": "Kütüphane kategorileri."
-        }
-      },
-      {
-        "path": "/applications/{appId}",
-        "definition": {
-          "entityName": "Application",
-          "schema": { "$ref": "#/backend/entities/Application" },
-          "description": "Kuruluş ve gönüllülük başvuruları."
-        }
-      }
-    ]
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/User" },
+      "description": "Kullanıcı dökümanları."
+    },
+    "/ngos/{ngoId}": {
+      "schema": { "$ref": "#/backend/entities/NGO" },
+      "description": "STK dökümanları."
+    },
+    "/brands/{brandId}": {
+      "schema": { "$ref": "#/backend/entities/Brand" },
+      "description": "Marka dökümanları."
+    },
+    "/posts/{postId}": {
+      "schema": { "$ref": "#/backend/entities/Post" },
+      "description": "Zaman tüneli gönderileri."
+    },
+    "/volunteering/{oppId}": {
+      "schema": { "$ref": "#/backend/entities/Volunteering" },
+      "description": "Gönüllülük ilanları."
+    },
+    "/library/{sectionId}": {
+      "schema": { "$ref": "#/backend/entities/LibrarySection" },
+      "description": "Kütüphane kategorileri."
+    },
+    "/applications/{appId}": {
+      "schema": { "$ref": "#/backend/entities/Application" },
+      "description": "Başvurular."
+    }
   }
 }

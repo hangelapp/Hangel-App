@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
+    // --- Yardımcı Fonksiyonlar ---
     function isSignedIn() {
       return request.auth != null;
     }
@@ -11,59 +11,66 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- User Data Ownership ---
+    // --- Kullanıcı Verileri ---
     match /users/{userId} {
       allow get, list, create, update, delete: if isOwner(userId);
 
-      match /impactScore/{document} {
-        allow get, list, create, update, delete: if isOwner(userId);
-      }
-
-      match /badges/{badgeId} {
-        allow get, list, create, update, delete: if isOwner(userId);
-      }
-
-      match /certificates/{certId} {
-        allow get, list, create, update, delete: if isOwner(userId);
-      }
-
-      match /qrCodePayments/{paymentId} {
-        allow get, list, create, update, delete: if isOwner(userId);
+      // Alt koleksiyonlar (badges, certificates, qrCodePayments vb.)
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
       }
     }
 
-    // --- Organization Profiles (Publicly Readable) ---
+    // --- STK Profilleri (Herkese Açık Okuma) ---
     match /ngos/{ngoId} {
       allow get, list: if true;
-      allow write: if isOwner(ngoId); // NGO Admin access
+      allow write: if isSignedIn(); // Prototip aşamasında tüm giriş yapmış kullanıcılara izin veriyoruz
 
-      match /timelinePosts/{postId} {
-        allow get, list: if true;
-        allow write: if isOwner(ngoId);
-      }
-
-      match /volunteerOpportunities/{oppId} {
-        allow get, list: if true;
-        allow write: if isOwner(ngoId);
+      match /{allSubcollections=**} {
+        allow read: if true;
+        allow write: if isSignedIn();
       }
     }
 
+    // --- Marka Profilleri (Herkese Açık Okuma) ---
     match /brands/{brandId} {
       allow get, list: if true;
-      allow write: if isOwner(brandId); // Brand Admin access
+      allow write: if isSignedIn();
     }
 
-    // --- Discovery & Events ---
+    // --- Zaman Tüneli Gönderileri ---
+    match /posts/{postId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // --- Gönüllülük İlanları ---
+    match /volunteering/{oppId} {
+      allow get, list: if true;
+      allow write: if isSignedIn();
+    }
+
+    // --- Kütüphane İçerikleri ---
+    match /library/{sectionId} {
+      allow get, list: if true;
+      allow write: if isSignedIn();
+    }
+
+    // --- Başvurular (İzin Hatasını Düzelten Kısım) ---
+    match /applications/{appId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    // --- Etkinlikler ---
     match /events/{eventId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.organizerId == request.auth.uid;
+      allow create, update, delete: if isSignedIn();
     }
 
+    // --- Acil Durum Bildirimleri ---
     match /emergencyAssistance/{emergencyAssistanceId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.requesterId == request.auth.uid;
+      allow create, update, delete: if isSignedIn();
     }
   }
 }
