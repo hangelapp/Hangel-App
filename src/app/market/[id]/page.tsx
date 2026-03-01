@@ -1,4 +1,3 @@
-
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -96,12 +95,13 @@ export default function BrandProfilePage() {
     setIsDonating(true);
     const transRef = collection(db, 'donations');
     
+    // Perform non-blocking write to Firestore
     addDocumentNonBlocking(transRef, {
         userId: authUser.uid,
         brandId: brand.id,
         brandName: brand.name,
-        purchaseAmount: "0.00", // Will be updated by system
-        donationAmount: "0.00", // Will be updated by system
+        purchaseAmount: "0.00", // Will be updated by system after transaction
+        donationAmount: "0.00", // Will be updated by system after transaction
         date: new Date().toISOString().split('T')[0],
         time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
         type: 'expense',
@@ -109,13 +109,15 @@ export default function BrandProfilePage() {
         ngo: ["Varsayılan STK'nız"]
     });
 
+    // Simulated UX delay for redirection
     setTimeout(() => {
         setIsDonating(false);
         toast({
             title: "Mağazaya Yönlendiriliyorsunuz",
             description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
         });
-        // Real app would redirect here: window.open(brand.affiliateLink, '_blank');
+        // In a real production app, we would redirect to the affiliate URL:
+        // window.open(brand.affiliateLink, '_blank');
     }, 1000);
   };
 
@@ -216,7 +218,7 @@ export default function BrandProfilePage() {
                             <Badge className="bg-primary text-white font-black text-xl px-4 py-1.5 h-auto rounded-xl">%{brand.donationRate}</Badge>
                         </div>
                         <CardDescription className="text-muted-foreground mt-2 font-medium">
-                            Bu markadan yapacağınız her alışverişin belirtilen oranı seçtiğiniz STK'ya bağışlanır.
+                            Bu markadan yapacağınız her alışverişinin belirtilen oranı seçtiğiniz STK'ya bağışlanır.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className='p-0'>

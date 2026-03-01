@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -32,7 +31,7 @@ const AppleSection = ({
     description?: string, 
     cta1?: string, 
     cta1Href?: string,
-    cta2?: string,
+    cta2?: string, 
     cta2Href?: string,
     theme?: 'light' | 'dark',
     imageUrl?: string,
@@ -194,7 +193,7 @@ export default function AboutPage() {
             
             {/* Hangel Derneği */}
             <AppleSection 
-                title="Sivil Toplumun Kalbinde: hangel Derneği."
+                title="Sivil Toplumের Kalbinde: hangel Derneği."
                 description="Platformun teknolojik gücünü, Social Business Global Derneğinin (SBG) saha tecrübesi ve akademik vizyonuyla birleştiriyoruz. Derneğimiz, sosyal girişimcilik ekosistemini güçlendirmek, mevzuat çalışmaları yapmak ve uluslararası işbirlikleri kurmak için çalışır."
                 cta1="Daha Fazla Bilgi"
                 cta1Href="/hangelassociation"

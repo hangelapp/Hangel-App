@@ -1,4 +1,3 @@
-
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { volunteeringOpportunities, ngos } from '@/lib/data';
@@ -50,6 +49,7 @@ export default function VolunteeringDetailPage() {
     setIsApplying(true);
     const appRef = collection(db, 'applications');
     
+    // Perform non-blocking write to Firestore
     addDocumentNonBlocking(appRef, {
         userId: authUser.uid,
         userName: authUser.displayName || authUser.email?.split('@')[0] || 'Gönüllü',
@@ -62,6 +62,7 @@ export default function VolunteeringDetailPage() {
         location: opportunity.location.city
     });
 
+    // Simulated UX delay
     setTimeout(() => {
         setIsApplying(false);
         toast({
