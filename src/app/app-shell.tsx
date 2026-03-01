@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     // Auth Guard Logic
     useEffect(() => {
-        if (!isUserLoading && !authUser) {
+        if (!isUserLoading && !authUser && isMounted) {
             const protectedPaths = [
                 '/timeline', '/market', '/volunteering', '/clubs', '/events', 
                 '/qr-payment', '/emergency', '/leaderboard', '/stories', 
@@ -114,7 +114,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 router.push(redirectUrl);
             }
         }
-    }, [authUser, isUserLoading, pathname, router]);
+    }, [authUser, isUserLoading, pathname, router, isMounted]);
+
+    if (!isMounted) {
+        return <div className="min-h-screen bg-background">{children}</div>;
+    }
 
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');

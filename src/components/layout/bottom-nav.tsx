@@ -26,6 +26,10 @@ export default function AppBottomNav() {
     setIsMounted(true);
   }, []);
 
+  if (!isMounted) {
+    return null;
+  }
+
   // Bottom Nav Visibility Rules
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
   if (isAuthPage || !user) {
@@ -60,7 +64,7 @@ export default function AppBottomNav() {
             >
               <Icon className="h-6 w-6" />
               <span className="text-[10px] font-medium truncate w-full">
-                {isMounted ? t(item.label) : <>&nbsp;</>}
+                {t(item.label)}
               </span>
             </Link>
           );
