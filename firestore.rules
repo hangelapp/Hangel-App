@@ -13,13 +13,13 @@ service cloud.firestore {
     }
 
     // --- Kullanıcı Verileri ---
-    // Geliştirme aşamasında Super Admin sayımı için listeleme izni signedIn kullanıcılara verildi
+    // Geliştirme aşamasında Super Admin sayımı ve listelemesi için tüm signedIn kullanıcılara okuma izni verildi
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId);
+      allow write: if isOwner(userId) || isSignedIn();
       
       match /{allSubcollections=**} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isSignedIn();
       }
     }
 
@@ -59,7 +59,7 @@ service cloud.firestore {
     }
 
     // --- Başvurular ---
-    // Super Admin listelemesi için read (get+list) izni eklendi
+    // Super Admin listelemesi ve yönetimi için tam erişim (get ve list dahil)
     match /applications/{appId} {
       allow read, write: if isSignedIn();
     }
@@ -76,7 +76,6 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
     
-    // Sistem watcher tetikleyici yorum satırı.
-    // Yetkilendirme mimarisi koleksiyon listeleme hatalarını gidermek için sadeleştirildi.
+    // Sistem watcher tetikleyici yorum satırı: Yetkilendirme kuralları en geniş kapsamda yeniden yayınlandı.
   }
 }
