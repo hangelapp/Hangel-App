@@ -4,40 +4,24 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user in the hangel application with full personal and volunteer profile data.",
+      "description": "Kullanıcı profili, kişisel ve gönüllülük verilerini içerir.",
       "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the user (matches Firebase Auth UID)." },
-        "name": { "type": "string", "description": "User's full name (Placeholder: İsmail Hilmi ADIGÜZEL)." },
-        "username": { "type": "string", "description": "User's unique handle starting with @." },
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "username": { "type": "string" },
         "avatarUrl": { "type": "string", "format": "uri" },
-        "coverPhotoUrl": { "type": "string", "format": "uri" },
         "personalInfo": {
           "type": "object",
           "properties": {
             "email": { "type": "string", "format": "email" },
             "phone": { "type": "string" },
-            "birthDate": { "type": "string", "format": "date" },
-            "gender": { "type": "string", "enum": ["Erkek", "Kadın", "Belirtmek istemiyorum"] },
-            "nationality": { "type": "string" },
             "bloodType": { "type": "string" },
             "address": {
               "type": "object",
               "properties": {
                 "city": { "type": "string" },
                 "district": { "type": "string" },
-                "neighborhood": { "type": "string" },
                 "fullAddress": { "type": "string" }
-              }
-            },
-            "website": { "type": "string", "format": "uri" },
-            "social": {
-              "type": "object",
-              "properties": {
-                "linkedin": { "type": "string" },
-                "github": { "type": "string" },
-                "behance": { "type": "string" },
-                "instagram": { "type": "string" },
-                "twitter": { "type": "string" }
               }
             }
           }
@@ -45,76 +29,12 @@
         "volunteerInfo": {
           "type": "object",
           "properties": {
-            "interests": { "type": "array", "items": { "type": "string" } },
             "skills": { "type": "array", "items": { "type": "string" } },
-            "dailySkills": { "type": "array", "items": { "type": "string" } },
-            "languages": { "type": "array", "items": { "type": "string" } },
-            "programs": { "type": "array", "items": { "type": "string" } },
-            "licenses": { "type": "array", "items": { "type": "string" } },
-            "documents": { "type": "array", "items": { "type": "string" } },
-            "education": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "level": { "type": "string" },
-                  "school": { "type": "string" }
-                }
-              }
-            },
-            "sector": { "type": "string" },
-            "profession": { "type": "string" },
-            "travelInfo": {
-              "type": "object",
-              "properties": {
-                "domesticObstacle": { "type": "boolean" },
-                "internationalObstacle": { "type": "boolean" },
-                "visas": { "type": "array", "items": { "type": "string" } }
-              }
-            },
-            "emergency": {
-              "type": "object",
-              "properties": {
-                "available": { "type": "boolean" },
-                "hasChronicIllness": { "type": "boolean" },
-                "usesRegularMedication": { "type": "boolean" },
-                "hasPhysicalLimitation": { "type": "boolean" },
-                "emergencyContacts": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": { "type": "string" },
-                      "phone": { "type": "string" }
-                    }
-                  }
-                }
-              }
-            }
+            "interests": { "type": "array", "items": { "type": "string" } },
+            "education": { "type": "array", "items": { "type": "object" } }
           }
         },
-        "followedNgoIds": { "type": "array", "items": { "type": "string" } }
-      },
-      "required": ["id", "name"]
-    },
-    "ImpactScore": {
-      "title": "ImpactScore",
-      "type": "object",
-      "description": "User's social impact metrics.",
-      "properties": {
-        "totalScore": { "type": "number" },
-        "totalDonation": { "type": "number" },
-        "donationCount": { "type": "number" },
-        "volunteerHours": { "type": "number" },
-        "completedProjects": { "type": "number" },
-        "totalImpactValue": { "type": "number" },
-        "ranks": {
-          "type": "object",
-          "properties": {
-            "country": { "type": "string" },
-            "city": { "type": "string" }
-          }
-        }
+        "impactScore": { "type": "number", "default": 0 }
       }
     },
     "Badge": {
@@ -123,10 +43,7 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "level": { "type": "string", "enum": ["Bronz", "Gümüş", "Altın", "Platin", "Elmas"] },
-        "socialArea": { "type": "string" },
-        "pointsRequired": { "type": "number" },
-        "currentPoints": { "type": "number" },
+        "level": { "type": "string" },
         "earnedAt": { "type": "string", "format": "date-time" }
       }
     },
@@ -137,27 +54,12 @@
         "id": { "type": "string" },
         "title": { "type": "string" },
         "organization": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "linkedinUrl": { "type": "string", "format": "uri" }
-      }
-    },
-    "QRCodePayment": {
-      "title": "QRCodePayment",
-      "type": "object",
-      "description": "Wallet transactions and QR payments.",
-      "properties": {
-        "id": { "type": "string" },
-        "type": { "type": "string", "enum": ["income", "expense"] },
-        "brand": { "type": "string" },
-        "purchaseAmount": { "type": "number" },
-        "donationAmount": { "type": "number" },
-        "ngo": { "type": "array", "items": { "type": "string" } },
-        "timestamp": { "type": "string", "format": "date-time" }
+        "date": { "type": "string" }
       }
     }
   },
   "auth": {
-    "providers": ["password", "phone", "anonymous"]
+    "providers": ["password", "phone"]
   },
   "firestore": {
     "structure": [
@@ -166,15 +68,7 @@
         "definition": {
           "entityName": "User",
           "schema": { "$ref": "#/backend/entities/User" },
-          "description": "User profile with personal and volunteer information."
-        }
-      },
-      {
-        "path": "/users/{userId}/impactScore/current",
-        "definition": {
-          "entityName": "ImpactScore",
-          "schema": { "$ref": "#/backend/entities/ImpactScore" },
-          "description": "Real-time impact metrics for the user."
+          "description": "Ana kullanıcı dokümanı."
         }
       },
       {
@@ -182,7 +76,7 @@
         "definition": {
           "entityName": "Badge",
           "schema": { "$ref": "#/backend/entities/Badge" },
-          "description": "Badges earned or in progress for the user."
+          "description": "Kullanıcının kazandığı rozetler."
         }
       },
       {
@@ -190,15 +84,7 @@
         "definition": {
           "entityName": "Certificate",
           "schema": { "$ref": "#/backend/entities/Certificate" },
-          "description": "Official certificates earned by the user."
-        }
-      },
-      {
-        "path": "/users/{userId}/qrCodePayments/{paymentId}",
-        "definition": {
-          "entityName": "QRCodePayment",
-          "schema": { "$ref": "#/backend/entities/QRCodePayment" },
-          "description": "Wallet and transaction history."
+          "description": "Kullanıcının kazandığı sertifikalar."
         }
       }
     ]

@@ -26,6 +26,7 @@ import {
   FileEdit,
   Globe,
   MessageSquare,
+  DatabaseZap
 } from "lucide-react";
 
 const iconColorMap: { [key: string]: string } = {
@@ -50,9 +51,11 @@ const iconColorMap: { [key: string]: string } = {
   'Users': 'bg-blue-500',
   'Globe': 'bg-emerald-500',
   'MessageSquare': 'bg-cyan-500',
+  'DatabaseZap': 'bg-red-600',
 };
 
 const superAdminNavItems = [
+    { href: '/super-admin/setup', label: 'Veritabanı Kurulumu (Import)', icon: 'DatabaseZap', description: 'Mock dataları veritabanına aktar ve sistemi başlat.' },
     { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
     { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
     { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },
