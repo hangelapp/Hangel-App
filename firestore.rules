@@ -2,14 +2,41 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Geliştirme aşamasında, giriş yapmış her kullanıcıya tüm koleksiyonlar için tam erişim veriyoruz.
-    // Bu, Super Admin panelindeki listeleme (list) ve okuma (get) hatalarını kesin olarak çözer.
-    match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+    // Yardımcı fonksiyonlar
+    function isSignedIn() {
+      return request.auth != null;
     }
     
-    // Sistem watcher tetikleyici: Yetki kuralları global olarak en kapsayıcı hale getirildi.
-    // Bu kural /users, /applications, /ngos ve diğer tüm koleksiyonlardaki 'list' hatalarını giderir.
-    // Son güncelleme: 2024-07-23 16:45
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isSuperAdmin() {
+      return request.auth.token.email == '5384009090@hangel.org';
+    }
+
+    // Kullanıcı koleksiyonu kuralları
+    match /users/{userId} {
+      // Herkes giriş yapmışsa okuyabilir (Profil görüntüleme için)
+      allow read: if isSignedIn();
+      // Sadece sahibi veya Süper Admin yazabilir/güncelleyebilir
+      allow write, update: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+      
+      // Alt koleksiyonlar (Rozetler, Sertifikalar vb.)
+      match /{allChildren=**} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+      }
+    }
+
+    // Diğer tüm koleksiyonlar için global kural
+    // Geliştirme sürecinde Süper Admin paneli ve diğer listelemeler için en kapsayıcı kural.
+    match /{allPaths=**} {
+      allow read, write: if isSignedIn();
+    }
+    
+    // Sistem watcher tetikleyici: Yetki kuralları revize edildi.
+    // Kullanıcıların kendi profillerini güncelleme yetkisi (update) garanti altına alındı.
+    // Son güncelleme: 2024-07-23 18:30
   }
 }

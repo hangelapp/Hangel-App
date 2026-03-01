@@ -181,7 +181,7 @@ export default function FundsPage() {
                             <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl relative">
                                 <Filter className="h-5 w-5" />
                                 {activeFilterCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
                                         {activeFilterCount}
                                     </span>
                                 )}
@@ -263,7 +263,7 @@ export default function FundsPage() {
                 <CardContent className="space-y-4">
                     {filteredAndSortedFunds.length > 0 ? filteredAndSortedFunds.map(fund => (
                         <Card key={fund.id} className={cn(
-                            "transition-all duration-300 rounded-2xl border-black/5 shadow-sm",
+                            "transition-all duration-300 rounded-2xl border-black/5 shadow-sm overflow-hidden",
                             fund.status === 'Kapandı' ? 'opacity-60 bg-muted/30 grayscale-[0.5]' : 'hover:border-primary/50 hover:shadow-md'
                         )}>
                             <CardHeader className="p-6 pb-2">
@@ -288,7 +288,7 @@ export default function FundsPage() {
                                         </Badge>
                                     ))}
                                 </div>
-                                <div className="flex items-center gap-4 text-[11px] font-bold text-muted-foreground">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-[11px] font-bold text-muted-foreground">
                                     <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
                                         <Calendar className="h-3.5 w-3.5" />
                                         <span>Son Başvuru: {fund.deadline}</span>
@@ -321,73 +321,74 @@ export default function FundsPage() {
             {/* Fund Details Dialog */}
             <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
                 {selectedFund && (
-                    <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] border-none shadow-2xl">
-                        <DialogHeader>
-                            <div className="flex items-center gap-2 mb-2">
-                                <HandCoins className="h-6 w-6 text-primary" />
-                                <Badge className={cn(
-                                    "font-black text-[9px] tracking-widest px-3 py-1 uppercase rounded-lg border-none",
-                                    selectedFund.status === 'Açık' ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground'
-                                )}>
-                                    {selectedFund.status}
-                                </Badge>
-                            </div>
-                            <DialogTitle className="text-2xl font-bold tracking-tight text-[#1d1d1f]">{selectedFund.name}</DialogTitle>
-                            <DialogDescription className="text-base font-bold text-primary">{selectedFund.provider}</DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="py-6 space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar pr-2">
-                            <div className="space-y-2">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Info className="h-3.5 w-3.5" /> Program Hakkında
-                                </h4>
-                                <p className="text-sm leading-relaxed text-[#1d1d1f]/80 font-medium">{selectedFund.description}</p>
-                            </div>
-
-                            <Separator className="opacity-50" />
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
+                    <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
+                        <div className="h-2 w-full bg-primary" />
+                        <div className="p-8">
+                            <DialogHeader>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <HandCoins className="h-6 w-6 text-primary" />
+                                    <Badge className={cn(
+                                        "font-black text-[9px] tracking-widest px-3 py-1 uppercase rounded-lg border-none",
+                                        selectedFund.status === 'Açık' ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground'
+                                    )}>
+                                        {selectedFund.status}
+                                    </Badge>
+                                </div>
+                                <DialogTitle className="text-2xl font-bold tracking-tight text-[#1d1d1f] leading-tight">{selectedFund.name}</DialogTitle>
+                                <DialogDescription className="text-base font-bold text-primary mt-1">{selectedFund.provider}</DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="py-6 space-y-6 max-h-[50vh] overflow-y-auto no-scrollbar pr-2 mt-4 border-t border-dashed">
+                                <div className="space-y-3">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        <DollarSign className="h-3.5 w-3.5" /> Bütçe Aralığı
+                                        <Info className="h-3.5 w-3.5" /> Program Hakkında
                                     </h4>
-                                    <p className="text-sm font-bold text-[#1d1d1f]">{selectedFund.budget}</p>
+                                    <p className="text-sm leading-relaxed text-[#1d1d1f]/80 font-medium">{selectedFund.description}</p>
                                 </div>
-                                <div className="space-y-2">
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-[#f5f5f7] rounded-2xl">
+                                    <div className="space-y-1">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                            <DollarSign className="h-3.5 w-3.5 text-primary" /> Bütçe Aralığı
+                                        </h4>
+                                        <p className="text-sm font-bold text-[#1d1d1f]">{selectedFund.budget}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                            <Calendar className="h-3.5 w-3.5 text-primary" /> Son Tarih
+                                        </h4>
+                                        <p className="text-sm font-bold text-[#1d1d1f]">{selectedFund.deadline}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        <Calendar className="h-3.5 w-3.5" /> Son Tarih
+                                        <Target className="h-3.5 w-3.5" /> Başvuru Koşulları
                                     </h4>
-                                    <p className="text-sm font-bold text-[#1d1d1f]">{selectedFund.deadline}</p>
+                                    <p className="text-sm font-medium text-[#1d1d1f]/80 leading-relaxed">{selectedFund.requirements}</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                        <CheckCircle2 className="h-3.5 w-3.5" /> Odak Alanları
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedFund.areas.map(area => (
+                                            <Badge key={area} variant="secondary" className="rounded-xl font-bold px-4 py-1 bg-white border border-black/5 text-[#1d1d1f]/80">{area}</Badge>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Target className="h-3.5 w-3.5" /> Başvuru Koşulları
-                                </h4>
-                                <p className="text-sm font-medium text-[#1d1d1f]/80 leading-relaxed">{selectedFund.requirements}</p>
-                            </div>
-
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <CheckCircle2 className="h-3.5 w-3.5" /> Odak Alanları
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedFund.areas.map(area => (
-                                        <Badge key={area} variant="secondary" className="rounded-xl font-bold px-4 py-1 bg-muted/50 text-[#1d1d1f]/80 border-none">{area}</Badge>
-                                    ))}
-                                </div>
-                            </div>
+                            <DialogFooter className="gap-3 sm:gap-0 mt-8 pt-6 border-t">
+                                <Button variant="ghost" onClick={() => setIsDetailsOpen(false)} className="rounded-2xl font-bold h-12 flex-1">Kapat</Button>
+                                <Button asChild className="rounded-2xl font-bold h-12 flex-1 shadow-xl shadow-primary/20">
+                                    <a href={selectedFund.url} target="_blank" rel="noopener noreferrer">
+                                        Resmi Başvuru <ExternalLink className="ml-2 h-4 w-4" />
+                                    </a>
+                                </Button>
+                            </DialogFooter>
                         </div>
-
-                        <DialogFooter className="gap-3 sm:gap-0 mt-4 border-t pt-6">
-                            <Button variant="ghost" onClick={() => setIsDetailsOpen(false)} className="rounded-2xl font-bold h-12 flex-1">Kapat</Button>
-                            <Button asChild className="rounded-2xl font-bold h-12 flex-1 shadow-xl shadow-primary/20">
-                                <a href={selectedFund.url} target="_blank" rel="noopener noreferrer">
-                                    Resmi Başvuru <ExternalLink className="ml-2 h-4 w-4" />
-                                </a>
-                            </Button>
-                        </DialogFooter>
                     </DialogContent>
                 )}
             </Dialog>
