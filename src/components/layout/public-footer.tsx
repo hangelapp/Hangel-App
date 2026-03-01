@@ -56,7 +56,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { 
             title: "Hesabım ve Destek", 
             links: [
-                {label: "Giriş Yap", href: "/login/selection?action=login"}, 
+                {label: "Geniş Yap", href: "/login/selection?action=login"}, 
                 {label: "Kayıt Ol", href: "/login/selection?action=register"}, 
                 {label: "Destek Merkezi", href: "/support"}, 
                 {label: "Geri Bildirim", href: "/feedback"}
@@ -174,7 +174,8 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                             Türkiye
                         </div>
                     </div>
-                     <div className="text-left text-[11px] text-[#1d1d1f]/50 pt-4">
+                     <div className="text-left text-[11px] text-[#1d1d1f]/50 pt-4 space-y-1">
+                        <p>© 2024 hangel teknoloji ve sosyal etki anonim şirketi. Tüm hakları saklıdır.</p>
                         <p>hangel v.2</p>
                     </div>
                 </div>

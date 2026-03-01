@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { user as staticUser, countryPhoneCodes, allProvinces, districtsData } from '@/lib/data';
+import { user as staticUser, countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { ArrowLeft, Camera, Trash2, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -80,6 +80,10 @@ export default function ProfileSettingsPage() {
         router.push('/settings');
     }
   };
+
+  const city = profile.personalInfo.address.city;
+  const district = profile.personalInfo.address.district;
+  const neighborhood = profile.personalInfo.address.neighborhood;
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
@@ -169,19 +173,32 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>İl</Label>
-                        <Select value={profile.personalInfo.address.city} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '' })} required>
+                        <Select value={city} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>İlçe</Label>
-                        <Select value={profile.personalInfo.address.district} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v })} required disabled={!profile.personalInfo.address.city}>
+                        <Select value={district} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!city}>
                             <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
-                            <SelectContent>{districtsData[profile.personalInfo.address.city]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                            <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                 </div>
+                
+                {city && district && neighborhoodsData[city]?.[district] && (
+                    <div className="space-y-2">
+                        <Label>Mahalle</Label>
+                        <Select value={neighborhood} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
+                            <SelectTrigger><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
+                            <SelectContent>
+                                {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Kan Grubu</Label>
@@ -221,7 +238,7 @@ export default function ProfileSettingsPage() {
                   <div className="relative w-64 h-64 rounded-full overflow-hidden border-4 border-primary/20 shadow-2xl">
                       <div className="absolute inset-0 flex items-center justify-center">
                           <Image 
-                            src={profile.avatarUrl} 
+                            src={profile.avatarUrl || '/placeholder-avatar.png'} 
                             alt="Preview" 
                             width={256} 
                             height={256} 
@@ -247,3 +264,5 @@ export default function ProfileSettingsPage() {
     </div>
   );
 }
+
+    

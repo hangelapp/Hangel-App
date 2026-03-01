@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { allUniversities, countryPhoneCodes, sportsFederations, allProvinces, districtsData } from '@/lib/data';
+import { allUniversities, countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -94,8 +94,9 @@ export default function ManageProfilePage() {
   
   const [ngoType, setNgoType] = useState('dernek');
   const [selectedFeds, setSelectedFeds] = useState<string[]>([]);
-  const [city, setCity] = useState('İstanbul');
-  const [district, setDistrict] = useState('Kadıköy');
+  const [city, setCity] = useState('Adana');
+  const [district, setDistrict] = useState('Seyhan');
+  const [neighborhood, setNeighborhood] = useState('');
 
   const handleSave = (e: React.FormEvent) => {
       e.preventDefault();
@@ -118,7 +119,7 @@ export default function ManageProfilePage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">STK Profilini Güncelle</h1>
+                <h1 className="text-2xl font-bold font-headline">STK Profili Güncelle</h1>
                 <p className="text-muted-foreground text-sm">Platformda görünen bilgilerinizi buradan yönetebilirsiniz.</p>
             </div>
           </div>
@@ -191,7 +192,7 @@ export default function ManageProfilePage() {
 
             {ngoType === 'spor-kulubu' && (
                 <div className="space-y-4 p-4 border rounded-[2rem] bg-primary/5 border-primary/10 animate-in slide-in-from-top-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Kayıtlı Olduğunuz Federasyonlar</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Kayıt Olduğunuz Federasyonlar</Label>
                     <Select onValueChange={toggleFed}>
                         <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm"><SelectValue placeholder="Federasyon ekleyin..." /></SelectTrigger>
                         <SelectContent className="max-h-60">
@@ -239,19 +240,32 @@ export default function ManageProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
-                        <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); }} required>
+                        <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
-                        <Select value={district} onValueChange={setDistrict} disabled={!city} required>
+                        <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
                             <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                 </div>
+
+                {city && district && neighborhoodsData[city]?.[district] && (
+                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                        <Select value={neighborhood} onValueChange={setNeighborhood} required>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
+                            <SelectContent>
+                                {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
                     <Input type="email" defaultValue="iletisim@ahbap.org" className="h-11 rounded-xl" required />
@@ -333,3 +347,5 @@ export default function ManageProfilePage() {
     </div>
   );
 }
+
+    

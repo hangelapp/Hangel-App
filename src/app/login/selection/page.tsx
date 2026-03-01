@@ -43,7 +43,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations, allProvinces, districtsData } from '@/lib/data';
+import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
@@ -238,7 +238,7 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya", ema
 const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood, required = true }: any) => (
     <div className="space-y-4">
         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Adres Bilgileri</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
                 <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
@@ -257,11 +257,20 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
                     </SelectContent>
                 </Select>
             </div>
-            <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
-                <Input placeholder="Mahalle adı" className="h-11 rounded-xl" value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} required={required} />
-            </div>
         </div>
+        
+        {city && district && neighborhoodsData[city]?.[district] && (
+            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                <Select value={neighborhood} onValueChange={setNeighborhood} required={required}>
+                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
+                    <SelectContent>
+                        {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+        )}
+
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Açık Adres</Label>
             <Input placeholder="Sokak, kapı no..." className="h-11 rounded-xl" required={required} />
@@ -590,7 +599,7 @@ const FormRenderer = () => {
                     {ngoType === 'spor-kulubu' && (
                         <div className="space-y-4 p-4 border rounded-[2rem] bg-primary/5 border-primary/10 animate-in slide-in-from-top-2">
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Kayıtlı Olduğunuz Federasyonlar (En fazla 3)</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Kayıt Olduğunuz Federasyonlar (En fazla 3)</Label>
                                 <p className="text-[9px] text-muted-foreground ml-1">Alttan federasyon seçerek listenize ekleyebilirsiniz.</p>
                             </div>
                             
@@ -1089,3 +1098,5 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
+
+    
