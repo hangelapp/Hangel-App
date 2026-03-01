@@ -1,0 +1,47 @@
+
+[
+  {
+    "slug": "veri-kutuphanesi",
+    "title": "Veri Kütüphanesi",
+    "description": "Kamu, belediye ve STK'lar tarafından paylaşılan resmi veriler ve açık veri setleri.",
+    "icon": "Database",
+    "items": [
+      {
+        "slug": "icisleri-bakanligi-dernek-verileri-2023",
+        "title": "T.C. İçişleri Bakanlığı - Derneklerin Sosyal Etki Verileri (2023)",
+        "content": "<h4>Veri Seti Özeti</h4><p>Bu veri seti, Türkiye genelinde faaliyet gösteren derneklerin 2023 yılı içerisindeki sosyal etki kapasitelerini, üye sayılarını ve gerçekleştirdikleri yardım faaliyetlerinin sektörel dağılımını içermektedir.</p>"
+      },
+      {
+        "slug": "ibb-sosyal-yardim-istatistikleri",
+        "title": "İstanbul Büyükşehir Belediyesi - Sosyal Yardım İstatistikleri",
+        "content": "<h4>Açıklama</h4><p>İstanbul genelinde mahalle bazlı sosyal yardım talepleri ve karşılanma oranlarını gösteren anonimleştirilmiş veri setidir.</p>"
+      }
+    ]
+  },
+  {
+    "slug": "kitaplar",
+    "title": "Kitaplar",
+    "description": "Sosyal gelişim ve toplumsal dönüşüm üzerine temel eserler.",
+    "icon": "Library",
+    "items": [
+      {
+        "slug": "sosyal-girisimcilik-rehberi",
+        "title": "Sosyal Girişimcilik: Dünyayı Değiştiren İş Modelleri",
+        "content": "<h4>Kitap Hakkında</h4><p>Geleneksel hayırseverlikten sürdürülebilir sosyal girişimciliğe geçişi anlatan temel bir başvuru kaynağıdır.</p>"
+      }
+    ]
+  },
+  {
+    "slug": "filmler",
+    "title": "Filmler",
+    "description": "Toplumsal farkındalığı artıran ve ilham veren sinema eserleri.",
+    "icon": "Film",
+    "items": [
+      {
+        "slug": "umudunu-kaybetme",
+        "title": "Umudunu Kaybetme (The Pursuit of Happyness)",
+        "content": "<h4>Film Analizi</h4><p>Azim ve toplumsal dayanışma üzerine çarpıcı bir hikaye.</p>"
+      }
+    ]
+  }
+]

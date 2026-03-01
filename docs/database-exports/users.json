@@ -4,22 +4,77 @@
     "id": "1",
     "name": "İsmail Hilmi ADIGÜZEL",
     "username": "@ismailhilmicom",
-    "email": "i.adiguzel@email.com",
-    "impactScore": 15750,
     "avatarUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1080",
-    "phoneNumber": "5077007007",
-    "birthDate": "1993-05-21",
-    "gender": "Erkek",
-    "nationality": "Türkiye Cumhuriyeti",
-    "bloodType": "0 Rh+",
-    "address": {
-      "country": "Türkiye",
-      "city": "İstanbul",
-      "district": "Kadıköy",
-      "neighborhood": "Caferağa",
-      "fullAddress": "Caferağa Mah. Moda Cad. No: 123 D:4"
+    "coverPhotoUrl": "https://images.unsplash.com/photo-1693902939226-449195d2698b?q=80&w=1080",
+    "impactScore": 15750,
+    "personalInfo": {
+      "email": "i.adiguzel@email.com",
+      "phone": "5077007007",
+      "birthDate": "1993-05-21",
+      "gender": "Erkek",
+      "nationality": "Türkiye Cumhuriyeti",
+      "bloodType": "0 Rh+",
+      "address": {
+        "country": "Türkiye",
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "neighborhood": "Caferağa",
+        "fullAddress": "Caferağa Mah. Moda Cad. No: 123 D:4"
+      },
+      "website": "https://ismailhilmi.com",
+      "social": {
+        "linkedin": "ismailhilmi",
+        "github": "ismailhilmi",
+        "behance": "ismailhilmi",
+        "instagram": "ismailhilmi",
+        "twitter": "ismailhilmi"
+      }
     },
-    "skills": ["Proje Yönetimi", "Sosyal Medya Yönetimi", "Grafik Tasarım", "Bağışçı İlişkileri"],
-    "interests": ["Hayvan Hakları", "Çevre", "Eğitim", "Sosyal Girişimcilik"]
+    "volunteerInfo": {
+      "skills": ["Proje Yönetimi", "Sosyal Medya Yönetimi", "Grafik Tasarım", "Bağışçı İlişkileri"],
+      "dailySkills": ["Yemek Yapma", "Temizlik", "El Becerileri", "Organizasyon", "İletişim"],
+      "interests": ["Hayvan Hakları", "Çevre", "Eğitim", "Sosyal Girişimcilik"],
+      "education": [
+        { "level": "Lisans", "school": "Boğaziçi Üniversitesi - Yönetim Bilişim Sistemleri" },
+        { "level": "Lise", "school": "Kabataş Erkek Lisesi" }
+      ],
+      "profession": "Yazılım Geliştirici",
+      "sector": "Teknoloji",
+      "languages": ["Türkçe", "İngilizce", "Almanca"],
+      "programs": ["VS Code", "Figma", "Docker", "Google Analytics"],
+      "licenses": ["B Sınıfı Ehliyet"],
+      "documents": ["İlk Yardım Sertifikası", "Hijyen Belgesi"],
+      "travelInfo": { 
+        "domesticObstacle": false, 
+        "internationalObstacle": false,
+        "visas": ["Schengen", "ABD (B1/B2)"]
+      },
+      "emergency": {
+        "available": true,
+        "hasChronicIllness": false,
+        "usesRegularMedication": false,
+        "hasPhysicalLimitation": false,
+        "emergencyContacts": [{ "name": "Ayşe Yılmaz", "phone": "+90 555 987 65 43" }]
+      }
+    },
+    "stats": {
+      "totalDonation": 1250,
+      "donationCount": 42,
+      "highestSingleDonation": 150,
+      "supportedNgosCount": 7,
+      "mostSupportedNgo": "TEMA Vakfı",
+      "avgDonation": 29.76,
+      "volunteerHours": 48,
+      "completedProjects": 5,
+      "volunteerRank": {
+        "country": "İlk %5",
+        "city": "İlk %2",
+        "school": "İlk %1",
+        "interest": "Hayvan Hakları alanında İlk %10"
+      },
+      "mostActiveVolunteerArea": "Hayvan Hakları",
+      "avgVolunteerDuration": "3 Hafta",
+      "totalImpactValue": 25000
+    }
   }
 ]

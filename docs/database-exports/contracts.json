@@ -1,0 +1,13 @@
+
+[
+  {
+    "slug": "kullanici-sozlesmesi",
+    "title": "Kullanıcı Sözleşmesi",
+    "content": "<h3>Kullanıcı Sözleşmesi</h3><h4>1. Amaç</h4><p>işbu sözleşmenin amacı, hangel platformunun sunduğu dijital hizmetlerden yararlanan bireysel kullanıcıların hak ve yükümlülüklerini düzenlemektir.</p>"
+  },
+  {
+    "slug": "gizlilik-politikasi",
+    "title": "Gizlilik Politikası",
+    "content": "<h3>Gizlilik Politikası</h3><h4>1. Amaç</h4><p>hangel kullanıcılarının dijital mahremiyetini korumak ve veri işleme süreçlerini şeffaflaştırmaktır.</p>"
+  }
+]

@@ -1,0 +1,21 @@
+
+[
+  {
+    "id": "1",
+    "author": { "name": "TEMA Vakfı", "avatarUrl": "https://logo.clearbit.com/tema.org.tr" },
+    "content": "Bugün Balıkesir fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳",
+    "timestamp": "2024-07-22T10:00:00Z",
+    "likes": 1240,
+    "comments": 45,
+    "imageUrl": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop"
+  },
+  {
+    "id": "2",
+    "author": { "name": "Uluslararası Sosyal Fayda Derneği", "avatarUrl": "https://logo.clearbit.com/socialbusinessglobal.org" },
+    "content": "Hatay bölgesindeki ihtiyaç sahibi aileler için hazırladığımız gıda kolilerini dağıtmaya başladık. 🙏",
+    "timestamp": "2024-07-22T08:00:00Z",
+    "likes": 3500,
+    "comments": 120,
+    "imageUrl": "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop"
+  }
+]

@@ -6,14 +6,38 @@
     "foundationYear": 1992,
     "category": "Çevre",
     "type": "Vakıf",
+    "avatarUrl": "https://logo.clearbit.com/tema.org.tr",
+    "coverPhotoUrl": "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2041&auto=format&fit=crop",
     "transparencyScore": 92,
     "about": "Türkiye Çöl Olmasın! TEMA Vakfı, ağaçlandırma ve erozyonla mücadele ederek Türkiye'nin topraklarını korumaktadır.",
+    "joinDate": "2023-01-10",
     "supportedSDGs": ["İklim Eylemi", "Sudaki Yaşam", "Karasal Yaşam"],
     "beneficiaryGroups": ["Çevre", "Gelecek Nesiller"],
+    "memberOf": ["Açık Açık"],
+    "usagePurpose": "both",
+    "economicEnterpriseStatus": "var",
     "contact": {
       "email": "info@tema.org.tr",
       "phone": "0212 292 69 69",
-      "website": "https://tema.org.tr"
+      "website": "https://tema.org.tr",
+      "social": {
+        "twitter": "temavakfi",
+        "instagram": "temavakfi",
+        "facebook": "temavakfi",
+        "linkedin": "tema"
+      }
+    },
+    "stats": {
+      "followers": 120000,
+      "donors": 50000,
+      "volunteers": 80000,
+      "volunteerHours": 250000,
+      "projects": 150,
+      "totalDonation": 1500000,
+      "donationCount": 65000,
+      "avgDonation": 23.07,
+      "highestSingleDonation": 500,
+      "peopleReached": 500000
     }
   },
   {
@@ -23,14 +47,38 @@
     "foundationYear": 2017,
     "category": "Dayanışma",
     "type": "Dernek",
+    "avatarUrl": "https://logo.clearbit.com/socialbusinessglobal.org",
+    "coverPhotoUrl": "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
     "transparencyScore": 95,
     "about": "Uluslararası Sosyal Fayda Derneği, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir.",
+    "joinDate": "2023-02-20",
     "supportedSDGs": ["Yoksulluğa Son", "Açlığa Son", "Nitelikli Eğitim"],
     "beneficiaryGroups": ["İhtiyaç Sahipleri", "Afetzedeler", "Öğrenciler"],
+    "memberOf": ["Afet Platformu"],
+    "usagePurpose": "both",
+    "economicEnterpriseStatus": "var",
     "contact": {
       "email": "info@socialbusinessglobal.org",
       "phone": "0216 550 50 50",
-      "website": "https://socialbusinessglobal.org"
+      "website": "https://socialbusinessglobal.org",
+      "social": {
+        "twitter": "socialbusinessglobal",
+        "instagram": "socialbusinessglobal",
+        "facebook": "socialbusinessglobal",
+        "linkedin": "socialbusinessglobal"
+      }
+    },
+    "stats": {
+      "followers": 850000,
+      "donors": 250000,
+      "volunteers": 150000,
+      "volunteerHours": 500000,
+      "projects": 500,
+      "totalDonation": 12500000,
+      "donationCount": 300000,
+      "avgDonation": 41.67,
+      "highestSingleDonation": 1000,
+      "peopleReached": 2000000
     }
   },
   {
@@ -40,12 +88,38 @@
     "foundationYear": 2020,
     "category": "Sosyal İnovasyon",
     "type": "Dernek",
+    "avatarUrl": "",
+    "coverPhotoUrl": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop",
     "transparencyScore": 98,
     "about": "hangel Derneği, sosyal fayda odaklı teknoloji ve inovasyon projeleri geliştirerek, bireylerin ve kurumların sosyal etki potansiyelini en üst düzeye çıkarmayı hedefler.",
+    "joinDate": "2023-01-01",
+    "supportedSDGs": ["Amaçlar için Ortaklıklar", "Sanayi, Yenilikçilik ve Altyapı", "Nitelikli Eğitim"],
+    "beneficiaryGroups": ["Girişimciler", "Gençler", "Sivil Toplum", "Öğrenciler"],
+    "memberOf": ["Açık Açık", "Afet Platformu"],
+    "usagePurpose": "both",
+    "economicEnterpriseStatus": "var",
     "contact": {
       "email": "dernek@hangel.org",
       "phone": "0850 123 45 67",
-      "website": "https://hangelassociation.org"
+      "website": "https://hangelassociation.org",
+      "social": {
+        "twitter": "hangel",
+        "instagram": "hangel",
+        "facebook": "hangel",
+        "linkedin": "hangel"
+      }
+    },
+    "stats": {
+      "followers": 15000,
+      "donors": 5000,
+      "volunteers": 2000,
+      "volunteerHours": 10000,
+      "projects": 15,
+      "totalDonation": 250000,
+      "donationCount": 1000,
+      "avgDonation": 250,
+      "highestSingleDonation": 5000,
+      "peopleReached": 50000
     }
   }
 ]

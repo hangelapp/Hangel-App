@@ -6,14 +6,49 @@
     "organization": "Uluslararası Sosyal Fayda Derneği",
     "ngoId": "2",
     "location": { "city": "Hatay", "district": "Antakya", "type": "Saha" },
-    "socialArea": "Afet",
-    "points": 1500,
+    "commitment": "Dönemsel",
+    "volunteerCount": { "needed": 50, "applications": 120 },
     "dates": {
+      "applicationStart": "2025-05-01",
       "applicationEnd": "2026-05-21",
       "eventStart": "2025-06-01",
       "eventEnd": "2025-06-30"
     },
-    "description": "Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz."
+    "hours": { "start": "09:00", "end": "18:00", "total": 56 },
+    "socialArea": "Afet",
+    "points": 1500,
+    "ngoTransparencyScore": 95,
+    "taskType": "Dönemsel",
+    "providesCertificate": true,
+    "earnedBadges": ["Afet Kahramanı"],
+    "hasPreTraining": true,
+    "description": "Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz.",
+    "amenities": { "transport": true, "food": true, "accommodation": true }
+  },
+  {
+    "id": "2",
+    "title": "Fidan Dikme Etkinliği",
+    "organization": "TEMA Vakfı",
+    "ngoId": "1",
+    "location": { "city": "İstanbul", "district": "Beykoz", "type": "Saha" },
+    "commitment": "Tek Günlük",
+    "volunteerCount": { "needed": 100, "applications": 250 },
+    "dates": {
+      "applicationStart": "2025-05-01",
+      "applicationEnd": "2026-05-21",
+      "eventStart": "2025-06-01",
+      "eventEnd": "2025-06-01"
+    },
+    "hours": { "start": "10:00", "end": "16:00", "total": 6 },
+    "socialArea": "Çevre",
+    "points": 500,
+    "ngoTransparencyScore": 92,
+    "taskType": "Tek Gün",
+    "providesCertificate": true,
+    "earnedBadges": ["Doğa Koruyucu"],
+    "hasPreTraining": false,
+    "description": "Geleceğe nefes olmak için binlerce fidanı toprakla buluşturuyoruz.",
+    "amenities": { "transport": false, "food": true, "accommodation": false }
   },
   {
     "id": "5",
@@ -21,13 +56,25 @@
     "organization": "hangel Derneği",
     "ngoId": "8",
     "location": { "city": "Online", "district": "Türkiye Geneli", "type": "Online" },
-    "socialArea": "Sosyal Girişimcilik",
-    "points": 5000,
+    "commitment": "Sürekli",
+    "volunteerCount": { "needed": 25, "applications": 0 },
     "dates": {
+      "applicationStart": "2025-05-01",
       "applicationEnd": "2026-05-21",
       "eventStart": "2025-06-01",
       "eventEnd": "2026-06-01"
     },
-    "description": "Kampüsünüzde sosyal etki rüzgarı estirin! hangel'in üniversite temsilcisi olun."
+    "hours": { "start": "10:00", "end": "18:00", "total": 0 },
+    "socialArea": "Sosyal Girişimcilik",
+    "points": 5000,
+    "ngoTransparencyScore": 98,
+    "taskType": "Sürekli",
+    "providesCertificate": true,
+    "earnedBadges": ["Liderlik Rozeti", "Topluluk Yöneticisi"],
+    "hasPreTraining": true,
+    "description": "Kampüsünüzde sosyal etki rüzgarı estirin! hangel'in üniversite temsilcisi olun.",
+    "amenities": { "transport": false, "food": false, "accommodation": false },
+    "skills": ["Proje Yönetimi", "Organizasyon", "İletişim"],
+    "education": "Üniversite"
   }
 ]
