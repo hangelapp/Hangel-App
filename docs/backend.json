@@ -37,6 +37,34 @@
         "impactScore": { "type": "number", "default": 0 }
       }
     },
+    "NGO": {
+      "title": "NGO",
+      "type": "object",
+      "description": "Sivil Toplum Kuruluşu profili.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "type": { "type": "string" },
+        "transparencyScore": { "type": "number" },
+        "about": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "coverPhotoUrl": { "type": "string" }
+      }
+    },
+    "Brand": {
+      "title": "Brand",
+      "type": "object",
+      "description": "Anlaşmalı Marka/İşletme profili.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "donationRate": { "type": "number" },
+        "category": { "type": "string" },
+        "logoUrl": { "type": "string" }
+      }
+    },
     "Badge": {
       "title": "Badge",
       "type": "object",
@@ -85,6 +113,22 @@
           "entityName": "Certificate",
           "schema": { "$ref": "#/backend/entities/Certificate" },
           "description": "Kullanıcının kazandığı sertifikalar."
+        }
+      },
+      {
+        "path": "/ngos/{ngoId}",
+        "definition": {
+          "entityName": "NGO",
+          "schema": { "$ref": "#/backend/entities/NGO" },
+          "description": "STK profili."
+        }
+      },
+      {
+        "path": "/brands/{brandId}",
+        "definition": {
+          "entityName": "Brand",
+          "schema": { "$ref": "#/backend/entities/Brand" },
+          "description": "Marka profili."
         }
       }
     ]

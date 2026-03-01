@@ -1,20 +1,17 @@
-
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Loader2, ArrowDownUp } from 'lucide-react';
-import { marketCategories, allEntityLists, adBanners } from '@/lib/data';
+import { Search, Filter, ArrowDownUp } from 'lucide-react';
+import { marketCategories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
-import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Image from 'next/image';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import Autoplay from "embla-carousel-autoplay";
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [hasError, setHasError] = useState(false);
@@ -38,54 +35,22 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
   );
 };
 
-const AdCarousel = () => {
-    const plugin = useRef(
-        Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
-    );
-
-    return (
-         <Carousel
-            plugins={[plugin.current]}
-            opts={{
-            align: 'start',
-            loop: true,
-            }}
-            className="w-full rounded-xl overflow-hidden"
-        >
-            <CarouselContent>
-            {adBanners.map((ad) => (
-                <CarouselItem key={ad.id}>
-                    <Link href={ad.link} passHref>
-                        <div className="relative h-40">
-                            <Image
-                            src={ad.imageUrl}
-                            alt={ad.title}
-                            fill
-                            className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/40" />
-                            <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
-                                <h3 className="font-bold text-xl">{ad.title}</h3>
-                                <p className="text-base">{ad.description}</p>
-                            </div>
-                        </div>
-                    </Link>
-                </CarouselItem>
-            ))}
-            </CarouselContent>
-        </Carousel>
-    )
-}
-
 export default function MarketPage() {
+  const db = useFirestore();
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [brandType, setBrandType] = useState('all');
-  const [sortKey, setSortKey] = useState('donationRate');
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
+
+  const brandsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, 'brands');
+  }, [db]);
+
+  const { data: brandsData, isLoading } = useCollection<Brand>(brandsQuery);
 
   const brandsToShow = useMemo(() => {
-    let list = [...allEntityLists];
+    if (!brandsData) return [];
+    let list = [...brandsData];
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -100,15 +65,8 @@ export default function MarketPage() {
       list = list.filter(b => b.type === brandType);
     }
 
-    list.sort((a, b) => {
-      if (sortKey === 'name') {
-        return a.name.localeCompare(b.name, 'tr');
-      }
-      return b.donationRate - a.donationRate;
-    });
-    
-    return list;
-  }, [activeCategory, sortKey, searchTerm, brandType]);
+    return list.sort((a, b) => b.donationRate - a.donationRate);
+  }, [brandsData, activeCategory, searchTerm, brandType]);
 
   return (
     <div className="flex flex-col h-full bg-secondary/30 relative">
@@ -138,17 +96,6 @@ export default function MarketPage() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm">
-                <ArrowDownUp className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSortKey('donationRate')}>En Yüksek Bağış</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
@@ -156,11 +103,9 @@ export default function MarketPage() {
                 <TabsTrigger value="all">Tümü</TabsTrigger>
                 <TabsTrigger value="brand">Ticari</TabsTrigger>
                 <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                <TabsTrigger value="economic">İktisadi İşletme</TabsTrigger>
-                <TabsTrigger value="social">Sosyal Şirket</TabsTrigger>
+                <TabsTrigger value="social">Sosyal</TabsTrigger>
             </TabsList>
         </Tabs>
-
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -173,7 +118,7 @@ export default function MarketPage() {
                 className={cn(
                   "text-left text-[11px] sm:text-sm p-4 whitespace-nowrap truncate transition-all",
                   activeCategory === cat.mainCategory
-                    ? "bg-primary/10 text-primary border-l-4 border-primary font-black shadow-sm"
+                    ? "bg-primary/10 text-primary border-l-4 border-primary font-black"
                     : "text-muted-foreground hover:bg-accent/50"
                 )}
               >
@@ -184,38 +129,33 @@ export default function MarketPage() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4">
-            <div className="max-w-6xl mx-auto">
-              {brandsToShow.length === 0 ? (
+            {isLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[...Array(8)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)}
+                </div>
+            ) : brandsToShow.length === 0 ? (
                 <div className="text-center py-20 text-muted-foreground italic">
                   Aramanızla eşleşen marka bulunamadı.
                 </div>
-              ) : (
+            ) : (
                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {brandsToShow.map((brand, index) => (
-                    <React.Fragment key={brand.id}>
-                        <Link href={`/market/${brand.slug}`} className="group">
+                  {brandsToShow.map((brand) => (
+                    <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
                         <div className="flex flex-col items-center text-center space-y-2">
                             <div className="relative w-full aspect-square">
-                            <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
-                                <BrandLogo brand={brand} />
-                            </div>
-                            <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
-                                %{brand.donationRate}
-                            </div>
+                                <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
+                                    <BrandLogo brand={brand} />
+                                </div>
+                                <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                                    %{brand.donationRate}
+                                </div>
                             </div>
                             <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
                         </div>
-                        </Link>
-                         {(index + 1) % 15 === 0 && (
-                            <div className="col-span-full my-4">
-                                <AdCarousel />
-                            </div>
-                        )}
-                    </React.Fragment>
+                    </Link>
                   ))}
                 </div>
-              )}
-            </div>
+            )}
         </main>
       </div>
     </div>

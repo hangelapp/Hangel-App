@@ -4,12 +4,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { doc, collection } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { DatabaseZap, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { DatabaseZap, Loader2, AlertTriangle } from 'lucide-react';
 
-// Import JSON files (assumed available in current bundle via relative path or provided by user)
+// Import JSON files
 import usersJson from '../../../../docs/database-exports/users.json';
 import ngosJson from '../../../../docs/database-exports/ngos.json';
 import brandsJson from '../../../../docs/database-exports/brands.json';
@@ -27,6 +26,12 @@ export default function SetupPage() {
     const logProgress = (msg: string) => setProgress(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
 
     const handleImport = async () => {
+        setIsLoading(false);
+        if (!db) {
+            toast({ variant: 'destructive', title: "Hata", description: "Veritabanı bağlantısı henüz hazır değil." });
+            return;
+        }
+        
         setIsLoading(true);
         setProgress([]);
         logProgress("Kurulum başlatıldı...");
@@ -89,16 +94,16 @@ export default function SetupPage() {
     };
 
     return (
-        <div className="space-y-6 max-w-2xl mx-auto">
-            <h1 className="text-3xl font-black tracking-tighter">Veritabanı Kurulumu</h1>
+        <div className="space-y-6 max-w-2xl mx-auto p-4">
+            <h1 className="text-3xl font-black tracking-tighter">Veritabanı Kurulum Merkezi</h1>
             <Card className="border-red-200 bg-red-50">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-red-800">
                         <AlertTriangle className="h-5 w-5" />
-                        Dikkat: Veri Üzerine Yazma
+                        Veri Senkronizasyonu
                     </CardTitle>
                     <CardDescription className="text-red-700">
-                        Bu işlem, mevcut Firestore koleksiyonlarınızdaki aynı ID'ye sahip dökümanların üzerine mock dataları yazacaktır. Bu işlem geri alınamaz.
+                        Bu işlem, `docs/database-exports/` dizinindeki tüm JSON dosyalarını bulut veritabanına aktaracaktır. Mevcut verilerin üzerine yazılabilir.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -110,7 +115,7 @@ export default function SetupPage() {
                         {isLoading ? (
                             <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Veriler Yazılıyor...</>
                         ) : (
-                            <><DatabaseZap className="mr-2 h-5 w-5" /> Mock Dataları Firestore'a Aktar</>
+                            <><DatabaseZap className="mr-2 h-5 w-5" /> Tüm Modülleri Firestore'a Aktar</>
                         )}
                     </Button>
                 </CardContent>
@@ -118,7 +123,7 @@ export default function SetupPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest">Kurulum Logları</CardTitle>
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest">İşlem Günlüğü</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="bg-black text-green-400 p-4 rounded-xl font-mono text-xs h-64 overflow-y-auto space-y-1">
