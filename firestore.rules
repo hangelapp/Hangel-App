@@ -2,13 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Geliştirme aşamasında, giriş yapmış her kullanıcıya tüm koleksiyonlar için tam erişim veriyoruz.
+    // Geliştirme ve canlı test aşamasında, giriş yapmış her kullanıcıya tüm koleksiyonlar için tam erişim veriyoruz.
     // Bu, Super Admin panelindeki listeleme (list) ve okuma (get) hatalarını kesin olarak çözer.
     match /{allPaths=**} {
       allow read, write: if request.auth != null;
     }
     
     // Sistem watcher tetikleyici: Yetki kuralları global olarak en kapsayıcı hale getirildi.
-    // Son güncelleme: 2024-07-23 12:00
+    // Bu kural /users, /applications, /ngos ve diğer tüm koleksiyonlardaki 'list' hatalarını giderir.
+    // Son güncelleme: 2024-07-23 15:30
   }
 }
