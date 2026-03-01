@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,10 +86,10 @@ export default function SuperAdminDashboard() {
   const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
   const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
 
-  const { data: usersData } = useCollection(usersQuery);
-  const { data: ngosData } = useCollection(ngosQuery);
-  const { data: brandsData } = useCollection(brandsQuery);
-  const { data: appsData } = useCollection(appsQuery);
+  const { data: usersData, isLoading: usersLoading } = useCollection(usersQuery);
+  const { data: ngosData, isLoading: ngosLoading } = useCollection(ngosQuery);
+  const { data: brandsData, isLoading: brandsLoading } = useCollection(brandsQuery);
+  const { data: appsData, isLoading: appsLoading } = useCollection(appsQuery);
 
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12">
@@ -106,7 +105,7 @@ export default function SuperAdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{usersData?.length || 0}</div>
+              <div className="text-2xl font-bold">{usersLoading ? '...' : (usersData?.length || 0)}</div>
               <p className="text-xs text-muted-foreground">Aktif üye sayısı</p>
             </CardContent>
           </Card>
@@ -116,7 +115,7 @@ export default function SuperAdminDashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{appsData?.length || 0}</div>
+              <div className="text-2xl font-bold">{appsLoading ? '...' : (appsData?.length || 0)}</div>
               <p className="text-xs text-muted-foreground">Yeni başvurular</p>
             </CardContent>
           </Card>
@@ -126,7 +125,7 @@ export default function SuperAdminDashboard() {
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{ngosData?.length || 0}</div>
+              <div className="text-2xl font-bold">{ngosLoading ? '...' : (ngosData?.length || 0)}</div>
               <p className="text-xs text-muted-foreground">Kayıtlı kuruluşlar</p>
             </CardContent>
           </Card>
@@ -136,7 +135,7 @@ export default function SuperAdminDashboard() {
               <Store className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{brandsData?.length || 0}</div>
+              <div className="text-2xl font-bold">{brandsLoading ? '...' : (brandsData?.length || 0)}</div>
               <p className="text-xs text-muted-foreground">İş ortağı markalar</p>
             </CardContent>
           </Card>

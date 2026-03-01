@@ -13,10 +13,10 @@ service cloud.firestore {
 
     // --- Kullanıcı Verileri ---
     match /users/{userId} {
-      // Bireysel döküman erişimi sahibine özel
+      // Bireysel döküman erişimi sahibine veya listeleme izni olan yetkiliye açık
       allow get, create, update, delete: if isOwner(userId);
       
-      // Dashboard istatistikleri ve listeleme için izin veriyoruz
+      // Admin paneli için listeleme izni
       allow list: if isSignedIn();
 
       // Alt koleksiyonlar (badges, certificates, qrCodePayments vb.)
@@ -62,6 +62,7 @@ service cloud.firestore {
 
     // --- Başvurular ---
     match /applications/{appId} {
+      // Tüm kayıtlı kullanıcılar (özellikle adminler) başvuruları görebilmeli
       allow read, write: if isSignedIn();
     }
 

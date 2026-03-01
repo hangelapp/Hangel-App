@@ -11,7 +11,8 @@
         "avatarUrl": { "type": "string" },
         "impactScore": { "type": "number" },
         "personalInfo": { "type": "object" },
-        "volunteerInfo": { "type": "object" }
+        "volunteerInfo": { "type": "object" },
+        "stats": { "type": "object" }
       }
     },
     "NGO": {
@@ -23,7 +24,10 @@
         "category": { "type": "string" },
         "type": { "type": "string" },
         "transparencyScore": { "type": "number" },
-        "stats": { "type": "object" }
+        "stats": { "type": "object" },
+        "about": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "coverPhotoUrl": { "type": "string" }
       }
     },
     "Brand": {
@@ -35,7 +39,8 @@
         "slug": { "type": "string" },
         "donationRate": { "type": "number" },
         "category": { "type": "string" },
-        "type": { "type": "string" }
+        "type": { "type": "string" },
+        "logoUrl": { "type": "string" }
       }
     },
     "Post": {
@@ -46,7 +51,8 @@
         "author": { "type": "object" },
         "content": { "type": "string" },
         "timestamp": { "type": "string" },
-        "likes": { "type": "number" }
+        "likes": { "type": "number" },
+        "imageUrl": { "type": "string" }
       }
     },
     "Volunteering": {
@@ -57,7 +63,8 @@
         "title": { "type": "string" },
         "organization": { "type": "string" },
         "points": { "type": "number" },
-        "location": { "type": "object" }
+        "location": { "type": "object" },
+        "description": { "type": "string" }
       }
     },
     "LibrarySection": {
@@ -66,6 +73,8 @@
       "properties": {
         "slug": { "type": "string" },
         "title": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
         "items": { "type": "array" }
       }
     },
@@ -76,7 +85,8 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "type": { "type": "string" },
-        "status": { "type": "string" }
+        "status": { "type": "string" },
+        "date": { "type": "string" }
       }
     }
   },
