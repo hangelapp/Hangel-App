@@ -79,10 +79,11 @@ const marketCategoryLabels = marketCategories
     .map(c => c.mainCategory);
 
 const corporateCountries = [
-    "Türkiye", "Makedonya", "İran", "Azerbaycan", "Nijerya", "Suriye", "Ürdün", "Danimarka", "Endonezya", "Almanya", "Ukranya",
-    "Avusturya", "Belçika", "Bulgaristan", "Çekya", "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", 
-    "İrlanda", "İspanya", "İsveç", "İtalya", "Letonya", "Litvanya", "Lüksemburg", "Macaristan", "Malta", "Polonya", 
-    "Portekiz", "Romanya", "Slovakya", "Slovenya", "Yunanistan"
+    "Almanya", "Avusturya", "Azerbaycan", "Belçika", "Bulgaristan", "Çekya", "Danimarka", "Endonezya", 
+    "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", "İrlanda", "İran", "İspanya", 
+    "İsveç", "İtalya", "Letonya", "Litvanya", "Lüksemburg", "Macaristan", "Makedonya", "Malta", 
+    "Nijerya", "Polonya", "Portekiz", "Romanya", "Slovakya", "Slovenya", "Suriye", "Türkiye", 
+    "Ukranya", "Ürdün", "Yunanistan"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
@@ -1003,7 +1004,7 @@ const FormRenderer = () => {
                     <CardContent className="space-y-6 px-8 pb-10">
                          <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                <TabsTrigger value="login" className="rounded-lg font-bold">Geniş Yap</TabsTrigger>
+                                <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
                                 <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
                             </TabsList>
                         </Tabs>

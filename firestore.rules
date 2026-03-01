@@ -8,58 +8,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
     // --- Veri Erişim Kuralları ---
-    // Geliştirme aşamasında tüm koleksiyonlar için giriş yapmış kullanıcılara tam yetki veriyoruz.
-    // Bu, Super Admin panelindeki sayaçların ve listelerin hatasız çalışmasını sağlar.
+    // Geliştirme ve MVP aşamasında, giriş yapmış tüm kullanıcıların 
+    // tüm koleksiyonlara (users, applications, ngos, brands vb.) 
+    // tam erişimini sağlıyoruz. Bu, Super Admin panelindeki listeleme 
+    // ve sayma hatalarını kesin olarak çözer.
 
-    match /users/{userId} {
-      allow read, write: if isSignedIn();
-      
-      match /{allSubcollections=**} {
-        allow read, write: if isSignedIn();
-      }
-    }
-
-    match /ngos/{ngoId} {
-      allow read, write: if isSignedIn();
-
-      match /{allSubcollections=**} {
-        allow read, write: if isSignedIn();
-      }
-    }
-
-    match /brands/{brandId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /posts/{postId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /volunteering/{oppId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /library/{sectionId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /applications/{appId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /events/{eventId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /emergencyAssistance/{emergencyId} {
+    match /{allPaths=**} {
       allow read, write: if isSignedIn();
     }
     
-    // Sistem watcher tetikleyici yorum satırı: Yetki kuralları Super Admin erişimi için güncellendi.
+    // Sistem watcher tetikleyici yorum satırı: Yetki kuralları global erişim için güncellendi.
   }
 }
