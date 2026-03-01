@@ -109,7 +109,7 @@
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/User" },
-      "description": "Kullanıcı dökümanları."
+      "description": "Kullanıcı dökümanları. Listeleme izni imzalı kullanıcılara açık."
     },
     "/ngos/{ngoId}": {
       "schema": { "$ref": "#/backend/entities/NGO" },
@@ -133,7 +133,7 @@
     },
     "/applications/{appId}": {
       "schema": { "$ref": "#/backend/entities/Application" },
-      "description": "Başvurular."
+      "description": "Başvurular. Listeleme izni imzalı kullanıcılara açık."
     },
     "/events/{eventId}": {
       "schema": { "$ref": "#/backend/entities/Event" },
