@@ -37,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText, Loader2, CheckCircle, XCircle, Clock } from "lucide-react";
+import { FileText, Loader2, CheckCircle, XCircle, Clock, ShieldCheck } from "lucide-react";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import type { Application } from '@/lib/types';
@@ -58,6 +58,7 @@ const ApplicationDetailsDialog = ({ application }: { application: Application })
                     <p><strong>Yasal Adı:</strong> {application.org}</p>
                     <p><strong>Konum:</strong> {application.location}</p>
                     <p><strong>Başvuru Başlığı:</strong> {application.title}</p>
+                    {application.userId && <p><strong>Başvuran Kullanıcı ID:</strong> {application.userId}</p>}
                 </CardContent>
             </Card>
              <Card className="rounded-2xl border-black/5">
@@ -82,7 +83,7 @@ const ApplicationDetailsDialog = ({ application }: { application: Application })
     </DialogContent>
 );
 
-const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Application, onApprove: (id: string) => void, onReject: (id: string) => void }) => (
+const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Application, onApprove: (id: string, userId?: string) => void, onReject: (id: string) => void }) => (
     <Card className="rounded-2xl border-black/5 hover:shadow-md transition-all group">
         <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -105,7 +106,7 @@ const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Applicati
                     variant="outline" 
                     size="sm" 
                     className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-50 rounded-xl font-bold" 
-                    onClick={() => onApprove(item.id)}
+                    onClick={() => onApprove(item.id, item.userId)}
                 >
                     Onayla
                 </Button>
@@ -129,9 +130,20 @@ export default function ApplicationsPage() {
     const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
     const { data: applications, isLoading } = useCollection<Application>(appsQuery);
 
-    const handleUpdateStatus = (id: string, newStatus: 'Onaylandı' | 'Reddedildi') => {
+    const handleUpdateStatus = (id: string, newStatus: 'Onaylandı' | 'Reddedildi', userId?: string) => {
+        // Update application status
         const appRef = doc(db, 'applications', id);
         updateDocumentNonBlocking(appRef, { status: newStatus });
+        
+        // If approved and has userId, grant ngo-admin role to the user
+        if (newStatus === 'Onaylandı' && userId) {
+            const userRef = doc(db, 'users', userId);
+            updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
+            toast({
+                title: "Yetki Tanımlandı",
+                description: "Kullanıcıya Yönetim Paneli erişimi otomatik olarak verildi.",
+            });
+        }
         
         toast({
             title: newStatus === 'Onaylandı' ? "Başvuru Onaylandı" : "Başvuru Reddedildi",
@@ -164,6 +176,14 @@ export default function ApplicationsPage() {
                 <p className="text-muted-foreground text-sm font-medium">STK, Marka ve Kulüp başvurularını gerçek zamanlı denetleyin.</p>
             </div>
 
+            <div className="p-4 bg-primary/5 border border-primary/10 rounded-[2rem] flex items-start gap-4">
+                <ShieldCheck className="h-6 w-6 text-primary mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                    <p className="font-bold text-sm">Otomatik Yetkilendirme Sistemi Aktif</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Onaylanan kurumsal başvuruların sahiplerine otomatik olarak "Yönetici" (ngo-admin) yetkisi tanımlanır ve "Yönetim Paneli" menüsü görünür hale gelir.</p>
+                </div>
+            </div>
+
             <Tabs defaultValue="pending" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 h-14 rounded-2xl bg-muted/50 p-1.5 backdrop-blur-xl">
                     <TabsTrigger value="pending" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">
@@ -183,7 +203,7 @@ export default function ApplicationsPage() {
                             <PendingApplicationCard 
                                 key={app.id} 
                                 item={app} 
-                                onApprove={(id) => handleUpdateStatus(id, 'Onaylandı')}
+                                onApprove={(id, userId) => handleUpdateStatus(id, 'Onaylandı', userId)}
                                 onReject={(id) => handleUpdateStatus(id, 'Reddedildi')}
                             />
                         ))

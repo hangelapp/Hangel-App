@@ -1,18 +1,20 @@
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AppHeader from '@/components/layout/header';
 import { SideNav } from '@/components/layout/SideNav';
-import type { SideNavItem } from '@/lib/types';
+import type { SideNavItem, User } from '@/lib/types';
 import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import * as Icons from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { user } from '@/lib/data';
-import { useUser } from '@/firebase';
+import { user as staticUser } from '@/lib/data';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
@@ -91,10 +93,38 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);
     const { user: authUser, isUserLoading } = useUser();
+    const db = useFirestore();
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser]);
+
+    const { data: userData } = useDoc<User>(userDocRef);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // Authorization Flags
+    const isSuperAdmin = useMemo(() => {
+        if (!authUser) return false;
+        // Check for specific master admin email or general role in Firestore
+        return authUser.email === '5384009090@hangel.org' || userData?.role === 'super-admin';
+    }, [authUser, userData]);
+
+    const isNgoAdmin = useMemo(() => {
+        return isSuperAdmin || userData?.role === 'ngo-admin';
+    }, [isSuperAdmin, userData]);
+
+    // Filter Secondary items based on authorization
+    const filteredSecondaryItems = useMemo(() => {
+        return group4Items.filter(item => {
+            if (item.href === '/super-admin') return isSuperAdmin;
+            if (item.href === '/admin') return isNgoAdmin;
+            return true;
+        });
+    }, [isSuperAdmin, isNgoAdmin]);
 
     // Auth Guard Logic
     useEffect(() => {
@@ -152,8 +182,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return <div className="min-h-screen bg-background">{children}</div>;
     }
 
-    const currentUserName = authUser?.displayName || authUser?.email?.split('@')[0] || user.name;
-    const currentUserHandle = authUser?.email ? `@${authUser.email.split('@')[0]}` : user.username;
+    const currentUserName = authUser?.displayName || authUser?.email?.split('@')[0] || staticUser.name;
+    const currentUserHandle = authUser?.email ? `@${authUser.email.split('@')[0]}` : staticUser.username;
 
     return (
         <div className="relative mx-auto flex min-h-screen w-full flex-col bg-background">
@@ -161,7 +191,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             mainItems={group1Items} 
             navItems={group2Items}
             userItems={group3Items}
-            secondaryItems={group4Items}
+            secondaryItems={filteredSecondaryItems}
           />
            <Sheet open={isDrawerOpen} onOpenChange={setDrawerOpen}>
               <SheetContent side="left" className="w-full max-w-sm p-0">
@@ -198,7 +228,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                                 {group3Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
                             <ul className="bg-card rounded-xl border overflow-hidden divide-y">
-                                {group4Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                                {filteredSecondaryItems.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
                         </nav>
                    </div>

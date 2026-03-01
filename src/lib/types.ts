@@ -240,6 +240,7 @@ export type User = {
     avatarUrl: string;
     coverPhotoUrl: string;
     impactScore: number;
+    role?: 'super-admin' | 'ngo-admin' | 'user';
     personalInfo: {
         email: string;
         phone: string;
@@ -381,6 +382,8 @@ export type SchoolRepresentative = {
 
 export type Application = {
     id: string;
+    userId?: string;
+    userName?: string;
     title: string;
     type: 'Gönüllülük' | 'Marka' | 'Kulüpler' | 'STK';
     org: string;
