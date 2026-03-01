@@ -108,69 +108,37 @@
     "providers": ["password", "phone"]
   },
   "firestore": {
-    "/users": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/User" } },
-      "description": "Tüm kullanıcıların listelenmesi."
-    },
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/User" },
-      "description": "Bireysel kullanıcı dökümanı."
-    },
-    "/ngos": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/NGO" } },
-      "description": "STK listesi."
+      "description": "Kullanıcı profilleri."
     },
     "/ngos/{ngoId}": {
       "schema": { "$ref": "#/backend/entities/NGO" },
-      "description": "STK dökümanı."
-    },
-    "/brands": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Brand" } },
-      "description": "Marka listesi."
+      "description": "STK dökümanları."
     },
     "/brands/{brandId}": {
       "schema": { "$ref": "#/backend/entities/Brand" },
-      "description": "Marka dökümanı."
-    },
-    "/posts": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Post" } },
-      "description": "Gönderi listesi."
+      "description": "Marka dökümanları."
     },
     "/posts/{postId}": {
       "schema": { "$ref": "#/backend/entities/Post" },
-      "description": "Gönderi dökümanı."
-    },
-    "/volunteering": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Volunteering" } },
-      "description": "Gönüllülük ilanları listesi."
+      "description": "Zaman tüneli gönderileri."
     },
     "/volunteering/{oppId}": {
       "schema": { "$ref": "#/backend/entities/Volunteering" },
-      "description": "Gönüllülük ilanı dökümanı."
-    },
-    "/library": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/LibrarySection" } },
-      "description": "Kütüphane bölümleri listesi."
+      "description": "Gönüllülük ilanları."
     },
     "/library/{sectionId}": {
       "schema": { "$ref": "#/backend/entities/LibrarySection" },
-      "description": "Kütüphane bölümü dökümanı."
-    },
-    "/applications": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Application" } },
-      "description": "Tüm başvuruların listelenmesi."
+      "description": "Kütüphane içerikleri."
     },
     "/applications/{appId}": {
       "schema": { "$ref": "#/backend/entities/Application" },
-      "description": "Başvuru dökümanı."
-    },
-    "/events": {
-      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Event" } },
-      "description": "Etkinlik listesi."
+      "description": "STK, Marka ve Kulüp başvuruları."
     },
     "/events/{eventId}": {
       "schema": { "$ref": "#/backend/entities/Event" },
-      "description": "Etkinlik dökümanı."
+      "description": "Etkinlik dökümanları."
     }
   }
 }
