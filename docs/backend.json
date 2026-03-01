@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -107,37 +108,69 @@
     "providers": ["password", "phone"]
   },
   "firestore": {
+    "/users": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/User" } },
+      "description": "Tüm kullanıcıların listelenmesi (Admin)."
+    },
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/User" },
-      "description": "Kullanıcı dökümanları. Listeleme izni imzalı kullanıcılara açık."
+      "description": "Bireysel kullanıcı dökümanı."
+    },
+    "/ngos": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/NGO" } },
+      "description": "STK listesi."
     },
     "/ngos/{ngoId}": {
       "schema": { "$ref": "#/backend/entities/NGO" },
-      "description": "STK dökümanları."
+      "description": "STK dökümanı."
+    },
+    "/brands": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Brand" } },
+      "description": "Marka listesi."
     },
     "/brands/{brandId}": {
       "schema": { "$ref": "#/backend/entities/Brand" },
-      "description": "Marka dökümanları."
+      "description": "Marka dökümanı."
+    },
+    "/posts": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Post" } },
+      "description": "Gönderi listesi."
     },
     "/posts/{postId}": {
       "schema": { "$ref": "#/backend/entities/Post" },
-      "description": "Zaman tüneli gönderileri."
+      "description": "Gönderi dökümanı."
+    },
+    "/volunteering": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Volunteering" } },
+      "description": "Gönüllülük ilanları listesi."
     },
     "/volunteering/{oppId}": {
       "schema": { "$ref": "#/backend/entities/Volunteering" },
-      "description": "Gönüllülük ilanları."
+      "description": "Gönüllülük ilanı dökümanı."
+    },
+    "/library": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/LibrarySection" } },
+      "description": "Kütüphane bölümleri listesi."
     },
     "/library/{sectionId}": {
       "schema": { "$ref": "#/backend/entities/LibrarySection" },
-      "description": "Kütüphane kategorileri."
+      "description": "Kütüphane bölümü dökümanı."
+    },
+    "/applications": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Application" } },
+      "description": "Tüm başvuruların listelenmesi (Admin)."
     },
     "/applications/{appId}": {
       "schema": { "$ref": "#/backend/entities/Application" },
-      "description": "Başvurular. Listeleme izni imzalı kullanıcılara açık."
+      "description": "Başvuru dökümanı."
+    },
+    "/events": {
+      "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Event" } },
+      "description": "Etkinlik listesi."
     },
     "/events/{eventId}": {
       "schema": { "$ref": "#/backend/entities/Event" },
-      "description": "Etkinlikler."
+      "description": "Etkinlik dökümanı."
     }
   }
 }
