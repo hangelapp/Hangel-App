@@ -176,7 +176,6 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     </div>
                      <div className="text-left text-[11px] text-[#1d1d1f]/50 pt-4 space-y-1">
                         <p>© 2024 hangel teknoloji ve sosyal etki anonim şirketi. Tüm hakları saklıdır.</p>
-                        <p>hangel v.2</p>
                     </div>
                 </div>
             </div>

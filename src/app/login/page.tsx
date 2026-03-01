@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles, Megaphone, HelpCircle, Plus, Siren, HandCoins } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles, Megaphone, HelpCircle, Plus, Siren, HandCoins, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -438,7 +439,7 @@ const FullStandardsSection = () => {
                     <AccordionItem value="item-standards" className="border-none">
                         <AccordionTrigger className="text-2xl md:text-3xl font-bold tracking-tight hover:no-underline text-center justify-center data-[state=open]:text-primary py-6 [&>svg:last-child]:hidden">
                             <div className="flex items-center gap-4">
-                                <Plus className="h-8 w-8" />
+                                <ChevronDown className="h-8 w-8" />
                                 <span>Standartlarımız</span>
                             </div>
                         </AccordionTrigger>
@@ -753,9 +754,12 @@ export default function LoginPage() {
 
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl">
-                        <div className="text-center mb-12">
+                        <div className="text-center mb-12 space-y-4">
                             <h2 className="text-4xl font-bold tracking-tight">hangel derneği</h2>
                             <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
+                            <Button asChild variant="link" className="font-bold text-primary text-base p-0 h-auto">
+                                <Link href="/hangelassociation">Derneğin ana sayfasını görüntüle</Link>
+                            </Button>
                         </div>
                         <Carousel
                             opts={{

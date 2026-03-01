@@ -19,7 +19,6 @@ export default function SettingsLayout({
       {children}
       <footer className="pt-8 pb-4 text-center text-[10px] text-muted-foreground space-y-1">
         <p>© 2024 hangel teknoloji ve sosyal etki anonim şirketi. Tüm hakları saklıdır.</p>
-        <p>hangel v.2</p>
       </footer>
     </>
   );

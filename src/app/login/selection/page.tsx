@@ -72,12 +72,15 @@ const clubCategories = [
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
 const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
-const allFederations = ['Türkiye Gönüllülük Federasyonu', 'Sosyal İnovasyon Federasyonu', 'Gençlik STK’ları Federasyonu', 'Sivil Toplum Dayanışma Federasyonu', 'Doğa ve Çevre Federasyonu', 'Eğitim ve Kültür Federasyonu', 'Hayvan Hakları Federasyonu', 'İnsan Hakları Federasyonu'];
 const years = Array.from({ length: 2025 - 1900 }, (_, i) => (2024 - i).toString());
 
 const marketCategoryLabels = marketCategories
     .filter(c => c.mainCategory !== 'Öne çıkanlar' && c.mainCategory !== 'Tümü')
     .map(c => c.mainCategory);
+
+const corporateCountries = [
+    "Türkiye", "Makedonya", "İran", "Azerbaycan", "Nijerya", "Suriye", "Ürdün", "Danimarka", "Endonezya", "Almanya", "Ukrayna", "AB Ülkeleri"
+];
 
 // --- Shared Components ---
 
@@ -356,6 +359,7 @@ const FormRenderer = () => {
     const type = searchParams.get('type') || 'individual';
     const entity = searchParams.get('entity') || '';
     const redirectParam = searchParams.get('redirect');
+    const [selectedCountry, setSelectedCountry] = useState<string>('');
     
     const [showSurvey, setShowSurvey] = useState(false);
     const [aboutText, setAboutText] = useState("");
@@ -500,7 +504,7 @@ const FormRenderer = () => {
                 {isRegister && (
                     <div className="space-y-2">
                         <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Adınız ve Soyadınız</Label>
-                        <Input id="name" placeholder="İsmail Hilmi ADIGÜZEL" required value={name} onChange={e => setName(e.target.value)} className="h-12 rounded-xl" />
+                        <Input id="name" placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={name} onChange={e => setName(e.target.value)} className="h-12 rounded-xl" />
                     </div>
                 )}
                 <div className="space-y-2">
@@ -685,7 +689,7 @@ const FormRenderer = () => {
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler</h3>
                         <FileUpload label="Logo" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" required={true} />
                         <FileUpload label="Faaliyet Belgesi" accept=".pdf,.png" hint="Desteklenen format: .pdf, .png" required={true} />
-                        <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" required={true} />
+                        <FileUpload label={ngoType === 'vakif' ? 'Vakıf Senedi' : 'Tüzük'} accept=".pdf" hint="Desteklenen format: .pdf" required={true} />
                     </div>
 
                     <AuthorizedPersonFields />
@@ -854,7 +858,7 @@ const FormRenderer = () => {
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler & Logolar</h3>
-                        <FileUpload label="Vergi Levhası" accept=".pdf" hint="Desteklenen format: .pdf" required={true} />
+                        <FileUpload label="Vergi Levhası" accept=".pdf,.jpg,.jpeg,.png" hint="Desteklenen formatlar: .pdf, .jpg, .png" required={true} />
                         <FileUpload label="Marka Logosu" accept=".jpg,.jpeg,.png" hint="Yüksek çözünürlüklü .png veya .jpg" required={true} />
                     </div>
 
@@ -1002,19 +1006,37 @@ const FormRenderer = () => {
                                 </div>
 
                                 {type === 'corporate' && (
-                                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
-                                        <Select onValueChange={handleEntityChange} value={entity} required>
-                                            <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
-                                                <SelectValue placeholder="Kuruluş türünü seçin..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="NGO">STK (Dernek, Vakıf, Spor Kulübü, Özel İzinli)</SelectItem>
-                                                <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
-                                                <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                    <>
+                                        <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ülke</Label>
+                                            <Select onValueChange={setSelectedCountry} value={selectedCountry} required>
+                                                <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
+                                                    <SelectValue placeholder="Ülke seçin..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {corporateCountries.map(country => (
+                                                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {selectedCountry && (
+                                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
+                                                <Select onValueChange={handleEntityChange} value={entity} required>
+                                                    <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
+                                                        <SelectValue placeholder="Kuruluş türünü seçin..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="NGO">STK (Dernek, Vakıf, Spor Kulübü, Özel İzinli)</SelectItem>
+                                                        <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
+                                                        <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
 
                                 {type === 'individual' ? (
@@ -1024,9 +1046,14 @@ const FormRenderer = () => {
                                         {entity === 'NGO' && <NgoRegistrationForm />}
                                         {entity === 'BRAND' && <BrandRegistrationForm />}
                                         {entity === 'CLUB' && <ClubRegistrationForm />}
-                                        {!entity && (
+                                        {!entity && selectedCountry && (
                                             <div className="p-12 text-center border-2 border-dashed rounded-[2rem] opacity-40">
                                                 <p className="text-sm font-medium italic">Lütfen kuruluş türünü seçin.</p>
+                                            </div>
+                                        )}
+                                        {!selectedCountry && type === 'corporate' && (
+                                            <div className="p-12 text-center border-2 border-dashed rounded-[2rem] opacity-40">
+                                                <p className="text-sm font-medium italic">Lütfen önce ülke seçin.</p>
                                             </div>
                                         )}
                                     </div>

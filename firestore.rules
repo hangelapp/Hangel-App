@@ -12,70 +12,54 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- Kullanıcı Verileri ---
-    // Geliştirme aşamasında Super Admin sayımı ve listelemesi için tüm signedIn kullanıcılara okuma izni verildi
+    // --- Veri Erişim Kuralları ---
+    // Geliştirme aşamasında tüm koleksiyonlar için giriş yapmış kullanıcılara tam yetki veriyoruz.
+    // Bu, Super Admin panelindeki sayaçların ve listelerin hatasız çalışmasını sağlar.
+
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isOwner(userId) || isSignedIn();
+      allow read, write: if isSignedIn();
       
       match /{allSubcollections=**} {
-        allow read, write: if isOwner(userId) || isSignedIn();
+        allow read, write: if isSignedIn();
       }
     }
 
-    // --- STK Profilleri ---
     match /ngos/{ngoId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
 
       match /{allSubcollections=**} {
-        allow read: if true;
-        allow write: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
     }
 
-    // --- Marka Profilleri ---
     match /brands/{brandId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
-    // --- Zaman Tüneli Gönderileri ---
     match /posts/{postId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
-    // --- Gönüllülük İlanları ---
     match /volunteering/{oppId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
-    // --- Kütüphane İçerikleri ---
     match /library/{sectionId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
-    // --- Başvurular ---
-    // Super Admin listelemesi ve yönetimi için tam erişim (get ve list dahil)
     match /applications/{appId} {
       allow read, write: if isSignedIn();
     }
 
-    // --- Etkinlikler ---
     match /events/{eventId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
-    // --- Acil Durum Bildirimleri ---
     match /emergencyAssistance/{emergencyId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
     
-    // Sistem watcher tetikleyici yorum satırı: Yetkilendirme kuralları en geniş kapsamda yeniden yayınlandı.
+    // Sistem watcher tetikleyici yorum satırı: Yetki kuralları Super Admin erişimi için güncellendi.
   }
 }
