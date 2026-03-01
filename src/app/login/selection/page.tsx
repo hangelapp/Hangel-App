@@ -80,7 +80,7 @@ const marketCategoryLabels = marketCategories
 
 const corporateCountries = [
     "Türkiye", "Makedonya", "İran", "Azerbaycan", "Nijerya", "Suriye", "Ürdün", "Danimarka", "Endonezya", "Almanya", "Ukrayna", "AB Ülkeleri"
-];
+].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
 
@@ -147,7 +147,7 @@ const AuthorizedPersonFields = () => (
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
-                <Input type="email" placeholder="kurumsal@ornek.com" required className="h-11 rounded-xl" />
+                <Input type="email" placeholder="örnek@marka.com" required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
@@ -181,7 +181,7 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya", ema
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-muted rounded-lg"><Mail className="h-4 w-4 text-muted-foreground" /></div>
-                    <Input type="email" placeholder="kurumsal@ornek.com" required={emailRequired} className="h-11 rounded-xl" />
+                    <Input type="email" placeholder="örnek@marka.com" required={emailRequired} className="h-11 rounded-xl" />
                 </div>
             </div>
             <div className="space-y-2">
@@ -983,7 +983,7 @@ const FormRenderer = () => {
                     <CardContent className="space-y-6 px-8 pb-10">
                          <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
+                                <TabsTrigger value="login" className="rounded-lg font-bold">Geniş Yap</TabsTrigger>
                                 <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
                             </TabsList>
                         </Tabs>
