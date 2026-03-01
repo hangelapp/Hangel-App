@@ -24,7 +24,8 @@ const AppleSection = ({
     theme = 'light',
     imageUrl,
     imageHint,
-    className
+    className,
+    children
 }: { 
     title: string, 
     subtitle?: string, 
@@ -36,7 +37,8 @@ const AppleSection = ({
     theme?: 'light' | 'dark',
     imageUrl?: string,
     imageHint?: string,
-    className?: string
+    className?: string,
+    children?: React.ReactNode
 }) => (
     <section className={cn(
         "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
@@ -60,6 +62,7 @@ const AppleSection = ({
                     </Link>
                 )}
             </div>
+            {children}
         </div>
         
         {imageUrl && (
@@ -192,7 +195,7 @@ export default function AboutPage() {
             {/* Hangel Derneği */}
             <AppleSection 
                 title="Sivil Toplumun Kalbinde: hangel Derneği."
-                description="Platformun teknolojik gücünü, Social Business Global Derneği'nin (SBG) saha tecrübesi ve akademik vizyonuyla birleştiriyoruz. Derneğimiz, sosyal girişimcilik ekosistemini güçlendirmek, mevzuat çalışmaları yapmak ve uluslararası işbirlikleri kurmak için çalışır."
+                description="Platformun teknolojik gücünü, Social Business Global Derneğinin (SBG) saha tecrübesi ve akademik vizyonuyla birleştiriyoruz. Derneğimiz, sosyal girişimcilik ekosistemini güçlendirmek, mevzuat çalışmaları yapmak ve uluslararası işbirlikleri kurmak için çalışır."
                 cta1="Daha Fazla Bilgi"
                 cta1Href="/hangelassociation"
                 imageUrl="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop"
