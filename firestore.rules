@@ -13,7 +13,11 @@ service cloud.firestore {
 
     // --- Kullanıcı Verileri ---
     match /users/{userId} {
-      allow get, list, create, update, delete: if isOwner(userId);
+      // Bireysel döküman erişimi sahibine özel
+      allow get, create, update, delete: if isOwner(userId);
+      
+      // Dashboard istatistikleri için listelemeye (count vb.) izin veriyoruz
+      allow list: if isSignedIn();
 
       // Alt koleksiyonlar (badges, certificates, qrCodePayments vb.)
       match /{allSubcollections=**} {
@@ -56,7 +60,7 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
-    // --- Başvurular (İzin Hatasını Düzelten Kısım) ---
+    // --- Başvurular ---
     match /applications/{appId} {
       allow get, list, create, update, delete: if isSignedIn();
     }
