@@ -56,16 +56,6 @@ export default function VolunteeringDetailPage() {
 
   const ngo = ngos.find(n => n.id === opportunity.ngoId);
 
-  // Mock checking logic remains for visual feedback
-  const requiredSkillsMet = true; 
-  const requiredLanguagesMet = true;
-  const requiredProgramsMet = true;
-  const requiredDocsMet = true;
-  const requiredEducationMet = true;
-  const domesticTravelMet = true;
-  const internationalTravelMet = true;
-  const visaMet = true;
-
   const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
 
@@ -171,20 +161,6 @@ export default function VolunteeringDetailPage() {
                                 </Button>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-                
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Uygunluk Durumun</CardTitle>
-                        <CardDescription>Bu ilana başvurmak için profilinin ne kadar uyumlu olduğunu gör.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="divide-y">
-                        <RequirementRow label="Gerekli Yetkinlikler" value={opportunity.skills} isMet={requiredSkillsMet} />
-                        <RequirementRow label="İstenen Diller" value={opportunity.languages} isMet={requiredLanguagesMet} />
-                        <RequirementRow label="Bilgisi İstenen Programlar" value={opportunity.programs} isMet={requiredProgramsMet} />
-                        <RequirementRow label="Gerekli Belgeler/Lisanslar" value={opportunity.requirements} isMet={requiredDocsMet} />
-                        <RequirementRow label="Eğitim Seviyesi" value={opportunity.education} isMet={requiredEducationMet} />
                     </CardContent>
                 </Card>
             </div>
