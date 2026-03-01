@@ -82,7 +82,7 @@ const corporateCountries = [
     "Endonezya", "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", 
     "İrlanda", "İspanya", "İsveç", "İtalya", "İran", "Letonya", "Litvanya", "Lüksemburg", 
     "Macaristan", "Makedonya", "Malta", "Nijerya", "Polonya", "Portekiz", "Romanya", 
-    "Slovakya", "Slovenya", "Suriye", "Türkiye", "Ukranya", "Ürdün", "Yunanistan"
+    "Slovakya", "Slovenya", "Suriye", "Türkiye", "Ukrayna", "Ürdün", "Yunanistan"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
@@ -142,7 +142,7 @@ const AuthorizedPersonFields = () => (
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
-                <Input placeholder="İsmail Hilmi ADIGÜZEL" required className="h-11 rounded-xl" />
+                <Input placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
@@ -474,6 +474,7 @@ const FormRenderer = () => {
                         username: `@${phone.replace(/\D/g, '')}`,
                         avatarUrl: '',
                         coverPhotoUrl: '',
+                        role: 'user', // Default role
                         personalInfo: {
                             email: email,
                             phone: phone,

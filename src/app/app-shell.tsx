@@ -80,7 +80,7 @@ const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => vo
                     </div>
                     <span className='text-sm font-semibold text-foreground'>{item.label}</span>
                 </div>
-                <Icons.ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                <Icons.ChevronRight className="h-4 w-4 text-muted-foreground/50" />
             </Link>
         </SheetClose>
     );

@@ -12,13 +12,17 @@ service cloud.firestore {
     }
     
     function isSuperAdmin() {
-      return request.auth.token.email == '5384009090@hangel.org';
+      // Hem email bazlı hem de sistem üzerindeki rol bazlı kontrol
+      return request.auth.token.email == '5384009090@hangel.org' || 
+             (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super-admin');
     }
 
     // Kullanıcı koleksiyonu kuralları
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write, update: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+      // Kullanıcı kendi dökümanını güncelleyebilir, Süper Admin her şeyi yapabilir
+      allow create, update, write: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
       
       match /{allChildren=**} {
         allow read: if isSignedIn();
@@ -26,13 +30,24 @@ service cloud.firestore {
       }
     }
 
+    // Başvuru koleksiyonu
+    match /applications/{appId} {
+      allow read: if isSignedIn();
+      // Başvuru yapma yetkisi tüm giriş yapanlarda, güncelleme yetkisi Süper Admin'de
+      allow create: if isSignedIn();
+      allow update, delete, write: if isSignedIn() && isSuperAdmin();
+    }
+
     // Diğer tüm koleksiyonlar için global kural
-    // Süper Admin her şeyi yapabilir, giriş yapanlar okuyabilir/yazabilir (başvuru vb için)
     match /{allPaths=**} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      // Kritik koleksiyonlara yazma yetkisi sadece Süper Admin ve ilgili sahiplerde olmalı
+      // Ancak MVP aşamasında karmaşıklığı önlemek için signedIn kontrolü yeterlidir
+      // Önemli: Süper Admin her zaman yazabilir
+      allow write: if isSignedIn();
     }
     
-    // Sistem watcher tetikleyici: Yetki hiyerarşisi ve Super Admin erişimi tam kapasiteye çıkarıldı.
-    // Son güncelleme: 2024-07-23 21:45
+    // Sistem güncellendi: Yetki hiyerarşisi ve Süper Admin global erişimi senkronize edildi.
+    // Son güncelleme: 2024-07-24 10:30
   }
 }
