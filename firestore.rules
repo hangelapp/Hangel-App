@@ -13,71 +13,97 @@ service cloud.firestore {
     }
 
     // --- Kullanıcı Verileri ---
-    // match /users/{userId} kuralı listeleme (list) yetkisini de kapsamalıdır.
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isOwner(userId);
-      
-      match /{allSubcollections=**} {
-        allow read, write: if isOwner(userId);
+    // Koleksiyon düzeyinde listeleme ve doküman düzeyinde okuma/yazma izinleri
+    match /users {
+      allow list: if isSignedIn();
+      match /{userId} {
+        allow get: if isSignedIn();
+        allow write: if isOwner(userId);
+        
+        match /{allSubcollections=**} {
+          allow read, write: if isOwner(userId);
+        }
       }
     }
 
     // --- STK Profilleri ---
-    match /ngos/{ngoId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-
-      match /{allSubcollections=**} {
-        allow read: if true;
+    match /ngos {
+      allow list: if true;
+      match /{ngoId} {
+        allow get: if true;
         allow write: if isSignedIn();
+
+        match /{allSubcollections=**} {
+          allow read: if true;
+          allow write: if isSignedIn();
+        }
       }
     }
 
     // --- Marka Profilleri ---
-    match /brands/{brandId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    match /brands {
+      allow list: if true;
+      match /{brandId} {
+        allow get: if true;
+        allow write: if isSignedIn();
+      }
     }
 
     // --- Zaman Tüneli Gönderileri ---
-    match /posts/{postId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    match /posts {
+      allow list: if true;
+      match /{postId} {
+        allow get: if true;
+        allow write: if isSignedIn();
+      }
     }
 
     // --- Gönüllülük İlanları ---
-    match /volunteering/{oppId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    match /volunteering {
+      allow list: if true;
+      match /{oppId} {
+        allow get: if true;
+        allow write: if isSignedIn();
+      }
     }
 
     // --- Kütüphane İçerikleri ---
-    match /library/{sectionId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    match /library {
+      allow list: if true;
+      match /{sectionId} {
+        allow get: if true;
+        allow write: if isSignedIn();
+      }
     }
 
     // --- Başvurular ---
-    match /applications/{appId} {
-      // Başvuru dökümanlarını okuma ve listeleme izni tüm giriş yapmış kullanıcılara açık
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
+    // Super Admin'in tüm başvuruları görebilmesi için koleksiyon düzeyinde izin
+    match /applications {
+      allow list: if isSignedIn();
+      match /{appId} {
+        allow read, write: if isSignedIn();
+      }
     }
 
     // --- Etkinlikler ---
-    match /events/{eventId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    match /events {
+      allow list: if true;
+      match /{eventId} {
+        allow get: if true;
+        allow write: if isSignedIn();
+      }
     }
 
     // --- Acil Durum Bildirimleri ---
-    match /emergencyAssistance/{emergencyAssistanceId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    match /emergencyAssistance {
+      allow list: if true;
+      match /{emergencyId} {
+        allow get: if true;
+        allow write: if isSignedIn();
+      }
     }
     
-    // Sistem watcheri tetiklemek için eklenen yorum satırı.
-    // Uyum ve güvenlik denetimi tamamlandı.
+    // Sistem watcher'ı tetiklemek için eklenen yorum satırı.
+    // Yetkilendirme mimarisi Super Admin listeleme gereksinimlerine göre optimize edildi.
   }
 }

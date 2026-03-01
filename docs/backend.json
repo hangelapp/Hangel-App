@@ -110,7 +110,7 @@
   "firestore": {
     "/users": {
       "schema": { "type": "array", "items": { "$ref": "#/backend/entities/User" } },
-      "description": "Tüm kullanıcıların listelenmesi (Admin)."
+      "description": "Tüm kullanıcıların listelenmesi."
     },
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/User" },
@@ -158,7 +158,7 @@
     },
     "/applications": {
       "schema": { "type": "array", "items": { "$ref": "#/backend/entities/Application" } },
-      "description": "Tüm başvuruların listelenmesi (Admin)."
+      "description": "Tüm başvuruların listelenmesi."
     },
     "/applications/{appId}": {
       "schema": { "$ref": "#/backend/entities/Application" },
