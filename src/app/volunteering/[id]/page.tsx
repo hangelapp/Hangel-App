@@ -15,26 +15,6 @@ import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
-const RequirementRow = ({ label, value, isMet }: { label: string; value: string | string[] | undefined; isMet: boolean }) => {
-    if (!value || (Array.isArray(value) && value.length === 0)) {
-        return null;
-    }
-    const Icon = isMet ? CheckCircle : XCircle;
-    const colorClass = isMet ? 'text-green-600' : 'text-red-600';
-
-    return (
-        <div className="flex items-start py-3 text-sm">
-            <Icon className={`h-5 w-5 mr-3 mt-0.5 flex-shrink-0 ${colorClass}`} />
-            <div className="flex-1">
-                <p className="font-medium">{label}</p>
-                <p className="text-muted-foreground leading-snug">
-                    {Array.isArray(value) ? value.join(', ') : value}
-                </p>
-            </div>
-        </div>
-    );
-};
-
 export default function VolunteeringDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -47,7 +27,9 @@ export default function VolunteeringDetailPage() {
   const [isApplying, setIsApplying] = useState(false);
 
   useEffect(() => {
-    setProfileUrl(window.location.href);
+    if (typeof window !== 'undefined') {
+        setProfileUrl(window.location.href);
+    }
   }, []);
   
   if (!opportunity) {

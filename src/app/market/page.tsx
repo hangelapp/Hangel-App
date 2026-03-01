@@ -43,7 +43,7 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 const MarketAssistant = ({ brands }: { brands: Brand[] }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
-    const [messages, setStories] = useState<{ role: 'user' | 'assistant', text: string }[]>([]);
+    const [messages, setMessages] = useState<{ role: 'user' | 'assistant', text: string }[]>([]);
     const [isTyping, setIsTyping] = useState(false);
     const { toast } = useToast();
 
@@ -53,13 +53,13 @@ const MarketAssistant = ({ brands }: { brands: Brand[] }) => {
 
         const userMsg = query;
         setQuery('');
-        setStories(prev => [...prev, { role: 'user', text: userMsg }]);
+        setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
         setIsTyping(true);
 
         try {
             const brandsContext = brands.map(b => `${b.name} (${b.category}): %${b.donationRate} bağış oranı.`).join('\n');
             const result = await askMarketAssistant({ userQuestion: userMsg, brandsContext });
-            setStories(prev => [...prev, { role: 'assistant', text: result.answer }]);
+            setMessages(prev => [...prev, { role: 'assistant', text: result.answer }]);
         } catch (error) {
             toast({ variant: 'destructive', title: "Asistan Hatası", description: "Yanıt alınamadı." });
         } finally {
@@ -195,7 +195,7 @@ export default function MarketPage() {
         </div>
 
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="all">Tümü</TabsTrigger>
                 <TabsTrigger value="brand">Ticari</TabsTrigger>
                 <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
