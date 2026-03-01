@@ -16,7 +16,7 @@ service cloud.firestore {
       // Bireysel döküman erişimi sahibine özel
       allow get, create, update, delete: if isOwner(userId);
       
-      // Dashboard istatistikleri için listelemeye (count vb.) izin veriyoruz
+      // Dashboard istatistikleri ve listeleme için izin veriyoruz
       allow list: if isSignedIn();
 
       // Alt koleksiyonlar (badges, certificates, qrCodePayments vb.)
@@ -25,10 +25,10 @@ service cloud.firestore {
       }
     }
 
-    // --- STK Profilleri (Herkese Açık Okuma) ---
+    // --- STK Profilleri ---
     match /ngos/{ngoId} {
-      allow get, list: if true;
-      allow write: if isSignedIn(); // Prototip aşamasında tüm giriş yapmış kullanıcılara izin veriyoruz
+      allow read: if true;
+      allow write: if isSignedIn();
 
       match /{allSubcollections=**} {
         allow read: if true;
@@ -36,45 +36,45 @@ service cloud.firestore {
       }
     }
 
-    // --- Marka Profilleri (Herkese Açık Okuma) ---
+    // --- Marka Profilleri ---
     match /brands/{brandId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isSignedIn();
     }
 
     // --- Zaman Tüneli Gönderileri ---
     match /posts/{postId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     // --- Gönüllülük İlanları ---
     match /volunteering/{oppId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isSignedIn();
     }
 
     // --- Kütüphane İçerikleri ---
     match /library/{sectionId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isSignedIn();
     }
 
     // --- Başvurular ---
     match /applications/{appId} {
-      allow get, list, create, update, delete: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
     // --- Etkinlikler ---
     match /events/{eventId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     // --- Acil Durum Bildirimleri ---
     match /emergencyAssistance/{emergencyAssistanceId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
+      allow read: if true;
+      allow write: if isSignedIn();
     }
   }
 }
