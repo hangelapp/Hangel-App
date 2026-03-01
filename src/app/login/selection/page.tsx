@@ -79,7 +79,10 @@ const marketCategoryLabels = marketCategories
     .map(c => c.mainCategory);
 
 const corporateCountries = [
-    "Türkiye", "Makedonya", "İran", "Azerbaycan", "Nijerya", "Suriye", "Ürdün", "Danimarka", "Endonezya", "Almanya", "Ukrayna", "AB Ülkeleri"
+    "Türkiye", "Makedonya", "İran", "Azerbaycan", "Nijerya", "Suriye", "Ürdün", "Danimarka", "Endonezya", "Almanya", "Ukranya",
+    "Avusturya", "Belçika", "Bulgaristan", "Çekya", "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", 
+    "İrlanda", "İspanya", "İsveç", "İtalya", "Letonya", "Litvanya", "Lüksemburg", "Macaristan", "Malta", "Polonya", 
+    "Portekiz", "Romanya", "Slovakya", "Slovenya", "Yunanistan"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
@@ -239,48 +242,60 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya", ema
     </div>
 );
 
-const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood, required = true }: any) => (
-    <div className="space-y-4">
-        <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Adres Bilgileri</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
-                <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
-                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
-                    <SelectContent>
-                        {allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
-                <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
-                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
-                    <SelectContent>
-                        {city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-        </div>
-        
-        {city && district && neighborhoodsData[city]?.[district] && (
-            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
-                <Select value={neighborhood} onValueChange={setNeighborhood} required={required}>
-                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
-                    <SelectContent>
-                        {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-        )}
+const AddressFields = ({ country, city, setCity, district, setDistrict, neighborhood, setNeighborhood, required = true }: any) => {
+    const isTurkey = country === 'Türkiye';
 
-        <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Açık Adres</Label>
-            <Input placeholder="Sokak, kapı no..." className="h-11 rounded-xl" required={required} />
+    return (
+        <div className="space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Adres Bilgileri</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl / Eyalet</Label>
+                    {isTurkey ? (
+                        <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                            <SelectContent>
+                                {allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    ) : (
+                        <Input placeholder="Şehir / Eyalet girin" value={city} onChange={e => setCity(e.target.value)} required={required} className="h-11 rounded-xl" />
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe / Bölge</Label>
+                    {isTurkey ? (
+                        <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                            <SelectContent>
+                                {city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    ) : (
+                        <Input placeholder="İlçe / Bölge girin" value={district} onChange={e => setDistrict(e.target.value)} required={required} className="h-11 rounded-xl" />
+                    )}
+                </div>
+            </div>
+            
+            {isTurkey && city && district && neighborhoodsData[city]?.[district] && (
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                    <Select value={neighborhood} onValueChange={setNeighborhood} required={required}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
+                        <SelectContent>
+                            {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Açık Adres</Label>
+                <Input placeholder="Sokak, kapı no..." className="h-11 rounded-xl" required={required} />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const FinancialFields = ({ type = 'STK', required = false }: { type?: 'STK' | 'Marka', required?: boolean }) => (
     <div className="space-y-4">
@@ -539,7 +554,7 @@ const FormRenderer = () => {
         );
     };
 
-    const NgoRegistrationForm = () => {
+    const NgoRegistrationForm = ({ selectedCountry }: { selectedCountry: string }) => {
         const [ngoType, setNgoType] = useState<string>('');
         const [selectedFeds, setSelectedFeds] = useState<string[]>([]);
 
@@ -681,7 +696,7 @@ const FormRenderer = () => {
                     <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
                     
-                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
+                    <AddressFields country={selectedCountry} city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
                     <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" emailRequired={true} phoneRequired={true} />
                     <FinancialFields required={true} />
 
@@ -700,7 +715,7 @@ const FormRenderer = () => {
         );
     };
 
-    const BrandRegistrationForm = () => {
+    const BrandRegistrationForm = ({ selectedCountry }: { selectedCountry: string }) => {
         const [brandStatus, setBrandStatus] = useState<string>('');
 
         const handleSubmit = (e: React.FormEvent) => {
@@ -852,7 +867,7 @@ const FormRenderer = () => {
                         </div>
                     </div>
 
-                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
+                    <AddressFields country={selectedCountry} city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
                     <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" emailRequired={true} phoneRequired={true} />
                     <FinancialFields type="Marka" required={true} />
 
@@ -870,10 +885,11 @@ const FormRenderer = () => {
         );
     };
 
-    const ClubRegistrationForm = () => {
+    const ClubRegistrationForm = ({ selectedCountry }: { selectedCountry: string }) => {
         const [clubSchoolType, setClubSchoolType] = useState<string>('');
         const [clubCategory, setClubCategory] = useState<string>('');
         const [otherClubCategory, setOtherClubCategory] = useState<string>('');
+        const isTurkey = selectedCountry === 'Türkiye';
         
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
@@ -901,16 +917,20 @@ const FormRenderer = () => {
                         {(clubSchoolType === 'university' || clubSchoolType === 'high-school') && (
                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                                    {clubSchoolType === 'university' ? 'Üniversite' : 'İl Millî Eğitim Müdürlüğü'}
+                                    {clubSchoolType === 'university' ? 'Üniversite' : 'Okul Adı / Müdürlüğü'}
                                 </Label>
-                                <Select required>
-                                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                    <SelectContent>
-                                        {(clubSchoolType === 'university' ? allUniversities : provincialDirectorates).map(u => (
-                                            <SelectItem key={u} value={u}>{u}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                {isTurkey ? (
+                                    <Select required>
+                                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {(clubSchoolType === 'university' ? allUniversities : provincialDirectorates).map(u => (
+                                                <SelectItem key={u} value={u}>{u}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input placeholder={clubSchoolType === 'university' ? "Üniversite adını girin" : "Okul adını girin"} required className="h-11 rounded-xl" />
+                                )}
                             </div>
                         )}
 
@@ -945,7 +965,7 @@ const FormRenderer = () => {
                         </div>
                     </div>
 
-                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
+                    <AddressFields country={selectedCountry} city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
                     <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" emailRequired={true} phoneRequired={true} />
 
                     <div className="space-y-4">
@@ -1043,9 +1063,9 @@ const FormRenderer = () => {
                                     <IndividualForm isRegister={true} onComplete={handleRegistrationComplete} />
                                 ) : (
                                     <div className="pt-4">
-                                        {entity === 'NGO' && <NgoRegistrationForm />}
-                                        {entity === 'BRAND' && <BrandRegistrationForm />}
-                                        {entity === 'CLUB' && <ClubRegistrationForm />}
+                                        {entity === 'NGO' && <NgoRegistrationForm selectedCountry={selectedCountry} />}
+                                        {entity === 'BRAND' && <BrandRegistrationForm selectedCountry={selectedCountry} />}
+                                        {entity === 'CLUB' && <ClubRegistrationForm selectedCountry={selectedCountry} />}
                                         {!entity && selectedCountry && (
                                             <div className="p-12 text-center border-2 border-dashed rounded-[2rem] opacity-40">
                                                 <p className="text-sm font-medium italic">Lütfen kuruluş türünü seçin.</p>
