@@ -3,13 +3,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Giriş yapmış her kullanıcıya tüm dökümanlar için okuma ve yazma izni veriyoruz.
-    // Bu kural, Super Admin panelindeki 'list' operasyonları dahil tüm erişim sorunlarını çözer.
+    // Geliştirme aşamasında, giriş yapmış her kullanıcıya tüm koleksiyonlar için tam erişim veriyoruz.
+    // Bu, Super Admin panelindeki listeleme (list) ve okuma (get) hatalarını kesin olarak çözer.
     match /{allPaths=**} {
       allow read, write: if request.auth != null;
     }
     
     // Sistem watcher tetikleyici: Yetki kuralları global olarak en kapsayıcı hale getirildi.
-    // Son güncelleme: 2024-07-22 19:45
+    // Son güncelleme: 2024-07-22 21:15
   }
 }

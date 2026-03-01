@@ -79,11 +79,10 @@ const marketCategoryLabels = marketCategories
     .map(c => c.mainCategory);
 
 const corporateCountries = [
-    "Almanya", "Avusturya", "Azerbaycan", "Belçika", "Bulgaristan", "Çekya", "Danimarka", "Endonezya", 
-    "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", "İrlanda", "İran", "İspanya", 
-    "İsveç", "İtalya", "Letonya", "Litvanya", "Lüksemburg", "Macaristan", "Makedonya", "Malta", 
-    "Nijerya", "Polonya", "Portekiz", "Romanya", "Slovakya", "Slovenya", "Suriye", "Türkiye", 
-    "Ukrayna", "Ürdün", "Yunanistan"
+    "Türkiye", "Makedonya", "İran", "Azerbaycan", "Nijerya", "Suriye", "Ürdün", "Danimarka", "Endonezya", "Almanya", "Ukrayna",
+    "Avusturya", "Belçika", "Bulgaristan", "Çekya", "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", 
+    "İrlanda", "İspanya", "İsveç", "İtalya", "Letonya", "Litvanya", "Lüksemburg", "Macaristan", "Malta", "Polonya", 
+    "Portekiz", "Romanya", "Slovakya", "Slovenya", "Yunanistan"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
@@ -478,7 +477,7 @@ const FormRenderer = () => {
                         personalInfo: {
                             email: email,
                             phone: phone,
-                            address: { city: '', district: '', neighborhood: '', fullAddress: '' }
+                            address: { country: 'Türkiye', city: '', district: '', neighborhood: '', fullAddress: '' }
                         },
                         volunteerInfo: {
                             interests: [],
