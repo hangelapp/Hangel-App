@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { timelinePosts, adBanners, ngos, allEntityLists } from '@/lib/data';
+import { adBanners, ngos, allEntityLists } from '@/lib/data';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, X } from 'lucide-react';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -22,7 +22,9 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Progress } from '@/components/ui/progress';
-
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Post } from '@/lib/types';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -64,17 +66,19 @@ const AdCarousel = () => {
 }
 
 export default function TimelinePage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Mocking auth
-  const router = useRouter();
-  const { toast } = useToast();
+  const db = useFirestore();
   const [sortKey, setSortKey] = useState('id');
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSanaOzelVisible, setIsSanaOzelVisible] = useState(true);
 
+  const postsQuery = useMemoFirebase(() => collection(db, 'posts'), [db]);
+  const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
+
   const sortedAndFilteredPosts = useMemo(() => {
-    let posts = [...timelinePosts];
+    if (!postsData) return [];
+    let posts = [...postsData];
 
     if (filterSponsored) {
         posts = posts.filter(p => p.sponsored);
@@ -91,34 +95,28 @@ export default function TimelinePage() {
     posts.sort((a, b) => {
         let valA, valB;
         if (sortKey === 'id') {
-            valA = parseInt(a.id);
-            valB = parseInt(b.id);
+            valA = a.id;
+            valB = b.id;
         } else { // likes
             valA = a.likes;
             valB = b.likes;
         }
 
         if (sortDir === 'desc') {
-            return valB - valA;
+            return valB > valA ? 1 : -1;
         } else {
-            return valA - valB;
+            return valA > valB ? 1 : -1;
         }
     });
 
     return posts;
-  }, [sortKey, sortDir, filterSponsored, searchTerm]);
-  
-  if (!isAuthenticated) {
-      return null;
-  }
+  }, [postsData, sortKey, sortDir, filterSponsored, searchTerm]);
 
   const getEntityLink = (authorName: string) => {
     const ngo = ngos.find(n => n.name === authorName);
     if (ngo) return `/ngos/${ngo.id}`;
-
     const brand = allEntityLists.find(b => b.name === authorName);
     if (brand) return `/market/${brand.id}`;
-
     return '#';
   }
 
@@ -176,14 +174,7 @@ export default function TimelinePage() {
                         <Card className="relative">
                             <CardHeader>
                                 <CardTitle className="text-lg">Sana Özel</CardTitle>
-                                 <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="absolute top-2 right-2 h-7 w-7" 
-                                    onClick={() => setIsSanaOzelVisible(false)}
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
+                                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setIsSanaOzelVisible(false)}><X className="h-4 w-4" /></Button>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
@@ -211,7 +202,9 @@ export default function TimelinePage() {
                     </div>
                 )}
                 <div className="p-2 sm:p-4 space-y-4">
-                    {sortedAndFilteredPosts.map((post, index) => (
+                    {isLoading ? (
+                        [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
+                    ) : sortedAndFilteredPosts.map((post, index) => (
                     <React.Fragment key={post.id}>
                         <Card className="overflow-hidden shadow-none rounded-xl">
                             <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4">
@@ -228,32 +221,27 @@ export default function TimelinePage() {
                                 <div className="flex items-center gap-1">
                                     {post.sponsored && (
                                     <Badge variant="outline" className="text-xs">
-                                        <Star className="h-3 w-3 mr-1" />
-                                        Sponsorlu
+                                        <Star className="h-3 w-3 mr-1" /> Sponsorlu
                                     </Badge>
                                     )}
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="h-5 w-5" />
-                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-5 w-5" /></Button>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4 px-3 sm:px-4 pb-3">
                             <p className="text-base">{post.content}</p>
                             {post.imageUrl && (
                                 <div className="relative aspect-video w-full overflow-hidden rounded-xl">
-                                <Image src={post.imageUrl} alt="Post image" fill className="object-cover" data-ai-hint={post.imageHint}/>
+                                <Image src={post.imageUrl} alt="Post image" fill className="object-cover" />
                                 </div>
                             )}
                             </CardContent>
                             <CardFooter className="flex justify-start gap-0 border-t p-0">
                                 <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
-                                    <Heart className="h-5 w-5" /> 
-                                    <span>Beğen</span>
+                                    <Heart className="h-5 w-5" /> <span>Beğen</span>
                                 </Button>
                                 <div className="w-[1px] h-6 bg-border self-center" />
                                 <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
-                                    <Share2 className="h-5 w-5" /> 
-                                    <span>Paylaş</span>
+                                    <Share2 className="h-5 w-5" /> <span>Paylaş</span>
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -262,9 +250,6 @@ export default function TimelinePage() {
                     ))}
                 </div>
             </TabsContent>
-            <TabsContent value="country" className="text-center text-muted-foreground p-16">Ülke genelindeki gönderiler yakında burada.</TabsContent>
-            <TabsContent value="city" className="text-center text-muted-foreground p-16">Şehrinizdeki gönderiler yakında burada.</TabsContent>
-            <TabsContent value="school" className="text-center text-muted-foreground p-16">Okulunuzdaki gönderiler yakında burada.</TabsContent>
         </Tabs>
     </div>
   );

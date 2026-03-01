@@ -1,88 +1,83 @@
+
 {
   "entities": {
     "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Kullanıcı profili, kişisel ve gönüllülük verilerini içerir.",
+      "description": "Kullanıcı profili ve gönüllülük verileri.",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
         "username": { "type": "string" },
-        "avatarUrl": { "type": "string", "format": "uri" },
-        "personalInfo": {
-          "type": "object",
-          "properties": {
-            "email": { "type": "string", "format": "email" },
-            "phone": { "type": "string" },
-            "bloodType": { "type": "string" },
-            "address": {
-              "type": "object",
-              "properties": {
-                "city": { "type": "string" },
-                "district": { "type": "string" },
-                "fullAddress": { "type": "string" }
-              }
-            }
-          }
-        },
-        "volunteerInfo": {
-          "type": "object",
-          "properties": {
-            "skills": { "type": "array", "items": { "type": "string" } },
-            "interests": { "type": "array", "items": { "type": "string" } },
-            "education": { "type": "array", "items": { "type": "object" } }
-          }
-        },
-        "impactScore": { "type": "number", "default": 0 }
+        "avatarUrl": { "type": "string" },
+        "impactScore": { "type": "number" },
+        "personalInfo": { "type": "object" },
+        "volunteerInfo": { "type": "object" }
       }
     },
     "NGO": {
       "title": "NGO",
       "type": "object",
-      "description": "Sivil Toplum Kuruluşu profili.",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
         "category": { "type": "string" },
         "type": { "type": "string" },
         "transparencyScore": { "type": "number" },
-        "about": { "type": "string" },
-        "avatarUrl": { "type": "string" },
-        "coverPhotoUrl": { "type": "string" }
+        "stats": { "type": "object" }
       }
     },
     "Brand": {
       "title": "Brand",
       "type": "object",
-      "description": "Anlaşmalı Marka/İşletme profili.",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
         "slug": { "type": "string" },
         "donationRate": { "type": "number" },
         "category": { "type": "string" },
-        "logoUrl": { "type": "string" }
+        "type": { "type": "string" }
       }
     },
-    "Badge": {
-      "title": "Badge",
+    "Post": {
+      "title": "Post",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "name": { "type": "string" },
-        "level": { "type": "string" },
-        "earnedAt": { "type": "string", "format": "date-time" }
+        "author": { "type": "object" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "likes": { "type": "number" }
       }
     },
-    "Certificate": {
-      "title": "Certificate",
+    "Volunteering": {
+      "title": "Volunteering",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "title": { "type": "string" },
         "organization": { "type": "string" },
-        "date": { "type": "string" }
+        "points": { "type": "number" },
+        "location": { "type": "object" }
+      }
+    },
+    "LibrarySection": {
+      "title": "LibrarySection",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string" },
+        "title": { "type": "string" },
+        "items": { "type": "array" }
+      }
+    },
+    "Application": {
+      "title": "Application",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string" }
       }
     }
   },
@@ -96,23 +91,7 @@
         "definition": {
           "entityName": "User",
           "schema": { "$ref": "#/backend/entities/User" },
-          "description": "Ana kullanıcı dokümanı."
-        }
-      },
-      {
-        "path": "/users/{userId}/badges/{badgeId}",
-        "definition": {
-          "entityName": "Badge",
-          "schema": { "$ref": "#/backend/entities/Badge" },
-          "description": "Kullanıcının kazandığı rozetler."
-        }
-      },
-      {
-        "path": "/users/{userId}/certificates/{certId}",
-        "definition": {
-          "entityName": "Certificate",
-          "schema": { "$ref": "#/backend/entities/Certificate" },
-          "description": "Kullanıcının kazandığı sertifikalar."
+          "description": "Kullanıcı dokümanı."
         }
       },
       {
@@ -129,6 +108,38 @@
           "entityName": "Brand",
           "schema": { "$ref": "#/backend/entities/Brand" },
           "description": "Marka profili."
+        }
+      },
+      {
+        "path": "/posts/{postId}",
+        "definition": {
+          "entityName": "Post",
+          "schema": { "$ref": "#/backend/entities/Post" },
+          "description": "Zaman tüneli gönderileri."
+        }
+      },
+      {
+        "path": "/volunteering/{oppId}",
+        "definition": {
+          "entityName": "Volunteering",
+          "schema": { "$ref": "#/backend/entities/Volunteering" },
+          "description": "Gönüllülük ilanları."
+        }
+      },
+      {
+        "path": "/library/{sectionId}",
+        "definition": {
+          "entityName": "LibrarySection",
+          "schema": { "$ref": "#/backend/entities/LibrarySection" },
+          "description": "Kütüphane kategorileri."
+        }
+      },
+      {
+        "path": "/applications/{appId}",
+        "definition": {
+          "entityName": "Application",
+          "schema": { "$ref": "#/backend/entities/Application" },
+          "description": "Kuruluş ve gönüllülük başvuruları."
         }
       }
     ]

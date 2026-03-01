@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,8 @@ import {
   MessageSquare,
   DatabaseZap
 } from "lucide-react";
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const iconColorMap: { [key: string]: string } = {
   'FileText': 'bg-sky-500',
@@ -77,6 +80,18 @@ const superAdminNavItems = [
 ];
 
 export default function SuperAdminDashboard() {
+  const db = useFirestore();
+
+  const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
+  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+  const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
+
+  const { data: usersData } = useCollection(usersQuery);
+  const { data: ngosData } = useCollection(ngosQuery);
+  const { data: brandsData } = useCollection(brandsQuery);
+  const { data: appsData } = useCollection(appsQuery);
+
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12">
       <div className="space-y-1 px-1">
@@ -87,30 +102,22 @@ export default function SuperAdminDashboard() {
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Toplam Kullanıcı
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Toplam Kullanıcı</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">14,234</div>
-              <p className="text-xs text-muted-foreground">
-                +%20.1 geçen aydan
-              </p>
+              <div className="text-2xl font-bold">{usersData?.length || 0}</div>
+              <p className="text-xs text-muted-foreground">Aktif üye sayısı</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Onay Bekleyen Başvurular
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Onay Bekleyenler</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+573</div>
-              <p className="text-xs text-muted-foreground">
-                32 STK, 120 Marka, 421 Kulüp
-              </p>
+              <div className="text-2xl font-bold">{appsData?.length || 0}</div>
+              <p className="text-xs text-muted-foreground">Yeni başvurular</p>
             </CardContent>
           </Card>
           <Card>
@@ -119,10 +126,8 @@ export default function SuperAdminDashboard() {
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">128</div>
-              <p className="text-xs text-muted-foreground">
-                +19% geçen aydan
-              </p>
+              <div className="text-2xl font-bold">{ngosData?.length || 0}</div>
+              <p className="text-xs text-muted-foreground">Kayıtlı kuruluşlar</p>
             </CardContent>
           </Card>
           <Card>
@@ -131,10 +136,8 @@ export default function SuperAdminDashboard() {
               <Store className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">542</div>
-              <p className="text-xs text-muted-foreground">
-                +201 geçen aydan
-              </p>
+              <div className="text-2xl font-bold">{brandsData?.length || 0}</div>
+              <p className="text-xs text-muted-foreground">İş ortağı markalar</p>
             </CardContent>
           </Card>
         </div>

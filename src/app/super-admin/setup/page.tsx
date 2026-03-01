@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -16,6 +17,8 @@ import eventsJson from '../../../../docs/database-exports/events.json';
 import volunteeringJson from '../../../../docs/database-exports/volunteering.json';
 import badgesJson from '../../../../docs/database-exports/badges.json';
 import certificatesJson from '../../../../docs/database-exports/certificates.json';
+import libraryJson from '../../../../docs/database-exports/library.json';
+import postsJson from '../../../../docs/database-exports/timeline_posts.json';
 
 export default function SetupPage() {
     const db = useFirestore();
@@ -26,9 +29,8 @@ export default function SetupPage() {
     const logProgress = (msg: string) => setProgress(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
 
     const handleImport = async () => {
-        setIsLoading(false);
         if (!db) {
-            toast({ variant: 'destructive', title: "Hata", description: "Veritabanı bağlantısı henüz hazır değil." });
+            toast({ variant: 'destructive', title: "Hata", description: "Veritabanı bağlantısı hazır değil." });
             return;
         }
         
@@ -37,57 +39,35 @@ export default function SetupPage() {
         logProgress("Kurulum başlatıldı...");
 
         try {
-            // 1. Users Import
             logProgress("Kullanıcılar aktarılıyor...");
-            usersJson.forEach((u: any) => {
-                const ref = doc(db, 'users', u.id);
-                setDocumentNonBlocking(ref, u, { merge: true });
-            });
+            usersJson.forEach((u: any) => setDocumentNonBlocking(doc(db, 'users', u.id), u, { merge: true }));
 
-            // 2. NGOs Import
             logProgress("STK'lar aktarılıyor...");
-            ngosJson.forEach((n: any) => {
-                const ref = doc(db, 'ngos', n.id);
-                setDocumentNonBlocking(ref, n, { merge: true });
-            });
+            ngosJson.forEach((n: any) => setDocumentNonBlocking(doc(db, 'ngos', n.id), n, { merge: true }));
 
-            // 3. Brands Import
             logProgress("Markalar aktarılıyor...");
-            brandsJson.forEach((b: any) => {
-                const ref = doc(db, 'brands', b.id);
-                setDocumentNonBlocking(ref, b, { merge: true });
-            });
+            brandsJson.forEach((b: any) => setDocumentNonBlocking(doc(db, 'brands', b.id), b, { merge: true }));
 
-            // 4. Events Import
             logProgress("Etkinlikler aktarılıyor...");
-            eventsJson.forEach((e: any) => {
-                const ref = doc(db, 'events', e.id);
-                setDocumentNonBlocking(ref, e, { merge: true });
-            });
+            eventsJson.forEach((e: any) => setDocumentNonBlocking(doc(db, 'events', e.id), e, { merge: true }));
 
-            // 5. Volunteering Import
             logProgress("Gönüllülük ilanları aktarılıyor...");
-            volunteeringJson.forEach((v: any) => {
-                const ref = doc(db, 'volunteering', v.id);
-                setDocumentNonBlocking(ref, v, { merge: true });
-            });
+            volunteeringJson.forEach((v: any) => setDocumentNonBlocking(doc(db, 'volunteering', v.id), v, { merge: true }));
 
-            // 6. Badges & Certificates (Subcollections for user '1')
-            logProgress("Kullanıcı '1' için rozet ve sertifikalar ekleniyor...");
-            badgesJson.forEach((badge: any) => {
-                const ref = doc(db, 'users', '1', 'badges', badge.id);
-                setDocumentNonBlocking(ref, badge, { merge: true });
-            });
-            certificatesJson.forEach((cert: any) => {
-                const ref = doc(db, 'users', '1', 'certificates', cert.id);
-                setDocumentNonBlocking(ref, cert, { merge: true });
-            });
+            logProgress("Kütüphane içerikleri aktarılıyor...");
+            libraryJson.forEach((l: any) => setDocumentNonBlocking(doc(db, 'library', l.slug), l, { merge: true }));
+
+            logProgress("Zaman tüneli gönderileri aktarılıyor...");
+            postsJson.forEach((p: any) => setDocumentNonBlocking(doc(db, 'posts', p.id), p, { merge: true }));
+
+            logProgress("Rozet ve sertifikalar (Kullanıcı 1) ekleniyor...");
+            badgesJson.forEach((badge: any) => setDocumentNonBlocking(doc(db, 'users', '1', 'badges', badge.id), badge, { merge: true }));
+            certificatesJson.forEach((cert: any) => setDocumentNonBlocking(doc(db, 'users', '1', 'certificates', cert.id), cert, { merge: true }));
 
             logProgress("Tüm veriler başarıyla kuyruğa alındı!");
-            toast({ title: "Kurulum Tamamlandı", description: "Tüm mock datalar Firestore'a aktarıldı." });
+            toast({ title: "Kurulum Tamamlandı" });
         } catch (error: any) {
             logProgress(`Hata: ${error.message}`);
-            toast({ variant: 'destructive', title: "Hata", description: "Veri aktarımı sırasında bir sorun oluştu." });
         } finally {
             setIsLoading(false);
         }
@@ -98,43 +78,16 @@ export default function SetupPage() {
             <h1 className="text-3xl font-black tracking-tighter">Veritabanı Kurulum Merkezi</h1>
             <Card className="border-red-200 bg-red-50">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-800">
-                        <AlertTriangle className="h-5 w-5" />
-                        Veri Senkronizasyonu
-                    </CardTitle>
-                    <CardDescription className="text-red-700">
-                        Bu işlem, `docs/database-exports/` dizinindeki tüm JSON dosyalarını bulut veritabanına aktaracaktır. Mevcut verilerin üzerine yazılabilir.
-                    </CardDescription>
+                    <CardTitle className="text-red-800 flex items-center gap-2"><AlertTriangle /> Veri Senkronizasyonu</CardTitle>
+                    <CardDescription className="text-red-700">Tüm modülleri (Kütüphane, Gönderiler dahil) Firestore'a aktarın.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Button 
-                        onClick={handleImport} 
-                        disabled={isLoading}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold h-14 rounded-2xl shadow-xl"
-                    >
-                        {isLoading ? (
-                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Veriler Yazılıyor...</>
-                        ) : (
-                            <><DatabaseZap className="mr-2 h-5 w-5" /> Tüm Modülleri Firestore'a Aktar</>
-                        )}
+                    <Button onClick={handleImport} disabled={isLoading} className="w-full bg-red-600 hover:bg-red-700 h-14 rounded-2xl">
+                        {isLoading ? <Loader2 className="animate-spin mr-2" /> : <DatabaseZap className="mr-2" />} Tüm Modülleri Firestore'a Aktar
                     </Button>
                 </CardContent>
             </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest">İşlem Günlüğü</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="bg-black text-green-400 p-4 rounded-xl font-mono text-xs h-64 overflow-y-auto space-y-1">
-                        {progress.length === 0 ? (
-                            <p className="opacity-50 italic">Henüz işlem başlatılmadı...</p>
-                        ) : (
-                            progress.map((p, i) => <p key={i}>{p}</p>)
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+            <Card><CardContent><div className="bg-black text-green-400 p-4 rounded-xl font-mono text-xs h-64 overflow-y-auto">{progress.map((p, i) => <p key={i}>{p}</p>)}</div></CardContent></Card>
         </div>
     );
 }
