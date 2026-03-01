@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -51,7 +52,7 @@ export default function CompaniesPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="contact-name">Yetkili Adı</Label>
-                                <Input id="contact-name" placeholder="Adınız Soyadınız" required />
+                                <Input id="contact-name" placeholder="İsmail Hilmi ADIGÜZEL" required />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

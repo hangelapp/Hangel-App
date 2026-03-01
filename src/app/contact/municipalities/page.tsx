@@ -96,7 +96,7 @@ export default function MunicipalitiesPage() {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="max-w-3xl mx-auto">
                 <CardHeader>
                     <CardTitle>İletişime Geçin</CardTitle>
                     <CardDescription>Belediyenize özel çözümlerimiz ve işbirliği modellerimiz hakkında bilgi almak için formu doldurun.</CardDescription>
@@ -110,7 +110,7 @@ export default function MunicipalitiesPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="contact-name">Yetkili Adı</Label>
-                                <Input id="contact-name" placeholder="Adınız Soyadınız" required />
+                                <Input id="contact-name" placeholder="İsmail Hilmi ADIGÜZEL" required />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -134,4 +134,3 @@ export default function MunicipalitiesPage() {
         </div>
     );
 }
-

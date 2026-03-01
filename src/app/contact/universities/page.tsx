@@ -27,7 +27,7 @@ const IndividualContactForm = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="ind-name">Ad Soyad</Label>
-                <Input id="ind-name" placeholder="Adınız Soyadınız" required />
+                <Input id="ind-name" placeholder="İsmail Hilmi ADIGÜZEL" required />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="ind-email">E-posta</Label>
@@ -61,7 +61,7 @@ const NgoContactForm = () => {
             </div>
              <div className="space-y-2">
                 <Label htmlFor="ngo-contact-name">Yetkili Adı</Label>
-                <Input id="ngo-contact-name" placeholder="Adınız Soyadınız" required />
+                <Input id="ngo-contact-name" placeholder="İsmail Hilmi ADIGÜZEL" required />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="ngo-email">E-posta</Label>
@@ -91,7 +91,7 @@ const BrandContactForm = () => {
             </div>
              <div className="space-y-2">
                 <Label htmlFor="brand-contact-name">Yetkili Adı</Label>
-                <Input id="brand-contact-name" placeholder="Adınız Soyadınız" required />
+                <Input id="brand-contact-name" placeholder="İsmail Hilmi ADIGÜZEL" required />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="brand-email">E-posta</Label>
@@ -136,11 +136,11 @@ const CorporateContactForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="first-name">İlk adı</Label>
-                    <Input id="first-name" placeholder="Adınız" required />
+                    <Input id="first-name" placeholder="İsmail Hilmi" required />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="last-name">Soyadı</Label>
-                    <Input id="last-name" placeholder="Soyadınız" required />
+                    <Input id="last-name" placeholder="ADIGÜZEL" required />
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

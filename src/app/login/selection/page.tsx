@@ -135,7 +135,7 @@ const AuthorizedPersonFields = () => (
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
-                <Input placeholder="Adınız Soyadınız" required className="h-11 rounded-xl" />
+                <Input placeholder="İsmail Hilmi ADIGÜZEL" required className="h-11 rounded-xl" />
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
@@ -997,8 +997,7 @@ const FormRenderer = () => {
                 <div className="text-center mt-8 space-y-4">
                     <div className="flex justify-center items-center gap-4 opacity-40">
                         <ShieldCheck className="h-6 w-6" />
-                        <Landmark className="h-6 w-6" />
-                        <Building2 className="h-6 w-6" />
+                        <span className="font-bold text-xs">hangel</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Güvenli ve Şeffaf Altyapı</p>
                 </div>
@@ -1098,5 +1097,3 @@ export default function LoginSelectionPage() {
     </Suspense>
   );
 }
-
-    

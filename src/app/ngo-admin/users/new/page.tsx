@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -97,7 +98,7 @@ export default function NewUserPage() {
                             <Label htmlFor="name">Ad Soyad</Label>
                             <Input 
                                 id="name" 
-                                placeholder="Örn: Can Demir" 
+                                placeholder="İsmail Hilmi ADIGÜZEL" 
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
