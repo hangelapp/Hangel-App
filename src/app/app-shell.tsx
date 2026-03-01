@@ -149,7 +149,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
 
     if (isPreviewPage || isSuperAdminPage || isPublicPage) {
-        return <>{children}</>;
+        return <div className="min-h-screen bg-background">{children}</div>;
     }
 
     const currentUserName = authUser?.displayName || authUser?.email?.split('@')[0] || user.name;
@@ -207,7 +207,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
-            <main className={cn("flex-1 pt-12 pb-24 lg:pb-24")}>{children}</main>
+            <main className="flex-1 pt-12 pb-24 lg:pb-24">{children}</main>
           </div>
         </div>
     );

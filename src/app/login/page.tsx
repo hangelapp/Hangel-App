@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -419,7 +418,7 @@ const FullStandardsSection = () => {
     ];
     
     const accessibilityLawData = [
-        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Afrika / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
+        { label: "Erişilebilirlik", std: "WCAG 2.2 / EN 301 549", org: "W3C / European Commission / TSE / hangel", region: "Küresel / AB / Türkiye / Uzak Doğu / Africa / Latin Amerika / Güney Amerika", rate: "AA: %100 / AAA: %95" },
         { label: "Bilgilendirme Politikası", std: "Transparency Rules", org: "Regülatörler / hangel", region: "Küresel", rate: "%95 / %100" },
         { label: "Çok Dilli Erişim", std: "Inclusive Design", org: "Uluslararası Kullanıcılar / hangel", region: "Küresel", rate: "%80 / %100" },
         { label: "Yerel Bağış Uyumu", std: "Ulusal Mevzuat", org: "Kamu / hangel", region: "Ülke bazlı", rate: "%85 / %100" },
@@ -606,10 +605,10 @@ export default function LoginPage() {
         }
     ];
 
-    if (!mounted) return <div className="min-h-screen bg-white" />;
+    if (!mounted) return <div className="min-h-screen bg-background" />;
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <style jsx global>{`
                 @keyframes scroll {
                     from { transform: translateX(0); }
